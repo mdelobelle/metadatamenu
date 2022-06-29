@@ -118,3 +118,7 @@ div.supercharged-modal {
 div.supercharged-modal h4 {
     margin: 0;
 }
+
+.modal-text-danger {
+    color: red
+}

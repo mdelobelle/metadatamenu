@@ -6,11 +6,6 @@ export interface MetadataMenuSettings {
 	globallyIgnoredFields: Array<string>;
 	getFromInlineField: boolean;
 	classFilesPath: string;
-	enableEditor: boolean;
-	enableFileList: boolean;
-	enableBacklinks: boolean;
-	enableQuickSwitcher: boolean;
-	enableSuggestor: boolean;
 }
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
@@ -19,9 +14,4 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	globallyIgnoredFields: [],
 	classFilesPath: "",
 	getFromInlineField: true,
-	enableEditor: true,
-	enableFileList: true,
-	enableBacklinks: true,
-	enableQuickSwitcher: true,
-	enableSuggestor: true
 }

@@ -1,8 +1,53 @@
-import { App, PluginSettingTab, Setting, ButtonComponent, ToggleComponent } from "obsidian"
+import { App, PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal } from "obsidian"
 import MetadataMenu from "main"
 import FieldSettingsModal from "src/settings/FieldSettingsModal"
 import Field from "src/Field"
 import FieldSetting from "src/settings/FieldSetting"
+
+class SettingsMigrationConfirmModal extends Modal {
+
+	private plugin: MetadataMenu
+	private tab: MetadataMenuSettingTab
+
+	constructor(plugin: MetadataMenu, tab: MetadataMenuSettingTab) {
+		super(plugin.app)
+		this.plugin = plugin
+		this.tab = tab
+	}
+
+	onOpen(): void {
+
+		this.titleEl.setText("Confirm")
+		const body = this.contentEl.createDiv({
+			cls: "modal-text-danger"
+		})
+		body.setText("This will erase current settings. Are you sure?")
+		const confirmButton = new ButtonComponent(this.contentEl)
+		confirmButton.setIcon("check")
+		confirmButton.onClick(() => {
+			//@ts-ignore
+			if (this.app.plugins.plugins.hasOwnProperty("supercharged-links-obsidian")) {
+				//@ts-ignore
+				let settings = this.app.plugins.plugins["supercharged-links-obsidian"].settings
+				let _settings = this.plugin.settings
+				_settings.classFilesPath = settings.classFilesPath
+				_settings.displayFieldsInContextMenu = settings.displayFieldsInContextMenu
+				_settings.getFromInlineField = settings.getFromInlineField
+				_settings.globallyIgnoredFields = settings.globallyIgnoredFields
+				this.plugin.initialProperties = settings.presetFields
+				this.plugin.saveSettings()
+				this.close()
+			}
+
+		})
+	}
+
+	onClose(): void {
+		this.tab.display()
+	}
+}
+
+
 
 export default class MetadataMenuSettingTab extends PluginSettingTab {
 	plugin: MetadataMenu;
@@ -94,5 +139,21 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			Object.assign(property, prop)
 			new FieldSetting(containerEl, property, this.app, this.plugin)
 		})
+
+		containerEl.createEl('h4', { text: 'Migrate' });
+
+		/* Add new property for which we want to preset values*/
+		new Setting(containerEl)
+			.setName("Copy settings from supercharged links plugin")
+			.setDesc("Copy settings from supercharged links plugin")
+			.addButton((button: ButtonComponent): ButtonComponent => {
+				return button
+					.setTooltip("Get settings from supercharged links")
+					.setButtonText("Copy")
+					.onClick(async () => {
+						let modal = new SettingsMigrationConfirmModal(this.plugin, this);
+						modal.open();
+					});
+			});
 	}
 }
