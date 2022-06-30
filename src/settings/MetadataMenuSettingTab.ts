@@ -27,23 +27,22 @@ class SettingsMigrationConfirmModal extends Modal {
 		confirmButton.onClick(() => {
 			//@ts-ignore
 			if (this.app.plugins.plugins.hasOwnProperty("supercharged-links-obsidian")) {
-				this.plugin.initialProperties = []
 				//@ts-ignore
 				let settings = this.app.plugins.plugins["supercharged-links-obsidian"].settings
 				let _settings = this.plugin.settings
-				console.log(settings)
-
+				//copying simple settings
 				_settings.classFilesPath = settings.classFilesPath
 				_settings.displayFieldsInContextMenu = settings.displayFieldsInContextMenu
 				_settings.getFromInlineField = settings.getFromInlineField
 				_settings.globallyIgnoredFields = settings.globallyIgnoredFields
+				//deep copying presetFields in initialProperty
+				this.plugin.initialProperties = []
 				settings.presetFields.forEach((prop: Field) => {
 					const property = new Field()
 					Object.assign(property, prop)
 					this.plugin.initialProperties.push(property)
 				})
-				console.log(settings.presetFields)
-				console.log(this.plugin.initialProperties)
+
 				this.plugin.saveSettings()
 				this.close()
 			}
