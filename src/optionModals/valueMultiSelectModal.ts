@@ -14,12 +14,22 @@ export default class valueMultiSelectModal extends Modal {
     top: boolean
 
     constructor(app: App, file: TFile, name: string, initialValues: string, settings: Field, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
+        console.log(initialValues)
         super(app)
         this.app = app
         this.file = file
         this.name = name
         this.settings = settings
-        this.values = initialValues ? initialValues.toString().replace(/^\[(.*)\]$/, "$1").split(",").map(item => item.trim()) : []
+        if (initialValues) {
+            if (initialValues.toString().startsWith("[[")) {
+                this.values = initialValues.split(",").map(item => item.trim())
+            } else {
+                this.values = initialValues.toString().replace(/^\[(.*)\]$/, "$1").split(",").map(item => item.trim())
+            }
+        } else {
+            this.values = []
+        }
+        //this.values = initialValues ? initialValues.toString().replace(/^\[(.*)\]$/, "$1").split(",").map(item => item.trim()) : []
         this.lineNumber = lineNumber
         this.inFrontmatter = inFrontMatter
         this.top = top
