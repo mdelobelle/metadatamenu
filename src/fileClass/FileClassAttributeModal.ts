@@ -39,14 +39,14 @@ export default class FileClassAttributeModal extends Modal {
         attrName.setText(`<${this.name}>`)
         attrLine.append(" fields in files with:")
         String(`---\nfileClass: ${this.fileClass.name}\n...\n---`).split('\n').forEach(line => {
-            typeSelectHeader.createEl("div", "yaml-frontmatter-red").setText(line)
+            typeSelectHeader.createEl("div", "yaml-metadata-menu-red").setText(line)
         })
 
         // type select
-        const typeSelectContainer = this.contentEl.createDiv({ cls: 'frontmatter-value-selector-container' })
-        const typeSelectLabel = typeSelectContainer.createDiv({ cls: 'frontmatter-value-selector-inline-label' })
+        const typeSelectContainer = this.contentEl.createDiv({ cls: 'metadata-menu-value-selector-container' })
+        const typeSelectLabel = typeSelectContainer.createDiv({ cls: 'metadata-menu-value-selector-inline-label' })
         typeSelectLabel.setText("will: ")
-        const typeSelectDropDown = typeSelectContainer.createDiv({ cls: 'frontmatter-value-selector-toggler' })
+        const typeSelectDropDown = typeSelectContainer.createDiv({ cls: 'metadata-menu-value-selector-toggler' })
         const typeSelect = new DropdownComponent(typeSelectDropDown)
         Object.keys(types).forEach(key => {
             typeSelect.addOption(key, types[key])
@@ -56,8 +56,8 @@ export default class FileClassAttributeModal extends Modal {
         }
 
         // options input
-        const optionsInputContainer = this.contentEl.createDiv({ cls: 'frontmatter-value-selector-container' })
-        const optionsInputLabel = optionsInputContainer.createDiv({ cls: 'frontmatter-value-selector-inline-label-top' })
+        const optionsInputContainer = this.contentEl.createDiv({ cls: 'metadata-menu-value-selector-container' })
+        const optionsInputLabel = optionsInputContainer.createDiv({ cls: 'metadata-menu-value-selector-inline-label-top' })
         optionsInputLabel.setText("Values")
         const optionsInput = new TextAreaComponent(optionsInputContainer)
         optionsInput.inputEl.rows = 3
@@ -74,7 +74,7 @@ export default class FileClassAttributeModal extends Modal {
         nameInput.onChange(value => { this.name = value; attrName.setText(`<${value}>`) })
 
         // footer buttons
-        const footer = this.contentEl.createDiv({ cls: "frontmatter-value-grid-footer" })
+        const footer = this.contentEl.createDiv({ cls: "metadata-menu-value-grid-footer" })
         const saveButton = new ButtonComponent(footer)
         saveButton.setIcon("checkmark")
         saveButton.onClick(() => {
@@ -88,7 +88,7 @@ export default class FileClassAttributeModal extends Modal {
                 const confirmModal = new Modal(this.app)
                 confirmModal.titleEl.setText("Please confirm")
                 confirmModal.contentEl.createDiv().setText(`Do you really want to remove ${this.attr?.name} attribute from ${this.fileClass.name}?`)
-                const confirmFooter = confirmModal.contentEl.createDiv({ cls: "frontmatter-value-grid-footer" })
+                const confirmFooter = confirmModal.contentEl.createDiv({ cls: "metadata-menu-value-grid-footer" })
                 const confirmButton = new ButtonComponent(confirmFooter)
                 confirmButton.setIcon("checkmark")
                 confirmButton.onClick(() => {

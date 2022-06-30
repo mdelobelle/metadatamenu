@@ -29,7 +29,7 @@ export default class addNewFieldModal extends Modal {
         const valueInputEl = new TextComponent(valueInputContainer)
         valueInputEl.setPlaceholder("Field value")
         const footerButtons = this.contentEl.createDiv({
-            cls: 'frontmatter-textarea-buttons'
+            cls: 'metadata-menu-textarea-buttons'
         })
         const saveButton = new ButtonComponent(footerButtons)
         saveButton.setIcon("checkmark")

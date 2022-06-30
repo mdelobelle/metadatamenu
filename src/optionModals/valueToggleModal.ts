@@ -1,4 +1,4 @@
-import {App, Modal, ToggleComponent, TFile} from "obsidian"
+import { App, Modal, ToggleComponent, TFile } from "obsidian"
 import { replaceValues } from "src/options/replaceValues"
 
 export default class valueToggleModal extends Modal {
@@ -7,7 +7,7 @@ export default class valueToggleModal extends Modal {
     name: string
     value: boolean
 
-    constructor(app: App, file: TFile, name: string, value: boolean){
+    constructor(app: App, file: TFile, name: string, value: boolean) {
         super(app)
         this.app = app
         this.file = file
@@ -15,14 +15,14 @@ export default class valueToggleModal extends Modal {
         this.value = value
     }
 
-    onOpen(){
+    onOpen() {
         const inputDiv = this.contentEl.createDiv({
-            cls: "frontmatter-toggler"
+            cls: "metadata-menu-toggler"
         })
         this.buildInputEl(inputDiv)
     }
 
-    buildInputEl(inputDiv: HTMLDivElement): void{
+    buildInputEl(inputDiv: HTMLDivElement): void {
         const inputEl = new ToggleComponent(inputDiv)
         inputEl.setValue(this.value)
         inputEl.onChange(v => {

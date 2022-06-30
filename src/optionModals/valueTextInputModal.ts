@@ -1,4 +1,4 @@
-import {App, Modal, TextComponent, TFile} from "obsidian"
+import { App, Modal, TextComponent, TFile } from "obsidian"
 import { replaceValues } from "src/options/replaceValues"
 
 export default class valueTextInputModal extends Modal {
@@ -10,7 +10,7 @@ export default class valueTextInputModal extends Modal {
     inFrontmatter: boolean
     top: boolean
 
-    constructor(app: App, file: TFile, name: string, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false){
+    constructor(app: App, file: TFile, name: string, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
         super(app)
         this.app = app
         this.file = file
@@ -21,31 +21,31 @@ export default class valueTextInputModal extends Modal {
         this.top = top
     }
 
-    onOpen(){
+    onOpen() {
         const inputDiv = this.contentEl.createDiv({
-            cls: "frontmatter-modal-value"
+            cls: "metadata-menu-modal-value"
         })
         this.buildInputEl(inputDiv)
     }
 
-    buildInputEl(inputDiv: HTMLDivElement): void{
+    buildInputEl(inputDiv: HTMLDivElement): void {
         const form = inputDiv.createEl("form")
         form.type = "submit";
         form.onsubmit = (e: Event) => {
             e.preventDefault()
-            if(this.lineNumber == -1){
+            if (this.lineNumber == -1) {
                 replaceValues(this.app, this.file, this.name, inputEl.getValue())
             }
             else {
                 this.app.vault.read(this.file).then(result => {
                     let newContent: string[] = []
-                    if(this.top){
+                    if (this.top) {
                         newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${inputEl.getValue()}`)
                         result.split("\n").forEach((line, _lineNumber) => newContent.push(line))
                     } else {
                         result.split("\n").forEach((line, _lineNumber) => {
                             newContent.push(line)
-                            if(_lineNumber == this.lineNumber){
+                            if (_lineNumber == this.lineNumber) {
                                 newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${inputEl.getValue()}`)
                             }
                         })
@@ -59,7 +59,7 @@ export default class valueTextInputModal extends Modal {
         const inputEl = new TextComponent(form)
         inputEl.inputEl.focus()
         inputEl.setValue(this.value)
-        inputEl.inputEl.addClass("frontmatter-prompt-input")
+        inputEl.inputEl.addClass("metadata-menu-prompt-input")
 
     }
 }

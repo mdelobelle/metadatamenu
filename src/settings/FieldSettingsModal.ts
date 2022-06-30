@@ -117,7 +117,7 @@ export default class FieldSettingsModal extends Modal {
         const values = this.property.values
         const presetValue = values[key]
         const valueContainer = parentNode.createDiv({
-            cls: 'frontmatter-prompt-container',
+            cls: 'metadata-menu-prompt-container',
         })
         const input = new TextComponent(valueContainer)
         input.setValue(presetValue)
@@ -160,16 +160,16 @@ export default class FieldSettingsModal extends Modal {
 
     createForm(): void {
         const div = this.contentEl.createDiv({
-            cls: "frontmatter-prompt-div"
+            cls: "metadata-menu-prompt-div"
         })
         const mainDiv = div.createDiv({
-            cls: "frontmatter-prompt-form"
+            cls: "metadata-menu-prompt-form"
         })
         /* Property Name Section */
         const nameContainer = mainDiv.createDiv()
         this.namePromptComponent = this.createnameInputContainer(nameContainer)
 
-        mainDiv.createDiv({ cls: 'frontmatter-separator' }).createEl("hr")
+        mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr")
 
         /* Property is Multi section*/
 
@@ -185,7 +185,7 @@ export default class FieldSettingsModal extends Modal {
             }
         })
 
-        mainDiv.createDiv({ cls: 'frontmatter-separator' }).createEl("hr")
+        mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr")
 
         /* Property is Cycle section*/
 
@@ -201,14 +201,14 @@ export default class FieldSettingsModal extends Modal {
             }
         })
 
-        mainDiv.createDiv({ cls: 'frontmatter-separator' }).createEl("hr")
+        mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr")
 
         /* Property's note for list of Values */
 
         const listNotePathContainer = mainDiv.createDiv()
         this.listNotePathComponent = this.createListNoteContainer(listNotePathContainer)
 
-        mainDiv.createDiv({ cls: 'frontmatter-separator' }).createEl("hr")
+        mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr")
 
         /* Property Values */
         const valuesList = mainDiv.createDiv()
@@ -232,7 +232,7 @@ export default class FieldSettingsModal extends Modal {
 
         })
 
-        mainDiv.createDiv({ cls: 'frontmatter-separator' }).createEl("hr")
+        mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr")
 
         /* footer buttons*/
         const footerEl = this.contentEl.createDiv()

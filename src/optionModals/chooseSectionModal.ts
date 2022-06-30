@@ -16,10 +16,10 @@ export default class chooseSectionModal extends Modal {
     onOpen() {
         this.titleEl.setText("Add a field in this note after:")
         const inputDiv = this.contentEl.createDiv({
-            cls: "frontmatter-modal-value"
+            cls: "metadata-menu-modal-value"
         })
         const selectEl = new DropdownComponent(inputDiv)
-        selectEl.selectEl.addClass("frontmatter-select")
+        selectEl.selectEl.addClass("metadata-menu-select")
         selectEl.addOption("", "Select line")
         selectEl.addOption("top_0", "top")
         this.app.vault.read(this.file).then(result => {
