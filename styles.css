@@ -34,7 +34,8 @@
 }
 
 .metadata-menu-modal-value {
-    text-align: center
+    display: flex;
+    margin-top: 3px;
 }
 
 .metadata-menu-select {
@@ -97,4 +98,19 @@
     margin-left: 10px;
     margin-right: 10px;
     vertical-align: top
+}
+
+.metadata-menu-modal-value .checkbox-container {
+    margin-right: 1em;
+    margin-top: 3px;
+}
+
+.metadata-menu-modal-value > form {
+    width: 80%
+}
+
+.metadata-menu-date-parser-label{
+    margin-top: -4px;
+    margin-right: 0.2em;
+    font-size: x-large;
 }

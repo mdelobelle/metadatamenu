@@ -1,4 +1,4 @@
-import { App, Modal, TextComponent, TFile } from "obsidian"
+import { App, Modal, TextComponent, TFile, ToggleComponent } from "obsidian"
 import { replaceValues } from "src/options/replaceValues"
 
 export default class valueTextInputModal extends Modal {
@@ -9,6 +9,7 @@ export default class valueTextInputModal extends Modal {
     lineNumber: number
     inFrontmatter: boolean
     top: boolean
+    parseDate: boolean = false
 
     constructor(app: App, file: TFile, name: string, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
         super(app)
@@ -28,25 +29,69 @@ export default class valueTextInputModal extends Modal {
         this.buildInputEl(inputDiv)
     }
 
+    buildDateParseToggler(container: HTMLElement) {
+        //@ts-ignore
+        if (app.plugins.plugins.hasOwnProperty('nldates-obsidian')) {
+            //@ts-ignore
+            const nldates = app.plugins.plugins['nldates-obsidian']
+            const dateParserLabel = container.createDiv({
+                cls: "metadata-menu-date-parser-label"
+            })
+            dateParserLabel.setText("📆")
+            const dateParserToggler = new ToggleComponent(container)
+            dateParserToggler.onChange(value => {
+                this.parseDate = value
+            })
+            dateParserLabel.onclick = () => dateParserToggler.setValue(!this.parseDate)
+        }
+    }
+
     buildInputEl(inputDiv: HTMLDivElement): void {
+        this.buildDateParseToggler(inputDiv)
         const form = inputDiv.createEl("form")
         form.type = "submit";
+
+        const inputEl = new TextComponent(form)
+        inputEl.inputEl.focus()
+        inputEl.setValue(this.value)
+        inputEl.inputEl.addClass("metadata-menu-prompt-input")
+
         form.onsubmit = (e: Event) => {
             e.preventDefault()
+            let inputValue = inputEl.getValue()
+            //@ts-ignore
+            if (app.plugins.plugins.hasOwnProperty('nldates-obsidian') && this.parseDate) {
+                //@ts-ignore
+                const nldates = app.plugins.plugins['nldates-obsidian']
+                const format = nldates.settings.format
+                let textStart = ""
+                let textEnd = ""
+                let date = ""
+                const selectionStart = inputEl.inputEl.selectionStart
+                const selectionEnd = inputEl.inputEl.selectionEnd
+                if (selectionEnd == selectionStart) {
+                    date = nldates.parseDate(inputEl.getValue()).moment.format(format)
+                } else {
+                    textStart = inputEl.getValue().slice(0, selectionStart!)
+                    date = nldates.parseDate(inputEl.getValue().slice(selectionStart!, selectionEnd!)).moment.format(format)
+                    textEnd = inputEl.getValue().slice(selectionEnd!)
+                }
+                inputValue = textStart + "[[" + date + "]]" + textEnd
+            }
             if (this.lineNumber == -1) {
-                replaceValues(this.app, this.file, this.name, inputEl.getValue())
+                replaceValues(this.app, this.file, this.name, inputValue)
             }
             else {
                 this.app.vault.read(this.file).then(result => {
                     let newContent: string[] = []
                     if (this.top) {
-                        newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${inputEl.getValue()}`)
+                        newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${inputValue}`)
                         result.split("\n").forEach((line, _lineNumber) => newContent.push(line))
                     } else {
                         result.split("\n").forEach((line, _lineNumber) => {
                             newContent.push(line)
                             if (_lineNumber == this.lineNumber) {
-                                newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${inputEl.getValue()}`)
+                                newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${inputValue}`)
                             }
                         })
                     }
@@ -56,10 +101,6 @@ export default class valueTextInputModal extends Modal {
             }
             this.close()
         }
-        const inputEl = new TextComponent(form)
-        inputEl.inputEl.focus()
-        inputEl.setValue(this.value)
-        inputEl.inputEl.addClass("metadata-menu-prompt-input")
 
     }
 }
