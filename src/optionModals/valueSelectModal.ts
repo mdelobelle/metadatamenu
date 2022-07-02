@@ -9,7 +9,7 @@ export default class valueToggleModal extends Modal {
     name: string
     value: string
     settings: Field
-    newValue: string
+    newValue: string | null
     lineNumber: number
     inFrontmatter: boolean
     top: boolean

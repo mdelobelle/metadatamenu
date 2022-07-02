@@ -5,6 +5,7 @@ import Field from 'src/Field';
 import linkContextMenu from "src/options/linkContextMenu"
 import NoteFieldsCommandsModal from "src/options/NoteFieldsCommandsModal"
 import FileClassAttributeSelectModal from 'src/fileClass/FileClassAttributeSelectModal';
+import ValueSuggest from "src/suggester/MetaDataSuggester"
 
 export default class MetadataMenu extends Plugin {
 	settings: MetadataMenuSettings;
@@ -14,7 +15,7 @@ export default class MetadataMenu extends Plugin {
 	async onload(): Promise<void> {
 		console.log('Metadata Menu loaded');
 		await this.loadSettings();
-
+		this.registerEditorSuggest(new ValueSuggest(this.app, this));
 
 		this.settings.presetFields.forEach(prop => {
 			const property = new Field()
