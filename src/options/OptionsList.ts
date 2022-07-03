@@ -45,14 +45,15 @@ export default class OptionsList {
 			if (isMenu(this.category)) { this.category.addSeparator() }
 			let fileClassForFields = false
 			let fileClassFields: string[] = []
-			if (Object.keys(attributes).includes('fileClass')) {
-				const fileClass = attributes['fileClass']
+			const fileClassAlias = this.plugin.settings.fileClassAlias
+			if (Object.keys(attributes).includes(fileClassAlias)) {
+				const fileClass = attributes[fileClassAlias]
 				createFileClass(this.plugin, fileClass).then(fileClass => {
 					this.fileClass = fileClass
 					fileClassFields = fileClass.attributes.map(attr => attr.name)
 					fileClassForFields = true
 					Object.keys(attributes).forEach(key => {
-						if (!fileClassFields.includes(key) && key != 'fileClass') {
+						if (!fileClassFields.includes(key) && key != fileClassAlias) {
 							delete attributes[key]
 						}
 					})

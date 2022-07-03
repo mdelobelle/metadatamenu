@@ -126,6 +126,19 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					})
 			});
 
+		/* Set fileClass alias*/
+		new Setting(containerEl)
+			.setName('fileClass field alias')
+			.setDesc('Choose another name for fileClass field in frontmatter (example: Category, type, ...')
+			.addText((text) => {
+				text
+					.setValue(this.plugin.settings.fileClassAlias)
+					.onChange(async (value) => {
+						this.plugin.settings.fileClassAlias = value
+						await this.plugin.saveSettings();
+					})
+			});
+
 		/* Add new property for which we want to preset values*/
 		new Setting(containerEl)
 			.setName("Add New Property Manager")

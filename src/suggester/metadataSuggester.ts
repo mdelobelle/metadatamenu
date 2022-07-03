@@ -18,15 +18,18 @@ interface IValueCompletion {
 export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     private plugin: MetadataMenu;
     private app: App;
-    private triggerPhrase: string = ":::";
+    private triggerPhraseOutsideFrontmatter: string = ":::";
+    private triggerPhraseInFrontmatter: string = "::";
+    private triggerPhrase: string;
     private fileClass: FileClass
 
     constructor(app: App, plugin: MetadataMenu) {
         super(app);
         this.app = app;
         this.plugin = plugin;
+        this.triggerPhrase = this.triggerPhraseInFrontmatter
 
-        this.setInstructions([{ command: "Shift", purpose: "put a space after::" }]);
+        this.setInstructions([{ command: "Shift", purpose: "put a space after::" }])
 
         // @ts-ignore
         this.scope.register(["Shift"], "Enter", (evt: KeyboardEvent) => {
@@ -41,14 +44,18 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         if (suggestions.length) {
             return suggestions;
         }
-        console.log(context.query)
         // catch-all if there are no matches
         return [{ value: context.query }];
     }
 
     async getValueSuggestions(context: EditorSuggestContext): Promise<IValueCompletion[]> {
         const line = context.start.line
-        const regex = new RegExp(/[_\*~`]*([0-9\w\p{Letter}\p{Emoji_Presentation}][-0-9\w\p{Letter}\p{Emoji_Presentation}\s]*)[_\*~`]*\s*::(.+)?/u)
+        let regex
+        if (this.triggerPhrase === this.triggerPhraseOutsideFrontmatter) {
+            regex = new RegExp(/[_\*~`]*([0-9\w\p{Letter}\p{Emoji_Presentation}][-0-9\w\p{Letter}\p{Emoji_Presentation}\s]*)[_\*~`]*\s*::(.+)?/u)
+        } else {
+            regex = new RegExp(/[_\*~`]*([0-9\w\p{Letter}\p{Emoji_Presentation}][-0-9\w\p{Letter}\p{Emoji_Presentation}\s]*)[_\*~`]*\s*:(.+)?/u)
+        }
         const regexResult = context.editor.getRange({ line: line, ch: 0 }, { line: line, ch: -1 }).match(regex)
 
         if (regexResult && regexResult.length > 0) {
@@ -58,15 +65,15 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             let tryWithPresetField = !cache?.frontmatter
             if (cache?.frontmatter) {
                 const { position, ...attributes } = cache.frontmatter
-                if (Object.keys(attributes).contains('fileClass')) {
-                    const fileClassValue = attributes['fileClass']
+                const fileClassAlias = this.plugin.settings.fileClassAlias
+                if (Object.keys(attributes).contains(fileClassAlias)) {
+                    const fileClassValue = attributes[fileClassAlias]
                     try {
                         const fileClass = await createFileClass(this.plugin, fileClassValue)
                         this.fileClass = fileClass
                         const fileClassAttributes = this.fileClass.attributes
                         if (fileClassAttributes.map(attr => attr.name).contains(fieldName)) {
                             const options = fileClassAttributes.filter(attr => attr.name == fieldName)[0].options
-                            console.log(options)
                             return options.map(option => Object({ value: option }))
                         }
                     } catch (error) {
@@ -108,8 +115,11 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         if (!activeView) {
             return;
         }
-        const includeSpace = event.shiftKey;
-        activeView.editor.replaceRange(`${includeSpace ? ":: " : "::"}` + suggestion.value, this.context!.start, this.context!.end);
+        const includeSpace = event.shiftKey || this.triggerPhrase === this.triggerPhraseInFrontmatter
+        const separator = this.triggerPhrase.slice(0, this.triggerPhrase.length - 1)
+        activeView.editor.replaceRange(`${includeSpace ? separator + " " : separator}` + suggestion.value,
+            this.context!.start,
+            this.context!.end);
     }
 
     onTrigger(
@@ -120,8 +130,13 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         if (!this.plugin.settings.isAutosuggestEnabled) {
             return null;
         }
-
-
+        //@ts-ignore
+        const frontmatter = this.plugin.app.metadataCache.metadataCache[app.metadataCache.fileCache[file.path].hash].frontmatter
+        if (frontmatter && frontmatter.position.start.line < cursor.line && cursor.line < frontmatter.position.end.line) {
+            this.triggerPhrase = this.triggerPhraseInFrontmatter
+        } else {
+            this.triggerPhrase = this.triggerPhraseOutsideFrontmatter
+        }
         const startPos = this.context?.start || {
             line: cursor.line,
             ch: cursor.ch - this.triggerPhrase.length,
@@ -130,7 +145,6 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         if (!editor.getRange(startPos, cursor).startsWith(this.triggerPhrase)) {
             return null;
         }
-
         return {
             start: startPos,
             end: cursor,

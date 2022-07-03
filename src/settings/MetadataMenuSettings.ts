@@ -6,7 +6,8 @@ export interface MetadataMenuSettings {
 	globallyIgnoredFields: Array<string>;
 	getFromInlineField: boolean;
 	classFilesPath: string;
-	isAutosuggestEnabled: boolean
+	isAutosuggestEnabled: boolean;
+	fileClassAlias: string;
 }
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
@@ -15,5 +16,6 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	globallyIgnoredFields: [],
 	classFilesPath: "",
 	getFromInlineField: true,
-	isAutosuggestEnabled: true
+	isAutosuggestEnabled: true,
+	fileClassAlias: "fileClass"
 }

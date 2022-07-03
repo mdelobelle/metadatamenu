@@ -1,7 +1,5 @@
 import { FileClassAttribute } from "./fileClassAttribute"
 import MetadataMenu from "main"
-import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab"
-import { renderResults } from "obsidian"
 
 interface FileClass {
     plugin: MetadataMenu
@@ -21,9 +19,10 @@ class FileClassManager {
     all() {
         const filesWithFileClassName = this.instance.plugin.app.vault.getMarkdownFiles().filter(file => {
             const cache = this.instance.plugin.app.metadataCache.getFileCache(file)
+            const fileClassAlias = this.instance.plugin.settings.fileClassAlias
             return cache?.frontmatter
-                && Object.keys(cache.frontmatter).includes('fileClass')
-                && cache.frontmatter['fileClass'] == this.instance.name
+                && Object.keys(cache.frontmatter).includes(fileClassAlias)
+                && cache.frontmatter[fileClassAlias] == this.instance.name
         })
         return filesWithFileClassName
     }

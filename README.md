@@ -1,7 +1,11 @@
 ## Metadata Menu
 This plugin adds context menu items to modifiy target note's frontmatter properties and "inline fields" (dataview syntax) by right-clicking on the link
-The preset values for those properties can be managed globally in the plugin's settings or on a file-by-file basis thanks to fileClass definition (see section 4)
+The preset values for those properties can be managed globally in the plugin's settings or on a file-by-file basis thanks to fileClass definition
+It also enables frontmatter of inline-field autocompletion with suggested values based on preset values.
 
+type "::" after a field in frontmatter, or ":::" after an inline-field to trigger the autocompletion
+
+### Example
 <img src=https://raw.githubusercontent.com/mdelobelle/obsidian_supercharged_links/e147ac10179d2c351d9a9f222e4637ee7fe32aed/images/superchargeLink.gif alt="drawing" style="width:600px;"/>
 
 
