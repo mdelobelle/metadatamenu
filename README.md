@@ -191,3 +191,6 @@ https://youtu.be/U0Bo_x1B2TM
 
 ## Roadmap
 - [ ] manage indented lists multi-values frontmatter property
+
+## Know Issue
+- autocomplete conflicts with Various Complements plugin

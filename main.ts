@@ -5,7 +5,7 @@ import Field from 'src/Field';
 import linkContextMenu from "src/options/linkContextMenu"
 import NoteFieldsCommandsModal from "src/options/NoteFieldsCommandsModal"
 import FileClassAttributeSelectModal from 'src/fileClass/FileClassAttributeSelectModal';
-import ValueSuggest from "src/suggester/MetaDataSuggester"
+import ValueSuggest from "src/suggester/MetadataSuggester"
 
 export default class MetadataMenu extends Plugin {
 	settings: MetadataMenuSettings;
