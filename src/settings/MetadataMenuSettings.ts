@@ -1,4 +1,4 @@
-import Field from "src/Field"
+import Field from "src/Field";
 
 export interface MetadataMenuSettings {
 	presetFields: Array<Field>;
@@ -18,4 +18,4 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	getFromInlineField: true,
 	isAutosuggestEnabled: true,
 	fileClassAlias: "fileClass"
-}
+};

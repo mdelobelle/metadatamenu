@@ -1,116 +1,115 @@
-import { App, Modal, ToggleComponent, TFile, ButtonComponent, ExtraButtonComponent, parseFrontMatterStringArray } from "obsidian"
-import Field from "src/Field"
-import { replaceValues } from "src/options/replaceValues"
-import FieldSetting from "src/settings/FieldSetting"
+import { App, Modal, ToggleComponent, TFile, ButtonComponent, ExtraButtonComponent } from "obsidian";
+import Field from "src/Field";
+import { replaceValues } from "src/commands/replaceValues";
+import FieldSetting from "src/settings/FieldSetting";
 
 export default class valueMultiSelectModal extends Modal {
-    app: App
-    file: TFile
-    name: string
-    settings: Field
-    values: Array<string>
-    lineNumber: number
-    inFrontmatter: boolean
-    top: boolean
+    app: App;
+    file: TFile;
+    name: string;
+    settings: Field;
+    values: Array<string>;
+    lineNumber: number;
+    inFrontmatter: boolean;
+    top: boolean;
 
     constructor(app: App, file: TFile, name: string, initialValues: string, settings: Field, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
-        console.log(initialValues)
-        super(app)
-        this.app = app
-        this.file = file
-        this.name = name
-        this.settings = settings
+        super(app);
+        this.app = app;
+        this.file = file;
+        this.name = name;
+        this.settings = settings;
         if (initialValues) {
             if (initialValues.toString().startsWith("[[")) {
-                this.values = initialValues.split(",").map(item => item.trim())
+                this.values = initialValues.split(",").map(item => item.trim());
             } else {
-                this.values = initialValues.toString().replace(/^\[(.*)\]$/, "$1").split(",").map(item => item.trim())
-            }
+                this.values = initialValues.toString().replace(/^\[(.*)\]$/, "$1").split(",").map(item => item.trim());
+            };
         } else {
-            this.values = []
-        }
+            this.values = [];
+        };
         //this.values = initialValues ? initialValues.toString().replace(/^\[(.*)\]$/, "$1").split(",").map(item => item.trim()) : []
-        this.lineNumber = lineNumber
-        this.inFrontmatter = inFrontMatter
-        this.top = top
-    }
+        this.lineNumber = lineNumber;
+        this.inFrontmatter = inFrontMatter;
+        this.top = top;
+    };
 
     onOpen() {
         const valueGrid = this.contentEl.createDiv({
             cls: "metadata-menu-value-grid"
-        })
+        });
         FieldSetting.getValuesListFromNote(this.settings.valuesListNotePath, this.app).then(listNoteValues => {
-            this.populateValuesGrid(valueGrid, listNoteValues)
-        })
-    }
+            this.populateValuesGrid(valueGrid, listNoteValues);
+        });
+    };
 
     buildValueToggler(valueGrid: HTMLDivElement, presetValue: string) {
         const valueSelectorContainer = valueGrid.createDiv({
             cls: "metadata-menu-value-selector-container"
-        })
+        });
         const valueTogglerContainer = valueSelectorContainer.createDiv({
             cls: "metadata-menu-value-selector-toggler"
-        })
-        const valueToggler = new ToggleComponent(valueTogglerContainer)
+        });
+        const valueToggler = new ToggleComponent(valueTogglerContainer);
         this.values.forEach(value => {
             if (value == presetValue) {
                 valueToggler.setValue(true)
-            }
-        })
+            };
+        });
         valueToggler.onChange(value => {
             if (value && !this.values.includes(presetValue)) {
-                this.values.push(presetValue)
-            }
+                this.values.push(presetValue);
+            };
             if (!value) {
-                this.values.remove(presetValue)
-            }
-        })
+                this.values.remove(presetValue);
+            };
+        });
         const valueLabel = valueSelectorContainer.createDiv({
             cls: "metadata-menu-value-selector-label"
-        })
-        valueLabel.setText(presetValue)
-    }
+        });
+        valueLabel.setText(presetValue);
+    };
 
     populateValuesGrid(valueGrid: HTMLDivElement, listNoteValues: string[]) {
         Object.keys(this.settings.values).forEach(key => {
-            const presetValue = this.settings.values[key]
-            this.buildValueToggler(valueGrid, presetValue)
-        })
+            const presetValue = this.settings.values[key];
+            this.buildValueToggler(valueGrid, presetValue);
+        });
         listNoteValues.forEach(value => {
-            this.buildValueToggler(valueGrid, value)
-        })
+            this.buildValueToggler(valueGrid, value);
+        });
         const footer = this.contentEl.createDiv({
             cls: "metadata-menu-value-grid-footer"
-        })
-        const saveButton = new ButtonComponent(footer)
-        saveButton.setIcon("checkmark")
+        });
+        const saveButton = new ButtonComponent(footer);
+        saveButton.setIcon("checkmark");
         saveButton.onClick(() => {
             if (this.lineNumber == -1) {
-                replaceValues(this.app, this.file, this.name, this.values.join(","))
+                replaceValues(this.app, this.file, this.name, this.values.join(","));
             } else {
                 this.app.vault.read(this.file).then(result => {
-                    let newContent: string[] = []
+                    let newContent: string[] = [];
                     if (this.top) {
-                        newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${this.values.join(",")}`)
-                        result.split("\n").forEach((line, _lineNumber) => newContent.push(line))
+                        newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${this.values.join(",")}`);
+                        result.split("\n").forEach((line, _lineNumber) => newContent.push(line));
                     } else {
                         result.split("\n").forEach((line, _lineNumber) => {
-                            newContent.push(line)
+                            newContent.push(line);
                             if (_lineNumber == this.lineNumber) {
-                                newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${this.values.join(",")}`)
-                            }
-                        })
-                    }
+                                newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${this.values.join(",")}`);
+                            };
+                        });
+                    };
 
-                    this.app.vault.modify(this.file, newContent.join('\n'))
-                    this.close()
-                })
-            }
+                    this.app.vault.modify(this.file, newContent.join('\n'));
+                    this.close();
+                });
+            };
 
-            this.close()
-        })
-        const cancelButton = new ExtraButtonComponent(footer)
-        cancelButton.setIcon("cross")
-        cancelButton.onClick(() => this.close())
-    }
-}
+            this.close();
+        });
+        const cancelButton = new ExtraButtonComponent(footer);
+        cancelButton.setIcon("cross");
+        cancelButton.onClick(() => this.close());
+    };
+};

@@ -1,11 +1,12 @@
-import Field from "src/Field"
+import Field from "src/Field";
+import { genericFieldRegex } from "src/utils/parser";
 
-interface FileClassAttribute{
-    name: string
-    type: string
-    options: string[]
-    isMulti: boolean
-    isCycle: boolean
+interface FileClassAttribute {
+    name: string;
+    type: string;
+    options: string[];
+    isMulti: boolean;
+    isCycle: boolean;
 }
 
 const types: Record<string, string> = {
@@ -15,19 +16,19 @@ const types: Record<string, string> = {
     "cycle": "Cycle through values from a list"
 }
 
-class FileClassAttribute{
+class FileClassAttribute {
 
-    constructor(raw: string){
-        const completeRegex = new RegExp(/^[_\*~`]*([0-9\w\p{Letter}\p{Emoji_Presentation}][-0-9\w\p{Letter}\p{Emoji_Presentation}\s]*)[_\*~`]*\s*::(.+)?/u)
-        const nameRegex = new RegExp(/^[_\*~`]*([0-9\w\p{Letter}\p{Emoji_Presentation}][-0-9\w\p{Letter}\p{Emoji_Presentation}\s]*)[_\*~`]*\s*$/u)
-		const detailedFieldRaw = raw.match(completeRegex)
-        const simpleFieldRaw = raw.match(nameRegex)
-        if(detailedFieldRaw){
-            this.name = detailedFieldRaw[1].trim()
-            const settings = JSON.parse(`${detailedFieldRaw[2].trim()}`)
-            this.type = settings['type']
+    constructor(raw: string) {
+        const completeRegex = new RegExp(`${genericFieldRegex}::(.+)?`, "u");
+        const nameRegex = new RegExp(`${genericFieldRegex}$`, "u");
+        const detailedFieldRaw = raw.match(completeRegex);
+        const simpleFieldRaw = raw.match(nameRegex);
+        if (detailedFieldRaw) {
+            this.name = detailedFieldRaw[1].trim();
+            const settings = JSON.parse(`${detailedFieldRaw[2].trim()}`);
+            this.type = settings['type'];
             switch (this.type) {
-                case "multi":  
+                case "multi":
                     this.isMulti = true;
                     break;
                 case "cycle":
@@ -36,22 +37,22 @@ class FileClassAttribute{
                 default:
                     break;
             }
-            this.options = settings['options']
-        } else if(simpleFieldRaw){
-            this.name = simpleFieldRaw[0].trim()
+            this.options = settings['options'];
+        } else if (simpleFieldRaw) {
+            this.name = simpleFieldRaw[0].trim();
         } else {
-            const error = new Error("Improper value")
-            throw error
+            const error = new Error("Improper value");
+            throw error;
         }
     }
 
-    getField(){
-        let values: Record<string, string> = {}
+    getField() {
+        let values: Record<string, string> = {};
         this.options.forEach((option, index) => {
-            values[index] = option
+            values[index] = option;
         })
-        return new Field(this.name, values, this.name, this.isMulti, this.isCycle)
+        return new Field(this.name, values, this.name, this.isMulti, this.isCycle);
     }
 }
 
-export {FileClassAttribute, types}
+export { FileClassAttribute, types };

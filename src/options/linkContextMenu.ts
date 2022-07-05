@@ -1,17 +1,17 @@
-import { TFile } from "obsidian"
-import MetadataMenu from "main"
-import OptionsList from "src/options/OptionsList"
-import FileClassAttributeSelectModal from "src/fileClass/FileClassAttributeSelectModal"
+import { TFile } from "obsidian";
+import MetadataMenu from "main";
+import OptionsList from "src/options/OptionsList";
+import FileClassAttributeSelectModal from "src/fileClass/FileClassAttributeSelectModal";
 
-class linkContextMenu {
-	plugin: MetadataMenu
-	file: TFile
-	optionsList: OptionsList
+export default class linkContextMenu {
+	plugin: MetadataMenu;
+	file: TFile;
+	optionsList: OptionsList;
 
 	constructor(plugin: MetadataMenu) {
-		this.plugin = plugin
-		this.createContextMenu()
-	}
+		this.plugin = plugin;
+		this.createContextMenu();
+	};
 
 	createContextMenu(): void {
 		this.plugin.registerEvent(
@@ -21,29 +21,26 @@ class linkContextMenu {
 					source === "calendar-context-menu" ||
 					source === 'pane-more-options' ||
 					source === 'file-explorer-context-menu')) {
-					const files = this.plugin.app.vault.getMarkdownFiles().filter(mdFile => mdFile.path == abstractFile.path)
-					if (files.length > 0) {
-						const file = files[0]
-						this.file = file
+					const file = this.plugin.app.vault.getAbstractFileByPath(abstractFile.path)
+					if (file instanceof TFile && file.extension === 'md') {
+						this.file = file;
 						if (file.parent.path + "/" == this.plugin.settings.classFilesPath) {
-							menu.addSeparator()
+							menu.addSeparator();
 							menu.addItem((item) => {
-								item.setIcon("gear")
-								item.setTitle(`Manage <${file.basename}> fields`)
+								item.setIcon("gear");
+								item.setTitle(`Manage <${file.basename}> fields`);
 								item.onClick((evt) => {
-									const fileClassAttributeSelectModal = new FileClassAttributeSelectModal(this.plugin, file)
-									fileClassAttributeSelectModal.open()
-								})
-							})
+									const fileClassAttributeSelectModal = new FileClassAttributeSelectModal(this.plugin, file);
+									fileClassAttributeSelectModal.open();
+								});
+							});
 						} else {
-							this.optionsList = new OptionsList(this.plugin, this.file, menu)
-							this.optionsList.createExtraOptionList()
-						}
-					}
-				}
+							this.optionsList = new OptionsList(this.plugin, this.file, menu);
+							this.optionsList.createExtraOptionList();
+						};
+					};
+				};
 			})
 		);
-	}
-}
-
-export default linkContextMenu
+	};
+};

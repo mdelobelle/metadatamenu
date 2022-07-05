@@ -1,10 +1,10 @@
-import {DropdownComponent} from "obsidian"
+import { DropdownComponent } from "obsidian";
 
 export default class SelectModal extends DropdownComponent {
-    modals: Record<string, any>
+    modals: Record<string, any>;
 
-    constructor(containerEl: HTMLElement){
-        super(containerEl)
-        this.modals = {}
-    }
-}
+    constructor(containerEl: HTMLElement) {
+        super(containerEl);
+        this.modals = {};
+    };
+};

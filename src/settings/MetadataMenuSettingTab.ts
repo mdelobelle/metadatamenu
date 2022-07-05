@@ -1,58 +1,58 @@
-import { App, PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal } from "obsidian"
-import MetadataMenu from "main"
-import FieldSettingsModal from "src/settings/FieldSettingsModal"
-import Field from "src/Field"
-import FieldSetting from "src/settings/FieldSetting"
+import { App, PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal } from "obsidian";
+import MetadataMenu from "main";
+import FieldSettingsModal from "src/settings/FieldSettingsModal";
+import Field from "src/Field";
+import FieldSetting from "src/settings/FieldSetting";
 
 class SettingsMigrationConfirmModal extends Modal {
 
-	private plugin: MetadataMenu
-	private tab: MetadataMenuSettingTab
+	private plugin: MetadataMenu;
+	private tab: MetadataMenuSettingTab;
 
 	constructor(plugin: MetadataMenu, tab: MetadataMenuSettingTab) {
-		super(plugin.app)
-		this.plugin = plugin
-		this.tab = tab
-	}
+		super(plugin.app);
+		this.plugin = plugin;
+		this.tab = tab;
+	};
 
 	onOpen(): void {
 
-		this.titleEl.setText("Confirm")
+		this.titleEl.setText("Confirm");
 		const body = this.contentEl.createDiv({
 			cls: "modal-text-danger"
-		})
-		body.setText("This will erase current settings. Are you sure?")
-		const confirmButton = new ButtonComponent(this.contentEl)
-		confirmButton.setIcon("check")
+		});
+		body.setText("This will erase current settings. Are you sure?");
+		const confirmButton = new ButtonComponent(this.contentEl);
+		confirmButton.setIcon("check");
 		confirmButton.onClick(() => {
 			//@ts-ignore
 			if (this.app.plugins.plugins.hasOwnProperty("supercharged-links-obsidian")) {
 				//@ts-ignore
-				let settings = this.app.plugins.plugins["supercharged-links-obsidian"].settings
-				let _settings = this.plugin.settings
+				let settings = this.app.plugins.plugins["supercharged-links-obsidian"].settings;
+				let _settings = this.plugin.settings;
 				//copying simple settings
-				_settings.classFilesPath = settings.classFilesPath
-				_settings.displayFieldsInContextMenu = settings.displayFieldsInContextMenu
-				_settings.getFromInlineField = settings.getFromInlineField
-				_settings.globallyIgnoredFields = settings.globallyIgnoredFields
+				_settings.classFilesPath = settings.classFilesPath;
+				_settings.displayFieldsInContextMenu = settings.displayFieldsInContextMenu;
+				_settings.getFromInlineField = settings.getFromInlineField;
+				_settings.globallyIgnoredFields = settings.globallyIgnoredFields;
 				//deep copying presetFields in initialProperty
-				this.plugin.initialProperties = []
+				this.plugin.initialProperties = [];
 				settings.presetFields.forEach((prop: Field) => {
-					const property = new Field()
-					Object.assign(property, prop)
-					this.plugin.initialProperties.push(property)
+					const property = new Field();
+					Object.assign(property, prop);
+					this.plugin.initialProperties.push(property);
 				})
 
-				this.plugin.saveSettings()
-				this.close()
-			}
-		})
-	}
+				this.plugin.saveSettings();
+				this.close();
+			};
+		});
+	};
 
 	onClose(): void {
-		this.tab.display()
-	}
-}
+		this.tab.display();
+	};
+};
 
 
 
@@ -63,7 +63,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 	constructor(app: App, plugin: MetadataMenu) {
 		super(app, plugin);
 		this.plugin = plugin;
-	}
+	};
 
 	display(): void {
 		let { containerEl } = this;
@@ -94,8 +94,8 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				toggle.onChange(async value => {
 					this.plugin.settings.displayFieldsInContextMenu = value
 					await this.plugin.saveSettings()
-				})
-			})
+				});
+			});
 		/* Exclude Fields from context menu*/
 		new Setting(containerEl)
 			.setName('Ignored fields')
@@ -107,7 +107,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.globallyIgnoredFields = value.replace(/\s/g, '').split(',');
 						await this.plugin.saveSettings();
-					})
+					});
 				text.inputEl.rows = 6;
 				text.inputEl.cols = 25;
 			});
@@ -123,7 +123,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.classFilesPath = value
 						await this.plugin.saveSettings();
-					})
+					});
 			});
 
 		/* Set fileClass alias*/
@@ -134,9 +134,9 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				text
 					.setValue(this.plugin.settings.fileClassAlias)
 					.onChange(async (value) => {
-						this.plugin.settings.fileClassAlias = value
+						this.plugin.settings.fileClassAlias = value;
 						await this.plugin.saveSettings();
-					})
+					});
 			});
 
 		/* Add new property for which we want to preset values*/
@@ -155,10 +155,10 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		/* Managed properties that currently have preset values */
 		this.plugin.initialProperties.forEach(prop => {
-			const property = new Field()
-			Object.assign(property, prop)
-			new FieldSetting(containerEl, property, this.app, this.plugin)
-		})
+			const property = new Field();
+			Object.assign(property, prop);
+			new FieldSetting(containerEl, property, this.app, this.plugin);
+		});
 
 		containerEl.createEl('h4', { text: 'Migrate' });
 
@@ -175,5 +175,5 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 						modal.open();
 					});
 			});
-	}
-}
+	};
+};
