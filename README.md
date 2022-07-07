@@ -5,10 +5,6 @@ It also enables frontmatter of inline-field autocompletion with suggested values
 
 type "::" after a field in frontmatter, or ":::" after an inline-field to trigger the autocompletion
 
-### Example
-<img src=https://raw.githubusercontent.com/mdelobelle/obsidian_supercharged_links/e147ac10179d2c351d9a9f222e4637ee7fe32aed/images/superchargeLink.gif alt="drawing" style="width:600px;"/>
-
-
 Right click on a link will automatically display an item per target note's frontmatter property and "inline fields" (dataview syntax)
 
 these options are accessible from:
