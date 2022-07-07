@@ -107,7 +107,8 @@ export default class OptionsList {
 	async createExtraOptionsListForInlineFields(file: TFile, fileClassForFields: boolean = false, fileClassFields: string[] = []): Promise<void> {
 		return new Promise((resolve, reject) => {
 			let attributes: Record<string, string> = {};
-			const regex = new RegExp(`${genericFieldRegex}::(.+)?`, "u");
+			const regex = new RegExp(`^${genericFieldRegex}::(.+)?`, "u");
+			console.log(regex)
 			this.plugin.app.vault.read(file).then((result: string) => {
 				result.split('\n').map(line => {
 					const regexResult = line.match(regex);
@@ -123,6 +124,7 @@ export default class OptionsList {
 						};
 					};
 				});
+				console.log(attributes)
 				if (Object.keys(attributes).length > 0) {
 					if (isMenu(this.category)) { this.category.addSeparator(); };
 					this.buildExtraOptionsList(attributes);

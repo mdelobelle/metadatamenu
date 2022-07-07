@@ -19,8 +19,9 @@ const types: Record<string, string> = {
 class FileClassAttribute {
 
     constructor(raw: string) {
-        const completeRegex = new RegExp(`${genericFieldRegex}::(.+)?`, "u");
-        const nameRegex = new RegExp(`${genericFieldRegex}$`, "u");
+        const completeRegex = new RegExp(`^${genericFieldRegex}::(.+)?`, "u");
+        const nameRegex = new RegExp(`^${genericFieldRegex}$`, "u");
+        console.log(completeRegex)
         const detailedFieldRaw = raw.match(completeRegex);
         const simpleFieldRaw = raw.match(nameRegex);
         if (detailedFieldRaw) {

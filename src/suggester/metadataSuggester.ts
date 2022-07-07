@@ -53,9 +53,9 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         const line = context.start.line;
         let regex;
         if (this.triggerPhrase === this.triggerPhraseOutsideFrontmatter) {
-            regex = new RegExp(`${genericFieldRegex}::(.+)?`, "u");
+            regex = new RegExp(`^${genericFieldRegex}::(.+)?`, "u");
         } else {
-            regex = new RegExp(`${genericFieldRegex}:(.+)?`, "u");
+            regex = new RegExp(`^${genericFieldRegex}:(.+)?`, "u");
         };
         const regexResult = context.editor.getRange({ line: line, ch: 0 }, { line: line, ch: -1 }).match(regex);
 
