@@ -108,7 +108,6 @@ export default class OptionsList {
 		return new Promise((resolve, reject) => {
 			let attributes: Record<string, string> = {};
 			const regex = new RegExp(`^${genericFieldRegex}::(.+)?`, "u");
-			console.log(regex)
 			this.plugin.app.vault.read(file).then((result: string) => {
 				result.split('\n').map(line => {
 					const regexResult = line.match(regex);

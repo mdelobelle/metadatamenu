@@ -17,9 +17,11 @@ these options are accessible from:
 ### Update text property
 
 1. Right-click on the link
-1. Click on "Update .... " to change the property's value
-1. Change the value in the modal's prompt
-1. Type `enter` to save or click X or `esc` to cancel
+2. Click on "Update .... " to change the property's value
+3. Change the value in the modal's prompt
+4. Type `enter` to save or click X or `esc` to cancel
+
+NB: if you have the `natural language dates` plugin installed, you can type the target date in natural langage and toggle the 📆 selector to automatically convert the input into a link towards the daily note
 
 demo: 
 https://youtu.be/qhtPKstdnhI
