@@ -2,10 +2,10 @@ import { App, Modal, ToggleComponent, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 
 export default class valueToggleModal extends Modal {
-    app: App;
-    file: TFile;
-    name: string;
-    value: boolean;
+
+    private file: TFile;
+    private name: string;
+    private value: boolean;
 
     constructor(app: App, file: TFile, name: string, value: boolean) {
         super(app);
@@ -22,7 +22,7 @@ export default class valueToggleModal extends Modal {
         this.buildInputEl(inputDiv);
     };
 
-    buildInputEl(inputDiv: HTMLDivElement): void {
+    private buildInputEl(inputDiv: HTMLDivElement): void {
         const inputEl = new ToggleComponent(inputDiv);
         inputEl.setValue(this.value);
         inputEl.onChange(v => {

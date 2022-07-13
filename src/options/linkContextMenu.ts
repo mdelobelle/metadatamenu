@@ -5,16 +5,16 @@ import FileClassAttributeSelectModal from "src/fileClass/FileClassAttributeSelec
 import NoteFieldsCommandsModal from "src/options/NoteFieldsCommandsModal";
 
 export default class linkContextMenu {
-	plugin: MetadataMenu;
-	file: TFile;
-	optionsList: OptionsList;
+	private plugin: MetadataMenu;
+	private file: TFile;
+	private optionsList: OptionsList;
 
 	constructor(plugin: MetadataMenu) {
 		this.plugin = plugin;
 		this.createContextMenu();
 	};
 
-	createContextMenu(): void {
+	private createContextMenu(): void {
 		this.plugin.registerEvent(
 			this.plugin.app.workspace.on('file-menu', (menu, abstractFile, source) => {
 

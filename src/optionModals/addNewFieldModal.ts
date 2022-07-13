@@ -3,11 +3,10 @@ import MetadataMenu from "main";
 
 export default class addNewFieldModal extends Modal {
 
-    plugin: MetadataMenu;
-    lineNumber: number;
-    file: TFile;
-    inFrontmatter: boolean;
-    top: boolean;
+    private lineNumber: number;
+    private file: TFile;
+    private inFrontmatter: boolean;
+    private top: boolean;
 
     constructor(plugin: MetadataMenu, lineNumber: number, file: TFile, inFrontmatter: boolean, top: boolean) {
         super(plugin.app);

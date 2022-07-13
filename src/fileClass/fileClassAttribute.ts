@@ -19,8 +19,8 @@ const types: Record<string, string> = {
 class FileClassAttribute {
 
     constructor(raw: string) {
-        const completeRegex = new RegExp(`${genericFieldRegex}::(.+)?`, "u");
-        const nameRegex = new RegExp(`${genericFieldRegex}$`, "u");
+        const completeRegex = new RegExp(`^${genericFieldRegex}::(.+)?`, "u");
+        const nameRegex = new RegExp(`^${genericFieldRegex}$`, "u");
         const detailedFieldRaw = raw.match(completeRegex);
         const simpleFieldRaw = raw.match(nameRegex);
         if (detailedFieldRaw) {
@@ -46,7 +46,7 @@ class FileClassAttribute {
         }
     }
 
-    getField() {
+    public getField() {
         let values: Record<string, string> = {};
         this.options.forEach((option, index) => {
             values[index] = option;

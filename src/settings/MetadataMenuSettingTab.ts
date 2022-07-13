@@ -57,8 +57,7 @@ class SettingsMigrationConfirmModal extends Modal {
 
 
 export default class MetadataMenuSettingTab extends PluginSettingTab {
-	plugin: MetadataMenu;
-	debouncedGenerate: Function;
+	private plugin: MetadataMenu;
 
 	constructor(app: App, plugin: MetadataMenu) {
 		super(app, plugin);

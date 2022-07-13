@@ -4,15 +4,15 @@ import { replaceValues } from "src/commands/replaceValues";
 import FieldSetting from "src/settings/FieldSetting";
 
 export default class valueToggleModal extends Modal {
-    app: App;
-    file: TFile;
-    name: string;
-    value: string;
-    settings: Field;
-    newValue: string | null;
-    lineNumber: number;
-    inFrontmatter: boolean;
-    top: boolean;
+
+    private file: TFile;
+    private name: string;
+    private value: string;
+    private settings: Field;
+    private newValue: string | null;
+    private lineNumber: number;
+    private inFrontmatter: boolean;
+    private top: boolean;
 
     constructor(app: App, file: TFile, name: string, value: string, settings: Field, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
         super(app);
@@ -34,7 +34,7 @@ export default class valueToggleModal extends Modal {
         this.buildInputEl(inputDiv);
     };
 
-    buildInputEl(inputDiv: HTMLDivElement): void {
+    private buildInputEl(inputDiv: HTMLDivElement): void {
         const selectEl = new DropdownComponent(inputDiv);
         selectEl.selectEl.addClass("metadata-menu-select");
         const values = this.settings.values;

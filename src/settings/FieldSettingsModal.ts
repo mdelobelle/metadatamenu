@@ -4,18 +4,17 @@ import Field from "src/Field";
 import FieldSetting from "src/settings/FieldSetting";
 
 export default class FieldSettingsModal extends Modal {
-    namePromptComponent: TextComponent;
-    valuesPromptComponents: Array<TextComponent> = [];
-    isMultiTogglerComponent: ToggleComponent;
-    isCycleTogglerComponent: ToggleComponent;
-    listNotePathComponent: TextComponent;
-    saved: boolean = false;
-    property: Field;
-    plugin: MetadataMenu;
-    initialProperty: Field;
-    parentSetting?: Setting;
-    new: boolean = true;
-    parentSettingContainer: HTMLElement;
+    private namePromptComponent: TextComponent;
+    private valuesPromptComponents: Array<TextComponent> = [];
+    private isMultiTogglerComponent: ToggleComponent;
+    private isCycleTogglerComponent: ToggleComponent;
+    private saved: boolean = false;
+    private property: Field;
+    private plugin: MetadataMenu;
+    private initialProperty: Field;
+    private parentSetting?: Setting;
+    private new: boolean = true;
+    private parentSettingContainer: HTMLElement;
 
 
     constructor(app: App, plugin: MetadataMenu, parentSettingContainer: HTMLElement, parentSetting?: Setting, property?: Field) {
@@ -64,11 +63,11 @@ export default class FieldSettingsModal extends Modal {
         };
     };
 
-    setValueListText(header: HTMLDivElement): void {
+    private setValueListText(header: HTMLDivElement): void {
         header.setText(`Preset values: ${Object.values(this.property.values).join(', ')}`);
     };
 
-    createnameInputContainer(parentNode: HTMLDivElement): TextComponent {
+    private createnameInputContainer(parentNode: HTMLDivElement): TextComponent {
         const propertyNameContainerLabel = parentNode.createDiv();
         propertyNameContainerLabel.setText(`Property Name:`);
         const input = new TextComponent(parentNode);
@@ -83,7 +82,7 @@ export default class FieldSettingsModal extends Modal {
         return input;
     };
 
-    createTogglerContainer(parentNode: HTMLDivElement, label: string): ToggleComponent {
+    private createTogglerContainer(parentNode: HTMLDivElement, label: string): ToggleComponent {
         const propertyContainerLabel = parentNode.createDiv({
             cls: 'frontmatter-checkbox-toggler'
         });
@@ -92,7 +91,7 @@ export default class FieldSettingsModal extends Modal {
         return toggler;
     };
 
-    createListNoteContainer(parentNode: HTMLDivElement): TextComponent {
+    private createListNoteContainer(parentNode: HTMLDivElement): TextComponent {
         const listNoteContainerLabel = parentNode.createDiv();
         listNoteContainerLabel.setText(`Path of the note containing the values:`);
         const input = new TextComponent(parentNode);
@@ -103,7 +102,7 @@ export default class FieldSettingsModal extends Modal {
         return input;
     };
 
-    removePresetValue(key: string): void {
+    private removePresetValue(key: string): void {
         let newValues: Record<string, string> = {};
         for (let _key in this.property.values) {
             if (key !== _key) {
@@ -113,7 +112,7 @@ export default class FieldSettingsModal extends Modal {
         this.property.values = newValues;
     };
 
-    createValueContainer(parentNode: HTMLDivElement, header: HTMLDivElement, key: string): TextComponent {
+    private createValueContainer(parentNode: HTMLDivElement, header: HTMLDivElement, key: string): TextComponent {
         const values = this.property.values;
         const presetValue = values[key];
         const valueContainer = parentNode.createDiv({
@@ -158,7 +157,7 @@ export default class FieldSettingsModal extends Modal {
         return input;
     };
 
-    createForm(): void {
+    private createForm(): void {
         const div = this.contentEl.createDiv({
             cls: "metadata-menu-prompt-div"
         });
@@ -206,7 +205,7 @@ export default class FieldSettingsModal extends Modal {
         /* Property's note for list of Values */
 
         const listNotePathContainer = mainDiv.createDiv();
-        this.listNotePathComponent = this.createListNoteContainer(listNotePathContainer);
+        this.createListNoteContainer(listNotePathContainer);
 
         mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
 
@@ -241,7 +240,7 @@ export default class FieldSettingsModal extends Modal {
         footerButtons.addExtraButton((b) => this.createCancelButton(b));
     };
 
-    createSaveButton(b: ButtonComponent): ButtonComponent {
+    private createSaveButton(b: ButtonComponent): ButtonComponent {
         b.setTooltip("Save")
             .setIcon("checkmark")
             .onClick(async () => {
@@ -301,7 +300,7 @@ export default class FieldSettingsModal extends Modal {
         return b;
     };
 
-    createCancelButton(b: ExtraButtonComponent): ExtraButtonComponent {
+    private createCancelButton(b: ExtraButtonComponent): ExtraButtonComponent {
         b.setIcon("cross")
             .setTooltip("Cancel")
             .onClick(() => {
@@ -317,7 +316,7 @@ export default class FieldSettingsModal extends Modal {
 
     /* utils functions */
 
-    static setValidationError(textInput: TextComponent, insertAfter: Element, message?: string) {
+    private static setValidationError(textInput: TextComponent, insertAfter: Element, message?: string) {
         textInput.inputEl.addClass("is-invalid");
         if (message && textInput.inputEl.parentElement?.lastElementChild) {
 
@@ -332,7 +331,7 @@ export default class FieldSettingsModal extends Modal {
             mDiv.insertAfter(insertAfter);
         }
     }
-    static removeValidationError(textInput: TextComponent) {
+    private static removeValidationError(textInput: TextComponent) {
         if (textInput.inputEl.hasClass("is-invalid") && textInput.inputEl.parentElement?.lastElementChild) {
             textInput.inputEl.removeClass("is-invalid")
             textInput.inputEl.parentElement.removeChild(

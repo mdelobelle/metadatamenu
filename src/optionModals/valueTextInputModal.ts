@@ -2,14 +2,14 @@ import { App, Modal, TextComponent, TFile, ToggleComponent } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 
 export default class valueTextInputModal extends Modal {
-    app: App;
-    file: TFile;
-    name: string;
-    value: string;
-    lineNumber: number;
-    inFrontmatter: boolean;
-    top: boolean;
-    parseDate: boolean = false;
+
+    private file: TFile;
+    private name: string;
+    private value: string;
+    private lineNumber: number;
+    private inFrontmatter: boolean;
+    private top: boolean;
+    private parseDate: boolean = false;
 
     constructor(app: App, file: TFile, name: string, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
         super(app);
@@ -46,7 +46,7 @@ export default class valueTextInputModal extends Modal {
         };
     };
 
-    buildInputEl(inputDiv: HTMLDivElement): void {
+    private buildInputEl(inputDiv: HTMLDivElement): void {
         this.buildDateParseToggler(inputDiv);
         const form = inputDiv.createEl("form");
         form.type = "submit";

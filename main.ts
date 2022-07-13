@@ -1,4 +1,4 @@
-import { Plugin, MarkdownView, Notice } from 'obsidian';
+import { Plugin, MarkdownView } from 'obsidian';
 import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import { MetadataMenuSettings, DEFAULT_SETTINGS } from "src/settings/MetadataMenuSettings";
 import Field from 'src/Field';
@@ -8,9 +8,9 @@ import FileClassAttributeSelectModal from 'src/fileClass/FileClassAttributeSelec
 import ValueSuggest from "src/suggester/MetadataSuggester";
 
 export default class MetadataMenu extends Plugin {
-	settings: MetadataMenuSettings;
-	initialProperties: Array<Field> = [];
-	settingTab: MetadataMenuSettingTab;
+	public settings: MetadataMenuSettings;
+	public initialProperties: Array<Field> = [];
+	public settingTab: MetadataMenuSettingTab;
 
 	async onload(): Promise<void> {
 		console.log('Metadata Menu loaded');
@@ -28,18 +28,13 @@ export default class MetadataMenu extends Plugin {
 		this.addCommand({
 			id: "field_options",
 			name: "field options",
-			hotkeys: [
-				{
-					modifiers: ["Alt"],
-					key: 'O',
-				},
-			],
-			callback: () => {
+			checkCallback: (checking: boolean) => {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
-				if (view?.file) {
-					const fieldsOptionsModal = new NoteFieldsCommandsModal(this.app, this, view.file)
-					fieldsOptionsModal.open()
+				if (checking) {
+					return !!(view?.file)
 				}
+				const fieldsOptionsModal = new NoteFieldsCommandsModal(this.app, this, view!.file)
+				fieldsOptionsModal.open()
 			},
 		});
 
@@ -47,20 +42,13 @@ export default class MetadataMenu extends Plugin {
 		this.addCommand({
 			id: "fileClassAttr_options",
 			name: "fileClass attributes options",
-			hotkeys: [
-				{
-					modifiers: ["Alt"],
-					key: 'P',
-				},
-			],
-			callback: () => {
-				const leaf = this.app.workspace.activeLeaf
-				if (leaf?.view instanceof MarkdownView && leaf.view.file && `${leaf.view.file.parent.path}/` == this.settings.classFilesPath) {
-					const modal = new FileClassAttributeSelectModal(this, leaf.view.file)
-					modal.open()
-				} else {
-					const notice = new Notice("This is not a fileClass", 2500)
+			checkCallback: (checking: boolean) => {
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
+				if (checking) {
+					return !!(view?.file) && `${view.file.parent.path}/` == this.settings.classFilesPath
 				}
+				const modal = new FileClassAttributeSelectModal(this, view!.file)
+				modal.open()
 			},
 		});
 

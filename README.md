@@ -3,12 +3,11 @@ This plugin adds context menu items to modifiy target note's frontmatter propert
 The preset values for those properties can be managed globally in the plugin's settings or on a file-by-file basis thanks to fileClass definition
 It also enables frontmatter of inline-field autocompletion with suggested values based on preset values.
 
-type "::" after a field in frontmatter, or ":::" after an inline-field to trigger the autocompletion
 
-### Example
-<img src=https://raw.githubusercontent.com/mdelobelle/obsidian_supercharged_links/e147ac10179d2c351d9a9f222e4637ee7fe32aed/images/superchargeLink.gif alt="drawing" style="width:600px;"/>
+## Field autocompletion
+type ":" after a field in frontmatter, or "::" after an inline-field to trigger the autocompletion
 
-
+## link and file options
 Right click on a link will automatically display an item per target note's frontmatter property and "inline fields" (dataview syntax)
 
 these options are accessible from:
@@ -21,9 +20,11 @@ these options are accessible from:
 ### Update text property
 
 1. Right-click on the link
-1. Click on "Update .... " to change the property's value
-1. Change the value in the modal's prompt
-1. Type `enter` to save or click X or `esc` to cancel
+2. Click on "Update .... " to change the property's value
+3. Change the value in the modal's prompt
+4. Type `enter` to save or click X or `esc` to cancel
+
+NB: if you have the `natural language dates` plugin installed, you can type the target date in natural langage and toggle the 📆 selector to automatically convert the input into a link towards the daily note
 
 demo: 
 https://youtu.be/qhtPKstdnhI

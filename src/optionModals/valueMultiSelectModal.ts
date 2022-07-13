@@ -4,14 +4,14 @@ import { replaceValues } from "src/commands/replaceValues";
 import FieldSetting from "src/settings/FieldSetting";
 
 export default class valueMultiSelectModal extends Modal {
-    app: App;
-    file: TFile;
-    name: string;
-    settings: Field;
-    values: Array<string>;
-    lineNumber: number;
-    inFrontmatter: boolean;
-    top: boolean;
+
+    private file: TFile;
+    private name: string;
+    private settings: Field;
+    private values: Array<string>;
+    private lineNumber: number;
+    private inFrontmatter: boolean;
+    private top: boolean;
 
     constructor(app: App, file: TFile, name: string, initialValues: string, settings: Field, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
         super(app);
@@ -43,7 +43,7 @@ export default class valueMultiSelectModal extends Modal {
         });
     };
 
-    buildValueToggler(valueGrid: HTMLDivElement, presetValue: string) {
+    private buildValueToggler(valueGrid: HTMLDivElement, presetValue: string) {
         const valueSelectorContainer = valueGrid.createDiv({
             cls: "metadata-menu-value-selector-container"
         });
@@ -70,7 +70,7 @@ export default class valueMultiSelectModal extends Modal {
         valueLabel.setText(presetValue);
     };
 
-    populateValuesGrid(valueGrid: HTMLDivElement, listNoteValues: string[]) {
+    private populateValuesGrid(valueGrid: HTMLDivElement, listNoteValues: string[]) {
         Object.keys(this.settings.values).forEach(key => {
             const presetValue = this.settings.values[key];
             this.buildValueToggler(valueGrid, presetValue);

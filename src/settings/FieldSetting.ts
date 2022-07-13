@@ -4,10 +4,10 @@ import Field from "src/Field";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 
 export default class FieldSetting extends Setting {
-    property: Field;
-    app: App;
-    plugin: MetadataMenu;
-    containerEl: HTMLElement;
+    private property: Field;
+    private app: App;
+    private plugin: MetadataMenu;
+    private containerEl: HTMLElement;
     constructor(containerEl: HTMLElement, property: Field, app: App, plugin: MetadataMenu) {
         super(containerEl);
         this.containerEl = containerEl;
@@ -20,13 +20,13 @@ export default class FieldSetting extends Setting {
 
     };
 
-    setTextContentWithname(): void {
+    private setTextContentWithname(): void {
         this.infoEl.textContent =
             `${this.property.name}: [${Object.keys(this.property.values).map(k => this.property.values[k]).join(', ')}]`;
     };
 
 
-    addEditButton(): void {
+    private addEditButton(): void {
         this.addButton((b) => {
             b.setIcon("pencil")
                 .setTooltip("Edit")
@@ -37,7 +37,7 @@ export default class FieldSetting extends Setting {
         });
     };
 
-    addDeleteButton(): void {
+    private addDeleteButton(): void {
         this.addButton((b) => {
             b.setIcon("trash")
                 .setTooltip("Delete")
@@ -52,7 +52,7 @@ export default class FieldSetting extends Setting {
         });
     };
 
-    static getValuesListFromNote(notePath: string, app: App): Promise<string[]> {
+    public static getValuesListFromNote(notePath: string, app: App): Promise<string[]> {
         return new Promise((resolve, reject) => {
             let values: Array<string> = [];
             const file = app.vault.getAbstractFileByPath(notePath);

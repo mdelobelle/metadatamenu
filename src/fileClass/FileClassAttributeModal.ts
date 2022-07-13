@@ -2,13 +2,16 @@ import { App, DropdownComponent, Modal, TextComponent, ButtonComponent, ExtraBut
 import { FileClassAttribute, types } from "src/fileClass/fileClassAttribute";
 import { FileClass } from "src/fileClass/fileClass";
 
-export default class FileClassAttributeModal extends Modal {
 
+interface FileClassAttributeModal {
     attr?: FileClassAttribute;
     fileClass: FileClass;
-    type: string = "input";
-    options: string[] = [];
-    name: string = "";
+    type: string;
+    options: string[];
+    name: string;
+}
+
+class FileClassAttributeModal extends Modal {
 
     constructor(app: App, fileClass: FileClass, attr?: FileClassAttribute) {
         super(app);
@@ -106,3 +109,5 @@ export default class FileClassAttributeModal extends Modal {
         cancelButton.onClick(() => this.close());
     }
 }
+
+export { FileClassAttributeModal }
