@@ -37,6 +37,7 @@ export default class valueToggleModal extends Modal {
     private buildInputEl(inputDiv: HTMLDivElement): void {
         const selectEl = new DropdownComponent(inputDiv);
         selectEl.selectEl.addClass("metadata-menu-select");
+        
         const values = this.settings.values;
         selectEl.addOption("", "--Empty--");
         Object.keys(values).forEach(key => {

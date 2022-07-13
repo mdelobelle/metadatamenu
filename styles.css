@@ -1,7 +1,7 @@
+/* Metadata Menu Prompt */
 .metadata-menu-prompt-div {
     display: flex;
 }
-
 .metadata-menu-prompt-form {
     width: 100%;
 }
@@ -33,9 +33,12 @@
     margin-bottom: 20px;
 }
 
-.metadata-menu-modal-value {
+/* Metadata Modal */
+.metadata-menu-modal-value,
+.metadata-menu .field-options {
     display: flex;
     margin-top: 3px;
+    justify-content: center;
 }
 
 .metadata-menu-select {
@@ -47,23 +50,29 @@
     grid-template-columns: repeat(2, 1fr);
 }
 
-.metadata-menu-value-selector-container{
+.metadata-menu-value-selector-container {
     margin-bottom: 5px;
 }
 
-.metadata-menu-value-selector-label{
+.metadata-menu-value-selector-label {
     display: inline-block;
     vertical-align: top;
     margin-left: 10px;
 }
 
-.metadata-menu-value-selector-inline-label{
+.metadata-menu-value-selector-inline-label {
     display: inline-block;
     margin-left: 10px;
     margin-right: 10px
 }
 
-.yaml-metadata-menu-red{
+
+
+
+
+
+
+.yaml-metadata-menu-red {
     color: #C7254E
 }
 
@@ -93,7 +102,7 @@
     margin-right: 10px;
 }
 
-.metadata-menu-value-selector-inline-label-top{
+.metadata-menu-value-selector-inline-label-top {
     display: inline-block;
     margin-left: 10px;
     margin-right: 10px;
@@ -114,3 +123,5 @@
     margin-right: 0.2em;
     font-size: x-large;
 }
+
+

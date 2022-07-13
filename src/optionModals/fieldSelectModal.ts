@@ -26,14 +26,17 @@ export default class fieldSelectModal extends Modal {
 
     onOpen() {
         this.titleEl.setText(`Insert field after > ${this.line.substring(0, 20)}${this.line.length > 20 ? "..." : ""}`);
-        const container = this.contentEl.createDiv();
+        const container = this.contentEl.createDiv({ cls: "metadata-menu-field-select" });
+        
         const settingsDropdownContainer = container.createDiv();
         const settingsSelector = new DropdownComponent(settingsDropdownContainer);
         settingsSelector.addOption("---", "Choose Field");
         settingsSelector.addOption("++New", "New");
+        
         this.plugin.settings.presetFields.forEach(setting => {
             settingsSelector.addOption(setting.name, setting.name);
         });
+
         settingsSelector.onChange(value => {
             if (value == "++New") {
                 const newFieldModal = new addNewFieldModal(this.plugin, this.lineNumber, this.file, this.inFrontmatter, this.top);
