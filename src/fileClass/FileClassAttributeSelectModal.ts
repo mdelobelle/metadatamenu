@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { DropdownComponent, Modal, TFile } from "obsidian";
 import { createFileClass } from "src/fileClass/fileClass";
-import FileClassAttributeModal from "src/fileClass/FileClassAttributeModal";
+import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
 
 export default class FileClassAttributeSelectModal extends Modal {
 

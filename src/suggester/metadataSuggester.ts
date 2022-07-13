@@ -8,6 +8,8 @@ import {
     EditorSuggestTriggerInfo,
     MarkdownView,
     TFile,
+    parseYaml,
+    Notice
 } from "obsidian";
 import { createFileClass, FileClass } from "src/fileClass/fileClass";
 import { genericFieldRegex } from "../utils/parser";
@@ -19,16 +21,14 @@ interface IValueCompletion {
 export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     private plugin: MetadataMenu;
     private app: App;
-    private triggerPhraseOutsideFrontmatter: string = ":::";
-    private triggerPhraseInFrontmatter: string = "::";
-    private triggerPhrase: string;
-    private fileClass: FileClass
+    private fileClass: FileClass;
+    private inFrontmatter: boolean = false;
+    private didSelect: boolean = false
 
     constructor(app: App, plugin: MetadataMenu) {
         super(app);
         this.app = app;
         this.plugin = plugin;
-        this.triggerPhrase = this.triggerPhraseInFrontmatter
 
         this.setInstructions([{ command: "Shift", purpose: "put a space after::" }]);
 
@@ -40,27 +40,69 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         });
     };
 
+    onTrigger(
+        cursor: EditorPosition,
+        editor: Editor,
+        file: TFile
+    ): EditorSuggestTriggerInfo | null {
+        if (this.didSelect) {
+            this.didSelect = false
+            return null
+        }
+        if (!this.plugin.settings.isAutosuggestEnabled) {
+            return null;
+        };
+        //@ts-ignore
+        const frontmatter = this.plugin.app.metadataCache.metadataCache[app.metadataCache.fileCache[file.path].hash].frontmatter;
+
+        this.inFrontmatter = frontmatter && frontmatter.position.start.line < cursor.line && cursor.line < frontmatter.position.end.line
+        const regex = this.inFrontmatter ? new RegExp(`^${genericFieldRegex}:(?<values>.*)`, "u") : new RegExp(`^${genericFieldRegex}::(?<values>.*)`, "u")
+        const fullLine = editor.getLine(editor.getCursor().line)
+        if (!regex.test(fullLine)) {
+            return null
+        }
+        return {
+            start: cursor,
+            end: cursor,
+            query: editor.getLine(cursor.line),
+        };
+    };
+
+    private filterOption = (firstValues: string[] | undefined, lastValue: string | undefined, option: string): boolean => {
+        return !firstValues || !firstValues?.contains(option) && (!lastValue || !!lastValue && option.contains(lastValue))
+    }
+
     async getSuggestions(context: EditorSuggestContext): Promise<IValueCompletion[]> {
         const suggestions = await this.getValueSuggestions(context);
         if (suggestions.length) {
             return suggestions;
         }
-        // catch-all if there are no matches
-        return [{ value: context.query }];
+        return [];
     };
 
     async getValueSuggestions(context: EditorSuggestContext): Promise<IValueCompletion[]> {
         const line = context.start.line;
         let regex;
-        if (this.triggerPhrase === this.triggerPhraseOutsideFrontmatter) {
-            regex = new RegExp(`^${genericFieldRegex}::(.+)?`, "u");
+        if (!this.inFrontmatter) {
+            regex = new RegExp(`^${genericFieldRegex}::(?<values>.+)?`, "u");
         } else {
-            regex = new RegExp(`^${genericFieldRegex}:(.+)?`, "u");
+            regex = new RegExp(`^${genericFieldRegex}:(?<values>.+)?`, "u");
         };
-        const regexResult = context.editor.getRange({ line: line, ch: 0 }, { line: line, ch: -1 }).match(regex);
+        const regexResult = context.editor.getRange({ line: line, ch: 0 }, context.end).match(regex);
 
-        if (regexResult && regexResult.length > 0) {
-            const fieldName = regexResult[1];
+        if (regexResult && regexResult.groups?.attribute) {
+            const fieldName = regexResult.groups.attribute;
+            const valuesList = regexResult.groups.values?.replace(/^\[|^\s\[/, '').replace(/\]$/, '').split(",").map(o => o.trim())
+            const lastValue = valuesList?.last()
+            const firstValues = valuesList?.slice(0, -1)
+            //tags specific cas
+            if (fieldName === "tags" && this.inFrontmatter) {
+                //@ts-ignore
+                return Object.keys(this.app.metadataCache.getTags())
+                    .filter(t => lastValue ? t.contains(lastValue) : t)
+                    .sort()
+                    .map(tag => Object({ value: tag.replace(/^#/, "") }))
+            }
             //if this note has a fileClass, check if field values are defined in the FileClass
             const cache = this.plugin.app.metadataCache.getCache(context.file.path);
             let tryWithPresetField = !cache?.frontmatter;
@@ -74,8 +116,12 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                         this.fileClass = fileClass;
                         const fileClassAttributes = this.fileClass.attributes;
                         if (fileClassAttributes.map(attr => attr.name).contains(fieldName)) {
-                            const options = fileClassAttributes.filter(attr => attr.name == fieldName)[0].options;
-                            return options.map(option => Object({ value: option }));
+                            const options = fileClassAttributes
+                                .filter(attr => attr.name == fieldName)[0]
+                                .options
+                                .filter(option => this.filterOption(firstValues, lastValue, option))
+                            return options
+                                .map(option => Object({ value: option }));
                         }
                     } catch (error) {
                         tryWithPresetField = true;
@@ -94,12 +140,16 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                         //override presetValues if there is a valuesList
                         const valuesFile = this.plugin.app.vault.getAbstractFileByPath(presetField.valuesListNotePath);
                         if (valuesFile instanceof TFile && valuesFile.extension == "md") {
-                            const values: { value: string }[] = await (await this.plugin.app.vault.read(valuesFile)).split("\n").map(_value => Object({ value: _value }));
-                            return values.filter(item => item.value.startsWith(context.query));
+                            const values: { value: string }[] = await (await this.plugin.app.vault.read(valuesFile)).split("\n")
+                                .filter(option => this.filterOption(firstValues, lastValue, option))
+                                .map(_value => Object({ value: _value }))
+                            return values;
                         };
                     };
-                    const values = Object.entries(presetFieldMatch[0].values);
-                    return values.map(_value => Object({ value: _value[1] })).filter(item => item.value.startsWith(context.query));
+                    const values = Object.entries(presetFieldMatch[0].values).map(option => option[1])
+                        .filter(option => this.filterOption(firstValues, lastValue, option))
+                    return values
+                        .map(_value => Object({ value: _value }))
                 };
             };
         };
@@ -115,40 +165,56 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         if (!activeView) {
             return;
         };
-        const includeSpace = event.shiftKey || this.triggerPhrase === this.triggerPhraseInFrontmatter;
-        const separator = this.triggerPhrase.slice(0, this.triggerPhrase.length - 1);
-        activeView.editor.replaceRange(`${includeSpace ? separator + " " : separator}` + suggestion.value,
-            this.context!.start,
-            this.context!.end);
-    };
+        const editor = activeView.editor;
+        const activeLine = editor.getLine(this.context!.start.line);
 
-    onTrigger(
-        cursor: EditorPosition,
-        editor: Editor,
-        file: TFile
-    ): EditorSuggestTriggerInfo | null {
-        if (!this.plugin.settings.isAutosuggestEnabled) {
-            return null;
-        };
-        //@ts-ignore
-        const frontmatter = this.plugin.app.metadataCache.metadataCache[app.metadataCache.fileCache[file.path].hash].frontmatter;
-        if (frontmatter && frontmatter.position.start.line < cursor.line && cursor.line < frontmatter.position.end.line) {
-            this.triggerPhrase = this.triggerPhraseInFrontmatter;
+        if (this.inFrontmatter) {
+            //format list if in frontmatter
+            try {
+                let parsedField: Record<string, string | string[] | null> = parseYaml(activeLine)
+                let [attr, pastValues] = Object.entries(parsedField)[0]
+                let newField: string
+                if (!pastValues) {
+                    newField = attr + ": " + suggestion.value;
+                } else if (typeof pastValues == 'string') {
+                    if (!pastValues.contains(",")) {
+                        newField = attr + ": " + suggestion.value;
+                    } else {
+                        newField = attr + ": [" + pastValues.split(",").map(o => o.trim()).slice(0, -1).join(', ') + ", " + suggestion.value + "]";
+                    }
+                } else if (Array.isArray(pastValues)) {
+                    if (activeLine.endsWith(",]") || activeLine.endsWith(", ]")) {
+                        //value can be directly added since parseYaml wont create an empty last item in pastValues
+                        newField = attr + ": [" + [...pastValues, suggestion.value].join(", ") + "]";
+                    } else {
+                        //we have typed something that we ahve to remove to replace with selected value
+                        newField = attr + ": [" + [...pastValues.slice(0, -1), suggestion.value].join(", ") + "]";
+                    }
+
+                } else {
+                    newField = attr + ": [" + [...pastValues].join(", ") + "]";
+                }
+                editor.replaceRange(newField, { line: this.context!.start.line, ch: 0 }, { line: this.context!.start.line, ch: activeLine.length });
+                if (Array.isArray(pastValues) || typeof pastValues === 'string' && pastValues.contains(",")) {
+                    editor.setCursor({ line: this.context!.start.line, ch: newField.length - 1 })
+                } else {
+                    editor.setCursor({ line: this.context!.start.line, ch: newField.length })
+                }
+            } catch (error) {
+                new Notice("Frontmatter wrongly formatted", 2000)
+                this.close()
+                return
+            }
         } else {
-            this.triggerPhrase = this.triggerPhraseOutsideFrontmatter;
-        };
-        const startPos = this.context?.start || {
-            line: cursor.line,
-            ch: cursor.ch - this.triggerPhrase.length,
-        };
-
-        if (!editor.getRange(startPos, cursor).startsWith(this.triggerPhrase)) {
-            return null;
+            //clean line by removing everything after , or ::
+            let cleanedLine = activeLine
+            while (![',', ':'].contains(cleanedLine.charAt(cleanedLine.length - 1))) {
+                cleanedLine = cleanedLine.slice(0, -1)
+            }
+            editor.replaceRange(`${cleanedLine}${event.shiftKey ? " " : ""}` + suggestion.value,
+                { line: this.context!.start.line, ch: 0 }, this.context!.end);
         }
-        return {
-            start: startPos,
-            end: cursor,
-            query: editor.getRange(startPos, cursor).substring(this.triggerPhrase.length),
-        };
+        this.didSelect = true
+        this.close()
     };
 };

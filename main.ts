@@ -1,4 +1,4 @@
-import { Plugin, MarkdownView, Notice } from 'obsidian';
+import { Plugin, MarkdownView } from 'obsidian';
 import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import { MetadataMenuSettings, DEFAULT_SETTINGS } from "src/settings/MetadataMenuSettings";
 import Field from 'src/Field';
@@ -8,9 +8,9 @@ import FileClassAttributeSelectModal from 'src/fileClass/FileClassAttributeSelec
 import ValueSuggest from "src/suggester/MetadataSuggester";
 
 export default class MetadataMenu extends Plugin {
-	settings: MetadataMenuSettings;
-	initialProperties: Array<Field> = [];
-	settingTab: MetadataMenuSettingTab;
+	public settings: MetadataMenuSettings;
+	public initialProperties: Array<Field> = [];
+	public settingTab: MetadataMenuSettingTab;
 
 	async onload(): Promise<void> {
 		console.log('Metadata Menu loaded');

@@ -3,8 +3,11 @@ This plugin adds context menu items to modifiy target note's frontmatter propert
 The preset values for those properties can be managed globally in the plugin's settings or on a file-by-file basis thanks to fileClass definition
 It also enables frontmatter of inline-field autocompletion with suggested values based on preset values.
 
-type "::" after a field in frontmatter, or ":::" after an inline-field to trigger the autocompletion
 
+## Field autocompletion
+type ":" after a field in frontmatter, or "::" after an inline-field to trigger the autocompletion
+
+## link and file options
 Right click on a link will automatically display an item per target note's frontmatter property and "inline fields" (dataview syntax)
 
 these options are accessible from:

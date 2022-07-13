@@ -46,7 +46,7 @@ class FileClassAttribute {
         }
     }
 
-    getField() {
+    public getField() {
         let values: Record<string, string> = {};
         this.options.forEach((option, index) => {
             values[index] = option;

@@ -34,7 +34,7 @@ export default class OptionsList {
 		this.category = category;
 	};
 
-	createExtraOptionList() {
+	public createExtraOptionList() {
 		const frontmatter = this.plugin.app.metadataCache.getCache(this.file.path)?.frontmatter;
 		if (frontmatter) {
 			const { position, ...attributes } = frontmatter;
@@ -51,6 +51,7 @@ export default class OptionsList {
 				const fileClass = attributes[fileClassAlias];
 				createFileClass(this.plugin, fileClass).then(fileClass => {
 					this.fileClass = fileClass;
+					console.log(fileClass)
 					fileClassFields = fileClass.attributes.map(attr => attr.name);
 					fileClassForFields = true;
 					Object.keys(attributes).forEach(key => {
@@ -104,7 +105,7 @@ export default class OptionsList {
 
 	};
 
-	async createExtraOptionsListForInlineFields(file: TFile, fileClassForFields: boolean = false, fileClassFields: string[] = []): Promise<void> {
+	private async createExtraOptionsListForInlineFields(file: TFile, fileClassForFields: boolean = false, fileClassFields: string[] = []): Promise<void> {
 		return new Promise((resolve, reject) => {
 			let attributes: Record<string, string> = {};
 			const regex = new RegExp(`^${genericFieldRegex}::(.+)?`, "u");
@@ -123,7 +124,6 @@ export default class OptionsList {
 						};
 					};
 				});
-				console.log(attributes)
 				if (Object.keys(attributes).length > 0) {
 					if (isMenu(this.category)) { this.category.addSeparator(); };
 					this.buildExtraOptionsList(attributes);
@@ -133,7 +133,7 @@ export default class OptionsList {
 		});
 	};
 
-	async createExtraOptionsListForFrontmatter(attributes: Record<string, string>) {
+	private async createExtraOptionsListForFrontmatter(attributes: Record<string, string>) {
 		this.buildExtraOptionsList(attributes,);
 	};
 
@@ -165,7 +165,7 @@ export default class OptionsList {
 		});
 	};
 
-	addSectionSelectModalOption(plugin: MetadataMenu): void {
+	private addSectionSelectModalOption(plugin: MetadataMenu): void {
 		const modal = new chooseSectionModal(this.plugin, this.file);
 		if (isMenu(this.category)) {
 			this.category.addItem((item) => {
@@ -182,7 +182,7 @@ export default class OptionsList {
 		};
 	};
 
-	addCycleMenuOption(name: string, value: string, propertySettings: Field): void {
+	private addCycleMenuOption(name: string, value: string, propertySettings: Field): void {
 		const values = propertySettings.values;
 		const keys = Object.keys(values);
 		const keyForValue = keys.find(key => values[key] === value);
@@ -209,7 +209,7 @@ export default class OptionsList {
 		};
 	};
 
-	addMultiMenuOption(name: string, value: string, propertySettings: Field): void {
+	private addMultiMenuOption(name: string, value: string, propertySettings: Field): void {
 		const modal = new valueMultiSelectModal(this.plugin.app, this.file, name, value, propertySettings);
 		modal.titleEl.setText("Select values");
 		if (isMenu(this.category)) {
@@ -227,7 +227,7 @@ export default class OptionsList {
 		};
 	};
 
-	addSelectMenuOption(name: string, value: string, propertySettings: Field): void {
+	private addSelectMenuOption(name: string, value: string, propertySettings: Field): void {
 		const modal = new valueSelectModal(this.plugin.app, this.file, name, value, propertySettings);
 		modal.titleEl.setText("Select value");
 		if (isMenu(this.category)) {
@@ -243,7 +243,7 @@ export default class OptionsList {
 		};
 	};
 
-	addToggleMenuOption(name: string, value: boolean): void {
+	private addToggleMenuOption(name: string, value: boolean): void {
 		const modal = new valueToggleModal(this.plugin.app, this.file, name, value);
 		modal.titleEl.setText(`Change Value for <${name}>`);
 		if (isMenu(this.category)) {
@@ -259,7 +259,7 @@ export default class OptionsList {
 		};
 	};
 
-	addTextInputMenuOption(name: string, value: string): void {
+	private addTextInputMenuOption(name: string, value: string): void {
 		const modal = new valueTextInputModal(this.plugin.app, this.file, name, value);
 		modal.titleEl.setText(`Change Value for <${name}>`);
 		if (isMenu(this.category)) {
@@ -275,7 +275,7 @@ export default class OptionsList {
 		};
 	};
 
-	getPropertySettings(propertyName: string): Field | undefined {
+	private getPropertySettings(propertyName: string): Field | undefined {
 		const matchingSettings = this.plugin.settings.presetFields.filter(p => p.name == propertyName);
 		if (this.fileClass) {
 			const fileClassAttributesWithName = this.fileClass.attributes.filter(attr => attr.name == propertyName);

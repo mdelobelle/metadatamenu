@@ -11,13 +11,13 @@ interface FileClass {
 }
 
 class FileClassManager {
-    instance: FileClass;
+    public instance: FileClass;
 
     constructor(instance: FileClass) {
         this.instance = instance;
     }
 
-    all() {
+    public all() {
         const filesWithFileClassName = this.instance.plugin.app.vault.getMarkdownFiles().filter(file => {
             const cache = this.instance.plugin.app.metadataCache.getFileCache(file);
             const fileClassAlias = this.instance.plugin.settings.fileClassAlias;
@@ -28,7 +28,7 @@ class FileClassManager {
         return filesWithFileClassName;
     }
 
-    get(name: string) {
+    public get(name: string) {
         const filesWithName = this.all().filter(file => file.basename == name);
         if (filesWithName.length > 1) {
             const error = new Error("More than one value found");
@@ -42,7 +42,7 @@ class FileClassManager {
 
     }
 
-    getPath(path: string) {
+    public getPath(path: string) {
         const filesWithName = this.all().filter(file => file.path == path);
         if (filesWithName.length > 1) {
             const error = new Error("More than one value found");
@@ -65,7 +65,7 @@ class FileClass {
         this.attributes = [];
     }
 
-    getClassFile() {
+    public getClassFile(): TFile {
         const filesClassPath = this.plugin.settings.classFilesPath;
         const file = this.plugin.app.vault.getAbstractFileByPath(`${filesClassPath}${this.name}.md`);
         if (file instanceof TFile && file.extension == "md") {
@@ -76,7 +76,7 @@ class FileClass {
         }
     }
 
-    getAttributes(): Promise<void> {
+    public getAttributes(): Promise<void> {
         return new Promise((resolve, reject) => {
             try {
                 const file = this.getClassFile();
@@ -101,7 +101,7 @@ class FileClass {
         })
     }
 
-    updateAttribute(newType: string, newOptions: string[], newName: string, attr?: FileClassAttribute): Promise<void> {
+    public updateAttribute(newType: string, newOptions: string[], newName: string, attr?: FileClassAttribute): Promise<void> {
         return new Promise((resolve, reject) => {
 
             const file = this.getClassFile();
@@ -135,7 +135,7 @@ class FileClass {
         })
     }
 
-    removeAttribute(attr: FileClassAttribute): Promise<void> {
+    public removeAttribute(attr: FileClassAttribute): Promise<void> {
         return new Promise((resolve, reject) => {
             const file = this.getClassFile();
             this.plugin.app.vault.read(file).then(result => {

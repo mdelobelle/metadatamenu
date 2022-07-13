@@ -7,12 +7,13 @@ import valueMultiSelectModal from "./valueMultiSelectModal";
 
 export default class fieldSelectModal extends Modal {
 
-    lineNumber: number;
-    line: string;
-    plugin: MetadataMenu;
-    file: TFile;
-    inFrontmatter: boolean;
-    top: boolean;
+    private lineNumber: number;
+    private line: string;
+    private plugin: MetadataMenu;
+    private file: TFile;
+    private inFrontmatter: boolean;
+    private top: boolean;
+
     constructor(plugin: MetadataMenu, file: TFile, lineNumber: number, line: string, inFrontmatter: boolean, top: boolean) {
         super(plugin.app);
         this.line = line;

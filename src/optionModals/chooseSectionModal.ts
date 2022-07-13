@@ -4,8 +4,8 @@ import MetadataMenu from "main";
 
 export default class chooseSectionModal extends Modal {
 
-    plugin: MetadataMenu;
-    file: TFile;
+    private plugin: MetadataMenu;
+    private file: TFile;
 
     constructor(plugin: MetadataMenu, file: TFile) {
         super(plugin.app);

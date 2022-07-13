@@ -8,7 +8,7 @@ export default class NoteFieldsCommandsModal extends Modal {
     private plugin: MetadataMenu;
     private file: TFile;
     private select: SelectModal;
-    optionsList: OptionsList;
+    private optionsList: OptionsList;
 
     constructor(app: App, plugin: MetadataMenu, file: TFile) {
         super(app);
