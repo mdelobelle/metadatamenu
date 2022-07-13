@@ -29,7 +29,6 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         super(app);
         this.app = app;
         this.plugin = plugin;
-
         this.setInstructions([{ command: "Shift", purpose: "put a space after::" }]);
 
         // @ts-ignore
