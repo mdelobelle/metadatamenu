@@ -34,13 +34,56 @@ export default class valueMultiSelectModal extends Modal {
         this.top = top;
     };
 
-    onOpen() {
+    async onOpen() {
         const valueGrid = this.contentEl.createDiv({
             cls: "metadata-menu-value-grid"
         });
-        FieldSetting.getValuesListFromNote(this.settings.valuesListNotePath, this.app).then(listNoteValues => {
-            this.populateValuesGrid(valueGrid, listNoteValues);
+        const listNoteValues = await FieldSetting.getValuesListFromNote(this.settings.valuesListNotePath, this.app)
+        await this.populateValuesGrid(valueGrid, listNoteValues);
+    };
+
+    private async populateValuesGrid(valueGrid: HTMLDivElement, listNoteValues: string[]): Promise<void> {
+        if (listNoteValues.length === 0) {
+            Object.keys(this.settings.values).forEach(key => {
+                const presetValue = this.settings.values[key];
+                this.buildValueToggler(valueGrid, presetValue);
+            })
+        };
+        listNoteValues.forEach(value => {
+            this.buildValueToggler(valueGrid, value);
         });
+        const footer = this.contentEl.createDiv({
+            cls: "metadata-menu-value-grid-footer"
+        });
+        const saveButton = new ButtonComponent(footer);
+        saveButton.setIcon("checkmark");
+        saveButton.onClick(async () => {
+            if (this.lineNumber == -1) {
+                replaceValues(this.app, this.file, this.name, this.values.join(","));
+            } else {
+                const result = await this.app.vault.read(this.file)
+                let newContent: string[] = [];
+                if (this.top) {
+                    newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${this.values.join(",")}`);
+                    result.split("\n").forEach((line, _lineNumber) => newContent.push(line));
+                } else {
+                    result.split("\n").forEach((line, _lineNumber) => {
+                        newContent.push(line);
+                        if (_lineNumber == this.lineNumber) {
+                            newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${this.values.join(",")}`);
+                        };
+                    });
+                };
+
+                this.app.vault.modify(this.file, newContent.join('\n'));
+                this.close();
+            };
+
+            this.close();
+        });
+        const cancelButton = new ExtraButtonComponent(footer);
+        cancelButton.setIcon("cross");
+        cancelButton.onClick(() => this.close());
     };
 
     private buildValueToggler(valueGrid: HTMLDivElement, presetValue: string) {
@@ -68,48 +111,5 @@ export default class valueMultiSelectModal extends Modal {
             cls: "metadata-menu-value-selector-label"
         });
         valueLabel.setText(presetValue);
-    };
-
-    private populateValuesGrid(valueGrid: HTMLDivElement, listNoteValues: string[]) {
-        Object.keys(this.settings.values).forEach(key => {
-            const presetValue = this.settings.values[key];
-            this.buildValueToggler(valueGrid, presetValue);
-        });
-        listNoteValues.forEach(value => {
-            this.buildValueToggler(valueGrid, value);
-        });
-        const footer = this.contentEl.createDiv({
-            cls: "metadata-menu-value-grid-footer"
-        });
-        const saveButton = new ButtonComponent(footer);
-        saveButton.setIcon("checkmark");
-        saveButton.onClick(() => {
-            if (this.lineNumber == -1) {
-                replaceValues(this.app, this.file, this.name, this.values.join(","));
-            } else {
-                this.app.vault.read(this.file).then(result => {
-                    let newContent: string[] = [];
-                    if (this.top) {
-                        newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${this.values.join(",")}`);
-                        result.split("\n").forEach((line, _lineNumber) => newContent.push(line));
-                    } else {
-                        result.split("\n").forEach((line, _lineNumber) => {
-                            newContent.push(line);
-                            if (_lineNumber == this.lineNumber) {
-                                newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${this.values.join(",")}`);
-                            };
-                        });
-                    };
-
-                    this.app.vault.modify(this.file, newContent.join('\n'));
-                    this.close();
-                });
-            };
-
-            this.close();
-        });
-        const cancelButton = new ExtraButtonComponent(footer);
-        cancelButton.setIcon("cross");
-        cancelButton.onClick(() => this.close());
     };
 };

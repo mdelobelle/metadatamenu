@@ -1,5 +1,5 @@
 import { App, TFile } from "obsidian";
-import { inlineFieldRegex } from "src/utils/parser";
+import { fieldComponents, inlineFieldRegex } from "src/utils/parser";
 
 export async function replaceValues(app: App, file: TFile, attribute: string, input: string): Promise<void> {
     const content = await (await app.vault.cachedRead(file)).split('\n');
@@ -19,10 +19,11 @@ export async function replaceValues(app: App, file: TFile, attribute: string, in
         } else {
             const regex = inlineFieldRegex(attribute);
             const r = line.match(regex);
-            if (r && r.length > 0) {
+            if (r?.groups && Object.keys(r.groups).every(i => fieldComponents.includes(i))) {
+                const { startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = r.groups
                 const inputArray = input ? input.replace(/(\,\s+)/g, ',').split(',') : [""];
                 const newValue = inputArray.length == 1 ? inputArray[0] : `${inputArray.join(', ')}`;
-                return `${r[1]}${attribute}${r[2]}${r[3]}:: ${newValue}`;
+                return `${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer}${newValue}`;
             } else {
                 return line;
             }

@@ -19,27 +19,33 @@ const types: Record<string, string> = {
 class FileClassAttribute {
 
     constructor(raw: string) {
-        const completeRegex = new RegExp(`^${genericFieldRegex}::(.+)?`, "u");
+        const completeRegex = new RegExp(`^${genericFieldRegex}::(?<fieldSettings>.+)?`, "u");
         const nameRegex = new RegExp(`^${genericFieldRegex}$`, "u");
-        const detailedFieldRaw = raw.match(completeRegex);
-        const simpleFieldRaw = raw.match(nameRegex);
-        if (detailedFieldRaw) {
-            this.name = detailedFieldRaw[1].trim();
-            const settings = JSON.parse(`${detailedFieldRaw[2].trim()}`);
-            this.type = settings['type'];
-            switch (this.type) {
-                case "multi":
-                    this.isMulti = true;
-                    break;
-                case "cycle":
-                    this.isCycle = true;
-                    break;
-                default:
-                    break;
+        let fieldName: string
+        let { attribute, fieldSettings } = raw.match(completeRegex)?.groups || {}
+        if (attribute) {
+            fieldName = attribute
+        } else {
+            let { attribute } = raw.match(nameRegex)?.groups || {}
+            fieldName = attribute
+        }
+        if (fieldName) {
+            this.name = attribute.trim();
+            if (fieldSettings) {
+                const settings = JSON.parse(`${fieldSettings.trim()}`);
+                this.type = settings['type'];
+                switch (this.type) {
+                    case "multi":
+                        this.isMulti = true;
+                        break;
+                    case "cycle":
+                        this.isCycle = true;
+                        break;
+                    default:
+                        break;
+                }
+                this.options = settings['options'];
             }
-            this.options = settings['options'];
-        } else if (simpleFieldRaw) {
-            this.name = simpleFieldRaw[0].trim();
         } else {
             const error = new Error("Improper value");
             throw error;

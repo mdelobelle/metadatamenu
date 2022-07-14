@@ -51,7 +51,6 @@ export default class OptionsList {
 				const fileClass = attributes[fileClassAlias];
 				createFileClass(this.plugin, fileClass).then(fileClass => {
 					this.fileClass = fileClass;
-					console.log(fileClass)
 					fileClassFields = fileClass.attributes.map(attr => attr.name);
 					fileClassForFields = true;
 					Object.keys(attributes).forEach(key => {
@@ -108,19 +107,18 @@ export default class OptionsList {
 	private async createExtraOptionsListForInlineFields(file: TFile, fileClassForFields: boolean = false, fileClassFields: string[] = []): Promise<void> {
 		return new Promise((resolve, reject) => {
 			let attributes: Record<string, string> = {};
-			const regex = new RegExp(`^${genericFieldRegex}::(.+)?`, "u");
+			const regex = new RegExp(`^${genericFieldRegex}::\s*(?<values>.+)?`, "u");
 			this.plugin.app.vault.read(file).then((result: string) => {
 				result.split('\n').map(line => {
 					const regexResult = line.match(regex);
-					if (regexResult
-						&& regexResult.length > 0
-						&& !this.plugin.settings.globallyIgnoredFields.includes(regexResult[1].trim())) {
+					const { attribute, values } = regexResult?.groups || {}
+					if (attribute && !this.plugin.settings.globallyIgnoredFields.includes(attribute.trim())) {
 						if (fileClassForFields) {
-							if (fileClassFields.includes(regexResult[1].trim())) {
-								attributes[regexResult[1].trim()] = regexResult.length > 1 && regexResult[2] ? regexResult[2].trim() : "";
+							if (fileClassFields.includes(attribute.trim())) {
+								attributes[attribute.trim()] = values ? values.trim() : "";
 							};
 						} else {
-							attributes[regexResult[1].trim()] = regexResult.length > 1 && regexResult[2] ? regexResult[2].trim() : "";
+							attributes[attribute.trim()] = values ? values.trim() : "";
 						};
 					};
 				});
@@ -141,7 +139,7 @@ export default class OptionsList {
 		Object.keys(attributes).forEach((key: string) => {
 			const value = attributes[key];
 			const propertySettings = this.getPropertySettings(key);
-			if (propertySettings && propertySettings.values) {
+			if (propertySettings?.values) {
 				if (propertySettings.isCycle) {
 					this.addCycleMenuOption(key, value, propertySettings);
 				} else if (propertySettings.isMulti) {

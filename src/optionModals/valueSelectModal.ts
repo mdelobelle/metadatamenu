@@ -27,58 +27,58 @@ export default class valueToggleModal extends Modal {
         this.top = top;
     };
 
-    onOpen() {
+    async onOpen() {
         const inputDiv = this.contentEl.createDiv({
             cls: "metadata-menu-modal-value"
         });
-        this.buildInputEl(inputDiv);
+        await this.buildInputEl(inputDiv);
     };
 
-    private buildInputEl(inputDiv: HTMLDivElement): void {
+    private async buildInputEl(inputDiv: HTMLDivElement): Promise<void> {
         const selectEl = new DropdownComponent(inputDiv);
         selectEl.selectEl.addClass("metadata-menu-select");
         const values = this.settings.values;
         selectEl.addOption("", "--Empty--");
-        Object.keys(values).forEach(key => {
-            selectEl.addOption(values[key], values[key]);
-        });
-        if (Object.values(values).includes(this.value)) {
+        const listNoteValues = await FieldSetting.getValuesListFromNote(this.settings.valuesListNotePath, this.app)
+        listNoteValues.forEach(value => selectEl.addOption(value, value));
+        if (listNoteValues.includes(this.value)) {
             selectEl.setValue(this.value);
         };
-        FieldSetting.getValuesListFromNote(this.settings.valuesListNotePath, this.app).then(listNoteValues => {
-            listNoteValues.forEach(value => selectEl.addOption(value, value));
-            if (listNoteValues.includes(this.value)) {
+        if (listNoteValues.length === 0) {
+            Object.keys(values).forEach(key => {
+                selectEl.addOption(values[key], values[key]);
+            });
+            if (Object.values(values).includes(this.value)) {
                 selectEl.setValue(this.value);
             };
-            selectEl.onChange(value => this.newValue = value != "--Empty--" ? value : "");
-            const submitButton = new ButtonComponent(inputDiv);
-            submitButton.setTooltip("Save")
-                .setIcon("checkmark")
-                .onClick(async () => {
-                    if (this.lineNumber == -1) {
-                        if (this.newValue || this.newValue == "") {
-                            replaceValues(this.app, this.file, this.name, this.newValue);
-                        };
+        }
+        selectEl.onChange(value => this.newValue = value != "--Empty--" ? value : "");
+        const submitButton = new ButtonComponent(inputDiv);
+        submitButton.setTooltip("Save")
+            .setIcon("checkmark")
+            .onClick(async () => {
+                if (this.lineNumber == -1) {
+                    if (this.newValue || this.newValue == "") {
+                        replaceValues(this.app, this.file, this.name, this.newValue);
+                    };
+                } else {
+                    const result = await this.app.vault.read(this.file)
+                    let newContent: string[] = [];
+                    if (this.top) {
+                        newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${selectEl.getValue()}`);
+                        result.split("\n").forEach((line, _lineNumber) => newContent.push(line));
                     } else {
-                        this.app.vault.read(this.file).then(result => {
-                            let newContent: string[] = [];
-                            if (this.top) {
+                        result.split("\n").forEach((line, _lineNumber) => {
+                            newContent.push(line);
+                            if (_lineNumber == this.lineNumber) {
                                 newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${selectEl.getValue()}`);
-                                result.split("\n").forEach((line, _lineNumber) => newContent.push(line));
-                            } else {
-                                result.split("\n").forEach((line, _lineNumber) => {
-                                    newContent.push(line);
-                                    if (_lineNumber == this.lineNumber) {
-                                        newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${selectEl.getValue()}`);
-                                    };
-                                });
                             };
-                            this.app.vault.modify(this.file, newContent.join('\n'));
-                            this.close();
                         });
                     };
+                    this.app.vault.modify(this.file, newContent.join('\n'));
                     this.close();
-                });
-        });
+                };
+                this.close();
+            });
     };
 };
