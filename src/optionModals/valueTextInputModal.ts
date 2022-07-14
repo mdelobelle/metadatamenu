@@ -56,7 +56,7 @@ export default class valueTextInputModal extends Modal {
         inputEl.setValue(this.value);
         inputEl.inputEl.addClass("metadata-menu-prompt-input");
 
-        form.onsubmit = (e: Event) => {
+        form.onsubmit = async (e: Event) => {
             e.preventDefault();
             let inputValue = inputEl.getValue();
             //@ts-ignore
@@ -81,22 +81,21 @@ export default class valueTextInputModal extends Modal {
             if (this.lineNumber == -1) {
                 replaceValues(this.app, this.file, this.name, inputValue);
             } else {
-                this.app.vault.read(this.file).then(result => {
-                    let newContent: string[] = [];
-                    if (this.top) {
-                        newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${inputValue}`);
-                        result.split("\n").forEach((line, _lineNumber) => newContent.push(line));
-                    } else {
-                        result.split("\n").forEach((line, _lineNumber) => {
-                            newContent.push(line);
-                            if (_lineNumber == this.lineNumber) {
-                                newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${inputValue}`);
-                            };
-                        });
-                    };
-                    this.app.vault.modify(this.file, newContent.join('\n'));
-                    this.close();
-                });
+                const result = await this.app.vault.read(this.file)
+                let newContent: string[] = [];
+                if (this.top) {
+                    newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${inputValue}`);
+                    result.split("\n").forEach((line, _lineNumber) => newContent.push(line));
+                } else {
+                    result.split("\n").forEach((line, _lineNumber) => {
+                        newContent.push(line);
+                        if (_lineNumber == this.lineNumber) {
+                            newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${inputValue}`);
+                        };
+                    });
+                };
+                this.app.vault.modify(this.file, newContent.join('\n'));
+                this.close();
             };
             this.close();
         };

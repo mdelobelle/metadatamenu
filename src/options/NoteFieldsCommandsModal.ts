@@ -17,13 +17,13 @@ export default class NoteFieldsCommandsModal extends Modal {
         this.file = file;
     };
 
-    onOpen() {
+    async onOpen() {
         this.titleEl.setText(`Select the field to manage`);
         const optionsListContainer = this.contentEl.createDiv();
         this.select = new SelectModal(optionsListContainer);
         this.select.addOption("---", "Choose Field");
         this.optionsList = new OptionsList(this.plugin, this.file, this.select);
-        this.optionsList.createExtraOptionList();
+        await this.optionsList.createExtraOptionList();
         this.select.onChange((value) => {
             this.select.modals[value]();
             this.close();

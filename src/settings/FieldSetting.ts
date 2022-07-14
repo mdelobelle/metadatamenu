@@ -52,23 +52,19 @@ export default class FieldSetting extends Setting {
         });
     };
 
-    public static getValuesListFromNote(notePath: string, app: App): Promise<string[]> {
-        return new Promise((resolve, reject) => {
-            let values: Array<string> = [];
-            const file = app.vault.getAbstractFileByPath(notePath);
-            if (file instanceof TFile && file.extension == "md") {
-                app.vault.read(file).then((result: string) => {
-                    result.split('\n').forEach(line => {
-                        if (/^(.*)$/.test(line)) {
-                            values.push(line.trim());
-                        };
-                    });
-                    resolve(values);
-                });
-            } else {
-                resolve([]);
-            };
-        });
-
+    public static async getValuesListFromNote(notePath: string, app: App): Promise<string[]> {
+        let values: Array<string> = [];
+        const file = app.vault.getAbstractFileByPath(notePath);
+        if (file instanceof TFile && file.extension == "md") {
+            const result = await app.vault.read(file)
+            result.split('\n').forEach(line => {
+                if (/^(.*)$/.test(line)) {
+                    values.push(line.trim());
+                };
+            });
+            return values;
+        } else {
+            return [];
+        };
     };
 };

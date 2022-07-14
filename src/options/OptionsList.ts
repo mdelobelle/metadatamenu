@@ -34,7 +34,7 @@ export default class OptionsList {
 		this.category = category;
 	};
 
-	public createExtraOptionList() {
+	public async createExtraOptionList(): Promise<void> {
 		const frontmatter = this.plugin.app.metadataCache.getCache(this.file.path)?.frontmatter;
 		if (frontmatter) {
 			const { position, ...attributes } = frontmatter;
@@ -49,9 +49,10 @@ export default class OptionsList {
 			const fileClassAlias = this.plugin.settings.fileClassAlias;
 			if (Object.keys(attributes).includes(fileClassAlias)) {
 				const fileClass = attributes[fileClassAlias];
-				createFileClass(this.plugin, fileClass).then(fileClass => {
-					this.fileClass = fileClass;
-					fileClassFields = fileClass.attributes.map(attr => attr.name);
+				try {
+					const _fileClass = await createFileClass(this.plugin, fileClass)
+					this.fileClass = _fileClass;
+					fileClassFields = _fileClass.attributes.map(attr => attr.name);
 					fileClassForFields = true;
 					Object.keys(attributes).forEach(key => {
 						if (!fileClassFields.includes(key) && key != fileClassAlias) {
@@ -73,62 +74,51 @@ export default class OptionsList {
 						this.category.modals["add_field_at_section"] = () => fileClassAttributeSelectModal.open();
 					};
 
-					this.createExtraOptionsListForFrontmatter(attributes,).then(() => {
-						this.createExtraOptionsListForInlineFields(this.file, fileClassForFields, fileClassFields).then(() => {
-							if (isMenu(this.category)) { this.category.addSeparator() };
-							this.addSectionSelectModalOption(this.plugin);
-						});
-					});
-				}).catch((error) => {
-					this.createExtraOptionsListForFrontmatter(attributes).then(() => {
-						this.createExtraOptionsListForInlineFields(this.file).then(() => {
-							if (isMenu(this.category)) { this.category.addSeparator(); };
-							this.addSectionSelectModalOption(this.plugin);
-						});
-					});
-				});
+					await this.createExtraOptionsListForFrontmatter(attributes,)
+					await this.createExtraOptionsListForInlineFields(this.file, fileClassForFields, fileClassFields)
+					if (isMenu(this.category)) { this.category.addSeparator() };
+					this.addSectionSelectModalOption(this.plugin);
+				} catch (error) {
+					await this.createExtraOptionsListForFrontmatter(attributes)
+					await this.createExtraOptionsListForInlineFields(this.file)
+					if (isMenu(this.category)) { this.category.addSeparator(); };
+					this.addSectionSelectModalOption(this.plugin);
+				};
 			} else {
-				this.createExtraOptionsListForFrontmatter(attributes).then(() => {
-					this.createExtraOptionsListForInlineFields(this.file).then(() => {
-						if (isMenu(this.category)) { this.category.addSeparator(); };
-						this.addSectionSelectModalOption(this.plugin);
-					});
-				});
-			};
-		} else {
-			this.createExtraOptionsListForInlineFields(this.file).then(() => {
+				await this.createExtraOptionsListForFrontmatter(attributes)
+				await this.createExtraOptionsListForInlineFields(this.file)
 				if (isMenu(this.category)) { this.category.addSeparator(); };
 				this.addSectionSelectModalOption(this.plugin);
-			});
+			};
+		} else {
+			await this.createExtraOptionsListForInlineFields(this.file)
+			if (isMenu(this.category)) { this.category.addSeparator(); };
+			this.addSectionSelectModalOption(this.plugin);
 		};
 
 	};
 
 	private async createExtraOptionsListForInlineFields(file: TFile, fileClassForFields: boolean = false, fileClassFields: string[] = []): Promise<void> {
-		return new Promise((resolve, reject) => {
-			let attributes: Record<string, string> = {};
-			const regex = new RegExp(`^${genericFieldRegex}::\s*(?<values>.+)?`, "u");
-			this.plugin.app.vault.read(file).then((result: string) => {
-				result.split('\n').map(line => {
-					const regexResult = line.match(regex);
-					const { attribute, values } = regexResult?.groups || {}
-					if (attribute && !this.plugin.settings.globallyIgnoredFields.includes(attribute.trim())) {
-						if (fileClassForFields) {
-							if (fileClassFields.includes(attribute.trim())) {
-								attributes[attribute.trim()] = values ? values.trim() : "";
-							};
-						} else {
-							attributes[attribute.trim()] = values ? values.trim() : "";
-						};
+		let attributes: Record<string, string> = {};
+		const regex = new RegExp(`^${genericFieldRegex}::\s*(?<values>.+)?`, "u");
+		const result = await this.plugin.app.vault.read(file)
+		result.split('\n').map(line => {
+			const regexResult = line.match(regex);
+			const { attribute, values } = regexResult?.groups || {}
+			if (attribute && !this.plugin.settings.globallyIgnoredFields.includes(attribute.trim())) {
+				if (fileClassForFields) {
+					if (fileClassFields.includes(attribute.trim())) {
+						attributes[attribute.trim()] = values ? values.trim() : "";
 					};
-				});
-				if (Object.keys(attributes).length > 0) {
-					if (isMenu(this.category)) { this.category.addSeparator(); };
-					this.buildExtraOptionsList(attributes);
+				} else {
+					attributes[attribute.trim()] = values ? values.trim() : "";
 				};
-				resolve();
-			});
+			};
 		});
+		if (Object.keys(attributes).length > 0) {
+			if (isMenu(this.category)) { this.category.addSeparator(); };
+			this.buildExtraOptionsList(attributes);
+		};
 	};
 
 	private async createExtraOptionsListForFrontmatter(attributes: Record<string, string>) {

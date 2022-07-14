@@ -44,13 +44,13 @@ export default class FieldSettingsModal extends Modal {
         };
     };
 
-    onOpen(): void {
+    async onOpen(): Promise<void> {
         if (this.property.name == "") {
             this.titleEl.setText(`Add a property and set predefined`);
         } else {
             this.titleEl.setText(`Manage settings values for ${this.property.name}`);
         };
-        this.createForm();
+        await this.createForm();
     };
 
     onClose(): void {
@@ -157,7 +157,7 @@ export default class FieldSettingsModal extends Modal {
         return input;
     };
 
-    private createForm(): void {
+    private async createForm(): Promise<void> {
         const div = this.contentEl.createDiv({
             cls: "metadata-menu-prompt-div"
         });
@@ -224,11 +224,10 @@ export default class FieldSettingsModal extends Modal {
         const addValue = valuesListFooter.createEl('button');
         addValue.type = 'button';
         addValue.textContent = 'Add';
-        addValue.onClickEvent((evt: MouseEvent) => {
+        addValue.onClickEvent(async (evt: MouseEvent) => {
             evt.preventDefault;
-            this.property.insertNewValue("")
-                .then(newKey => { this.createValueContainer(valuesListBody, valuesListHeader, newKey) });
-
+            const newKey = await this.property.insertNewValue("")
+            this.createValueContainer(valuesListBody, valuesListHeader, newKey)
         });
 
         mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");

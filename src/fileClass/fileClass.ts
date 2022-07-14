@@ -76,80 +76,66 @@ class FileClass {
         }
     }
 
-    public getAttributes(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            try {
-                const file = this.getClassFile();
-                let attributes: Array<FileClassAttribute> = [];
-                let errors: string[] = [];
-                this.plugin.app.vault.cachedRead(file).then(result => {
-                    result.split('\n').forEach(line => {
-                        try {
-                            const attribute = new FileClassAttribute(line);
-                            attributes.push(attribute);
-                        } catch (error) {
-                            errors.push(error);
-                        }
-                    })
-                    this.attributes = attributes;
-                    this.errors = errors;
-                    resolve();
-                })
-            } catch (error) {
-                reject(error);
+    public async getAttributes(): Promise<void> {
+        try {
+            const file = this.getClassFile();
+            let attributes: Array<FileClassAttribute> = [];
+            let errors: string[] = [];
+            const result = await this.plugin.app.vault.cachedRead(file)
+            result.split('\n').forEach(line => {
+                try {
+                    const attribute = new FileClassAttribute(line);
+                    attributes.push(attribute);
+                } catch (error) {
+                    errors.push(error);
+                }
+            })
+            this.attributes = attributes;
+            this.errors = errors;
+        } catch (error) {
+            throw (error);
+        }
+    }
+
+    public async updateAttribute(newType: string, newOptions: string[], newName: string, attr?: FileClassAttribute): Promise<void> {
+        const file = this.getClassFile();
+        let result = await this.plugin.app.vault.read(file)
+        if (attr) {
+            let newContent: string[] = [];
+            result.split('\n').forEach(line => {
+                if (line.startsWith(attr.name)) {
+                    if (newType == "input") {
+                        newContent.push(newName);
+                    } else {
+                        let settings: Record<string, any> = {};
+                        settings["type"] = newType;
+                        settings["options"] = newOptions;
+                        newContent.push(`${newName}:: ${JSON.stringify(settings)}`);
+                    }
+                } else {
+                    newContent.push(line);
+                }
+            })
+            this.plugin.app.vault.modify(file, newContent.join('\n'));
+        } else {
+            let settings: Record<string, any> = {};
+            settings["type"] = newType;
+            settings["options"] = newOptions;
+            result += (`\n${newName}:: ${JSON.stringify(settings)}`);
+            await this.plugin.app.vault.modify(file, result);
+        }
+    }
+
+    public async removeAttribute(attr: FileClassAttribute): Promise<void> {
+        const file = this.getClassFile();
+        const result = await this.plugin.app.vault.read(file)
+        let newContent: string[] = [];
+        result.split('\n').forEach(line => {
+            if (!line.startsWith(attr.name)) {
+                newContent.push(line);
             }
         })
-    }
-
-    public updateAttribute(newType: string, newOptions: string[], newName: string, attr?: FileClassAttribute): Promise<void> {
-        return new Promise((resolve, reject) => {
-
-            const file = this.getClassFile();
-            this.plugin.app.vault.read(file).then(result => {
-                if (attr) {
-                    let newContent: string[] = [];
-                    result.split('\n').forEach(line => {
-                        if (line.startsWith(attr.name)) {
-                            if (newType == "input") {
-                                newContent.push(newName);
-                            } else {
-                                let settings: Record<string, any> = {};
-                                settings["type"] = newType;
-                                settings["options"] = newOptions;
-                                newContent.push(`${newName}:: ${JSON.stringify(settings)}`);
-                            }
-                        } else {
-                            newContent.push(line);
-                        }
-                    })
-                    this.plugin.app.vault.modify(file, newContent.join('\n'));
-                } else {
-                    let settings: Record<string, any> = {};
-                    settings["type"] = newType;
-                    settings["options"] = newOptions;
-                    result += (`\n${newName}:: ${JSON.stringify(settings)}`);
-                    this.plugin.app.vault.modify(file, result);
-                }
-                resolve();
-            })
-        })
-    }
-
-    public removeAttribute(attr: FileClassAttribute): Promise<void> {
-        return new Promise((resolve, reject) => {
-            const file = this.getClassFile();
-            this.plugin.app.vault.read(file).then(result => {
-                let newContent: string[] = [];
-                result.split('\n').forEach(line => {
-                    if (!line.startsWith(attr.name)) {
-                        newContent.push(line);
-                    }
-                })
-                this.plugin.app.vault.modify(file, newContent.join('\n'));
-                resolve();
-            })
-
-        })
+        await this.plugin.app.vault.modify(file, newContent.join('\n'));
     }
 }
 
