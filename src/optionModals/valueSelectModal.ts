@@ -28,9 +28,8 @@ export default class valueToggleModal extends Modal {
     };
 
     onOpen() {
-        const inputDiv = this.contentEl.createDiv({
-            cls: "metadata-menu-modal-value"
-        });
+        this.containerEl.addClass("metadata-menu");
+        const inputDiv = this.contentEl.createDiv({ cls: "metadata-menu-modal-value" });
         this.buildInputEl(inputDiv);
     };
 

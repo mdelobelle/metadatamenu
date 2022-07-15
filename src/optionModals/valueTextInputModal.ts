@@ -23,9 +23,7 @@ export default class valueTextInputModal extends Modal {
     };
 
     onOpen() {
-        const inputDiv = this.contentEl.createDiv({
-            cls: "metadata-menu-modal-value"
-        });
+        const inputDiv = this.contentEl.createDiv({ cls: "metadata-menu-modal-value" });
         this.buildInputEl(inputDiv);
     };
 
