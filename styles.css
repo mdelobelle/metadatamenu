@@ -121,6 +121,11 @@
     margin-top: 3px;
 }
 
+.metadata-menu.modal-container .modal button:hover {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
 .metadata-menu-modal-value > form {
     width: 80%
 }
@@ -132,3 +137,13 @@
 }
 
 
+/* Settings Styling */
+.metadata-menu-input input { 
+    width: 100%; 
+}
+
+.metadata-menu-toggle {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
