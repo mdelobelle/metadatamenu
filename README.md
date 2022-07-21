@@ -190,6 +190,25 @@ Because it can be overwhelming to remember this syntax, you can manage "type" an
 demo:
 https://youtu.be/U0Bo_x1B2TM
 
+## Api
+
+API is accessible with `app.plugins.plugins["metadata-menu"].api`
+
+`getValues(app: App, file: TFile, attribute: string)`
+
+Takes a TFile containing the field and a string for the related field name
+
+Returns an array with the values of the field
+
+This is an asynchronous function, so you should await it.
+
+`replaceValues(app: App, file: TFile, attribute: string, input: string)`
+
+Takes a TFile containing the field, a string for the related field name, a new value for this field and updates the field with the new value
+
+This is an asynchronous function, so you should await it.
+
+
 ## Roadmap
 - [ ] manage indented lists multi-values frontmatter property
 
