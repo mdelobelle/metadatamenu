@@ -83,18 +83,19 @@ export default class FieldSettingsModal extends Modal {
     };
 
     private createTogglerContainer(parentNode: HTMLDivElement, label: string): ToggleComponent {
-        const propertyContainerLabel = parentNode.createDiv({
-            cls: 'frontmatter-checkbox-toggler'
-        });
+        parentNode.addClass("metadata-menu-toggle")
+        const propertyContainerLabel = parentNode.createDiv({ cls: 'frontmatter-checkbox-toggler' });
+
         propertyContainerLabel.setText(label);
         const toggler = new ToggleComponent(parentNode);
         return toggler;
     };
 
     private createListNoteContainer(parentNode: HTMLDivElement): TextComponent {
-        const listNoteContainerLabel = parentNode.createDiv();
+        const listNoteContainerLabel = parentNode.createDiv({ cls: "metadata-menu-input" });
         listNoteContainerLabel.setText(`Path of the note containing the values:`);
-        const input = new TextComponent(parentNode);
+
+        const input = new TextComponent(listNoteContainerLabel);
         const listNotePath = this.property.valuesListNotePath;
         input.setValue(listNotePath);
         input.setPlaceholder("Path/of/the/note.md");
@@ -172,7 +173,7 @@ export default class FieldSettingsModal extends Modal {
 
         /* Property is Multi section*/
 
-        const multiContainer = mainDiv.createDiv();
+        const multiContainer = mainDiv.createDiv({ cls: "metadata-menu-toggle"});
         this.isMultiTogglerComponent = this.createTogglerContainer(multiContainer, "Is Multi: ");
         this.isMultiTogglerComponent.setValue(this.property.isMulti);
         this.isMultiTogglerComponent.setTooltip("Can this property have multiple values?");
@@ -183,8 +184,6 @@ export default class FieldSettingsModal extends Modal {
                 this.isCycleTogglerComponent.setValue(false);
             };
         });
-
-        mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
 
         /* Property is Cycle section*/
 

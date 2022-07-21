@@ -71,7 +71,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		containerEl.createEl('h4', { text: 'Settings' });
 
-		// Managing choice wether you get attributes from inline fields and frontmatter or only frontmater
+		// Managing choice whether you get attributes from inline fields and frontmatter or only frontmater
 		new Setting(containerEl)
 			.setName('Search for attribute in Inline fields like <field::>')
 			.setDesc('Sets the `data-link-<field>`-attribute to the value of inline fields')

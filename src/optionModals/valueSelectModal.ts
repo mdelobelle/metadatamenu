@@ -28,15 +28,15 @@ export default class valueToggleModal extends Modal {
     };
 
     async onOpen() {
-        const inputDiv = this.contentEl.createDiv({
-            cls: "metadata-menu-modal-value"
-        });
+        this.containerEl.addClass("metadata-menu");
+        const inputDiv = this.contentEl.createDiv({ cls: "metadata-menu-modal-value" });
         await this.buildInputEl(inputDiv);
     };
 
     private async buildInputEl(inputDiv: HTMLDivElement): Promise<void> {
         const selectEl = new DropdownComponent(inputDiv);
         selectEl.selectEl.addClass("metadata-menu-select");
+
         const values = this.settings.values;
         selectEl.addOption("", "--Empty--");
         const listNoteValues = await FieldSetting.getValuesListFromNote(this.settings.valuesListNotePath, this.app)

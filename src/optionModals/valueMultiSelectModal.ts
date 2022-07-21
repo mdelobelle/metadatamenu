@@ -35,6 +35,8 @@ export default class valueMultiSelectModal extends Modal {
     };
 
     async onOpen() {
+        this.containerEl.addClass("metadata-menu");
+
         const valueGrid = this.contentEl.createDiv({
             cls: "metadata-menu-value-grid"
         });
@@ -52,9 +54,7 @@ export default class valueMultiSelectModal extends Modal {
         listNoteValues.forEach(value => {
             this.buildValueToggler(valueGrid, value);
         });
-        const footer = this.contentEl.createDiv({
-            cls: "metadata-menu-value-grid-footer"
-        });
+        const footer = this.contentEl.createDiv({ cls: "metadata-menu-value-grid-footer" });
         const saveButton = new ButtonComponent(footer);
         saveButton.setIcon("checkmark");
         saveButton.onClick(async () => {
@@ -107,9 +107,7 @@ export default class valueMultiSelectModal extends Modal {
                 this.values.remove(presetValue);
             };
         });
-        const valueLabel = valueSelectorContainer.createDiv({
-            cls: "metadata-menu-value-selector-label"
-        });
+        const valueLabel = valueSelectorContainer.createDiv({ cls: "metadata-menu-value-selector-label" });
         valueLabel.setText(presetValue);
     };
 };

@@ -1,7 +1,7 @@
+/* Metadata Menu Prompt */
 .metadata-menu-prompt-div {
     display: flex;
 }
-
 .metadata-menu-prompt-form {
     width: 100%;
 }
@@ -33,9 +33,12 @@
     margin-bottom: 20px;
 }
 
-.metadata-menu-modal-value {
+/* Metadata Modal */
+.metadata-menu-modal-value,
+.metadata-menu .field-options {
     display: flex;
     margin-top: 3px;
+    justify-content: center;
 }
 
 .metadata-menu-select {
@@ -45,25 +48,32 @@
 .metadata-menu-value-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
+    overflow-y: auto;
+    max-height: 70vh;
 }
-
-.metadata-menu-value-selector-container{
+.metadata-menu-value-selector-container {
     margin-bottom: 5px;
 }
 
-.metadata-menu-value-selector-label{
+.metadata-menu-value-selector-label {
     display: inline-block;
     vertical-align: top;
     margin-left: 10px;
 }
 
-.metadata-menu-value-selector-inline-label{
+.metadata-menu-value-selector-inline-label {
     display: inline-block;
     margin-left: 10px;
     margin-right: 10px
 }
 
-.yaml-metadata-menu-red{
+
+
+
+
+
+
+.yaml-metadata-menu-red {
     color: #C7254E
 }
 
@@ -73,12 +83,15 @@
     padding-top: 3px;
 }
 
+
 .metadata-menu-value-grid-footer {
     flex: 1 1 auto;
     text-align: right;
     display: flex;
     justify-content: flex-end;
     align-items: center;
+    
+    padding-top: 10px;
 }
 
 .metadata-menu-textarea-buttons {
@@ -93,7 +106,7 @@
     margin-right: 10px;
 }
 
-.metadata-menu-value-selector-inline-label-top{
+.metadata-menu-value-selector-inline-label-top {
     display: inline-block;
     margin-left: 10px;
     margin-right: 10px;
@@ -105,6 +118,11 @@
     margin-top: 3px;
 }
 
+.metadata-menu.modal-container .modal button:hover {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
 .metadata-menu-modal-value > form {
     width: 80%
 }
@@ -113,4 +131,16 @@
     margin-top: -4px;
     margin-right: 0.2em;
     font-size: x-large;
+}
+
+
+/* Settings Styling */
+.metadata-menu-input input { 
+    width: 100%; 
+}
+
+.metadata-menu-toggle {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
 }
