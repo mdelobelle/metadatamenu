@@ -1,6 +1,8 @@
 import { Plugin, MarkdownView } from 'obsidian';
 import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import { MetadataMenuSettings, DEFAULT_SETTINGS } from "src/settings/MetadataMenuSettings";
+import type { IMetadataMenuApi } from 'src/MetadataMenuApi';
+import { MetadataMenuApi } from 'src/MetadataMenuApi';
 import Field from 'src/Field';
 import linkContextMenu from "src/options/linkContextMenu";
 import NoteFieldsCommandsModal from "src/options/NoteFieldsCommandsModal";
@@ -8,6 +10,7 @@ import FileClassAttributeSelectModal from 'src/fileClass/FileClassAttributeSelec
 import ValueSuggest from "src/suggester/MetadataSuggester";
 
 export default class MetadataMenu extends Plugin {
+	public api: IMetadataMenuApi;
 	public settings: MetadataMenuSettings;
 	public initialProperties: Array<Field> = [];
 	public settingTab: MetadataMenuSettingTab;
@@ -23,7 +26,7 @@ export default class MetadataMenu extends Plugin {
 			this.initialProperties.push(property);
 		});
 		this.addSettingTab(new MetadataMenuSettingTab(this.app, this));
-
+		this.api = new MetadataMenuApi(this).make();
 
 		this.addCommand({
 			id: "field_options",

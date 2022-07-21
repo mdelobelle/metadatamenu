@@ -4,7 +4,7 @@ import { fieldComponents, inlineFieldRegex } from "src/utils/parser";
 export async function replaceValues(app: App, file: TFile, attribute: string, input: string): Promise<void> {
     const content = await (await app.vault.cachedRead(file)).split('\n');
     const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
-    const { position: { start, end } } = frontmatter;
+    const { position: { start, end } } = frontmatter || null;
     const newContent = content.map((line, i) => {
         if (frontmatter && i >= start.line && i <= end.line) {
             const regex = new RegExp(`${attribute}:`, 'u');
