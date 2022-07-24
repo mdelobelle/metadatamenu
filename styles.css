@@ -144,3 +144,24 @@
     justify-content: space-between;
     margin-bottom: 20px;
 }
+
+/* dataview fields Styling */
+
+.metadata-menu-dv-field-button {
+    font-size: small;
+    padding: 0 6px 0 0;
+    margin-right: 6px;
+}
+
+.metadata-menu-dv-field-spacer {
+    width: 40px;
+}
+
+
+.metadata-menu-dv-field-container {
+    display: flex;
+}
+
+.metadata-menu-dv-input {
+    margin-right: 6px;
+}

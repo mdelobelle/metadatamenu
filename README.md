@@ -208,6 +208,35 @@ Takes a TFile containing the field, a string for the related field name, a new v
 
 This is an asynchronous function, so you should await it.
 
+`fieldWithMenu(dv: any, p: any, fieldName: string)`
+
+Takes a dataview api instance, a page and a field name and return a HTML element to modify the value of the field in the target note
+
+## Dataview field modifier with dataviewJS
+
+using `fieldWithMenu`function included in metadata-menu API, you can build modifiable fields within dataview table
+
+example
+
+```dataviewjs
+const {fieldWithMenu: _} = this.app.plugins.plugins["metadata-menu"].api // destruct metadata-menu api to use fieldWithMenu function and give an alias: "_"
+
+dv.table(["file", "status], dv.pages()
+.limit(10)
+.map(p => [
+    p.file.link, 
+    _(dv, p, "Status") // pass dv (dataview api instance), p (the page), and the field name to fieldWithMenu (: "-")
+    ])
+)
+```
+
+when hovering the field you will get a 🖍 button
+when clicking the button, an input field will replace the value. you can type a new value
+- type escape or click the ❌ button : the input will be replaced by the initial value
+- type enter or click the ✅ button: the initial value will be replaced by the input value in the target note and the inpu field will be replaced by the value
+
+
+
 
 ## Roadmap
 - [ ] manage indented lists multi-values frontmatter property
