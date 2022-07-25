@@ -52,9 +52,9 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             return null;
         };
         //@ts-ignore
-        const frontmatter = this.plugin.app.metadataCache.metadataCache[app.metadataCache.fileCache[file.path].hash].frontmatter;
+        const frontmatter = this.plugin.app.metadataCache.getFileCache(file).frontmatter;
 
-        this.inFrontmatter = frontmatter && frontmatter.position.start.line < cursor.line && cursor.line < frontmatter.position.end.line
+        this.inFrontmatter = frontmatter !== undefined && frontmatter.position.start.line < cursor.line && cursor.line < frontmatter.position.end.line
         const regex = this.inFrontmatter ? new RegExp(`^${genericFieldRegex}:(?<values>.*)`, "u") : new RegExp(`^${genericFieldRegex}::(?<values>.*)`, "u")
         const fullLine = editor.getLine(editor.getCursor().line)
         if (!regex.test(fullLine)) {

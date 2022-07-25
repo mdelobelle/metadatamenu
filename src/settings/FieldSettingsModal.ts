@@ -141,7 +141,8 @@ export default class FieldSettingsModal extends Modal {
             valueUpgradeButton.setButtonText("▲");
             valueUpgradeButton.onClick((evt: MouseEvent) => {
                 const thisValue = values[key];
-                const upperComponent = this.valuesPromptComponents[this.valuesPromptComponents.indexOf(input) - 1];
+                const inputIndex = this.valuesPromptComponents.indexOf(input)
+                const upperComponent = inputIndex !== -1 ? this.valuesPromptComponents[inputIndex - 1] : this.valuesPromptComponents.last();
                 if (upperComponent) {
                     const upperValue = upperComponent.inputEl.value;
                     const upperKey = Object.keys(values).filter(k => values[k] == upperValue)[0];
@@ -173,7 +174,7 @@ export default class FieldSettingsModal extends Modal {
 
         /* Property is Multi section*/
 
-        const multiContainer = mainDiv.createDiv({ cls: "metadata-menu-toggle"});
+        const multiContainer = mainDiv.createDiv({ cls: "metadata-menu-toggle" });
         this.isMultiTogglerComponent = this.createTogglerContainer(multiContainer, "Is Multi: ");
         this.isMultiTogglerComponent.setValue(this.property.isMulti);
         this.isMultiTogglerComponent.setTooltip("Can this property have multiple values?");
