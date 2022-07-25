@@ -58,7 +58,7 @@ class FileClassAttribute {
 
     public getField() {
         let values: Record<string, string> = {};
-        this.options.forEach((option, index) => {
+        this.options?.forEach((option, index) => {
             values[index] = option;
         })
         return new Field(this.name, values, this.name, this.isMulti, this.isCycle, this.isBoolean);
