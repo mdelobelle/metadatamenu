@@ -3,7 +3,7 @@ import Field from "src/Field";
 import { replaceValues } from "src/commands/replaceValues";
 import FieldSetting from "src/settings/FieldSetting";
 
-export default class valueToggleModal extends Modal {
+export default class valueSelectModal extends Modal {
 
     private file: TFile;
     private name: string;

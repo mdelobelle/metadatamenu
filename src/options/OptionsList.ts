@@ -2,7 +2,6 @@ import MetadataMenu from "main";
 import { App, TFile, Menu } from "obsidian";
 import valueMultiSelectModal from "src/optionModals/valueMultiSelectModal";
 import valueTextInputModal from "src/optionModals/valueTextInputModal";
-import valueToggleModal from "src/optionModals/valueToggleModal";
 import valueSelectModal from "src/optionModals/valueSelectModal";
 import Field from "src/Field";
 import chooseSectionModal from "../optionModals/chooseSectionModal";
@@ -232,18 +231,16 @@ export default class OptionsList {
 	};
 
 	private addToggleMenuOption(name: string, value: boolean): void {
-		const modal = new valueToggleModal(this.plugin.app, this.file, name, value);
-		modal.titleEl.setText(`Change Value for <${name}>`);
 		if (isMenu(this.category)) {
 			this.category.addItem((item) => {
-				item.setTitle(`Update <${name}>`);
+				item.setTitle(`<${name}> ${value ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);
 				item.setIcon('checkmark');
-				item.onClick((evt: MouseEvent) => { modal.open() });
+				item.onClick((evt: MouseEvent) => { replaceValues(this.plugin.app, this.file, name, (!value).toString()); });
 				item.setSection("target-metadata");
 			})
 		} else if (isSelect(this.category)) {
-			this.category.addOption(`update_${name}`, `Update <${name}>`);
-			this.category.modals[`update_${name}`] = () => modal.open();
+			this.category.addOption(`update_${name}`, `<${name}> ${value ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);
+			this.category.modals[`update_${name}`] = () => replaceValues(this.plugin.app, this.file, name, (!value).toString());;
 		};
 	};
 
@@ -269,7 +266,7 @@ export default class OptionsList {
 			const fileClassAttributesWithName = this.fileClass.attributes.filter(attr => attr.name == propertyName);
 			if (fileClassAttributesWithName.length > 0) {
 				const fileClassAttribute = fileClassAttributesWithName[0];
-				if (fileClassAttribute.options) {
+				if (fileClassAttribute.type) {
 					return fileClassAttribute.getField();
 				} else if (matchingSettings.length > 0) {
 					return matchingSettings[0];
