@@ -6,6 +6,7 @@ import FieldSetting from "src/settings/FieldSetting";
 export default class FieldSettingsModal extends Modal {
     private namePromptComponent: TextComponent;
     private valuesPromptComponents: Array<TextComponent> = [];
+    private isBooleanTogglerComponent: ToggleComponent;
     private isMultiTogglerComponent: ToggleComponent;
     private isCycleTogglerComponent: ToggleComponent;
     private saved: boolean = false;
@@ -171,6 +172,21 @@ export default class FieldSettingsModal extends Modal {
         this.namePromptComponent = this.createnameInputContainer(nameContainer);
 
         mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
+
+        /* Property is Boolean section */
+        const booleanContainer = mainDiv.createDiv({ cls: "metadata-menu-toggle" });
+        this.isBooleanTogglerComponent = this.createTogglerContainer(booleanContainer, "Is Boolean: ");
+        this.isBooleanTogglerComponent.setValue(this.property.isBoolean);
+        this.isBooleanTogglerComponent.setTooltip("Is this property true or false only?")
+        this.isBooleanTogglerComponent.onChange(value => {
+            this.property.isBoolean = value;
+            if ((this.property.isMulti || this.property.isCycle) && this.property.isBoolean) {
+                this.property.isMulti = false;
+                this.isMultiTogglerComponent.setValue(false);
+                this.property.isCycle = false;
+                this.isCycleTogglerComponent.setValue(false);
+            }
+        })
 
         /* Property is Multi section*/
 

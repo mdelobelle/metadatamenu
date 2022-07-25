@@ -21,8 +21,16 @@ export default class FieldSetting extends Setting {
     };
 
     private setTextContentWithname(): void {
+        const values = !this.property.isBoolean ? `[${Object.keys(this.property.values).map(k => this.property.values[k]).join(', ')}]` : ""
+        let type = "single"
+        if (this.property.isBoolean) type = "boolean"
+        if (this.property.isMulti) type = "multi"
+        if (this.property.isCycle) type = "cycle"
         this.infoEl.textContent =
-            `${this.property.name}: [${Object.keys(this.property.values).map(k => this.property.values[k]).join(', ')}]`;
+            `${this.property.name}: ${values}`;
+        const typeContainer = this.infoEl.createEl("span", `metadata-menu-setting-item-info-type ${type}`)
+        typeContainer.setText(type)
+
     };
 
 

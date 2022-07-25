@@ -4,6 +4,7 @@ interface Field {
     values: Record<string, string>;
     isCycle: boolean;
     isMulti: boolean;
+    isBoolean: boolean;
     valuesListNotePath: string;
 }
 
@@ -14,10 +15,12 @@ class Field {
         id: string = "",
         isMulti: boolean = false,
         isCycle: boolean = false,
+        isBoolean: boolean = false,
         valuesListNotePath: string = "") {
         this.name = name;
         this.values = values;
         this.id = id;
+        this.isBoolean = isBoolean
         this.isCycle = isCycle;
         this.isMulti = isMulti;
         this.valuesListNotePath = valuesListNotePath;
@@ -38,6 +41,7 @@ class Field {
     static copyProperty(target: Field, source: Field) {
         target.id = source.id;
         target.name = source.name;
+        target.isBoolean = source.isBoolean
         target.isCycle = source.isCycle;
         target.isMulti = source.isMulti;
         target.valuesListNotePath = source.valuesListNotePath;
