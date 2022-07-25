@@ -64,12 +64,12 @@ class FileClassAttributeModal extends Modal {
         const optionsInput = new TextAreaComponent(optionsInputContainer);
         optionsInput.inputEl.rows = 3;
         optionsInput.inputEl.cols = 26;
-        this.attr ? optionsInput.setValue(this.type == "input" ? "" : this.options.join(", ")) : optionsInput.setPlaceholder("insert values, comma separated");
-        !this.attr || this.type == "input" ? optionsInputContainer.hide() : optionsInputContainer.show();
+        this.attr ? optionsInput.setValue(this.type == "input" || this.type == "boolean" ? "" : this.options.join(", ")) : optionsInput.setPlaceholder("insert values, comma separated");
+        !this.attr || this.type == "input" || this.type == "boolean" ? optionsInputContainer.hide() : optionsInputContainer.show();
 
         // event handlers
         typeSelect.onChange(type => {
-            type == "input" ? optionsInputContainer.hide() : optionsInputContainer.show();
+            type == "input" || type == "boolean" ? optionsInputContainer.hide() : optionsInputContainer.show();
             this.type = type;
         })
         optionsInput.onChange(value => this.options = value.split(",").map(item => item.trim()));
