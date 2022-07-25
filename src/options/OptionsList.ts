@@ -129,7 +129,7 @@ export default class OptionsList {
 		Object.keys(attributes).forEach((key: string) => {
 			const value = attributes[key];
 			const propertySettings = this.getPropertySettings(key);
-			if (propertySettings?.values) {
+			if (propertySettings?.values && !propertySettings?.isBoolean) {
 				if (propertySettings.isCycle) {
 					this.addCycleMenuOption(key, value, propertySettings);
 				} else if (propertySettings.isMulti) {
@@ -137,7 +137,7 @@ export default class OptionsList {
 				} else {
 					this.addSelectMenuOption(key, value, propertySettings);
 				};
-			} else if (isBoolean(value) || /true/i.test(value) || /false/i.test(value)) {
+			} else if (propertySettings?.isBoolean) {
 				let toBooleanValue: boolean = false;
 				if (isBoolean(value)) {
 					toBooleanValue = value;
