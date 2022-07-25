@@ -7,13 +7,15 @@ interface FileClassAttribute {
     options: string[];
     isMulti: boolean;
     isCycle: boolean;
+    isBoolean: boolean;
 }
 
 const types: Record<string, string> = {
-    "input": "Accepts any value",
-    "select": "Accepts a single value from a list",
-    "multi": "Accepts multiple values from a list",
-    "cycle": "Cycle through values from a list"
+    "input": "Accept any value",
+    "select": "Accept a single value from a list",
+    "multi": "Accept multiple values from a list",
+    "cycle": "Cycle through values from a list",
+    "boolean": "Accept true of false"
 }
 
 class FileClassAttribute {
@@ -30,7 +32,7 @@ class FileClassAttribute {
             fieldName = attribute
         }
         if (fieldName) {
-            this.name = attribute.trim();
+            this.name = fieldName.trim();
             if (fieldSettings) {
                 const settings = JSON.parse(`${fieldSettings.trim()}`);
                 this.type = settings['type'];
@@ -41,6 +43,8 @@ class FileClassAttribute {
                     case "cycle":
                         this.isCycle = true;
                         break;
+                    case "boolean":
+                        this.isBoolean = true
                     default:
                         break;
                 }
@@ -57,7 +61,7 @@ class FileClassAttribute {
         this.options.forEach((option, index) => {
             values[index] = option;
         })
-        return new Field(this.name, values, this.name, this.isMulti, this.isCycle);
+        return new Field(this.name, values, this.name, this.isMulti, this.isCycle, this.isBoolean);
     }
 }
 
