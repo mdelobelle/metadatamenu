@@ -3,6 +3,7 @@ import MetadataMenu from "main";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import Field from "src/Field";
 import FieldSetting from "src/settings/FieldSetting";
+import { copyFileSync } from "fs";
 
 class SettingsMigrationConfirmModal extends Modal {
 
@@ -66,13 +67,21 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 	display(): void {
 		let { containerEl } = this;
-
 		containerEl.empty();
 
-		containerEl.createEl('h4', { text: 'Settings' });
-
+		/* 
+		-----------------------------------------
+		Global Settings 
+		-----------------------------------------
+		*/
+		const globalSettings = containerEl.createEl('div')
+		globalSettings.createEl('h4', { text: 'Global settings', cls: "metadata-menu-setting-section-header" });
+		globalSettings.createEl('div', {
+			cls: "setting-item-description metadata-menu-setting-section-desc",
+			text: "Global settings to apply to your whole vault"
+		})
 		// Managing choice whether you get attributes from inline fields and frontmatter or only frontmater
-		new Setting(containerEl)
+		new Setting(globalSettings)
 			.setName('Search for attribute in Inline fields like <field::>')
 			.setDesc('Sets the `data-link-<field>`-attribute to the value of inline fields')
 			.addToggle(toggle => {
@@ -83,9 +92,8 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				});
 			});
 
-		/* Managing predefined values for properties */
 		/* Manage menu options display*/
-		new Setting(containerEl)
+		new Setting(globalSettings)
 			.setName("Display field options in context menu")
 			.setDesc("Choose to show or hide fields options in the context menu of a link or a file")
 			.addToggle((toggle: ToggleComponent) => {
@@ -96,8 +104,8 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				});
 			});
 		/* Exclude Fields from context menu*/
-		new Setting(containerEl)
-			.setName('Ignored fields')
+		new Setting(globalSettings)
+			.setName('Globally ignored fields')
 			.setDesc('Fields to be ignored by the plugin when adding options to the context menu')
 			.addTextArea((text) => {
 				text
@@ -111,8 +119,52 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				text.inputEl.cols = 25;
 			});
 
+		/* 
+		-----------------------------------------
+		Managing predefined values for properties 
+		-----------------------------------------
+		*/
+		/* Add new property for which we want to preset values*/
+		const presetFieldsSettings = containerEl.createEl("div")
+		presetFieldsSettings.createEl('h4', { text: 'Preset Fields settings', cls: "metadata-menu-setting-section-header" });
+		presetFieldsSettings.createEl('div', {
+			cls: "setting-item-description metadata-menu-setting-section-desc",
+			text: "Manage globally predefined type and values for a field throughout your whole vault"
+		})
+		new Setting(presetFieldsSettings)
+			.setName("Add New Property Manager")
+			.setDesc("Add a new Frontmatter property for which you want preset values.")
+			.addButton((button: ButtonComponent): ButtonComponent => {
+				return button
+					.setTooltip("Add New Property Manager")
+					.setButtonText("+")
+					.onClick(async () => {
+						let modal = new FieldSettingsModal(this.app, this.plugin, presetFieldsSettings);
+						modal.open();
+					});
+			});
+
+		/* Managed properties that currently have preset values */
+		this.plugin.initialProperties.forEach(prop => {
+			const property = new Field();
+			Object.assign(property, prop);
+			new FieldSetting(presetFieldsSettings, property, this.app, this.plugin);
+		});
+
+		/* 
+		-----------------------------------------
+		Managing fileClass 
+		-----------------------------------------
+		*/
 		/* Set classFiles Path*/
-		new Setting(containerEl)
+		const classFilesSettings = containerEl.createEl("div")
+		classFilesSettings.createEl('h4', { text: 'FileClass settings', cls: "metadata-menu-setting-section-header" });
+		classFilesSettings.createEl('div', {
+			cls: "setting-item-description metadata-menu-setting-section-desc",
+			text: "Manage fileClass folder and alias. " +
+				"When a note has a fielClass defined, fileClass field properties will override global preset fields settings for the same field name"
+		})
+		new Setting(classFilesSettings)
 			.setName('class Files path')
 			.setDesc('Path to the files containing the authorized fields for a type of note')
 			.addText((text) => {
@@ -126,7 +178,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			});
 
 		/* Set fileClass alias*/
-		new Setting(containerEl)
+		new Setting(classFilesSettings)
 			.setName('fileClass field alias')
 			.setDesc('Choose another name for fileClass field in frontmatter (example: Category, type, ...')
 			.addText((text) => {
@@ -138,31 +190,16 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					});
 			});
 
-		/* Add new property for which we want to preset values*/
-		new Setting(containerEl)
-			.setName("Add New Property Manager")
-			.setDesc("Add a new Frontmatter property for which you want preset values.")
-			.addButton((button: ButtonComponent): ButtonComponent => {
-				return button
-					.setTooltip("Add New Property Manager")
-					.setButtonText("+")
-					.onClick(async () => {
-						let modal = new FieldSettingsModal(this.app, this.plugin, containerEl);
-						modal.open();
-					});
-			});
-
-		/* Managed properties that currently have preset values */
-		this.plugin.initialProperties.forEach(prop => {
-			const property = new Field();
-			Object.assign(property, prop);
-			new FieldSetting(containerEl, property, this.app, this.plugin);
-		});
-
-		containerEl.createEl('h4', { text: 'Migrate' });
+		/* 
+		-----------------------------------------
+		Migration settings 
+		-----------------------------------------
+		*/
+		const migrateSettings = containerEl.createEl("div")
+		migrateSettings.createEl('h4', { text: 'Migrate' });
 
 		/* Add new property for which we want to preset values*/
-		new Setting(containerEl)
+		new Setting(migrateSettings)
 			.setName("Copy settings from supercharged links plugin")
 			.setDesc("Copy settings from supercharged links plugin")
 			.addButton((button: ButtonComponent): ButtonComponent => {
