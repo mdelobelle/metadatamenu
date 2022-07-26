@@ -24,6 +24,8 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     private fileClass: FileClass;
     private inFrontmatter: boolean = false;
     private didSelect: boolean = false
+    private metaStart = null;
+    private metaEnd = null;
 
     constructor(app: App, plugin: MetadataMenu) {
         super(app);
@@ -55,8 +57,8 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         const frontmatter = this.plugin.app.metadataCache.getFileCache(file).frontmatter;
 
         this.inFrontmatter = frontmatter !== undefined && frontmatter.position.start.line < cursor.line && cursor.line < frontmatter.position.end.line
-        const regex = this.inFrontmatter ? new RegExp(`^${genericFieldRegex}:(?<values>.*)`, "u") : new RegExp(`^${genericFieldRegex}::(?<values>.*)`, "u")
-        const fullLine = editor.getLine(editor.getCursor().line)
+		const regex = this.inFrontmatter ? new RegExp(`^${genericFieldRegex}:(?<values>.*)`, "u") : new RegExp(`::\\s`, "u");
+		const fullLine = editor.getLine(editor.getCursor().line)
         if (!regex.test(fullLine)) {
             return null
         }
@@ -83,12 +85,29 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         const line = context.start.line;
         let regex;
         if (!this.inFrontmatter) {
-            regex = new RegExp(`^${genericFieldRegex}::(?<values>.+)?`, "u");
+            regex = new RegExp(`^${genericFieldRegex}::(?<values>[^\\]\\)\r]+[\\]\\)]?)?`, "u");
         } else {
             regex = new RegExp(`^${genericFieldRegex}:(?<values>.+)?`, "u");
         };
-        const regexResult = context.editor.getRange({ line: line, ch: 0 }, context.end).match(regex);
-
+		const lineLength = context.query.length;
+		const character = context.start.ch;
+		const currentRegex = null;
+		for(let i = 0; i <= lineLength; i++){
+			if(context.editor.getRange({ line, ch: (character-i) }, context.end).match(regex)){
+			  if(!context.editor.getRange({ line, ch: (character-i-1) }, context.end).match(regex)){
+				this.metaStart = character-i;
+				break;
+			  }
+			}
+		}
+		for(let i = lineLength; i > 0; i--){
+			if(context.editor.getRange({ line, ch: this.metaStart }, {line, ch: i }).match(regex) && context.editor.getRange({ line, ch: this.metaStart }, {line, ch: (i-1)}).match(regex) && context.editor.getRange({ line, ch: this.metaStart }, {line, ch: i }).match(regex)[0] != context.editor.getRange({ line, ch: this.metaStart }, {line, ch: (i-1)}).match(regex)[0]){
+				this.metaEnd = i-1;
+				break;
+			}
+		}
+		const regexResult = context.editor.getRange({ line, ch: this.metaStart }, {line, ch: this.metaEnd }).match(regex);
+		
         if (regexResult && regexResult.groups?.attribute) {
             const fieldName = regexResult.groups.attribute;
             const valuesList = regexResult.groups.values?.replace(/^\[|^\s\[/, '').replace(/\]$/, '').split(",").map(o => o.trim())
@@ -165,7 +184,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             return;
         };
         const editor = activeView.editor;
-        const activeLine = editor.getLine(this.context!.start.line);
+        const activeLine = editor.getRange({ line: this.context.start.line, ch: this.metaStart }, {line: this.context.start.line, ch: this.metaEnd});
 
         if (this.inFrontmatter) {
             //format list if in frontmatter
@@ -211,7 +230,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 cleanedLine = cleanedLine.slice(0, -1)
             }
             editor.replaceRange(`${cleanedLine}${event.shiftKey ? " " : ""}` + suggestion.value,
-                { line: this.context!.start.line, ch: 0 }, this.context!.end);
+				{ line: this.context.start.line, ch: this.metaStart }, {line: this.context.start.line, ch: this.metaEnd});
         }
         this.didSelect = true
         this.close()
