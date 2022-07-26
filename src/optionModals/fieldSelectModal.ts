@@ -37,7 +37,6 @@ export default class fieldSelectModal extends Modal {
         const settingsSelector = new DropdownComponent(settingsDropdownContainer);
         settingsSelector.addOption("---", "Choose Field");
         settingsSelector.addOption("++New", "New");
-        //TODO: if fileClass: propose fileClass attributes
         if (this.fileClass) {
             this.fileClass.attributes.forEach(attr => {
                 settingsSelector.addOption(attr.name, attr.name);
