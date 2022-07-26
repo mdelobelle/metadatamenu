@@ -168,6 +168,13 @@
     background-color: #5e81ac;
 }
 
+.metadata-menu-setting-section-header{
+    margin-bottom: 0;
+}
+
+.metadata-menu-setting-section-desc{
+    margin-bottom: 1.33em;
+}
 
 /* dataview fields Styling */
 
