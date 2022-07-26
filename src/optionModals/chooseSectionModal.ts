@@ -1,16 +1,19 @@
 import { Modal, DropdownComponent, TFile } from "obsidian";
 import fieldSelectModal from "./fieldSelectModal";
 import MetadataMenu from "main";
+import { FileClass } from "src/fileClass/fileClass";
 
 export default class chooseSectionModal extends Modal {
 
     private plugin: MetadataMenu;
     private file: TFile;
+    private fileClass?: FileClass
 
-    constructor(plugin: MetadataMenu, file: TFile) {
+    constructor(plugin: MetadataMenu, file: TFile, fileClass?: FileClass) {
         super(plugin.app);
         this.file = file;
         this.plugin = plugin;
+        this.fileClass = fileClass
     };
 
     async onOpen() {
@@ -51,7 +54,7 @@ export default class chooseSectionModal extends Modal {
             const lineNumber = Number(valueArray && valueArray.length > 1 ? valueArray[2] : 0);
             const inFrontmatter = position == "frontmatter" ? true : false;
             const top = position == "top" ? true : false;
-            const modal = new fieldSelectModal(this.plugin, this.file, lineNumber, result.split('\n')[lineNumber], inFrontmatter, top);
+            const modal = new fieldSelectModal(this.plugin, this.file, lineNumber, result.split('\n')[lineNumber], inFrontmatter, top, this.fileClass);
             this.close();
             modal.open();
         });

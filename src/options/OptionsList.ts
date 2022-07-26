@@ -76,25 +76,24 @@ export default class OptionsList {
 					await this.createExtraOptionsListForFrontmatter(attributes,)
 					await this.createExtraOptionsListForInlineFields(this.file, fileClassForFields, fileClassFields)
 					if (isMenu(this.category)) { this.category.addSeparator() };
-					this.addSectionSelectModalOption(this.plugin);
+					this.addSectionSelectModalOption();
 				} catch (error) {
 					await this.createExtraOptionsListForFrontmatter(attributes)
 					await this.createExtraOptionsListForInlineFields(this.file)
 					if (isMenu(this.category)) { this.category.addSeparator(); };
-					this.addSectionSelectModalOption(this.plugin);
+					this.addSectionSelectModalOption();
 				};
 			} else {
 				await this.createExtraOptionsListForFrontmatter(attributes)
 				await this.createExtraOptionsListForInlineFields(this.file)
 				if (isMenu(this.category)) { this.category.addSeparator(); };
-				this.addSectionSelectModalOption(this.plugin);
+				this.addSectionSelectModalOption();
 			};
 		} else {
 			await this.createExtraOptionsListForInlineFields(this.file)
 			if (isMenu(this.category)) { this.category.addSeparator(); };
-			this.addSectionSelectModalOption(this.plugin);
+			this.addSectionSelectModalOption();
 		};
-
 	};
 
 	private async createExtraOptionsListForInlineFields(file: TFile, fileClassForFields: boolean = false, fileClassFields: string[] = []): Promise<void> {
@@ -152,8 +151,8 @@ export default class OptionsList {
 		});
 	};
 
-	private addSectionSelectModalOption(plugin: MetadataMenu): void {
-		const modal = new chooseSectionModal(this.plugin, this.file);
+	private addSectionSelectModalOption(): void {
+		const modal = new chooseSectionModal(this.plugin, this.file, this.fileClass);
 		if (isMenu(this.category)) {
 			this.category.addItem((item) => {
 				item.setIcon("pencil");

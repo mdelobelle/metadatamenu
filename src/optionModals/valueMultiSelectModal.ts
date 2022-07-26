@@ -63,14 +63,15 @@ export default class valueMultiSelectModal extends Modal {
             } else {
                 const result = await this.app.vault.read(this.file)
                 let newContent: string[] = [];
+                const renderedValues = !this.inFrontmatter ? this.values.join(",") : this.values.length > 1 ? `[${this.values.join(",")}]` : this.values
                 if (this.top) {
-                    newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${this.values.join(",")}`);
+                    newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${renderedValues}`);
                     result.split("\n").forEach((line, _lineNumber) => newContent.push(line));
                 } else {
                     result.split("\n").forEach((line, _lineNumber) => {
                         newContent.push(line);
                         if (_lineNumber == this.lineNumber) {
-                            newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${this.values.join(",")}`);
+                            newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${renderedValues}`);
                         };
                     });
                 };
