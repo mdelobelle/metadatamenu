@@ -2,13 +2,13 @@ import { App, TFile } from "obsidian"
 import MetadataMenu from "main"
 import { getValues } from "./commands/getValues";
 import { replaceValues } from "./commands/replaceValues";
-import { fieldWithMenu } from "./commands/fieldWithMenu";
+import { fieldModifier } from "./commands/fieldModifier";
 
 
 export interface IMetadataMenuApi {
     getValues: (app: App, file: TFile, attribute: string) => Promise<string[]>;
     replaceValues: (app: App, file: TFile, attribute: string, input: string) => Promise<void>;
-    fieldWithMenu: (dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }) => HTMLElement;
+    fieldModifier: (dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }) => Promise<HTMLElement>;
 }
 
 export class MetadataMenuApi {
@@ -19,7 +19,7 @@ export class MetadataMenuApi {
         return {
             getValues: this.getValues(),
             replaceValues: this.replaceValues(),
-            fieldWithMenu: this.fieldWithMenu()
+            fieldModifier: this.fieldModifier()
         };
     }
 
@@ -31,7 +31,7 @@ export class MetadataMenuApi {
         return async (app: App, file: TFile, attribute: string, input: string) => replaceValues(app, file, attribute, input)
     }
 
-    private fieldWithMenu(): (dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }) => HTMLElement {
-        return (dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }) => fieldWithMenu(this.plugin, dv, p, fieldName, attrs)
+    private fieldModifier(): (dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }) => Promise<HTMLElement> {
+        return (dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }) => fieldModifier(this.plugin, dv, p, fieldName, attrs)
     }
 }

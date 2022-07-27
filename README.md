@@ -3,6 +3,13 @@ This plugin adds context menu items to modifiy target note's frontmatter propert
 The preset values for those properties can be managed globally in the plugin's settings or on a file-by-file basis thanks to fileClass definition
 It also enables frontmatter of inline-field autocompletion with suggested values based on preset values.
 
+---
+## **BREAKING CHANGE IN 0.1.3**
+The recently added feature "fieldWithMenu" has been replaced by "fieldModifyer"
+This feature enables to modify the value of a YAML property or a dv inline field directly from a dataview table
+It is now async so it should be awaited (see section "Dataview field modifier with dataviewJS" below)
+
+---
 
 ## Field autocompletion
 type ":" after a field in frontmatter, or "::" after an inline-field to trigger the autocompletion
@@ -32,8 +39,7 @@ https://youtu.be/qhtPKstdnhI
 ### Update boolean property
 
 1. Right-click on the link
-1. Toggle the swith in the modal to change the value 
-1. Press `esc` to leave the modal
+1. Click on `✅ ▷ ❌` or `❌ ▷ ✅` depending on the value of the boolean to change the value
 
 demo: 
 https://youtu.be/iwL-HqvoNOs
@@ -164,6 +170,7 @@ Type can be one of:
 - "select" : this field can take one value out of a list of items preset in options (see below)
 - "multi" : this field can take 0,1 or multiple values out of a list of items preset in options (see below)
 - "cycle" : this field can take one value that can "progress" within a list of items preset in options (see below)
+- "boolean": this field can be true or false
 
 Options is an array of options
 
@@ -194,6 +201,8 @@ https://youtu.be/U0Bo_x1B2TM
 
 API is accessible with `app.plugins.plugins["metadata-menu"].api`
 
+### getValues
+
 `getValues(app: App, file: TFile, attribute: string)`
 
 Takes a TFile containing the field and a string for the related field name
@@ -202,31 +211,37 @@ Returns an array with the values of the field
 
 This is an asynchronous function, so you should await it.
 
+### replaceValues
 `replaceValues(app: App, file: TFile, attribute: string, input: string)`
 
 Takes a TFile containing the field, a string for the related field name, a new value for this field and updates the field with the new value
 
 This is an asynchronous function, so you should await it.
 
-`fieldWithMenu(dv: any, p: any, fieldName: string)`
+`fieldModifier(dv: any, p: any, fieldName: string)`
 
 Takes a dataview api instance, a page and a field name and return a HTML element to modify the value of the field in the target note
+This is async and should be awaited
 
 ## Dataview field modifier with dataviewJS
 
-using `fieldWithMenu`function included in metadata-menu API, you can build modifiable fields within dataview table
+using `fieldModifier`function included in metadata-menu API, you can build modifiable fields within dataview table
 
 example
 
 ```dataviewjs
-const {fieldWithMenu: _} = this.app.plugins.plugins["metadata-menu"].api // destruct metadata-menu api to use fieldWithMenu function and give an alias: "_"
+const {fieldModifier: f} = this.app.plugins.plugins["metadata-menu"].api // destruct metadata-menu api to use fieldWithMeby function and give an alias: "_"
 
-dv.table(["file", "status], dv.pages()
-.limit(10)
-.map(p => [
-    p.file.link, 
-    _(dv, p, "Status") // pass dv (dataview api instance), p (the page), and the field name to fieldWithMenu (: "-")
-    ])
+dv.table(["file", "status", "started"], 
+    await Promise.all(                // await all modifier to resolve their promise
+        dv.pages()
+        .limit(10)
+        .map(p => [
+            p.file.link, 
+            await f(dv, p, "status")  // pass dv (dataview api instance), p (the page), and the field name to fieldModifier (: "f")
+            await f(dv, p, "started") // pass dv (dataview api instance), p (the page), and the field name to fieldModifier (: "f")
+            ])
+    )
 )
 ```
 

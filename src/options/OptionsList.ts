@@ -8,6 +8,7 @@ import chooseSectionModal from "../optionModals/chooseSectionModal";
 import SelectModal from "src/optionModals/SelectModal";
 import { createFileClass, FileClass } from "src/fileClass/fileClass";
 import { replaceValues } from "../commands/replaceValues";
+import { getPropertySettings } from "src/commands/getPropertySettings";
 import FileClassAttributeSelectModal from "src/fileClass/FileClassAttributeSelectModal";
 import { genericFieldRegex } from "../utils/parser";
 
@@ -126,7 +127,7 @@ export default class OptionsList {
 	buildExtraOptionsList(attributes: Record<string, string>) {
 		Object.keys(attributes).forEach((key: string) => {
 			const value = attributes[key];
-			const propertySettings = this.getPropertySettings(key);
+			const propertySettings = getPropertySettings(this.plugin, key, this.fileClass);
 			if (propertySettings?.values && !propertySettings?.isBoolean) {
 				if (propertySettings.isCycle) {
 					this.addCycleMenuOption(key, value, propertySettings);
@@ -256,23 +257,6 @@ export default class OptionsList {
 		} else if (isSelect(this.category)) {
 			this.category.addOption(`update_${name}`, `Update <${name}>`);
 			this.category.modals[`update_${name}`] = () => modal.open();
-		};
-	};
-
-	private getPropertySettings(propertyName: string): Field | undefined {
-		const matchingSettings = this.plugin.settings.presetFields.filter(p => p.name == propertyName);
-		if (this.fileClass) {
-			const fileClassAttributesWithName = this.fileClass.attributes.filter(attr => attr.name == propertyName);
-			if (fileClassAttributesWithName.length > 0) {
-				const fileClassAttribute = fileClassAttributesWithName[0];
-				if (fileClassAttribute.type) {
-					return fileClassAttribute.getField();
-				} else if (matchingSettings.length > 0) {
-					return matchingSettings[0];
-				};
-			}
-		} else if (matchingSettings.length > 0) {
-			return matchingSettings[0];
 		};
 	};
 };
