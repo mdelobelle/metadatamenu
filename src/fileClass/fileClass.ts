@@ -1,6 +1,7 @@
 import { FileClassAttribute } from "./fileClassAttribute";
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
+import { FieldType } from "src/types/fieldTypes";
 
 interface FileClass {
     plugin: MetadataMenu;
@@ -97,15 +98,15 @@ class FileClass {
         }
     }
 
-    public async updateAttribute(newType: string, newOptions: string[], newName: string, attr?: FileClassAttribute): Promise<void> {
+    public async updateAttribute(newType: keyof typeof FieldType, newOptions: string[], newName: string, attr?: FileClassAttribute): Promise<void> {
         const file = this.getClassFile();
         let result = await this.plugin.app.vault.read(file)
         if (attr) {
             let newContent: string[] = [];
             result.split('\n').forEach(line => {
                 if (line.startsWith(attr.name)) {
-                    if (newType == "input") {
-                        newContent.push(newName);
+                    if (newType == "Input") {
+                        newContent.push(`${newName}:: {"type": "Input"}`);
                     } else {
                         let settings: Record<string, any> = {};
                         settings["type"] = newType;

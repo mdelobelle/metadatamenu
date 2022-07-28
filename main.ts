@@ -4,10 +4,12 @@ import { MetadataMenuSettings, DEFAULT_SETTINGS } from "src/settings/MetadataMen
 import type { IMetadataMenuApi } from 'src/MetadataMenuApi';
 import { MetadataMenuApi } from 'src/MetadataMenuApi';
 import Field from 'src/Field';
+import { FieldType } from 'src/types/fieldTypes';
 import linkContextMenu from "src/options/linkContextMenu";
 import NoteFieldsCommandsModal from "src/options/NoteFieldsCommandsModal";
 import FileClassAttributeSelectModal from 'src/fileClass/FileClassAttributeSelectModal';
 import ValueSuggest from "src/suggester/MetadataSuggester";
+import { migrateSettingsV1toV2 } from 'src/settings/migrateSettingV1toV2';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -18,7 +20,9 @@ export default class MetadataMenu extends Plugin {
 	async onload(): Promise<void> {
 		console.log('Metadata Menu loaded');
 		await this.loadSettings();
-		this.registerEditorSuggest(new ValueSuggest(this.app, this));
+		if (this.settings.settingsVersion === undefined) {
+			await migrateSettingsV1toV2(this)
+		}
 
 		this.settings.presetFields.forEach(prop => {
 			const property = new Field();
@@ -26,6 +30,8 @@ export default class MetadataMenu extends Plugin {
 			this.initialProperties.push(property);
 		});
 		this.addSettingTab(new MetadataMenuSettingTab(this.app, this));
+
+		this.registerEditorSuggest(new ValueSuggest(this.app, this));
 		this.api = new MetadataMenuApi(this).make();
 
 		this.addCommand({

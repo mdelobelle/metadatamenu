@@ -1,24 +1,24 @@
-import { App, Modal, Setting, TextComponent, Notice, ButtonComponent, ExtraButtonComponent, ToggleComponent } from "obsidian";
+import { App, Modal, Setting, TextComponent, Notice, ButtonComponent, ExtraButtonComponent, DropdownComponent } from "obsidian";
 import MetadataMenu from "main";
 import Field from "src/Field";
+import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 import FieldSetting from "src/settings/FieldSetting";
 
 export default class FieldSettingsModal extends Modal {
     private namePromptComponent: TextComponent;
     private valuesPromptComponents: Array<TextComponent> = [];
-    private isBooleanTogglerComponent: ToggleComponent;
-    private isMultiTogglerComponent: ToggleComponent;
-    private isCycleTogglerComponent: ToggleComponent;
+    private typeSelectComponent: DropdownComponent;
+    private presetValuesFields: HTMLDivElement;
     private saved: boolean = false;
     private property: Field;
     private plugin: MetadataMenu;
     private initialProperty: Field;
-    private parentSetting?: Setting;
+    private parentSetting?: FieldSetting;
     private new: boolean = true;
     private parentSettingContainer: HTMLElement;
 
 
-    constructor(app: App, plugin: MetadataMenu, parentSettingContainer: HTMLElement, parentSetting?: Setting, property?: Field) {
+    constructor(app: App, plugin: MetadataMenu, parentSettingContainer: HTMLElement, parentSetting?: FieldSetting, property?: Field) {
         super(app);
         this.plugin = plugin;
         this.parentSetting = parentSetting;
@@ -57,8 +57,7 @@ export default class FieldSettingsModal extends Modal {
     onClose(): void {
         Object.assign(this.property, this.initialProperty);
         if (!this.new && this.parentSetting) {
-            this.parentSetting.infoEl.textContent =
-                `${this.property.name}: [${Object.keys(this.property.values).map(k => this.property.values[k]).join(', ')}]`;
+            this.parentSetting.setTextContentWithname()
         } else if (this.saved) {
             new FieldSetting(this.parentSettingContainer, this.property, this.app, this.plugin);
         };
@@ -67,6 +66,21 @@ export default class FieldSettingsModal extends Modal {
     private setValueListText(header: HTMLDivElement): void {
         header.setText(`Preset values: ${Object.values(this.property.values).join(', ')}`);
     };
+
+    private createTypeSelectorContainer(parentNode: HTMLDivElement): DropdownComponent {
+        const typeSelectorContainerLabel = parentNode.createDiv();
+        typeSelectorContainerLabel.setText(`Property type:`);
+        const select = new DropdownComponent(parentNode);
+        Object.keys(FieldTypeLabelMapping).forEach(f => select.addOption(f, f))
+        if (this.property.type) {
+            select.setValue(this.property.type)
+        }
+        select.onChange((typeLabel: keyof typeof FieldType) => {
+            this.property.type = FieldTypeLabelMapping[typeLabel];
+            [FieldType.Multi, FieldType.Cycle, FieldType.Select].contains(this.property.type) ? this.presetValuesFields.show() : this.presetValuesFields.hide()
+        })
+        return select
+    }
 
     private createnameInputContainer(parentNode: HTMLDivElement): TextComponent {
         const propertyNameContainerLabel = parentNode.createDiv();
@@ -81,15 +95,6 @@ export default class FieldSettingsModal extends Modal {
             FieldSettingsModal.removeValidationError(input);
         });
         return input;
-    };
-
-    private createTogglerContainer(parentNode: HTMLDivElement, label: string): ToggleComponent {
-        parentNode.addClass("metadata-menu-toggle")
-        const propertyContainerLabel = parentNode.createDiv({ cls: 'frontmatter-checkbox-toggler' });
-
-        propertyContainerLabel.setText(label);
-        const toggler = new ToggleComponent(parentNode);
-        return toggler;
     };
 
     private createListNoteContainer(parentNode: HTMLDivElement): TextComponent {
@@ -173,60 +178,23 @@ export default class FieldSettingsModal extends Modal {
 
         mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
 
-        /* Property is Boolean section */
-        const booleanContainer = mainDiv.createDiv({ cls: "metadata-menu-toggle" });
-        this.isBooleanTogglerComponent = this.createTogglerContainer(booleanContainer, "Is Boolean: ");
-        this.isBooleanTogglerComponent.setValue(this.property.isBoolean);
-        this.isBooleanTogglerComponent.setTooltip("Is this property true or false only?")
-        this.isBooleanTogglerComponent.onChange(value => {
-            this.property.isBoolean = value;
-            if ((this.property.isMulti || this.property.isCycle) && this.property.isBoolean) {
-                this.property.isMulti = false;
-                this.isMultiTogglerComponent.setValue(false);
-                this.property.isCycle = false;
-                this.isCycleTogglerComponent.setValue(false);
-            }
-        })
+        /* Property type selection */
+        const typeSelectContainer = mainDiv.createDiv()
+        this.typeSelectComponent = this.createTypeSelectorContainer(typeSelectContainer)
 
-        /* Property is Multi section*/
-
-        const multiContainer = mainDiv.createDiv({ cls: "metadata-menu-toggle" });
-        this.isMultiTogglerComponent = this.createTogglerContainer(multiContainer, "Is Multi: ");
-        this.isMultiTogglerComponent.setValue(this.property.isMulti);
-        this.isMultiTogglerComponent.setTooltip("Can this property have multiple values?");
-        this.isMultiTogglerComponent.onChange(value => {
-            this.property.isMulti = value;
-            if (this.property.isCycle && this.property.isMulti) {
-                this.property.isCycle = false;
-                this.isCycleTogglerComponent.setValue(false);
-            };
-        });
-
-        /* Property is Cycle section*/
-
-        const cycleContainer = mainDiv.createDiv();
-        this.isCycleTogglerComponent = this.createTogglerContainer(cycleContainer, "Is Cycle: ");
-        this.isCycleTogglerComponent.setValue(this.property.isCycle);
-        this.isCycleTogglerComponent.setTooltip("Is this property's values set in cycle mode?");
-        this.isCycleTogglerComponent.onChange(value => {
-            this.property.isCycle = value;
-            if (this.property.isCycle && this.property.isMulti) {
-                this.property.isMulti = false;
-                this.isMultiTogglerComponent.setValue(false);
-            };
-        });
-
-        mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
+        /* preset values for multi & cycle */
+        this.presetValuesFields = mainDiv.createDiv()
+        this.presetValuesFields.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
 
         /* Property's note for list of Values */
 
-        const listNotePathContainer = mainDiv.createDiv();
+        const listNotePathContainer = this.presetValuesFields.createDiv();
         this.createListNoteContainer(listNotePathContainer);
 
-        mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
+        this.presetValuesFields.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
 
         /* Property Values */
-        const valuesList = mainDiv.createDiv();
+        const valuesList = this.presetValuesFields.createDiv();
         const valuesListHeader = valuesList.createDiv();
         valuesListHeader.createEl("h2");
         valuesListHeader.setText(`Preset values: ${Object.values(this.property.values).join(', ')}`);
@@ -256,62 +224,63 @@ export default class FieldSettingsModal extends Modal {
     };
 
     private createSaveButton(b: ButtonComponent): ButtonComponent {
-        b.setTooltip("Save")
-            .setIcon("checkmark")
-            .onClick(async () => {
-                let error = false;
-                if (/^[#>-]/.test(this.property.name)) {
+        b.setTooltip("Save");
+        b.setIcon("checkmark");
+        b.onClick(async () => {
+            let error = false;
+            if (/^[#>-]/.test(this.property.name)) {
+                FieldSettingsModal.setValidationError(
+                    this.namePromptComponent, this.namePromptComponent.inputEl,
+                    "Property name cannot start with #, >, -"
+                );
+                error = true;
+            };
+            if (this.property.name == "") {
+                FieldSettingsModal.setValidationError(
+                    this.namePromptComponent, this.namePromptComponent.inputEl,
+                    "Property name can not be Empty"
+                );
+                error = true;
+            };
+            this.valuesPromptComponents.forEach(input => {
+                if (/^[#>-]/.test(input.inputEl.value) && input.inputEl.parentElement?.lastElementChild) {
                     FieldSettingsModal.setValidationError(
-                        this.namePromptComponent, this.namePromptComponent.inputEl,
-                        "Property name cannot start with #, >, -"
+                        input, input.inputEl.parentElement.lastElementChild,
+                        "Values cannot cannot start with #, >, -"
                     );
                     error = true;
                 };
-                if (this.property.name == "") {
+                if (/[,]/gu.test(input.inputEl.value) && input.inputEl.parentElement?.lastElementChild) {
                     FieldSettingsModal.setValidationError(
-                        this.namePromptComponent, this.namePromptComponent.inputEl,
-                        "Property name can not be Empty"
+                        input, input.inputEl.parentElement.lastElementChild,
+                        "Values cannot contain a comma"
                     );
                     error = true;
                 };
-                this.valuesPromptComponents.forEach(input => {
-                    if (/^[#>-]/.test(input.inputEl.value) && input.inputEl.parentElement?.lastElementChild) {
-                        FieldSettingsModal.setValidationError(
-                            input, input.inputEl.parentElement.lastElementChild,
-                            "Values cannot cannot start with #, >, -"
-                        );
-                        error = true;
-                    };
-                    if (/[,]/gu.test(input.inputEl.value) && input.inputEl.parentElement?.lastElementChild) {
-                        FieldSettingsModal.setValidationError(
-                            input, input.inputEl.parentElement.lastElementChild,
-                            "Values cannot contain a comma"
-                        );
-                        error = true;
-                    };
-                    if (input.inputEl.value == "" && input.inputEl.parentElement?.lastElementChild) {
-                        FieldSettingsModal.setValidationError(
-                            input, input.inputEl.parentElement.lastElementChild,
-                            "Values can't be null."
-                        );
-                        error = true;
-                    };
-                });
-                if (error) {
-                    new Notice("Fix errors before saving.");
-                    return;
+                if (input.inputEl.value == "" && input.inputEl.parentElement?.lastElementChild) {
+                    FieldSettingsModal.setValidationError(
+                        input, input.inputEl.parentElement.lastElementChild,
+                        "Values can't be null."
+                    );
+                    error = true;
                 };
-                this.saved = true;
-                const currentExistingProperty = this.plugin.initialProperties.filter(p => p.id == this.property.id)[0];
-                if (currentExistingProperty) {
-                    Field.copyProperty(currentExistingProperty, this.property);
-                } else {
-                    this.plugin.initialProperties.push(this.property);
-                };
-                this.initialProperty = this.property;
-                this.plugin.saveSettings();
-                this.close();
             });
+            if (error) {
+                new Notice("Fix errors before saving.");
+                return;
+            };
+            this.saved = true;
+            const currentExistingProperty = this.plugin.initialProperties.filter(p => p.id == this.property.id)[0];
+            if (currentExistingProperty) {
+                Field.copyProperty(currentExistingProperty, this.property);
+            } else {
+                this.plugin.initialProperties.push(this.property);
+            };
+            this.initialProperty = this.property;
+            this.parentSetting?.setTextContentWithname()
+            this.plugin.saveSettings();
+            this.close();
+        });
         return b;
     };
 

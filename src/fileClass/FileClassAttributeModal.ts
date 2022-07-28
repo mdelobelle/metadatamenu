@@ -1,5 +1,6 @@
 import { DropdownComponent, Modal, TextComponent, ButtonComponent, ExtraButtonComponent, TextAreaComponent } from "obsidian";
-import { FileClassAttribute, types } from "src/fileClass/fileClassAttribute";
+import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
+import { FieldTypeTooltip, FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 import { FileClass } from "src/fileClass/fileClass";
 import MetadataMenu from "main";
 
@@ -7,7 +8,7 @@ import MetadataMenu from "main";
 interface FileClassAttributeModal {
     attr?: FileClassAttribute;
     fileClass: FileClass;
-    type: string;
+    type: FieldType;
     options: string[];
     name: string;
     plugin: MetadataMenu
@@ -21,7 +22,7 @@ class FileClassAttributeModal extends Modal {
         this.attr = attr;
         this.fileClass = fileClass;
         if (this.attr) {
-            this.type = this.attr.type || "input";
+            this.type = FieldTypeLabelMapping[this.attr.type];
             this.options = this.attr.options;
             this.name = this.attr.name;
         }
@@ -53,8 +54,8 @@ class FileClassAttributeModal extends Modal {
         typeSelectLabel.setText("will: ");
         const typeSelectDropDown = typeSelectContainer.createDiv({ cls: 'metadata-menu-value-selector-toggler' });
         const typeSelect = new DropdownComponent(typeSelectDropDown);
-        Object.keys(types).forEach(key => {
-            typeSelect.addOption(key, types[key]);
+        Object.keys(FieldTypeTooltip).forEach((key: keyof typeof FieldType) => {
+            typeSelect.addOption(key, FieldTypeTooltip[key]);
         })
         if (this.attr) {
             typeSelect.setValue(this.type);
@@ -67,13 +68,13 @@ class FileClassAttributeModal extends Modal {
         const optionsInput = new TextAreaComponent(optionsInputContainer);
         optionsInput.inputEl.rows = 3;
         optionsInput.inputEl.cols = 26;
-        this.attr ? optionsInput.setValue(this.type == "input" || this.type == "boolean" ? "" : this.options.join(", ")) : optionsInput.setPlaceholder("insert values, comma separated");
-        !this.attr || this.type == "input" || this.type == "boolean" ? optionsInputContainer.hide() : optionsInputContainer.show();
+        this.attr ? optionsInput.setValue(this.type === FieldType.Input || this.type === FieldType.Boolean ? "" : this.options?.join(", ")) : optionsInput.setPlaceholder("insert values, comma separated");
+        !this.attr || this.type === FieldType.Input || this.type === FieldType.Boolean ? optionsInputContainer.hide() : optionsInputContainer.show();
 
         // event handlers
-        typeSelect.onChange(type => {
-            type == "input" || type == "boolean" ? optionsInputContainer.hide() : optionsInputContainer.show();
-            this.type = type;
+        typeSelect.onChange((type: keyof typeof FieldType) => {
+            type === FieldType.Input || type === FieldType.Boolean ? optionsInputContainer.hide() : optionsInputContainer.show();
+            this.type = FieldTypeLabelMapping[type];
         })
         optionsInput.onChange(value => this.options = value.split(",").map(item => item.trim()));
         nameInput.onChange(value => { this.name = value; attrName.setText(`<${value}>`) });

@@ -8,6 +8,7 @@ export interface MetadataMenuSettings {
 	classFilesPath: string;
 	isAutosuggestEnabled: boolean;
 	fileClassAlias: string;
+	settingsVersion?: number;
 }
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
@@ -17,5 +18,6 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	classFilesPath: "",
 	getFromInlineField: true,
 	isAutosuggestEnabled: true,
-	fileClassAlias: "fileClass"
+	fileClassAlias: "fileClass",
+	settingsVersion: undefined
 };

@@ -7,6 +7,7 @@ import valueToggleModal from "./valueToggleModal";
 import valueMultiSelectModal from "./valueMultiSelectModal";
 import { FileClass } from "src/fileClass/fileClass";
 import Field from "src/Field";
+import { FieldType } from "src/types/fieldTypes";
 
 export default class fieldSelectModal extends Modal {
 
@@ -94,25 +95,45 @@ export default class fieldSelectModal extends Modal {
                 this.close()
             } else {
                 const field = this.plugin.settings.presetFields.filter(_field => _field.name == value)[0];
-                if (field.valuesListNotePath || (field.values && Object.keys(field.values).length > 0)) {
-                    if (field.isMulti) {
-                        const fieldModal = new valueMultiSelectModal(this.app, this.file, field.name, "", field, this.lineNumber, this.inFrontmatter, this.top);
-                        fieldModal.titleEl.setText(`Select values for ${value}`);
-                        fieldModal.open();
-                    } else {
-                        const fieldModal = new valueSelectModal(this.app, this.file, field.name, "", field, this.lineNumber, this.inFrontmatter, this.top);
-                        fieldModal.titleEl.setText(`Select value for ${value}`);
-                        fieldModal.open();
-                    };
-                } else if (field.isBoolean) {
-                    const fieldModal = new valueToggleModal(this.app, this.file, field.name, false, this.lineNumber, this.inFrontmatter, this.top)
-                    fieldModal.titleEl.setText(`Set value for ${value}`);
-                    fieldModal.open();
-                } else {
-                    const fieldModal = new valueTextInputModal(this.app, this.file, value, "", this.lineNumber, this.inFrontmatter, this.top);
-                    fieldModal.titleEl.setText(`Enter value for ${value}`);
-                    fieldModal.open();
-                };
+                switch (field.type) {
+                    case FieldType.Multi:
+                        {
+                            const fieldModal = new valueMultiSelectModal(this.app, this.file, field.name, "", field, this.lineNumber, this.inFrontmatter, this.top);
+                            fieldModal.titleEl.setText(`Select values for ${value}`);
+                            fieldModal.open();
+                            break;
+                        }
+                    case FieldType.Cycle:
+                    //fall-through
+                    case FieldType.Select:
+                        {
+                            const fieldModal = new valueSelectModal(this.app, this.file, field.name, "", field, this.lineNumber, this.inFrontmatter, this.top);
+                            fieldModal.titleEl.setText(`Select value for ${value}`);
+                            fieldModal.open();
+                            break;
+                        }
+                    case FieldType.Boolean:
+                        {
+                            const fieldModal = new valueToggleModal(this.app, this.file, field.name, false, this.lineNumber, this.inFrontmatter, this.top)
+                            fieldModal.titleEl.setText(`Set value for ${value}`);
+                            fieldModal.open();
+                            break;
+                        }
+                    case FieldType.Input:
+                        {
+                            const fieldModal = new valueTextInputModal(this.app, this.file, value, "", this.lineNumber, this.inFrontmatter, this.top);
+                            fieldModal.titleEl.setText(`Enter value for ${value}`);
+                            fieldModal.open();
+                            break;
+                        }
+                    default:
+                        {
+                            const fieldModal = new valueTextInputModal(this.app, this.file, value, "", this.lineNumber, this.inFrontmatter, this.top);
+                            fieldModal.titleEl.setText(`Enter value for ${value}`);
+                            fieldModal.open();
+                            break;
+                        }
+                }
                 this.close();
             };
         });

@@ -1,6 +1,7 @@
 import { App, Setting, TFile } from "obsidian";
 import MetadataMenu from "main";
 import Field from "src/Field";
+import { FieldType, FieldTypeTagClass } from "src/types/fieldTypes";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 
 export default class FieldSetting extends Setting {
@@ -8,6 +9,8 @@ export default class FieldSetting extends Setting {
     private app: App;
     private plugin: MetadataMenu;
     private containerEl: HTMLElement;
+    private typeContainer: HTMLSpanElement;
+
     constructor(containerEl: HTMLElement, property: Field, app: App, plugin: MetadataMenu) {
         super(containerEl);
         this.containerEl = containerEl;
@@ -17,22 +20,16 @@ export default class FieldSetting extends Setting {
         this.setTextContentWithname();
         this.addEditButton();
         this.addDeleteButton();
-
     };
 
-    private setTextContentWithname(): void {
-        const values = !this.property.isBoolean ? `[${Object.keys(this.property.values).map(k => this.property.values[k]).join(', ')}]` : ""
-        let type = "single"
-        if (this.property.isBoolean) type = "boolean"
-        if (this.property.isMulti) type = "multi"
-        if (this.property.isCycle) type = "cycle"
+    public setTextContentWithname(): void {
+        const values = !(this.property.type === FieldType.Boolean) ? `[${Object.keys(this.property.values).map(k => this.property.values[k]).join(', ')}]` : ""
         this.infoEl.textContent =
             `${this.property.name}: ${values}`;
-        const typeContainer = this.infoEl.createEl("span", `metadata-menu-setting-item-info-type ${type}`)
-        typeContainer.setText(type)
-
+        this.typeContainer = this.infoEl.createEl("span", "-")
+        this.typeContainer.setAttr("class", `metadata-menu-setting-item-info-type ${FieldTypeTagClass[this.property.type]}`)
+        this.typeContainer.setText(this.property.type)
     };
-
 
     private addEditButton(): void {
         this.addButton((b) => {

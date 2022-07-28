@@ -4,6 +4,7 @@ import valueMultiSelectModal from "src/optionModals/valueMultiSelectModal";
 import valueTextInputModal from "src/optionModals/valueTextInputModal";
 import valueSelectModal from "src/optionModals/valueSelectModal";
 import Field from "src/Field";
+import { FieldType } from "src/types/fieldTypes";
 import chooseSectionModal from "../optionModals/chooseSectionModal";
 import SelectModal from "src/optionModals/SelectModal";
 import { createFileClass, FileClass } from "src/fileClass/fileClass";
@@ -124,31 +125,32 @@ export default class OptionsList {
 		this.buildExtraOptionsList(attributes,);
 	};
 
-	buildExtraOptionsList(attributes: Record<string, string>) {
+	private buildExtraOptionsList(attributes: Record<string, string>) {
 		Object.keys(attributes).forEach((key: string) => {
 			const value = attributes[key];
 			const propertySettings = getPropertySettings(this.plugin, key, this.fileClass);
-			if (propertySettings?.values && !propertySettings?.isBoolean) {
-				if (propertySettings.isCycle) {
-					this.addCycleMenuOption(key, value, propertySettings);
-				} else if (propertySettings.isMulti) {
-					this.addMultiMenuOption(key, value, propertySettings);
-				} else {
-					this.addSelectMenuOption(key, value, propertySettings);
-				};
-			} else if (propertySettings?.isBoolean) {
-				let toBooleanValue: boolean = false;
-				if (isBoolean(value)) {
-					toBooleanValue = value;
-				} else if (/true/i.test(value)) {
-					toBooleanValue = true;
-				} else if (/false/i.test(value)) {
-					toBooleanValue = false;
-				};
-				this.addToggleMenuOption(key, toBooleanValue);
+			if (propertySettings) {
+				switch (propertySettings.type) {
+					case FieldType.Cycle: this.addCycleMenuOption(key, value, propertySettings); break;
+					case FieldType.Multi: this.addMultiMenuOption(key, value, propertySettings); break;
+					case FieldType.Select: this.addSelectMenuOption(key, value, propertySettings); break;
+					case FieldType.Boolean:
+						let toBooleanValue: boolean = false;
+						if (isBoolean(value)) {
+							toBooleanValue = value;
+						} else if (/true/i.test(value)) {
+							toBooleanValue = true;
+						} else if (/false/i.test(value)) {
+							toBooleanValue = false;
+						};
+						this.addToggleMenuOption(key, toBooleanValue);
+						break;
+					case FieldType.Input: this.addTextInputMenuOption(key, value ? value.toString() : ""); break;
+					default: this.addTextInputMenuOption(key, value ? value.toString() : ""); break;
+				}
 			} else {
 				this.addTextInputMenuOption(key, value ? value.toString() : "");
-			};
+			}
 		});
 	};
 

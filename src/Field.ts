@@ -1,11 +1,11 @@
+import { FieldType } from "./types/fieldTypes"
+
 interface Field {
     id: string;
     name: string;
     values: Record<string, string>;
-    isCycle: boolean;
-    isMulti: boolean;
-    isBoolean: boolean;
     valuesListNotePath: string;
+    type: FieldType
 }
 
 class Field {
@@ -13,17 +13,14 @@ class Field {
     constructor(name: string = "",
         values: Record<string, string> = {},
         id: string = "",
-        isMulti: boolean = false,
-        isCycle: boolean = false,
-        isBoolean: boolean = false,
-        valuesListNotePath: string = "") {
+        valuesListNotePath: string = "",
+        type: FieldType = FieldType.Input
+    ) {
         this.name = name;
         this.values = values;
         this.id = id;
-        this.isBoolean = isBoolean
-        this.isCycle = isCycle;
-        this.isMulti = isMulti;
         this.valuesListNotePath = valuesListNotePath;
+        this.type = type
         this.insertNewValue.bind(this);
     };
 
@@ -41,10 +38,8 @@ class Field {
     static copyProperty(target: Field, source: Field) {
         target.id = source.id;
         target.name = source.name;
-        target.isBoolean = source.isBoolean
-        target.isCycle = source.isCycle;
-        target.isMulti = source.isMulti;
         target.valuesListNotePath = source.valuesListNotePath;
+        target.type = source.type
         Object.keys(source.values).forEach(k => {
             target.values[k] = source.values[k];
         });

@@ -168,6 +168,11 @@
     background-color: #5e81ac;
 }
 
+
+.metadata-menu-setting-item-info-type.select{
+    background-color: #556b77;
+}
+
 .metadata-menu-setting-section-header{
     margin-bottom: 0;
 }

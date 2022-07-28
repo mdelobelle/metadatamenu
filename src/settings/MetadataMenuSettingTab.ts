@@ -3,7 +3,6 @@ import MetadataMenu from "main";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import Field from "src/Field";
 import FieldSetting from "src/settings/FieldSetting";
-import { copyFileSync } from "fs";
 
 class SettingsMigrationConfirmModal extends Modal {
 

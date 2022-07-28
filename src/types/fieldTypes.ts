@@ -1,3 +1,31 @@
-export enum FieldTypes {
-    'Input', 'Select', 'Multi', 'Cycle', 'Boolean'
+export const enum FieldType {
+    'Input' = "Input",
+    'Select' = "Select",
+    'Multi' = "Multi",
+    'Cycle' = "Cycle",
+    'Boolean' = "Boolean"
+}
+
+export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = {
+    "Input": FieldType.Input,
+    "Select": FieldType.Select,
+    "Multi": FieldType.Multi,
+    "Cycle": FieldType.Cycle,
+    "Boolean": FieldType.Boolean
+};
+
+export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
+    "Input": "single",
+    "Select": "select",
+    "Multi": "multi",
+    "Cycle": "cycle",
+    "Boolean": "boolean"
+}
+
+export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
+    "Input": "Accept any value",
+    "Select": "Accept a single value from a list",
+    "Multi": "Accept multiple values from a list",
+    "Cycle": "Cycle through values from a list",
+    "Boolean": "Accept true of false"
 }

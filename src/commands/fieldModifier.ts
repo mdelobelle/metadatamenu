@@ -3,6 +3,7 @@ import { replaceValues } from "./replaceValues"
 import MetadataMenu from "main"
 import { createFileClass } from "src/fileClass/fileClass";
 import { getPropertySettings } from "src/commands/getPropertySettings";
+import { FieldType } from "src/types/fieldTypes";
 
 function createInputField(
     plugin: MetadataMenu,
@@ -124,14 +125,14 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
         if (p[fileClassAlias]) {
             const fileClass = await createFileClass(plugin, p[fileClassAlias])
             const field = getPropertySettings(plugin, fieldName, fileClass)
-            if (field?.isBoolean) {
+            if (field?.type === FieldType.Boolean) {
                 createBooleanField(plugin, dv, p, fieldName, fieldContainer, attrs)
             } else {
                 createInputField(plugin, dv, p, fieldName, fieldContainer, attrs)
             }
         } else if (plugin.settings.presetFields.filter(attr => attr.name == fieldName)) {
             const field = getPropertySettings(plugin, fieldName)
-            if (field?.isBoolean) {
+            if (field?.type === FieldType.Boolean) {
                 createBooleanField(plugin, dv, p, fieldName, fieldContainer, attrs)
             } else {
                 createInputField(plugin, dv, p, fieldName, fieldContainer, attrs)
