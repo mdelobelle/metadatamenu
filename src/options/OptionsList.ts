@@ -70,8 +70,8 @@ export default class OptionsList {
 							});
 						});
 					} else {
-						this.category.addOption("manage_fileClass_attributes", "Manage fileClass attributes");
-						this.category.modals["add_field_at_section"] = () => fileClassAttributeSelectModal.open();
+						this.category.addOption("manage_fileClass_attributes", `Manage <${this.fileClass.name}> fields`);
+						this.category.modals["manage_fileClass_attributes"] = () => fileClassAttributeSelectModal.open();
 					};
 
 					await this.createExtraOptionsListForFrontmatter(attributes,)

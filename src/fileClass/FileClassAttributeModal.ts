@@ -1,6 +1,7 @@
-import { App, DropdownComponent, Modal, TextComponent, ButtonComponent, ExtraButtonComponent, TextAreaComponent } from "obsidian";
+import { DropdownComponent, Modal, TextComponent, ButtonComponent, ExtraButtonComponent, TextAreaComponent } from "obsidian";
 import { FileClassAttribute, types } from "src/fileClass/fileClassAttribute";
 import { FileClass } from "src/fileClass/fileClass";
+import MetadataMenu from "main";
 
 
 interface FileClassAttributeModal {
@@ -9,12 +10,14 @@ interface FileClassAttributeModal {
     type: string;
     options: string[];
     name: string;
+    plugin: MetadataMenu
 }
 
 class FileClassAttributeModal extends Modal {
 
-    constructor(app: App, fileClass: FileClass, attr?: FileClassAttribute) {
-        super(app);
+    constructor(plugin: MetadataMenu, fileClass: FileClass, attr?: FileClassAttribute) {
+        super(plugin.app);
+        this.plugin = plugin
         this.attr = attr;
         this.fileClass = fileClass;
         if (this.attr) {
@@ -40,7 +43,7 @@ class FileClassAttributeModal extends Modal {
         const attrName = attrLine.createEl("strong");
         attrName.setText(`<${this.name}>`);
         attrLine.append(" fields in files with:");
-        String(`---\nfileClass: ${this.fileClass.name}\n...\n---`).split('\n').forEach(line => {
+        String(`---\n${this.plugin.settings.fileClassAlias}: ${this.fileClass.name}\n...\n---`).split('\n').forEach(line => {
             typeSelectHeader.createEl("div", "yaml-metadata-menu-red").setText(line);
         })
 
@@ -87,7 +90,7 @@ class FileClassAttributeModal extends Modal {
             const removeButton = new ButtonComponent(footer);
             removeButton.setIcon("trash");
             removeButton.onClick(() => {
-                const confirmModal = new Modal(this.app);
+                const confirmModal = new Modal(this.plugin.app);
                 confirmModal.titleEl.setText("Please confirm");
                 confirmModal.contentEl.createDiv().setText(`Do you really want to remove ${this.attr?.name} attribute from ${this.fileClass.name}?`);
                 const confirmFooter = confirmModal.contentEl.createDiv({ cls: "metadata-menu-value-grid-footer" });
