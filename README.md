@@ -238,7 +238,7 @@ dv.table(["file", "status", "started"],
         .limit(10)
         .map(async p => [
             p.file.link, 
-            await f(dv, p, "status")  // pass dv (dataview api instance), p (the page), and the field name to fieldModifier (: "f")
+            await f(dv, p, "status"),  // pass dv (dataview api instance), p (the page), and the field name to fieldModifier (: "f")
             await f(dv, p, "started") // pass dv (dataview api instance), p (the page), and the field name to fieldModifier (: "f")
             ])
     )
