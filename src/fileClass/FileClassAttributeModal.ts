@@ -64,11 +64,11 @@ class FileClassAttributeModal extends Modal {
         // options input
         const optionsInputContainer = this.contentEl.createDiv({ cls: 'metadata-menu-value-selector-container' });
         const optionsInputLabel = optionsInputContainer.createDiv({ cls: 'metadata-menu-value-selector-inline-label-top' });
-        optionsInputLabel.setText("Values");
+        optionsInputLabel.setText("Options");
         const optionsInput = new TextAreaComponent(optionsInputContainer);
         optionsInput.inputEl.rows = 3;
         optionsInput.inputEl.cols = 26;
-        this.attr ? optionsInput.setValue(this.type === FieldType.Input || this.type === FieldType.Boolean ? "" : this.options?.join(", ")) : optionsInput.setPlaceholder("insert values, comma separated");
+        this.attr ? optionsInput.setValue(this.type === FieldType.Input || this.type === FieldType.Boolean ? "" : this.options?.join(", ")) : optionsInput.setPlaceholder("insert options, comma separated");
         !this.attr || this.type === FieldType.Input || this.type === FieldType.Boolean ? optionsInputContainer.hide() : optionsInputContainer.show();
 
         // event handlers

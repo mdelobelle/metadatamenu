@@ -8,27 +8,26 @@ export default class valueMultiSelectModal extends Modal {
     private file: TFile;
     private name: string;
     private settings: Field;
-    private values: Array<string>;
+    private options: Array<string>;
     private lineNumber: number;
     private inFrontmatter: boolean;
     private top: boolean;
 
-    constructor(app: App, file: TFile, name: string, initialValues: string, settings: Field, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
+    constructor(app: App, file: TFile, name: string, initialOptions: string, settings: Field, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
         super(app);
         this.app = app;
         this.file = file;
         this.name = name;
         this.settings = settings;
-        if (initialValues) {
-            if (initialValues.toString().startsWith("[[")) {
-                this.values = initialValues.split(",").map(item => item.trim());
+        if (initialOptions) {
+            if (initialOptions.toString().startsWith("[[")) {
+                this.options = initialOptions.split(",").map(item => item.trim());
             } else {
-                this.values = initialValues.toString().replace(/^\[(.*)\]$/, "$1").split(",").map(item => item.trim());
+                this.options = initialOptions.toString().replace(/^\[(.*)\]$/, "$1").split(",").map(item => item.trim());
             };
         } else {
-            this.values = [];
+            this.options = [];
         };
-        //this.values = initialValues ? initialValues.toString().replace(/^\[(.*)\]$/, "$1").split(",").map(item => item.trim()) : []
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
         this.top = top;
@@ -46,8 +45,8 @@ export default class valueMultiSelectModal extends Modal {
 
     private async populateValuesGrid(valueGrid: HTMLDivElement, listNoteValues: string[]): Promise<void> {
         if (listNoteValues.length === 0) {
-            Object.keys(this.settings.values).forEach(key => {
-                const presetValue = this.settings.values[key];
+            Object.keys(this.settings.options).forEach(key => {
+                const presetValue = this.settings.options[key];
                 this.buildValueToggler(valueGrid, presetValue);
             })
         };
@@ -59,11 +58,11 @@ export default class valueMultiSelectModal extends Modal {
         saveButton.setIcon("checkmark");
         saveButton.onClick(async () => {
             if (this.lineNumber == -1) {
-                replaceValues(this.app, this.file, this.name, this.values.join(","));
+                replaceValues(this.app, this.file, this.name, this.options.join(","));
             } else {
                 const result = await this.app.vault.read(this.file)
                 let newContent: string[] = [];
-                const renderedValues = !this.inFrontmatter ? this.values.join(",") : this.values.length > 1 ? `[${this.values.join(",")}]` : this.values
+                const renderedValues = !this.inFrontmatter ? this.options.join(",") : this.options.length > 1 ? `[${this.options.join(",")}]` : this.options
                 if (this.top) {
                     newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${renderedValues}`);
                     result.split("\n").forEach((line, _lineNumber) => newContent.push(line));
@@ -87,7 +86,7 @@ export default class valueMultiSelectModal extends Modal {
         cancelButton.onClick(() => this.close());
     };
 
-    private buildValueToggler(valueGrid: HTMLDivElement, presetValue: string) {
+    private buildValueToggler(valueGrid: HTMLDivElement, presetOption: string) {
         const valueSelectorContainer = valueGrid.createDiv({
             cls: "metadata-menu-value-selector-container"
         });
@@ -95,20 +94,20 @@ export default class valueMultiSelectModal extends Modal {
             cls: "metadata-menu-value-selector-toggler"
         });
         const valueToggler = new ToggleComponent(valueTogglerContainer);
-        this.values.forEach(value => {
-            if (value == presetValue) {
+        this.options.forEach(options => {
+            if (options == presetOption) {
                 valueToggler.setValue(true)
             };
         });
         valueToggler.onChange(value => {
-            if (value && !this.values.includes(presetValue)) {
-                this.values.push(presetValue);
+            if (value && !this.options.includes(presetOption)) {
+                this.options.push(presetOption);
             };
             if (!value) {
-                this.values.remove(presetValue);
+                this.options.remove(presetOption);
             };
         });
         const valueLabel = valueSelectorContainer.createDiv({ cls: "metadata-menu-value-selector-label" });
-        valueLabel.setText(presetValue);
+        valueLabel.setText(presetOption);
     };
 };

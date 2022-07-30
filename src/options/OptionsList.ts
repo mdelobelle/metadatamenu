@@ -171,30 +171,30 @@ export default class OptionsList {
 		};
 	};
 
-	private addCycleMenuOption(name: string, value: string, propertySettings: Field): void {
-		const values = propertySettings.values;
-		const keys = Object.keys(values);
-		const keyForValue = keys.find(key => values[key] === value);
-		let nextValue: string;
+	private addCycleMenuOption(name: string, option: string, propertySettings: Field): void {
+		const options = propertySettings.options;
+		const keys = Object.keys(options);
+		const keyForValue = keys.find(key => options[key] === option);
+		let nextOption: string;
 		if (keyForValue) {
 			const nextKey = keys[(keys.indexOf(keyForValue) + 1) % keys.length];
-			nextValue = values[nextKey];
+			nextOption = options[nextKey];
 		} else {
-			nextValue = values[Object.keys(values)[0]];
+			nextOption = options[Object.keys(options)[0]];
 		};
 		if (isMenu(this.category)) {
 			this.category.addItem((item) => {
-				item.setTitle(`${name} : ${value} ▷ ${nextValue}`);
+				item.setTitle(`${name} : ${option} ▷ ${nextOption}`);
 				item.setIcon('switch');
 				item.onClick((evt: MouseEvent) => {
-					replaceValues(this.plugin.app, this.file, name, nextValue);
+					replaceValues(this.plugin.app, this.file, name, nextOption);
 				});
 				item.setSection("target-metadata");
 			});
 		} else if (isSelect(this.category)) {
-			this.category.addOption(`${name}_${value}_${nextValue}`, `${name} : ${value} ▷ ${nextValue}`);
-			this.category.modals[`${name}_${value}_${nextValue}`] = () =>
-				replaceValues(this.plugin.app, this.file, name, nextValue);
+			this.category.addOption(`${name}_${option}_${nextOption}`, `${name} : ${option} ▷ ${nextOption}`);
+			this.category.modals[`${name}_${option}_${nextOption}`] = () =>
+				replaceValues(this.plugin.app, this.file, name, nextOption);
 		};
 	};
 

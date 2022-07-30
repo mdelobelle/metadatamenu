@@ -120,19 +120,19 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		/* 
 		-----------------------------------------
-		Managing predefined values for properties 
+		Managing predefined options for properties 
 		-----------------------------------------
 		*/
-		/* Add new property for which we want to preset values*/
+		/* Add new property for which we want to preset options*/
 		const presetFieldsSettings = containerEl.createEl("div")
 		presetFieldsSettings.createEl('h4', { text: 'Preset Fields settings', cls: "metadata-menu-setting-section-header" });
 		presetFieldsSettings.createEl('div', {
 			cls: "setting-item-description metadata-menu-setting-section-desc",
-			text: "Manage globally predefined type and values for a field throughout your whole vault"
+			text: "Manage globally predefined type and options for a field throughout your whole vault"
 		})
 		new Setting(presetFieldsSettings)
 			.setName("Add New Property Manager")
-			.setDesc("Add a new Frontmatter property for which you want preset values.")
+			.setDesc("Add a new Frontmatter property for which you want preset options.")
 			.addButton((button: ButtonComponent): ButtonComponent => {
 				return button
 					.setTooltip("Add New Property Manager")
@@ -143,7 +143,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					});
 			});
 
-		/* Managed properties that currently have preset values */
+		/* Managed properties that currently have preset options */
 		this.plugin.initialProperties.forEach(prop => {
 			const property = new Field();
 			Object.assign(property, prop);
@@ -197,7 +197,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		const migrateSettings = containerEl.createEl("div")
 		migrateSettings.createEl('h4', { text: 'Migrate' });
 
-		/* Add new property for which we want to preset values*/
+		/* Add new property for which we want to preset options*/
 		new Setting(migrateSettings)
 			.setName("Copy settings from supercharged links plugin")
 			.setDesc("Copy settings from supercharged links plugin")

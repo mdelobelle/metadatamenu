@@ -38,11 +38,11 @@ class FileClassAttribute {
     }
 
     public getField() {
-        let values: Record<string, string> = {};
+        let options: Record<string, string> = {};
         this.options?.forEach((option, index) => {
-            values[index] = option;
+            options[index] = option;
         })
-        return new Field(this.name, values, this.name, undefined, this.type);
+        return new Field(this.name, options, this.name, undefined, this.type);
     }
 }
 

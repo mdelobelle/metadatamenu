@@ -9,6 +9,7 @@ export default class FieldSettingsModal extends Modal {
     private valuesPromptComponents: Array<TextComponent> = [];
     private typeSelectComponent: DropdownComponent;
     private presetValuesFields: HTMLDivElement;
+    private numberValidatorField: HTMLDivElement;
     private saved: boolean = false;
     private property: Field;
     private plugin: MetadataMenu;
@@ -29,8 +30,8 @@ export default class FieldSettingsModal extends Modal {
             this.property = property;
             this.initialProperty.name = property.name;
             this.initialProperty.id = property.id;
-            Object.keys(property.values).forEach(k => {
-                this.initialProperty.values[k] = property.values[k];
+            Object.keys(property.options).forEach(k => {
+                this.initialProperty.options[k] = property.options[k];
             });
         } else {
             let newId = 1;
@@ -49,7 +50,7 @@ export default class FieldSettingsModal extends Modal {
         if (this.property.name == "") {
             this.titleEl.setText(`Add a property and set predefined`);
         } else {
-            this.titleEl.setText(`Manage settings values for ${this.property.name}`);
+            this.titleEl.setText(`Manage settings options for ${this.property.name}`);
         };
         await this.createForm();
     };
@@ -64,7 +65,7 @@ export default class FieldSettingsModal extends Modal {
     };
 
     private setValueListText(header: HTMLDivElement): void {
-        header.setText(`Preset values: ${Object.values(this.property.values).join(', ')}`);
+        header.setText(`Preset options: ${Object.values(this.property.options).join(', ')}`);
     };
 
     private createTypeSelectorContainer(parentNode: HTMLDivElement): DropdownComponent {
@@ -91,11 +92,19 @@ export default class FieldSettingsModal extends Modal {
         input.setPlaceholder("Name of the property");
         input.onChange(value => {
             this.property.name = value;
-            this.titleEl.setText(`Manage predefined values for ${this.property.name}`);
+            this.titleEl.setText(`Manage predefined options for ${this.property.name}`);
             FieldSettingsModal.removeValidationError(input);
         });
         return input;
     };
+
+    /*
+    private createNumberContainer(parentNode: HTMLDivElement): HTMLDivElement {
+        const stepContainer = parentNode.createDiv()
+        const stepLabel = stepContainer.createEl("span", "Step (optional)")
+        const stepValue = new TextComponent(stepContainer)
+    }
+    */
 
     private createListNoteContainer(parentNode: HTMLDivElement): TextComponent {
         const listNoteContainerLabel = parentNode.createDiv({ cls: "metadata-menu-input" });
@@ -111,24 +120,24 @@ export default class FieldSettingsModal extends Modal {
 
     private removePresetValue(key: string): void {
         let newValues: Record<string, string> = {};
-        for (let _key in this.property.values) {
+        for (let _key in this.property.options) {
             if (key !== _key) {
-                newValues[_key] = this.property.values[_key];
+                newValues[_key] = this.property.options[_key];
             };
         };
-        this.property.values = newValues;
+        this.property.options = newValues;
     };
 
     private createValueContainer(parentNode: HTMLDivElement, header: HTMLDivElement, key: string): TextComponent {
-        const values = this.property.values;
-        const presetValue = values[key];
+        const options = this.property.options;
+        const presetValue = options[key];
         const valueContainer = parentNode.createDiv({
             cls: 'metadata-menu-prompt-container',
         });
         const input = new TextComponent(valueContainer);
         input.setValue(presetValue);
         input.onChange(value => {
-            this.property.values[key] = value;
+            this.property.options[key] = value;
             this.setValueListText(header);
             FieldSettingsModal.removeValidationError(input);
         });
@@ -142,21 +151,21 @@ export default class FieldSettingsModal extends Modal {
                 this.valuesPromptComponents.remove(input);
 
             });
-        if (key != Object.keys(this.property.values)[0]) {
+        if (key != Object.keys(this.property.options)[0]) {
             const valueUpgradeButton = new ButtonComponent(valueContainer);
             valueUpgradeButton.setButtonText("▲");
             valueUpgradeButton.onClick((evt: MouseEvent) => {
-                const thisValue = values[key];
+                const thisValue = options[key];
                 const inputIndex = this.valuesPromptComponents.indexOf(input)
                 const upperComponent = inputIndex !== -1 ? this.valuesPromptComponents[inputIndex - 1] : this.valuesPromptComponents.last();
                 if (upperComponent) {
                     const upperValue = upperComponent.inputEl.value;
-                    const upperKey = Object.keys(values).filter(k => values[k] == upperValue)[0];
+                    const upperKey = Object.keys(options).filter(k => options[k] == upperValue)[0];
                     if (upperKey) {
                         upperComponent.setValue(thisValue);
-                        values[upperKey] = thisValue;
+                        options[upperKey] = thisValue;
                         input.setValue(upperValue);
-                        values[key] = upperValue;
+                        options[key] = upperValue;
                     };
                 };
             });
@@ -182,28 +191,34 @@ export default class FieldSettingsModal extends Modal {
         const typeSelectContainer = mainDiv.createDiv()
         this.typeSelectComponent = this.createTypeSelectorContainer(typeSelectContainer)
 
-        /* preset values for multi & cycle */
+        /* Number validation */
+        this.numberValidatorField = mainDiv.createDiv()
+        this.numberValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
+
+
+
+        /* preset options for multi & cycle */
         this.presetValuesFields = mainDiv.createDiv()
         this.presetValuesFields.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
 
-        /* Property's note for list of Values */
+        /* Property's note for list of Options */
 
         const listNotePathContainer = this.presetValuesFields.createDiv();
         this.createListNoteContainer(listNotePathContainer);
 
         this.presetValuesFields.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
 
-        /* Property Values */
+        /* Property options */
         const valuesList = this.presetValuesFields.createDiv();
         const valuesListHeader = valuesList.createDiv();
         valuesListHeader.createEl("h2");
-        valuesListHeader.setText(`Preset values: ${Object.values(this.property.values).join(', ')}`);
+        valuesListHeader.setText(`Preset options: ${Object.values(this.property.options).join(', ')}`);
         const valuesListBody = valuesList.createDiv();
-        Object.keys(this.property.values).forEach(key => {
+        Object.keys(this.property.options).forEach(key => {
             this.valuesPromptComponents.push(this.createValueContainer(valuesListBody, valuesListHeader, key));
         });
 
-        /* Add a new Values */
+        /* Add a new Options */
         const valuesListFooter = valuesList.createDiv();
         const addValue = valuesListFooter.createEl('button');
         addValue.type = 'button';
@@ -289,7 +304,7 @@ export default class FieldSettingsModal extends Modal {
             .setTooltip("Cancel")
             .onClick(() => {
                 this.saved = false;
-                /* reset values from settings */
+                /* reset options from settings */
                 if (this.initialProperty.name != "") {
                     Object.assign(this.property, this.initialProperty);
                 };

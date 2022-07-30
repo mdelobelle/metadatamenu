@@ -102,7 +102,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                     .sort()
                     .map(tag => Object({ value: tag.replace(/^#/, "") }))
             }
-            //if this note has a fileClass, check if field values are defined in the FileClass
+            //if this note has a fileClass, check if field options are defined in the FileClass
             const cache = this.plugin.app.metadataCache.getCache(context.file.path);
             let tryWithPresetField = !cache?.frontmatter;
             if (cache?.frontmatter) {
@@ -130,7 +130,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 };
             };
             if (tryWithPresetField) {
-                //else check if there are global preset values
+                //else check if there are global preset voptiosalues
                 const presetFieldMatch = this.plugin.settings.presetFields.filter(field => field.name == fieldName);
                 if (presetFieldMatch.length > 0) {
                     const presetField = presetFieldMatch[0];
@@ -145,7 +145,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                             return values;
                         };
                     };
-                    const values = Object.entries(presetFieldMatch[0].values).map(option => option[1])
+                    const values = Object.entries(presetFieldMatch[0].options).map(option => option[1])
                         .filter(option => this.filterOption(firstValues, lastValue, option))
                     return values
                         .map(_value => Object({ value: _value }))

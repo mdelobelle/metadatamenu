@@ -3,7 +3,8 @@ export const enum FieldType {
     'Select' = "Select",
     'Multi' = "Multi",
     'Cycle' = "Cycle",
-    'Boolean' = "Boolean"
+    'Boolean' = "Boolean",
+    "Number" = "Number"
 }
 
 export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = {
@@ -11,7 +12,8 @@ export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = 
     "Select": FieldType.Select,
     "Multi": FieldType.Multi,
     "Cycle": FieldType.Cycle,
-    "Boolean": FieldType.Boolean
+    "Boolean": FieldType.Boolean,
+    "Number": FieldType.Number
 };
 
 export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
@@ -19,7 +21,8 @@ export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
     "Select": "select",
     "Multi": "multi",
     "Cycle": "cycle",
-    "Boolean": "boolean"
+    "Boolean": "boolean",
+    "Number": "number"
 }
 
 export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
@@ -27,5 +30,6 @@ export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
     "Select": "Accept a single value from a list",
     "Multi": "Accept multiple values from a list",
     "Cycle": "Cycle through values from a list",
-    "Boolean": "Accept true of false"
+    "Boolean": "Accept true of false",
+    "Number": "Accept a number"
 }

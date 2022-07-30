@@ -68,13 +68,13 @@ export default class fieldSelectModal extends Modal {
                         //fall-through
                         case "select": {
                             const fieldModal = new valueSelectModal(this.app, this.file, field.name, "", field, this.lineNumber, this.inFrontmatter, this.top);
-                            fieldModal.titleEl.setText(`Select value for ${value}`);
+                            fieldModal.titleEl.setText(`Select option for ${value}`);
                             fieldModal.open();
                             break;
                         }
                         case "multi": {
                             const fieldModal = new valueMultiSelectModal(this.app, this.file, field.name, "", field, this.lineNumber, this.inFrontmatter, this.top);
-                            fieldModal.titleEl.setText(`Select values for ${value}`);
+                            fieldModal.titleEl.setText(`Select options for ${value}`);
                             fieldModal.open();
                             break;
                         }
@@ -99,7 +99,7 @@ export default class fieldSelectModal extends Modal {
                     case FieldType.Multi:
                         {
                             const fieldModal = new valueMultiSelectModal(this.app, this.file, field.name, "", field, this.lineNumber, this.inFrontmatter, this.top);
-                            fieldModal.titleEl.setText(`Select values for ${value}`);
+                            fieldModal.titleEl.setText(`Select Options for ${value}`);
                             fieldModal.open();
                             break;
                         }
@@ -108,7 +108,7 @@ export default class fieldSelectModal extends Modal {
                     case FieldType.Select:
                         {
                             const fieldModal = new valueSelectModal(this.app, this.file, field.name, "", field, this.lineNumber, this.inFrontmatter, this.top);
-                            fieldModal.titleEl.setText(`Select value for ${value}`);
+                            fieldModal.titleEl.setText(`Select option for ${value}`);
                             fieldModal.open();
                             break;
                         }
