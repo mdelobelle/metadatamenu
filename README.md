@@ -203,7 +203,7 @@ API is accessible with `app.plugins.plugins["metadata-menu"].api`
 
 ### getValues
 
-`getValues(app: App, file: TFile, attribute: string)`
+`getValues(file: TFile, attribute: string)`
 
 Takes a TFile containing the field and a string for the related field name
 
@@ -212,7 +212,7 @@ Returns an array with the values of the field
 This is an asynchronous function, so you should await it.
 
 ### replaceValues
-`replaceValues(app: App, file: TFile, attribute: string, input: string)`
+`replaceValues(file: TFile, attribute: string, input: string)`
 
 Takes a TFile containing the field, a string for the related field name, a new value for this field and updates the field with the new value
 
