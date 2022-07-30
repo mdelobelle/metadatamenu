@@ -4,6 +4,9 @@ The preset values for those properties can be managed globally in the plugin's s
 It also enables frontmatter of inline-field autocompletion with suggested values based on preset values.
 
 ---
+## ** BREAKING CHANGE IN 0.1.5 **
+getValues and replaceValues api functions no longer need the first `app: App` argument
+
 ## **BREAKING CHANGE IN 0.1.3**
 The recently added feature "fieldWithMenu" has been replaced by "fieldModifyer"
 This feature enables to modify the value of a YAML property or a dv inline field directly from a dataview table
