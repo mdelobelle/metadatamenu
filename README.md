@@ -77,7 +77,7 @@ https://youtu.be/GryvvJ6qIg4
 ### Multi select preset values for property
 
 1. In the settings, follow the steps 1 to 3 of previous section
-2. Toggle the `isMulti` switch
+2. Select the `Multi` value from the dropdown select list
 
 Back in a note Right-click on the link
 
@@ -92,7 +92,7 @@ https://youtu.be/iyIG6LmCcuc
 ### Cycle through preset values
 
 1. In the settings, follow the steps 1 to 3 of previous section
-2. Toggle the `isCycle` switch
+2. Select the `Cycle` value from the dropdown select list
 
 Back in a note Right-click on the link
 
