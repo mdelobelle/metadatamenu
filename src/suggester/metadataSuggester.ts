@@ -86,8 +86,6 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
               break;
             }
           }
-          console.log()
-          console.log(this.startSuggesting);
           if (!this.startSuggesting) {
             this.metaStart = null;
             this.metaEnd = null;
