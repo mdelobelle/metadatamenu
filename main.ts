@@ -4,11 +4,10 @@ import { MetadataMenuSettings, DEFAULT_SETTINGS } from "src/settings/MetadataMen
 import type { IMetadataMenuApi } from 'src/MetadataMenuApi';
 import { MetadataMenuApi } from 'src/MetadataMenuApi';
 import Field from 'src/Field';
-import { FieldType } from 'src/types/fieldTypes';
 import linkContextMenu from "src/options/linkContextMenu";
 import NoteFieldsCommandsModal from "src/options/NoteFieldsCommandsModal";
 import FileClassAttributeSelectModal from 'src/fileClass/FileClassAttributeSelectModal';
-import ValueSuggest from "src/suggester/MetadataSuggester";
+import ValueSuggest from "src/suggester/metadataSuggester";
 import { migrateSettingsV1toV2 } from 'src/settings/migrateSettingV1toV2';
 
 export default class MetadataMenu extends Plugin {

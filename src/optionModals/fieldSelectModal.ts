@@ -48,13 +48,13 @@ export default class fieldSelectModal extends Modal {
             })
         };
 
-        settingsSelector.onChange(value => {
-            if (value == "++New") {
+        settingsSelector.onChange(selectedFieldName => {
+            if (selectedFieldName == "++New") {
                 const newFieldModal = new addNewFieldModal(this.plugin, this.lineNumber, this.file, this.inFrontmatter, this.top);
                 newFieldModal.open();
                 this.close();
             } else if (this.fileClass) {
-                const fileClassAttributesWithName = this.fileClass.attributes.filter(attr => attr.name == value);
+                const fileClassAttributesWithName = this.fileClass.attributes.filter(attr => attr.name == selectedFieldName);
                 let field: Field | undefined
                 let type: string | undefined
                 if (fileClassAttributesWithName.length > 0) {
@@ -68,25 +68,25 @@ export default class fieldSelectModal extends Modal {
                         //fall-through
                         case "select": {
                             const fieldModal = new valueSelectModal(this.app, this.file, field.name, "", field, this.lineNumber, this.inFrontmatter, this.top);
-                            fieldModal.titleEl.setText(`Select option for ${value}`);
+                            fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
                             fieldModal.open();
                             break;
                         }
                         case "multi": {
                             const fieldModal = new valueMultiSelectModal(this.app, this.file, field.name, "", field, this.lineNumber, this.inFrontmatter, this.top);
-                            fieldModal.titleEl.setText(`Select options for ${value}`);
+                            fieldModal.titleEl.setText(`Select options for ${selectedFieldName}`);
                             fieldModal.open();
                             break;
                         }
                         case "boolean": {
                             const fieldModal = new valueToggleModal(this.app, this.file, field.name, false, this.lineNumber, this.inFrontmatter, this.top)
-                            fieldModal.titleEl.setText(`Set value for ${value}`);
+                            fieldModal.titleEl.setText(`Set value for ${selectedFieldName}`);
                             fieldModal.open();
                             break;
                         }
                         default: {
-                            const fieldModal = new valueTextInputModal(this.app, this.file, value, "", this.lineNumber, this.inFrontmatter, this.top);
-                            fieldModal.titleEl.setText(`Enter value for ${value}`);
+                            const fieldModal = new valueTextInputModal(this.app, this.file, field, "", this.lineNumber, this.inFrontmatter, this.top);
+                            fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
                             fieldModal.open();
                             "break"
                         };
@@ -94,12 +94,12 @@ export default class fieldSelectModal extends Modal {
                 }
                 this.close()
             } else {
-                const field = this.plugin.settings.presetFields.filter(_field => _field.name == value)[0];
+                const field = this.plugin.settings.presetFields.filter(_field => _field.name == selectedFieldName)[0];
                 switch (field.type) {
                     case FieldType.Multi:
                         {
                             const fieldModal = new valueMultiSelectModal(this.app, this.file, field.name, "", field, this.lineNumber, this.inFrontmatter, this.top);
-                            fieldModal.titleEl.setText(`Select Options for ${value}`);
+                            fieldModal.titleEl.setText(`Select Options for ${selectedFieldName}`);
                             fieldModal.open();
                             break;
                         }
@@ -108,28 +108,30 @@ export default class fieldSelectModal extends Modal {
                     case FieldType.Select:
                         {
                             const fieldModal = new valueSelectModal(this.app, this.file, field.name, "", field, this.lineNumber, this.inFrontmatter, this.top);
-                            fieldModal.titleEl.setText(`Select option for ${value}`);
+                            fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
                             fieldModal.open();
                             break;
                         }
                     case FieldType.Boolean:
                         {
                             const fieldModal = new valueToggleModal(this.app, this.file, field.name, false, this.lineNumber, this.inFrontmatter, this.top)
-                            fieldModal.titleEl.setText(`Set value for ${value}`);
+                            fieldModal.titleEl.setText(`Set value for ${selectedFieldName}`);
                             fieldModal.open();
                             break;
                         }
+                    case FieldType.Number:
+                    //fall-through
                     case FieldType.Input:
                         {
-                            const fieldModal = new valueTextInputModal(this.app, this.file, value, "", this.lineNumber, this.inFrontmatter, this.top);
-                            fieldModal.titleEl.setText(`Enter value for ${value}`);
+                            const fieldModal = new valueTextInputModal(this.app, this.file, field, "", this.lineNumber, this.inFrontmatter, this.top);
+                            fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
                             fieldModal.open();
                             break;
                         }
                     default:
                         {
-                            const fieldModal = new valueTextInputModal(this.app, this.file, value, "", this.lineNumber, this.inFrontmatter, this.top);
-                            fieldModal.titleEl.setText(`Enter value for ${value}`);
+                            const fieldModal = new valueTextInputModal(this.app, this.file, field, "", this.lineNumber, this.inFrontmatter, this.top);
+                            fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
                             fieldModal.open();
                             break;
                         }

@@ -128,7 +128,6 @@
 }
 
 .metadata-menu-date-parser-label{
-    margin-top: -4px;
     margin-right: 0.2em;
     font-size: x-large;
 }
@@ -175,6 +174,10 @@
 
 .metadata-menu-setting-item-info-type.select{
     background-color: #556b77;
+}
+
+.metadata-menu-setting-item-info-type.number{
+    background-color: #689d6a;
 }
 
 .metadata-menu-setting-section-header{

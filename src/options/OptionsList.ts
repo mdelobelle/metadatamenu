@@ -145,11 +145,15 @@ export default class OptionsList {
 						};
 						this.addToggleMenuOption(key, toBooleanValue);
 						break;
-					case FieldType.Input: this.addTextInputMenuOption(key, value ? value.toString() : ""); break;
-					default: this.addTextInputMenuOption(key, value ? value.toString() : ""); break;
+					case FieldType.Number:
+					//fall-through
+					case FieldType.Input: this.addTextInputMenuOption(key, value ? value.toString() : "", propertySettings); break;
+					default: this.addTextInputMenuOption(key, value ? value.toString() : "", propertySettings); break;
 				}
 			} else {
-				this.addTextInputMenuOption(key, value ? value.toString() : "");
+				const defaultField = new Field(key)
+				defaultField.type = FieldType.Input
+				this.addTextInputMenuOption(key, value ? value.toString() : "", defaultField);
 			}
 		});
 	};
@@ -171,8 +175,8 @@ export default class OptionsList {
 		};
 	};
 
-	private addCycleMenuOption(name: string, option: string, propertySettings: Field): void {
-		const options = propertySettings.options;
+	private addCycleMenuOption(name: string, option: string, field: Field): void {
+		const options = field.options;
 		const keys = Object.keys(options);
 		const keyForValue = keys.find(key => options[key] === option);
 		let nextOption: string;
@@ -198,8 +202,8 @@ export default class OptionsList {
 		};
 	};
 
-	private addMultiMenuOption(name: string, value: string, propertySettings: Field): void {
-		const modal = new valueMultiSelectModal(this.plugin.app, this.file, name, value, propertySettings);
+	private addMultiMenuOption(name: string, value: string, field: Field): void {
+		const modal = new valueMultiSelectModal(this.plugin.app, this.file, name, value, field);
 		modal.titleEl.setText("Select values");
 		if (isMenu(this.category)) {
 			this.category.addItem((item) => {
@@ -216,8 +220,8 @@ export default class OptionsList {
 		};
 	};
 
-	private addSelectMenuOption(name: string, value: string, propertySettings: Field): void {
-		const modal = new valueSelectModal(this.plugin.app, this.file, name, value, propertySettings);
+	private addSelectMenuOption(name: string, value: string, field: Field): void {
+		const modal = new valueSelectModal(this.plugin.app, this.file, name, value, field);
 		modal.titleEl.setText("Select value");
 		if (isMenu(this.category)) {
 			this.category.addItem((item) => {
@@ -246,8 +250,8 @@ export default class OptionsList {
 		};
 	};
 
-	private addTextInputMenuOption(name: string, value: string): void {
-		const modal = new valueTextInputModal(this.plugin.app, this.file, name, value);
+	private addTextInputMenuOption(name: string, value: string, field: Field): void {
+		const modal = new valueTextInputModal(this.plugin.app, this.file, field, value);
 		modal.titleEl.setText(`Change Value for <${name}>`);
 		if (isMenu(this.category)) {
 			this.category.addItem((item) => {

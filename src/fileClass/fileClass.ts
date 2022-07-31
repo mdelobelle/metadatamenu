@@ -98,7 +98,7 @@ class FileClass {
         }
     }
 
-    public async updateAttribute(newType: keyof typeof FieldType, newOptions: string[], newName: string, attr?: FileClassAttribute): Promise<void> {
+    public async updateAttribute(newType: keyof typeof FieldType, newName: string, newOptions?: string[] | Record<string, string>, attr?: FileClassAttribute): Promise<void> {
         const file = this.getClassFile();
         let result = await this.plugin.app.vault.read(file)
         if (attr) {
@@ -110,7 +110,7 @@ class FileClass {
                     } else {
                         let settings: Record<string, any> = {};
                         settings["type"] = newType;
-                        settings["options"] = newOptions;
+                        if (newOptions) settings["options"] = newOptions;
                         newContent.push(`${newName}:: ${JSON.stringify(settings)}`);
                     }
                 } else {
@@ -121,7 +121,7 @@ class FileClass {
         } else {
             let settings: Record<string, any> = {};
             settings["type"] = newType;
-            settings["options"] = newOptions;
+            if (newOptions) settings["options"] = newOptions;
             result += (`\n${newName}:: ${JSON.stringify(settings)}`);
             await this.plugin.app.vault.modify(file, result);
         }

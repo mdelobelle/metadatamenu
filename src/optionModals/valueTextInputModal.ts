@@ -1,21 +1,23 @@
 import { App, Modal, TextComponent, TFile, ToggleComponent } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
+import Field from "src/Field";
+import { FieldType } from "src/types/fieldTypes";
 
 export default class valueTextInputModal extends Modal {
 
     private file: TFile;
-    private name: string;
     private value: string;
     private lineNumber: number;
     private inFrontmatter: boolean;
     private top: boolean;
     private parseDate: boolean = false;
+    private field: Field;
 
-    constructor(app: App, file: TFile, name: string, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
+    constructor(app: App, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
         super(app);
         this.app = app;
         this.file = file;
-        this.name = name;
+        this.field = field;
         this.value = value;
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
@@ -29,23 +31,24 @@ export default class valueTextInputModal extends Modal {
 
     buildDateParseToggler(container: HTMLElement) {
         //@ts-ignore
-        if (app.plugins.plugins.hasOwnProperty('nldates-obsidian')) {
-            //@ts-ignore
-            const nldates = app.plugins.plugins['nldates-obsidian'];
-            const dateParserLabel = container.createDiv({
-                cls: "metadata-menu-date-parser-label"
-            });
-            dateParserLabel.setText("📆");
-            const dateParserToggler = new ToggleComponent(container);
-            dateParserToggler.onChange(value => {
-                this.parseDate = value;
-            });
-            dateParserLabel.onclick = () => dateParserToggler.setValue(!this.parseDate);
-        };
+        const nldates = app.plugins.plugins['nldates-obsidian'];
+        const dateParserLabel = container.createDiv({
+            cls: "metadata-menu-date-parser-label"
+        });
+        dateParserLabel.setText("📆");
+        const dateParserToggler = new ToggleComponent(container);
+        dateParserToggler.setValue(this.parseDate)
+        dateParserToggler.onChange(value => {
+            this.parseDate = value;
+        });
+        dateParserLabel.onclick = () => dateParserToggler.setValue(!this.parseDate);
     };
 
     private buildInputEl(inputDiv: HTMLDivElement): void {
-        this.buildDateParseToggler(inputDiv);
+        //@ts-ignore
+        if (app.plugins.plugins.hasOwnProperty('nldates-obsidian') && this.field.type === FieldType.Input) {
+            this.buildDateParseToggler(inputDiv);
+        };
         const form = inputDiv.createEl("form");
         form.type = "submit";
 
@@ -58,7 +61,7 @@ export default class valueTextInputModal extends Modal {
             e.preventDefault();
             let inputValue = inputEl.getValue();
             //@ts-ignore
-            if (app.plugins.plugins.hasOwnProperty('nldates-obsidian') && this.parseDate) {
+            if (app.plugins.plugins.hasOwnProperty('nldates-obsidian') && this.parseDate && this.field.type === FieldType.Input) {
                 //@ts-ignore
                 const nldates = app.plugins.plugins['nldates-obsidian'];
                 const format = nldates.settings.format;
@@ -77,18 +80,18 @@ export default class valueTextInputModal extends Modal {
                 inputValue = textStart + "[[" + date + "]]" + textEnd;
             }
             if (this.lineNumber == -1) {
-                replaceValues(this.app, this.file, this.name, inputValue);
+                replaceValues(this.app, this.file, this.field.name, inputValue);
             } else {
                 const result = await this.app.vault.read(this.file)
                 let newContent: string[] = [];
                 if (this.top) {
-                    newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${inputValue}`);
+                    newContent.push(`${this.field.name}${this.inFrontmatter ? ":" : "::"} ${inputValue}`);
                     result.split("\n").forEach((line, _lineNumber) => newContent.push(line));
                 } else {
                     result.split("\n").forEach((line, _lineNumber) => {
                         newContent.push(line);
                         if (_lineNumber == this.lineNumber) {
-                            newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${inputValue}`);
+                            newContent.push(`${this.field.name}${this.inFrontmatter ? ":" : "::"} ${inputValue}`);
                         };
                     });
                 };
@@ -97,6 +100,5 @@ export default class valueTextInputModal extends Modal {
             };
             this.close();
         };
-
     };
 };

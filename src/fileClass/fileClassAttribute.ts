@@ -6,7 +6,7 @@ import { genericFieldRegex } from "src/utils/parser";
 interface FileClassAttribute {
     name: string;
     type: FieldType;
-    options: string[];
+    options: string[] | Record<string, string>;
 }
 
 class FileClassAttribute {
@@ -39,9 +39,13 @@ class FileClassAttribute {
 
     public getField() {
         let options: Record<string, string> = {};
-        this.options?.forEach((option, index) => {
-            options[index] = option;
-        })
+        if (Array.isArray(this.options)) {
+            this.options?.forEach((option, index) => {
+                options[index] = option;
+            })
+        } else {
+            options = this.options
+        }
         return new Field(this.name, options, this.name, undefined, this.type);
     }
 }

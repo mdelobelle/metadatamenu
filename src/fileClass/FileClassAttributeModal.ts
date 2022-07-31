@@ -3,18 +3,29 @@ import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
 import { FieldTypeTooltip, FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 import { FileClass } from "src/fileClass/fileClass";
 import MetadataMenu from "main";
-
+import Field from "src/Field";
 
 interface FileClassAttributeModal {
     attr?: FileClassAttribute;
     fileClass: FileClass;
     type: FieldType;
-    options: string[];
     name: string;
     plugin: MetadataMenu
 }
 
 class FileClassAttributeModal extends Modal {
+
+    private nameInputContainer: HTMLDivElement;
+    private nameInput: TextComponent;
+    private typeSelectContainer: HTMLDivElement;
+    private typeSelect: DropdownComponent;
+    private multiValuesContainer: HTMLDivElement;
+    private multiValuesInput: TextAreaComponent;
+    private numberOptionsContainer: HTMLDivElement;
+    private numberStepInput: TextComponent;
+    private numberMinInput: TextComponent;
+    private numberMaxInput: TextComponent;
+    private errorMessageContainer: HTMLDivElement;
 
     constructor(plugin: MetadataMenu, fileClass: FileClass, attr?: FileClassAttribute) {
         super(plugin.app);
@@ -23,8 +34,122 @@ class FileClassAttributeModal extends Modal {
         this.fileClass = fileClass;
         if (this.attr) {
             this.type = FieldTypeLabelMapping[this.attr.type];
-            this.options = this.attr.options;
             this.name = this.attr.name;
+        }
+        this.nameInputContainer = this.contentEl.createDiv();
+        this.typeSelectContainer = this.contentEl.createDiv({ cls: 'metadata-menu-value-selector-container' });
+        this.errorMessageContainer = this.contentEl.createDiv()
+        this.errorMessageContainer.hide()
+        this.multiValuesContainer = this.contentEl.createDiv({ cls: 'metadata-menu-value-selector-container' });
+        this.numberOptionsContainer = this.contentEl.createDiv({ cls: "metadata-menu-number-options" });
+    }
+
+    buildNameInputContainer(): void {
+        this.nameInputContainer.setText("name");
+        this.nameInput = new TextComponent(this.nameInputContainer);
+        this.attr ? this.nameInput.setValue(this.attr.name) : this.nameInput.setPlaceholder("Type a name for this attribute");
+    }
+
+    buildTypeSelectContainer(): void {
+        const typeSelectLabel = this.typeSelectContainer.createDiv({ cls: 'metadata-menu-value-selector-inline-label' });
+        typeSelectLabel.setText("will: ");
+        const typeSelectDropDown = this.typeSelectContainer.createDiv({ cls: 'metadata-menu-value-selector-toggler' });
+        this.typeSelect = new DropdownComponent(typeSelectDropDown);
+        Object.keys(FieldTypeTooltip).forEach((key: keyof typeof FieldType) => {
+            this.typeSelect.addOption(key, FieldTypeTooltip[key]);
+        })
+        if (this.attr) {
+            this.typeSelect.setValue(this.type);
+        }
+    }
+
+    buildValuesArrayInputContainer(): void {
+        const container = this.multiValuesContainer
+        const multiValuesInputLabel = container.createDiv({ cls: 'metadata-menu-value-selector-inline-label-top' });
+        multiValuesInputLabel.setText("Options");
+        this.multiValuesInput = new TextAreaComponent(container);
+        const input = this.multiValuesInput
+        input.inputEl.rows = 3;
+        input.inputEl.cols = 26;
+        this.attr && Array.isArray(this.attr?.options) ? input.setValue(this.attr.options.join(", ")) : input.setPlaceholder("insert options, comma separated");
+    }
+
+    buildNumberOptionsContainer(): void {
+        const { step, max, min } = this.attr?.options as Record<string, string> || {}
+        //number step
+        this.numberOptionsContainer.createEl("span", { text: "Step (optional)", cls: 'metadata-menu-field-option' })
+        this.numberStepInput = new TextComponent(this.numberOptionsContainer)
+        this.numberStepInput.setValue(step || "")
+        //number min
+        this.numberOptionsContainer.createEl("span", { text: "Min value (optional)", cls: 'metadata-menu-field-option' })
+        this.numberMinInput = new TextComponent(this.numberOptionsContainer)
+        this.numberMinInput.setValue(min || "")
+        //number max
+        this.numberOptionsContainer.createEl("span", { text: "Max value (optional)", cls: 'metadata-menu-field-option' })
+        this.numberMaxInput = new TextComponent(this.numberOptionsContainer)
+        this.numberMaxInput.setValue(max || "")
+    }
+
+    displaySection(): void {
+        switch (this.type) {
+            case FieldType.Input:
+            //fall-through
+            case FieldType.Boolean:
+                this.multiValuesContainer.hide();
+                this.numberOptionsContainer.hide();
+                break;
+            case FieldType.Multi:
+            //fall-through
+            case FieldType.Cycle:
+            //fall-through
+            case FieldType.Select:
+                this.multiValuesContainer.show();
+                this.numberOptionsContainer.hide();
+                break;
+            case FieldType.Number:
+                this.multiValuesContainer.hide();
+                this.numberOptionsContainer.show();
+                break;
+            default:
+                break;
+        }
+    }
+
+    cleanOptions(): Record<string, string> | string[] | undefined {
+        switch (this.type) {
+            case FieldType.Boolean:
+            //fall-through
+            case FieldType.Input:
+                return undefined
+            case FieldType.Select:
+            //fall-through
+            case FieldType.Multi:
+            //fall-through:
+            case FieldType.Cycle:
+                try {
+                    return this.multiValuesInput.getValue().split(",").map(item => item.trim())
+                } catch (error) {
+                    throw Error("Wrong format for this type of field: please use string values, comma separated")
+                }
+            case FieldType.Number:
+                try {
+                    const step = this.numberStepInput.getValue().trim();
+                    const min = this.numberMinInput.getValue().trim();
+                    const max = this.numberMaxInput.getValue().trim();
+                    if (!step && !min && !max) {
+                        return undefined
+                    } else {
+                        return {
+                            "step": this.numberStepInput.getValue().trim(),
+                            "min": this.numberMinInput.getValue().trim(),
+                            "max": this.numberMaxInput.getValue().trim(),
+                        }
+                    }
+                } catch (error) {
+                    throw Error("Wrong format for this type of field: please use string values, comma separated")
+                }
+            default:
+                break;
         }
     }
 
@@ -33,10 +158,7 @@ class FileClassAttributeModal extends Modal {
         this.titleEl.setText(this.attr ? `Manage ${this.attr.name}` : `Create a new attribute for ${this.fileClass.name}`);
 
         //name input
-        const nameInputContainer = this.contentEl.createDiv();
-        nameInputContainer.setText("name");
-        const nameInput = new TextComponent(nameInputContainer);
-        this.attr ? nameInput.setValue(this.attr.name) : nameInput.setPlaceholder("Type a name for this attribute");
+        this.buildNameInputContainer()
 
         //header for select
         const typeSelectHeader = this.contentEl.createDiv();
@@ -48,44 +170,29 @@ class FileClassAttributeModal extends Modal {
             typeSelectHeader.createEl("div", "yaml-metadata-menu-red").setText(line);
         })
 
-        // type select
-        const typeSelectContainer = this.contentEl.createDiv({ cls: 'metadata-menu-value-selector-container' });
-        const typeSelectLabel = typeSelectContainer.createDiv({ cls: 'metadata-menu-value-selector-inline-label' });
-        typeSelectLabel.setText("will: ");
-        const typeSelectDropDown = typeSelectContainer.createDiv({ cls: 'metadata-menu-value-selector-toggler' });
-        const typeSelect = new DropdownComponent(typeSelectDropDown);
-        Object.keys(FieldTypeTooltip).forEach((key: keyof typeof FieldType) => {
-            typeSelect.addOption(key, FieldTypeTooltip[key]);
-        })
-        if (this.attr) {
-            typeSelect.setValue(this.type);
-        }
-
-        // options input
-        const optionsInputContainer = this.contentEl.createDiv({ cls: 'metadata-menu-value-selector-container' });
-        const optionsInputLabel = optionsInputContainer.createDiv({ cls: 'metadata-menu-value-selector-inline-label-top' });
-        optionsInputLabel.setText("Options");
-        const optionsInput = new TextAreaComponent(optionsInputContainer);
-        optionsInput.inputEl.rows = 3;
-        optionsInput.inputEl.cols = 26;
-        this.attr ? optionsInput.setValue(this.type === FieldType.Input || this.type === FieldType.Boolean ? "" : this.options?.join(", ")) : optionsInput.setPlaceholder("insert options, comma separated");
-        !this.attr || this.type === FieldType.Input || this.type === FieldType.Boolean ? optionsInputContainer.hide() : optionsInputContainer.show();
+        this.buildTypeSelectContainer()
+        this.buildValuesArrayInputContainer()
+        this.buildNumberOptionsContainer()
+        this.displaySection()
 
         // event handlers
-        typeSelect.onChange((type: keyof typeof FieldType) => {
-            type === FieldType.Input || type === FieldType.Boolean ? optionsInputContainer.hide() : optionsInputContainer.show();
+        this.nameInput.onChange(value => { this.name = value; attrName.setText(`<${value}>`) });
+        this.typeSelect.onChange((type: keyof typeof FieldType) => {
             this.type = FieldTypeLabelMapping[type];
+            this.displaySection()
         })
-        optionsInput.onChange(value => this.options = value.split(",").map(item => item.trim()));
-        nameInput.onChange(value => { this.name = value; attrName.setText(`<${value}>`) });
-
         // footer buttons
         const footer = this.contentEl.createDiv({ cls: "metadata-menu-value-grid-footer" });
         const saveButton = new ButtonComponent(footer);
         saveButton.setIcon("checkmark");
         saveButton.onClick(() => {
-            this.fileClass.updateAttribute(this.type, this.options, this.name, this.attr);
-            this.close();
+            try {
+                this.fileClass.updateAttribute(this.type, this.name, this.cleanOptions(), this.attr);
+                this.close();
+            } catch (error) {
+                this.errorMessageContainer.setText(error)
+            }
+
         })
         if (this.attr) {
             const removeButton = new ButtonComponent(footer);
