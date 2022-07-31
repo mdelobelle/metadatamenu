@@ -99,7 +99,7 @@ export default class OptionsList {
 
 	private async createExtraOptionsListForInlineFields(file: TFile, fileClassForFields: boolean = false, fileClassFields: string[] = []): Promise<void> {
 		let attributes: Record<string, string> = {};
-		const regex = new RegExp(`^${genericFieldRegex}::\s*(?<values>.+)?`, "u");
+		const regex = new RegExp(`^${genericFieldRegex}::\\s*(?<values>[^\\]\\)\\n]+[\\]\\)])?`, "u");
 		const result = await this.plugin.app.vault.read(file)
 		result.split('\n').map(line => {
 			const regexResult = line.match(regex);

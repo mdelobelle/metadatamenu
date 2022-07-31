@@ -21,7 +21,8 @@ const types: Record<string, string> = {
 class FileClassAttribute {
 
     constructor(raw: string) {
-        const completeRegex = new RegExp(`^${genericFieldRegex}::(?<fieldSettings>.+)?`, "u");
+        const completeRegex = new RegExp(`^${genericFieldRegex}::(?<fieldSettings>[^\\]\\)\\n]+)?`, "u");
+
         const nameRegex = new RegExp(`^${genericFieldRegex}$`, "u");
         let fieldName: string
         let { attribute, fieldSettings } = raw.match(completeRegex)?.groups || {}
