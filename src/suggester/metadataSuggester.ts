@@ -13,6 +13,7 @@ import {
 } from "obsidian";
 import { createFileClass, FileClass } from "src/fileClass/fileClass";
 import { genericFieldRegex } from "../utils/parser";
+import { inlineMultipleFieldRegex } from "../utils/parser";
 
 interface IValueCompletion {
     value: string;
@@ -23,13 +24,17 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     private app: App;
     private fileClass: FileClass;
     private inFrontmatter: boolean = false;
-    private didSelect: boolean = false
+    private fieldLocation: string = null;
+    private didSelect: boolean = false;
+    private metaStart: number = null;
+    private metaEnd: number = null;
+    private startSuggesting: boolean = false;
 
     constructor(app: App, plugin: MetadataMenu) {
         super(app);
         this.app = app;
         this.plugin = plugin;
-        this.setInstructions([{ command: "Shift", purpose: "put a space after::" }]);
+        this.setInstructions([{ command: "Shift", purpose: "Select multiple" }]);
 
         // @ts-ignore
         this.scope.register(["Shift"], "Enter", (evt: KeyboardEvent) => {
@@ -53,17 +58,48 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         };
         //@ts-ignore
         const frontmatter = this.plugin.app.metadataCache.getFileCache(file).frontmatter;
-
         this.inFrontmatter = frontmatter !== undefined && frontmatter.position.start.line < cursor.line && cursor.line < frontmatter.position.end.line
-        const regex = this.inFrontmatter ? new RegExp(`^${genericFieldRegex}:(?<values>.*)`, "u") : new RegExp(`^${genericFieldRegex}::(?<values>.*)`, "u")
-        const fullLine = editor.getLine(editor.getCursor().line)
-        if (!regex.test(fullLine)) {
-            return null
+        const fullLine = editor.getLine(cursor.line);
+        this.startSuggesting = false;
+        let regex;
+        regex = new RegExp(`${inlineMultipleFieldRegex}::`, "u");
+        if (this.inFrontmatter) {
+          regex = new RegExp(`^${genericFieldRegex}:\\s*?(?<values>.*)?`, "u");
+          this.fieldLocation = "frontmatter";
+        } else if (!fullLine.match(regex)) {
+          regex = new RegExp(`^${genericFieldRegex}:\\s*?(?<values>.*)?`, "u");
+          this.fieldLocation = "inlineSingle";
+        } else if (fullLine.match(regex)) {
+          regex = new RegExp(`^${inlineMultipleFieldRegex}::\\s*?(?<values>[^\\]\\)\\n]*)(?<endField>[\\]\\)]*)(?<tail>.)*`, "u");
+          this.fieldLocation = "inlineMultiple";
+        }
+        ;
+        const lineLength = fullLine.length;
+        const character = cursor.ch;
+        const line = cursor.line;
+        const currentRegex = null;
+        if(this.fieldLocation == "inlineMultiple") {
+          for(let i = character; i >= 0; i--){
+            if(fullLine.substring(i, character).match(regex) && !Boolean(fullLine.substring(i-1, character).match(regex)) && !Boolean(fullLine.substring(i, character).match(regex).groups.tail) && !Boolean(fullLine.substring(i, character).match(regex).groups.endField)){
+              this.metaStart = i;
+              this.startSuggesting = true;
+              break;
+            }
+          }
+          console.log()
+          console.log(this.startSuggesting);
+          if (!this.startSuggesting) {
+            this.metaStart = null;
+            this.metaEnd = null;
+            return null;
+          }
+        } else if (!regex.test(fullLine)) {
+          return null 
         }
         return {
-            start: cursor,
-            end: cursor,
-            query: editor.getLine(cursor.line),
+          start: cursor,
+          end: cursor,
+          query: fullLine
         };
     };
 
@@ -80,15 +116,39 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     };
 
     async getValueSuggestions(context: EditorSuggestContext): Promise<IValueCompletion[]> {
-        const line = context.start.line;
+        const lineLength = context.query.length;
         let regex;
-        if (!this.inFrontmatter) {
-            regex = new RegExp(`^${genericFieldRegex}::(?<values>.+)?`, "u");
-        } else {
-            regex = new RegExp(`^${genericFieldRegex}:(?<values>.+)?`, "u");
+        let regexResult;
+        switch(this.fieldLocation){
+          case "frontmatter":
+            regex = new RegExp(`^${genericFieldRegex}:\\s*?(?<values>.*)`, "u");
+            break;
+          case "inlineSingle":
+            regex = new RegExp(`^${genericFieldRegex}::\\s*?(?<values>.*)`, "u");
+            break;
+          case "inlineMultiple":
+            regex = new RegExp(`^${inlineMultipleFieldRegex}::\\s*?(?<values>[^\\]\\)\\n]*)(?<endField>[\\]\\)]*)(?<tail>.)*`, "u");
+            break;
         };
-        const regexResult = context.editor.getRange({ line: line, ch: 0 }, context.end).match(regex);
-
+        if(this.fieldLocation == "inlineMultiple"){
+          for(let i = context.start.ch; i <= lineLength; i++){
+            if(context.query.substring(this.metaStart, i).match(regex) && !context.query.substring(this.metaStart, i).match(regex).groups.tail){
+              this.metaEnd = i;
+              break;
+            }
+          }
+        }
+        switch(this.fieldLocation){
+          case "frontmatter":
+            regexResult = context.query.match(regex);
+            break;
+          case "inlineSingle":
+            regexResult = context.query.match(regex);
+            break;
+          case "inlineMultiple":
+            regexResult = context.query.substring(this.metaStart, this.metaEnd).match(regex);
+            break;
+        };
         if (regexResult && regexResult.groups?.attribute) {
             const fieldName = regexResult.groups.attribute;
             const valuesList = regexResult.groups.values?.replace(/^\[|^\s\[/, '').replace(/\]$/, '').split(",").map(o => o.trim())
@@ -165,7 +225,15 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             return;
         };
         const editor = activeView.editor;
-        const activeLine = editor.getLine(this.context!.start.line);
+        switch(this.fieldLocation){
+            case "frontmatter":
+              this.metaEnd = editor.end;
+              break;
+            case "inlineSingle":
+              this.metaEnd = editor.end;
+              break;
+        };
+        const activeLine = editor.getRange({ line: this.context.start.line, ch: this.metaStart }, {line: this.context.start.line, ch: this.metaEnd});
 
         if (this.inFrontmatter) {
             //format list if in frontmatter
@@ -210,8 +278,8 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             while (![',', ':'].contains(cleanedLine.charAt(cleanedLine.length - 1))) {
                 cleanedLine = cleanedLine.slice(0, -1)
             }
-            editor.replaceRange(`${cleanedLine}${event.shiftKey ? " " : ""}` + suggestion.value,
-                { line: this.context!.start.line, ch: 0 }, this.context!.end);
+            editor.replaceRange(`${cleanedLine} ` + suggestion.value + `${event.shiftKey ? "," : ""}`, { line: this.context.start.line, ch: this.metaStart }, 
+                {line: this.context.start.line, ch: this.metaEnd});
         }
         this.didSelect = true
         this.close()
