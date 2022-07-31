@@ -145,6 +145,11 @@
     margin-bottom: 20px;
 }
 
+.metadata-menu-field-option {
+    display: flex;
+    margin-top: 1em;
+}
+
 .metadata-menu-setting-item-info-type{
     border-radius: 12px;
     padding: 1px 12px 3px 12px;
@@ -167,7 +172,6 @@
 .metadata-menu-setting-item-info-type.single{
     background-color: #5e81ac;
 }
-
 
 .metadata-menu-setting-item-info-type.select{
     background-color: #556b77;

@@ -7,7 +7,6 @@ import FieldSetting from "src/settings/FieldSetting";
 export default class FieldSettingsModal extends Modal {
     private namePromptComponent: TextComponent;
     private valuesPromptComponents: Array<TextComponent> = [];
-    private typeSelectComponent: DropdownComponent;
     private presetValuesFields: HTMLDivElement;
     private numberValidatorField: HTMLDivElement;
     private saved: boolean = false;
@@ -18,7 +17,6 @@ export default class FieldSettingsModal extends Modal {
     private new: boolean = true;
     private parentSettingContainer: HTMLElement;
 
-
     constructor(app: App, plugin: MetadataMenu, parentSettingContainer: HTMLElement, parentSetting?: FieldSetting, property?: Field) {
         super(app);
         this.plugin = plugin;
@@ -28,11 +26,7 @@ export default class FieldSettingsModal extends Modal {
         if (property) {
             this.new = false;
             this.property = property;
-            this.initialProperty.name = property.name;
-            this.initialProperty.id = property.id;
-            Object.keys(property.options).forEach(k => {
-                this.initialProperty.options[k] = property.options[k];
-            });
+            Field.copyProperty(this.initialProperty, this.property)
         } else {
             let newId = 1;
             this.plugin.initialProperties.forEach(prop => {
@@ -68,7 +62,34 @@ export default class FieldSettingsModal extends Modal {
         header.setText(`Preset options: ${Object.values(this.property.options).join(', ')}`);
     };
 
-    private createTypeSelectorContainer(parentNode: HTMLDivElement): DropdownComponent {
+    private showSection(fieldType: FieldType): void {
+        switch (fieldType) {
+            case FieldType.Multi:
+            //fall-through
+            case FieldType.Cycle:
+            //fall-through
+            case FieldType.Select:
+                this.presetValuesFields.show()
+                this.numberValidatorField.hide()
+                break;
+            case FieldType.Number:
+                this.presetValuesFields.hide()
+                this.numberValidatorField.show()
+                break;
+            case FieldType.Boolean:
+            //fall-through
+            case FieldType.Input:
+                this.presetValuesFields.hide()
+                this.numberValidatorField.hide()
+                break;
+            default:
+                this.presetValuesFields.hide()
+                this.numberValidatorField.hide()
+                break;
+        }
+    }
+
+    private createTypeSelectorContainer(parentNode: HTMLDivElement): void {
         const typeSelectorContainerLabel = parentNode.createDiv();
         typeSelectorContainerLabel.setText(`Property type:`);
         const select = new DropdownComponent(parentNode);
@@ -78,9 +99,8 @@ export default class FieldSettingsModal extends Modal {
         }
         select.onChange((typeLabel: keyof typeof FieldType) => {
             this.property.type = FieldTypeLabelMapping[typeLabel];
-            [FieldType.Multi, FieldType.Cycle, FieldType.Select].contains(this.property.type) ? this.presetValuesFields.show() : this.presetValuesFields.hide()
+            this.showSection(this.property.type)
         })
-        return select
     }
 
     private createnameInputContainer(parentNode: HTMLDivElement): TextComponent {
@@ -98,13 +118,27 @@ export default class FieldSettingsModal extends Modal {
         return input;
     };
 
-    /*
-    private createNumberContainer(parentNode: HTMLDivElement): HTMLDivElement {
-        const stepContainer = parentNode.createDiv()
-        const stepLabel = stepContainer.createEl("span", "Step (optional)")
-        const stepValue = new TextComponent(stepContainer)
+
+    private createNumberContainer(parentNode: HTMLDivElement): void {
+        parentNode.createEl("span", { text: "Step (optional)", cls: 'metadata-menu-field-option' })
+        const stepValue = new TextComponent(parentNode)
+        stepValue.setValue(this.property.options.step || "")
+        parentNode.createEl("span", { text: "Min value (optional)", cls: 'metadata-menu-field-option' })
+        const minValue = new TextComponent(parentNode)
+        minValue.setValue(this.property.options.min || "")
+        parentNode.createEl("span", { text: "Max value (optional)", cls: 'metadata-menu-field-option' })
+        const maxValue = new TextComponent(parentNode)
+        maxValue.setValue(this.property.options.max || "")
+        stepValue.onChange(value => {
+            this.property.options.step = value
+        })
+        minValue.onChange(value => {
+            this.property.options.min = value
+        })
+        maxValue.onChange(value => {
+            this.property.options.max = value
+        })
     }
-    */
 
     private createListNoteContainer(parentNode: HTMLDivElement): TextComponent {
         const listNoteContainerLabel = parentNode.createDiv({ cls: "metadata-menu-input" });
@@ -189,13 +223,12 @@ export default class FieldSettingsModal extends Modal {
 
         /* Property type selection */
         const typeSelectContainer = mainDiv.createDiv()
-        this.typeSelectComponent = this.createTypeSelectorContainer(typeSelectContainer)
+        this.createTypeSelectorContainer(typeSelectContainer)
 
         /* Number validation */
-        this.numberValidatorField = mainDiv.createDiv()
+        this.numberValidatorField = mainDiv.createDiv({ cls: "metadata-menu-number-options" })
+        this.createNumberContainer(this.numberValidatorField)
         this.numberValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
-
-
 
         /* preset options for multi & cycle */
         this.presetValuesFields = mainDiv.createDiv()
@@ -236,6 +269,9 @@ export default class FieldSettingsModal extends Modal {
         const footerButtons = new Setting(footerEl);
         footerButtons.addButton((b) => this.createSaveButton(b));
         footerButtons.addExtraButton((b) => this.createCancelButton(b));
+
+        /* initial state */
+        this.showSection(this.property.type)
     };
 
     private createSaveButton(b: ButtonComponent): ButtonComponent {
