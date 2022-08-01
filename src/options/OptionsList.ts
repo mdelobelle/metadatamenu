@@ -2,8 +2,9 @@ import MetadataMenu from "main";
 import { App, TFile, Menu } from "obsidian";
 import valueMultiSelectModal from "src/optionModals/valueMultiSelectModal";
 import valueTextInputModal from "src/optionModals/valueTextInputModal";
+import numbertModal from "src/optionModals/numberModal";
 import valueSelectModal from "src/optionModals/valueSelectModal";
-import Field from "src/Field";
+import Field from "src/fields/Field";
 import { FieldType } from "src/types/fieldTypes";
 import chooseSectionModal from "../optionModals/chooseSectionModal";
 import SelectModal from "src/optionModals/SelectModal";
@@ -125,6 +126,18 @@ export default class OptionsList {
 		this.buildExtraOptionsList(attributes,);
 	};
 
+	private stringToBoolean(value: string): boolean {
+		let toBooleanValue: boolean = false;
+		if (isBoolean(value)) {
+			toBooleanValue = value;
+		} else if (/true/i.test(value)) {
+			toBooleanValue = true;
+		} else if (/false/i.test(value)) {
+			toBooleanValue = false;
+		};
+		return toBooleanValue
+	}
+
 	private buildExtraOptionsList(attributes: Record<string, string>) {
 		Object.keys(attributes).forEach((key: string) => {
 			const value = attributes[key];
@@ -134,21 +147,10 @@ export default class OptionsList {
 					case FieldType.Cycle: this.addCycleMenuOption(key, value, propertySettings); break;
 					case FieldType.Multi: this.addMultiMenuOption(key, value, propertySettings); break;
 					case FieldType.Select: this.addSelectMenuOption(key, value, propertySettings); break;
-					case FieldType.Boolean:
-						let toBooleanValue: boolean = false;
-						if (isBoolean(value)) {
-							toBooleanValue = value;
-						} else if (/true/i.test(value)) {
-							toBooleanValue = true;
-						} else if (/false/i.test(value)) {
-							toBooleanValue = false;
-						};
-						this.addToggleMenuOption(key, toBooleanValue);
-						break;
-					case FieldType.Number:
-					//fall-through
+					case FieldType.Boolean: this.addToggleMenuOption(key, this.stringToBoolean(value)); break;
+					case FieldType.Number: this.addNumberMenuOption(key, value, propertySettings); break;
 					case FieldType.Input: this.addTextInputMenuOption(key, value ? value.toString() : "", propertySettings); break;
-					default: this.addTextInputMenuOption(key, value ? value.toString() : "", propertySettings); break;
+					default: break;
 				}
 			} else {
 				const defaultField = new Field(key)
@@ -246,7 +248,7 @@ export default class OptionsList {
 			})
 		} else if (isSelect(this.category)) {
 			this.category.addOption(`update_${name}`, `<${name}> ${value ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);
-			this.category.modals[`update_${name}`] = () => replaceValues(this.plugin.app, this.file, name, (!value).toString());;
+			this.category.modals[`update_${name}`] = () => replaceValues(this.plugin.app, this.file, name, (!value).toString());
 		};
 	};
 
@@ -265,4 +267,46 @@ export default class OptionsList {
 			this.category.modals[`update_${name}`] = () => modal.open();
 		};
 	};
+
+	private addNumberMenuOption(name: string, value: string, field: Field): void {
+		const modal = new numbertModal(this.plugin.app, this.file, field, value);
+		modal.titleEl.setText(`Change Value for <${name}>`);
+		if (isMenu(this.category)) {
+			this.category.addItem((item) => {
+				item.setTitle(`Update <${name}>`);
+				item.setIcon('pencil');
+				item.onClick((evt: MouseEvent) => modal.open());
+				item.setSection("target-metadata");
+			})
+			const { min, max, step } = field.options
+
+			const fMin = parseFloat(min)
+			const fMax = parseFloat(max)
+			const fStep = parseFloat(step)
+			const fValue = parseFloat(value)
+			if (fStep) {
+				if (isNaN(fMin) || (fMin && fValue - fStep > fMin))
+					this.category.addItem((item) => {
+						item.setIcon('pencil');
+						item.setTitle(`<${name}> ➡️ ${fValue - fStep}`);
+						item.onClick(() => {
+							replaceValues(this.plugin.app, this.file, name, (fValue - fStep).toString())
+						})
+						item.setSection("target-metadata");
+					})
+				if (isNaN(fMax) || (fMax && fValue + fStep < fMax))
+					this.category.addItem((item) => {
+						item.setIcon('pencil');
+						item.setTitle(`<${name}> ➡️ ${fValue + fStep}`);
+						item.onClick(() => {
+							replaceValues(this.plugin.app, this.file, name, (fValue + fStep).toString())
+						})
+						item.setSection("target-metadata");
+					})
+			}
+		} else if (isSelect(this.category)) {
+			this.category.addOption(`update_${name}`, `Update <${name}>`);
+			this.category.modals[`update_${name}`] = () => modal.open();
+		};
+	}
 };

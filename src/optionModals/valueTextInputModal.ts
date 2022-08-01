@@ -1,6 +1,6 @@
 import { App, Modal, TextComponent, TFile, ToggleComponent } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
-import Field from "src/Field";
+import Field from "src/fields/Field";
 import { FieldType } from "src/types/fieldTypes";
 
 export default class valueTextInputModal extends Modal {

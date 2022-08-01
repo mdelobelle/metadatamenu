@@ -3,7 +3,7 @@ import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
 import { FieldTypeTooltip, FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 import { FileClass } from "src/fileClass/fileClass";
 import MetadataMenu from "main";
-import Field from "src/Field";
+import Field from "src/fields/Field";
 
 interface FileClassAttributeModal {
     attr?: FileClassAttribute;

@@ -1,5 +1,5 @@
 import MetadataMenu from "main"
-import Field from "../Field"
+import Field from "../fields/Field"
 import { FieldType } from "src/types/fieldTypes"
 
 interface OldField extends Field {

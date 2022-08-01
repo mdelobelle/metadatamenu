@@ -1,5 +1,5 @@
 import { App, Modal, DropdownComponent, TFile, ButtonComponent } from "obsidian";
-import Field from "src/Field";
+import Field from "src/fields/Field";
 import { replaceValues } from "src/commands/replaceValues";
 import FieldSetting from "src/settings/FieldSetting";
 

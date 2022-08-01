@@ -16,13 +16,30 @@
 
 .metadata-menu-prompt-input {
     flex-grow: 1;
-    width: 100%
+    width: 100%;
 }
 
-.metadata-menu-prompt-input {
-    flex-grow: 1;
+.metadata-menu-modal-value-with-btn {
+    display: flex;
+    width: 100%;
+    margin-bottom: 2em;
 }
 
+.metadata-menu-modal-value-with-btn > input {
+    margin-right: 1em;
+    width: 100%;
+    text-align: right;
+}
+
+.metadata-menu-modal-value-with-btn > input.is-invalid {
+    color: red;
+}
+
+.metadata-menu-modal-value-with-btn-error-field{
+    margin-top: -2em;
+    height: 2em;
+    color: red;
+}
 
 .metadata-menu-toggler {
     text-align: center;
@@ -92,6 +109,7 @@
     align-items: center;
     
     padding-top: 10px;
+    margin-bottom: 1em;
 }
 
 .metadata-menu-textarea-buttons {
@@ -136,6 +154,14 @@
 /* Settings Styling */
 .metadata-menu-input input { 
     width: 100%; 
+}
+
+.metadata-menu-prompt-form .invalid-feedback{
+    color: red;
+}
+
+.metadata-menu-prompt-form input.is-invalid{
+    color: red
 }
 
 .metadata-menu-toggle {

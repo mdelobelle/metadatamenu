@@ -1,6 +1,6 @@
 import { App, Modal, Setting, TextComponent, Notice, ButtonComponent, ExtraButtonComponent, DropdownComponent } from "obsidian";
 import MetadataMenu from "main";
-import Field from "src/Field";
+import Field from "src/fields/Field";
 import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 import FieldSetting from "src/settings/FieldSetting";
 
@@ -9,6 +9,9 @@ export default class FieldSettingsModal extends Modal {
     private valuesPromptComponents: Array<TextComponent> = [];
     private presetValuesFields: HTMLDivElement;
     private numberValidatorField: HTMLDivElement;
+    private numberStepValue: TextComponent;
+    private numberMinValue: TextComponent;
+    private numberMaxValue: TextComponent;
     private saved: boolean = false;
     private property: Field;
     private plugin: MetadataMenu;
@@ -120,23 +123,31 @@ export default class FieldSettingsModal extends Modal {
 
 
     private createNumberContainer(parentNode: HTMLDivElement): void {
-        parentNode.createEl("span", { text: "Step (optional)", cls: 'metadata-menu-field-option' })
-        const stepValue = new TextComponent(parentNode)
-        stepValue.setValue(this.property.options.step || "")
-        parentNode.createEl("span", { text: "Min value (optional)", cls: 'metadata-menu-field-option' })
-        const minValue = new TextComponent(parentNode)
-        minValue.setValue(this.property.options.min || "")
-        parentNode.createEl("span", { text: "Max value (optional)", cls: 'metadata-menu-field-option' })
-        const maxValue = new TextComponent(parentNode)
-        maxValue.setValue(this.property.options.max || "")
-        stepValue.onChange(value => {
-            this.property.options.step = value
+        const numberStepValueContainer = parentNode.createDiv();
+        numberStepValueContainer.createEl("span", { text: "Step (optional)", cls: 'metadata-menu-field-option' })
+        this.numberStepValue = new TextComponent(numberStepValueContainer)
+        this.numberStepValue.setValue(this.property.options.step || "")
+
+        const numberMinValueContainer = parentNode.createDiv();
+        numberMinValueContainer.createEl("span", { text: "Min value (optional)", cls: 'metadata-menu-field-option' })
+        this.numberMinValue = new TextComponent(numberMinValueContainer)
+        this.numberMinValue.setValue(this.property.options.min || "")
+
+        const numberMaxValueContainer = parentNode.createDiv();
+        numberMaxValueContainer.createEl("span", { text: "Max value (optional)", cls: 'metadata-menu-field-option' })
+        this.numberMaxValue = new TextComponent(numberMaxValueContainer)
+        this.numberMaxValue.setValue(this.property.options.max || "")
+        this.numberStepValue.onChange(value => {
+            this.property.options.step = value;
+            FieldSettingsModal.removeValidationError(this.numberStepValue);
         })
-        minValue.onChange(value => {
-            this.property.options.min = value
+        this.numberMinValue.onChange(value => {
+            this.property.options.min = value;
+            FieldSettingsModal.removeValidationError(this.numberMinValue);
         })
-        maxValue.onChange(value => {
-            this.property.options.max = value
+        this.numberMaxValue.onChange(value => {
+            this.property.options.max = value;
+            FieldSettingsModal.removeValidationError(this.numberMaxValue);
         })
     }
 
@@ -227,6 +238,7 @@ export default class FieldSettingsModal extends Modal {
 
         /* Number validation */
         this.numberValidatorField = mainDiv.createDiv({ cls: "metadata-menu-number-options" })
+        //this.numberValidatorField.setAttr("style", "background-color: green")
         this.createNumberContainer(this.numberValidatorField)
         this.numberValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
 
@@ -238,8 +250,7 @@ export default class FieldSettingsModal extends Modal {
 
         const listNotePathContainer = this.presetValuesFields.createDiv();
         this.createListNoteContainer(listNotePathContainer);
-
-        this.presetValuesFields.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
+        listNotePathContainer.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
 
         /* Property options */
         const valuesList = this.presetValuesFields.createDiv();
@@ -262,7 +273,7 @@ export default class FieldSettingsModal extends Modal {
             this.createValueContainer(valuesListBody, valuesListHeader, newKey)
         });
 
-        mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
+        valuesList.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
 
         /* footer buttons*/
         const footerEl = this.contentEl.createDiv();
@@ -274,25 +285,23 @@ export default class FieldSettingsModal extends Modal {
         this.showSection(this.property.type)
     };
 
-    private createSaveButton(b: ButtonComponent): ButtonComponent {
-        b.setTooltip("Save");
-        b.setIcon("checkmark");
-        b.onClick(async () => {
-            let error = false;
-            if (/^[#>-]/.test(this.property.name)) {
-                FieldSettingsModal.setValidationError(
-                    this.namePromptComponent, this.namePromptComponent.inputEl,
-                    "Property name cannot start with #, >, -"
-                );
-                error = true;
-            };
-            if (this.property.name == "") {
-                FieldSettingsModal.setValidationError(
-                    this.namePromptComponent, this.namePromptComponent.inputEl,
-                    "Property name can not be Empty"
-                );
-                error = true;
-            };
+    private validateFields(): boolean {
+        let error = false;
+        if (/^[#>-]/.test(this.property.name)) {
+            FieldSettingsModal.setValidationError(
+                this.namePromptComponent, this.namePromptComponent.inputEl,
+                "Property name cannot start with #, >, -"
+            );
+            error = true;
+        };
+        if (this.property.name == "") {
+            FieldSettingsModal.setValidationError(
+                this.namePromptComponent, this.namePromptComponent.inputEl,
+                "Property name can not be Empty"
+            );
+            error = true;
+        };
+        if (this.property.type !== FieldType.Number) {
             this.valuesPromptComponents.forEach(input => {
                 if (/^[#>-]/.test(input.inputEl.value) && input.inputEl.parentElement?.lastElementChild) {
                     FieldSettingsModal.setValidationError(
@@ -316,6 +325,37 @@ export default class FieldSettingsModal extends Modal {
                     error = true;
                 };
             });
+        } else {
+            if (this.property.options.step && isNaN(parseFloat(this.property.options.step))) {
+                FieldSettingsModal.setValidationError(
+                    this.numberStepValue, this.numberStepValue.inputEl,
+                    "Values must be numeric."
+                );
+                error = true;
+            }
+            if (this.property.options.min && isNaN(parseFloat(this.property.options.min))) {
+                FieldSettingsModal.setValidationError(
+                    this.numberMinValue, this.numberMinValue.inputEl,
+                    "Values must be numeric."
+                );
+                error = true;
+            }
+            if (this.property.options.max && isNaN(parseFloat(this.property.options.max))) {
+                FieldSettingsModal.setValidationError(
+                    this.numberMaxValue, this.numberMaxValue.inputEl,
+                    "Values must be numeric."
+                );
+                error = true;
+            }
+        }
+        return error
+    }
+
+    private createSaveButton(b: ButtonComponent): ButtonComponent {
+        b.setTooltip("Save");
+        b.setIcon("checkmark");
+        b.onClick(async () => {
+            let error = this.validateFields()
             if (error) {
                 new Notice("Fix errors before saving.");
                 return;

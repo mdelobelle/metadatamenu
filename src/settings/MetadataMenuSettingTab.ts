@@ -1,7 +1,7 @@
 import { App, PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal } from "obsidian";
 import MetadataMenu from "main";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
-import Field from "src/Field";
+import Field from "src/fields/Field";
 import FieldSetting from "src/settings/FieldSetting";
 
 class SettingsMigrationConfirmModal extends Modal {

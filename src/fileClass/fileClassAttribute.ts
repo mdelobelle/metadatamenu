@@ -1,4 +1,4 @@
-import Field from "src/Field";
+import Field from "src/fields/Field";
 import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 import { capitalize } from "src/utils/textUtils";
 import { genericFieldRegex } from "src/utils/parser";

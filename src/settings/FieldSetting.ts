@@ -1,6 +1,6 @@
 import { App, Setting, TFile } from "obsidian";
 import MetadataMenu from "main";
-import Field from "src/Field";
+import Field from "src/fields/Field";
 import { FieldType, FieldTypeTagClass } from "src/types/fieldTypes";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 

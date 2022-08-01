@@ -1,4 +1,4 @@
-import Field from "src/Field";
+import Field from "src/fields/Field";
 
 export interface MetadataMenuSettings {
 	presetFields: Array<Field>;

@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import Field from "src/Field";
+import Field from "src/fields/Field";
 import { FileClass } from "src/fileClass/fileClass";
 
 export function getPropertySettings(plugin: MetadataMenu, propertyName: string, fileClass?: FileClass): Field | undefined {

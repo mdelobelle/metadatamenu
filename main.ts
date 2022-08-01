@@ -3,7 +3,7 @@ import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import { MetadataMenuSettings, DEFAULT_SETTINGS } from "src/settings/MetadataMenuSettings";
 import type { IMetadataMenuApi } from 'src/MetadataMenuApi';
 import { MetadataMenuApi } from 'src/MetadataMenuApi';
-import Field from 'src/Field';
+import Field from 'src/fields/Field';
 import linkContextMenu from "src/options/linkContextMenu";
 import NoteFieldsCommandsModal from "src/options/NoteFieldsCommandsModal";
 import FileClassAttributeSelectModal from 'src/fileClass/FileClassAttributeSelectModal';

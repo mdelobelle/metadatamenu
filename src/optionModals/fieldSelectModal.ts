@@ -6,7 +6,7 @@ import valueSelectModal from "./valueSelectModal";
 import valueToggleModal from "./valueToggleModal";
 import valueMultiSelectModal from "./valueMultiSelectModal";
 import { FileClass } from "src/fileClass/fileClass";
-import Field from "src/Field";
+import Field from "src/fields/Field";
 import { FieldType } from "src/types/fieldTypes";
 
 export default class fieldSelectModal extends Modal {
