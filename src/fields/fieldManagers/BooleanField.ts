@@ -31,7 +31,7 @@ export default class BooleanField extends FieldManager {
             category.addItem((item) => {
                 item.setTitle(`<${name}> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);
                 item.setIcon('checkmark');
-                item.onClick((evt: MouseEvent) => { replaceValues(app, file, name, (!bValue).toString()); });
+                item.onClick(() => replaceValues(app, file, name, (!bValue).toString()));
                 item.setSection("target-metadata");
             })
         } else if (BooleanField.isSelect(category)) {
@@ -40,11 +40,12 @@ export default class BooleanField extends FieldManager {
         };
     };
 
-    createSettingContainer(): void {
-        //no need of settings for standard input field
+    createSettingContainer(parentContainer: HTMLDivElement): void {
+        //no need of settings for boolean field
     }
 
-    validate(): boolean {
+    validateOptions(): boolean {
+        //always true since there are no options
         return true
     }
 

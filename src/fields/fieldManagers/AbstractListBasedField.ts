@@ -85,6 +85,34 @@ export default abstract class AbstractListBasedField extends FieldManager {
         return input;
     };
 
+    validateOptions(): boolean {
+        let error = false;
+        this.valuesPromptComponents.forEach(input => {
+            if (/^[#>-]/.test(input.inputEl.value) && input.inputEl.parentElement?.lastElementChild) {
+                FieldSettingsModal.setValidationError(
+                    input, input.inputEl.parentElement.lastElementChild,
+                    "Values cannot cannot start with #, >, -"
+                );
+                error = true;
+            };
+            if (/[,]/gu.test(input.inputEl.value) && input.inputEl.parentElement?.lastElementChild) {
+                FieldSettingsModal.setValidationError(
+                    input, input.inputEl.parentElement.lastElementChild,
+                    "Values cannot contain a comma"
+                );
+                error = true;
+            };
+            if (input.inputEl.value == "" && input.inputEl.parentElement?.lastElementChild) {
+                FieldSettingsModal.setValidationError(
+                    input, input.inputEl.parentElement.lastElementChild,
+                    "Values can't be null."
+                );
+                error = true;
+            };
+        });
+        return !error
+    }
+
     createAddButton(valuesList: HTMLDivElement, valuesListBody: HTMLDivElement, valuesListHeader: HTMLDivElement): void {
         const valuesListFooter = valuesList.createDiv();
         const addValue = valuesListFooter.createEl('button');

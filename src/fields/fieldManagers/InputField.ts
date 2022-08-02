@@ -20,7 +20,7 @@ export default class InputField extends FieldManager {
             category.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
                 item.setIcon('pencil');
-                item.onClick((evt: MouseEvent) => modal.open());
+                item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             })
         } else if (InputField.isSelect(category)) {
@@ -29,11 +29,12 @@ export default class InputField extends FieldManager {
         };
     };
 
-    createSettingContainer(): void {
+    createSettingContainer(parentContainer: HTMLDivElement): void {
         //no need of settings for standard input field
     }
 
-    validate(): boolean {
+    validateOptions(): boolean {
+        //always true since there are no options
         return true
     }
 

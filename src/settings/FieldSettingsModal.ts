@@ -1,17 +1,12 @@
-import { App, Modal, Setting, TextComponent, Notice, ButtonComponent, ExtraButtonComponent, DropdownComponent } from "obsidian";
 import MetadataMenu from "main";
+import { App, ButtonComponent, DropdownComponent, ExtraButtonComponent, Modal, Notice, Setting, TextComponent } from "obsidian";
 import Field from "src/fields/Field";
-import { FieldManager, FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 import FieldSetting from "src/settings/FieldSetting";
-import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
-import NumberField from "src/fields/fieldManagers/NumberField";
+import { FieldManager as F } from "src/fields/FieldManager";
+import { FieldManager, FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 
 export default class FieldSettingsModal extends Modal {
     private namePromptComponent: TextComponent;
-    private valuesPromptComponents: Array<TextComponent> = [];
-    private numberStepValue: TextComponent;
-    private numberMinValue: TextComponent;
-    private numberMaxValue: TextComponent;
     private saved: boolean = false;
     private field: Field;
     private plugin: MetadataMenu;
@@ -20,6 +15,7 @@ export default class FieldSettingsModal extends Modal {
     private new: boolean = true;
     private parentSettingContainer: HTMLElement;
     private fieldOptionsContainer: HTMLDivElement;
+    private fieldManager: F;
 
     constructor(app: App, plugin: MetadataMenu, parentSettingContainer: HTMLElement, parentSetting?: FieldSetting, field?: Field) {
         super(app);
@@ -42,6 +38,7 @@ export default class FieldSettingsModal extends Modal {
             this.field.id = newId.toString();
             this.initialField.id = newId.toString();
         };
+        this.fieldManager = new FieldManager[this.field.type](this.field);
     };
 
     async onOpen(): Promise<void> {
@@ -77,6 +74,10 @@ export default class FieldSettingsModal extends Modal {
         return input;
     };
 
+    private buildOptionsContainer(): void {
+        this.fieldManager.createSettingContainer(this.fieldOptionsContainer)
+    }
+
     private createTypeSelectorContainer(parentNode: HTMLDivElement): void {
         const typeSelectorContainerLabel = parentNode.createDiv();
         typeSelectorContainerLabel.setText(`Field type:`);
@@ -88,6 +89,7 @@ export default class FieldSettingsModal extends Modal {
         select.onChange((typeLabel: keyof typeof FieldType) => {
             this.field = new Field();
             Field.copyProperty(this.field, this.initialField);
+            this.field.name = this.namePromptComponent.getValue()
             this.field.type = FieldTypeLabelMapping[typeLabel];
             if (this.field.type !== this.initialField.type &&
                 ![this.field.type, this.initialField.type].every(fieldType =>
@@ -99,40 +101,21 @@ export default class FieldSettingsModal extends Modal {
             while (this.fieldOptionsContainer.firstChild) {
                 this.fieldOptionsContainer.removeChild(this.fieldOptionsContainer.firstChild);
             }
+            this.fieldManager = new FieldManager[this.field.type](this.field)
             this.buildOptionsContainer();
         })
     }
 
-    private buildOptionsContainer(): void {
-        const fieldManager = new FieldManager[this.field.type](this.field);
-        if (
-            fieldManager.field.type === FieldType.Select ||
-            fieldManager.field.type === FieldType.Multi ||
-            fieldManager.field.type === FieldType.Cycle
-        ) {
-            (fieldManager as AbstractListBasedField).createSettingContainer(this.fieldOptionsContainer);
-        } else if (fieldManager.field.type === FieldType.Number) {
-            (fieldManager as NumberField).createSettingContainer(this.fieldOptionsContainer);
-        }
-    }
-
     private async createForm(): Promise<void> {
-        const div = this.contentEl.createDiv({
-            cls: "metadata-menu-prompt-div"
-        });
-        const mainDiv = div.createDiv({
-            cls: "metadata-menu-prompt-form"
-        });
-        /* Field Name Section */
+        const div = this.contentEl.createDiv({ cls: "metadata-menu-prompt-div" });
+        const mainDiv = div.createDiv({ cls: "metadata-menu-prompt-form" });
+
+        /* Sections */
         const nameContainer = mainDiv.createDiv();
         this.namePromptComponent = this.createnameInputContainer(nameContainer);
-
         mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
 
-        /* Field type selection */
         const typeSelectContainer = mainDiv.createDiv()
-
-        /* Field options section*/
         this.fieldOptionsContainer = mainDiv.createDiv()
 
         /* footer buttons*/
@@ -147,76 +130,18 @@ export default class FieldSettingsModal extends Modal {
     };
 
     private validateFields(): boolean {
-        let error = false;
-        if (/^[#>-]/.test(this.field.name)) {
-            FieldSettingsModal.setValidationError(
-                this.namePromptComponent, this.namePromptComponent.inputEl,
-                "Field name cannot start with #, >, -"
-            );
-            error = true;
-        };
-        if (this.field.name == "") {
-            FieldSettingsModal.setValidationError(
-                this.namePromptComponent, this.namePromptComponent.inputEl,
-                "Field name can not be Empty"
-            );
-            error = true;
-        };
-        if (this.field.type !== FieldType.Number) {
-            this.valuesPromptComponents.forEach(input => {
-                if (/^[#>-]/.test(input.inputEl.value) && input.inputEl.parentElement?.lastElementChild) {
-                    FieldSettingsModal.setValidationError(
-                        input, input.inputEl.parentElement.lastElementChild,
-                        "Values cannot cannot start with #, >, -"
-                    );
-                    error = true;
-                };
-                if (/[,]/gu.test(input.inputEl.value) && input.inputEl.parentElement?.lastElementChild) {
-                    FieldSettingsModal.setValidationError(
-                        input, input.inputEl.parentElement.lastElementChild,
-                        "Values cannot contain a comma"
-                    );
-                    error = true;
-                };
-                if (input.inputEl.value == "" && input.inputEl.parentElement?.lastElementChild) {
-                    FieldSettingsModal.setValidationError(
-                        input, input.inputEl.parentElement.lastElementChild,
-                        "Values can't be null."
-                    );
-                    error = true;
-                };
-            });
-        } else {
-            if (this.field.options.step && isNaN(parseFloat(this.field.options.step))) {
-                FieldSettingsModal.setValidationError(
-                    this.numberStepValue, this.numberStepValue.inputEl,
-                    "Values must be numeric."
-                );
-                error = true;
-            }
-            if (this.field.options.min && isNaN(parseFloat(this.field.options.min))) {
-                FieldSettingsModal.setValidationError(
-                    this.numberMinValue, this.numberMinValue.inputEl,
-                    "Values must be numeric."
-                );
-                error = true;
-            }
-            if (this.field.options.max && isNaN(parseFloat(this.field.options.max))) {
-                FieldSettingsModal.setValidationError(
-                    this.numberMaxValue, this.numberMaxValue.inputEl,
-                    "Values must be numeric."
-                );
-                error = true;
-            }
-        }
-        return error
+        return this.fieldManager.validateName(
+            this.namePromptComponent,
+            this.namePromptComponent.inputEl
+        ) &&
+            this.fieldManager.validateOptions();
     }
 
     private createSaveButton(b: ButtonComponent): ButtonComponent {
         b.setTooltip("Save");
         b.setIcon("checkmark");
         b.onClick(async () => {
-            let error = this.validateFields()
+            let error = !this.validateFields();
             if (error) {
                 new Notice("Fix errors before saving.");
                 return;
@@ -229,7 +154,7 @@ export default class FieldSettingsModal extends Modal {
                 this.plugin.initialProperties.push(this.field);
             };
             Field.copyProperty(this.initialField, this.field)
-            Field.copyProperty(this.parentSetting!.field, this.field)
+            if (this.parentSetting) Field.copyProperty(this.parentSetting.field, this.field);
             this.parentSetting?.setTextContentWithname()
             this.plugin.saveSettings();
             this.close();

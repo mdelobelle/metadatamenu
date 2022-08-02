@@ -22,7 +22,7 @@ export default class SelectField extends AbstractListBasedField {
             category.addItem((item) => {
                 item.setTitle(`Update ${name}`);
                 item.setIcon('right-triangle');
-                item.onClick((evt: MouseEvent) => modal.open());
+                item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             });
         } else if (SelectField.isSelect(category)) {
@@ -30,10 +30,6 @@ export default class SelectField extends AbstractListBasedField {
             category.modals[`update_${name}`] = () => modal.open();
         };
     };
-
-    validate(): boolean {
-        return true
-    }
 
     createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
         const fieldModal = new valueSelectModal(app, file, this.field.name, "", this.field, lineNumber, inFrontmatter, top);

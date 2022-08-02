@@ -26,7 +26,7 @@ export default class NumberField extends FieldManager {
             category.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
                 item.setIcon('pencil');
-                item.onClick((evt: MouseEvent) => modal.open());
+                item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             })
             const { min, max, step } = this.field.options
@@ -40,18 +40,14 @@ export default class NumberField extends FieldManager {
                     category.addItem((item) => {
                         item.setIcon('pencil');
                         item.setTitle(`<${name}> ➡️ ${fValue - fStep}`);
-                        item.onClick(() => {
-                            replaceValues(app, file, name, (fValue - fStep).toString())
-                        })
+                        item.onClick(() => replaceValues(app, file, name, (fValue - fStep).toString()));
                         item.setSection("target-metadata");
                     })
                 if (isNaN(fMax) || (fMax && fValue + fStep < fMax))
                     category.addItem((item) => {
                         item.setIcon('pencil');
                         item.setTitle(`<${name}> ➡️ ${fValue + fStep}`);
-                        item.onClick(() => {
-                            replaceValues(app, file, name, (fValue + fStep).toString())
-                        })
+                        item.onClick(() => replaceValues(app, file, name, (fValue + fStep).toString()));
                         item.setSection("target-metadata");
                     })
             }
@@ -88,7 +84,6 @@ export default class NumberField extends FieldManager {
             this.field.options.max = value;
             FieldSettingsModal.removeValidationError(this.numberMaxValue);
         })
-        this.numberValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
     }
 
     createSettingContainer(parentContainer: HTMLDivElement): void {
@@ -97,8 +92,30 @@ export default class NumberField extends FieldManager {
         this.numberValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
     }
 
-    validate(): boolean {
-        return true
+    validateOptions(): boolean {
+        let error = false
+        if (this.field.options.step && isNaN(parseFloat(this.field.options.step))) {
+            FieldSettingsModal.setValidationError(
+                this.numberStepValue, this.numberStepValue.inputEl,
+                "Values must be numeric."
+            );
+            error = true;
+        }
+        if (this.field.options.min && isNaN(parseFloat(this.field.options.min))) {
+            FieldSettingsModal.setValidationError(
+                this.numberMinValue, this.numberMinValue.inputEl,
+                "Values must be numeric."
+            );
+            error = true;
+        }
+        if (this.field.options.max && isNaN(parseFloat(this.field.options.max))) {
+            FieldSettingsModal.setValidationError(
+                this.numberMaxValue, this.numberMaxValue.inputEl,
+                "Values must be numeric."
+            );
+            error = true;
+        }
+        return !error
     }
 
     createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
