@@ -1,18 +1,14 @@
 import MetadataMenu from "main";
 import { App, TFile, Menu } from "obsidian";
-import valueMultiSelectModal from "src/optionModals/valueMultiSelectModal";
-import valueTextInputModal from "src/optionModals/valueTextInputModal";
-import numbertModal from "src/optionModals/numberModal";
-import valueSelectModal from "src/optionModals/valueSelectModal";
 import Field from "src/fields/Field";
-import { FieldType } from "src/types/fieldTypes";
+import { FieldType, FieldManager } from "src/types/fieldTypes";
 import chooseSectionModal from "../optionModals/chooseSectionModal";
 import SelectModal from "src/optionModals/SelectModal";
 import { createFileClass, FileClass } from "src/fileClass/fileClass";
-import { replaceValues } from "../commands/replaceValues";
 import { getPropertySettings } from "src/commands/getPropertySettings";
 import FileClassAttributeSelectModal from "src/fileClass/FileClassAttributeSelectModal";
 import { genericFieldRegex } from "../utils/parser";
+import Managers from "src/fields/fieldManagers/Managers";
 
 function isMenu(category: Menu | SelectModal): category is Menu {
 	return (category as Menu).addItem !== undefined;
@@ -23,6 +19,9 @@ function isSelect(category: Menu | SelectModal): category is SelectModal {
 };
 
 export default class OptionsList {
+
+	// adds options to context menu or to a dropdown modal trigger with "Field: Options" command in command pallette
+
 	app: App;
 	file: TFile;
 	plugin: MetadataMenu;
@@ -76,18 +75,18 @@ export default class OptionsList {
 						this.category.modals["manage_fileClass_attributes"] = () => fileClassAttributeSelectModal.open();
 					};
 
-					await this.createExtraOptionsListForFrontmatter(attributes,)
-					await this.createExtraOptionsListForInlineFields(this.file, fileClassForFields, fileClassFields)
+					this.buildExtraOptionsList(attributes); // frontmatter
+					await this.createExtraOptionsListForInlineFields(this.file, fileClassForFields, fileClassFields);
 					if (isMenu(this.category)) { this.category.addSeparator() };
 					this.addSectionSelectModalOption();
 				} catch (error) {
-					await this.createExtraOptionsListForFrontmatter(attributes)
+					this.buildExtraOptionsList(attributes); // frontmatter
 					await this.createExtraOptionsListForInlineFields(this.file)
 					if (isMenu(this.category)) { this.category.addSeparator(); };
 					this.addSectionSelectModalOption();
 				};
 			} else {
-				await this.createExtraOptionsListForFrontmatter(attributes)
+				this.buildExtraOptionsList(attributes); // frontmatter
 				await this.createExtraOptionsListForInlineFields(this.file)
 				if (isMenu(this.category)) { this.category.addSeparator(); };
 				this.addSectionSelectModalOption();
@@ -99,7 +98,11 @@ export default class OptionsList {
 		};
 	};
 
-	private async createExtraOptionsListForInlineFields(file: TFile, fileClassForFields: boolean = false, fileClassFields: string[] = []): Promise<void> {
+	private async createExtraOptionsListForInlineFields(
+		file: TFile,
+		fileClassForFields: boolean = false,
+		fileClassFields: string[] = []
+	): Promise<void> {
 		let attributes: Record<string, string> = {};
 		const regex = new RegExp(`^${genericFieldRegex}::\s*(?<values>.+)?`, "u");
 		const result = await this.plugin.app.vault.read(file)
@@ -122,40 +125,18 @@ export default class OptionsList {
 		};
 	};
 
-	private async createExtraOptionsListForFrontmatter(attributes: Record<string, string>) {
-		this.buildExtraOptionsList(attributes,);
-	};
-
-	private stringToBoolean(value: string): boolean {
-		let toBooleanValue: boolean = false;
-		if (isBoolean(value)) {
-			toBooleanValue = value;
-		} else if (/true/i.test(value)) {
-			toBooleanValue = true;
-		} else if (/false/i.test(value)) {
-			toBooleanValue = false;
-		};
-		return toBooleanValue
-	}
-
 	private buildExtraOptionsList(attributes: Record<string, string>) {
 		Object.keys(attributes).forEach((key: string) => {
 			const value = attributes[key];
 			const propertySettings = getPropertySettings(this.plugin, key, this.fileClass);
 			if (propertySettings) {
-				switch (propertySettings.type) {
-					case FieldType.Cycle: this.addCycleMenuOption(key, value, propertySettings); break;
-					case FieldType.Multi: this.addMultiMenuOption(key, value, propertySettings); break;
-					case FieldType.Select: this.addSelectMenuOption(key, value, propertySettings); break;
-					case FieldType.Boolean: this.addToggleMenuOption(key, this.stringToBoolean(value)); break;
-					case FieldType.Number: this.addNumberMenuOption(key, value, propertySettings); break;
-					case FieldType.Input: this.addTextInputMenuOption(key, value ? value.toString() : "", propertySettings); break;
-					default: break;
-				}
+				const fieldManager = new FieldManager[propertySettings.type](propertySettings);
+				fieldManager.addMenuOption(key, value, this.plugin.app, this.file, this.category);
 			} else {
 				const defaultField = new Field(key)
 				defaultField.type = FieldType.Input
-				this.addTextInputMenuOption(key, value ? value.toString() : "", defaultField);
+				const fieldManager = new Managers.Input(defaultField)
+				fieldManager.addMenuOption(key, value, this.plugin.app, this.file, this.category)
 			}
 		});
 	};
@@ -176,137 +157,4 @@ export default class OptionsList {
 			this.category.modals["add_field_at_section"] = () => modal.open();
 		};
 	};
-
-	private addCycleMenuOption(name: string, option: string, field: Field): void {
-		const options = field.options;
-		const keys = Object.keys(options);
-		const keyForValue = keys.find(key => options[key] === option);
-		let nextOption: string;
-		if (keyForValue) {
-			const nextKey = keys[(keys.indexOf(keyForValue) + 1) % keys.length];
-			nextOption = options[nextKey];
-		} else {
-			nextOption = options[Object.keys(options)[0]];
-		};
-		if (isMenu(this.category)) {
-			this.category.addItem((item) => {
-				item.setTitle(`${name} : ${option} ▷ ${nextOption}`);
-				item.setIcon('switch');
-				item.onClick((evt: MouseEvent) => {
-					replaceValues(this.plugin.app, this.file, name, nextOption);
-				});
-				item.setSection("target-metadata");
-			});
-		} else if (isSelect(this.category)) {
-			this.category.addOption(`${name}_${option}_${nextOption}`, `${name} : ${option} ▷ ${nextOption}`);
-			this.category.modals[`${name}_${option}_${nextOption}`] = () =>
-				replaceValues(this.plugin.app, this.file, name, nextOption);
-		};
-	};
-
-	private addMultiMenuOption(name: string, value: string, field: Field): void {
-		const modal = new valueMultiSelectModal(this.plugin.app, this.file, name, value, field);
-		modal.titleEl.setText("Select values");
-		if (isMenu(this.category)) {
-			this.category.addItem((item) => {
-				item.setTitle(`Update <${name}>`);
-				item.setIcon('bullet-list');
-				item.onClick((evt: MouseEvent) => {
-					modal.open();
-				});
-				item.setSection("target-metadata");
-			});
-		} else if (isSelect(this.category)) {
-			this.category.addOption(`update_${name}`, `Update <${name}>`);
-			this.category.modals[`update_${name}`] = () => modal.open();
-		};
-	};
-
-	private addSelectMenuOption(name: string, value: string, field: Field): void {
-		const modal = new valueSelectModal(this.plugin.app, this.file, name, value, field);
-		modal.titleEl.setText("Select value");
-		if (isMenu(this.category)) {
-			this.category.addItem((item) => {
-				item.setTitle(`Update ${name}`);
-				item.setIcon('right-triangle');
-				item.onClick((evt: MouseEvent) => modal.open());
-				item.setSection("target-metadata");
-			});
-		} else if (isSelect(this.category)) {
-			this.category.addOption(`update_${name}`, `Update <${name}>`);
-			this.category.modals[`update_${name}`] = () => modal.open();
-		};
-	};
-
-	private addToggleMenuOption(name: string, value: boolean): void {
-		if (isMenu(this.category)) {
-			this.category.addItem((item) => {
-				item.setTitle(`<${name}> ${value ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);
-				item.setIcon('checkmark');
-				item.onClick((evt: MouseEvent) => { replaceValues(this.plugin.app, this.file, name, (!value).toString()); });
-				item.setSection("target-metadata");
-			})
-		} else if (isSelect(this.category)) {
-			this.category.addOption(`update_${name}`, `<${name}> ${value ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);
-			this.category.modals[`update_${name}`] = () => replaceValues(this.plugin.app, this.file, name, (!value).toString());
-		};
-	};
-
-	private addTextInputMenuOption(name: string, value: string, field: Field): void {
-		const modal = new valueTextInputModal(this.plugin.app, this.file, field, value);
-		modal.titleEl.setText(`Change Value for <${name}>`);
-		if (isMenu(this.category)) {
-			this.category.addItem((item) => {
-				item.setTitle(`Update <${name}>`);
-				item.setIcon('pencil');
-				item.onClick((evt: MouseEvent) => modal.open());
-				item.setSection("target-metadata");
-			})
-		} else if (isSelect(this.category)) {
-			this.category.addOption(`update_${name}`, `Update <${name}>`);
-			this.category.modals[`update_${name}`] = () => modal.open();
-		};
-	};
-
-	private addNumberMenuOption(name: string, value: string, field: Field): void {
-		const modal = new numbertModal(this.plugin.app, this.file, field, value);
-		modal.titleEl.setText(`Change Value for <${name}>`);
-		if (isMenu(this.category)) {
-			this.category.addItem((item) => {
-				item.setTitle(`Update <${name}>`);
-				item.setIcon('pencil');
-				item.onClick((evt: MouseEvent) => modal.open());
-				item.setSection("target-metadata");
-			})
-			const { min, max, step } = field.options
-
-			const fMin = parseFloat(min)
-			const fMax = parseFloat(max)
-			const fStep = parseFloat(step)
-			const fValue = parseFloat(value)
-			if (fStep) {
-				if (isNaN(fMin) || (fMin && fValue - fStep > fMin))
-					this.category.addItem((item) => {
-						item.setIcon('pencil');
-						item.setTitle(`<${name}> ➡️ ${fValue - fStep}`);
-						item.onClick(() => {
-							replaceValues(this.plugin.app, this.file, name, (fValue - fStep).toString())
-						})
-						item.setSection("target-metadata");
-					})
-				if (isNaN(fMax) || (fMax && fValue + fStep < fMax))
-					this.category.addItem((item) => {
-						item.setIcon('pencil');
-						item.setTitle(`<${name}> ➡️ ${fValue + fStep}`);
-						item.onClick(() => {
-							replaceValues(this.plugin.app, this.file, name, (fValue + fStep).toString())
-						})
-						item.setSection("target-metadata");
-					})
-			}
-		} else if (isSelect(this.category)) {
-			this.category.addOption(`update_${name}`, `Update <${name}>`);
-			this.category.modals[`update_${name}`] = () => modal.open();
-		};
-	}
 };

@@ -1,3 +1,5 @@
+import Managers from "src/fields/fieldManagers/Managers";
+
 export const enum FieldType {
     'Input' = "Input",
     'Select' = "Select",
@@ -32,4 +34,13 @@ export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
     "Cycle": "Cycle through values from a list",
     "Boolean": "Accept true of false",
     "Number": "Accept a number"
+}
+
+export const FieldManager: Record<keyof typeof FieldType, any> = {
+    "Input": Managers.Input,
+    "Select": Managers.Select,
+    "Multi": Managers.Multi,
+    "Cycle": Managers.Cycle,
+    "Boolean": Managers.Boolean,
+    "Number": Managers.Number
 }
