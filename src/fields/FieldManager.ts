@@ -1,4 +1,4 @@
-import { App, Menu, TFile } from "obsidian";
+import { Menu } from "obsidian";
 import SelectModal from "src/optionModals/SelectModal";
 import { FieldType } from "src/types/fieldTypes";
 import Field from "./Field";

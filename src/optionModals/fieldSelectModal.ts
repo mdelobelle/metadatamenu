@@ -4,7 +4,6 @@ import addNewFieldModal from "./addNewFieldModal";
 import { FileClass } from "src/fileClass/fileClass";
 import Field from "src/fields/Field";
 import { FieldManager, FieldType } from "src/types/fieldTypes";
-import Managers from "src/fields/fieldManagers/Managers";
 
 export default class fieldSelectModal extends Modal {
 

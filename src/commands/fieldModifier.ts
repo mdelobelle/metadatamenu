@@ -1,10 +1,9 @@
-import MetadataMenu from "main"
-import { createFileClass } from "src/fileClass/fileClass";
-import { getPropertySettings } from "src/commands/getPropertySettings";
-import { FieldType } from "src/types/fieldTypes";
+import MetadataMenu from "main";
+import { getField } from "src/commands/getField";
 import Managers from "src/fields/fieldManagers/Managers";
+import { createFileClass } from "src/fileClass/fileClass";
+import { FieldType } from "src/types/fieldTypes";
 import { createInputField } from "./createInputField";
-
 
 export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }): Promise<HTMLElement> {
 
@@ -21,7 +20,7 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
         const fileClassAlias = plugin.settings.fileClassAlias
         if (p[fileClassAlias]) {
             const fileClass = await createFileClass(plugin, p[fileClassAlias])
-            const field = getPropertySettings(plugin, fieldName, fileClass)
+            const field = getField(plugin, fieldName, fileClass)
             if (field?.type === FieldType.Boolean) {
                 const fieldManager = new Managers.Boolean(field);
                 fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs)
@@ -32,7 +31,7 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
                 createInputField(plugin, dv, p, fieldName, fieldContainer, attrs)
             }
         } else if (plugin.settings.presetFields.filter(attr => attr.name == fieldName)) {
-            const field = getPropertySettings(plugin, fieldName)
+            const field = getField(plugin, fieldName)
             if (field?.type === FieldType.Boolean) {
                 const fieldManager = new Managers.Boolean(field);
                 fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs)

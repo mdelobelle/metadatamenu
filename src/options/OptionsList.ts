@@ -5,7 +5,7 @@ import { FieldType, FieldManager } from "src/types/fieldTypes";
 import chooseSectionModal from "../optionModals/chooseSectionModal";
 import SelectModal from "src/optionModals/SelectModal";
 import { createFileClass, FileClass } from "src/fileClass/fileClass";
-import { getPropertySettings } from "src/commands/getPropertySettings";
+import { getField } from "src/commands/getField";
 import FileClassAttributeSelectModal from "src/fileClass/FileClassAttributeSelectModal";
 import { genericFieldRegex } from "../utils/parser";
 import Managers from "src/fields/fieldManagers/Managers";
@@ -128,9 +128,9 @@ export default class OptionsList {
 	private buildExtraOptionsList(attributes: Record<string, string>) {
 		Object.keys(attributes).forEach((key: string) => {
 			const value = attributes[key];
-			const propertySettings = getPropertySettings(this.plugin, key, this.fileClass);
-			if (propertySettings) {
-				const fieldManager = new FieldManager[propertySettings.type](propertySettings);
+			const field = getField(this.plugin, key, this.fileClass);
+			if (field) {
+				const fieldManager = new FieldManager[field.type](field);
 				fieldManager.addMenuOption(key, value, this.plugin.app, this.file, this.category);
 			} else {
 				const defaultField = new Field(key)

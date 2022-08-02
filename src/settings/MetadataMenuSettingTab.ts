@@ -38,9 +38,9 @@ class SettingsMigrationConfirmModal extends Modal {
 				//deep copying presetFields in initialProperty
 				this.plugin.initialProperties = [];
 				settings.presetFields.forEach((prop: Field) => {
-					const property = new Field();
-					Object.assign(property, prop);
-					this.plugin.initialProperties.push(property);
+					const field = new Field();
+					Object.assign(field, prop);
+					this.plugin.initialProperties.push(field);
 				})
 
 				this.plugin.saveSettings();
