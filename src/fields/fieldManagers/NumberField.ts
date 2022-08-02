@@ -2,12 +2,18 @@ import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
 import numbertModal from "src/optionModals/numberModal";
-import { App, Menu, TFile } from "obsidian";
+import { App, Menu, TFile, TextComponent } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 import SelectModal from "src/optionModals/SelectModal";
+import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import MetadataMenu from "main";
 
 export default class NumberField extends FieldManager {
+
+    private numberValidatorField: HTMLDivElement;
+    private numberStepValue: TextComponent;
+    private numberMinValue: TextComponent;
+    private numberMaxValue: TextComponent;
 
     constructor(field: Field) {
         super(field, FieldType.Number)
@@ -55,8 +61,40 @@ export default class NumberField extends FieldManager {
         };
     };
 
-    createSettingContainer(): void {
-        //no need of settings for standard input field
+    createNumberContainer(parentContainer: HTMLDivElement): void {
+        const numberStepValueContainer = parentContainer.createDiv();
+        numberStepValueContainer.createEl("span", { text: "Step (optional)", cls: 'metadata-menu-field-option' })
+        this.numberStepValue = new TextComponent(numberStepValueContainer)
+        this.numberStepValue.setValue(this.field.options.step || "")
+
+        const numberMinValueContainer = parentContainer.createDiv();
+        numberMinValueContainer.createEl("span", { text: "Min value (optional)", cls: 'metadata-menu-field-option' })
+        this.numberMinValue = new TextComponent(numberMinValueContainer)
+        this.numberMinValue.setValue(this.field.options.min || "")
+
+        const numberMaxValueContainer = parentContainer.createDiv();
+        numberMaxValueContainer.createEl("span", { text: "Max value (optional)", cls: 'metadata-menu-field-option' })
+        this.numberMaxValue = new TextComponent(numberMaxValueContainer)
+        this.numberMaxValue.setValue(this.field.options.max || "")
+        this.numberStepValue.onChange(value => {
+            this.field.options.step = value;
+            FieldSettingsModal.removeValidationError(this.numberStepValue);
+        })
+        this.numberMinValue.onChange(value => {
+            this.field.options.min = value;
+            FieldSettingsModal.removeValidationError(this.numberMinValue);
+        })
+        this.numberMaxValue.onChange(value => {
+            this.field.options.max = value;
+            FieldSettingsModal.removeValidationError(this.numberMaxValue);
+        })
+        this.numberValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
+    }
+
+    createSettingContainer(parentContainer: HTMLDivElement): void {
+        this.numberValidatorField = parentContainer.createDiv({ cls: "metadata-menu-number-options" })
+        this.createNumberContainer(this.numberValidatorField)
+        this.numberValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
     }
 
     validate(): boolean {

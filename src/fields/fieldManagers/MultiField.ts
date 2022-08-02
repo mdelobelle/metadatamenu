@@ -1,12 +1,15 @@
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
-import { FieldManager } from "../FieldManager";
-import { App, Menu, TFile } from "obsidian";
+import AbstractListBasedField from "./AbstractListBasedField";
+import { App, Menu, TFile, TextComponent } from "obsidian";
 import SelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
 import valueMultiSelectModal from "src/optionModals/valueMultiSelectModal";
 
-export default class MultiField extends FieldManager {
+export default class MultiField extends AbstractListBasedField {
+
+    valuesPromptComponents: Array<TextComponent> = [];
+    presetValuesFields: HTMLDivElement;
 
     constructor(field: Field) {
         super(field, FieldType.Multi)
@@ -29,10 +32,6 @@ export default class MultiField extends FieldManager {
             category.modals[`update_${name}`] = () => modal.open();
         };
     };
-
-    createSettingContainer(): void {
-        //no need of settings for standard input field
-    }
 
     validate(): boolean {
         return true

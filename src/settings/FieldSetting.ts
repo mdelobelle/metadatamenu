@@ -5,7 +5,7 @@ import { FieldType, FieldTypeTagClass } from "src/types/fieldTypes";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 
 export default class FieldSetting extends Setting {
-    private property: Field;
+    public field: Field;
     private app: App;
     private plugin: MetadataMenu;
     private containerEl: HTMLElement;
@@ -14,7 +14,7 @@ export default class FieldSetting extends Setting {
     constructor(containerEl: HTMLElement, property: Field, app: App, plugin: MetadataMenu) {
         super(containerEl);
         this.containerEl = containerEl;
-        this.property = property;
+        this.field = property;
         this.app = app;
         this.plugin = plugin;
         this.setTextContentWithname();
@@ -23,12 +23,12 @@ export default class FieldSetting extends Setting {
     };
 
     public setTextContentWithname(): void {
-        const options = !(this.property.type === FieldType.Boolean) ? `[${Object.keys(this.property.options).map(k => this.property.options[k]).join(', ')}]` : ""
+        const options = !(this.field.type === FieldType.Boolean) ? `[${Object.keys(this.field.options).map(k => this.field.options[k]).join(', ')}]` : ""
         this.infoEl.textContent =
-            `${this.property.name}: ${options}`;
+            `${this.field.name}: ${options}`;
         this.typeContainer = this.infoEl.createEl("span", "-")
-        this.typeContainer.setAttr("class", `metadata-menu-setting-item-info-type ${FieldTypeTagClass[this.property.type]}`)
-        this.typeContainer.setText(this.property.type)
+        this.typeContainer.setAttr("class", `metadata-menu-setting-item-info-type ${FieldTypeTagClass[this.field.type]}`)
+        this.typeContainer.setText(this.field.type)
     };
 
     private addEditButton(): void {
@@ -36,7 +36,7 @@ export default class FieldSetting extends Setting {
             b.setIcon("pencil")
                 .setTooltip("Edit")
                 .onClick(() => {
-                    let modal = new FieldSettingsModal(this.app, this.plugin, this.containerEl, this, this.property);
+                    let modal = new FieldSettingsModal(this.app, this.plugin, this.containerEl, this, this.field);
                     modal.open();
                 });
         });
@@ -47,7 +47,7 @@ export default class FieldSetting extends Setting {
             b.setIcon("trash")
                 .setTooltip("Delete")
                 .onClick(() => {
-                    const currentExistingProperty = this.plugin.initialProperties.filter(p => p.id == this.property.id)[0];
+                    const currentExistingProperty = this.plugin.initialProperties.filter(p => p.id == this.field.id)[0];
                     if (currentExistingProperty) {
                         this.plugin.initialProperties.remove(currentExistingProperty);
                     };

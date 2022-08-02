@@ -1,4 +1,4 @@
-import { App, TFile } from "obsidian"
+import { TFile } from "obsidian"
 import MetadataMenu from "main"
 import { getValues } from "./commands/getValues";
 import { replaceValues } from "./commands/replaceValues";

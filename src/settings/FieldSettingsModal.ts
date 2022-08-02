@@ -1,14 +1,14 @@
 import { App, Modal, Setting, TextComponent, Notice, ButtonComponent, ExtraButtonComponent, DropdownComponent } from "obsidian";
 import MetadataMenu from "main";
 import Field from "src/fields/Field";
-import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
+import { FieldManager, FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 import FieldSetting from "src/settings/FieldSetting";
+import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
+import NumberField from "src/fields/fieldManagers/NumberField";
 
 export default class FieldSettingsModal extends Modal {
     private namePromptComponent: TextComponent;
     private valuesPromptComponents: Array<TextComponent> = [];
-    private presetValuesFields: HTMLDivElement;
-    private numberValidatorField: HTMLDivElement;
     private numberStepValue: TextComponent;
     private numberMinValue: TextComponent;
     private numberMaxValue: TextComponent;
@@ -62,37 +62,6 @@ export default class FieldSettingsModal extends Modal {
         };
     };
 
-    private setValueListText(header: HTMLDivElement): void {
-        header.setText(`Preset options: ${Object.values(this.field.options).join(', ')}`);
-    };
-
-    private showSection(fieldType: FieldType): void {
-        switch (fieldType) {
-            case FieldType.Multi:
-            //fall-through
-            case FieldType.Cycle:
-            //fall-through
-            case FieldType.Select:
-                this.presetValuesFields.show()
-                this.numberValidatorField.hide()
-                break;
-            case FieldType.Number:
-                this.presetValuesFields.hide()
-                this.numberValidatorField.show()
-                break;
-            case FieldType.Boolean:
-            //fall-through
-            case FieldType.Input:
-                this.presetValuesFields.hide()
-                this.numberValidatorField.hide()
-                break;
-            default:
-                this.presetValuesFields.hide()
-                this.numberValidatorField.hide()
-                break;
-        }
-    }
-
     private createnameInputContainer(parentNode: HTMLDivElement): TextComponent {
         const fieldNameContainerLabel = parentNode.createDiv();
         fieldNameContainerLabel.setText(`Field Name:`);
@@ -117,108 +86,35 @@ export default class FieldSettingsModal extends Modal {
             select.setValue(this.field.type)
         }
         select.onChange((typeLabel: keyof typeof FieldType) => {
+            this.field = new Field();
+            Field.copyProperty(this.field, this.initialField);
             this.field.type = FieldTypeLabelMapping[typeLabel];
-            this.showSection(this.field.type)
+            if (this.field.type !== this.initialField.type &&
+                ![this.field.type, this.initialField.type].every(fieldType =>
+                    [FieldType.Multi, FieldType.Select, FieldType.Cycle].includes(fieldType)
+                )
+            ) {
+                this.field.options = {}
+            }
+            while (this.fieldOptionsContainer.firstChild) {
+                this.fieldOptionsContainer.removeChild(this.fieldOptionsContainer.firstChild);
+            }
+            this.buildOptionsContainer();
         })
     }
 
-
-    private createNumberContainer(parentNode: HTMLDivElement): void {
-        const numberStepValueContainer = parentNode.createDiv();
-        numberStepValueContainer.createEl("span", { text: "Step (optional)", cls: 'metadata-menu-field-option' })
-        this.numberStepValue = new TextComponent(numberStepValueContainer)
-        this.numberStepValue.setValue(this.field.options.step || "")
-
-        const numberMinValueContainer = parentNode.createDiv();
-        numberMinValueContainer.createEl("span", { text: "Min value (optional)", cls: 'metadata-menu-field-option' })
-        this.numberMinValue = new TextComponent(numberMinValueContainer)
-        this.numberMinValue.setValue(this.field.options.min || "")
-
-        const numberMaxValueContainer = parentNode.createDiv();
-        numberMaxValueContainer.createEl("span", { text: "Max value (optional)", cls: 'metadata-menu-field-option' })
-        this.numberMaxValue = new TextComponent(numberMaxValueContainer)
-        this.numberMaxValue.setValue(this.field.options.max || "")
-        this.numberStepValue.onChange(value => {
-            this.field.options.step = value;
-            FieldSettingsModal.removeValidationError(this.numberStepValue);
-        })
-        this.numberMinValue.onChange(value => {
-            this.field.options.min = value;
-            FieldSettingsModal.removeValidationError(this.numberMinValue);
-        })
-        this.numberMaxValue.onChange(value => {
-            this.field.options.max = value;
-            FieldSettingsModal.removeValidationError(this.numberMaxValue);
-        })
+    private buildOptionsContainer(): void {
+        const fieldManager = new FieldManager[this.field.type](this.field);
+        if (
+            fieldManager.field.type === FieldType.Select ||
+            fieldManager.field.type === FieldType.Multi ||
+            fieldManager.field.type === FieldType.Cycle
+        ) {
+            (fieldManager as AbstractListBasedField).createSettingContainer(this.fieldOptionsContainer);
+        } else if (fieldManager.field.type === FieldType.Number) {
+            (fieldManager as NumberField).createSettingContainer(this.fieldOptionsContainer);
+        }
     }
-
-    private createListNoteContainer(parentNode: HTMLDivElement): TextComponent {
-        const listNoteContainerLabel = parentNode.createDiv({ cls: "metadata-menu-input" });
-        listNoteContainerLabel.setText(`Path of the note containing the values:`);
-
-        const input = new TextComponent(listNoteContainerLabel);
-        const listNotePath = this.field.valuesListNotePath;
-        input.setValue(listNotePath);
-        input.setPlaceholder("Path/of/the/note.md");
-        input.onChange(value => this.field.valuesListNotePath = value);
-        return input;
-    };
-
-    private removePresetValue(key: string): void {
-        let newValues: Record<string, string> = {};
-        for (let _key in this.field.options) {
-            if (key !== _key) {
-                newValues[_key] = this.field.options[_key];
-            };
-        };
-        this.field.options = newValues;
-    };
-
-    private createValueContainer(parentNode: HTMLDivElement, header: HTMLDivElement, key: string): TextComponent {
-        const options = this.field.options;
-        const presetValue = options[key];
-        const valueContainer = parentNode.createDiv({
-            cls: 'metadata-menu-prompt-container',
-        });
-        const input = new TextComponent(valueContainer);
-        input.setValue(presetValue);
-        input.onChange(value => {
-            this.field.options[key] = value;
-            this.setValueListText(header);
-            FieldSettingsModal.removeValidationError(input);
-        });
-        const valueRemoveButton = new ButtonComponent(valueContainer);
-        valueRemoveButton.setIcon("trash")
-            .onClick((evt: MouseEvent) => {
-                evt.preventDefault;
-                this.removePresetValue(key);
-                this.setValueListText(header);
-                parentNode.removeChild(valueContainer);
-                this.valuesPromptComponents.remove(input);
-
-            });
-        if (key != Object.keys(this.field.options)[0]) {
-            const valueUpgradeButton = new ButtonComponent(valueContainer);
-            valueUpgradeButton.setButtonText("▲");
-            valueUpgradeButton.onClick((evt: MouseEvent) => {
-                const thisValue = options[key];
-                const inputIndex = this.valuesPromptComponents.indexOf(input)
-                const upperComponent = inputIndex !== -1 ? this.valuesPromptComponents[inputIndex - 1] : this.valuesPromptComponents.last();
-                if (upperComponent) {
-                    const upperValue = upperComponent.inputEl.value;
-                    const upperKey = Object.keys(options).filter(k => options[k] == upperValue)[0];
-                    if (upperKey) {
-                        upperComponent.setValue(thisValue);
-                        options[upperKey] = thisValue;
-                        input.setValue(upperValue);
-                        options[key] = upperValue;
-                    };
-                };
-            });
-        };
-
-        return input;
-    };
 
     private async createForm(): Promise<void> {
         const div = this.contentEl.createDiv({
@@ -235,49 +131,9 @@ export default class FieldSettingsModal extends Modal {
 
         /* Field type selection */
         const typeSelectContainer = mainDiv.createDiv()
-        this.createTypeSelectorContainer(typeSelectContainer)
 
         /* Field options section*/
         this.fieldOptionsContainer = mainDiv.createDiv()
-
-        /* Number validation */
-        this.numberValidatorField = this.fieldOptionsContainer.createDiv({ cls: "metadata-menu-number-options" })
-        //this.numberValidatorField.setAttr("style", "background-color: green")
-        this.createNumberContainer(this.numberValidatorField)
-        this.numberValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
-
-        /* preset options for multi & cycle */
-        this.presetValuesFields = this.fieldOptionsContainer.createDiv()
-        this.presetValuesFields.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
-
-        /* Field's note for list of Options */
-
-        const listNotePathContainer = this.presetValuesFields.createDiv();
-        this.createListNoteContainer(listNotePathContainer);
-        listNotePathContainer.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
-
-        /* Field options */
-        const valuesList = this.presetValuesFields.createDiv();
-        const valuesListHeader = valuesList.createDiv();
-        valuesListHeader.createEl("h2");
-        valuesListHeader.setText(`Preset options: ${Object.values(this.field.options).join(', ')}`);
-        const valuesListBody = valuesList.createDiv();
-        Object.keys(this.field.options).forEach(key => {
-            this.valuesPromptComponents.push(this.createValueContainer(valuesListBody, valuesListHeader, key));
-        });
-
-        /* Add a new Options */
-        const valuesListFooter = valuesList.createDiv();
-        const addValue = valuesListFooter.createEl('button');
-        addValue.type = 'button';
-        addValue.textContent = 'Add';
-        addValue.onClickEvent(async (evt: MouseEvent) => {
-            evt.preventDefault;
-            const newKey = await this.field.insertNewValue("")
-            this.createValueContainer(valuesListBody, valuesListHeader, newKey)
-        });
-
-        valuesList.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
 
         /* footer buttons*/
         const footerEl = this.contentEl.createDiv();
@@ -285,8 +141,9 @@ export default class FieldSettingsModal extends Modal {
         footerButtons.addButton((b) => this.createSaveButton(b));
         footerButtons.addExtraButton((b) => this.createCancelButton(b));
 
-        /* initial state */
-        this.showSection(this.field.type)
+        /* init state */
+        this.createTypeSelectorContainer(typeSelectContainer)
+        this.buildOptionsContainer();
     };
 
     private validateFields(): boolean {
@@ -371,7 +228,8 @@ export default class FieldSettingsModal extends Modal {
             } else {
                 this.plugin.initialProperties.push(this.field);
             };
-            this.initialField = this.field;
+            Field.copyProperty(this.initialField, this.field)
+            Field.copyProperty(this.parentSetting!.field, this.field)
             this.parentSetting?.setTextContentWithname()
             this.plugin.saveSettings();
             this.close();
@@ -395,7 +253,7 @@ export default class FieldSettingsModal extends Modal {
 
     /* utils functions */
 
-    private static setValidationError(textInput: TextComponent, insertAfter: Element, message?: string) {
+    public static setValidationError(textInput: TextComponent, insertAfter: Element, message?: string) {
         textInput.inputEl.addClass("is-invalid");
         if (message && textInput.inputEl.parentElement?.lastElementChild) {
 
@@ -410,7 +268,7 @@ export default class FieldSettingsModal extends Modal {
             mDiv.insertAfter(insertAfter);
         }
     }
-    private static removeValidationError(textInput: TextComponent) {
+    public static removeValidationError(textInput: TextComponent) {
         if (textInput.inputEl.hasClass("is-invalid") && textInput.inputEl.parentElement?.lastElementChild) {
             textInput.inputEl.removeClass("is-invalid")
             textInput.inputEl.parentElement.removeChild(
