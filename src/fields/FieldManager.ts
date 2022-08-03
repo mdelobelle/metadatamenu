@@ -3,17 +3,25 @@ import SelectModal from "src/optionModals/SelectModal";
 import { FieldType } from "src/types/fieldTypes";
 import Field from "./Field";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
+import { replaceValues } from "src/commands/replaceValues";
+import MetadataMenu from "main";
 
 
 export interface FieldManager {
     field: Field;
 }
 
+export const enum SettingLocation {
+    "PluginSettings",
+    "FileClassAttributeSettings"
+}
+
 export abstract class FieldManager {
 
     abstract addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void;
     abstract validateOptions(): boolean;
-    abstract createSettingContainer(parentContainer: HTMLDivElement): void;
+    abstract createSettingContainer(parentContainer: HTMLDivElement, location?: SettingLocation): void;
+    abstract createDvField(plugin: MetadataMenu, dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls: string, attr: Record<string, string> }): void
 
     constructor(field: Field, type: FieldType) {
         if (field.type !== type) throw Error(`This field is not of type ${type}`)

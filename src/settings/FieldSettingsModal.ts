@@ -2,8 +2,8 @@ import MetadataMenu from "main";
 import { App, ButtonComponent, DropdownComponent, ExtraButtonComponent, Modal, Notice, Setting, TextComponent } from "obsidian";
 import Field from "src/fields/Field";
 import FieldSetting from "src/settings/FieldSetting";
-import { FieldManager as F } from "src/fields/FieldManager";
-import { FieldManager, FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
+import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
+import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip } from "src/types/fieldTypes";
 
 export default class FieldSettingsModal extends Modal {
     private namePromptComponent: TextComponent;
@@ -74,15 +74,11 @@ export default class FieldSettingsModal extends Modal {
         return input;
     };
 
-    private buildOptionsContainer(): void {
-        this.fieldManager.createSettingContainer(this.fieldOptionsContainer)
-    }
-
     private createTypeSelectorContainer(parentNode: HTMLDivElement): void {
         const typeSelectorContainerLabel = parentNode.createDiv();
         typeSelectorContainerLabel.setText(`Field type:`);
         const select = new DropdownComponent(parentNode);
-        Object.keys(FieldTypeLabelMapping).forEach(f => select.addOption(f, f))
+        Object.keys(FieldTypeLabelMapping).forEach((f: keyof typeof FieldType) => select.addOption(f, FieldTypeTooltip[f]))
         if (this.field.type) {
             select.setValue(this.field.type)
         }
@@ -102,7 +98,7 @@ export default class FieldSettingsModal extends Modal {
                 this.fieldOptionsContainer.removeChild(this.fieldOptionsContainer.firstChild);
             }
             this.fieldManager = new FieldManager[this.field.type](this.field)
-            this.buildOptionsContainer();
+            this.fieldManager.createSettingContainer(this.fieldOptionsContainer, SettingLocation.PluginSettings)
         })
     }
 
@@ -126,7 +122,7 @@ export default class FieldSettingsModal extends Modal {
 
         /* init state */
         this.createTypeSelectorContainer(typeSelectContainer)
-        this.buildOptionsContainer();
+        this.fieldManager.createSettingContainer(this.fieldOptionsContainer, SettingLocation.PluginSettings)
     };
 
     private validateFields(): boolean {

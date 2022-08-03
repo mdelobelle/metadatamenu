@@ -1,8 +1,9 @@
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
-import { FieldManager } from "../FieldManager";
+import { FieldManager, SettingLocation } from "../FieldManager";
 import { TextComponent, ButtonComponent } from "obsidian";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
+import MetadataMenu from "main";
 
 export default abstract class AbstractListBasedField extends FieldManager {
 
@@ -19,6 +20,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
     };
 
     private createListNoteContainer(parentNode: HTMLDivElement): TextComponent {
+
         const listNoteContainerLabel = parentNode.createDiv({ cls: "metadata-menu-input" });
         listNoteContainerLabel.setText(`Path of the note containing the values:`);
 
@@ -127,8 +129,8 @@ export default abstract class AbstractListBasedField extends FieldManager {
         valuesList.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
     }
 
-    createSettingContainer(parentContainer: HTMLDivElement): void {
-        this.createListNoteContainer(parentContainer)
+    createSettingContainer(parentContainer: HTMLDivElement, location?: SettingLocation): void {
+        if (location === SettingLocation.PluginSettings) this.createListNoteContainer(parentContainer);
         this.presetValuesFields = parentContainer.createDiv()
         this.presetValuesFields.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
         const valuesList = this.presetValuesFields.createDiv();
@@ -140,5 +142,15 @@ export default abstract class AbstractListBasedField extends FieldManager {
             this.valuesPromptComponents.push(this.createValueContainer(valuesListBody, valuesListHeader, key));
         });
         this.createAddButton(valuesList, valuesListBody, valuesListHeader)
+    }
+
+    createDvField(
+        plugin: MetadataMenu,
+        dv: any,
+        p: any,
+        fieldContainer: HTMLElement,
+        attrs?: { cls: string, attr: Record<string, string> }
+    ): void {
+        fieldContainer.setText(p[this.field.name])
     }
 }

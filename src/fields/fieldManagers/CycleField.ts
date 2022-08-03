@@ -46,13 +46,4 @@ export default class CycleField extends AbstractListBasedField {
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }
-
-    createDvField(
-        plugin: MetadataMenu,
-        dv: any,
-        p: any,
-        fieldContainer: HTMLElement,
-        attrs?: { cls: string, attr: Record<string, string> }
-    ): void {
-    }
 }

@@ -131,5 +131,6 @@ export default class NumberField extends FieldManager {
         fieldContainer: HTMLElement,
         attrs?: { cls: string, attr: Record<string, string> }
     ): void {
+        fieldContainer.setText(p[this.field.name])
     }
 }

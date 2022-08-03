@@ -36,13 +36,4 @@ export default class MultiField extends AbstractListBasedField {
         fieldModal.titleEl.setText(`Select options for ${selectedFieldName}`);
         fieldModal.open();
     }
-
-    createDvField(
-        plugin: MetadataMenu,
-        dv: any,
-        p: any,
-        fieldContainer: HTMLElement,
-        attrs?: { cls: string, attr: Record<string, string> }
-    ): void {
-    }
 }
