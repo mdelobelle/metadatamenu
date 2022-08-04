@@ -131,7 +131,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			text: "Manage globally predefined type and options for a field throughout your whole vault"
 		})
 		new Setting(presetFieldsSettings)
-			.setName("Add New Property Manager")
+			.setName("Add New Field Setting")
 			.setDesc("Add a new Frontmatter property for which you want preset options.")
 			.addButton((button: ButtonComponent): ButtonComponent => {
 				return button
