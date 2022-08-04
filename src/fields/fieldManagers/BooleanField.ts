@@ -66,10 +66,7 @@ export default class BooleanField extends FieldManager {
         checkbox.checked = p[this.field.name]
         fieldContainer.appendChild(checkbox)
         checkbox.onchange = (value) => {
-            const file = plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
-            if (file instanceof TFile && file.extension == "md") {
-                replaceValues(plugin.app, file, this.field.name, checkbox.checked.toString())
-            }
+            BooleanField.replaceValues(plugin.app, p["file"]["path"], this.field.name, checkbox.checked.toString());
         }
     }
 }

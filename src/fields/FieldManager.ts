@@ -47,6 +47,13 @@ export abstract class FieldManager {
         return !error
     }
 
+    static replaceValues(app: App, path: string, fieldName: string, value: string): void {
+        const file = app.vault.getAbstractFileByPath(path)
+        if (file instanceof TFile && file.extension == "md") {
+            replaceValues(app, file, fieldName, value)
+        }
+    }
+
     static isMenu(category: Menu | SelectModal): category is Menu {
         return (category as Menu).addItem !== undefined;
     };

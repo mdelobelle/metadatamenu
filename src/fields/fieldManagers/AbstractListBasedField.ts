@@ -151,6 +151,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
         fieldContainer: HTMLElement,
         attrs?: { cls: string, attr: Record<string, string> }
     ): void {
-        fieldContainer.setText(p[this.field.name])
+        const fieldValue = dv.el("span", p[this.field.name]);
+        fieldContainer.appendChild(fieldValue);
     }
 }

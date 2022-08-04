@@ -5,7 +5,6 @@ import valueTextInputModal from "src/optionModals/valueTextInputModal";
 import { App, Menu, TFile } from "obsidian";
 import SelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
-import { replaceValues } from "src/commands/replaceValues";
 
 export default class InputField extends FieldManager {
 
@@ -76,18 +75,15 @@ export default class InputField extends FieldManager {
             spacer.show()
         }
 
-        const validateIcon = document.createElement("a")
+        const validateIcon = document.createElement("button")
         validateIcon.textContent = "✅"
         validateIcon.setAttr("class", "metadata-menu-dv-field-button")
         validateIcon.onclick = (e) => {
-            const file = plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
-            if (file instanceof TFile && file.extension == "md") {
-                replaceValues(plugin.app, file, this.field.name, input.value)
-            }
+            InputField.replaceValues(plugin.app, p["file"]["path"], this.field.name, input.value);
             fieldContainer.removeChild(inputContainer)
         }
         inputContainer?.appendChild(validateIcon)
-        const cancelIcon = document.createElement("a")
+        const cancelIcon = document.createElement("button")
         cancelIcon.setAttr("class", "metadata-menu-dv-field-button")
         cancelIcon.textContent = "❌"
         cancelIcon.onclick = (e) => {
@@ -101,10 +97,7 @@ export default class InputField extends FieldManager {
 
         input.onkeydown = (e) => {
             if (e.key === "Enter") {
-                const file = plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
-                if (file instanceof TFile && file.extension == "md") {
-                    replaceValues(plugin.app, file, this.field.name, input.value)
-                }
+                InputField.replaceValues(plugin.app, p["file"]["path"], this.field.name, input.value);
                 fieldContainer.removeChild(inputContainer)
             }
             if (e.key === 'Escape') {

@@ -46,4 +46,53 @@ export default class CycleField extends AbstractListBasedField {
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }
+
+    createDvField(
+        plugin: MetadataMenu,
+        dv: any,
+        p: any,
+        fieldContainer: HTMLElement,
+        attrs?: { cls: string, attr: Record<string, string> }
+    ): void {
+        const options = this.field.options;
+        const keys = Object.keys(options);
+        const keyForValue = keys.find(key => options[key] === p[this.field.name]);
+        let nextOption: string;
+        if (keyForValue) {
+            const nextKey = keys[(keys.indexOf(keyForValue) + 1) % keys.length];
+            nextOption = options[nextKey];
+        } else {
+            nextOption = options[Object.keys(options)[0]];
+        };
+
+        const fieldValue = dv.el('span', p[this.field.name], attrs);
+        /* end spacer */
+        const spacer = document.createElement("div");
+        spacer.setAttr("class", "metadata-menu-dv-field-spacer");
+        /* button to display input */
+        const button = document.createElement("button");
+        button.setText("▶️");
+        button.setAttr('class', "metadata-menu-dv-field-button");
+        button.hide();
+        spacer.show();
+        fieldContainer.onmouseover = () => {
+            button.show();
+            spacer.hide();
+        }
+        fieldContainer.onmouseout = () => {
+            button.hide();
+            spacer.show();
+        }
+
+        /* button on click : go to next version*/
+        button.onclick = (e) => {
+            CycleField.replaceValues(plugin.app, p["file"]["path"], this.field.name, nextOption);
+            button.hide();
+            spacer.show();
+        }
+
+        fieldContainer.appendChild(button);
+        fieldContainer.appendChild(fieldValue);
+        fieldContainer.appendChild(spacer);
+    }
 }

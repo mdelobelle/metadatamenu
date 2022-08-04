@@ -1,6 +1,8 @@
 import { App, Modal, TextComponent, TFile, ButtonComponent } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
+import NumberField from "src/fields/fieldManagers/NumberField";
+import { FieldManager } from "src/types/fieldTypes";
 
 export default class numbertModal extends Modal {
 
@@ -10,6 +12,7 @@ export default class numbertModal extends Modal {
     private inFrontmatter: boolean;
     private top: boolean;
     private field: Field;
+    private fieldManager: NumberField;
 
     constructor(app: App, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
         super(app);
@@ -20,28 +23,13 @@ export default class numbertModal extends Modal {
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
         this.top = top;
+        this.fieldManager = new FieldManager[this.field.type](this.field)
     };
 
     onOpen() {
         const inputDiv = this.contentEl.createDiv();
         this.buildInputEl(inputDiv);
     };
-
-    private canDecrement(value: string): boolean {
-        const { step, min } = this.field.options;
-        const fStep = parseFloat(step);
-        const fMin = parseFloat(min);
-        return !(
-            isNaN(parseFloat(value)) ||
-            !isNaN(fMin) &&
-            (
-                !isNaN(fStep) && (
-                    parseFloat(value) - fStep < fMin ||
-                    parseFloat(value) - 1 < fMin
-                )
-            )
-        )
-    }
 
     private decrement(inputEl: TextComponent): void {
         const { step } = this.field.options;
@@ -51,22 +39,6 @@ export default class numbertModal extends Modal {
         } else {
             inputEl.setValue((parseFloat(inputEl.getValue()) - 1).toString());
         }
-    }
-
-    private canIncrement(value: string): boolean {
-        const { step, max } = this.field.options;
-        const fStep = parseFloat(step);
-        const fMax = parseFloat(max);
-        return !(
-            isNaN(parseFloat(value)) ||
-            !isNaN(fMax) &&
-            (
-                !isNaN(fStep) && (
-                    parseFloat(value) + fStep > fMax ||
-                    parseFloat(value) + 1 > fMax
-                )
-            )
-        )
     }
 
     private increment(inputEl: TextComponent): void {
@@ -80,14 +52,14 @@ export default class numbertModal extends Modal {
     }
 
     private toggleButtonsState(minusBtn: ButtonComponent, plusBtn: ButtonComponent, inputEl: TextComponent): void {
-        minusBtn.setDisabled(!this.canDecrement(inputEl.getValue()));
-        plusBtn.setDisabled(!this.canIncrement(inputEl.getValue()));
-        if (this.canDecrement(inputEl.getValue())) {
+        minusBtn.setDisabled(!this.fieldManager.canDecrement(inputEl.getValue()));
+        plusBtn.setDisabled(!this.fieldManager.canIncrement(inputEl.getValue()));
+        if (this.fieldManager.canDecrement(inputEl.getValue())) {
             minusBtn.setCta();
         } else {
             minusBtn.removeCta();
         }
-        if (this.canIncrement(inputEl.getValue())) {
+        if (this.fieldManager.canIncrement(inputEl.getValue())) {
             plusBtn.setCta();
         } else {
             plusBtn.removeCta();
@@ -121,7 +93,7 @@ export default class numbertModal extends Modal {
 
         const plusBtn = new ButtonComponent(fieldContainer);
         plusBtn.setButtonText(`+ ${!!step ? step : 1}`);
-        plusBtn.setDisabled(!this.canIncrement(inputEl.getValue()));
+        plusBtn.setDisabled(!this.fieldManager.canIncrement(inputEl.getValue()));
 
         const errorField = form.createEl("div", { cls: "metadata-menu-modal-value-with-btn-error-field" })
         errorField.hide()
@@ -165,7 +137,7 @@ export default class numbertModal extends Modal {
         form.onsubmit = async (e: Event) => {
             e.preventDefault();
             let inputValue = inputEl.getValue();
-            if (!this.validateValue(inputValue)) {
+            if (!this.fieldManager.validateValue(inputValue)) {
                 const { min, max } = this.field.options
                 errorField.show();
                 errorField.setText(`value must be numeric${min ? " and >= " + min : ""} ${max ? " and <= " + max : ""}`)
