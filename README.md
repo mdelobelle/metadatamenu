@@ -5,6 +5,9 @@ The preset values for those fields can be managed globally in the plugin's setti
 
 It also enables frontmatter of inline-field autocompletion with suggested values based on preset values.
 
+demo: https://youtu.be/7bvIAkJf0OE
+
+
 ### **BREAKING CHANGE IN 0.1.5**
 `getValues` and `replaceValues` api functions no longer need the first `app: App` argument
 
