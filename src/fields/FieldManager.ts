@@ -5,6 +5,7 @@ import Field from "./Field";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { replaceValues } from "src/commands/replaceValues";
 import MetadataMenu from "main";
+import { FieldManager as FM } from "src/types/fieldTypes";
 
 
 export interface FieldManager {
@@ -61,4 +62,9 @@ export abstract class FieldManager {
     static isSelect(category: Menu | SelectModal): category is SelectModal {
         return (category as SelectModal).modals !== undefined;
     };
+
+    public static createDefault(name: string): FieldManager {
+        const field = Field.createDefault(name);
+        return new FM[field.type](field);
+    }
 }

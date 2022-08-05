@@ -49,6 +49,13 @@ class Field {
             };
         });
     };
+
+    public static createDefault(name: string): Field {
+        const field = new Field();
+        field.type = FieldType.Input;
+        field.name = name;
+        return field;
+    }
 };
 
 export default Field;

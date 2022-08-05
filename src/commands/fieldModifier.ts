@@ -1,7 +1,9 @@
 import MetadataMenu from "main";
 import { getField } from "src/commands/getField";
+import Field from "src/fields/Field";
 import { createFileClass } from "src/fileClass/fileClass";
-import { FieldManager } from "src/types/fieldTypes";
+import { FieldManager, FieldType } from "src/types/fieldTypes";
+import { FieldManager as F } from "src/fields/FieldManager";
 
 export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }): Promise<HTMLElement> {
 
@@ -23,7 +25,8 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
                 const fieldManager = new FieldManager[field.type](field);
                 fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
             } else {
-                return dv.el('span', p[fieldName], attrs);
+                const fieldManager = F.createDefault(fieldName);
+                fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
             }
         } else if (plugin.settings.presetFields.filter(attr => attr.name == fieldName)) {
             const field = getField(plugin, fieldName)
@@ -31,10 +34,12 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
                 const fieldManager = new FieldManager[field.type](field);
                 fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
             } else {
-                return dv.el('span', p[fieldName], attrs);
+                const fieldManager = F.createDefault(fieldName);
+                fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
             }
         } else {
-            return dv.el('span', p[fieldName], attrs);
+            const fieldManager = F.createDefault(fieldName);
+            fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
         }
     }
     return fieldContainer
