@@ -1,21 +1,12 @@
-import Field from "src/Field";
+import Field from "src/fields/Field";
+import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
+import { capitalize } from "src/utils/textUtils";
 import { genericFieldRegex } from "src/utils/parser";
 
 interface FileClassAttribute {
     name: string;
-    type: string;
-    options: string[];
-    isMulti: boolean;
-    isCycle: boolean;
-    isBoolean: boolean;
-}
-
-const types: Record<string, string> = {
-    "input": "Accept any value",
-    "select": "Accept a single value from a list",
-    "multi": "Accept multiple values from a list",
-    "cycle": "Cycle through values from a list",
-    "boolean": "Accept true of false"
+    type: FieldType;
+    options: string[] | Record<string, string>;
 }
 
 class FileClassAttribute {
@@ -35,20 +26,10 @@ class FileClassAttribute {
             this.name = fieldName.trim();
             if (fieldSettings) {
                 const settings = JSON.parse(`${fieldSettings.trim()}`);
-                this.type = settings['type'];
-                switch (this.type) {
-                    case "multi":
-                        this.isMulti = true;
-                        break;
-                    case "cycle":
-                        this.isCycle = true;
-                        break;
-                    case "boolean":
-                        this.isBoolean = true
-                    default:
-                        break;
-                }
+                this.type = FieldTypeLabelMapping[capitalize(settings['type']) as keyof typeof FieldType];
                 this.options = settings['options'];
+            } else {
+                this.type = FieldType.Input // default type when no setting is provided
             }
         } else {
             const error = new Error("Improper value");
@@ -57,12 +38,16 @@ class FileClassAttribute {
     }
 
     public getField() {
-        let values: Record<string, string> = {};
-        this.options?.forEach((option, index) => {
-            values[index] = option;
-        })
-        return new Field(this.name, values, this.name, this.isMulti, this.isCycle, this.isBoolean);
+        let options: Record<string, string> = {};
+        if (Array.isArray(this.options)) {
+            this.options?.forEach((option, index) => {
+                options[index] = option;
+            })
+        } else {
+            options = this.options
+        }
+        return new Field(this.name, options, this.name, undefined, this.type);
     }
 }
 
-export { FileClassAttribute, types };
+export { FileClassAttribute };

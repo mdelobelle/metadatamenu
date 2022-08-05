@@ -1,3 +1,4 @@
 export enum MetadataTypes {
-    'Frontmatter', 'Dataview'
+    'Frontmatter',
+    'Dataview'
 }

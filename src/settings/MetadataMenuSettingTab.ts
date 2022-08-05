@@ -1,9 +1,8 @@
 import { App, PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal } from "obsidian";
 import MetadataMenu from "main";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
-import Field from "src/Field";
+import Field from "src/fields/Field";
 import FieldSetting from "src/settings/FieldSetting";
-import { copyFileSync } from "fs";
 
 class SettingsMigrationConfirmModal extends Modal {
 
@@ -30,18 +29,12 @@ class SettingsMigrationConfirmModal extends Modal {
 			if (this.app.plugins.plugins.hasOwnProperty("supercharged-links-obsidian")) {
 				//@ts-ignore
 				let settings = this.app.plugins.plugins["supercharged-links-obsidian"].settings;
-				let _settings = this.plugin.settings;
-				//copying simple settings
-				_settings.classFilesPath = settings.classFilesPath;
-				_settings.displayFieldsInContextMenu = settings.displayFieldsInContextMenu;
-				_settings.getFromInlineField = settings.getFromInlineField;
-				_settings.globallyIgnoredFields = settings.globallyIgnoredFields;
 				//deep copying presetFields in initialProperty
 				this.plugin.initialProperties = [];
 				settings.presetFields.forEach((prop: Field) => {
-					const property = new Field();
-					Object.assign(property, prop);
-					this.plugin.initialProperties.push(property);
+					const field = new Field();
+					Object.assign(field, prop);
+					this.plugin.initialProperties.push(field);
 				})
 
 				this.plugin.saveSettings();
@@ -80,17 +73,6 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			cls: "setting-item-description metadata-menu-setting-section-desc",
 			text: "Global settings to apply to your whole vault"
 		})
-		// Managing choice whether you get attributes from inline fields and frontmatter or only frontmater
-		new Setting(globalSettings)
-			.setName('Search for attribute in Inline fields like <field::>')
-			.setDesc('Sets the `data-link-<field>`-attribute to the value of inline fields')
-			.addToggle(toggle => {
-				toggle.setValue(this.plugin.settings.getFromInlineField)
-				toggle.onChange(async value => {
-					this.plugin.settings.getFromInlineField = value
-					await this.plugin.saveSettings()
-				});
-			});
 
 		/* Manage menu options display*/
 		new Setting(globalSettings)
@@ -121,19 +103,19 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		/* 
 		-----------------------------------------
-		Managing predefined values for properties 
+		Managing predefined options for properties 
 		-----------------------------------------
 		*/
-		/* Add new property for which we want to preset values*/
+		/* Add new property for which we want to preset options*/
 		const presetFieldsSettings = containerEl.createEl("div")
 		presetFieldsSettings.createEl('h4', { text: 'Preset Fields settings', cls: "metadata-menu-setting-section-header" });
 		presetFieldsSettings.createEl('div', {
 			cls: "setting-item-description metadata-menu-setting-section-desc",
-			text: "Manage globally predefined type and values for a field throughout your whole vault"
+			text: "Manage globally predefined type and options for a field throughout your whole vault"
 		})
 		new Setting(presetFieldsSettings)
-			.setName("Add New Property Manager")
-			.setDesc("Add a new Frontmatter property for which you want preset values.")
+			.setName("Add New Field Setting")
+			.setDesc("Add a new Frontmatter property for which you want preset options.")
 			.addButton((button: ButtonComponent): ButtonComponent => {
 				return button
 					.setTooltip("Add New Property Manager")
@@ -144,7 +126,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					});
 			});
 
-		/* Managed properties that currently have preset values */
+		/* Managed properties that currently have preset options */
 		this.plugin.initialProperties.forEach(prop => {
 			const property = new Field();
 			Object.assign(property, prop);
@@ -198,7 +180,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		const migrateSettings = containerEl.createEl("div")
 		migrateSettings.createEl('h4', { text: 'Migrate' });
 
-		/* Add new property for which we want to preset values*/
+		/* Add new property for which we want to preset options*/
 		new Setting(migrateSettings)
 			.setName("Copy settings from supercharged links plugin")
 			.setDesc("Copy settings from supercharged links plugin")

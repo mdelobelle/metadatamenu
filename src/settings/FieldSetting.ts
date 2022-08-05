@@ -1,45 +1,42 @@
 import { App, Setting, TFile } from "obsidian";
 import MetadataMenu from "main";
-import Field from "src/Field";
+import Field from "src/fields/Field";
+import { FieldType, FieldTypeTagClass } from "src/types/fieldTypes";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 
 export default class FieldSetting extends Setting {
-    private property: Field;
+    public field: Field;
     private app: App;
     private plugin: MetadataMenu;
     private containerEl: HTMLElement;
+    private typeContainer: HTMLSpanElement;
+
     constructor(containerEl: HTMLElement, property: Field, app: App, plugin: MetadataMenu) {
         super(containerEl);
         this.containerEl = containerEl;
-        this.property = property;
+        this.field = property;
         this.app = app;
         this.plugin = plugin;
         this.setTextContentWithname();
         this.addEditButton();
         this.addDeleteButton();
-
     };
 
-    private setTextContentWithname(): void {
-        const values = !this.property.isBoolean ? `[${Object.keys(this.property.values).map(k => this.property.values[k]).join(', ')}]` : ""
-        let type = "single"
-        if (this.property.isBoolean) type = "boolean"
-        if (this.property.isMulti) type = "multi"
-        if (this.property.isCycle) type = "cycle"
+    public setTextContentWithname(): void {
+        const options = !(this.field.type === FieldType.Boolean) ? `[${Object.keys(this.field.options).map(k => this.field.options[k]).join(', ')}]` : ""
         this.infoEl.textContent =
-            `${this.property.name}: ${values}`;
-        const typeContainer = this.infoEl.createEl("span", `metadata-menu-setting-item-info-type ${type}`)
-        typeContainer.setText(type)
-
+            `${this.field.name}: ${options}`;
+        this.typeContainer = this.infoEl.createEl("span", "-")
+        this.typeContainer.setAttr("class", `metadata-menu-setting-item-info-type ${FieldTypeTagClass[this.field.type]}`)
+        this.typeContainer.setText(this.field.type)
     };
-
 
     private addEditButton(): void {
         this.addButton((b) => {
             b.setIcon("pencil")
                 .setTooltip("Edit")
                 .onClick(() => {
-                    let modal = new FieldSettingsModal(this.app, this.plugin, this.containerEl, this, this.property);
+                    let modal = new FieldSettingsModal(this.app, this.plugin, this.containerEl, this, this.field);
                     modal.open();
                 });
         });
@@ -50,7 +47,7 @@ export default class FieldSetting extends Setting {
             b.setIcon("trash")
                 .setTooltip("Delete")
                 .onClick(() => {
-                    const currentExistingProperty = this.plugin.initialProperties.filter(p => p.id == this.property.id)[0];
+                    const currentExistingProperty = this.plugin.initialProperties.filter(p => p.id == this.field.id)[0];
                     if (currentExistingProperty) {
                         this.plugin.initialProperties.remove(currentExistingProperty);
                     };

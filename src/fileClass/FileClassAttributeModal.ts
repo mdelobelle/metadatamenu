@@ -1,115 +1,156 @@
-import { DropdownComponent, Modal, TextComponent, ButtonComponent, ExtraButtonComponent, TextAreaComponent } from "obsidian";
-import { FileClassAttribute, types } from "src/fileClass/fileClassAttribute";
+import { DropdownComponent, Modal, TextComponent, ButtonComponent, ExtraButtonComponent, Notice } from "obsidian";
+import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
+import { FieldTypeTooltip, FieldType, FieldTypeLabelMapping, FieldManager } from "src/types/fieldTypes";
 import { FileClass } from "src/fileClass/fileClass";
 import MetadataMenu from "main";
-
-
-interface FileClassAttributeModal {
-    attr?: FileClassAttribute;
-    fileClass: FileClass;
-    type: string;
-    options: string[];
-    name: string;
-    plugin: MetadataMenu
-}
+import Field from "src/fields/Field";
+import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
 
 class FileClassAttributeModal extends Modal {
+
+    private attr?: FileClassAttribute;
+    private fileClass: FileClass;
+    private plugin: MetadataMenu
+    private nameInputContainer: HTMLDivElement;
+    private nameInput: TextComponent;
+    private attrName: HTMLElement;
+    private typeSelectContainer: HTMLDivElement;
+    private initialField: Field;
+    private field: Field;
+    private fieldManager: F;
+    private fieldOptionsContainer: HTMLDivElement;
+
 
     constructor(plugin: MetadataMenu, fileClass: FileClass, attr?: FileClassAttribute) {
         super(plugin.app);
         this.plugin = plugin
         this.attr = attr;
         this.fileClass = fileClass;
+        this.initialField = new Field();
         if (this.attr) {
-            this.type = this.attr.type || "input";
-            this.options = this.attr.options;
-            this.name = this.attr.name;
+            this.field = attr!.getField()
+            Field.copyProperty(this.initialField, this.field)
+        } else {
+            this.field = new Field();
         }
+        this.fieldManager = new FieldManager[this.field.type](this.field);
+        this.nameInputContainer = this.contentEl.createDiv();
+        this.typeSelectContainer = this.contentEl.createDiv({ cls: 'metadata-menu-value-selector-container' });
+        this.fieldOptionsContainer = this.contentEl.createDiv()
+    }
+
+    buildNameInputContainer(): void {
+        this.nameInputContainer.setText("Name: ");
+        this.nameInput = new TextComponent(this.nameInputContainer);
+        this.attr ? this.nameInput.setValue(this.field.name) : this.nameInput.setPlaceholder("Type a name for this attribute");
+        this.nameInput.onChange(value => { this.field.name = value; this.attrName.setText(`<${value}>`) });
+        this.typeSelectContainer.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
+    }
+
+    buildTypeSelectContainer(): void {
+
+        //header for select
+        const typeSelectHeader = this.typeSelectContainer.createDiv();
+        const attrLine = typeSelectHeader.createEl("div");
+        this.attrName = attrLine.createEl("strong");
+        this.attrName.setText(`<${this.field.name}>`);
+        attrLine.append(" fields in files with:");
+        String(`---\n${this.plugin.settings.fileClassAlias}: ${this.fileClass.name}\n...\n---`).split('\n').forEach(line => {
+            typeSelectHeader.createEl("div", "yaml-metadata-menu-red").setText(line);
+        })
+        //dropdown
+        const typeSelectLabel = this.typeSelectContainer.createDiv({ cls: 'metadata-menu-value-selector-inline-label' });
+        typeSelectLabel.setText("will: ");
+        const typeSelectDropDown = this.typeSelectContainer.createDiv({ cls: 'metadata-menu-value-selector-toggler' });
+
+        const typeSelect = new DropdownComponent(typeSelectDropDown);
+
+        Object.keys(FieldTypeTooltip).forEach((key: keyof typeof FieldType) => typeSelect.addOption(key, FieldTypeTooltip[key]))
+        typeSelect.setValue(this.field.type)
+        typeSelect.onChange((typeLabel: keyof typeof FieldType) => {
+
+            this.field = new Field();
+            Field.copyProperty(this.field, this.initialField);
+            this.field.name = this.nameInput.getValue()
+            this.field.type = FieldTypeLabelMapping[typeLabel];
+            if (this.field.type !== this.initialField.type &&
+                ![this.field.type, this.initialField.type].every(fieldType =>
+                    [FieldType.Multi, FieldType.Select, FieldType.Cycle].includes(fieldType)
+                )
+            ) {
+                this.field.options = {}
+            }
+            while (this.fieldOptionsContainer.firstChild) {
+                this.fieldOptionsContainer.removeChild(this.fieldOptionsContainer.firstChild);
+            }
+            this.fieldManager = new FieldManager[this.field.type](this.field)
+            this.fieldManager.createSettingContainer(this.fieldOptionsContainer, SettingLocation.FileClassAttributeSettings)
+        })
+    }
+
+    private validateFields(): boolean {
+        return this.fieldManager.validateName(
+            this.nameInput,
+            this.nameInput.inputEl
+        ) &&
+            this.fieldManager.validateOptions();
+    }
+
+    private createSaveBtn(container: HTMLDivElement): void {
+        const saveButton = new ButtonComponent(container);
+        saveButton.setIcon("checkmark");
+        saveButton.onClick(() => {
+            let error = !this.validateFields();
+            if (error) {
+                new Notice("Fix errors before saving.");
+                return;
+            };
+            this.fileClass.updateAttribute(this.field.type, this.field.name, this.field.options, this.attr);
+            this.close();
+        })
+    }
+
+    private createRemovelBtn(container: HTMLDivElement): void {
+        const removeButton = new ButtonComponent(container);
+        removeButton.setIcon("trash");
+        removeButton.onClick(() => {
+            const confirmModal = new Modal(this.plugin.app);
+            confirmModal.titleEl.setText("Please confirm");
+            confirmModal.contentEl.createDiv().setText(`Do you really want to remove ${this.attr?.name} attribute from ${this.fileClass.name}?`);
+            const confirmFooter = confirmModal.contentEl.createDiv({ cls: "metadata-menu-value-grid-footer" });
+            const confirmButton = new ButtonComponent(confirmFooter);
+            confirmButton.setIcon("checkmark");
+            confirmButton.onClick(() => {
+                if (this.attr) this.fileClass.removeAttribute(this.attr);
+                confirmModal.close();
+                this.close();
+            })
+            const dismissButton = new ExtraButtonComponent(confirmFooter);
+            dismissButton.setIcon("cross");
+            dismissButton.onClick(() => this.close());
+            confirmModal.open();
+        })
+    }
+
+    private createCancelBtn(container: HTMLDivElement): void {
+        const cancelButton = new ExtraButtonComponent(container);
+        cancelButton.setIcon("cross");
+        cancelButton.onClick(() => this.close());
     }
 
     onOpen() {
         //title
         this.titleEl.setText(this.attr ? `Manage ${this.attr.name}` : `Create a new attribute for ${this.fileClass.name}`);
 
-        //name input
-        const nameInputContainer = this.contentEl.createDiv();
-        nameInputContainer.setText("name");
-        const nameInput = new TextComponent(nameInputContainer);
-        this.attr ? nameInput.setValue(this.attr.name) : nameInput.setPlaceholder("Type a name for this attribute");
-
-        //header for select
-        const typeSelectHeader = this.contentEl.createDiv();
-        const attrLine = typeSelectHeader.createEl("div");
-        const attrName = attrLine.createEl("strong");
-        attrName.setText(`<${this.name}>`);
-        attrLine.append(" fields in files with:");
-        String(`---\n${this.plugin.settings.fileClassAlias}: ${this.fileClass.name}\n...\n---`).split('\n').forEach(line => {
-            typeSelectHeader.createEl("div", "yaml-metadata-menu-red").setText(line);
-        })
-
-        // type select
-        const typeSelectContainer = this.contentEl.createDiv({ cls: 'metadata-menu-value-selector-container' });
-        const typeSelectLabel = typeSelectContainer.createDiv({ cls: 'metadata-menu-value-selector-inline-label' });
-        typeSelectLabel.setText("will: ");
-        const typeSelectDropDown = typeSelectContainer.createDiv({ cls: 'metadata-menu-value-selector-toggler' });
-        const typeSelect = new DropdownComponent(typeSelectDropDown);
-        Object.keys(types).forEach(key => {
-            typeSelect.addOption(key, types[key]);
-        })
-        if (this.attr) {
-            typeSelect.setValue(this.type);
-        }
-
-        // options input
-        const optionsInputContainer = this.contentEl.createDiv({ cls: 'metadata-menu-value-selector-container' });
-        const optionsInputLabel = optionsInputContainer.createDiv({ cls: 'metadata-menu-value-selector-inline-label-top' });
-        optionsInputLabel.setText("Values");
-        const optionsInput = new TextAreaComponent(optionsInputContainer);
-        optionsInput.inputEl.rows = 3;
-        optionsInput.inputEl.cols = 26;
-        this.attr ? optionsInput.setValue(this.type == "input" || this.type == "boolean" ? "" : this.options.join(", ")) : optionsInput.setPlaceholder("insert values, comma separated");
-        !this.attr || this.type == "input" || this.type == "boolean" ? optionsInputContainer.hide() : optionsInputContainer.show();
-
-        // event handlers
-        typeSelect.onChange(type => {
-            type == "input" || type == "boolean" ? optionsInputContainer.hide() : optionsInputContainer.show();
-            this.type = type;
-        })
-        optionsInput.onChange(value => this.options = value.split(",").map(item => item.trim()));
-        nameInput.onChange(value => { this.name = value; attrName.setText(`<${value}>`) });
+        this.buildNameInputContainer()
+        this.buildTypeSelectContainer()
+        this.fieldManager.createSettingContainer(this.fieldOptionsContainer, SettingLocation.FileClassAttributeSettings)
 
         // footer buttons
         const footer = this.contentEl.createDiv({ cls: "metadata-menu-value-grid-footer" });
-        const saveButton = new ButtonComponent(footer);
-        saveButton.setIcon("checkmark");
-        saveButton.onClick(() => {
-            this.fileClass.updateAttribute(this.type, this.options, this.name, this.attr);
-            this.close();
-        })
-        if (this.attr) {
-            const removeButton = new ButtonComponent(footer);
-            removeButton.setIcon("trash");
-            removeButton.onClick(() => {
-                const confirmModal = new Modal(this.plugin.app);
-                confirmModal.titleEl.setText("Please confirm");
-                confirmModal.contentEl.createDiv().setText(`Do you really want to remove ${this.attr?.name} attribute from ${this.fileClass.name}?`);
-                const confirmFooter = confirmModal.contentEl.createDiv({ cls: "metadata-menu-value-grid-footer" });
-                const confirmButton = new ButtonComponent(confirmFooter);
-                confirmButton.setIcon("checkmark");
-                confirmButton.onClick(() => {
-                    if (this.attr) this.fileClass.removeAttribute(this.attr);
-                    confirmModal.close();
-                    this.close();
-                })
-                const dismissButton = new ExtraButtonComponent(confirmFooter);
-                dismissButton.setIcon("cross");
-                dismissButton.onClick(() => this.close());
-                confirmModal.open();
-            })
-        }
-        const cancelButton = new ExtraButtonComponent(footer);
-        cancelButton.setIcon("cross");
-        cancelButton.onClick(() => this.close());
+        this.createSaveBtn(footer);
+        if (this.attr) this.createRemovelBtn(footer);
+        this.createCancelBtn(footer);
     }
 }
 

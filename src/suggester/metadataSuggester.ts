@@ -12,6 +12,7 @@ import {
     Notice
 } from "obsidian";
 import { createFileClass, FileClass } from "src/fileClass/fileClass";
+import { FieldType } from "src/types/fieldTypes";
 import { genericFieldRegex } from "../utils/parser";
 
 interface IValueCompletion {
@@ -102,7 +103,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                     .sort()
                     .map(tag => Object({ value: tag.replace(/^#/, "") }))
             }
-            //if this note has a fileClass, check if field values are defined in the FileClass
+            //if this note has a fileClass, check if field options are defined in the FileClass
             const cache = this.plugin.app.metadataCache.getCache(context.file.path);
             let tryWithPresetField = !cache?.frontmatter;
             if (cache?.frontmatter) {
@@ -115,12 +116,18 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                         this.fileClass = fileClass;
                         const fileClassAttributes = this.fileClass.attributes;
                         if (fileClassAttributes.map(attr => attr.name).contains(fieldName)) {
-                            const options = fileClassAttributes
-                                .filter(attr => attr.name == fieldName)[0]
-                                .options
-                                .filter(option => this.filterOption(firstValues, lastValue, option))
-                            return options
-                                .map(option => Object({ value: option }));
+                            const field = fileClassAttributes
+                                .filter(attr => attr.name == fieldName)[0].getField()
+                            if ([FieldType.Cycle, FieldType.Multi, FieldType.Select].contains(field.type)) {
+                                const filteredOptions = Array.isArray(field.options) ?
+                                    field.options.filter(option => this.filterOption(firstValues, lastValue, option)) :
+                                    Object.keys(field.options)
+                                        .map(k => field.options[k])
+                                        .filter(option => this.filterOption(firstValues, lastValue, option))
+                                return filteredOptions.map(option => Object({ value: option }));
+                            } else {
+                                return []
+                            }
                         }
                     } catch (error) {
                         tryWithPresetField = true;
@@ -130,25 +137,29 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 };
             };
             if (tryWithPresetField) {
-                //else check if there are global preset values
+                //else check if there are global preset voptiosalues
                 const presetFieldMatch = this.plugin.settings.presetFields.filter(field => field.name == fieldName);
                 if (presetFieldMatch.length > 0) {
                     const presetField = presetFieldMatch[0];
-
-                    if (presetField.valuesListNotePath) {
-                        //override presetValues if there is a valuesList
-                        const valuesFile = this.plugin.app.vault.getAbstractFileByPath(presetField.valuesListNotePath);
-                        if (valuesFile instanceof TFile && valuesFile.extension == "md") {
-                            const values: { value: string }[] = await (await this.plugin.app.vault.read(valuesFile)).split("\n")
-                                .filter(option => this.filterOption(firstValues, lastValue, option))
-                                .map(_value => Object({ value: _value }))
-                            return values;
+                    if ([FieldType.Cycle, FieldType.Multi, FieldType.Select].contains(presetField.type)) {
+                        if (presetField.valuesListNotePath) {
+                            //override presetValues if there is a valuesList
+                            const valuesFile = this.plugin.app.vault.getAbstractFileByPath(presetField.valuesListNotePath);
+                            if (valuesFile instanceof TFile && valuesFile.extension == "md") {
+                                const values: { value: string }[] = await (await this.plugin.app.vault.read(valuesFile)).split("\n")
+                                    .filter(option => this.filterOption(firstValues, lastValue, option))
+                                    .map(_value => Object({ value: _value }))
+                                return values;
+                            };
                         };
-                    };
-                    const values = Object.entries(presetFieldMatch[0].values).map(option => option[1])
-                        .filter(option => this.filterOption(firstValues, lastValue, option))
-                    return values
-                        .map(_value => Object({ value: _value }))
+                        const values = Object.entries(presetFieldMatch[0].options).map(option => option[1])
+                            .filter(option => this.filterOption(firstValues, lastValue, option))
+                        return values
+                            .map(_value => Object({ value: _value }))
+
+                    } else {
+                        return []
+                    }
                 };
             };
         };

@@ -1,14 +1,13 @@
 import { Modal, DropdownComponent, TFile } from "obsidian";
 import MetadataMenu from "main";
 import addNewFieldModal from "./addNewFieldModal";
-import valueTextInputModal from "./valueTextInputModal";
-import valueSelectModal from "./valueSelectModal";
-import valueToggleModal from "./valueToggleModal";
-import valueMultiSelectModal from "./valueMultiSelectModal";
 import { FileClass } from "src/fileClass/fileClass";
-import Field from "src/Field";
+import Field from "src/fields/Field";
+import { FieldManager, FieldType } from "src/types/fieldTypes";
 
 export default class fieldSelectModal extends Modal {
+
+    // choose a field type after "add field at section command"
 
     private lineNumber: number;
     private line: string;
@@ -47,72 +46,29 @@ export default class fieldSelectModal extends Modal {
             })
         };
 
-        settingsSelector.onChange(value => {
-            if (value == "++New") {
+        settingsSelector.onChange(selectedFieldName => {
+            if (selectedFieldName == "++New") {
                 const newFieldModal = new addNewFieldModal(this.plugin, this.lineNumber, this.file, this.inFrontmatter, this.top);
                 newFieldModal.open();
                 this.close();
             } else if (this.fileClass) {
-                const fileClassAttributesWithName = this.fileClass.attributes.filter(attr => attr.name == value);
+                const fileClassAttributesWithName = this.fileClass.attributes.filter(attr => attr.name == selectedFieldName);
                 let field: Field | undefined
-                let type: string | undefined
+                let type: FieldType | undefined
                 if (fileClassAttributesWithName.length > 0) {
                     const fileClassAttribute = fileClassAttributesWithName[0];
                     field = fileClassAttribute.getField();
                     type = fileClassAttribute.type
                 }
                 if (field) {
-                    switch (type) {
-                        case "cycle":
-                        //fall-through
-                        case "select": {
-                            const fieldModal = new valueSelectModal(this.app, this.file, field.name, "", field, this.lineNumber, this.inFrontmatter, this.top);
-                            fieldModal.titleEl.setText(`Select value for ${value}`);
-                            fieldModal.open();
-                            break;
-                        }
-                        case "multi": {
-                            const fieldModal = new valueMultiSelectModal(this.app, this.file, field.name, "", field, this.lineNumber, this.inFrontmatter, this.top);
-                            fieldModal.titleEl.setText(`Select values for ${value}`);
-                            fieldModal.open();
-                            break;
-                        }
-                        case "boolean": {
-                            const fieldModal = new valueToggleModal(this.app, this.file, field.name, false, this.lineNumber, this.inFrontmatter, this.top)
-                            fieldModal.titleEl.setText(`Set value for ${value}`);
-                            fieldModal.open();
-                            break;
-                        }
-                        default: {
-                            const fieldModal = new valueTextInputModal(this.app, this.file, value, "", this.lineNumber, this.inFrontmatter, this.top);
-                            fieldModal.titleEl.setText(`Enter value for ${value}`);
-                            fieldModal.open();
-                            "break"
-                        };
-                    }
+                    const fieldManager = new FieldManager[field.type](field);
+                    fieldManager.createAndOpenFieldModal(this.app, this.file, selectedFieldName, this.lineNumber, this.inFrontmatter, this.top);
                 }
                 this.close()
             } else {
-                const field = this.plugin.settings.presetFields.filter(_field => _field.name == value)[0];
-                if (field.valuesListNotePath || (field.values && Object.keys(field.values).length > 0)) {
-                    if (field.isMulti) {
-                        const fieldModal = new valueMultiSelectModal(this.app, this.file, field.name, "", field, this.lineNumber, this.inFrontmatter, this.top);
-                        fieldModal.titleEl.setText(`Select values for ${value}`);
-                        fieldModal.open();
-                    } else {
-                        const fieldModal = new valueSelectModal(this.app, this.file, field.name, "", field, this.lineNumber, this.inFrontmatter, this.top);
-                        fieldModal.titleEl.setText(`Select value for ${value}`);
-                        fieldModal.open();
-                    };
-                } else if (field.isBoolean) {
-                    const fieldModal = new valueToggleModal(this.app, this.file, field.name, false, this.lineNumber, this.inFrontmatter, this.top)
-                    fieldModal.titleEl.setText(`Set value for ${value}`);
-                    fieldModal.open();
-                } else {
-                    const fieldModal = new valueTextInputModal(this.app, this.file, value, "", this.lineNumber, this.inFrontmatter, this.top);
-                    fieldModal.titleEl.setText(`Enter value for ${value}`);
-                    fieldModal.open();
-                };
+                const field = this.plugin.settings.presetFields.filter(_field => _field.name == selectedFieldName)[0];
+                const fieldManager = new FieldManager[field.type](field);
+                fieldManager.createAndOpenFieldModal(this.app, this.file, selectedFieldName, this.lineNumber, this.inFrontmatter, this.top);
                 this.close();
             };
         });

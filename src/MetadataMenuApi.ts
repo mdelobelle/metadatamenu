@@ -1,4 +1,4 @@
-import { App, TFile } from "obsidian"
+import { TFile } from "obsidian"
 import MetadataMenu from "main"
 import { getValues } from "./commands/getValues";
 import { replaceValues } from "./commands/replaceValues";
@@ -6,8 +6,8 @@ import { fieldModifier } from "./commands/fieldModifier";
 
 
 export interface IMetadataMenuApi {
-    getValues: (app: App, file: TFile, attribute: string) => Promise<string[]>;
-    replaceValues: (app: App, file: TFile, attribute: string, input: string) => Promise<void>;
+    getValues: (file: TFile, attribute: string) => Promise<string[]>;
+    replaceValues: (file: TFile, attribute: string, input: string) => Promise<void>;
     fieldModifier: (dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }) => Promise<HTMLElement>;
 }
 
@@ -23,12 +23,12 @@ export class MetadataMenuApi {
         };
     }
 
-    private getValues(): (app: App, file: TFile, attribute: string) => Promise<string[]> {
-        return async (app: App, file: TFile, attribute: string) => getValues(app, file, attribute)
+    private getValues(): (file: TFile, attribute: string) => Promise<string[]> {
+        return async (file: TFile, attribute: string) => getValues(this.plugin.app, file, attribute)
     }
 
-    private replaceValues(): (app: App, file: TFile, attribute: string, input: string) => Promise<void> {
-        return async (app: App, file: TFile, attribute: string, input: string) => replaceValues(app, file, attribute, input)
+    private replaceValues(): (file: TFile, attribute: string, input: string) => Promise<void> {
+        return async (file: TFile, attribute: string, input: string) => replaceValues(this.plugin.app, file, attribute, input)
     }
 
     private fieldModifier(): (dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }) => Promise<HTMLElement> {

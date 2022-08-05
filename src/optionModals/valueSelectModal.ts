@@ -1,5 +1,5 @@
 import { App, Modal, DropdownComponent, TFile, ButtonComponent } from "obsidian";
-import Field from "src/Field";
+import Field from "src/fields/Field";
 import { replaceValues } from "src/commands/replaceValues";
 import FieldSetting from "src/settings/FieldSetting";
 
@@ -7,19 +7,19 @@ export default class valueSelectModal extends Modal {
 
     private file: TFile;
     private name: string;
-    private value: string;
+    private option: string;
     private settings: Field;
     private newValue: string | null;
     private lineNumber: number;
     private inFrontmatter: boolean;
     private top: boolean;
 
-    constructor(app: App, file: TFile, name: string, value: string, settings: Field, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
+    constructor(app: App, file: TFile, name: string, option: string, settings: Field, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
         super(app);
         this.app = app;
         this.file = file;
         this.name = name;
-        this.value = value;
+        this.option = option;
         this.settings = settings;
         this.newValue = null;
         this.lineNumber = lineNumber;
@@ -37,19 +37,19 @@ export default class valueSelectModal extends Modal {
         const selectEl = new DropdownComponent(inputDiv);
         selectEl.selectEl.addClass("metadata-menu-select");
 
-        const values = this.settings.values;
+        const options = this.settings.options;
         selectEl.addOption("", "--Empty--");
         const listNoteValues = await FieldSetting.getValuesListFromNote(this.settings.valuesListNotePath, this.app)
         listNoteValues.forEach(value => selectEl.addOption(value, value));
-        if (listNoteValues.includes(this.value)) {
-            selectEl.setValue(this.value);
+        if (listNoteValues.includes(this.option)) {
+            selectEl.setValue(this.option);
         };
         if (listNoteValues.length === 0) {
-            Object.keys(values).forEach(key => {
-                selectEl.addOption(values[key], values[key]);
+            Object.keys(options).forEach(key => {
+                selectEl.addOption(options[key], options[key]);
             });
-            if (Object.values(values).includes(this.value)) {
-                selectEl.setValue(this.value);
+            if (Object.values(options).includes(this.option)) {
+                selectEl.setValue(this.option);
             };
         }
         selectEl.onChange(value => this.newValue = value != "--Empty--" ? value : "");
