@@ -55,12 +55,6 @@ a Field can be modified or added from several locations:
 
 ## Global settings
 
-### `Search for attribute in inline fields like <field::>`
-
-if toggled `on` : Metadata Menu will search for inline fields within the note (may impact the overal performance for very large vaults)
-
-if toggled `off` : Metadata Menu will only search for frontmatter fields
-
 ### `Display field options in context menu`
 
 if toggled `on` : Metadata Menu will display one control item per field in the target note in the context menu. That could result in a very large context menu if the target note has many fields

@@ -29,12 +29,6 @@ class SettingsMigrationConfirmModal extends Modal {
 			if (this.app.plugins.plugins.hasOwnProperty("supercharged-links-obsidian")) {
 				//@ts-ignore
 				let settings = this.app.plugins.plugins["supercharged-links-obsidian"].settings;
-				let _settings = this.plugin.settings;
-				//copying simple settings
-				_settings.classFilesPath = settings.classFilesPath;
-				_settings.displayFieldsInContextMenu = settings.displayFieldsInContextMenu;
-				_settings.getFromInlineField = settings.getFromInlineField;
-				_settings.globallyIgnoredFields = settings.globallyIgnoredFields;
 				//deep copying presetFields in initialProperty
 				this.plugin.initialProperties = [];
 				settings.presetFields.forEach((prop: Field) => {
@@ -79,17 +73,6 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			cls: "setting-item-description metadata-menu-setting-section-desc",
 			text: "Global settings to apply to your whole vault"
 		})
-		// Managing choice whether you get attributes from inline fields and frontmatter or only frontmater
-		new Setting(globalSettings)
-			.setName('Search for attribute in Inline fields like <field::>')
-			.setDesc('Sets the `data-link-<field>`-attribute to the value of inline fields')
-			.addToggle(toggle => {
-				toggle.setValue(this.plugin.settings.getFromInlineField)
-				toggle.onChange(async value => {
-					this.plugin.settings.getFromInlineField = value
-					await this.plugin.saveSettings()
-				});
-			});
 
 		/* Manage menu options display*/
 		new Setting(globalSettings)
