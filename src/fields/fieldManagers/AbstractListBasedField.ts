@@ -128,7 +128,6 @@ export default abstract class AbstractListBasedField extends FieldManager {
             const newKey = await this.field.insertNewValue("")
             this.createValueContainer(valuesListBody, valuesListHeader, newKey)
         });
-
         valuesList.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
     }
 
