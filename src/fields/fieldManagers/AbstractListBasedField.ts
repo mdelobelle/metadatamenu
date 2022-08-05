@@ -49,8 +49,10 @@ export default abstract class AbstractListBasedField extends FieldManager {
             cls: 'metadata-menu-prompt-container',
         });
         const input = new TextComponent(valueContainer);
+        this.valuesPromptComponents.push(input)
         input.setValue(presetValue);
         input.onChange(value => {
+            console.log(key)
             this.field.options[key] = value;
             this.setValueListText(header);
             FieldSettingsModal.removeValidationError(input);
@@ -63,7 +65,6 @@ export default abstract class AbstractListBasedField extends FieldManager {
                 this.setValueListText(header);
                 parentNode.removeChild(valueContainer);
                 this.valuesPromptComponents.remove(input);
-
             });
         if (key != Object.keys(this.field.options)[0]) {
             const valueUpgradeButton = new ButtonComponent(valueContainer);
@@ -71,10 +72,12 @@ export default abstract class AbstractListBasedField extends FieldManager {
             valueUpgradeButton.onClick((evt: MouseEvent) => {
                 const thisValue = options[key];
                 const inputIndex = this.valuesPromptComponents.indexOf(input)
+                console.log(inputIndex, this.valuesPromptComponents)
                 const upperComponent = inputIndex !== -1 ? this.valuesPromptComponents[inputIndex - 1] : this.valuesPromptComponents.last();
                 if (upperComponent) {
                     const upperValue = upperComponent.inputEl.value;
                     const upperKey = Object.keys(options).filter(k => options[k] == upperValue)[0];
+                    console.log(upperKey);
                     if (upperKey) {
                         upperComponent.setValue(thisValue);
                         options[upperKey] = thisValue;
