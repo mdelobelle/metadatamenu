@@ -262,10 +262,6 @@
 	min-height: 1.0em;
 }
 
-.metadata-menu-dv-multi-value-container{
-    display: flex;
-}
-
 .metadata-menu-dv-multi-value-label {
     padding-left: 0.5em;
     padding-right: 0.5em;
