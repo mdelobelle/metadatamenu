@@ -51,7 +51,10 @@ export default class MultiField extends AbstractListBasedField {
         when the "+" button is clicked, we display a select dropdown filtered with remaining options. when one option is selected we add it to the list and remove the control
         */
         let valueHovered = false;
-        const currentValues = (p[this.field.name] as string).split(",").map(v => v.trim());
+		let currentValues = [];
+		if(p[this.field.name]){
+			currentValues = p[this.field.name].split(",").map((v) => v.trim());
+		}
 
         /* select container */
         const selectContainer = document.createElement("div");
