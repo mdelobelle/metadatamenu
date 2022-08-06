@@ -92,6 +92,17 @@ export default class MultiField extends AbstractListBasedField {
                 fieldContainer.removeChild(selectContainer);
             }
         }
+		const closeSelect = document.createElement("button");
+		closeSelect.setText("\u274C");
+		closeSelect.addClass("metadata-menu-dv-field-button");
+		closeSelect.addClass("multi");
+		closeSelect.onclick = () => {
+		  fieldContainer.appendChild(valuesContainer);
+		  fieldContainer.appendChild(singleSpacer);
+		  fieldContainer.appendChild(doubleSpacer);
+		  fieldContainer.removeChild(selectContainer);
+		};
+		selectContainer.appendChild(closeSelect);
 
         /* current values container */
         const valuesContainer = document.createElement("div");
