@@ -51,7 +51,10 @@ export default class MultiField extends AbstractListBasedField {
         when the "+" button is clicked, we display a select dropdown filtered with remaining options. when one option is selected we add it to the list and remove the control
         */
         let valueHovered = false;
-        const currentValues = (p[this.field.name] as string).split(",").map(v => v.trim());
+        let currentValues: string[] = [];
+        if (p[this.field.name]) {
+            currentValues = p[this.field.name].split(",").map((v: string) => v.trim());
+        }
 
         /* select container */
         const selectContainer = document.createElement("div");
@@ -89,6 +92,17 @@ export default class MultiField extends AbstractListBasedField {
                 fieldContainer.removeChild(selectContainer);
             }
         }
+        const closeSelect = document.createElement("button");
+        closeSelect.setText("\u274C");
+        closeSelect.addClass("metadata-menu-dv-field-button");
+        closeSelect.addClass("multi");
+        closeSelect.onclick = () => {
+            fieldContainer.appendChild(valuesContainer);
+            fieldContainer.appendChild(singleSpacer);
+            fieldContainer.appendChild(doubleSpacer);
+            fieldContainer.removeChild(selectContainer);
+        };
+        selectContainer.appendChild(closeSelect);
 
         /* current values container */
         const valuesContainer = document.createElement("div");

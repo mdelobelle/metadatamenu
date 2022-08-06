@@ -259,6 +259,7 @@
 
 .metadata-menu-dv-multi-values-container {
     display: flex;
+	min-height: 1.0em;
 }
 
 .metadata-menu-dv-multi-value-container{
