@@ -26,8 +26,8 @@ export class FieldInfo {
                     const fieldManager = new FieldManager[field.type](field);
                     this.isValid = await fieldManager.validateValue(value)
                     this.sourceType = "fileClass";
-                    this.fileClass = fileClass.name;
                     const attribute = fileClass.attributes.filter(a => a.name === fieldName)[0];
+                    this.fileClass = attribute.origin;
                     this.type = attribute.type;
                     this.options = attribute.options;
                 }

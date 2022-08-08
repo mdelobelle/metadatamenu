@@ -7,11 +7,13 @@ interface FileClassAttribute {
     name: string;
     type: FieldType;
     options: string[] | Record<string, string>;
+    origin: string;
 }
 
 class FileClassAttribute {
 
-    constructor(raw: string) {
+    constructor(raw: string, origin: string) {
+        this.origin = origin
         const completeRegex = new RegExp(`^${genericFieldRegex}::(?<fieldSettings>.+)?`, "u");
         const nameRegex = new RegExp(`^${genericFieldRegex}$`, "u");
         let fieldName: string

@@ -1,7 +1,9 @@
 # Metadata Menu
-This plugin adds context menu items to modifiy target note's frontmatter fields and "inline fields" (dataview syntax) by right-clicking on the link, or within dataview tables
+This plugin is made for data quality enthousiasts: access and manage the metadata of your notes in Obsidian.
 
-The preset values for those fields can be managed globally in the plugin's settings or on a file-by-file basis thanks to fileClass definition
+Metadata Menu adds context menu items to modifiy target note's frontmatter fields and "inline fields" (dataview syntax) by right-clicking on the link, or within dataview tables
+
+You can define preset types and values for those fields globally in the plugin's settings or on a file-by-file basis thanks to fileClass definition
 
 It also enables frontmatter of inline-field autocompletion with suggested values based on preset values.
 

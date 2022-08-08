@@ -16,7 +16,7 @@ export default class FileClassAttributeSelectModal extends Modal {
 
     async onOpen() {
         this.titleEl.setText(`Select the field to update`);
-        const fileClass = await createFileClass(this.plugin, this.file.basename)
+        const fileClass = await createFileClass(this.plugin, this.file.basename, true) // limit fields manage to current fileClass
         this.titleEl.setText(`Select the field to update in ${fileClass.name}`);
         const selectContainer = this.contentEl.createDiv();
         const select = new DropdownComponent(selectContainer);

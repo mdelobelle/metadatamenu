@@ -1,9 +1,9 @@
 {
 	"id": "metadata-menu",
 	"name": "Metadata Menu",
-	"version": "0.1.7",
+	"version": "0.1.8",
 	"minAppVersion": "0.15.3",
-	"description": "Adds options to file and link context menu to change metadatas of the target note.",
+	"description": "For data quality enthousiasts: access and manage the metadata of your notes in Obsidian.",
 	"author": "mdelobelle",
 	"authorUrl": "https://github.com/mdelobelle",
 	"isDesktopOnly": false
