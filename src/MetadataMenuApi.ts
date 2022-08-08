@@ -5,7 +5,6 @@ import { replaceValues } from "./commands/replaceValues";
 import { fieldModifier } from "./commands/fieldModifier";
 import { fileFields, FieldInfo } from "./commands/fileFields";
 
-
 export interface IMetadataMenuApi {
     getValues: (fileOrFilePath: TFile | string, attribute: string) => Promise<string[]>;
     replaceValues: (fileOrFilePath: TFile | string, attribute: string, input: string) => Promise<void>;

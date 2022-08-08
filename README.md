@@ -384,7 +384,7 @@ This is async and should be awaited
 ### fielFields
 `fileFields(fileOrFilePath: TFile | string)`
 
-Takes a TFile or e filePath and returns all the fields in the document, both frontmatter and dataview fields, and returns a collection of analysis of those field by metadatamenu:
+Takes a TFile or e filePath and returns all the fields in the document, both frontmatter and dataview fields, and returns a collection of analysis of those fields by metadatamenu:
 
 ```typescript
 {
