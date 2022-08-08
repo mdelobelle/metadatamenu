@@ -51,7 +51,7 @@ export default class NumberField extends FieldManager {
         )
     }
 
-    validateValue(value: string): boolean {
+    async validateValue(value: string): Promise<boolean> {
         const { min, max } = this.field.options;
         const fMin = parseFloat(min);
         const fMax = parseFloat(max);
@@ -179,13 +179,13 @@ export default class NumberField extends FieldManager {
         }
     }
 
-    createDvField(
+    async createDvField(
         plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls: string, attr: Record<string, string> }
-    ): void {
+    ): Promise<void> {
 
         const fieldValue = dv.el('span', p[this.field.name], attrs)
         const inputContainer = document.createElement("div");
@@ -234,7 +234,7 @@ export default class NumberField extends FieldManager {
         validateIcon.textContent = "✅"
         validateIcon.setAttr("class", "metadata-menu-dv-field-button")
         validateIcon.onclick = async () => {
-            if (this.validateValue(input.value)) {
+            if (await this.validateValue(input.value)) {
                 const file = plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
                 if (file instanceof TFile && file.extension == "md") {
                     await replaceValues(plugin.app, file, this.field.name, input.value)
@@ -270,7 +270,7 @@ export default class NumberField extends FieldManager {
 
         input.onkeydown = async (e) => {
             if (e.key === "Enter") {
-                if (this.validateValue(input.value)) {
+                if (await this.validateValue(input.value)) {
                     const file = plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
                     if (file instanceof TFile && file.extension == "md") {
                         await replaceValues(plugin.app, file, this.field.name, input.value);

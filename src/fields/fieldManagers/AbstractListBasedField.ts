@@ -4,6 +4,7 @@ import { FieldManager, SettingLocation } from "../FieldManager";
 import { TextComponent, ButtonComponent } from "obsidian";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import MetadataMenu from "main";
+import FieldSetting from "src/settings/FieldSetting";
 
 export default abstract class AbstractListBasedField extends FieldManager {
 
@@ -90,6 +91,18 @@ export default abstract class AbstractListBasedField extends FieldManager {
         return input;
     };
 
+    async validateValue(value: string): Promise<boolean> {
+        if (this.field.options && Object.values(this.field.options).length > 0) {
+            return Object.values(this.field.options).includes(value.trim())
+        } else if (this.field.valuesListNotePath) {
+            const listNoteValues = await FieldSetting.getValuesListFromNote(this.field.valuesListNotePath, app)
+            return listNoteValues.contains(value.trim())
+        } else {
+            return false
+        }
+
+    }
+
     validateOptions(): boolean {
         let error = false;
         this.valuesPromptComponents.forEach(input => {
@@ -146,13 +159,13 @@ export default abstract class AbstractListBasedField extends FieldManager {
         this.createAddButton(valuesList, valuesListBody, valuesListHeader)
     }
 
-    createDvField(
+    async createDvField(
         plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls: string, attr: Record<string, string> }
-    ): void {
+    ): Promise<void> {
         const fieldValue = dv.el("span", p[this.field.name]);
         fieldContainer.appendChild(fieldValue);
     }

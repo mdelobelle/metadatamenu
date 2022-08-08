@@ -43,13 +43,13 @@ export default class InputField extends FieldManager {
         fieldModal.open();
     }
 
-    createDvField(
+    async createDvField(
         plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls: string, attr: Record<string, string> }
-    ): void {
+    ): Promise<void> {
 
         const fieldValue = dv.el('span', p[this.field.name], attrs)
         const inputContainer = document.createElement("div")

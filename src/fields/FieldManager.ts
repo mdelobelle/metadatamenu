@@ -22,7 +22,7 @@ export abstract class FieldManager {
     abstract addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void;
     abstract validateOptions(): boolean;
     abstract createSettingContainer(parentContainer: HTMLDivElement, location?: SettingLocation): void;
-    abstract createDvField(plugin: MetadataMenu, dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls: string, attr: Record<string, string> }): void
+    abstract createDvField(plugin: MetadataMenu, dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls: string, attr: Record<string, string> }): Promise<void>
 
     constructor(field: Field, type: FieldType) {
         if (field.type !== type) throw Error(`This field is not of type ${type}`)
@@ -46,6 +46,10 @@ export abstract class FieldManager {
             error = true;
         };
         return !error
+    }
+
+    async validateValue(value: string): Promise<boolean> {
+        return true;
     }
 
     static replaceValues(app: App, path: string, fieldName: string, value: string): void {

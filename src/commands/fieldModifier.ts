@@ -23,23 +23,23 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
             const field = getField(plugin, fieldName, fileClass);
             if (field?.type) {
                 const fieldManager = new FieldManager[field.type](field);
-                fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
+                await fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
             } else {
                 const fieldManager = F.createDefault(fieldName);
-                fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
+                await fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
             }
         } else if (plugin.settings.presetFields.filter(attr => attr.name == fieldName)) {
             const field = getField(plugin, fieldName)
             if (field?.type) {
                 const fieldManager = new FieldManager[field.type](field);
-                fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
+                await fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
             } else {
                 const fieldManager = F.createDefault(fieldName);
-                fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
+                await fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
             }
         } else {
             const fieldManager = F.createDefault(fieldName);
-            fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
+            await fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
         }
     }
     return fieldContainer
