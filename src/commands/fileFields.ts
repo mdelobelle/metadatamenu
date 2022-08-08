@@ -1,3 +1,4 @@
+import { cp } from "fs";
 import MetadataMenu from "main";
 import { TFile } from "obsidian"
 import { createFileClass, FileClass } from "src/fileClass/fileClass";
@@ -26,8 +27,8 @@ export class FieldInfo {
                     const fieldManager = new FieldManager[field.type](field);
                     this.isValid = await fieldManager.validateValue(value)
                     this.sourceType = "fileClass";
-                    this.fileClass = fileClass.name;
                     const attribute = fileClass.attributes.filter(a => a.name === fieldName)[0];
+                    this.fileClass = attribute.origin;
                     this.type = attribute.type;
                     this.options = attribute.options;
                 }
@@ -64,6 +65,13 @@ export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | s
     const frontmatter = plugin.app.metadataCache.getCache(file.path)?.frontmatter;
     const fields: Record<string, FieldInfo> = {}
     let fileClass: FileClass | undefined;
+    if (plugin.settings.globalFileClass) {
+        try {
+            fileClass = await createFileClass(plugin, plugin.settings.globalFileClass)
+        } catch (error) {
+            fileClass = undefined;
+        }
+    }
     if (frontmatter) {
         const { position, ...attributes } = frontmatter;
         // check if there's a fileClass

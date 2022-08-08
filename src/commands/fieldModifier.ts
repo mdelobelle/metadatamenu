@@ -1,8 +1,7 @@
 import MetadataMenu from "main";
 import { getField } from "src/commands/getField";
-import Field from "src/fields/Field";
 import { createFileClass } from "src/fileClass/fileClass";
-import { FieldManager, FieldType } from "src/types/fieldTypes";
+import { FieldManager } from "src/types/fieldTypes";
 import { FieldManager as F } from "src/fields/FieldManager";
 
 export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }): Promise<HTMLElement> {
@@ -18,8 +17,9 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
         fieldContainer.appendChild(emptyField);
     } else {
         const fileClassAlias = plugin.settings.fileClassAlias;
-        if (p[fileClassAlias]) {
-            const fileClass = await createFileClass(plugin, p[fileClassAlias]);
+        if (p[fileClassAlias] || plugin.settings.globalFileClass) {
+            const fileClassName = p[fileClassAlias] || plugin.settings.globalFileClass // inner fileClass has the priority over global fileClass
+            const fileClass = await createFileClass(plugin, fileClassName);
             const field = getField(plugin, fieldName, fileClass);
             if (field?.type) {
                 const fieldManager = new FieldManager[field.type](field);

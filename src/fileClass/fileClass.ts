@@ -9,6 +9,8 @@ interface FileClass {
     attributes: Array<FileClassAttribute>;
     objects: FileClassManager;
     errors: string[];
+    parent?: FileClass;
+    excludes?: Array<FileClassAttribute>;
 }
 
 class FileClassManager {
@@ -77,21 +79,36 @@ class FileClass {
         }
     }
 
-    public async getAttributes(): Promise<void> {
+    public getParentClass(): FileClass | undefined {
+        return
+    }
+
+    public async getAttributes(excludeParents: boolean = false): Promise<void> {
         try {
             const file = this.getClassFile();
             let attributes: Array<FileClassAttribute> = [];
             let errors: string[] = [];
             const result = await this.plugin.app.vault.cachedRead(file)
+            const parent = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.extends
+            const excludedFields = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.excludes
+            if (parent && !excludeParents) {
+                try {
+                    const parentFileClass = await createFileClass(this.plugin, parent);
+                    await parentFileClass.getAttributes();
+                    attributes = [...parentFileClass.attributes]
+                } catch (error) {
+                    errors.push(error)
+                }
+            }
             result.split('\n').forEach(line => {
                 try {
-                    const attribute = new FileClassAttribute(line);
+                    const attribute = new FileClassAttribute(line, this.name);
                     attributes.push(attribute);
                 } catch (error) {
                     errors.push(error);
                 }
             })
-            this.attributes = attributes;
+            this.attributes = Array.isArray(excludedFields) ? attributes.filter(attr => !excludedFields.includes(attr.name)) : attributes;
             this.errors = errors;
         } catch (error) {
             throw (error);
@@ -140,10 +157,10 @@ class FileClass {
     }
 }
 
-async function createFileClass(plugin: MetadataMenu, name: string): Promise<FileClass> {
+async function createFileClass(plugin: MetadataMenu, name: string, excludeParent: boolean = false): Promise<FileClass> {
     return new Promise((resolve, reject) => {
         const fileClass = new FileClass(plugin, name);
-        fileClass.getAttributes().then(() => {
+        fileClass.getAttributes(excludeParent).then(() => {
             resolve(fileClass);
         }).catch((error) => {
             reject(error);

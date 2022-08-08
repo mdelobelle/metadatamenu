@@ -214,6 +214,10 @@
     margin-bottom: 1.33em;
 }
 
+.metadata-menu-setting-fileClass-search{
+    min-width: 20em;
+}
+
 /* dataview fields Styling */
 
 .metadata-menu-dv-field-button {
