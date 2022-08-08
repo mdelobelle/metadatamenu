@@ -48,8 +48,8 @@ export default class OptionsList {
 			let fileClassForFields = false;
 			let fileClassFields: string[] = [];
 			const fileClassAlias = this.plugin.settings.fileClassAlias;
-			if (Object.keys(attributes).includes(fileClassAlias)) {
-				const fileClass = attributes[fileClassAlias];
+			if (Object.keys(attributes).includes(fileClassAlias) || this.plugin.settings.globalFileClass) {
+				const fileClass = attributes[fileClassAlias] || this.plugin.settings.globalFileClass;
 				try {
 					const _fileClass = await createFileClass(this.plugin, fileClass)
 					this.fileClass = _fileClass;

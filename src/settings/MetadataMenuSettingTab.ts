@@ -3,6 +3,8 @@ import MetadataMenu from "main";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import Field from "src/fields/Field";
 import FieldSetting from "src/settings/FieldSetting";
+import { FolderSuggest } from "src/suggester/FolderSuggester";
+import { FileSuggest } from "src/suggester/FileSuggester";
 
 class SettingsMigrationConfirmModal extends Modal {
 
@@ -149,17 +151,18 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		new Setting(classFilesSettings)
 			.setName('class Files path')
 			.setDesc('Path to the files containing the authorized fields for a type of note')
-			.addText((text) => {
-				text
-					.setPlaceholder('Path/')
+			.addSearch((cb) => {
+				new FolderSuggest(this.app, cb.inputEl);
+				cb.setPlaceholder("Folder")
 					.setValue(this.plugin.settings.classFilesPath)
-					.onChange(async (value) => {
-						this.plugin.settings.classFilesPath = value
-						await this.plugin.saveSettings();
+					.onChange((new_folder) => {
+						this.plugin.settings.classFilesPath = new_folder.endsWith("/") ? new_folder : new_folder + "/";
+						this.plugin.saveSettings();
 					});
+				// @ts-ignore
+				cb.containerEl.addClass("metadata-menu-setting-fileClass-search")
 			});
 
-		/* Set fileClass alias*/
 		new Setting(classFilesSettings)
 			.setName('fileClass field alias')
 			.setDesc('Choose another name for fileClass field in frontmatter (example: Category, type, ...')
@@ -173,10 +176,34 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			});
 
 		/* 
-		-----------------------------------------
-		Migration settings 
-		-----------------------------------------
-		*/
+
+		/* Set global fileClass*/
+		new Setting(classFilesSettings)
+			.setName('global fileClass')
+			.setDesc('Choose one fileClass to be applicable to all files (even it is not present as a fileClass attribute in their frontmatter). This will override the preset Fields defined above')
+			.addSearch((cb) => {
+				new FileSuggest(
+					this.app,
+					cb.inputEl,
+					this.plugin,
+					this.plugin.settings.classFilesPath
+				);
+				cb.setPlaceholder("Global fileClass")
+					.setValue(this.plugin.settings.classFilesPath + this.plugin.settings.globalFileClass + ".md" || "")
+					.onChange((newPath) => {
+						this.plugin.settings.globalFileClass = newPath ? newPath.split('\\').pop()!.split('/').pop()?.replace(".md", "") : "";
+						this.plugin.saveSettings();
+					});
+				// @ts-ignore
+				cb.containerEl.addClass("metadata-menu-setting-fileClass-search")
+			})
+
+
+		/* 
+			-----------------------------------------
+			Migration settings 
+			-----------------------------------------
+			*/
 		const migrateSettings = containerEl.createEl("div")
 		migrateSettings.createEl('h4', { text: 'Migrate' });
 

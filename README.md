@@ -119,6 +119,13 @@ You may find usefull to combine the fileClass attribute with an other attribute 
 
 You can give an alias to fileClass attribute in `fileClass field alias` setting so that you can use the same name to manage the fields and for your other current usage.
 
+### Global fileClass
+You can define a fileClass that will be applicable to all of your notes, even if there is no fileClass attribute defined in their frontmatter.
+
+This is usefull if you are more confortable with setting your preset fields in a note rather than in the plugin settings.
+
+If global fileClass is null or unproperly configured, the preset fields defined in the plugin settings will have the priority.
+
 ## Migrate
 Historically most of this plugin's features were available in `Supercharged links` plugin.
 
@@ -355,6 +362,84 @@ Because it can be overwhelming to remember this syntax, you can manage "type" an
 
 You will be asked to choose the field that you wan't to modify or if you want to add a new one. After having selected a field, you will acces to a form to modify the type and options of the field (same form as in the plugin's settings)
 
+## fileClass inheritance
+
+### `extends` field
+
+a fileClass can extend another fileClass to benefit of it's fields without having to rewrite them.
+
+It may be usefull if you have several fileClass with the same set of fields.
+
+For example you may have a fileClass named `course.md` with some fields like `teacher`, `lecture`, `grade`, `type`.
+
+And you may want to define more specific fields depending on the type of course: a first fileClass `mathematics.md` with a field `chapter:: {"type": "Select", "options": {"0": "Algebra", "1": "Geometry", "2": "Statistics"}}` and a second fileClass `physics.md` with a field `lecture:: {"type": "Select", "options": {"0": "Mecanics", "1": "Optics", "2": "Electricity"}}`. For the two of them, you want to benefit from the `course` fileClass's fields.
+
+You can do this very easily by using the `extends` field in their frontmatter.
+
+With our example:
+
+`course.md`
+
+```
+teacher::{"type": "Input"}
+grade::{"type": "Select", "options":{"0": "A", "1": "B", "2": "C"}}
+type::{"type": "Select", "options":{"0": "at school", "1": "online", "2": "personal teacher at home"}}
+```
+
+`mathematics.md`
+
+```
+---
+extends: course
+---
+chapter::{"type": "Select", "options": {"0": "Algebra", "1": "Geometry", "2": "Statistics"}}
+```
+
+`physics.md`
+
+```
+---
+extends: course
+---
+lecture:: {"type": "Select", "options": {"0": "Mecanics", "1": "Optics", "2": "Electricity"}}
+```
+
+All notes with fileClass `mathematics` or `physics` will benefit from the fields of `course` with the same option, but they will have their own fields in addition to it (`chapter` for `mathematics`, `lecture` for `physics`)
+
+A fileClass can also override a field it has inherited from by defining it again.
+
+for example:
+
+`physics.md`
+
+```
+---
+extends: course
+---
+lecture:: {"type": "Select", "options": {"0": "Mecanics", "1": "Optics", "2": "Electricity"}}
+type::{"type": "Select", "options":{"0": "at school", "1": "online"}}
+```
+
+the `type` field in `physics` will override the one in `course`. notes with `fileClass: physics` will have `at school` and `online` options for `type` but not `personal teacher at home`
+
+
+### `excludes` field
+
+when defined with an array of values, the field in the array won't be inherited from the parent fileClass
+
+With our previous example:
+
+`physics.md`
+
+```
+---
+extends: course
+excludes: [grade]
+---
+lecture:: {"type": "Select", "options": {"0": "Mecanics", "1": "Optics", "2": "Electricity"}}
+```
+
+notes with `fileClass: physics` will inherit `teacher` and `type` from `course` fileClass but not `grade`
 
 # Api
 
@@ -383,7 +468,7 @@ This is an asynchronous function, so you should await it.
 Takes a dataview api instance, a page, a field name and optional attributes and returns a HTML element to modify the value of the field in the target note
 This is async and should be awaited
 
-### fielFields
+### fileFields
 `fileFields(fileOrFilePath: TFile | string)`
 
 Takes a TFile or e filePath and returns all the fields in the document, both frontmatter and dataview fields, and returns a collection of analysis of those fields by metadatamenu:
@@ -394,7 +479,7 @@ Takes a TFile or e filePath and returns all the fields in the document, both fro
         /* the value of the field in the file */
         value: string | undefined, 
 
-        /* the fileClass name of this file if there is a fileClass AND if the field is set in the fileClass */
+        /* the fileClass name applied to this field if there is a fileClass AND if the field is set in the fileClass or the fileClass it's inheriting from */
         fileClass: string | undefined,
 
         /* true if this fieldName is in "Globally ignored fields" in the plugin settings */
