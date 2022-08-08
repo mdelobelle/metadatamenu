@@ -21,6 +21,8 @@ export default class BooleanField extends FieldManager {
             toBooleanValue = true;
         } else if (/false/i.test(value)) {
             toBooleanValue = false;
+        } else {
+            throw Error("this value is not a boolean")
         };
         return toBooleanValue;
     }
@@ -44,6 +46,15 @@ export default class BooleanField extends FieldManager {
         //no need of settings for boolean field
     }
 
+    async validateValue(value: string): Promise<boolean> {
+        try {
+            const bValue = this.stringToBoolean(value)
+            return isBoolean(bValue)
+        } catch (error) {
+            return false
+        }
+    }
+
     validateOptions(): boolean {
         //always true since there are no options
         return true
@@ -55,13 +66,13 @@ export default class BooleanField extends FieldManager {
         fieldModal.open();
     }
 
-    createDvField(
+    async createDvField(
         plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls: string, attr: Record<string, string> }
-    ): void {
+    ): Promise<void> {
         const checkbox: HTMLInputElement = dv.el("input", "", { ...attrs, "type": "checkbox" })
         checkbox.checked = p[this.field.name]
         fieldContainer.appendChild(checkbox)

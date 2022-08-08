@@ -47,13 +47,13 @@ export default class CycleField extends AbstractListBasedField {
         fieldModal.open();
     }
 
-    createDvField(
+    async createDvField(
         plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls: string, attr: Record<string, string> }
-    ): void {
+    ): Promise<void> {
         const options = this.field.options;
         const keys = Object.keys(options);
         const keyForValue = keys.find(key => options[key] === p[this.field.name]);

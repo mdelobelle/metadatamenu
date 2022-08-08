@@ -1,11 +1,21 @@
 import { App, TFile } from "obsidian";
 import { fieldComponents, inlineFieldRegex } from "src/utils/parser";
 
-export async function replaceValues(app: App, file: TFile, attribute: string, input: string): Promise<void> {
-    const content = await (await app.vault.cachedRead(file)).split('\n');
+export async function replaceValues(app: App, fileOrFilePath: TFile | string, attribute: string, input: string): Promise<void> {
+    let file: TFile;
+    if (fileOrFilePath instanceof TFile) {
+        file = fileOrFilePath;
+    } else {
+        const _file = app.vault.getAbstractFileByPath(fileOrFilePath)
+        if (_file instanceof TFile && _file.extension == "md") {
+            file = _file;
+        } else {
+            throw Error("path doesn't correspond to a proper file");
+        }
+    }
+    const content = (await app.vault.cachedRead(file)).split('\n');
     const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
-    const start = frontmatter ? frontmatter.position.start : null
-    const end = frontmatter ? frontmatter.position.end : null
+    const { position: { start, end } } = frontmatter ? frontmatter : { position: { start: undefined, end: undefined } };
     const newContent = content.map((line, i) => {
         if (frontmatter && i >= start.line && i <= end.line) {
             const regex = new RegExp(`${attribute}:`, 'u');

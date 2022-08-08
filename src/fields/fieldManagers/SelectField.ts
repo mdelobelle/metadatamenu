@@ -38,13 +38,13 @@ export default class SelectField extends AbstractListBasedField {
     }
 
 
-    createDvField(
+    async createDvField(
         plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls: string, attr: Record<string, string> }
-    ): void {
+    ): Promise<void> {
         const selectContainer = document.createElement("div");
         const select = document.createElement("select");
         select.setAttr("class", "metadata-menu-dv-select");

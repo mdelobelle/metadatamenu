@@ -37,13 +37,13 @@ export default class MultiField extends AbstractListBasedField {
         fieldModal.open();
     }
 
-    createDvField(
+    async createDvField(
         plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls: string, attr: Record<string, string> }
-    ): void {
+    ): Promise<void> {
         /* 
         this control displays by default the list of value
         when mouseover: we display a "+" button at the beggining of the field to add a new value and a "x" button after the value hovered to remove it from list
