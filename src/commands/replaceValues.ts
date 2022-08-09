@@ -28,14 +28,35 @@ export async function replaceValues(app: App, fileOrFilePath: TFile | string, at
                 return line;
             }
         } else {
-            const regex = inlineFieldRegex(attribute);
-            const r = line.match(regex);
-            if (r?.groups && Object.keys(r.groups).every(i => fieldComponents.includes(i))) {
-                const { startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = r.groups
+            const fullLineRegex = new RegExp(`^${inlineFieldRegex(attribute)}`, "u");
+            const fR = line.match(fullLineRegex);
+            if (fR?.groups && Object.keys(fR.groups).every(j => fieldComponents.includes(j))) {
+                const { inList, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = fR.groups
                 const inputArray = input ? input.replace(/(\,\s+)/g, ',').split(',') : [""];
                 const newValue = inputArray.length == 1 ? inputArray[0] : `${inputArray.join(', ')}`;
-                return `${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer}${newValue}`;
+                return `${inList || ""}${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer}${newValue}`;
             } else {
+                const inSentenceRegex = new RegExp(`(?<=\\[)${inlineFieldRegex(attribute)}(?=\\])`, "gu");
+                const sR = line.matchAll(inSentenceRegex);
+                let next = sR.next();
+                const newFields: { oldField: string, newField: string }[] = [];
+                while (!next.done) {
+                    const match = next.value;
+                    if (match.groups && Object.keys(match.groups).every(j => fieldComponents.includes(j))) {
+                        const { inList, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = match.groups
+                        const inputArray = input ? input.replace(/(\,\s+)/g, ',').split(',') : [""];
+                        const newValue = inputArray.length == 1 ? inputArray[0] : `${inputArray.join(', ')}`;
+                        newFields.push({
+                            oldField: match[0],
+                            newField: `${inList || ""}${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer}${newValue}`
+                        })
+                    }
+                    next = sR.next()
+                }
+                newFields.forEach(field => {
+                    const fieldRegex = new RegExp(field.oldField.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "u")
+                    line = line.replace(fieldRegex, field.newField);
+                })
                 return line;
             }
         }

@@ -19,9 +19,11 @@
 		"esbuild": "0.14.47",
 		"obsidian": "latest",
 		"tslib": "2.4.0",
-		"typescript": "4.7.4"
+		"typescript": "4.7.4",
+		"moment": ">=2.29.4"
 	},
 	"dependencies": {
-		"@popperjs/core": "^2.11.5"
+		"@popperjs/core": "^2.11.5",
+		"moment": ">=2.29.4"
 	}
 }

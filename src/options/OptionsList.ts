@@ -7,7 +7,7 @@ import SelectModal from "src/optionModals/SelectModal";
 import { createFileClass, FileClass } from "src/fileClass/fileClass";
 import { getField } from "src/commands/getField";
 import FileClassAttributeSelectModal from "src/fileClass/FileClassAttributeSelectModal";
-import { genericFieldRegex } from "../utils/parser";
+import { getLineFields } from "../utils/parser";
 import Managers from "src/fields/fieldManagers/Managers";
 
 function isMenu(category: Menu | SelectModal): category is Menu {
@@ -28,106 +28,92 @@ export default class OptionsList {
 	path: string;
 	category: Menu | SelectModal;
 	fileClass: FileClass;
+	attributes: Record<string, string>;
+	fileClassForFields: boolean;
+	fileClassFields: string[];
 
 	constructor(plugin: MetadataMenu, file: TFile, category: Menu | SelectModal) {
 		this.file = file;
 		this.plugin = plugin;
 		this.category = category;
+		this.attributes = {};
+		this.fileClassFields = [];
+		this.fileClassForFields = false;
 	};
 
-	public async createExtraOptionList(): Promise<void> {
+	private async fetchFrontmatterFields(): Promise<void> {
 		const frontmatter = this.plugin.app.metadataCache.getCache(this.file.path)?.frontmatter;
 		if (frontmatter) {
 			const { position, ...attributes } = frontmatter;
 			Object.keys(attributes).forEach(key => {
-				if (this.plugin.settings.globallyIgnoredFields.includes(key)) {
-					delete attributes[key];
+				if (!this.plugin.settings.globallyIgnoredFields.includes(key)) {
+					this.attributes[key] = attributes[key];
 				};
 			});
-			if (isMenu(this.category)) { this.category.addSeparator(); };
-			let fileClassForFields = false;
-			let fileClassFields: string[] = [];
 			const fileClassAlias = this.plugin.settings.fileClassAlias;
-			if (Object.keys(attributes).includes(fileClassAlias) || this.plugin.settings.globalFileClass) {
-				const fileClass = attributes[fileClassAlias] || this.plugin.settings.globalFileClass;
+			if (Object.keys(this.attributes).includes(fileClassAlias) || this.plugin.settings.globalFileClass) {
+				const fileClass = this.attributes[fileClassAlias] || this.plugin.settings.globalFileClass as string;
 				try {
 					const _fileClass = await createFileClass(this.plugin, fileClass)
 					this.fileClass = _fileClass;
-					fileClassFields = _fileClass.attributes.map(attr => attr.name);
-					fileClassForFields = true;
+					this.fileClassFields = _fileClass.attributes.map(attr => attr.name);
+					this.fileClassForFields = true;
 					Object.keys(attributes).forEach(key => {
-						if (!fileClassFields.includes(key) && key != fileClassAlias) {
-							delete attributes[key];
+						if (!this.fileClassFields.includes(key) && key != fileClassAlias) {
+							delete this.attributes[key];
 						};
 					});
-					const fileClassAttributeSelectModal = new FileClassAttributeSelectModal(this.plugin, this.fileClass.getClassFile());
-					if (isMenu(this.category)) {
-						this.category.addSeparator();
-						this.category.addItem((item) => {
-							item.setIcon("gear");
-							item.setTitle(`Manage <${this.fileClass.name}> fields`);
-							item.onClick((evt) => {
-								fileClassAttributeSelectModal.open();
-							});
-						});
-					} else {
-						this.category.addOption("manage_fileClass_attributes", `Manage <${this.fileClass.name}> fields`);
-						this.category.modals["manage_fileClass_attributes"] = () => fileClassAttributeSelectModal.open();
-					};
-
-					this.buildExtraOptionsList(attributes); // frontmatter
-					await this.createExtraOptionsListForInlineFields(this.file, fileClassForFields, fileClassFields);
-					if (isMenu(this.category)) { this.category.addSeparator() };
-					this.addSectionSelectModalOption();
 				} catch (error) {
-					this.buildExtraOptionsList(attributes); // frontmatter
-					await this.createExtraOptionsListForInlineFields(this.file)
-					if (isMenu(this.category)) { this.category.addSeparator(); };
-					this.addSectionSelectModalOption();
-				};
-			} else {
-				this.buildExtraOptionsList(attributes); // frontmatter
-				await this.createExtraOptionsListForInlineFields(this.file)
-				if (isMenu(this.category)) { this.category.addSeparator(); };
-				this.addSectionSelectModalOption();
-			};
-		} else {
-			await this.createExtraOptionsListForInlineFields(this.file)
-			if (isMenu(this.category)) { this.category.addSeparator(); };
-			this.addSectionSelectModalOption();
-		};
-	};
+					//do nothing
+				}
+			}
+		}
+	}
 
-	private async createExtraOptionsListForInlineFields(
-		file: TFile,
-		fileClassForFields: boolean = false,
-		fileClassFields: string[] = []
-	): Promise<void> {
-		let attributes: Record<string, string> = {};
-		const regex = new RegExp(`^${genericFieldRegex}::\s*(?<values>.+)?`, "u");
-		const result = await this.plugin.app.vault.read(file)
+	private async fetchInlineFields(): Promise<void> {
+		const result = await this.plugin.app.vault.read(this.file);
 		result.split('\n').map(line => {
-			const regexResult = line.match(regex);
-			const { attribute, values } = regexResult?.groups || {}
-			if (attribute && !this.plugin.settings.globallyIgnoredFields.includes(attribute.trim())) {
-				if (fileClassForFields) {
-					if (fileClassFields.includes(attribute.trim())) {
-						attributes[attribute.trim()] = values ? values.trim() : "";
+			const lineFields = getLineFields(line);
+			lineFields.forEach(({ attribute, values }) => {
+				if (attribute && !this.plugin.settings.globallyIgnoredFields.includes(attribute.trim())) {
+					if (this.fileClassForFields) {
+						if (this.fileClassFields.includes(attribute.trim())) {
+							this.attributes[attribute.trim()] = values ? values.trim() : "";
+						};
+					} else {
+						this.attributes[attribute.trim()] = values ? values.trim() : "";
 					};
-				} else {
-					attributes[attribute.trim()] = values ? values.trim() : "";
 				};
-			};
-		});
-		if (Object.keys(attributes).length > 0) {
-			if (isMenu(this.category)) { this.category.addSeparator(); };
-			this.buildExtraOptionsList(attributes);
-		};
-	};
 
-	private buildExtraOptionsList(attributes: Record<string, string>) {
-		Object.keys(attributes).forEach((key: string) => {
-			const value = attributes[key];
+			})
+		});
+	}
+
+	public async createExtraOptionList(): Promise<void> {
+		await this.fetchFrontmatterFields();
+		await this.fetchInlineFields();
+		if (this.fileClass) {
+			const fileClassAttributeSelectModal = new FileClassAttributeSelectModal(this.plugin, this.fileClass.getClassFile());
+			if (isMenu(this.category)) {
+				this.category.addSeparator();
+				this.category.addItem((item) => {
+					item.setIcon("gear");
+					item.setTitle(`Manage <${this.fileClass.name}> fields`);
+					item.onClick(() => fileClassAttributeSelectModal.open())
+				});
+			} else {
+				this.category.addOption("manage_fileClass_attributes", `Manage <${this.fileClass.name}> fields`);
+				this.category.modals["manage_fileClass_attributes"] = () => fileClassAttributeSelectModal.open();
+			};
+		}
+		if (isMenu(this.category)) { this.category.addSeparator(); };
+		this.buildFieldOptions();
+		this.addSectionSelectModalOption();
+	}
+
+	private buildFieldOptions(): void {
+		Object.keys(this.attributes).forEach((key: string) => {
+			const value = this.attributes[key];
 			const field = getField(this.plugin, key, this.fileClass);
 			if (field) {
 				const fieldManager = new FieldManager[field.type](field);
@@ -139,7 +125,7 @@ export default class OptionsList {
 				fieldManager.addMenuOption(key, value, this.plugin.app, this.file, this.category)
 			}
 		});
-	};
+	}
 
 	private addSectionSelectModalOption(): void {
 		const modal = new chooseSectionModal(this.plugin, this.file, this.fileClass);

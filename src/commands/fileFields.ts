@@ -1,9 +1,8 @@
-import { cp } from "fs";
 import MetadataMenu from "main";
 import { TFile } from "obsidian"
 import { createFileClass, FileClass } from "src/fileClass/fileClass";
 import { FieldManager, FieldType } from "src/types/fieldTypes";
-import { genericFieldRegex } from "src/utils/parser";
+import { getLineFields } from "src/utils/parser";
 import { getField } from "./getField";
 
 export class FieldInfo {
@@ -15,6 +14,7 @@ export class FieldInfo {
     ignoreInMenu: boolean
     value: string = "";
     valuesListNotePath?: string = undefined;
+    unique: boolean = true
 
     async setInfos(plugin: MetadataMenu, fieldName: string, value: string, fileClass?: FileClass): Promise<void> {
         this.value = value;
@@ -87,22 +87,23 @@ export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | s
         // then explore frontmatter fields aka attributes
         Object.keys(attributes).forEach(async key => {
             const fieldInfo = new FieldInfo;
+            fieldInfo.unique = !Object.keys(fields).includes(key);
             fields[key] = fieldInfo;
             await fieldInfo.setInfos(plugin, key, attributes[key], fileClass);
         });
     }
     // let's explore the rest of the file: get inline fields
-    const regex = new RegExp(`^${genericFieldRegex}::\s*(?<values>.+)?`, "u");
+
     const result: string = await plugin.app.vault.read(file)
     result.split('\n').map(async line => {
-        const regexResult = line.match(regex);
-        const { attribute: _attribute, values } = regexResult?.groups || {}
-        if (_attribute) {
-            const fieldName = _attribute.trim()
+        const lineFields = getLineFields(line)
+        lineFields.forEach(async ({ attribute, values }) => {
+            const fieldName = attribute.trim()
             const fieldInfo = new FieldInfo;
+            fieldInfo.unique = !Object.keys(fields).includes(fieldName);
             fields[fieldName] = fieldInfo;
             await fieldInfo.setInfos(plugin, fieldName, values, fileClass);
-        }
+        })
     });
     return fields;
 }

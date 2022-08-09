@@ -479,6 +479,9 @@ Takes a TFile or e filePath and returns all the fields in the document, both fro
         /* the value of the field in the file */
         value: string | undefined, 
 
+        /* unicity of the field in the note: if false it means that this field appears more than once in the file */
+        unique: boolean,
+
         /* the fileClass name applied to this field if there is a fileClass AND if the field is set in the fileClass or the fileClass it's inheriting from */
         fileClass: string | undefined,
 
