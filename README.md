@@ -7,7 +7,11 @@ You can define preset types and values for those fields globally in the plugin's
 
 It also enables frontmatter of inline-field autocompletion with suggested values based on preset values.
 
-demo: https://youtu.be/7bvIAkJf0OE
+demo 1: basic features, settings and field types
+https://youtu.be/7bvIAkJf0OE
+
+demo 2: autocompletion and "in sentence" fields commands
+https://youtu.be/gU-StGyDciY 
 
 
 ### **BREAKING CHANGE IN 0.1.5**

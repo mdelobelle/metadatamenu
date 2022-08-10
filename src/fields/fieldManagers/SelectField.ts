@@ -45,15 +45,32 @@ export default class SelectField extends AbstractListBasedField {
         fieldContainer: HTMLElement,
         attrs?: { cls: string, attr: Record<string, string> }
     ): Promise<void> {
+        const valueContainer = document.createElement("div");;
+        const valueLabel = dv.el("span", p[this.field.name] || "");
+        valueContainer.appendChild(valueLabel);
+        const dropDownButton = document.createElement("button");
+        dropDownButton.setText("🔽");
+        dropDownButton.addClass("metadata-menu-dv-field-button");
+        valueContainer.appendChild(dropDownButton);
+
+
         const selectContainer = document.createElement("div");
         const select = document.createElement("select");
         select.setAttr("class", "metadata-menu-dv-select");
-        selectContainer.appendChild(select)
+        selectContainer.appendChild(select);
+        const dismissBtn = document.createElement("button");
+        dismissBtn.setText("❌");
+        dismissBtn.addClass("metadata-menu-dv-field-button");
+        selectContainer.appendChild(dismissBtn);
         const nullOption = new Option("--select--", undefined);
         select.add(nullOption);
         Object.keys(this.field.options).forEach(o => {
             const option = new Option(this.field.options[o], o);
-            if (p[this.field.name] === this.field.options[o]) {
+            if (p[this.field.name] === this.field.options[o] ||
+                p[this.field.name] &&
+                Object.keys(p[this.field.name]).includes("path") &&
+                `[[${p[this.field.name].path.replace(".md", "")}]]` === this.field.options[o]
+            ) {
                 option.selected = true;
             }
             select.add(option);
@@ -63,9 +80,21 @@ export default class SelectField extends AbstractListBasedField {
             if (select.value !== undefined) {
                 newValue = this.field.options[select.value]
             }
+            fieldContainer.removeChild(selectContainer)
+            fieldContainer.appendChild(valueContainer)
             SelectField.replaceValues(plugin.app, p["file"]["path"], this.field.name, newValue);
         }
+        dropDownButton.onclick = () => {
+            fieldContainer.removeChild(valueContainer);
+            fieldContainer.appendChild(selectContainer);
+        }
+
+        dismissBtn.onclick = () => {
+            fieldContainer.removeChild(selectContainer);
+            fieldContainer.appendChild(valueContainer)
+        }
+
         /* initial state */
-        fieldContainer.appendChild(selectContainer);
+        fieldContainer.appendChild(valueContainer);
     }
 }

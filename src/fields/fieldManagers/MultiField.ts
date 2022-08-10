@@ -53,7 +53,14 @@ export default class MultiField extends AbstractListBasedField {
         let valueHovered = false;
         let currentValues: string[] = [];
         if (p[this.field.name]) {
-            currentValues = p[this.field.name].split(",").map((v: string) => v.trim());
+            if (Object.keys(p[this.field.name]).includes("path")) {
+                currentValues = [`[[${p[this.field.name].path.replace(".md", "")}]]`]
+            } else if (Array.isArray(p[this.field.name])) {
+                currentValues.push(...p[this.field.name].last().split(",").map((v: string) => v.trim()))
+            }
+            else {
+                currentValues = p[this.field.name].split(",").map((v: string) => v.trim());
+            }
         }
 
         /* select container */
@@ -111,7 +118,7 @@ export default class MultiField extends AbstractListBasedField {
         /* current values */
         currentValues.forEach(v => {
             const valueContainer = document.createElement("div");
-            valueContainer.addClass("metadata-menu-dv-multi-value-container");
+            valueContainer.addClass("metadata-menu-dv-multi-values-container");
 
 
             const valueRemoveBtn = document.createElement("button");

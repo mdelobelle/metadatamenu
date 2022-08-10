@@ -279,3 +279,7 @@
     border-top-left-radius: 0em;
     border-bottom-left-radius: 0em;
 }
+
+.metadata-menu-dv-select {
+    margin-right: 0.33em;
+}
