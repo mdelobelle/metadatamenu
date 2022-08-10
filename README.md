@@ -7,7 +7,11 @@ You can define preset types and values for those fields globally in the plugin's
 
 It also enables frontmatter of inline-field autocompletion with suggested values based on preset values.
 
-demo: https://youtu.be/7bvIAkJf0OE
+demo 1: basic features, settings and field types
+https://youtu.be/7bvIAkJf0OE
+
+demo 2: autocompletion and "in sentence" fields commands
+https://youtu.be/gU-StGyDciY 
 
 
 ### **BREAKING CHANGE IN 0.1.5**
@@ -478,6 +482,9 @@ Takes a TFile or e filePath and returns all the fields in the document, both fro
     (fieldName: string): {
         /* the value of the field in the file */
         value: string | undefined, 
+
+        /* unicity of the field in the note: if false it means that this field appears more than once in the file */
+        unique: boolean,
 
         /* the fileClass name applied to this field if there is a fileClass AND if the field is set in the fileClass or the fileClass it's inheriting from */
         fileClass: string | undefined,

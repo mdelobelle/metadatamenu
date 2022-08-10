@@ -23,9 +23,16 @@ export async function getValues(app: App, fileOrfilePath: TFile | string, attrib
             const r = line.match(regex);
             if (r && r.length > 0) result.push(r[1]);
         } else {
-            const regex = inlineFieldRegex(attribute);
-            const r = line.match(regex);
-            if (r?.groups) result.push(r.groups.values);
+            const fullLineRegex = new RegExp(`^${inlineFieldRegex(attribute)}`, "u");
+            const fR = line.match(fullLineRegex);
+            if (fR?.groups) { result.push(fR.groups.values) };
+            const inSentenceRegex = new RegExp(`(?<=\\[)${inlineFieldRegex(attribute)}(?=\\])`, "gu");
+            const sR = line.matchAll(inSentenceRegex);
+            let next = sR.next();
+            while (!next.done) {
+                if (next.value.groups) { result.push(next.value.groups.values) }
+                next = sR.next()
+            }
         }
     })
     return result;

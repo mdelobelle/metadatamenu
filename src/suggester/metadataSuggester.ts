@@ -13,7 +13,7 @@ import {
 } from "obsidian";
 import { createFileClass, FileClass } from "src/fileClass/fileClass";
 import { FieldType } from "src/types/fieldTypes";
-import { genericFieldRegex } from "../utils/parser";
+import { genericFieldRegex, getLineFields, encodeLink } from "../utils/parser";
 
 interface IValueCompletion {
     value: string;
@@ -24,6 +24,8 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     private app: App;
     private fileClass: FileClass;
     private inFrontmatter: boolean = false;
+    private inFullLine: boolean = false;
+    private inSentence: boolean = false;
     private didSelect: boolean = false
 
     constructor(app: App, plugin: MetadataMenu) {
@@ -54,12 +56,13 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         };
         //@ts-ignore
         const frontmatter = this.plugin.app.metadataCache.getFileCache(file).frontmatter;
-
-        this.inFrontmatter = frontmatter !== undefined && frontmatter.position.start.line < cursor.line && cursor.line < frontmatter.position.end.line
-        const regex = this.inFrontmatter ? new RegExp(`^${genericFieldRegex}:(?<values>.*)`, "u") : new RegExp(`^${genericFieldRegex}::(?<values>.*)`, "u")
         const fullLine = editor.getLine(editor.getCursor().line)
-        if (!regex.test(fullLine)) {
-            return null
+        this.inFrontmatter = frontmatter !== undefined && frontmatter.position.start.line < cursor.line && cursor.line < frontmatter.position.end.line
+        if (this.inFrontmatter) {
+            const regex = new RegExp(`^${genericFieldRegex}:(?<values>.*)`, "u");
+            if (!regex.test(fullLine)) return null;
+        } else if (getLineFields(fullLine).length === 0) {
+            return null;
         }
         return {
             start: cursor,
@@ -69,7 +72,9 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     };
 
     private filterOption = (firstValues: string[] | undefined, lastValue: string | undefined, option: string): boolean => {
-        return !firstValues || !firstValues?.contains(option) && (!lastValue || !!lastValue && option.contains(lastValue))
+        return !firstValues ||
+            !firstValues?.contains(encodeLink(option)) && (!lastValue ||
+                !!lastValue && encodeLink(option).contains(lastValue))
     }
 
     async getSuggestions(context: EditorSuggestContext): Promise<IValueCompletion[]> {
@@ -81,18 +86,32 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     };
 
     async getValueSuggestions(context: EditorSuggestContext): Promise<IValueCompletion[]> {
-        const line = context.start.line;
-        let regex;
+        const lineNumber = context.start.line;
+        const matchField: { attribute?: string, values?: string } = { attribute: undefined, values: "" }
         if (!this.inFrontmatter) {
-            regex = new RegExp(`^${genericFieldRegex}::(?<values>.+)?`, "u");
+            const lineFields = getLineFields(encodeLink(context.editor.getLine(lineNumber)));
+            const position = context.editor.getCursor().ch
+            const activeLineField = lineFields.find(lineField => lineField.index <= position && lineField.index + lineField.length >= position)
+            if (activeLineField) {
+                this.inSentence = activeLineField.index > 0;
+                this.inFullLine = activeLineField.index === 0;
+                matchField.attribute = activeLineField.attribute;
+                matchField.values = activeLineField.values;
+            }
         } else {
-            regex = new RegExp(`^${genericFieldRegex}:(?<values>.+)?`, "u");
+            const regex = new RegExp(`^${genericFieldRegex}:(?<values>.+)?`, "u");
+            const regexResult = context.editor.getRange({ line: lineNumber, ch: 0 }, context.end).match(regex);
+            if (regexResult?.groups) {
+                matchField.attribute = regexResult.groups.attribute;
+                matchField.values = regexResult.groups.values;
+            }
         };
-        const regexResult = context.editor.getRange({ line: line, ch: 0 }, context.end).match(regex);
 
-        if (regexResult && regexResult.groups?.attribute) {
-            const fieldName = regexResult.groups.attribute;
-            const valuesList = regexResult.groups.values?.replace(/^\[|^\s\[/, '').replace(/\]$/, '').split(",").map(o => o.trim())
+        if (matchField.attribute) {
+            const fieldName = matchField.attribute;
+            const valuesList = matchField.values?.replace(/^\[|^\s\[|^\(|^\s\(/, '')
+                .replace(/\]$|\)$/, '')
+                .split(",").map(o => encodeLink(o.trim()))
             const lastValue = valuesList?.last()
             const firstValues = valuesList?.slice(0, -1)
             //tags specific cas
@@ -117,7 +136,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                         const fileClassAttributes = this.fileClass.attributes;
                         if (fileClassAttributes.map(attr => attr.name).contains(fieldName)) {
                             const field = fileClassAttributes
-                                .filter(attr => attr.name == fieldName)[0].getField()
+                                .find(attr => attr.name == fieldName)!.getField()
                             if ([FieldType.Cycle, FieldType.Multi, FieldType.Select].contains(field.type)) {
                                 const filteredOptions = Array.isArray(field.options) ?
                                     field.options.filter(option => this.filterOption(firstValues, lastValue, option)) :
@@ -138,9 +157,8 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             };
             if (tryWithPresetField) {
                 //else check if there are global preset voptiosalues
-                const presetFieldMatch = this.plugin.settings.presetFields.filter(field => field.name == fieldName);
-                if (presetFieldMatch.length > 0) {
-                    const presetField = presetFieldMatch[0];
+                const presetField = this.plugin.settings.presetFields.find(field => field.name == fieldName);
+                if (presetField) {
                     if ([FieldType.Cycle, FieldType.Multi, FieldType.Select].contains(presetField.type)) {
                         if (presetField.valuesListNotePath) {
                             //override presetValues if there is a valuesList
@@ -152,7 +170,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                                 return values;
                             };
                         };
-                        const values = Object.entries(presetFieldMatch[0].options).map(option => option[1])
+                        const values = Object.entries(presetField.options).map(option => option[1])
                             .filter(option => this.filterOption(firstValues, lastValue, option))
                         return values
                             .map(_value => Object({ value: _value }))
@@ -215,14 +233,35 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 this.close()
                 return
             }
-        } else {
-            //clean line by removing everything after , or ::
+        } else if (this.inFullLine) {
             let cleanedLine = activeLine
             while (![',', ':'].contains(cleanedLine.charAt(cleanedLine.length - 1))) {
                 cleanedLine = cleanedLine.slice(0, -1)
             }
             editor.replaceRange(`${cleanedLine}${event.shiftKey ? " " : ""}` + suggestion.value,
                 { line: this.context!.start.line, ch: 0 }, this.context!.end);
+        } else if (this.inSentence) {
+            const position = this.context?.editor.getCursor().ch || 0
+            let beforeCursor = activeLine.slice(0, position)
+            let afterCursor = activeLine.slice(position)
+            let separatorPos = position;
+            let currentValueLength = 0;
+            while (!beforeCursor.endsWith("::") && !beforeCursor.endsWith(",") && beforeCursor.length) {
+                separatorPos = separatorPos - 1;
+                currentValueLength = currentValueLength + 1
+                beforeCursor = beforeCursor.slice(0, -1);
+            }
+            let nextBracketPos = position;
+            while (!encodeLink(afterCursor).match("(\\]|\\)).*") && afterCursor.length) {
+                nextBracketPos = nextBracketPos + 1;
+                afterCursor = afterCursor.slice(nextBracketPos - position);
+            }
+            editor.replaceRange(
+                suggestion.value,
+                { line: this.context!.start.line, ch: separatorPos },
+                { line: this.context!.start.line, ch: nextBracketPos }
+            )
+            editor.setCursor({ line: this.context!.start.line, ch: nextBracketPos - currentValueLength + suggestion.value.length })
         }
         this.didSelect = true
         this.close()
