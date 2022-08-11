@@ -98,7 +98,7 @@ export default class FieldSettingsModal extends Modal {
                 this.fieldOptionsContainer.removeChild(this.fieldOptionsContainer.firstChild);
             }
             this.fieldManager = new FieldManager[this.field.type](this.field)
-            this.fieldManager.createSettingContainer(this.fieldOptionsContainer, SettingLocation.PluginSettings)
+            this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.PluginSettings)
         })
     }
 
@@ -122,7 +122,7 @@ export default class FieldSettingsModal extends Modal {
 
         /* init state */
         this.createTypeSelectorContainer(typeSelectContainer)
-        this.fieldManager.createSettingContainer(this.fieldOptionsContainer, SettingLocation.PluginSettings)
+        this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.PluginSettings)
     };
 
     private validateFields(): boolean {

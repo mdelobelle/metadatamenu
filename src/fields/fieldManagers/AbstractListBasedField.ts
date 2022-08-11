@@ -5,6 +5,7 @@ import { TextComponent, ButtonComponent } from "obsidian";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import MetadataMenu from "main";
 import FieldSetting from "src/settings/FieldSetting";
+import { FileSuggest } from "src/suggester/FileSuggester";
 
 export default abstract class AbstractListBasedField extends FieldManager {
 
@@ -20,18 +21,23 @@ export default abstract class AbstractListBasedField extends FieldManager {
         header.setText(`Preset options: ${Object.values(this.field.options).join(', ')}`);
     };
 
-    private createListNoteContainer(parentNode: HTMLDivElement): TextComponent {
-
-        const listNoteContainerLabel = parentNode.createDiv({ cls: "metadata-menu-input" });
+    private createListNoteContainer(parentNode: HTMLDivElement, plugin: MetadataMenu): void {
+        const listNoteContainerLabel = parentNode.createDiv({ cls: "metadata-menu-setting-fileClass-search" });
         listNoteContainerLabel.setText(`Path of the note containing the values:`);
 
         const input = new TextComponent(listNoteContainerLabel);
+
+        new FileSuggest(
+            plugin.app,
+            input.inputEl,
+            plugin,
+            "/"
+        )
         const listNotePath = this.field.valuesListNotePath;
         input.setValue(listNotePath);
         input.setPlaceholder("Path/of/the/note.md");
         input.onChange(value => this.field.valuesListNotePath = value);
-        return input;
-    };
+    }
 
     private removePresetValue(key: string): void {
         let newValues: Record<string, string> = {};
@@ -100,6 +106,12 @@ export default abstract class AbstractListBasedField extends FieldManager {
 
     }
 
+    getOptionsStr(): string {
+        if (this.field.valuesListNotePath) return this.field.valuesListNotePath
+        else if (Object.values(this.field.options).length) return Object.values(this.field.options).join(", ")
+        else return ""
+    }
+
     validateOptions(): boolean {
         let error = false;
         this.valuesPromptComponents.forEach(input => {
@@ -141,8 +153,8 @@ export default abstract class AbstractListBasedField extends FieldManager {
         valuesList.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
     }
 
-    createSettingContainer(parentContainer: HTMLDivElement, location?: SettingLocation): void {
-        if (location === SettingLocation.PluginSettings) this.createListNoteContainer(parentContainer);
+    createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
+        if (location === SettingLocation.PluginSettings) this.createListNoteContainer(parentContainer, plugin);
         this.presetValuesFields = parentContainer.createDiv()
         this.presetValuesFields.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
         const valuesList = this.presetValuesFields.createDiv();

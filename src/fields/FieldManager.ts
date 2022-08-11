@@ -21,8 +21,9 @@ export abstract class FieldManager {
 
     abstract addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void;
     abstract validateOptions(): boolean;
-    abstract createSettingContainer(parentContainer: HTMLDivElement, location?: SettingLocation): void;
+    abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
     abstract createDvField(plugin: MetadataMenu, dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls: string, attr: Record<string, string> }): Promise<void>
+    abstract getOptionsStr(): string;
 
     constructor(field: Field, type: FieldType) {
         if (field.type !== type) throw Error(`This field is not of type ${type}`)

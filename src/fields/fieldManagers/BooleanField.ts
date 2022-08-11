@@ -41,8 +41,11 @@ export default class BooleanField extends FieldManager {
             category.modals[`update_${name}`] = () => replaceValues(app, file, name, (!bValue).toString());
         };
     };
+    getOptionsStr(): string {
+        return ""
+    }
 
-    createSettingContainer(parentContainer: HTMLDivElement): void {
+    createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu): void {
         //no need of settings for boolean field
     }
 

@@ -19,6 +19,12 @@ export default class NumberField extends FieldManager {
         super(field, FieldType.Number)
     }
 
+    getOptionsStr(): string {
+        const options: string[] = [];
+        Object.keys(this.field.options).forEach((k) => { if (this.field.options[k]) options.push(`${k}: ${this.field.options[k]}`) })
+        return options.join(" | ")
+    }
+
     canDecrement(value: string): boolean {
         const { step, min } = this.field.options;
         const fStep = parseFloat(step);
@@ -128,7 +134,7 @@ export default class NumberField extends FieldManager {
         })
     }
 
-    createSettingContainer(parentContainer: HTMLDivElement): void {
+    createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu): void {
         this.numberValidatorField = parentContainer.createDiv({ cls: "metadata-menu-number-options" })
         this.createNumberContainer(this.numberValidatorField)
         this.numberValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");

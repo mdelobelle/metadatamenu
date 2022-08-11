@@ -12,6 +12,10 @@ export default class InputField extends FieldManager {
         super(field, FieldType.Input)
     }
 
+    getOptionsStr(): string {
+        return ""
+    }
+
     addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void {
         const modal = new valueTextInputModal(app, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
@@ -28,7 +32,7 @@ export default class InputField extends FieldManager {
         };
     };
 
-    createSettingContainer(parentContainer: HTMLDivElement): void {
+    createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu): void {
         //no need of settings for standard input field
     }
 

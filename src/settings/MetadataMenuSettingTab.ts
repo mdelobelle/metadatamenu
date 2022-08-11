@@ -151,16 +151,17 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		new Setting(classFilesSettings)
 			.setName('class Files path')
 			.setDesc('Path to the files containing the authorized fields for a type of note')
-			.addSearch((cb) => {
-				new FolderSuggest(this.app, cb.inputEl);
-				cb.setPlaceholder("Folder")
+			.addSearch((cfs) => {
+				new FolderSuggest(this.app, cfs.inputEl);
+				cfs.setPlaceholder("Folder")
 					.setValue(this.plugin.settings.classFilesPath)
 					.onChange((new_folder) => {
-						this.plugin.settings.classFilesPath = new_folder.endsWith("/") ? new_folder : new_folder + "/";
+						const newPath = new_folder.endsWith("/") ? new_folder : new_folder + "/";
+						this.plugin.settings.classFilesPath = newPath;
 						this.plugin.saveSettings();
 					});
 				// @ts-ignore
-				cb.containerEl.addClass("metadata-menu-setting-fileClass-search")
+				cfs.containerEl.addClass("metadata-menu-setting-fileClass-search")
 			});
 
 		new Setting(classFilesSettings)
@@ -181,21 +182,27 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		new Setting(classFilesSettings)
 			.setName('global fileClass')
 			.setDesc('Choose one fileClass to be applicable to all files (even it is not present as a fileClass attribute in their frontmatter). This will override the preset Fields defined above')
-			.addSearch((cb) => {
+			.addSearch((cfs) => {
 				new FileSuggest(
 					this.app,
-					cb.inputEl,
+					cfs.inputEl,
 					this.plugin,
 					this.plugin.settings.classFilesPath
 				);
-				cb.setPlaceholder("Global fileClass")
-					.setValue(this.plugin.settings.classFilesPath + this.plugin.settings.globalFileClass + ".md" || "")
+				cfs.setPlaceholder("Global fileClass")
+				cfs.setValue(
+					this.plugin.settings.globalFileClass ?
+						this.plugin.settings.classFilesPath + this.plugin.settings.globalFileClass + ".md" :
+						""
+				)
 					.onChange((newPath) => {
-						this.plugin.settings.globalFileClass = newPath ? newPath.split('\\').pop()!.split('/').pop()?.replace(".md", "") : "";
+						this.plugin.settings.globalFileClass = newPath ?
+							newPath.split('\\').pop()!.split('/').pop()?.replace(".md", "") :
+							"";
 						this.plugin.saveSettings();
 					});
 				// @ts-ignore
-				cb.containerEl.addClass("metadata-menu-setting-fileClass-search")
+				cfs.containerEl.addClass("metadata-menu-setting-fileClass-search")
 			})
 
 

@@ -84,7 +84,7 @@ class FileClassAttributeModal extends Modal {
                 this.fieldOptionsContainer.removeChild(this.fieldOptionsContainer.firstChild);
             }
             this.fieldManager = new FieldManager[this.field.type](this.field)
-            this.fieldManager.createSettingContainer(this.fieldOptionsContainer, SettingLocation.FileClassAttributeSettings)
+            this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.FileClassAttributeSettings)
         })
     }
 
@@ -144,7 +144,7 @@ class FileClassAttributeModal extends Modal {
 
         this.buildNameInputContainer()
         this.buildTypeSelectContainer()
-        this.fieldManager.createSettingContainer(this.fieldOptionsContainer, SettingLocation.FileClassAttributeSettings)
+        this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.FileClassAttributeSettings)
 
         // footer buttons
         const footer = this.contentEl.createDiv({ cls: "metadata-menu-value-grid-footer" });
