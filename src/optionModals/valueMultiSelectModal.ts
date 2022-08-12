@@ -2,23 +2,22 @@ import { App, Modal, ToggleComponent, TFile, ButtonComponent, ExtraButtonCompone
 import Field from "src/fields/Field";
 import { replaceValues } from "src/commands/replaceValues";
 import FieldSetting from "src/settings/FieldSetting";
+import { insertValues } from "src/commands/insertValues";
 
 export default class valueMultiSelectModal extends Modal {
 
     private file: TFile;
-    private name: string;
-    private settings: Field;
+    private field: Field;
     private options: Array<string>;
     private lineNumber: number;
     private inFrontmatter: boolean;
     private top: boolean;
 
-    constructor(app: App, file: TFile, name: string, initialOptions: string, settings: Field, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
+    constructor(app: App, file: TFile, field: Field, initialOptions: string, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
         super(app);
         this.app = app;
         this.file = file;
-        this.name = name;
-        this.settings = settings;
+        this.field = field;
         if (initialOptions) {
             if (initialOptions.toString().startsWith("[[")) {
                 this.options = initialOptions.split(",").map(item => item.trim());
@@ -39,14 +38,14 @@ export default class valueMultiSelectModal extends Modal {
         const valueGrid = this.contentEl.createDiv({
             cls: "metadata-menu-value-grid"
         });
-        const listNoteValues = await FieldSetting.getValuesListFromNote(this.settings.valuesListNotePath, this.app)
+        const listNoteValues = await FieldSetting.getValuesListFromNote(this.field.valuesListNotePath, this.app)
         await this.populateValuesGrid(valueGrid, listNoteValues);
     };
 
     private async populateValuesGrid(valueGrid: HTMLDivElement, listNoteValues: string[]): Promise<void> {
         if (listNoteValues.length === 0) {
-            Object.keys(this.settings.options).forEach(key => {
-                const presetValue = this.settings.options[key];
+            Object.keys(this.field.options).forEach(key => {
+                const presetValue = this.field.options[key];
                 this.buildValueToggler(valueGrid, presetValue);
             })
         };
@@ -58,27 +57,11 @@ export default class valueMultiSelectModal extends Modal {
         saveButton.setIcon("checkmark");
         saveButton.onClick(async () => {
             if (this.lineNumber == -1) {
-                replaceValues(this.app, this.file, this.name, this.options.join(","));
+                replaceValues(this.app, this.file, this.field.name, this.options.join(","));
             } else {
-                const result = await this.app.vault.read(this.file)
-                let newContent: string[] = [];
-                const renderedValues = !this.inFrontmatter ? this.options.join(",") : this.options.length > 1 ? `[${this.options.join(",")}]` : this.options
-                if (this.top) {
-                    newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${renderedValues}`);
-                    result.split("\n").forEach((line, _lineNumber) => newContent.push(line));
-                } else {
-                    result.split("\n").forEach((line, _lineNumber) => {
-                        newContent.push(line);
-                        if (_lineNumber == this.lineNumber) {
-                            newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${renderedValues}`);
-                        };
-                    });
-                };
-
-                this.app.vault.modify(this.file, newContent.join('\n'));
-                this.close();
+                const renderedValues = !this.inFrontmatter ? this.options.join(",") : this.options.length > 1 ? `[${this.options.join(", ")}]` : this.options[0]
+                insertValues(this.app, this.file, this.field.name, renderedValues, this.lineNumber, this.inFrontmatter, this.top);
             };
-
             this.close();
         });
         const cancelButton = new ExtraButtonComponent(footer);

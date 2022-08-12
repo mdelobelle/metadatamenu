@@ -2,12 +2,14 @@ import { TFile } from "obsidian"
 import MetadataMenu from "main"
 import { getValues } from "./commands/getValues";
 import { replaceValues } from "./commands/replaceValues";
+import { insertValues } from "./commands/insertValues";
 import { fieldModifier } from "./commands/fieldModifier";
 import { fileFields, FieldInfo } from "./commands/fileFields";
 
 export interface IMetadataMenuApi {
     getValues: (fileOrFilePath: TFile | string, attribute: string) => Promise<string[]>;
     replaceValues: (fileOrFilePath: TFile | string, attribute: string, input: string) => Promise<void>;
+    insertValues: (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean) => Promise<void>
     fileFields: (fileOrFilePath: TFile | string) => Promise<Record<string, FieldInfo>>;
     fieldModifier: (dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }) => Promise<HTMLElement>;
 }
@@ -21,6 +23,7 @@ export class MetadataMenuApi {
         return {
             getValues: this.getValues(),
             replaceValues: this.replaceValues(),
+            insertValues: this.insertValues(),
             fieldModifier: this.fieldModifier(),
             fileFields: this.fileFields()
         };
@@ -32,6 +35,10 @@ export class MetadataMenuApi {
 
     private replaceValues(): (fileOrFilePath: TFile | string, attribute: string, input: string) => Promise<void> {
         return async (fileOrFilePath: TFile | string, attribute: string, input: string) => replaceValues(this.plugin.app, fileOrFilePath, attribute, input)
+    }
+
+    private insertValues(): (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean) => Promise<void> {
+        return async (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean) => insertValues(this.plugin.app, fileOrFilePath, fieldName, value, lineNumber, inFrontmatter, top)
     }
 
     private fieldModifier(): (dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }) => Promise<HTMLElement> {

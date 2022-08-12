@@ -16,7 +16,7 @@ export default class MultiField extends AbstractListBasedField {
     }
 
     addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void {
-        const modal = new valueMultiSelectModal(app, file, name, value, this.field);
+        const modal = new valueMultiSelectModal(app, file, this.field, value);
         modal.titleEl.setText("Select values");
         if (MultiField.isMenu(category)) {
             category.addItem((item) => {
@@ -32,7 +32,7 @@ export default class MultiField extends AbstractListBasedField {
     };
 
     createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
-        const fieldModal = new valueMultiSelectModal(app, file, this.field.name, "", this.field, lineNumber, inFrontmatter, top);
+        const fieldModal = new valueMultiSelectModal(app, file, this.field, "", lineNumber, inFrontmatter, top);
         fieldModal.titleEl.setText(`Select options for ${selectedFieldName}`);
         fieldModal.open();
     }

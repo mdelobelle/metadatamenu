@@ -1,4 +1,5 @@
 import { App, Modal, TextComponent, TFile, ButtonComponent } from "obsidian";
+import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
 import NumberField from "src/fields/fieldManagers/NumberField";
@@ -147,21 +148,7 @@ export default class numbertModal extends Modal {
             if (this.lineNumber == -1) {
                 replaceValues(this.app, this.file, this.field.name, inputValue);
             } else {
-                const result = await this.app.vault.read(this.file)
-                let newContent: string[] = [];
-                if (this.top) {
-                    newContent.push(`${this.field.name}${this.inFrontmatter ? ":" : "::"} ${inputValue}`);
-                    result.split("\n").forEach((line, _lineNumber) => newContent.push(line));
-                } else {
-                    result.split("\n").forEach((line, _lineNumber) => {
-                        newContent.push(line);
-                        if (_lineNumber == this.lineNumber) {
-                            newContent.push(`${this.field.name}${this.inFrontmatter ? ":" : "::"} ${inputValue}`);
-                        };
-                    });
-                };
-                this.app.vault.modify(this.file, newContent.join('\n'));
-                this.close();
+                insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.top);
             };
             this.close();
         };

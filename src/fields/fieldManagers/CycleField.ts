@@ -42,7 +42,7 @@ export default class CycleField extends AbstractListBasedField {
     };
 
     createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
-        const fieldModal = new valueSelectModal(app, file, this.field.name, "", this.field, lineNumber, inFrontmatter, top);
+        const fieldModal = new valueSelectModal(app, file, "", this.field, lineNumber, inFrontmatter, top);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }

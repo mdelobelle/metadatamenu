@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { App, ButtonComponent, DropdownComponent, ExtraButtonComponent, Modal, Notice, Setting, TextComponent } from "obsidian";
+import { App, ButtonComponent, DropdownComponent, ExtraButtonComponent, Modal, Notice, Setting, TextComponent, TextAreaComponent } from "obsidian";
 import Field from "src/fields/Field";
 import FieldSetting from "src/settings/FieldSetting";
 import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
@@ -189,7 +189,7 @@ export default class FieldSettingsModal extends Modal {
             mDiv.insertAfter(insertAfter);
         }
     }
-    public static removeValidationError(textInput: TextComponent) {
+    public static removeValidationError(textInput: TextComponent | TextAreaComponent) {
         if (textInput.inputEl.hasClass("is-invalid") && textInput.inputEl.parentElement?.lastElementChild) {
             textInput.inputEl.removeClass("is-invalid")
             textInput.inputEl.parentElement.removeChild(
