@@ -1,5 +1,5 @@
 import { App, TFile } from "obsidian"
-import { inlineFieldRegex } from "src/utils/parser";
+import { inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
 
 export async function getValues(app: App, fileOrfilePath: TFile | string, attribute: string): Promise<string[]> {
     let file: TFile;
@@ -26,12 +26,19 @@ export async function getValues(app: App, fileOrfilePath: TFile | string, attrib
             const fullLineRegex = new RegExp(`^${inlineFieldRegex(attribute)}`, "u");
             const fR = line.match(fullLineRegex);
             if (fR?.groups) { result.push(fR.groups.values) };
-            const inSentenceRegex = new RegExp(`(?<=\\[)${inlineFieldRegex(attribute)}(?=\\])`, "gu");
-            const sR = line.matchAll(inSentenceRegex);
-            let next = sR.next();
+            const inSentenceRegexBrackets = new RegExp(`\\[${inlineFieldRegex(attribute)}\\]`, "gu");
+            const sRB = encodeLink(line).matchAll(inSentenceRegexBrackets);
+            let next = sRB.next();
             while (!next.done) {
-                if (next.value.groups) { result.push(next.value.groups.values) }
-                next = sR.next()
+                if (next.value.groups) { result.push(decodeLink(next.value.groups.values)) }
+                next = sRB.next()
+            }
+            const inSentenceRegexPar = new RegExp(`\\(${inlineFieldRegex(attribute)}\\)`, "gu");
+            const sRP = encodeLink(line).matchAll(inSentenceRegexPar);
+            next = sRP.next();
+            while (!next.done) {
+                if (next.value.groups) { result.push(decodeLink(next.value.groups.values)) }
+                next = sRP.next()
             }
         }
     })
