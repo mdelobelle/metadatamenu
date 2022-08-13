@@ -13,16 +13,7 @@ https://youtu.be/7bvIAkJf0OE
 demo 2: autocompletion and "in sentence" fields commands
 https://youtu.be/gU-StGyDciY 
 
-
-### **BREAKING CHANGE IN 0.1.5**
-`getValues` and `replaceValues` api functions no longer need the first `app: App` argument
-
-### **BREAKING CHANGE IN 0.1.3**
-The recently added feature `fieldWithMenu` has been replaced by `fieldModifier`
-
-This feature enables to modify the value of a YAML field or a dv inline field directly from a dataview table
-
-It is now async so it should be awaited (see section "Dataview field modifier with dataviewJS" below)
+## **Please update for version 0.1.10 for mobile compatibility (version 0.1.9 was only working on desktop platforms)**
 
 # General concepts
 
