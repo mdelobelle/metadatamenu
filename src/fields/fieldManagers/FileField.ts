@@ -1,10 +1,10 @@
 import { FieldType } from "src/types/fieldTypes";
 import { FieldManager, SettingLocation } from "../FieldManager";
 import Field from "../Field";
-import { App, TFile, Menu, TextComponent, TextAreaComponent } from "obsidian";
+import { App, TFile, Menu, TextAreaComponent, Notice } from "obsidian";
 import SelectModal from "src/optionModals/SelectModal";
 import main from "main";
-import FileFuzzySuggestModal from "src/optionModals/fileFuzzySuggestModal";
+import FileFuzzySuggester from "src/optionModals/fileFuzzySuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 
 export default class FileField extends FieldManager {
@@ -16,8 +16,44 @@ export default class FileField extends FieldManager {
         super(field, FieldType.File)
     }
 
+    static buildMarkDownLink(app: App, file: TFile, path: string): string {
+        const destFile = app.metadataCache.getFirstLinkpathDest(path, file.path)
+        if (destFile) {
+            return app.fileManager.generateMarkdownLink(
+                destFile,
+                file.path,
+                undefined,
+                destFile.basename
+            )
+        }
+        return ""
+    }
+
+    getFiles = (): TFile[] => {
+        //@ts-ignore
+        const getResults = (api: DataviewPlugin["api"]) => {
+            try {
+                return (new Function("dv", `return ${this.field.options.dvQueryString}`))(api)
+            } catch (error) {
+                new Notice(`Wrong query for field <${this.field.name}>\ncheck your settings`, 3000)
+            }
+        };
+        const dataview = app.plugins.plugins["dataview"]
+        //@ts-ignore
+        if (this.field.options.dvQueryString && dataview?.settings.enableDataviewJs && dataview?.settings.enableInlineDataviewJs) {
+            try {
+                const filesPath = getResults(dataview.api).values.map((v: any) => v.file.path)
+                return app.vault.getMarkdownFiles().filter(f => filesPath.includes(f.path));
+            } catch (error) {
+                throw (error);
+            }
+        } else {
+            return app.vault.getMarkdownFiles();
+        }
+    }
+
     addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void {
-        const modal = new FileFuzzySuggestModal(app, file, this.field, value)
+        const modal = new FileFuzzySuggester(app, file, this.field)
         modal.titleEl.setText("Select value");
         if (FileField.isMenu(category)) {
             category.addItem((item) => {
@@ -33,13 +69,33 @@ export default class FileField extends FieldManager {
     }
 
     createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
-        const fieldModal = new FileFuzzySuggestModal(app, file, this.field, "", lineNumber, inFrontmatter, top);
+        const fieldModal = new FileFuzzySuggester(app, file, this.field, lineNumber, inFrontmatter, top);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
 
     createDvField(plugin: main, dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls: string; attr: Record<string, string>; }): Promise<void> {
-        return dv.el("span", "-");
+        const fieldValueContainer = document.createElement("div")
+        const fieldValue = dv.el('span', p[this.field.name], attrs);
+        const searchBtn = document.createElement("button")
+        searchBtn.setText("🔎")
+        searchBtn.addClass("metadata-menu-dv-field-button")
+        fieldValueContainer.appendChild(fieldValue);
+        fieldValueContainer.appendChild(searchBtn);
+        const file = app.vault.getAbstractFileByPath(p["file"]["path"])
+        let fieldModal: FileFuzzySuggester;
+        if (file instanceof TFile && file.extension == "md") {
+            fieldModal = new FileFuzzySuggester(app, file, this.field)
+        } else {
+            return Promise.reject("path doesn't correspond to a proper file");
+        }
+        searchBtn.onclick = () => {
+            fieldModal.open()
+        }
+        /* initial state */
+        fieldContainer.appendChild(fieldValueContainer)
+
+        return Promise.resolve();
     }
 
     createFileContainer(parentContainer: HTMLDivElement): void {
