@@ -13,6 +13,10 @@ https://youtu.be/7bvIAkJf0OE
 demo 2: autocompletion and "in sentence" fields commands
 https://youtu.be/gU-StGyDciY 
 
+demo 3: File type fields
+https://youtu.be/sYudigxPEnY
+
+
 ## **Please update for version 0.1.10 for mobile compatibility (version 0.1.9 was only working on desktop platforms)**
 
 # General concepts
@@ -28,6 +32,7 @@ Available types are:
 - `Select`: a field that can `Accept a single value from a list`
 - `Multi`: a field that can `Accept multiple values from a list`
 - `Cycle`: a field that will `Cycle through values from a list`
+- `File`: a field that will `Accept a link to a file from your vault`
 
 ## Field settings
 By default each field is an `Input`
@@ -96,6 +101,11 @@ If `min` (float) is defined, you won't be able to set or change the value of the
 
 #### `Max`
 If `max` (float) is defined, you won't be able to set or change the value of the field with a value greater than `max` (an error will be displayed)
+
+### `File` options
+Dataview query accepts a call to the api function dv.pages that will return pages from your vault according to this function. 
+
+See documentation here: https://blacksmithgu.github.io/obsidian-dataview/api/code-reference/#dvpagessource
 
 ## Fileclass settings
 If you want the same field to have different behaviour depending on the note they belong to, you can defined field settings based on the "class" of the "note".
@@ -188,6 +198,13 @@ these options are accessible from:
 1. Right-click on the link (or context menu, ...)
 2. Click on " .. > .. " to change the field's value for the next one in the settings list
 
+### Update a link to a file (type: `File`)
+
+1. Right-click on the link (or context menu, ...)
+2. Click on " 🔎 Update ... "
+3. Type or select the link within the modal
+
+
 ### Add a new field at section
 
 1. Right-click on the link
@@ -249,7 +266,11 @@ when hovering the field you will a ▶️ button
 when clicking on ▶️, you will replace the value of the field by the new option defined in field options
 
 ### `Select`
-The value of the field will be replaced by a select field. Select another value to change the value
+Click to the arrow next to the value.
+
+The value of the field will then be replaced by a select field. 
+
+Select another value to change the value
 
 ### `Multi`
 The values of this field are displayed as a chip component
@@ -261,6 +282,13 @@ When hovering a chip, a "❌" button will be added after the value
 When clicking on "❌", the value will be removed from the list of the values in the target field.
 
 When clicking on "➕", the values will be replaced by a select field in the table with the remaining values available (not already selected). Select the new value that you want to add: it will be added at the end of the list in the target field.
+
+### `File`
+The values of this field are displayed as a link
+
+Click the "🔎" button next to the link to display a suggester modal.
+
+Select a choice to replace the link in the target field.
 
 # FileClass 
 
@@ -388,6 +416,7 @@ type::{"type": "Select", "options":{"0": "at school", "1": "online", "2": "perso
 extends: course
 ---
 chapter::{"type": "Select", "options": {"0": "Algebra", "1": "Geometry", "2": "Statistics"}}
+to do next::{"type": "File", "options": {"dvQueryString": "dv.pages('\"Courses\"')"}}
 ```
 
 `physics.md`
@@ -456,6 +485,16 @@ This is an asynchronous function, so you should await it.
 Takes a TFile containing the field, a string for the related field name, a new value for this field and updates the field with the new value
 
 This is an asynchronous function, so you should await it.
+
+### insertValues
+`insertValues(fileOrFilePath: TFile | string, attribute: string, value: string, lineNumber: number, inFrontmatter: boolean, top: boolean)`
+
+Takes a TFile, a string for the field name, a value for this field and insert the formatted field in the file at the line specified.
+
+You'll have to specify if the field will be in frontmatter to apply YAML syntax
+
+This is an asynchronous function, so you should await it.
+
 
 ### fieldModifier
 `fieldModifier(dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> })`
