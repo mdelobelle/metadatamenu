@@ -78,7 +78,6 @@ export default class SelectField extends AbstractListBasedField {
                 }
                 select.add(option);
                 select.onchange = () => {
-                    console.log(select.value)
                     let newValue = "";
                     if (select.value !== undefined) {
                         newValue = select.value;

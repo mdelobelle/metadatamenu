@@ -125,4 +125,9 @@ export default class FileField extends FieldManager {
     validateOptions(): boolean {
         return true;
     }
+
+    validateValue(value: string): Promise<boolean> {
+        const basename = value.trim().replace(/^\[\[/g, "").replace(/\]\]$/g, "")
+        return Promise.resolve(!!this.getFiles().map(f => f.basename).find(item => item === basename))
+    }
 }

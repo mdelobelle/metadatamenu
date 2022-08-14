@@ -24,8 +24,8 @@ export async function getValues(app: App, fileOrfilePath: TFile | string, attrib
             if (r && r.length > 0) result.push(r[1]);
         } else {
             const fullLineRegex = new RegExp(`^${inlineFieldRegex(attribute)}`, "u");
-            const fR = line.match(fullLineRegex);
-            if (fR?.groups) { result.push(fR.groups.values) };
+            const fR = encodeLink(line).match(fullLineRegex);
+            if (fR?.groups) { result.push(decodeLink(fR.groups.values)) };
             const inSentenceRegexBrackets = new RegExp(`\\[${inlineFieldRegex(attribute)}\\]`, "gu");
             const sRB = encodeLink(line).matchAll(inSentenceRegexBrackets);
             let next = sRB.next();
