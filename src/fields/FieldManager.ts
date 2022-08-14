@@ -24,6 +24,7 @@ export abstract class FieldManager {
     abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
     abstract createDvField(plugin: MetadataMenu, dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls: string, attr: Record<string, string> }): Promise<void>
     abstract getOptionsStr(): string;
+    abstract createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void
 
     constructor(field: Field, type: FieldType) {
         if (field.type !== type) throw Error(`This field is not of type ${type}`)

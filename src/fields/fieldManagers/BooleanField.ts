@@ -64,7 +64,7 @@ export default class BooleanField extends FieldManager {
     }
 
     createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
-        const fieldModal = new valueToggleModal(app, file, this.field.name, false, lineNumber, inFrontmatter, top)
+        const fieldModal = new valueToggleModal(app, file, this.field, false, lineNumber, inFrontmatter, top)
         fieldModal.titleEl.setText(`Set value for ${selectedFieldName}`);
         fieldModal.open();
     }

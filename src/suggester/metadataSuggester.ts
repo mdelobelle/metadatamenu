@@ -12,8 +12,9 @@ import {
     Notice
 } from "obsidian";
 import { createFileClass, FileClass } from "src/fileClass/fileClass";
-import { FieldType } from "src/types/fieldTypes";
+import { FieldManager, FieldType } from "src/types/fieldTypes";
 import { genericFieldRegex, getLineFields, encodeLink } from "../utils/parser";
+import FileField from "src/fields/fieldManagers/FileField";
 
 interface IValueCompletion {
     value: string;
@@ -144,6 +145,9 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                                         .map(k => field.options[k])
                                         .filter(option => this.filterOption(firstValues, lastValue, option))
                                 return filteredOptions.map(option => Object({ value: option }));
+                            } else if (field.type === FieldType.File) {
+                                return []
+                                //TODO get files
                             } else {
                                 return []
                             }
@@ -175,6 +179,17 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                         return values
                             .map(_value => Object({ value: _value }))
 
+                    } else if (presetField.type === FieldType.File) {
+                        const fieldManager: FileField = new FieldManager[presetField.type](presetField)
+                        const files = fieldManager.getFiles();
+                        if (lastValue) {
+                            return files
+                                .filter(f => f.basename.includes(lastValue))
+                                .map(f => Object({ value: FileField.buildMarkDownLink(app, context.file, f.basename) }));
+                        } else {
+                            return files
+                                .map(f => Object({ value: FileField.buildMarkDownLink(app, context.file, f.basename) }));
+                        }
                     } else {
                         return []
                     }

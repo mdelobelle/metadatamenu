@@ -5,6 +5,7 @@ import { App, Menu, TFile, TextComponent } from "obsidian";
 import SelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
 import valueSelectModal from "src/optionModals/valueSelectModal";
+import FieldSetting from "src/settings/FieldSetting";
 
 export default class SelectField extends AbstractListBasedField {
 
@@ -16,7 +17,7 @@ export default class SelectField extends AbstractListBasedField {
     }
 
     addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void {
-        const modal = new valueSelectModal(app, file, this.field.name, value, this.field);
+        const modal = new valueSelectModal(app, file, value, this.field);
         modal.titleEl.setText("Select value");
         if (SelectField.isMenu(category)) {
             category.addItem((item) => {
@@ -32,7 +33,7 @@ export default class SelectField extends AbstractListBasedField {
     };
 
     createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
-        const fieldModal = new valueSelectModal(app, file, this.field.name, "", this.field, lineNumber, inFrontmatter, top);
+        const fieldModal = new valueSelectModal(app, file, "", this.field, lineNumber, inFrontmatter, top);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -64,26 +65,51 @@ export default class SelectField extends AbstractListBasedField {
         selectContainer.appendChild(dismissBtn);
         const nullOption = new Option("--select--", undefined);
         select.add(nullOption);
-        Object.keys(this.field.options).forEach(o => {
-            const option = new Option(this.field.options[o], o);
-            if (p[this.field.name] === this.field.options[o] ||
-                p[this.field.name] &&
-                Object.keys(p[this.field.name]).includes("path") &&
-                `[[${p[this.field.name].path.replace(".md", "")}]]` === this.field.options[o]
-            ) {
-                option.selected = true;
-            }
-            select.add(option);
-        })
-        select.onchange = () => {
-            let newValue = "";
-            if (select.value !== undefined) {
-                newValue = this.field.options[select.value]
-            }
-            fieldContainer.removeChild(selectContainer)
-            fieldContainer.appendChild(valueContainer)
-            SelectField.replaceValues(plugin.app, p["file"]["path"], this.field.name, newValue);
+        const listNoteValues = await FieldSetting.getValuesListFromNote(this.field.valuesListNotePath, plugin.app)
+        if (listNoteValues.length) {
+            listNoteValues.forEach(o => {
+                const option = new Option(o, o);
+                if (p[this.field.name] === o ||
+                    p[this.field.name] &&
+                    Object.keys(p[this.field.name]).includes("path") &&
+                    `[[${p[this.field.name].path.replace(".md", "")}]]` === o
+                ) {
+                    option.selected = true;
+                }
+                select.add(option);
+                select.onchange = () => {
+                    let newValue = "";
+                    if (select.value !== undefined) {
+                        newValue = select.value;
+                    }
+                    fieldContainer.removeChild(selectContainer)
+                    fieldContainer.appendChild(valueContainer)
+                    SelectField.replaceValues(plugin.app, p["file"]["path"], this.field.name, newValue);
+                }
+            });
+        } else {
+            Object.keys(this.field.options).forEach(o => {
+                const option = new Option(this.field.options[o], o);
+                if (p[this.field.name] === this.field.options[o] ||
+                    p[this.field.name] &&
+                    Object.keys(p[this.field.name]).includes("path") &&
+                    `[[${p[this.field.name].path.replace(".md", "")}]]` === this.field.options[o]
+                ) {
+                    option.selected = true;
+                }
+                select.add(option);
+                select.onchange = () => {
+                    let newValue = "";
+                    if (select.value !== undefined) {
+                        newValue = this.field.options[select.value]
+                    }
+                    fieldContainer.removeChild(selectContainer)
+                    fieldContainer.appendChild(valueContainer)
+                    SelectField.replaceValues(plugin.app, p["file"]["path"], this.field.name, newValue);
+                }
+            })
         }
+
         dropDownButton.onclick = () => {
             fieldContainer.removeChild(valueContainer);
             fieldContainer.appendChild(selectContainer);

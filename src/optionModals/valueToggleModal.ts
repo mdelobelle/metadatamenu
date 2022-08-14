@@ -1,24 +1,26 @@
 import { App, Modal, ToggleComponent, TFile, ButtonComponent, ExtraButtonComponent } from "obsidian";
+import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
+import Field from "src/fields/Field";
 
 export default class valueToggleModal extends Modal {
 
     private file: TFile;
-    private name: string;
     private value: boolean;
     private lineNumber: number;
     private inFrontmatter: boolean;
     private top: boolean;
+    private field: Field;
 
-    constructor(app: App, file: TFile, name: string, value: boolean, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
+    constructor(app: App, file: TFile, field: Field, value: boolean, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
         super(app);
         this.app = app;
         this.file = file;
-        this.name = name;
         this.value = value;
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
         this.top = top;
+        this.field = field
     };
 
     onOpen() {
@@ -38,24 +40,9 @@ export default class valueToggleModal extends Modal {
         saveButton.onClick(async () => {
             const value = this.value.toString()
             if (this.lineNumber == -1) {
-                replaceValues(this.app, this.file, this.name, value);
+                replaceValues(this.app, this.file, this.field.name, value);
             } else {
-                const result = await this.app.vault.read(this.file)
-                let newContent: string[] = [];
-                if (this.top) {
-                    newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${value}`);
-                    result.split("\n").forEach((line, _lineNumber) => newContent.push(line));
-                } else {
-                    result.split("\n").forEach((line, _lineNumber) => {
-                        newContent.push(line);
-                        if (_lineNumber == this.lineNumber) {
-                            newContent.push(`${this.name}${this.inFrontmatter ? ":" : "::"} ${value}`);
-                        };
-                    });
-                };
-
-                this.app.vault.modify(this.file, newContent.join('\n'));
-                this.close();
+                insertValues(this.app, this.file, this.field.name, value, this.lineNumber, this.inFrontmatter, this.top);
             };
             this.close();
         });

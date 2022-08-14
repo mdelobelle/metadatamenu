@@ -6,7 +6,8 @@ export const enum FieldType {
     'Multi' = "Multi",
     'Cycle' = "Cycle",
     'Boolean' = "Boolean",
-    "Number" = "Number"
+    "Number" = "Number",
+    "File" = "File"
 }
 
 export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = {
@@ -15,7 +16,8 @@ export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = 
     "Multi": FieldType.Multi,
     "Cycle": FieldType.Cycle,
     "Boolean": FieldType.Boolean,
-    "Number": FieldType.Number
+    "Number": FieldType.Number,
+    "File": FieldType.File
 };
 
 export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
@@ -24,7 +26,8 @@ export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
     "Multi": "multi",
     "Cycle": "cycle",
     "Boolean": "boolean",
-    "Number": "number"
+    "Number": "number",
+    "File": "file"
 }
 
 export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
@@ -33,7 +36,8 @@ export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
     "Multi": "Accept multiple values from a list",
     "Cycle": "Cycle through values from a list",
     "Boolean": "Accept true of false",
-    "Number": "Accept a number"
+    "Number": "Accept a number",
+    "File": "Accept a link to a file in your vault"
 }
 
 export const FieldManager: Record<keyof typeof FieldType, any> = {
@@ -42,5 +46,6 @@ export const FieldManager: Record<keyof typeof FieldType, any> = {
     "Multi": Managers.Multi,
     "Cycle": Managers.Cycle,
     "Boolean": Managers.Boolean,
-    "Number": Managers.Number
+    "Number": Managers.Number,
+    "File": Managers.File
 }

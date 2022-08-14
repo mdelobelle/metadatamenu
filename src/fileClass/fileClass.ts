@@ -74,7 +74,9 @@ class FileClass {
         if (file instanceof TFile && file.extension == "md") {
             return file;
         } else {
-            const error = new Error("no such fileClass in fileClass folder");
+            const error = new Error(
+                `no file named <${this.name}.md> in <${filesClassPath}> folder to match <${this.plugin.settings.fileClassAlias}: ${this.name}> in one of these notes`
+            );
             throw error;
         }
     }
