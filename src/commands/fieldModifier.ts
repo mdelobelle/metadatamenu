@@ -4,7 +4,7 @@ import { createFileClass } from "src/fileClass/fileClass";
 import { FieldManager } from "src/types/fieldTypes";
 import { FieldManager as F } from "src/fields/FieldManager";
 
-export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }): Promise<HTMLElement> {
+export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }): Promise<HTMLElement> {
 
     /* fieldContainer*/
     const fieldContainer: HTMLElement = dv.el("div", "")

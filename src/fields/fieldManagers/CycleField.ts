@@ -52,7 +52,7 @@ export default class CycleField extends AbstractListBasedField {
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
-        attrs?: { cls: string, attr: Record<string, string> }
+        attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
     ): Promise<void> {
         const options = this.field.options;
         const keys = Object.keys(options);
@@ -73,22 +73,26 @@ export default class CycleField extends AbstractListBasedField {
         const button = document.createElement("button");
         button.setText("▶️");
         button.setAttr('class', "metadata-menu-dv-field-button");
-        button.hide();
-        spacer.show();
-        fieldContainer.onmouseover = () => {
-            button.show();
-            spacer.hide();
-        }
-        fieldContainer.onmouseout = () => {
+        if (!attrs?.options?.alwaysOn) {
             button.hide();
             spacer.show();
+            fieldContainer.onmouseover = () => {
+                button.show();
+                spacer.hide();
+            }
+            fieldContainer.onmouseout = () => {
+                button.hide();
+                spacer.show();
+            }
         }
 
         /* button on click : go to next version*/
         button.onclick = (e) => {
             CycleField.replaceValues(plugin.app, p["file"]["path"], this.field.name, nextOption);
-            button.hide();
-            spacer.show();
+            if (!attrs?.options?.alwaysOn) {
+                button.hide();
+                spacer.show();
+            }
         }
 
         fieldContainer.appendChild(button);

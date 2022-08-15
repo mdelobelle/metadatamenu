@@ -190,7 +190,7 @@ export default class NumberField extends FieldManager {
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
-        attrs?: { cls: string, attr: Record<string, string> }
+        attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
     ): Promise<void> {
 
         const fieldValue = dv.el('span', p[this.field.name], attrs)
@@ -207,33 +207,37 @@ export default class NumberField extends FieldManager {
         const editButton = document.createElement("button");
         editButton.setText("🖍");
         editButton.setAttr('class', "metadata-menu-dv-field-button");
-        editButton.hide();
+
 
         /* button to display input */
         const decrementButton = document.createElement("button");
         decrementButton.setText("◀️");
         decrementButton.setAttr('class', "metadata-menu-dv-field-button");
-        decrementButton.hide();
+
 
         /* button to display input */
         const incrementButton = document.createElement("button");
         incrementButton.setText("▶️");
         incrementButton.setAttr('class', "metadata-menu-dv-field-button");
-        incrementButton.hide();
 
-        tripleSpacer.show();
-
-        fieldContainer.onmouseover = () => {
-            editButton.show();
-            decrementButton.show();
-            incrementButton.show();
-            tripleSpacer.hide();
-        }
-        fieldContainer.onmouseout = () => {
+        if (!attrs?.options?.alwaysOn) {
             editButton.hide();
             decrementButton.hide();
             incrementButton.hide();
             tripleSpacer.show();
+
+            fieldContainer.onmouseover = () => {
+                editButton.show();
+                decrementButton.show();
+                incrementButton.show();
+                tripleSpacer.hide();
+            }
+            fieldContainer.onmouseout = () => {
+                editButton.hide();
+                decrementButton.hide();
+                incrementButton.hide();
+                tripleSpacer.show();
+            }
         }
 
         const validateIcon = document.createElement("a")

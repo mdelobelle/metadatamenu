@@ -74,14 +74,21 @@ export default class FileField extends FieldManager {
         fieldModal.open();
     }
 
-    createDvField(plugin: main, dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls: string; attr: Record<string, string>; }): Promise<void> {
-        const fieldValueContainer = document.createElement("div")
+    createDvField(
+        plugin: main,
+        dv: any,
+        p: any,
+        fieldContainer: HTMLElement,
+        attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
+    ): Promise<void> {
         const fieldValue = dv.el('span', p[this.field.name], attrs);
         const searchBtn = document.createElement("button")
         searchBtn.setText("🔎")
         searchBtn.addClass("metadata-menu-dv-field-button")
-        fieldValueContainer.appendChild(fieldValue);
-        fieldValueContainer.appendChild(searchBtn);
+        /* end spacer */
+        const spacer = document.createElement("div")
+        spacer.setAttr("class", "metadata-menu-dv-field-spacer")
+
         const file = app.vault.getAbstractFileByPath(p["file"]["path"])
         let fieldModal: FileFuzzySuggester;
         if (file instanceof TFile && file.extension == "md") {
@@ -92,8 +99,24 @@ export default class FileField extends FieldManager {
         searchBtn.onclick = () => {
             fieldModal.open()
         }
+
+        if (!attrs?.options?.alwaysOn) {
+            searchBtn.hide()
+            spacer.show()
+            fieldContainer.onmouseover = () => {
+                searchBtn.show()
+                spacer.hide()
+            }
+            fieldContainer.onmouseout = () => {
+                searchBtn.hide()
+                spacer.show()
+            }
+        }
+
         /* initial state */
-        fieldContainer.appendChild(fieldValueContainer)
+        fieldContainer.appendChild(fieldValue);
+        fieldContainer.appendChild(searchBtn);
+        fieldContainer.appendChild(spacer);
 
         return Promise.resolve();
     }

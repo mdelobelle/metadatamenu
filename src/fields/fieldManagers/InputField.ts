@@ -52,9 +52,8 @@ export default class InputField extends FieldManager {
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
-        attrs?: { cls: string, attr: Record<string, string> }
+        attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
     ): Promise<void> {
-
         const fieldValue = dv.el('span', p[this.field.name], attrs)
         const inputContainer = document.createElement("div")
         const input = document.createElement("input")
@@ -68,15 +67,17 @@ export default class InputField extends FieldManager {
         const button = document.createElement("button")
         button.setText("🖍")
         button.setAttr('class', "metadata-menu-dv-field-button")
-        button.hide()
-        spacer.show()
-        fieldContainer.onmouseover = () => {
-            button.show()
-            spacer.hide()
-        }
-        fieldContainer.onmouseout = () => {
+        if (!attrs?.options?.alwaysOn) {
             button.hide()
             spacer.show()
+            fieldContainer.onmouseover = () => {
+                button.show()
+                spacer.hide()
+            }
+            fieldContainer.onmouseout = () => {
+                button.hide()
+                spacer.show()
+            }
         }
 
         const validateIcon = document.createElement("button")
