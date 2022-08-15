@@ -105,7 +105,22 @@ If `max` (float) is defined, you won't be able to set or change the value of the
 ### `File` options
 Dataview query accepts a call to the api function dv.pages that will return pages from your vault according to this function. 
 
-See documentation here: https://blacksmithgu.github.io/obsidian-dataview/api/code-reference/#dvpagessource
+you’ll have to use dv.pages function explained here : https://blacksmithgu.github.io/obsidian-dataview/api/code-reference/#dvpagessource
+
+it takes a « source » (explained here https://blacksmithgu.github.io/obsidian-dataview/api/code-reference/#dvpagessource):
+
+you can also improve the filtering by applying a combination of other functions to the result returned by dv.pages(source):
+
+dv.pages(…).where(…) 
+dv.pages(…).sort(…)
+dv.pages(…).filter(…)
+dv.pages(…).limit(…)
+etc
+you can combine them:
+dv.pages(…).where(…).sort(…)
+see documentation here https://blacksmithgu.github.io/obsidian-dataview/api/data-array/#raw-interface
+
+a good source of help to build dataview queries is the obsidian discord server > plugin-advanced > dataview : the community is really helpful there
 
 ## Fileclass settings
 If you want the same field to have different behaviour depending on the note they belong to, you can defined field settings based on the "class" of the "note".
@@ -217,7 +232,24 @@ these options are accessible from:
 
 using `fieldModifier` function included in metadata-menu API (see # Api), you can build modifiable fields within dataview table
 
-syntax:
+fieldModifier takes 4 arguments:
+- dv: the dataview api
+- p : the page your are currently iterating on
+- fieldName: the name of the field you want to display (as string)
+- attrs (optional): an object with the attributes you want to pass to the field:
+    - cls (optional): the class to be applied to the field
+    - attr (optional): the dataview attributes for the field (they will be included as data tags in the HTML rendering of the field)
+    - options (optional): an object containing specific options for Metadata Menu field modification
+
+### options
+
+#### alwaysOn
+
+with `options: {alwaysOn: true}` the control for the field will always be displayed
+
+with `options: {alwaysOn: false}` (default) the control for the field won't always be displayed, you'll have to click on an intermediate button or hover the field to display the control
+
+### syntax
 
 ```js
 /* dataviewjs block */
@@ -230,7 +262,7 @@ dv.table(["file", "Masterization", "Tune"],
         .where(p => p.fileClass === "music")
         .map(async p => [
             p.file.link, 
-            await f(dv, p, "masterization"),  // pass dv (dataview api instance), p (the page), and the field name to fieldModifier (: "f")
+            await f(dv, p, "masterization", {options: {alwaysOn: true}}),  // pass dv (dataview api instance), p (the page), the field name to fieldModifier (: "f") and an object with options: {alwaysOn: true} so taht the control is always visible
             await f(dv, p, "tune") // pass dv (dataview api instance), p (the page), and the field name to fieldModifier (: "f")
             ])
     )

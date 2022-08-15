@@ -74,7 +74,7 @@ export default class BooleanField extends FieldManager {
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
-        attrs?: { cls: string, attr: Record<string, string> }
+        attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
     ): Promise<void> {
         const checkbox: HTMLInputElement = dv.el("input", "", { ...attrs, "type": "checkbox" })
         checkbox.checked = p[this.field.name]

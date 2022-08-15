@@ -42,7 +42,7 @@ export default class MultiField extends AbstractListBasedField {
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
-        attrs?: { cls: string, attr: Record<string, string> }
+        attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
     ): Promise<void> {
         /* 
         this control displays by default the list of value
@@ -159,7 +159,7 @@ export default class MultiField extends AbstractListBasedField {
         const addBtn = document.createElement("button");
         addBtn.setText("➕");
         addBtn.setAttr('class', "metadata-menu-dv-field-button");
-        addBtn.hide();
+
         valuesContainer.appendChild(addBtn);
         addBtn.onclick = () => {
             fieldContainer.removeChild(valuesContainer);
@@ -173,21 +173,31 @@ export default class MultiField extends AbstractListBasedField {
         singleSpacer.setAttr("class", "metadata-menu-dv-field-spacer")
         const doubleSpacer = document.createElement("div");
         doubleSpacer.setAttr("class", "metadata-menu-dv-field-double-spacer")
-        fieldContainer.onmouseover = () => {
-            addBtn.show();
-            doubleSpacer.hide();
-            if (!valueHovered) singleSpacer.show();
-        }
-        fieldContainer.onmouseout = () => {
+
+        if (!attrs?.options?.alwaysOn) {
             addBtn.hide();
-            singleSpacer.hide();
-            doubleSpacer.show();
+            fieldContainer.onmouseover = () => {
+                addBtn.show();
+                doubleSpacer.hide();
+                if (!valueHovered) singleSpacer.show();
+            }
+            fieldContainer.onmouseout = () => {
+                addBtn.hide();
+                singleSpacer.hide();
+                doubleSpacer.show();
+            }
         }
 
         /* initial state */
-        singleSpacer.hide();
-        doubleSpacer.show();
-        addBtn.hide();
+        if (!attrs?.options?.alwaysOn) {
+            singleSpacer.hide();
+            doubleSpacer.show();
+            addBtn.hide();
+        } else {
+            singleSpacer.show();
+            doubleSpacer.hide();
+            addBtn.show();
+        }
         fieldContainer.appendChild(valuesContainer);
         fieldContainer.appendChild(singleSpacer);
         fieldContainer.appendChild(doubleSpacer);

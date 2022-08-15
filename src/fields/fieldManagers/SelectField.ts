@@ -44,7 +44,7 @@ export default class SelectField extends AbstractListBasedField {
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
-        attrs?: { cls: string, attr: Record<string, string> }
+        attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
     ): Promise<void> {
         const valueContainer = document.createElement("div");;
         const valueLabel = dv.el("span", p[this.field.name] || "");
@@ -121,6 +121,10 @@ export default class SelectField extends AbstractListBasedField {
         }
 
         /* initial state */
-        fieldContainer.appendChild(valueContainer);
+        if (!attrs?.options?.alwaysOn) {
+            fieldContainer.appendChild(valueContainer);
+        } else {
+            fieldContainer.appendChild(selectContainer);
+        }
     }
 }

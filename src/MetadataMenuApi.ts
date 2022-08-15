@@ -11,7 +11,7 @@ export interface IMetadataMenuApi {
     replaceValues: (fileOrFilePath: TFile | string, attribute: string, input: string) => Promise<void>;
     insertValues: (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean) => Promise<void>
     fileFields: (fileOrFilePath: TFile | string) => Promise<Record<string, FieldInfo>>;
-    fieldModifier: (dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }) => Promise<HTMLElement>;
+    fieldModifier: (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => Promise<HTMLElement>;
 }
 
 export class MetadataMenuApi {
@@ -41,8 +41,8 @@ export class MetadataMenuApi {
         return async (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean) => insertValues(this.plugin.app, fileOrFilePath, fieldName, value, lineNumber, inFrontmatter, top)
     }
 
-    private fieldModifier(): (dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }) => Promise<HTMLElement> {
-        return (dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }) => fieldModifier(this.plugin, dv, p, fieldName, attrs)
+    private fieldModifier(): (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => Promise<HTMLElement> {
+        return (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => fieldModifier(this.plugin, dv, p, fieldName, attrs)
     }
 
     private fileFields(): (fileOrFilePath: TFile | string) => Promise<Record<string, FieldInfo>> {
