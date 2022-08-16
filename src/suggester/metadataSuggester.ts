@@ -146,8 +146,16 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                                         .filter(option => this.filterOption(firstValues, lastValue, option))
                                 return filteredOptions.map(option => Object({ value: option }));
                             } else if (field.type === FieldType.File) {
-                                return []
-                                //TODO get files
+                                const fieldManager: FileField = new FieldManager[field.type](field)
+                                const files = fieldManager.getFiles();
+                                if (lastValue) {
+                                    return files
+                                        .filter(f => f.basename.includes(lastValue))
+                                        .map(f => Object({ value: FileField.buildMarkDownLink(app, context.file, f.basename) }));
+                                } else {
+                                    return files
+                                        .map(f => Object({ value: FileField.buildMarkDownLink(app, context.file, f.basename) }));
+                                }
                             } else {
                                 return []
                             }
