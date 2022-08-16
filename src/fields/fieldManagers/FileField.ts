@@ -3,7 +3,7 @@ import { FieldManager, SettingLocation } from "../FieldManager";
 import Field from "../Field";
 import { App, TFile, Menu, TextAreaComponent, Notice } from "obsidian";
 import SelectModal from "src/optionModals/SelectModal";
-import main from "main";
+import MetadataMenu from "main";
 import FileFuzzySuggester from "src/optionModals/fileFuzzySuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 
@@ -75,7 +75,7 @@ export default class FileField extends FieldManager {
     }
 
     createDvField(
-        plugin: main,
+        plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
@@ -135,7 +135,7 @@ export default class FileField extends FieldManager {
         })
     }
 
-    createSettingContainer(parentContainer: HTMLDivElement, plugin: main, location?: SettingLocation): void {
+    createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
         this.fileValidatorField = parentContainer.createDiv({ cls: "metadata-menu-number-options" })
         this.createFileContainer(this.fileValidatorField)
         this.fileValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");

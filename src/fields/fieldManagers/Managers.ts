@@ -5,6 +5,7 @@ import Select from './SelectField'
 import Cycle from './CycleField'
 import Multi from './MultiField'
 import File from './FileField'
+import Date from './DateField'
 
 const Managers = {
     Input,
@@ -13,7 +14,8 @@ const Managers = {
     Select,
     Cycle,
     Multi,
-    File
+    File,
+    Date
 }
 
 export default Managers

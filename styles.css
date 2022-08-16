@@ -220,6 +220,10 @@
     background-color: #928374;
 }
 
+.metadata-menu-setting-item-info-type.date{
+    background-color: #483699;
+}
+
 .metadata-menu-setting-section-header{
     margin-bottom: 0;
 }
