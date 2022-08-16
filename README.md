@@ -112,12 +112,11 @@ it takes a « source » (explained here https://blacksmithgu.github.io/obsidian-
 you can also improve the filtering by applying a combination of other functions to the result returned by dv.pages(source):
 
 dv.pages(…).where(…) 
-dv.pages(…).sort(…)
 dv.pages(…).filter(…)
 dv.pages(…).limit(…)
 etc
 you can combine them:
-dv.pages(…).where(…).sort(…)
+dv.pages(…).where(…).limit(...)
 see documentation here https://blacksmithgu.github.io/obsidian-dataview/api/data-array/#raw-interface
 
 a good source of help to build dataview queries is the obsidian discord server > plugin-advanced > dataview : the community is really helpful there
