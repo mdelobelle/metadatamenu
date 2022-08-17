@@ -1,10 +1,10 @@
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
-import valueToggleModal from "src/optionModals/valueToggleModal";
+import BooleanModal from "src/optionModals/fields/BooleanModal";
 import { App, Menu, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
-import SelectModal from "src/optionModals/SelectModal";
+import FieldSelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
 
 export default class BooleanField extends FieldManager {
@@ -13,7 +13,7 @@ export default class BooleanField extends FieldManager {
         super(field, FieldType.Boolean)
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void {
+    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | FieldSelectModal): void {
         const bValue = BooleanField.stringToBoolean(value);
         if (BooleanField.isMenu(category)) {
             category.addItem((item) => {
@@ -50,7 +50,7 @@ export default class BooleanField extends FieldManager {
     }
 
     createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
-        const fieldModal = new valueToggleModal(app, file, this.field, false, lineNumber, inFrontmatter, top)
+        const fieldModal = new BooleanModal(app, file, this.field, false, lineNumber, inFrontmatter, top)
         fieldModal.titleEl.setText(`Set value for ${selectedFieldName}`);
         fieldModal.open();
     }

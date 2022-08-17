@@ -2,9 +2,9 @@ import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
 import { App, Menu, TFile, TextComponent } from "obsidian";
-import SelectModal from "src/optionModals/SelectModal";
+import FieldSelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
-import valueSelectModal from "src/optionModals/valueSelectModal";
+import SelectModal from "src/optionModals/fields/SelectModal";
 import { replaceValues } from "src/commands/replaceValues";
 
 export default class CycleField extends AbstractListBasedField {
@@ -16,7 +16,7 @@ export default class CycleField extends AbstractListBasedField {
         super(field, FieldType.Cycle)
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void {
+    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | FieldSelectModal): void {
         const options = this.field.options;
         const keys = Object.keys(options);
         const keyForValue = keys.find(key => options[key] === value);
@@ -42,7 +42,7 @@ export default class CycleField extends AbstractListBasedField {
     };
 
     createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
-        const fieldModal = new valueSelectModal(app, file, "", this.field, lineNumber, inFrontmatter, top);
+        const fieldModal = new SelectModal(app, file, "", this.field, lineNumber, inFrontmatter, top);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }

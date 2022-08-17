@@ -1,9 +1,9 @@
-import { App, Modal, ToggleComponent, TFile, ButtonComponent, ExtraButtonComponent } from "obsidian";
+import { App, Modal, ToggleComponent, TFile, ButtonComponent } from "obsidian";
 import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
 
-export default class valueToggleModal extends Modal {
+export default class BooleanModal extends Modal {
 
     private file: TFile;
     private value: boolean;

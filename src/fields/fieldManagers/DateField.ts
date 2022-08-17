@@ -5,9 +5,9 @@ import { App, TFile, Menu, TextComponent, ToggleComponent, Notice } from "obsidi
 import SelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
 import { moment } from "obsidian";
-import BooleanField from "./BooleanField";
+import DateModal from "src/optionModals/DateModal";
 
-export default class FileField extends FieldManager {
+export default class DateField extends FieldManager {
 
     dateValidatorField: HTMLDivElement
 
@@ -16,11 +16,25 @@ export default class FileField extends FieldManager {
     }
 
     addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void {
-
+        const modal = new DateModal(app, file, this.field, value);
+        modal.titleEl.setText(`Change date for <${name}>`);
+        if (DateField.isMenu(category)) {
+            category.addItem((item) => {
+                item.setTitle(`Update <${name}>`);
+                item.setIcon('calendar-glyph');
+                item.onClick(() => modal.open());
+                item.setSection("target-metadata");
+            })
+        } else if (DateField.isSelect(category)) {
+            category.addOption(`update_${name}`, `Update <${name}>`);
+            category.modals[`update_${name}`] = () => modal.open();
+        };
     }
 
     createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
-
+        const fieldModal = new DateModal(app, file, this.field, "", lineNumber, inFrontmatter, top);
+        fieldModal.titleEl.setText(`Enter date for ${selectedFieldName}`);
+        fieldModal.open();
     }
 
     createDateContainer(parentContainer: HTMLDivElement): void {
@@ -37,7 +51,7 @@ export default class FileField extends FieldManager {
         const defaultInsertAsLinkContainer = parentContainer.createDiv();
         defaultInsertAsLinkContainer.createEl("span", { text: "Insert as link by default", cls: 'metadata-menu-field-option' });
         const defaultInsertAsLink = new ToggleComponent(defaultInsertAsLinkContainer);
-        defaultInsertAsLink.setValue(BooleanField.stringToBoolean(this.field.options.defaultInsertAsLink || "false"))
+        defaultInsertAsLink.setValue(DateField.stringToBoolean(this.field.options.defaultInsertAsLink || "false"))
         defaultInsertAsLink.onChange((value: boolean) => {
             this.field.options.defaultInsertAsLink = value.toString();
         });

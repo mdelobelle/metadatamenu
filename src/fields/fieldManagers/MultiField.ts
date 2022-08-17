@@ -2,9 +2,9 @@ import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
 import { App, Menu, TFile, TextComponent } from "obsidian";
-import SelectModal from "src/optionModals/SelectModal";
+import FieldSelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
-import valueMultiSelectModal from "src/optionModals/valueMultiSelectModal";
+import MultiSelectModal from "src/optionModals/fields/MultiSelectModal";
 
 export default class MultiField extends AbstractListBasedField {
 
@@ -15,8 +15,8 @@ export default class MultiField extends AbstractListBasedField {
         super(field, FieldType.Multi)
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void {
-        const modal = new valueMultiSelectModal(app, file, this.field, value);
+    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | FieldSelectModal): void {
+        const modal = new MultiSelectModal(app, file, this.field, value);
         modal.titleEl.setText("Select values");
         if (MultiField.isMenu(category)) {
             category.addItem((item) => {
@@ -32,7 +32,7 @@ export default class MultiField extends AbstractListBasedField {
     };
 
     createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
-        const fieldModal = new valueMultiSelectModal(app, file, this.field, "", lineNumber, inFrontmatter, top);
+        const fieldModal = new MultiSelectModal(app, file, this.field, "", lineNumber, inFrontmatter, top);
         fieldModal.titleEl.setText(`Select options for ${selectedFieldName}`);
         fieldModal.open();
     }

@@ -4,7 +4,7 @@ import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
 import { FieldType } from "src/types/fieldTypes";
 
-export default class valueTextInputModal extends Modal {
+export default class DateModal extends Modal {
 
     private file: TFile;
     private value: string;
@@ -47,7 +47,7 @@ export default class valueTextInputModal extends Modal {
 
     private buildInputEl(inputDiv: HTMLDivElement): void {
         //@ts-ignore
-        if (app.plugins.plugins.hasOwnProperty('nldates-obsidian') && this.field.type === FieldType.Input) {
+        if (app.plugins.plugins.hasOwnProperty('nldates-obsidian') && this.field.type === FieldType.Date) {
             this.buildDateParseToggler(inputDiv);
         };
         const form = inputDiv.createEl("form");
@@ -62,7 +62,7 @@ export default class valueTextInputModal extends Modal {
             e.preventDefault();
             let inputValue = inputEl.getValue();
             //@ts-ignore
-            if (app.plugins.plugins.hasOwnProperty('nldates-obsidian') && this.parseDate && this.field.type === FieldType.Input) {
+            if (app.plugins.plugins.hasOwnProperty('nldates-obsidian') && this.parseDate && this.field.type === FieldType.Date) {
                 //@ts-ignore
                 const nldates = app.plugins.plugins['nldates-obsidian'];
                 const format = nldates.settings.format;

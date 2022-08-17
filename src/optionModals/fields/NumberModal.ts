@@ -5,7 +5,7 @@ import Field from "src/fields/Field";
 import NumberField from "src/fields/fieldManagers/NumberField";
 import { FieldManager } from "src/types/fieldTypes";
 
-export default class numbertModal extends Modal {
+export default class NumbertModal extends Modal {
 
     private file: TFile;
     private value: string;
@@ -65,16 +65,6 @@ export default class numbertModal extends Modal {
         } else {
             plusBtn.removeCta();
         }
-    }
-
-    private validateValue(value: string): boolean {
-        const { min, max } = this.field.options;
-        const fMin = parseFloat(min);
-        const fMax = parseFloat(max);
-        const fValue = parseFloat(value);
-        return (
-            !isNaN(fValue) && (isNaN(fMin) || fValue >= fMin) && (isNaN(fMax) || fValue <= fMax)
-        )
     }
 
     private buildInputEl(inputDiv: HTMLDivElement): void {

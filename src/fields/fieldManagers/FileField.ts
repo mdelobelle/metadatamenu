@@ -2,9 +2,9 @@ import { FieldType } from "src/types/fieldTypes";
 import { FieldManager, SettingLocation } from "../FieldManager";
 import Field from "../Field";
 import { App, TFile, Menu, TextAreaComponent, Notice } from "obsidian";
-import SelectModal from "src/optionModals/SelectModal";
+import FieldSelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
-import FileFuzzySuggester from "src/optionModals/fileFuzzySuggestModal";
+import SingleFileModal from "src/optionModals/fields/SingleFileModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 
 export default class FileField extends FieldManager {
@@ -52,8 +52,8 @@ export default class FileField extends FieldManager {
         }
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void {
-        const modal = new FileFuzzySuggester(app, file, this.field)
+    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | FieldSelectModal): void {
+        const modal = new SingleFileModal(app, file, this.field)
         modal.titleEl.setText("Select value");
         if (FileField.isMenu(category)) {
             category.addItem((item) => {
@@ -69,7 +69,7 @@ export default class FileField extends FieldManager {
     }
 
     createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
-        const fieldModal = new FileFuzzySuggester(app, file, this.field, lineNumber, inFrontmatter, top);
+        const fieldModal = new SingleFileModal(app, file, this.field, lineNumber, inFrontmatter, top);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -90,9 +90,9 @@ export default class FileField extends FieldManager {
         spacer.setAttr("class", "metadata-menu-dv-field-spacer")
 
         const file = app.vault.getAbstractFileByPath(p["file"]["path"])
-        let fieldModal: FileFuzzySuggester;
+        let fieldModal: SingleFileModal;
         if (file instanceof TFile && file.extension == "md") {
-            fieldModal = new FileFuzzySuggester(app, file, this.field)
+            fieldModal = new SingleFileModal(app, file, this.field)
         } else {
             return Promise.reject("path doesn't correspond to a proper file");
         }

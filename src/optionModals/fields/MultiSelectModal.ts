@@ -4,7 +4,7 @@ import { replaceValues } from "src/commands/replaceValues";
 import FieldSetting from "src/settings/FieldSetting";
 import { insertValues } from "src/commands/insertValues";
 
-export default class valueMultiSelectModal extends Modal {
+export default class MultiSelectModal extends Modal {
 
     private file: TFile;
     private field: Field;
