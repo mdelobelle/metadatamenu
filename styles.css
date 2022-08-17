@@ -41,6 +41,12 @@
     color: red;
 }
 
+.metadata-menu-modal-value-error-field{
+    height: 2em;
+    color: red;
+    margin-left: 1em;
+}
+
 .metadata-menu-toggler {
     text-align: center;
 }
@@ -84,7 +90,15 @@
     margin-top: 1em
 }
 
+.metadata-menu-toggler-with-label{
+    display: flex;
+    margin-left: 1em;
+    margin-top: 0.5em;
+}
 
+.metadata-menu-toggler-label{
+    margin-right: 0.5em;
+}
 
 
 

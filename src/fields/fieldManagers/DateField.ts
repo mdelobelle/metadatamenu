@@ -5,7 +5,7 @@ import { App, TFile, Menu, TextComponent, ToggleComponent, Notice } from "obsidi
 import SelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
 import { moment } from "obsidian";
-import DateModal from "src/optionModals/DateModal";
+import DateModal from "src/optionModals/fields/DateModal";
 
 export default class DateField extends FieldManager {
 
@@ -73,5 +73,9 @@ export default class DateField extends FieldManager {
 
     validateOptions(): boolean {
         return true;
+    }
+
+    validateValue(value: string): Promise<boolean> {
+        return Promise.resolve(moment(value).isValid())
     }
 }
