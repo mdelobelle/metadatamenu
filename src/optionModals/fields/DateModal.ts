@@ -2,9 +2,10 @@ import { App, Modal, TextComponent, TFile, ToggleComponent, ButtonComponent } fr
 import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
-import { FieldType } from "src/types/fieldTypes";
 import { FieldManager } from "src/fields/FieldManager";
 import { moment } from "obsidian";
+import flatpickr from "flatpickr";
+import MetadataMenu from "main";
 
 export default class DateModal extends Modal {
 
@@ -17,6 +18,8 @@ export default class DateModal extends Modal {
     private field: Field;
     private inputEl: TextComponent;
     private errorField: HTMLDivElement;
+    private format: string;
+    private plugin: MetadataMenu;
 
     constructor(app: App, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
         super(app);
@@ -27,6 +30,11 @@ export default class DateModal extends Modal {
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
         this.top = top;
+        this.insertAsLink = FieldManager.stringToBoolean(this.field.options.defaultInsertAsLink) || false;
+        this.format = this.field.options.dateFormat || this.field.options.defaultDateFormat;
+        if (this.app.plugins.enabledPlugins.has("metadata-menu")) {
+            this.plugin = this.app.plugins.plugins["metadata-menu"]
+        }
     };
 
     onOpen() {
@@ -48,24 +56,24 @@ export default class DateModal extends Modal {
 
         form.onsubmit = async (e: Event) => {
             e.preventDefault();
-            const format = this.field.options.dateFormat;
             let newValue: moment.Moment;
             //@ts-ignore
 
             //try natural language date
-            if (app.plugins.plugins.hasOwnProperty('nldates-obsidian')) {
+            if (app.plugins.enabledPlugins.has('nldates-obsidian')) {
                 //@ts-ignore
                 try {
                     const nldates = app.plugins.plugins['nldates-obsidian'];
                     newValue = nldates.parseDate(this.value).moment;
                 } catch (error) {
-                    newValue = moment(this.value);
+                    newValue = moment(this.value, this.format);
                 }
             } else {
-                newValue = moment(this.value);
+                newValue = moment(this.value, this.format);
             }
             if (newValue.isValid()) {
-                const formattedValue = this.insertAsLink ? `[[${newValue.format(format)}]]` : newValue.format(format)
+                const linkPath = app.metadataCache.getFirstLinkpathDest(this.field.options.linkPath + newValue.format(this.format), this.file.path)
+                const formattedValue = this.insertAsLink ? `[[${this.field.options.linkPath || ""}${newValue.format(this.format)}${linkPath ? "|" + linkPath.basename : ""}]]` : newValue.format(this.format)
                 if (this.lineNumber == -1) {
                     replaceValues(this.app, this.file, this.field.name, formattedValue);
                 } else {
@@ -95,7 +103,8 @@ export default class DateModal extends Modal {
     }
 
     private buildInputEl(form: HTMLFormElement): void {
-        this.inputEl = new TextComponent(form);
+        const inputContainer = form.createDiv({ cls: "metadata-menu-dateinput-with-picker" })
+        this.inputEl = new TextComponent(inputContainer);
         this.inputEl.inputEl.focus();
         this.inputEl.setValue(this.value);
         this.inputEl.inputEl.addClass("metadata-menu-prompt-input");
@@ -105,6 +114,26 @@ export default class DateModal extends Modal {
             this.errorField.setText("");
             this.value = value
         });
+        const calendarDisplayBtn = inputContainer.createEl("div", { cls: "metadata-menu-calendar-display-btn" })
+        calendarDisplayBtn.setText("📆")
+
+        const datePickerContainer = form.createDiv({ cls: "metadata-menu-picker-container" });
+        const datePicker = flatpickr(datePickerContainer, {
+            locale: {
+                firstDayOfWeek: this.plugin.settings.firstDayOfWeek
+            }
+        });
+        datePicker.config.onChange.push((value) => {
+            const newDate = moment(value.toString()).format(this.format);
+            this.inputEl.setValue(newDate);
+            this.value = newDate;
+
+        })
+
+        calendarDisplayBtn.onclick = (e: MouseEvent) => {
+            datePicker.setDate(datePicker.parseDate(this.inputEl.getValue()) || new Date())
+            datePicker.open()
+        }
 
     };
 };

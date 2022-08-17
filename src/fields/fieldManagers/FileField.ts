@@ -74,7 +74,7 @@ export default class FileField extends FieldManager {
         fieldModal.open();
     }
 
-    createDvField(
+    async createDvField(
         plugin: MetadataMenu,
         dv: any,
         p: any,
@@ -94,7 +94,7 @@ export default class FileField extends FieldManager {
         if (file instanceof TFile && file.extension == "md") {
             fieldModal = new SingleFileModal(app, file, this.field)
         } else {
-            return Promise.reject("path doesn't correspond to a proper file");
+            throw Error("path doesn't correspond to a proper file");
         }
         searchBtn.onclick = () => {
             fieldModal.open()
@@ -117,8 +117,6 @@ export default class FileField extends FieldManager {
         fieldContainer.appendChild(fieldValue);
         fieldContainer.appendChild(searchBtn);
         fieldContainer.appendChild(spacer);
-
-        return Promise.resolve();
     }
 
     createFileContainer(parentContainer: HTMLDivElement): void {
@@ -149,8 +147,8 @@ export default class FileField extends FieldManager {
         return true;
     }
 
-    validateValue(value: string): Promise<boolean> {
-        const basename = value.trim().replace(/^\[\[/g, "").replace(/\]\]$/g, "")
-        return Promise.resolve(!!this.getFiles().map(f => f.basename).find(item => item === basename))
+    async validateValue(value: string): Promise<boolean> {
+        const basename = value.trim().replace(/^\[\[/g, "").replace(/\]\]$/g, "");
+        return !!this.getFiles().map(f => f.basename).find(item => item === basename);
     }
 }
