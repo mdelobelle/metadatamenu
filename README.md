@@ -16,8 +16,9 @@ https://youtu.be/gU-StGyDciY
 demo 3: File type fields
 https://youtu.be/sYudigxPEnY
 
+demo 4: Date type fields
+https://youtu.be/PrbYaVh7N7g
 
-## **Please update for version 0.1.10 for mobile compatibility (version 0.1.9 was only working on desktop platforms)**
 
 # General concepts
 
