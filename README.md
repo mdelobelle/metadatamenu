@@ -28,11 +28,12 @@ Metadata Menu gives a type to each field.
 Available types are:
 - `Input` (free text) : this is the default type applied to each field if nothing is set for this field (see #Field settings). it will `Accept any value`
 - `Boolean`: a field that can `Accept true or false` or null value
-- `Number`: a field that can `Accept a number` (float) value, optionaly within a range (`min`, `max`) and can be decremented by a `step` value (default 1) 
+- `Number`: a field that can `Accept a number` (float) value, optionaly within a range (`min`, `max`) and can be in/decremented by a `step` value (default 1) 
 - `Select`: a field that can `Accept a single value from a list`
 - `Multi`: a field that can `Accept multiple values from a list`
 - `Cycle`: a field that will `Cycle through values from a list`
 - `File`: a field that will `Accept a link to a file from your vault`
+- `Date`: a field that will `Accept a date`
 
 ## Field settings
 By default each field is an `Input`
@@ -67,11 +68,14 @@ if toggled `on` : Metadata Menu will display one control item per field in the t
 if toggled `off` : Metadata Menu will display a "Field Options" item in the context menu. You can access control items through a modal display by clicking on "Field Options".
 
 ### `Globally ignored fields`
-the fields listed here (comma separated) won't be available in context menus 
+the fields listed here (comma separated) won't be available in context menus
+
+### `First day of week`
+For `Date` fields' datepicker, select the day the week should start with (default `Monday`)
 
 ## Preset Field settings
 
-If you want a field to be globally managed throughout your all vault you can `add a new field setting`:
+If you want a field to be globally managed throughout your whole vault you can `add a new field setting`:
 - Click on "+"
 - Type the field name
 - Select the type of field (see ## Field Types)
@@ -86,14 +90,14 @@ You can define the list of values in a note. This note must contain a value per 
 you can add preset values (options) directly in the setting form by clicking the `Add` button in the `Preset Options` section.
 You can rearrange the order of the options.
 
-This order is used to display the values in the dropdown lists and is the order used to cycle through values
+This order is used to display the values in the dropdown lists and is the order used to cycle through values.
 
-> If both `Path of the note containing the values` and `preset options`, the first one will have the priority
+> If both `Path of the note containing the values` and `preset options`, the first one will have the priority.
 
 ### `Number` options
 
 #### Step
-If `step` (float) is defined, its value will used to decrement or increment the field.
+If `step` (float) is defined, its value will be used to decrement or increment the field.
 If `step` is not defined, increment and decrement will be done with a step of `1`
 
 #### `Min`
@@ -103,7 +107,7 @@ If `min` (float) is defined, you won't be able to set or change the value of the
 If `max` (float) is defined, you won't be able to set or change the value of the field with a value greater than `max` (an error will be displayed)
 
 ### `File` options
-Dataview query accepts a call to the api function dv.pages that will return pages from your vault according to this function. 
+`Dataview query` accepts a call to the api function dv.pages that will return pages from your vault according to this function. 
 
 you’ll have to use dv.pages function explained here : https://blacksmithgu.github.io/obsidian-dataview/api/code-reference/#dvpagessource
 
@@ -119,14 +123,25 @@ you can combine them:
 dv.pages(…).where(…).limit(...)
 see documentation here https://blacksmithgu.github.io/obsidian-dataview/api/data-array/#raw-interface
 
-a good source of help to build dataview queries is the obsidian discord server > plugin-advanced > dataview : the community is really helpful there
+A good source of help to build dataview queries is the obsidian discord server > plugin-advanced > dataview : the community is really helpful there.
+
+### `Date` options
+
+#### `Date Format`
+The output format of the date as string following moment.js's syntax for formatting tokens : https://momentjs.com/docs/#/displaying/format/
+
+#### `Link path`
+If you want to render your date as a link to a note, specify the path of the folder where the note should be.
+
+#### `Insert as link by default`
+Toggle `on` if you want the option to insert the date as a link to be selected by default when creating/modifying a date field.
 
 ## Fileclass settings
-If you want the same field to have different behaviour depending on the note they belong to, you can defined field settings based on the "class" of the "note".
+If you want the same field to have different behaviours depending on the note they belong to, you can define field settings based on the "class" of the "note".
 This is a particular frontmatter attribute that you will have to give to your note.
 By default, this attribute is named `fileClass`
 
-a FileClass is a specific note located in a defined folder. In this note you will set the fields settings for each note that has a `fileClass` attribute equal to the name of the `fileClass` note (without .md extension)
+A FileClass is a specific note located in a defined folder. In this note you will set the fields settings for each note that has a `fileClass` attribute equal to the name of the `fileClass` note (without .md extension).
 
 > See # Fileclass section for details about how to write a fileClass
 
@@ -217,6 +232,14 @@ these options are accessible from:
 1. Right-click on the link (or context menu, ...)
 2. Click on " 🔎 Update ... "
 3. Type or select the link within the modal
+
+
+### Update a date (type: `Date`)
+
+1. Right-click on the link (or context menu, ...)
+2. Click on " 📅 Update ... "
+3. Type the date or select the date thanks to the date picker by clicking the "📅" button in the modal. If you have `Natural Language Dates` plugin installed, you can also type your date in natural language and have it parsed automatically
+4. Toggle `on` the `insert as link` option if you want your date to be included as a link
 
 
 ### Add a new field at section
@@ -321,6 +344,15 @@ Click the "🔎" button next to the link to display a suggester modal.
 
 Select a choice to replace the link in the target field.
 
+
+### `Date`
+The values of this field are displayed as a date string or a as link
+
+Click the "📆" button next to the link to display a date select modal.
+
+type a new date (or select thanks to the datepicker) to replace the link in the target field.
+
+
 # FileClass 
 
 Manage preset values based on the context of a file (fileClass)
@@ -376,7 +408,7 @@ A field settings is written in JSON and must be written as a value of and "inlin
 
 Say you want to set fields in `music.md` fileClass :
 - `genre` is a `Multi` field with "rock", "pop" and "jazz" as options,
-- `difficulty` is a `Number` within [0, 100] that you wan't to decrement/increment by 5
+- `difficulty` is a `Number` within [0, 100] that you want to decrement/increment by 5
 - `masterization`is a `Cycle` field with [⭐️, ⭐️⭐️, ⭐️⭐️⭐️, ⭐️⭐️⭐️⭐️, ⭐️⭐️⭐️⭐️⭐️] values
 - `tone` is a `Select` field with [A, B, C, D, E, F, G] values
 - `artist` is an `Input` field
@@ -414,7 +446,7 @@ Because it can be overwhelming to remember this syntax, you can manage "type" an
 - the more-options menu of a fileClass file
 - a command within a fileClass file (`alt+P`) -> `Metadata Menu: fileClass attributes options`
 
-You will be asked to choose the field that you wan't to modify or if you want to add a new one. After having selected a field, you will acces to a form to modify the type and options of the field (same form as in the plugin's settings)
+You will be asked to choose the field that you want to modify or if you want to add a new one. After having selected a field, you will acces to a form to modify the type and options of the field (same form as in the plugin's settings)
 
 ## fileClass inheritance
 

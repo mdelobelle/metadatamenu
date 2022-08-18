@@ -106,7 +106,7 @@ export default class DateModal extends Modal {
         const inputContainer = form.createDiv({ cls: "metadata-menu-dateinput-with-picker" })
         this.inputEl = new TextComponent(inputContainer);
         this.inputEl.inputEl.focus();
-        this.inputEl.setValue(this.value);
+        this.inputEl.setValue(this.value.replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last() || "");
         this.inputEl.inputEl.addClass("metadata-menu-prompt-input");
         this.inputEl.onChange(value => {
             this.inputEl.inputEl.removeClass("is-invalid")
