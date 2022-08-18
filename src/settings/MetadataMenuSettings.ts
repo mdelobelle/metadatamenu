@@ -9,6 +9,7 @@ export interface MetadataMenuSettings {
 	fileClassAlias: string;
 	settingsVersion?: number;
 	globalFileClass?: string;
+	firstDayOfWeek: number;
 }
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
@@ -20,4 +21,5 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	fileClassAlias: "fileClass",
 	settingsVersion: undefined,
 	globalFileClass: undefined,
+	firstDayOfWeek: 1
 };

@@ -1,10 +1,10 @@
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
-import numbertModal from "src/optionModals/numberModal";
+import NumbertModal from "src/optionModals/fields/NumberModal";
 import { App, Menu, TFile, TextComponent } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
-import SelectModal from "src/optionModals/SelectModal";
+import FieldSelectModal from "src/optionModals/SelectModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import MetadataMenu from "main";
 
@@ -67,8 +67,8 @@ export default class NumberField extends FieldManager {
         )
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void {
-        const modal = new numbertModal(app, file, this.field, value);
+    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | FieldSelectModal): void {
+        const modal = new NumbertModal(app, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
         if (NumberField.isMenu(category)) {
             category.addItem((item) => {
@@ -167,7 +167,7 @@ export default class NumberField extends FieldManager {
     }
 
     createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
-        const fieldModal = new numbertModal(app, file, this.field, "", lineNumber, inFrontmatter, top);
+        const fieldModal = new NumbertModal(app, file, this.field, "", lineNumber, inFrontmatter, top);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

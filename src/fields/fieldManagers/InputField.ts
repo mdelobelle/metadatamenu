@@ -1,9 +1,9 @@
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
-import valueTextInputModal from "src/optionModals/valueTextInputModal";
+import InputModal from "src/optionModals/fields/InputModal";
 import { App, Menu, TFile } from "obsidian";
-import SelectModal from "src/optionModals/SelectModal";
+import FieldSelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
 
 export default class InputField extends FieldManager {
@@ -16,8 +16,8 @@ export default class InputField extends FieldManager {
         return ""
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void {
-        const modal = new valueTextInputModal(app, file, this.field, value);
+    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | FieldSelectModal): void {
+        const modal = new InputModal(app, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
         if (InputField.isMenu(category)) {
             category.addItem((item) => {
@@ -42,7 +42,7 @@ export default class InputField extends FieldManager {
     }
 
     createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
-        const fieldModal = new valueTextInputModal(app, file, this.field, "", lineNumber, inFrontmatter, top);
+        const fieldModal = new InputModal(app, file, this.field, "", lineNumber, inFrontmatter, top);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

@@ -1,4 +1,4 @@
-import { TFile, App, FuzzySuggestModal, Notice } from "obsidian";
+import { TFile, App, FuzzySuggestModal } from "obsidian";
 import Field from "src/fields/Field";
 import { replaceValues } from "src/commands/replaceValues";
 import { insertValues } from "src/commands/insertValues";

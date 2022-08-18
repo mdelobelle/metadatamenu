@@ -73,4 +73,18 @@ export abstract class FieldManager {
         const field = Field.createDefault(name);
         return new FM[field.type](field);
     }
+
+    public static stringToBoolean(value: string): boolean {
+        let toBooleanValue: boolean = false;
+        if (isBoolean(value)) {
+            toBooleanValue = value;
+        } else if (/true/i.test(value)) {
+            toBooleanValue = true;
+        } else if (/false/i.test(value)) {
+            toBooleanValue = false;
+        } else {
+            throw Error("this value is not a boolean")
+        };
+        return toBooleanValue;
+    }
 }

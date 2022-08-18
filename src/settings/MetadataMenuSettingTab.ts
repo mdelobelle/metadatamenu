@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal } from "obsidian";
+import { App, PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal, DropdownComponent, moment } from "obsidian";
 import MetadataMenu from "main";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import Field from "src/fields/Field";
@@ -101,6 +101,22 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					});
 				text.inputEl.rows = 6;
 				text.inputEl.cols = 25;
+			});
+
+
+		/* First day of week (for Date Fields*/
+		new Setting(globalSettings)
+			.setName('First day of week')
+			.setDesc('For date fields, which day the date picker\'s week should start with')
+			.addDropdown((cb: DropdownComponent) => {
+				for (let i = 0; i < 2; i++) {
+					cb.addOption(i.toString(), moment().day(i).format("dddd"))
+				}
+				cb.setValue(this.plugin.settings.firstDayOfWeek.toString() || "1")
+				cb.onChange(async (value) => {
+					this.plugin.settings.firstDayOfWeek = parseInt(value);
+					await this.plugin.saveSettings();
+				});
 			});
 
 		/* 

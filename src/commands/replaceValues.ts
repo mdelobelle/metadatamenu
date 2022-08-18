@@ -40,7 +40,12 @@ export const matchInlineFields = (regex: RegExp, line: string, attribute: string
     return newFields
 }
 
-export async function replaceValues(app: App, fileOrFilePath: TFile | string, attribute: string, input: string): Promise<void> {
+export async function replaceValues(
+    app: App,
+    fileOrFilePath: TFile | string,
+    attribute: string,
+    input: string
+): Promise<void> {
     let file: TFile;
     if (fileOrFilePath instanceof TFile) {
         file = fileOrFilePath;
