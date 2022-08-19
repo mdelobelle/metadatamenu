@@ -30,7 +30,7 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
                     if (p[fileClassAlias] || plugin.settings.globalFileClass) {
                         const fileClassName = p[fileClassAlias] || plugin.settings.globalFileClass // inner fileClass has the priority over global fileClass
                         const fileClass = await createFileClass(plugin, fileClassName);
-                        if (F.stringToBoolean(attrs?.options?.inFrontmatter || "false") && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
+                        if (attrs?.options?.inFrontmatter && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
                             const result = await plugin.app.vault.read(file)
                             const lineNumber = result.split("\n").slice(1).findIndex(l => l === "---")
                             F.openFieldOrFieldSelectModal(plugin, file, fieldName, lineNumber, result.split('\n')[lineNumber], true, false, fileClass)
@@ -40,7 +40,7 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
                     } else if (plugin.settings.presetFields.filter(attr => attr.name == fieldName)) {
                         const field = getField(plugin, fieldName);
                         if (field?.type) {
-                            if (F.stringToBoolean(attrs?.options?.inFrontmatter || "false") && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
+                            if (attrs?.options?.inFrontmatter && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
                                 const result = await plugin.app.vault.read(file)
                                 const lineNumber = result.split("\n").slice(1).findIndex(l => l === "---")
                                 F.openFieldOrFieldSelectModal(plugin, file, fieldName, lineNumber, result.split('\n')[lineNumber], true, false)
