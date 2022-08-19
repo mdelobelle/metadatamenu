@@ -272,6 +272,12 @@ with `options: {alwaysOn: true}` the control for the field will always be displa
 
 with `options: {alwaysOn: false}` (default) the control for the field won't always be displayed, you'll have to click on an intermediate button or hover the field to display the control
 
+#### showAddField
+
+with `options: {showAddField: true}` if the file has no corresponding field, a "+" button will be displayed to select a line in the target file where to add this field
+
+with `options: {showAddField: false}` (default) if the file has no corresponding field, a null value will be displayed
+
 ### syntax
 
 ```js
