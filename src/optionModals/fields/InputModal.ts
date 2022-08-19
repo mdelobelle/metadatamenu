@@ -24,7 +24,6 @@ export default class InputModal extends Modal {
     };
 
     onOpen() {
-        console.log("c'est bien moi")
         const inputDiv = this.contentEl.createDiv({ cls: "metadata-menu-modal-value" });
         this.buildInputEl(inputDiv);
     };
