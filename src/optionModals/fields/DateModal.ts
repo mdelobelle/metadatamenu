@@ -26,11 +26,11 @@ export default class DateModal extends Modal {
         this.app = app;
         this.file = file;
         this.field = field;
-        this.value = value.replace(/^\[\[/g, "").replace(/\]\]$/g, "");
+        this.value = value.toString().replace(/^\[\[/g, "").replace(/\]\]$/g, "");
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
         this.top = top;
-        this.insertAsLink = FieldManager.stringToBoolean(this.field.options.defaultInsertAsLink) || false;
+        this.insertAsLink = FieldManager.stringToBoolean(this.field.options.defaultInsertAsLink || "false") || false;
         this.format = this.field.options.dateFormat || this.field.options.defaultDateFormat;
         if (this.app.plugins.enabledPlugins.has("metadata-menu")) {
             this.plugin = this.app.plugins.plugins["metadata-menu"]
@@ -72,7 +72,7 @@ export default class DateModal extends Modal {
                 newValue = moment(this.value, this.format);
             }
             if (newValue.isValid()) {
-                const linkPath = app.metadataCache.getFirstLinkpathDest(this.field.options.linkPath + newValue.format(this.format), this.file.path)
+                const linkPath = app.metadataCache.getFirstLinkpathDest(this.field.options.linkPath || "" + newValue.format(this.format), this.file.path)
                 const formattedValue = this.insertAsLink ? `[[${this.field.options.linkPath || ""}${newValue.format(this.format)}${linkPath ? "|" + linkPath.basename : ""}]]` : newValue.format(this.format)
                 if (this.lineNumber == -1) {
                     replaceValues(this.app, this.file, this.field.name, formattedValue);

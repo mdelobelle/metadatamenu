@@ -6,6 +6,8 @@ import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { replaceValues } from "src/commands/replaceValues";
 import MetadataMenu from "main";
 import { FieldManager as FM } from "src/types/fieldTypes";
+import fieldSelectModal from "src/optionModals/fieldSelectModal";
+import { FileClass } from "src/fileClass/fileClass";
 
 
 export interface FieldManager {
@@ -54,20 +56,50 @@ export abstract class FieldManager {
         return true;
     }
 
-    static replaceValues(app: App, path: string, fieldName: string, value: string): void {
+    public static replaceValues(app: App, path: string, fieldName: string, value: string): void {
         const file = app.vault.getAbstractFileByPath(path)
         if (file instanceof TFile && file.extension == "md") {
             replaceValues(app, file, fieldName, value)
         }
     }
 
-    static isMenu(category: Menu | SelectModal): category is Menu {
+    public static isMenu(category: Menu | SelectModal): category is Menu {
         return (category as Menu).addItem !== undefined;
     };
 
-    static isSelect(category: Menu | SelectModal): category is SelectModal {
+    public static isSelect(category: Menu | SelectModal): category is SelectModal {
         return (category as SelectModal).modals !== undefined;
     };
+
+    public static createAndOpenModal(plugin: MetadataMenu, file: TFile, fieldName: string, field: Field | undefined, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
+        if (field) {
+            const fieldManager = new FM[field.type](field);
+            fieldManager.createAndOpenFieldModal(plugin.app, file, fieldName, lineNumber, inFrontmatter, top);
+        } else {
+            const fieldManager = FieldManager.createDefault(fieldName!);
+            fieldManager.createAndOpenFieldModal(plugin.app, file, fieldName!, lineNumber, inFrontmatter, top);
+        }
+    }
+
+    public static openFieldOrFieldSelectModal(plugin: MetadataMenu, file: TFile, fieldName: string | undefined, lineNumber: number, line: string, inFrontmatter: boolean, top: boolean, fileClass?: FileClass) {
+        if (!fieldName) {
+            const modal = new fieldSelectModal(plugin, file, lineNumber, line, inFrontmatter, top, fileClass);
+            modal.open();
+        } else {
+            if (fileClass) {
+                const fileClassAttributesWithName = fileClass.attributes.filter(attr => attr.name == fieldName);
+                let field: Field | undefined
+                if (fileClassAttributesWithName.length > 0) {
+                    const fileClassAttribute = fileClassAttributesWithName[0];
+                    field = fileClassAttribute.getField();
+                }
+                this.createAndOpenModal(plugin, file, fieldName, field, lineNumber, inFrontmatter, top);
+            } else {
+                const field = plugin.settings.presetFields.filter(_field => _field.name == fieldName)[0];
+                this.createAndOpenModal(plugin, file, fieldName, field, lineNumber, inFrontmatter, top);
+            };
+        }
+    }
 
     public static createDefault(name: string): FieldManager {
         const field = Field.createDefault(name);

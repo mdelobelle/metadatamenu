@@ -1,10 +1,10 @@
 import MetadataMenu from "main";
 import { getField } from "src/commands/getField";
 import { createFileClass } from "src/fileClass/fileClass";
-import { FieldManager, FieldType } from "src/types/fieldTypes";
+import { FieldManager } from "src/types/fieldTypes";
 import { FieldManager as F } from "src/fields/FieldManager";
 import chooseSectionModal from "src/optionModals/chooseSectionModal";
-import { Modal, TFile } from "obsidian";
+import { TFile } from "obsidian";
 
 export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }): Promise<HTMLElement> {
 
@@ -30,16 +30,28 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
                     if (p[fileClassAlias] || plugin.settings.globalFileClass) {
                         const fileClassName = p[fileClassAlias] || plugin.settings.globalFileClass // inner fileClass has the priority over global fileClass
                         const fileClass = await createFileClass(plugin, fileClassName);
-                        new chooseSectionModal(plugin, file, fileClass, fieldName).open();
+                        if (F.stringToBoolean(attrs?.options?.inFrontmatter || "false") && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
+                            const result = await plugin.app.vault.read(file)
+                            const lineNumber = result.split("\n").slice(1).findIndex(l => l === "---")
+                            F.openFieldOrFieldSelectModal(plugin, file, fieldName, lineNumber, result.split('\n')[lineNumber], true, false, fileClass)
+                        } else {
+                            new chooseSectionModal(plugin, file, fileClass, fieldName).open();
+                        }
                     } else if (plugin.settings.presetFields.filter(attr => attr.name == fieldName)) {
                         const field = getField(plugin, fieldName);
                         if (field?.type) {
-                            new chooseSectionModal(plugin, file, undefined, field.name).open();
+                            if (F.stringToBoolean(attrs?.options?.inFrontmatter || "false") && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
+                                const result = await plugin.app.vault.read(file)
+                                const lineNumber = result.split("\n").slice(1).findIndex(l => l === "---")
+                                F.openFieldOrFieldSelectModal(plugin, file, fieldName, lineNumber, result.split('\n')[lineNumber], true, false)
+                            } else {
+                                new chooseSectionModal(plugin, file, undefined, fieldName).open();
+                            }
                         } else {
-                            new chooseSectionModal(plugin, file, undefined, FieldType.Input).open();
+                            new chooseSectionModal(plugin, file, undefined).open();
                         }
                     } else {
-                        new chooseSectionModal(plugin, file, undefined, FieldType.Input).open();
+                        new chooseSectionModal(plugin, file, undefined).open();
                     }
                 } else {
                     throw Error("path doesn't correspond to a proper file");
