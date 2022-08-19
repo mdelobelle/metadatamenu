@@ -278,6 +278,12 @@ with `options: {showAddField: true}` if the file has no corresponding field, a "
 
 with `options: {showAddField: false}` (default) if the file has no corresponding field, a null value will be displayed
 
+#### inFrontmatter
+
+with `options: {inFrontmatter: true}` the field will automatically be inserted at the end of the frontmatter of the file if exists. If there's no frontmatter (or wrongly formatted frontmatter), a modal will be displayed to select the section where to insert the field
+
+with `options: {inFrontmatter: false}` (default) a modal will be displayed to select the section where to insert the field 
+
 ### syntax
 
 ```js

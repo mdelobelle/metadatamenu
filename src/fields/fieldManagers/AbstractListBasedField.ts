@@ -115,13 +115,6 @@ export default abstract class AbstractListBasedField extends FieldManager {
     validateOptions(): boolean {
         let error = false;
         this.valuesPromptComponents.forEach(input => {
-            if (/^[#>-]/.test(input.inputEl.value) && input.inputEl.parentElement?.lastElementChild) {
-                FieldSettingsModal.setValidationError(
-                    input, input.inputEl.parentElement.lastElementChild,
-                    "Values cannot cannot start with #, >, -"
-                );
-                error = true;
-            };
             if (/[,]/gu.test(input.inputEl.value) && input.inputEl.parentElement?.lastElementChild) {
                 FieldSettingsModal.setValidationError(
                     input, input.inputEl.parentElement.lastElementChild,
