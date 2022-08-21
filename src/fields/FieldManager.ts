@@ -1,4 +1,4 @@
-import { App, TFile, Menu, TextComponent } from "obsidian";
+import { App, TFile, Menu, TextComponent, Command } from "obsidian";
 import SelectModal from "src/optionModals/SelectModal";
 import { FieldType } from "src/types/fieldTypes";
 import Field from "./Field";
@@ -63,13 +63,18 @@ export abstract class FieldManager {
         }
     }
 
-    public static isMenu(category: Menu | SelectModal): category is Menu {
+    public static isMenu(category: Menu | SelectModal | "Command"): category is Menu {
         return (category as Menu).addItem !== undefined;
     };
 
-    public static isSelect(category: Menu | SelectModal): category is SelectModal {
+    public static isSelect(category: Menu | SelectModal | "Command"): category is SelectModal {
         return (category as SelectModal).modals !== undefined;
     };
+
+
+    public static isPaletteCommand(category: Menu | SelectModal | "Command"): category is "Command" {
+        return (category as string) === "Command";
+    }
 
     public static createAndOpenModal(plugin: MetadataMenu, file: TFile, fieldName: string, field: Field | undefined, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
         if (field) {

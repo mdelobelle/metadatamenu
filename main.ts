@@ -9,6 +9,8 @@ import NoteFieldsCommandsModal from "src/options/NoteFieldsCommandsModal";
 import FileClassAttributeSelectModal from 'src/fileClass/FileClassAttributeSelectModal';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import { migrateSettingsV1toV2 } from 'src/settings/migrateSettingV1toV2';
+import { FieldManager } from 'src/fields/FieldManager';
+import OptionsList from 'src/options/OptionsList';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -46,7 +48,19 @@ export default class MetadataMenu extends Plugin {
 			},
 		});
 
-		/* TODO : add a context menu for fileClass files to show the same options as in FileClassAttributeSelectModal*/
+		this.addCommand({
+			id: "insert_field_at_cursor",
+			name: "insert field at cursor",
+			checkCallback: (checking: boolean) => {
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
+				if (checking) {
+					return !!(view?.file)
+				}
+				const optionsList = new OptionsList(this, view!.file, "Command");
+				optionsList.createExtraOptionList();
+			}
+		})
+
 		this.addCommand({
 			id: "fileClassAttr_options",
 			name: "fileClass attributes options",

@@ -26,6 +26,7 @@ export default class FileClassAttributeSelectModal extends Modal {
         })
 
         select.addOption("++newAttr++", "++Add a new attribute++");
+        select.selectEl.focus();
         select.onChange((attrName) => {
             if (attrName == "++newAttr") {
                 const modal = new FileClassAttributeModal(this.plugin, fileClass);
