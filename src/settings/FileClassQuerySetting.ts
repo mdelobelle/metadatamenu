@@ -18,6 +18,7 @@ export default class FileClassQuerySetting extends Setting {
         this.setTextContentWithname();
         this.addEditButton();
         this.addDeleteButton();
+        this.addMoveUpButton();
     };
 
     public setTextContentWithname(): void {
@@ -53,7 +54,7 @@ export default class FileClassQuerySetting extends Setting {
             b.setIcon("trash")
                 .setTooltip("Delete")
                 .onClick(() => {
-                    const currentExistingFileClassQuery = this.plugin.initialFileClassQueries.filter(p => p.id == this.fileClassQuery.id)[0];
+                    const currentExistingFileClassQuery = this.plugin.initialFileClassQueries.find(p => p.id == this.fileClassQuery.id);
                     if (currentExistingFileClassQuery) {
                         this.plugin.initialFileClassQueries.remove(currentExistingFileClassQuery);
                     };
@@ -62,4 +63,20 @@ export default class FileClassQuerySetting extends Setting {
                 });
         });
     };
+
+    private addMoveUpButton(): void {
+        this.addButton((b) => {
+            b.setIcon("up-chevron-glyph")
+                .setTooltip("Move up (lower priority)")
+                .onClick(() => {
+                    const currentFileClassQueryIndex = this.plugin.initialFileClassQueries.map(fcq => fcq.id).indexOf(this.fileClassQuery.id);
+                    if (currentFileClassQueryIndex > 0) {
+                        this.containerEl.insertBefore(this.settingEl, this.settingEl.previousElementSibling);
+                        this.plugin.initialFileClassQueries.splice(currentFileClassQueryIndex, 1);
+                        this.plugin.initialFileClassQueries.splice(currentFileClassQueryIndex - 1, 0, this.fileClassQuery);
+                        this.plugin.saveSettings();
+                    }
+                })
+        })
+    }
 };

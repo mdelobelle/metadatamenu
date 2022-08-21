@@ -128,13 +128,20 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		-----------------------------------------
 		*/
 		/* Add new property for which we want to preset options*/
-		const presetFieldsSettings = containerEl.createEl("div")
-		presetFieldsSettings.createEl('h4', { text: 'Preset Fields settings', cls: "metadata-menu-setting-section-header" });
-		presetFieldsSettings.createEl('div', {
+		const presetFieldsSettings = containerEl.createEl("div");
+		const presetFieldsSettingHeaderContainer = presetFieldsSettings.createEl("div", { cls: "metadata-menu-setting-section-header-container" });
+		const presetFieldsSettingHeaderTextContainer = presetFieldsSettingHeaderContainer.createEl("div", { cls: "metadata-menu-setting-section-header-text-container" });
+		presetFieldsSettingHeaderTextContainer.createEl('h4', { text: 'Preset Fields settings', cls: "metadata-menu-setting-section-header" });
+		presetFieldsSettingHeaderTextContainer.createEl('div', {
 			cls: "setting-item-description metadata-menu-setting-section-desc",
 			text: "Manage globally predefined type and options for a field throughout your whole vault"
-		})
-		new Setting(presetFieldsSettings)
+		});
+		const presetFieldsSettingsContainerShowButtonContainer = presetFieldsSettingHeaderContainer.createEl("div", { cls: "setting-item-control" });
+		const presetFieldsSettingsContainerShowButton = presetFieldsSettingsContainerShowButtonContainer.createEl("button");
+		presetFieldsSettingsContainerShowButton.addClass("setting-item-control");
+
+		const presetFieldsSettingsContainer = presetFieldsSettings.createEl("div");
+		new Setting(presetFieldsSettingsContainer)
 			.setName("Add New Field Setting")
 			.setDesc("Add a new Frontmatter property for which you want preset options.")
 			.addButton((button: ButtonComponent): ButtonComponent => {
@@ -142,7 +149,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					.setTooltip("Add New Property Manager")
 					.setButtonText("+")
 					.onClick(async () => {
-						let modal = new FieldSettingsModal(this.app, this.plugin, presetFieldsSettings);
+						let modal = new FieldSettingsModal(this.app, this.plugin, presetFieldsSettingsContainer);
 						modal.open();
 					});
 			});
@@ -151,23 +158,39 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		this.plugin.initialProperties.forEach(prop => {
 			const property = new Field();
 			Object.assign(property, prop);
-			new FieldSetting(presetFieldsSettings, property, this.app, this.plugin);
+			new FieldSetting(presetFieldsSettingsContainer, property, this.app, this.plugin);
 		});
+
+		presetFieldsSettingsContainerShowButton.setText(presetFieldsSettingsContainer.isShown() ? "🔼" : "🔽")
+		presetFieldsSettingsContainerShowButton.onclick = () => {
+			presetFieldsSettingsContainer.isShown() ? presetFieldsSettingsContainer.hide() : presetFieldsSettingsContainer.show();
+			presetFieldsSettingsContainerShowButton.setText(presetFieldsSettingsContainer.isShown() ? "🔼" : "🔽");
+		}
 
 		/* 
 		-----------------------------------------
 		Managing fileClass 
 		-----------------------------------------
 		*/
+
 		/* Set classFiles Path*/
 		const classFilesSettings = containerEl.createEl("div")
-		classFilesSettings.createEl('h4', { text: 'FileClass settings', cls: "metadata-menu-setting-section-header" });
-		classFilesSettings.createEl('div', {
+		const classFilesSettingsHeaderContainer = classFilesSettings.createEl("div", { cls: "metadata-menu-setting-section-header-container" });
+		const classFilesSettingsHeaderTextContainer = classFilesSettingsHeaderContainer.createEl("div", { cls: "metadata-menu-setting-section-header-text-container" });
+		classFilesSettingsHeaderTextContainer.createEl('h4', { text: 'FileClass settings', cls: "metadata-menu-setting-section-header" });
+		classFilesSettingsHeaderTextContainer.createEl('div', {
 			cls: "setting-item-description metadata-menu-setting-section-desc",
 			text: "Manage fileClass folder and alias. " +
 				"When a note has a fielClass defined, fileClass field properties will override global preset fields settings for the same field name"
-		})
-		new Setting(classFilesSettings)
+		});
+
+		const classFilesSettingsContainerShowButtonContainer = classFilesSettingsHeaderContainer.createEl("div", { cls: "setting-item-control" });
+		const classFilesSettingsContainerShowButton = classFilesSettingsContainerShowButtonContainer.createEl("button");
+
+		classFilesSettingsContainerShowButton.addClass("setting-item-control");
+		const classFilesSettingsContainer = classFilesSettings.createEl("div");
+
+		new Setting(classFilesSettingsContainer)
 			.setName('class Files path')
 			.setDesc('Path to the files containing the authorized fields for a type of note')
 			.addSearch((cfs) => {
@@ -183,7 +206,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				cfs.containerEl.addClass("metadata-menu-setting-fileClass-search")
 			});
 
-		new Setting(classFilesSettings)
+		new Setting(classFilesSettingsContainer)
 			.setName('fileClass field alias')
 			.setDesc('Choose another name for fileClass field in frontmatter (example: Category, type, ...')
 			.addText((text) => {
@@ -198,7 +221,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		/* 
 
 		/* Set global fileClass*/
-		new Setting(classFilesSettings)
+		new Setting(classFilesSettingsContainer)
 			.setName('global fileClass')
 			.setDesc('Choose one fileClass to be applicable to all files (even it is not present as a fileClass attribute in their frontmatter). This will override the preset Fields defined above')
 			.addSearch((cfs) => {
@@ -225,12 +248,12 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			})
 
 		/* 
-		-----------------------------------------
-		Managing predefined options for properties 
-		-----------------------------------------
+		--------------------------------------------------
+		Managing predefined fileClass for query's matching files 
+		--------------------------------------------------
 		*/
-		/* Add new property for which we want to preset options*/
-		const queryFileClassSettings = containerEl.createEl("div")
+		/* Add new query for which matching files will be applied the fileClass*/
+		const queryFileClassSettings = classFilesSettingsContainer.createEl("div")
 		queryFileClassSettings.createEl('h4', { text: 'Query based FileClass settings', cls: "metadata-menu-setting-section-header" });
 		queryFileClassSettings.createEl('div', {
 			cls: "setting-item-description metadata-menu-setting-section-desc",
@@ -250,13 +273,19 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			});
 
 		/* Managed properties that currently have preset options */
-		this.plugin.initialFileClassQueries.forEach(query => {
-			const fileClassQuery = new FileClassQuery();
-			Object.assign(fileClassQuery, query);
-			new FileClassQuerySetting(queryFileClassSettings, fileClassQuery, this.app, this.plugin);
-		});
+		this.plugin.initialFileClassQueries
+			.forEach(query => {
+				const fileClassQuery = new FileClassQuery();
+				Object.assign(fileClassQuery, query);
+				new FileClassQuerySetting(queryFileClassSettings, fileClassQuery, this.app, this.plugin);
+			});
 
 
+		classFilesSettingsContainerShowButton.setText(classFilesSettingsContainer.isShown() ? "🔼" : "🔽")
+		classFilesSettingsContainerShowButton.onclick = () => {
+			classFilesSettingsContainer.isShown() ? classFilesSettingsContainer.hide() : classFilesSettingsContainer.show();
+			classFilesSettingsContainerShowButton.setText(classFilesSettingsContainer.isShown() ? "🔼" : "🔽");
+		}
 
 		/* 
 		-----------------------------------------

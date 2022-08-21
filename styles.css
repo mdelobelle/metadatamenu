@@ -277,6 +277,14 @@
     margin-bottom: 0;
 }
 
+.metadata-menu-setting-section-header-container{
+    display: flex;
+}
+
+.metadata-menu-setting-section-header-text-container{
+    width: 100%;
+}
+
 .metadata-menu-setting-section-desc{
     margin-bottom: 1.33em;
 }
