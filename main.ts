@@ -72,7 +72,6 @@ export default class MetadataMenu extends Plugin {
 			})
 		)
 
-
 		this.addCommand({
 			id: "fileClassAttr_options",
 			name: "fileClass attributes options",

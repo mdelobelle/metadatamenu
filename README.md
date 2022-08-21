@@ -95,6 +95,20 @@ This order is used to display the values in the dropdown lists and is the order 
 
 > If both `Path of the note containing the values` and `preset options`, the first one will have the priority.
 
+### `Input` options
+
+You can define a template to help fill your `Input` field.
+
+Every item enclosed in curly braces will be transformed into an input or a dropdown select in the field modal
+
+#### standard input
+
+syntax : `{{name}}`
+
+#### dropdown select input
+
+syntax : `{{level: ["Beginner", "Intermediate", "Advanced"]}}`
+
 ### `Number` options
 
 #### Step
@@ -160,6 +174,11 @@ You can define a fileClass that will be applicable to all of your notes, even if
 This is usefull if you are more confortable with setting your preset fields in a note rather than in the plugin settings.
 
 If global fileClass is null or unproperly configured, the preset fields defined in the plugin settings will have the priority.
+
+### fileClass queries
+You can define fileClasses to be applicable to every file matching a dataview query. (same syntax as for `File` type fields)
+
+If a File matches several queries, the last matching fileClass (starting from the top) will be applicable to this file.
 
 ## Migrate
 Historically most of this plugin's features were available in `Supercharged links` plugin.
@@ -594,6 +613,11 @@ Takes a TFile or e filePath and returns all the fields in the document, both fro
 
         /* the fileClass name applied to this field if there is a fileClass AND if the field is set in the fileClass or the fileClass it's inheriting from */
         fileClass: string | undefined,
+
+
+        /* the fileClass query applied to this field if there is a fileClass
+        AND if the file matches the query attached to this fileClass in the settings AND if the field is set in the fileClass or the fileClass it's inheriting from */
+        fileClassQuery: string | undefined
 
         /* true if this fieldName is in "Globally ignored fields" in the plugin settings */
         ignoreInMenu: boolean | undefined,

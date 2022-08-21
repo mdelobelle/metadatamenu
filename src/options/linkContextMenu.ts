@@ -15,25 +15,6 @@ export default class linkContextMenu {
 	};
 
 	private createContextMenu(): void {
-		/*
-		this.plugin.registerEvent(
-			this.plugin.app.workspace.on('active-leaf-change', (leaf) => {
-
-				const view = leaf?.view
-				if (view && view instanceof FileView) {
-					const file = app.vault.getAbstractFileByPath(view.file.path)
-					if (file instanceof TFile && file.extension === 'md') {
-						if (file.parent.path + "/" == this.plugin.settings.classFilesPath) {
-
-						} else {
-							this.optionsList = new OptionsList(this.plugin, this.file, menu);
-							this.optionsList.createExtraOptionList();
-						}
-					}
-				}
-			})
-		)
-		*/
 		this.plugin.registerEvent(
 			this.plugin.app.workspace.on('file-menu', (menu, abstractFile, source) => {
 				const file = this.plugin.app.vault.getAbstractFileByPath(abstractFile.path);
