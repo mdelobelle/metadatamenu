@@ -55,7 +55,8 @@ export default class InputModal extends Modal {
     private renderValue() {
         let renderedString = this.field.options.template.slice()
         Object.keys(this.templateValues).forEach(k => {
-            const fieldRegex = new RegExp(`\\{\\{${k}(:.*)?\\}\\}`, "u")
+            const fieldRegex = new RegExp(`\\{\\{${k}(:[^\\}]*)?\\}\\}`, "u")
+            console.log(renderedString.match(fieldRegex));
             renderedString = renderedString.replace(fieldRegex, this.templateValues[k])
         })
 
