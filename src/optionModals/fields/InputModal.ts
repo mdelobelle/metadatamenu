@@ -1,4 +1,4 @@
-import { App, Modal, TextComponent, TFile } from "obsidian";
+import { App, DropdownComponent, Modal, TextComponent, TFile } from "obsidian";
 import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
@@ -11,6 +11,8 @@ export default class InputModal extends Modal {
     private inFrontmatter: boolean;
     private top: boolean;
     private field: Field;
+    private templateValues: Record<string, string> = {};
+    private renderedValueContainer: HTMLDivElement;
 
     constructor(app: App, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
         super(app);
@@ -24,9 +26,82 @@ export default class InputModal extends Modal {
     };
 
     onOpen() {
-        const inputDiv = this.contentEl.createDiv({ cls: "metadata-menu-modal-value" });
-        this.buildInputEl(inputDiv);
+        const inputDiv = this.contentEl.createDiv();
+        if (this.field.options.template) {
+            const templateFieldRegex = new RegExp(`\\{\\{(?<field>[^\\}]+?)\\}\\}`, "gu");
+            const tF = this.field.options.template.matchAll(templateFieldRegex)
+            let next = tF.next();
+            while (!next.done) {
+                if (next.value.groups) {
+                    const value = next.value.groups.field
+                    const [name, optionsString] = value.split(":").map(v => v.trim())
+                    this.templateValues[name] = "";
+                    if (optionsString) {
+                        const options = JSON.parse(optionsString);
+                        this.buildTemplateSelectItem(inputDiv, name, options);
+                    } else {
+                        this.buildTemplateInputItem(inputDiv, name);
+                    }
+                }
+                next = tF.next()
+            }
+            this.buildResultPreview(inputDiv);
+            this.buildSaveBtn(inputDiv);
+        } else {
+            this.buildInputEl(inputDiv);
+        }
     };
+
+    private renderValue() {
+        let renderedString = this.field.options.template.slice()
+        Object.keys(this.templateValues).forEach(k => {
+            const fieldRegex = new RegExp(`\\{\\{${k}(:.*)?\\}\\}`, "u")
+            renderedString = renderedString.replace(fieldRegex, this.templateValues[k])
+        })
+
+        this.renderedValueContainer.setText(renderedString)
+    }
+
+    private buildTemplateInputItem(inputDiv: HTMLDivElement, name: string) {
+        inputDiv.createDiv({ text: name });
+        const inputEl = new TextComponent(inputDiv);
+        inputEl.setPlaceholder(`Enter a value for ${name}`);
+        inputEl.inputEl.addClass("metadata-menu-prompt-input");
+        inputEl.onChange(value => {
+            this.templateValues[name] = value;
+            this.renderValue();
+        });
+    }
+
+    private buildTemplateSelectItem(inputDiv: HTMLDivElement, name: string, options: string[]) {
+        inputDiv.createDiv({ text: name });
+        const selectEl = new DropdownComponent(inputDiv);
+        selectEl.addOption("", "--select--")
+        options.forEach(o => selectEl.addOption(o, o));
+        selectEl.onChange(value => {
+            this.templateValues[name] = value;
+            this.renderValue();
+        })
+    }
+
+    private buildResultPreview(inputDiv: HTMLDivElement) {
+        this.renderedValueContainer = inputDiv.createDiv();
+        this.renderedValueContainer.setText(this.value)
+    }
+
+    private buildSaveBtn(inputDiv: HTMLDivElement) {
+        const saveBtn = inputDiv.createEl("button")
+        saveBtn.setText("✓")
+        saveBtn.onclick = () => {
+            let inputValue = this.renderedValueContainer.getText();
+            if (this.lineNumber == -1) {
+                replaceValues(this.app, this.file, this.field.name, inputValue);
+            } else {
+                insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.top);
+            };
+            this.close();
+        }
+    }
 
     private buildInputEl(inputDiv: HTMLDivElement): void {
         const form = inputDiv.createEl("form");

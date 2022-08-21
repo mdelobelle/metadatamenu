@@ -2,7 +2,7 @@ import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
 import InputModal from "src/optionModals/fields/InputModal";
-import { App, Menu, TFile } from "obsidian";
+import { App, Menu, TextAreaComponent, TFile } from "obsidian";
 import FieldSelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
 
@@ -13,7 +13,7 @@ export default class InputField extends FieldManager {
     }
 
     getOptionsStr(): string {
-        return ""
+        return this.field.options.template
     }
 
     addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | FieldSelectModal): void {
@@ -33,7 +33,14 @@ export default class InputField extends FieldManager {
     };
 
     createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu): void {
-        //no need of settings for standard input field
+        const templateContainer = parentContainer.createDiv();
+        templateContainer.createEl("span", { text: "Template", cls: 'metadata-menu-field-option' })
+        const templateValue = new TextAreaComponent(templateContainer)
+        templateValue.setValue(this.field.options.template || "")
+        templateValue.onChange((value: string) => {
+            this.field.options.template = value;
+
+        })
     }
 
     validateOptions(): boolean {
@@ -114,11 +121,20 @@ export default class InputField extends FieldManager {
         }
         /* button on click : remove button and field and display input field*/
         button.onclick = (e) => {
-            fieldContainer.removeChild(fieldValue)
-            fieldContainer.removeChild(button)
-            fieldContainer.removeChild(spacer)
-            fieldContainer.appendChild(inputContainer)
-            input.focus()
+            if (this.field.options.template) {
+                const file = plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
+                if (file instanceof TFile && file.extension === 'md') {
+                    const inputModal = new InputModal(plugin.app, file, this.field, p[this.field.name]);
+                    inputModal.open();
+                }
+
+            } else {
+                fieldContainer.removeChild(fieldValue)
+                fieldContainer.removeChild(button)
+                fieldContainer.removeChild(spacer)
+                fieldContainer.appendChild(inputContainer)
+                input.focus()
+            }
         }
         /* initial state */
         fieldContainer.appendChild(button)

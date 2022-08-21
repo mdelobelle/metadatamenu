@@ -1,4 +1,4 @@
-import { TFile } from "obsidian";
+import { FileView, TFile } from "obsidian";
 import MetadataMenu from "main";
 import OptionsList from "src/options/OptionsList";
 import FileClassAttributeSelectModal from "src/fileClass/FileClassAttributeSelectModal";
@@ -17,7 +17,6 @@ export default class linkContextMenu {
 	private createContextMenu(): void {
 		this.plugin.registerEvent(
 			this.plugin.app.workspace.on('file-menu', (menu, abstractFile, source) => {
-
 				const file = this.plugin.app.vault.getAbstractFileByPath(abstractFile.path);
 
 				if (file instanceof TFile && file.extension === 'md') {

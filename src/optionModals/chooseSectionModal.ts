@@ -51,6 +51,7 @@ export default class chooseSectionModal extends Modal {
                 selectEl.addOption(`body_${lineNumber}`, `${line.substring(0, 30)}${line.length > 30 ? "..." : ""}`);
             };
         });
+        selectEl.selectEl.focus();
         selectEl.onChange(() => {
             const valueArray = selectEl.getValue().match(/(\w+)_(\d+)/);
             const position = valueArray && valueArray.length > 0 ? valueArray[1] : 0;

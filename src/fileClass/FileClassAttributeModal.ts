@@ -43,6 +43,7 @@ class FileClassAttributeModal extends Modal {
         this.nameInputContainer.setText("Name: ");
         this.nameInput = new TextComponent(this.nameInputContainer);
         this.attr ? this.nameInput.setValue(this.field.name) : this.nameInput.setPlaceholder("Type a name for this attribute");
+        this.nameInput.inputEl.focus();
         this.nameInput.onChange(value => { this.field.name = value; this.attrName.setText(`<${value}>`) });
         this.typeSelectContainer.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
     }

@@ -1,6 +1,7 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian"
 import { createFileClass, FileClass } from "src/fileClass/fileClass";
+import FileClassQuery from "src/fileClass/FileClassQuery";
 import { FieldManager, FieldType } from "src/types/fieldTypes";
 import { getLineFields } from "src/utils/parser";
 import { getField } from "./getField";
@@ -9,6 +10,7 @@ export class FieldInfo {
     type?: FieldType = undefined;
     sourceType?: "fileClass" | "settings" = undefined;
     fileClass?: string = undefined;
+    fileClassQuery?: string = undefined;
     options?: Record<string, string> | string[] = undefined;
     isValid?: boolean = undefined;
     ignoreInMenu: boolean
@@ -16,7 +18,7 @@ export class FieldInfo {
     valuesListNotePath?: string = undefined;
     unique: boolean = true
 
-    async setInfos(plugin: MetadataMenu, fieldName: string, value: string, fileClass?: FileClass): Promise<void> {
+    async setInfos(plugin: MetadataMenu, fieldName: string, value: string, fileClass?: FileClass, matchingFileClassQuery?: string | undefined): Promise<void> {
         this.value = value;
         this.ignoreInMenu = plugin.settings.globallyIgnoredFields.includes(fieldName);
         if (fileClass) {
@@ -26,9 +28,9 @@ export class FieldInfo {
                 if (field) {
                     const fieldManager = new FieldManager[field.type](field);
                     this.isValid = await fieldManager.validateValue(value)
-                    this.sourceType = "fileClass";
                     const attribute = fileClass.attributes.filter(a => a.name === fieldName)[0];
                     this.fileClass = attribute.origin;
+                    this.fileClassQuery = matchingFileClassQuery;
                     this.type = attribute.type;
                     this.options = attribute.options;
                 }
@@ -72,6 +74,18 @@ export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | s
             fileClass = undefined;
         }
     }
+    const fileClassQueries = plugin.settings.fileClassQueries;
+    let matchingFileClassQuery: string | undefined = undefined;
+    if (fileClassQueries.length > 0) {
+        while (!matchingFileClassQuery && fileClassQueries.length > 0) {
+            const fileClassQuery = new FileClassQuery();
+            Object.assign(fileClassQuery, fileClassQueries.pop() as FileClassQuery)
+            if (fileClassQuery.matchFile(file)) {
+                fileClass = await createFileClass(plugin, fileClassQuery.fileClassName);
+                matchingFileClassQuery = fileClassQuery.name;
+            }
+        }
+    }
     if (frontmatter) {
         const { position, ...attributes } = frontmatter;
         // check if there's a fileClass
@@ -79,7 +93,8 @@ export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | s
         if (Object.keys(attributes).includes(fileClassAlias)) {
             const fileClassName = attributes[fileClassAlias];
             try {
-                fileClass = await createFileClass(plugin, fileClassName)
+                fileClass = await createFileClass(plugin, fileClassName);
+                matchingFileClassQuery = undefined;
             } catch (error) {
                 fileClass = undefined;
             }
@@ -102,7 +117,7 @@ export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | s
             const fieldInfo = new FieldInfo;
             fieldInfo.unique = !Object.keys(fields).includes(fieldName);
             fields[fieldName] = fieldInfo;
-            await fieldInfo.setInfos(plugin, fieldName, values, fileClass);
+            await fieldInfo.setInfos(plugin, fieldName, values, fileClass, matchingFileClassQuery);
         })
     });
     return fields;

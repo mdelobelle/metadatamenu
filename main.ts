@@ -1,4 +1,4 @@
-import { Plugin, MarkdownView } from 'obsidian';
+import { Plugin, MarkdownView, FileView, TFile } from 'obsidian';
 import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import { MetadataMenuSettings, DEFAULT_SETTINGS } from "src/settings/MetadataMenuSettings";
 import type { IMetadataMenuApi } from 'src/MetadataMenuApi';
@@ -9,11 +9,14 @@ import NoteFieldsCommandsModal from "src/options/NoteFieldsCommandsModal";
 import FileClassAttributeSelectModal from 'src/fileClass/FileClassAttributeSelectModal';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import { migrateSettingsV1toV2 } from 'src/settings/migrateSettingV1toV2';
+import OptionsList from 'src/options/OptionsList';
+import FileClassQuery from 'src/fileClass/FileClassQuery';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
 	public settings: MetadataMenuSettings;
 	public initialProperties: Array<Field> = [];
+	public initialFileClassQueries: Array<FileClassQuery> = [];
 	public settingTab: MetadataMenuSettingTab;
 
 	async onload(): Promise<void> {
@@ -28,6 +31,13 @@ export default class MetadataMenu extends Plugin {
 			Object.assign(property, prop);
 			this.initialProperties.push(property);
 		});
+
+		this.settings.fileClassQueries.forEach(query => {
+			const fileClassQuery = new FileClassQuery();
+			Object.assign(fileClassQuery, query);
+			this.initialFileClassQueries.push(fileClassQuery);
+		})
+
 		this.addSettingTab(new MetadataMenuSettingTab(this.app, this));
 
 		this.registerEditorSuggest(new ValueSuggest(this.app, this));
@@ -46,7 +56,22 @@ export default class MetadataMenu extends Plugin {
 			},
 		});
 
-		/* TODO : add a context menu for fileClass files to show the same options as in FileClassAttributeSelectModal*/
+		this.addInsertFieldAtPositionCommand();
+
+		this.registerEvent(
+			this.app.workspace.on('active-leaf-change', (leaf) => {
+				const view = leaf?.view
+				if (view && view instanceof FileView) {
+					const file = app.vault.getAbstractFileByPath(view.file.path)
+					if (file instanceof TFile && file.extension === 'md') {
+						if (file.parent.path + "/" !== this.settings.classFilesPath) {
+							this.addInsertFieldAtPositionCommand()
+						}
+					}
+				}
+			})
+		)
+
 		this.addCommand({
 			id: "fileClassAttr_options",
 			name: "fileClass attributes options",
@@ -67,12 +92,28 @@ export default class MetadataMenu extends Plugin {
 		console.log('Metadata Menu unloaded');
 	};
 
+	private addInsertFieldAtPositionCommand() {
+		this.addCommand({
+			id: "insert_field_at_cursor",
+			name: "insert field at cursor",
+			checkCallback: (checking: boolean) => {
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
+				if (checking) {
+					return !!(view?.file)
+				}
+				const optionsList = new OptionsList(this, view!.file, "Command");
+				optionsList.createExtraOptionList();
+			}
+		})
+	}
+
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	};
 
 	async saveSettings() {
 		this.settings.presetFields = this.initialProperties;
+		this.settings.fileClassQueries = this.initialFileClassQueries;
 		await this.saveData(this.settings);
 	};
 }

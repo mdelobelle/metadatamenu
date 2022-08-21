@@ -124,14 +124,10 @@ class FileClass {
             let newContent: string[] = [];
             result.split('\n').forEach(line => {
                 if (line.startsWith(attr.name)) {
-                    if (newType == "Input") {
-                        newContent.push(`${newName}:: {"type": "Input"}`);
-                    } else {
-                        let settings: Record<string, any> = {};
-                        settings["type"] = newType;
-                        if (newOptions) settings["options"] = newOptions;
-                        newContent.push(`${newName}:: ${JSON.stringify(settings)}`);
-                    }
+                    let settings: Record<string, any> = {};
+                    settings["type"] = newType;
+                    if (newOptions) settings["options"] = newOptions;
+                    newContent.push(`${newName}:: ${JSON.stringify(settings)}`);
                 } else {
                     newContent.push(line);
                 }

@@ -45,7 +45,7 @@ export default class fieldSelectModal extends Modal {
                 settingsSelector.addOption(setting.name, setting.name);
             })
         };
-
+        settingsSelector.selectEl.focus();
         settingsSelector.onChange(selectedFieldName => {
             if (selectedFieldName == "++New") {
                 const newFieldModal = new addNewFieldModal(this.plugin, this.lineNumber, this.file, this.inFrontmatter, this.top);
