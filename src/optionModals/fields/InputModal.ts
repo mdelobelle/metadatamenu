@@ -12,7 +12,7 @@ export default class InputModal extends Modal {
     private top: boolean;
     private field: Field;
     private templateValues: Record<string, string> = {};
-    private renderedValueContainer: HTMLDivElement;
+    private renderedValue: TextComponent;
 
     constructor(app: App, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
         super(app);
@@ -59,7 +59,7 @@ export default class InputModal extends Modal {
             renderedString = renderedString.replace(fieldRegex, this.templateValues[k])
         })
 
-        this.renderedValueContainer.setText(renderedString)
+        this.renderedValue.setValue(renderedString)
     }
 
     private buildTemplateInputItem(inputDiv: HTMLDivElement, name: string) {
@@ -85,15 +85,16 @@ export default class InputModal extends Modal {
     }
 
     private buildResultPreview(inputDiv: HTMLDivElement) {
-        this.renderedValueContainer = inputDiv.createDiv();
-        this.renderedValueContainer.setText(this.value)
+        const renderedValueContainer = inputDiv.createDiv();
+        this.renderedValue = new TextComponent(renderedValueContainer)
+        this.renderedValue.setValue(this.value)
     }
 
     private buildSaveBtn(inputDiv: HTMLDivElement) {
         const saveBtn = inputDiv.createEl("button")
         saveBtn.setText("✓")
         saveBtn.onclick = () => {
-            let inputValue = this.renderedValueContainer.getText();
+            let inputValue = this.renderedValue.getValue();
             if (this.lineNumber == -1) {
                 replaceValues(this.app, this.file, this.field.name, inputValue);
             } else {

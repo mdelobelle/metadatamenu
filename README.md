@@ -99,7 +99,7 @@ This order is used to display the values in the dropdown lists and is the order 
 
 You can define a template to help fill your `Input` field.
 
-Every item enclosed in curly braces will be transformed into an input or a dropdown select in the field modal
+Every item enclosed in curly braces will be transformed into an input or a dropdown select in the field modal. You can modify the "templatized" text afterwards.
 
 #### standard input
 
