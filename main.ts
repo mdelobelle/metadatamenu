@@ -9,13 +9,14 @@ import NoteFieldsCommandsModal from "src/options/NoteFieldsCommandsModal";
 import FileClassAttributeSelectModal from 'src/fileClass/FileClassAttributeSelectModal';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import { migrateSettingsV1toV2 } from 'src/settings/migrateSettingV1toV2';
-import { FieldManager } from 'src/fields/FieldManager';
 import OptionsList from 'src/options/OptionsList';
+import FileClassQuery from 'src/fileClass/FileClassQuery';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
 	public settings: MetadataMenuSettings;
 	public initialProperties: Array<Field> = [];
+	public initialFileClassQueries: Array<FileClassQuery> = [];
 	public settingTab: MetadataMenuSettingTab;
 
 	async onload(): Promise<void> {
@@ -30,6 +31,13 @@ export default class MetadataMenu extends Plugin {
 			Object.assign(property, prop);
 			this.initialProperties.push(property);
 		});
+
+		this.settings.fileClassQueries.forEach(query => {
+			const fileClassQuery = new FileClassQuery();
+			Object.assign(fileClassQuery, query);
+			this.initialFileClassQueries.push(fileClassQuery);
+		})
+
 		this.addSettingTab(new MetadataMenuSettingTab(this.app, this));
 
 		this.registerEditorSuggest(new ValueSuggest(this.app, this));
@@ -87,6 +95,7 @@ export default class MetadataMenu extends Plugin {
 
 	async saveSettings() {
 		this.settings.presetFields = this.initialProperties;
+		this.settings.fileClassQueries = this.initialFileClassQueries;
 		await this.saveData(this.settings);
 	};
 }

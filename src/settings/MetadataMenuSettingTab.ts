@@ -5,6 +5,9 @@ import Field from "src/fields/Field";
 import FieldSetting from "src/settings/FieldSetting";
 import { FolderSuggest } from "src/suggester/FolderSuggester";
 import { FileSuggest } from "src/suggester/FileSuggester";
+import FileClassQuery from "src/fileClass/FileClassQuery";
+import FileClassQuerySettingsModal from "./FileClassQuerySettingModal";
+import FileClassQuerySetting from "./FileClassQuerySetting";
 
 class SettingsMigrationConfirmModal extends Modal {
 
@@ -221,12 +224,45 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				cfs.containerEl.addClass("metadata-menu-setting-fileClass-search")
 			})
 
+		/* 
+		-----------------------------------------
+		Managing predefined options for properties 
+		-----------------------------------------
+		*/
+		/* Add new property for which we want to preset options*/
+		const queryFileClassSettings = containerEl.createEl("div")
+		queryFileClassSettings.createEl('h4', { text: 'Query based FileClass settings', cls: "metadata-menu-setting-section-header" });
+		queryFileClassSettings.createEl('div', {
+			cls: "setting-item-description metadata-menu-setting-section-desc",
+			text: "Manage globally predefined type and options for a field matching this query"
+		})
+		new Setting(queryFileClassSettings)
+			.setName("Add New Query for fileClass")
+			.setDesc("Add a new query and a FileClass that will apply to files matching this query.")
+			.addButton((button: ButtonComponent): ButtonComponent => {
+				return button
+					.setTooltip("Add New Property Manager")
+					.setButtonText("+")
+					.onClick(async () => {
+						let modal = new FileClassQuerySettingsModal(this.app, this.plugin, queryFileClassSettings);
+						modal.open();
+					});
+			});
+
+		/* Managed properties that currently have preset options */
+		this.plugin.initialFileClassQueries.forEach(query => {
+			const fileClassQuery = new FileClassQuery();
+			Object.assign(fileClassQuery, query);
+			new FileClassQuerySetting(queryFileClassSettings, fileClassQuery, this.app, this.plugin);
+		});
+
+
 
 		/* 
-			-----------------------------------------
-			Migration settings 
-			-----------------------------------------
-			*/
+		-----------------------------------------
+		Migration settings 
+		-----------------------------------------
+		*/
 		const migrateSettings = containerEl.createEl("div")
 		migrateSettings.createEl('h4', { text: 'Migrate' });
 
