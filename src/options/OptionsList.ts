@@ -10,6 +10,7 @@ import FileClassAttributeSelectModal from "src/fileClass/FileClassAttributeSelec
 import { getLineFields } from "../utils/parser";
 import Managers from "src/fields/fieldManagers/Managers";
 import { FieldManager as F } from "src/fields/FieldManager";
+import FileClassQuery from "src/fileClass/FileClassQuery";
 
 function isMenu(category: Menu | SelectModal | "Command"): category is Menu {
 	return (category as Menu).addItem !== undefined;
@@ -55,6 +56,19 @@ export default class OptionsList {
 			this.fileClassForFields = true;
 		} catch (error) {
 			//do nothing
+		}
+	}
+
+	private async getQueryFileClassForFields(): Promise<void> {
+		const fileClassQueries = this.plugin.settings.fileClassQueries.map(fcq => fcq)
+		while (!this.fileClassForFields && fileClassQueries.length > 0) {
+			const fileClassQuery = new FileClassQuery();
+			Object.assign(fileClassQuery, fileClassQueries.pop() as FileClassQuery)
+			if (fileClassQuery.matchFile(this.file)) {
+				this.fileClassForFields = true;
+				this.fileClass = await createFileClass(this.plugin, fileClassQuery.fileClassName)
+				this.fileClassFields = this.fileClass.attributes.map(attr => attr.name)
+			}
 		}
 	}
 
@@ -108,6 +122,7 @@ export default class OptionsList {
 
 	public async createExtraOptionList(): Promise<void> {
 		await this.getGlobalFileClassForFields();
+		await this.getQueryFileClassForFields();
 		await this.fetchFrontmatterFields();
 		await this.fetchInlineFields();
 		if (this.fileClass) {

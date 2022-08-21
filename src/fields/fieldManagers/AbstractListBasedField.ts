@@ -96,7 +96,12 @@ export default abstract class AbstractListBasedField extends FieldManager {
 
     async validateValue(value: string): Promise<boolean> {
         if (this.field.options && Object.values(this.field.options).length > 0) {
-            return Object.values(this.field.options).includes(value.trim())
+            if (value) {
+                return Object.values(this.field.options).includes(value.trim())
+            } else {
+                return true;
+            }
+
         } else if (this.field.valuesListNotePath) {
             const listNoteValues = await FieldSetting.getValuesListFromNote(this.field.valuesListNotePath, app)
             return listNoteValues.contains(value.trim())

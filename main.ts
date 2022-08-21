@@ -1,4 +1,4 @@
-import { Plugin, MarkdownView } from 'obsidian';
+import { Plugin, MarkdownView, FileView, TFile } from 'obsidian';
 import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import { MetadataMenuSettings, DEFAULT_SETTINGS } from "src/settings/MetadataMenuSettings";
 import type { IMetadataMenuApi } from 'src/MetadataMenuApi';
@@ -56,18 +56,22 @@ export default class MetadataMenu extends Plugin {
 			},
 		});
 
-		this.addCommand({
-			id: "insert_field_at_cursor",
-			name: "insert field at cursor",
-			checkCallback: (checking: boolean) => {
-				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
-				if (checking) {
-					return !!(view?.file)
+		this.addInsertFieldAtPositionCommand();
+
+		this.registerEvent(
+			this.app.workspace.on('active-leaf-change', (leaf) => {
+				const view = leaf?.view
+				if (view && view instanceof FileView) {
+					const file = app.vault.getAbstractFileByPath(view.file.path)
+					if (file instanceof TFile && file.extension === 'md') {
+						if (file.parent.path + "/" !== this.settings.classFilesPath) {
+							this.addInsertFieldAtPositionCommand()
+						}
+					}
 				}
-				const optionsList = new OptionsList(this, view!.file, "Command");
-				optionsList.createExtraOptionList();
-			}
-		})
+			})
+		)
+
 
 		this.addCommand({
 			id: "fileClassAttr_options",
@@ -88,6 +92,21 @@ export default class MetadataMenu extends Plugin {
 	onunload() {
 		console.log('Metadata Menu unloaded');
 	};
+
+	private addInsertFieldAtPositionCommand() {
+		this.addCommand({
+			id: "insert_field_at_cursor",
+			name: "insert field at cursor",
+			checkCallback: (checking: boolean) => {
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
+				if (checking) {
+					return !!(view?.file)
+				}
+				const optionsList = new OptionsList(this, view!.file, "Command");
+				optionsList.createExtraOptionList();
+			}
+		})
+	}
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
