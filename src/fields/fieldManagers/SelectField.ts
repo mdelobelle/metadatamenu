@@ -1,7 +1,7 @@
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
-import { App, Menu, TFile, TextComponent } from "obsidian";
+import { App, Menu, TFile, TextComponent, setIcon } from "obsidian";
 import FieldSelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
 import SelectModal from "src/optionModals/fields/SelectModal";
@@ -50,7 +50,7 @@ export default class SelectField extends AbstractListBasedField {
         const valueLabel = dv.el("span", p[this.field.name] || "");
         valueContainer.appendChild(valueLabel);
         const dropDownButton = document.createElement("button");
-        dropDownButton.setText("🔽");
+        setIcon(dropDownButton, "down-chevron-glyph");
         dropDownButton.addClass("metadata-menu-dv-field-button");
         valueContainer.appendChild(dropDownButton);
 
@@ -60,7 +60,7 @@ export default class SelectField extends AbstractListBasedField {
         select.setAttr("class", "metadata-menu-dv-select");
         selectContainer.appendChild(select);
         const dismissBtn = document.createElement("button");
-        dismissBtn.setText("❌");
+        setIcon(dismissBtn, "cross");
         dismissBtn.addClass("metadata-menu-dv-field-button");
         selectContainer.appendChild(dismissBtn);
         const nullOption = new Option("--select--", undefined);

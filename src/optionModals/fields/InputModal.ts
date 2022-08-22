@@ -1,4 +1,4 @@
-import { App, DropdownComponent, Modal, TextComponent, TFile } from "obsidian";
+import { App, DropdownComponent, Modal, setIcon, TextAreaComponent, TextComponent, TFile } from "obsidian";
 import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
@@ -12,7 +12,7 @@ export default class InputModal extends Modal {
     private top: boolean;
     private field: Field;
     private templateValues: Record<string, string> = {};
-    private renderedValue: TextComponent;
+    private renderedValue: TextAreaComponent;
 
     constructor(app: App, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
         super(app);
@@ -64,7 +64,7 @@ export default class InputModal extends Modal {
     }
 
     private buildTemplateInputItem(inputDiv: HTMLDivElement, name: string) {
-        inputDiv.createDiv({ text: name });
+        inputDiv.createDiv({ text: name, cls: "metadata-menu-input-label" });
         const inputEl = new TextComponent(inputDiv);
         inputEl.setPlaceholder(`Enter a value for ${name}`);
         inputEl.inputEl.addClass("metadata-menu-prompt-input");
@@ -75,7 +75,7 @@ export default class InputModal extends Modal {
     }
 
     private buildTemplateSelectItem(inputDiv: HTMLDivElement, name: string, options: string[]) {
-        inputDiv.createDiv({ text: name });
+        inputDiv.createDiv({ text: name, cls: "metadata-menu-input-label" });
         const selectEl = new DropdownComponent(inputDiv);
         selectEl.addOption("", "--select--")
         options.forEach(o => selectEl.addOption(o, o));
@@ -86,14 +86,20 @@ export default class InputModal extends Modal {
     }
 
     private buildResultPreview(inputDiv: HTMLDivElement) {
+        inputDiv.createEl("hr")
+        inputDiv.createDiv({ text: "Result preview", cls: "metadata-menu-input-label" });
         const renderedValueContainer = inputDiv.createDiv();
-        this.renderedValue = new TextComponent(renderedValueContainer)
-        this.renderedValue.setValue(this.value)
+        this.renderedValue = new TextAreaComponent(renderedValueContainer)
+        this.renderedValue.inputEl.addClass("metadata-menu-prompt-input");
+        this.renderedValue.inputEl.rows = 3;
+        this.renderedValue.setValue(this.value);
     }
 
     private buildSaveBtn(inputDiv: HTMLDivElement) {
-        const saveBtn = inputDiv.createEl("button")
-        saveBtn.setText("✓")
+        inputDiv.createEl("hr")
+        const saveBtnContainer = inputDiv.createDiv({ cls: "metadata-menu-textarea-buttons" })
+        const saveBtn = saveBtnContainer.createEl("button")
+        setIcon(saveBtn, "checkmark");
         saveBtn.onclick = () => {
             let inputValue = this.renderedValue.getValue();
             if (this.lineNumber == -1) {

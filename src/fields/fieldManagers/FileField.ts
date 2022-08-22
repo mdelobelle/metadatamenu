@@ -1,7 +1,7 @@
 import { FieldType } from "src/types/fieldTypes";
 import { FieldManager, SettingLocation } from "../FieldManager";
 import Field from "../Field";
-import { App, TFile, Menu, TextAreaComponent, Notice } from "obsidian";
+import { App, TFile, Menu, TextAreaComponent, Notice, setIcon } from "obsidian";
 import FieldSelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
 import SingleFileModal from "src/optionModals/fields/SingleFileModal";
@@ -83,7 +83,7 @@ export default class FileField extends FieldManager {
     ): Promise<void> {
         const fieldValue = dv.el('span', p[this.field.name], attrs);
         const searchBtn = document.createElement("button")
-        searchBtn.setText("🔎")
+        setIcon(searchBtn, "magnifying-glass")
         searchBtn.addClass("metadata-menu-dv-field-button")
         /* end spacer */
         const spacer = document.createElement("div")

@@ -6,8 +6,8 @@ import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { replaceValues } from "src/commands/replaceValues";
 import MetadataMenu from "main";
 import { FieldManager as FM } from "src/types/fieldTypes";
-import fieldSelectModal from "src/optionModals/fieldSelectModal";
 import { FileClass } from "src/fileClass/fileClass";
+import InsertFieldSuggestModal from "src/optionModals/insertFieldSuggestModal";
 
 
 export interface FieldManager {
@@ -88,7 +88,7 @@ export abstract class FieldManager {
 
     public static openFieldOrFieldSelectModal(plugin: MetadataMenu, file: TFile, fieldName: string | undefined, lineNumber: number, line: string, inFrontmatter: boolean, top: boolean, fileClass?: FileClass) {
         if (!fieldName) {
-            const modal = new fieldSelectModal(plugin, file, lineNumber, line, inFrontmatter, top, fileClass);
+            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, line, inFrontmatter, top, fileClass);
             modal.open();
         } else {
             if (fileClass) {

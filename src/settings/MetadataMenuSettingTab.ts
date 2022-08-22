@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal, DropdownComponent, moment } from "obsidian";
+import { App, PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal, DropdownComponent, moment, setIcon } from "obsidian";
 import MetadataMenu from "main";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import Field from "src/fields/Field";
@@ -161,10 +161,16 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			new FieldSetting(presetFieldsSettingsContainer, property, this.app, this.plugin);
 		});
 
-		presetFieldsSettingsContainerShowButton.setText(presetFieldsSettingsContainer.isShown() ? "🔼" : "🔽")
+		presetFieldsSettingsContainer.isShown() ?
+			setIcon(presetFieldsSettingsContainerShowButton, "double-up-arrow-glyph") :
+			setIcon(presetFieldsSettingsContainerShowButton, "double-down-arrow-glyph");
 		presetFieldsSettingsContainerShowButton.onclick = () => {
-			presetFieldsSettingsContainer.isShown() ? presetFieldsSettingsContainer.hide() : presetFieldsSettingsContainer.show();
-			presetFieldsSettingsContainerShowButton.setText(presetFieldsSettingsContainer.isShown() ? "🔼" : "🔽");
+			presetFieldsSettingsContainer.isShown() ?
+				presetFieldsSettingsContainer.hide() :
+				presetFieldsSettingsContainer.show();
+			presetFieldsSettingsContainer.isShown() ?
+				setIcon(presetFieldsSettingsContainerShowButton, "double-up-arrow-glyph") :
+				setIcon(presetFieldsSettingsContainerShowButton, "double-down-arrow-glyph");
 		}
 
 		/* 
@@ -280,11 +286,16 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				new FileClassQuerySetting(queryFileClassSettings, fileClassQuery, this.app, this.plugin);
 			});
 
-
-		classFilesSettingsContainerShowButton.setText(classFilesSettingsContainer.isShown() ? "🔼" : "🔽")
+		classFilesSettingsContainer.isShown() ?
+			setIcon(classFilesSettingsContainerShowButton, "double-up-arrow-glyph") :
+			setIcon(classFilesSettingsContainerShowButton, "double-down-arrow-glyph");
 		classFilesSettingsContainerShowButton.onclick = () => {
-			classFilesSettingsContainer.isShown() ? classFilesSettingsContainer.hide() : classFilesSettingsContainer.show();
-			classFilesSettingsContainerShowButton.setText(classFilesSettingsContainer.isShown() ? "🔼" : "🔽");
+			classFilesSettingsContainer.isShown() ?
+				classFilesSettingsContainer.hide() :
+				classFilesSettingsContainer.show();
+			classFilesSettingsContainer.isShown() ?
+				setIcon(classFilesSettingsContainerShowButton, "double-up-arrow-glyph") :
+				setIcon(classFilesSettingsContainerShowButton, "double-down-arrow-glyph");
 		}
 
 		/* 

@@ -1,7 +1,7 @@
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
-import { App, Menu, TFile, TextComponent } from "obsidian";
+import { App, Menu, TFile, TextComponent, setIcon } from "obsidian";
 import FieldSelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
 import MultiSelectModal from "src/optionModals/fields/MultiSelectModal";
@@ -100,7 +100,7 @@ export default class MultiField extends AbstractListBasedField {
             }
         }
         const closeSelect = document.createElement("button");
-        closeSelect.setText("\u274C");
+        setIcon(closeSelect, "cross");
         closeSelect.addClass("metadata-menu-dv-field-button");
         closeSelect.addClass("multi");
         closeSelect.onclick = () => {
@@ -122,7 +122,7 @@ export default class MultiField extends AbstractListBasedField {
 
 
             const valueRemoveBtn = document.createElement("button");
-            valueRemoveBtn.setText("❌");
+            setIcon(valueRemoveBtn, "cross")
             valueRemoveBtn.addClass("metadata-menu-dv-field-button");
             valueRemoveBtn.addClass("multi");
             valueRemoveBtn.hide();
@@ -157,7 +157,7 @@ export default class MultiField extends AbstractListBasedField {
 
         /* button to display input */
         const addBtn = document.createElement("button");
-        addBtn.setText("➕");
+        setIcon(addBtn, "bullet-list");
         addBtn.setAttr('class', "metadata-menu-dv-field-button");
 
         valuesContainer.appendChild(addBtn);

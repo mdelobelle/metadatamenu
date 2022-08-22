@@ -1,4 +1,4 @@
-import { App, Modal, TextComponent, TFile, ToggleComponent, ButtonComponent } from "obsidian";
+import { App, Modal, TextComponent, TFile, ToggleComponent, ButtonComponent, setIcon } from "obsidian";
 import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
@@ -115,8 +115,7 @@ export default class DateModal extends Modal {
             this.value = value
         });
         const calendarDisplayBtn = inputContainer.createEl("div", { cls: "metadata-menu-calendar-display-btn" })
-        calendarDisplayBtn.setText("📆")
-
+        setIcon(calendarDisplayBtn, "calendar-with-checkmark");
         const datePickerContainer = form.createDiv({ cls: "metadata-menu-picker-container" });
         const datePicker = flatpickr(datePickerContainer, {
             locale: {

@@ -1,7 +1,7 @@
 import { FieldType } from "src/types/fieldTypes";
 import { FieldManager, SettingLocation } from "../FieldManager";
 import Field from "../Field";
-import { App, TFile, Menu, TextComponent, ToggleComponent, Notice } from "obsidian";
+import { App, TFile, Menu, TextComponent, ToggleComponent, Notice, setIcon } from "obsidian";
 import SelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
 import { moment } from "obsidian";
@@ -84,7 +84,7 @@ export default class DateField extends FieldManager {
     ): Promise<void> {
         const fieldValue = dv.el('span', p[this.field.name], attrs);
         const dateBtn = document.createElement("button")
-        dateBtn.setText("📆")
+        setIcon(dateBtn, "calendar-with-checkmark")
         dateBtn.addClass("metadata-menu-dv-field-button")
         /* end spacer */
         const spacer = document.createElement("div")

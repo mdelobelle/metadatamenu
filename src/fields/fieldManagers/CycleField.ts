@@ -1,7 +1,7 @@
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
-import { App, Menu, TFile, TextComponent } from "obsidian";
+import { App, Menu, TFile, TextComponent, setIcon } from "obsidian";
 import FieldSelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
 import SelectModal from "src/optionModals/fields/SelectModal";
@@ -71,7 +71,7 @@ export default class CycleField extends AbstractListBasedField {
         spacer.setAttr("class", "metadata-menu-dv-field-spacer");
         /* button to display input */
         const button = document.createElement("button");
-        button.setText("▶️");
+        setIcon(button, "switch")
         button.setAttr('class', "metadata-menu-dv-field-button");
         if (!attrs?.options?.alwaysOn) {
             button.hide();

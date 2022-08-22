@@ -2,7 +2,7 @@ import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
 import NumbertModal from "src/optionModals/fields/NumberModal";
-import { App, Menu, TFile, TextComponent } from "obsidian";
+import { App, Menu, TFile, TextComponent, setIcon } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 import FieldSelectModal from "src/optionModals/SelectModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
@@ -205,19 +205,19 @@ export default class NumberField extends FieldManager {
 
         /* button to display input */
         const editButton = document.createElement("button");
-        editButton.setText("🖍");
+        setIcon(editButton, "pencil");
         editButton.setAttr('class', "metadata-menu-dv-field-button");
 
 
         /* button to display input */
         const decrementButton = document.createElement("button");
-        decrementButton.setText("◀️");
+        setIcon(decrementButton, "left-arrow");
         decrementButton.setAttr('class', "metadata-menu-dv-field-button");
 
 
         /* button to display input */
         const incrementButton = document.createElement("button");
-        incrementButton.setText("▶️");
+        setIcon(incrementButton, "right-arrow")
         incrementButton.setAttr('class', "metadata-menu-dv-field-button");
 
         if (!attrs?.options?.alwaysOn) {
@@ -241,7 +241,7 @@ export default class NumberField extends FieldManager {
         }
 
         const validateIcon = document.createElement("a")
-        validateIcon.textContent = "✅"
+        setIcon(validateIcon, "checkmark")
         validateIcon.setAttr("class", "metadata-menu-dv-field-button")
         validateIcon.onclick = async () => {
             if (await this.validateValue(input.value)) {

@@ -2,7 +2,7 @@ import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
 import InputModal from "src/optionModals/fields/InputModal";
-import { App, Menu, TextAreaComponent, TFile } from "obsidian";
+import { App, Menu, setIcon, TextAreaComponent, TFile } from "obsidian";
 import FieldSelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
 
@@ -72,7 +72,7 @@ export default class InputField extends FieldManager {
         spacer.setAttr("class", "metadata-menu-dv-field-spacer")
         /* button to display input */
         const button = document.createElement("button")
-        button.setText("🖍")
+        setIcon(button, "pencil")
         button.setAttr('class', "metadata-menu-dv-field-button")
         if (!attrs?.options?.alwaysOn) {
             button.hide()
