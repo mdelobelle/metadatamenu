@@ -16,7 +16,7 @@ export default class CycleField extends AbstractListBasedField {
         super(field, FieldType.Cycle)
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | FieldSelectModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal): void {
         const options = this.field.options;
         const keys = Object.keys(options);
         const keyForValue = keys.find(key => options[key] === value);
@@ -27,16 +27,16 @@ export default class CycleField extends AbstractListBasedField {
         } else {
             nextOption = options[Object.keys(options)[0]];
         };
-        if (CycleField.isMenu(category)) {
-            category.addItem((item) => {
+        if (CycleField.isMenu(location)) {
+            location.addItem((item) => {
                 item.setTitle(`${name} : ${value} ▷ ${nextOption}`);
                 item.setIcon('switch');
                 item.onClick(() => replaceValues(app, file, name, nextOption));
                 item.setSection("target-metadata");
             });
-        } else if (CycleField.isSelect(category)) {
-            category.addOption(`${name}_${value}_${nextOption}`, `${name} : ${value} ▷ ${nextOption}`);
-            category.modals[`${name}_${value}_${nextOption}`] = () =>
+        } else if (CycleField.isSelect(location)) {
+            location.addOption(`${name}_${value}_${nextOption}`, `${name} : ${value} ▷ ${nextOption}`);
+            location.modals[`${name}_${value}_${nextOption}`] = () =>
                 replaceValues(app, file, name, nextOption);
         };
     };

@@ -16,19 +16,19 @@ export default class SelectField extends AbstractListBasedField {
         super(field, FieldType.Select)
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | FieldSelectModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal): void {
         const modal = new SelectModal(app, file, value, this.field);
         modal.titleEl.setText("Select value");
-        if (SelectField.isMenu(category)) {
-            category.addItem((item) => {
+        if (SelectField.isMenu(location)) {
+            location.addItem((item) => {
                 item.setTitle(`Update ${name}`);
                 item.setIcon('right-triangle');
                 item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             });
-        } else if (SelectField.isSelect(category)) {
-            category.addOption(`update_${name}`, `Update <${name}>`);
-            category.modals[`update_${name}`] = () => modal.open();
+        } else if (SelectField.isSelect(location)) {
+            location.addOption(`update_${name}`, `Update <${name}>`);
+            location.modals[`update_${name}`] = () => modal.open();
         };
     };
 

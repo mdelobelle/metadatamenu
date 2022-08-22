@@ -21,7 +21,7 @@ export const enum SettingLocation {
 
 export abstract class FieldManager {
 
-    abstract addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void;
+    abstract addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | SelectModal): void;
     abstract validateOptions(): boolean;
     abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
     abstract createDvField(plugin: MetadataMenu, dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }): Promise<void>
@@ -63,17 +63,17 @@ export abstract class FieldManager {
         }
     }
 
-    public static isMenu(category: Menu | SelectModal | "Command"): category is Menu {
-        return (category as Menu).addItem !== undefined;
+    public static isMenu(location: Menu | SelectModal | "Command"): location is Menu {
+        return (location as Menu).addItem !== undefined;
     };
 
-    public static isSelect(category: Menu | SelectModal | "Command"): category is SelectModal {
-        return (category as SelectModal).modals !== undefined;
+    public static isSelect(location: Menu | SelectModal | "Command"): location is SelectModal {
+        return (location as SelectModal).modals !== undefined;
     };
 
 
-    public static isPaletteCommand(category: Menu | SelectModal | "Command"): category is "Command" {
-        return (category as string) === "Command";
+    public static isPaletteCommand(location: Menu | SelectModal | "Command"): location is "Command" {
+        return (location as string) === "Command";
     }
 
     public static createAndOpenModal(plugin: MetadataMenu, file: TFile, fieldName: string, field: Field | undefined, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {

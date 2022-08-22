@@ -67,11 +67,11 @@ export default class NumberField extends FieldManager {
         )
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | FieldSelectModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal): void {
         const modal = new NumbertModal(app, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
-        if (NumberField.isMenu(category)) {
-            category.addItem((item) => {
+        if (NumberField.isMenu(location)) {
+            location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
                 item.setIcon('pencil');
                 item.onClick(() => modal.open());
@@ -85,23 +85,23 @@ export default class NumberField extends FieldManager {
             const fValue = parseFloat(value)
             if (fStep) {
                 if (isNaN(fMin) || (fMin && fValue - fStep > fMin))
-                    category.addItem((item) => {
+                    location.addItem((item) => {
                         item.setIcon('pencil');
                         item.setTitle(`<${name}> ➡️ ${fValue - fStep}`);
                         item.onClick(() => replaceValues(app, file, name, (fValue - fStep).toString()));
                         item.setSection("target-metadata");
                     })
                 if (isNaN(fMax) || (fMax && fValue + fStep < fMax))
-                    category.addItem((item) => {
+                    location.addItem((item) => {
                         item.setIcon('pencil');
                         item.setTitle(`<${name}> ➡️ ${fValue + fStep}`);
                         item.onClick(() => replaceValues(app, file, name, (fValue + fStep).toString()));
                         item.setSection("target-metadata");
                     })
             }
-        } else if (NumberField.isSelect(category)) {
-            category.addOption(`update_${name}`, `Update <${name}>`);
-            category.modals[`update_${name}`] = () => modal.open();
+        } else if (NumberField.isSelect(location)) {
+            location.addOption(`update_${name}`, `Update <${name}>`);
+            location.modals[`update_${name}`] = () => modal.open();
         };
     };
 

@@ -13,18 +13,18 @@ export default class BooleanField extends FieldManager {
         super(field, FieldType.Boolean)
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | FieldSelectModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal): void {
         const bValue = BooleanField.stringToBoolean(value);
-        if (BooleanField.isMenu(category)) {
-            category.addItem((item) => {
+        if (BooleanField.isMenu(location)) {
+            location.addItem((item) => {
                 item.setTitle(`<${name}> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);
                 item.setIcon('checkmark');
                 item.onClick(() => replaceValues(app, file, name, (!bValue).toString()));
                 item.setSection("target-metadata");
             })
-        } else if (BooleanField.isSelect(category)) {
-            category.addOption(`update_${name}`, `<${name}> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);
-            category.modals[`update_${name}`] = () => replaceValues(app, file, name, (!bValue).toString());
+        } else if (BooleanField.isSelect(location)) {
+            location.addOption(`update_${name}`, `<${name}> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);
+            location.modals[`update_${name}`] = () => replaceValues(app, file, name, (!bValue).toString());
         };
     };
     getOptionsStr(): string {

@@ -52,19 +52,19 @@ export default class FileField extends FieldManager {
         }
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | FieldSelectModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal): void {
         const modal = new SingleFileModal(app, file, this.field)
         modal.titleEl.setText("Select value");
-        if (FileField.isMenu(category)) {
-            category.addItem((item) => {
+        if (FileField.isMenu(location)) {
+            location.addItem((item) => {
                 item.setTitle(`Update ${name}`);
                 item.setIcon('search');
                 item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             });
-        } else if (FileField.isSelect(category)) {
-            category.addOption(`update_${name}`, `Update <${name}>`);
-            category.modals[`update_${name}`] = () => modal.open();
+        } else if (FileField.isSelect(location)) {
+            location.addOption(`update_${name}`, `Update <${name}>`);
+            location.modals[`update_${name}`] = () => modal.open();
         };
     }
 

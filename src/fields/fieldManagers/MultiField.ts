@@ -15,19 +15,19 @@ export default class MultiField extends AbstractListBasedField {
         super(field, FieldType.Multi)
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | FieldSelectModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal): void {
         const modal = new MultiSelectModal(app, file, this.field, value);
         modal.titleEl.setText("Select values");
-        if (MultiField.isMenu(category)) {
-            category.addItem((item) => {
+        if (MultiField.isMenu(location)) {
+            location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
                 item.setIcon('bullet-list');
                 item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             });
-        } else if (MultiField.isSelect(category)) {
-            category.addOption(`update_${name}`, `Update <${name}>`);
-            category.modals[`update_${name}`] = () => modal.open();
+        } else if (MultiField.isSelect(location)) {
+            location.addOption(`update_${name}`, `Update <${name}>`);
+            location.modals[`update_${name}`] = () => modal.open();
         };
     };
 

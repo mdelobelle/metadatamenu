@@ -16,19 +16,19 @@ export default class InputField extends FieldManager {
         return this.field.options.template
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | FieldSelectModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal): void {
         const modal = new InputModal(app, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
-        if (InputField.isMenu(category)) {
-            category.addItem((item) => {
+        if (InputField.isMenu(location)) {
+            location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
                 item.setIcon('pencil');
                 item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             })
-        } else if (InputField.isSelect(category)) {
-            category.addOption(`update_${name}`, `Update <${name}>`);
-            category.modals[`update_${name}`] = () => modal.open();
+        } else if (InputField.isSelect(location)) {
+            location.addOption(`update_${name}`, `Update <${name}>`);
+            location.modals[`update_${name}`] = () => modal.open();
         };
     };
 

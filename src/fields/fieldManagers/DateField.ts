@@ -16,19 +16,19 @@ export default class DateField extends FieldManager {
         super(field, FieldType.Date)
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | SelectModal): void {
         const modal = new DateModal(app, file, this.field, value);
         modal.titleEl.setText(`Change date for <${name}>`);
-        if (DateField.isMenu(category)) {
-            category.addItem((item) => {
+        if (DateField.isMenu(location)) {
+            location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
                 item.setIcon('calendar-glyph');
                 item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             })
-        } else if (DateField.isSelect(category)) {
-            category.addOption(`update_${name}`, `Update <${name}>`);
-            category.modals[`update_${name}`] = () => modal.open();
+        } else if (DateField.isSelect(location)) {
+            location.addOption(`update_${name}`, `Update <${name}>`);
+            location.modals[`update_${name}`] = () => modal.open();
         };
     }
 
