@@ -51,8 +51,11 @@ export default class valueSelectModal extends Modal {
                 selectEl.setValue(this.value);
             };
         }
-        selectEl.onChange(value => this.newValue = value != "--Empty--" ? value : "");
         const submitButton = new ButtonComponent(inputDiv);
+        selectEl.onChange(value => {
+            this.newValue = value != "--Empty--" ? value : "";
+            submitButton.buttonEl.focus();
+        });
         submitButton.setTooltip("Save")
             .setIcon("checkmark")
             .onClick(async () => {

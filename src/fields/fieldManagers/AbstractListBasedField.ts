@@ -1,7 +1,7 @@
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager, SettingLocation } from "../FieldManager";
-import { TextComponent, ButtonComponent } from "obsidian";
+import { TextComponent, ButtonComponent, setIcon } from "obsidian";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import MetadataMenu from "main";
 import FieldSetting from "src/settings/FieldSetting";
@@ -22,6 +22,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
     };
 
     private createListNoteContainer(parentNode: HTMLDivElement, plugin: MetadataMenu): void {
+        parentNode.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
         const listNoteContainerLabel = parentNode.createDiv({ cls: "metadata-menu-setting-fileClass-search" });
         listNoteContainerLabel.setText(`Path of the note containing the values:`);
 
@@ -74,7 +75,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
             });
         if (key != Object.keys(this.field.options)[0]) {
             const valueUpgradeButton = new ButtonComponent(valueContainer);
-            valueUpgradeButton.setButtonText("▲");
+            setIcon(valueUpgradeButton.buttonEl, "up-chevron-glyph");
             valueUpgradeButton.onClick((evt: MouseEvent) => {
                 const thisValue = options[key];
                 const inputIndex = this.valuesPromptComponents.indexOf(input)

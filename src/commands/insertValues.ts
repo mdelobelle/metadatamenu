@@ -28,10 +28,10 @@ export async function insertValues(
         result.split("\n").forEach((line, _lineNumber) => newContent.push(line));
     } else {
         result.split("\n").forEach((line, _lineNumber) => {
-            newContent.push(line);
             if (_lineNumber == lineNumber) {
                 newContent.push(`${fieldName}${inFrontmatter ? ":" : "::"} ${value}`);
             };
+            newContent.push(line);
         });
     };
     app.vault.modify(file, newContent.join('\n'));

@@ -1,11 +1,12 @@
-import { FieldType } from "src/types/fieldTypes";
-import { FieldManager, SettingLocation } from "../FieldManager";
-import Field from "../Field";
-import { App, TFile, Menu, TextAreaComponent, Notice, setIcon } from "obsidian";
-import FieldSelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
+import { App, Menu, Notice, setIcon, TextAreaComponent, TFile } from "obsidian";
+import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
 import SingleFileModal from "src/optionModals/fields/SingleFileModal";
+import FieldSelectModal from "src/optionModals/SelectModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
+import { FieldIcon, FieldType } from "src/types/fieldTypes";
+import Field from "../Field";
+import { FieldManager, SettingLocation } from "../FieldManager";
 
 export default class FileField extends FieldManager {
 
@@ -52,19 +53,26 @@ export default class FileField extends FieldManager {
         }
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal | FieldCommandSuggestModal): void {
         const modal = new SingleFileModal(app, file, this.field)
         modal.titleEl.setText("Select value");
         if (FileField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update ${name}`);
-                item.setIcon('search');
+                item.setIcon(FieldIcon[FieldType.File]);
                 item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             });
         } else if (FileField.isSelect(location)) {
             location.addOption(`update_${name}`, `Update <${name}>`);
             location.modals[`update_${name}`] = () => modal.open();
+        } else if (FileField.isSuggest(location)) {
+            location.options.push({
+                id: `update_${name}`,
+                actionLabel: `<span>Update <b>${name}</b></span>`,
+                action: () => modal.open(),
+                icon: FieldIcon[FieldType.File]
+            });
         };
     }
 
@@ -83,7 +91,7 @@ export default class FileField extends FieldManager {
     ): Promise<void> {
         const fieldValue = dv.el('span', p[this.field.name], attrs);
         const searchBtn = document.createElement("button")
-        setIcon(searchBtn, "magnifying-glass")
+        setIcon(searchBtn, FieldIcon[FieldType.File])
         searchBtn.addClass("metadata-menu-dv-field-button")
         /* end spacer */
         const spacer = document.createElement("div")
@@ -123,8 +131,8 @@ export default class FileField extends FieldManager {
         const dvQueryStringContainer = parentContainer.createDiv();
         dvQueryStringContainer.createEl("span", { text: "Dataview Query (optional)", cls: 'metadata-menu-field-option' });
         this.dvQueryString = new TextAreaComponent(dvQueryStringContainer);
-        this.dvQueryString.inputEl.cols = 60;
-        this.dvQueryString.inputEl.rows = 6;
+        this.dvQueryString.inputEl.cols = 50;
+        this.dvQueryString.inputEl.rows = 4;
         this.dvQueryString.setValue(this.field.options.dvQueryString || "");
 
         this.dvQueryString.onChange(value => {

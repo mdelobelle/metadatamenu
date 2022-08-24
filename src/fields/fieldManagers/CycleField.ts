@@ -1,11 +1,12 @@
-import { FieldType } from "src/types/fieldTypes";
+import MetadataMenu from "main";
+import { App, Menu, setIcon, TextComponent, TFile } from "obsidian";
+import { replaceValues } from "src/commands/replaceValues";
+import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
+import SelectModal from "src/optionModals/fields/SelectModal";
+import FieldSelectModal from "src/optionModals/SelectModal";
+import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
-import { App, Menu, TFile, TextComponent, setIcon } from "obsidian";
-import FieldSelectModal from "src/optionModals/SelectModal";
-import MetadataMenu from "main";
-import SelectModal from "src/optionModals/fields/SelectModal";
-import { replaceValues } from "src/commands/replaceValues";
 
 export default class CycleField extends AbstractListBasedField {
 
@@ -16,7 +17,7 @@ export default class CycleField extends AbstractListBasedField {
         super(field, FieldType.Cycle)
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal | FieldCommandSuggestModal): void {
         const options = this.field.options;
         const keys = Object.keys(options);
         const keyForValue = keys.find(key => options[key] === value);
@@ -30,7 +31,7 @@ export default class CycleField extends AbstractListBasedField {
         if (CycleField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`${name} : ${value} ▷ ${nextOption}`);
-                item.setIcon('switch');
+                item.setIcon(FieldIcon[FieldType.Cycle]);
                 item.onClick(() => replaceValues(app, file, name, nextOption));
                 item.setSection("target-metadata");
             });
@@ -38,6 +39,14 @@ export default class CycleField extends AbstractListBasedField {
             location.addOption(`${name}_${value}_${nextOption}`, `${name} : ${value} ▷ ${nextOption}`);
             location.modals[`${name}_${value}_${nextOption}`] = () =>
                 replaceValues(app, file, name, nextOption);
+        } else if (CycleField.isSuggest(location)) {
+            location.options.push({
+                id: `${name}_${value}_${nextOption}`,
+                actionLabel: `<span><b>${name}</b> : ${value} ▷ ${nextOption}</span>`,
+                action: () =>
+                    replaceValues(app, file, name, nextOption),
+                icon: FieldIcon[FieldType.Cycle]
+            })
         };
     };
 
@@ -71,7 +80,7 @@ export default class CycleField extends AbstractListBasedField {
         spacer.setAttr("class", "metadata-menu-dv-field-spacer");
         /* button to display input */
         const button = document.createElement("button");
-        setIcon(button, "switch")
+        setIcon(button, FieldIcon[FieldType.Cycle])
         button.setAttr('class', "metadata-menu-dv-field-button");
         if (!attrs?.options?.alwaysOn) {
             button.hide();

@@ -219,7 +219,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				text
 					.setValue(this.plugin.settings.fileClassAlias)
 					.onChange(async (value) => {
-						this.plugin.settings.fileClassAlias = value;
+						this.plugin.settings.fileClassAlias = value || "fileClass";
 						await this.plugin.saveSettings();
 					});
 			});

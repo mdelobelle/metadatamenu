@@ -1,12 +1,13 @@
-import { FieldType } from "src/types/fieldTypes";
-import Field from "../Field";
-import { FieldManager } from "../FieldManager";
-import NumbertModal from "src/optionModals/fields/NumberModal";
-import { App, Menu, TFile, TextComponent, setIcon } from "obsidian";
+import MetadataMenu from "main";
+import { App, Menu, setIcon, TextComponent, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
+import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
+import NumbertModal from "src/optionModals/fields/NumberModal";
 import FieldSelectModal from "src/optionModals/SelectModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
-import MetadataMenu from "main";
+import { FieldIcon, FieldType } from "src/types/fieldTypes";
+import Field from "../Field";
+import { FieldManager } from "../FieldManager";
 
 export default class NumberField extends FieldManager {
 
@@ -67,13 +68,13 @@ export default class NumberField extends FieldManager {
         )
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal | FieldCommandSuggestModal): void {
         const modal = new NumbertModal(app, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
         if (NumberField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
-                item.setIcon('pencil');
+                item.setIcon(FieldIcon[FieldType.Number]);
                 item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             })
@@ -86,7 +87,7 @@ export default class NumberField extends FieldManager {
             if (fStep) {
                 if (isNaN(fMin) || (fMin && fValue - fStep > fMin))
                     location.addItem((item) => {
-                        item.setIcon('pencil');
+                        item.setIcon(FieldIcon[FieldType.Number]);
                         item.setTitle(`<${name}> ➡️ ${fValue - fStep}`);
                         item.onClick(() => replaceValues(app, file, name, (fValue - fStep).toString()));
                         item.setSection("target-metadata");
@@ -102,6 +103,13 @@ export default class NumberField extends FieldManager {
         } else if (NumberField.isSelect(location)) {
             location.addOption(`update_${name}`, `Update <${name}>`);
             location.modals[`update_${name}`] = () => modal.open();
+        } else if (NumberField.isSuggest(location)) {
+            location.options.push({
+                id: `update_${name}`,
+                actionLabel: `<span>Update <b>${name}</b></span>`,
+                action: () => modal.open(),
+                icon: FieldIcon[FieldType.Number]
+            });
         };
     };
 
@@ -205,7 +213,7 @@ export default class NumberField extends FieldManager {
 
         /* button to display input */
         const editButton = document.createElement("button");
-        setIcon(editButton, "pencil");
+        setIcon(editButton, FieldIcon[FieldType.Number]);
         editButton.setAttr('class', "metadata-menu-dv-field-button");
 
 
@@ -256,7 +264,7 @@ export default class NumberField extends FieldManager {
         inputContainer?.appendChild(validateIcon)
         const cancelIcon = document.createElement("a")
         cancelIcon.setAttr("class", "metadata-menu-dv-field-button")
-        cancelIcon.textContent = "❌"
+        setIcon(cancelIcon, "cross");
         cancelIcon.onclick = (e) => {
             fieldContainer.removeChild(inputContainer);
             fieldContainer.appendChild(decrementButton);

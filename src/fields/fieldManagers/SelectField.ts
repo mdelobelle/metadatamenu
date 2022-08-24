@@ -1,11 +1,12 @@
-import { FieldType } from "src/types/fieldTypes";
+import MetadataMenu from "main";
+import { App, Menu, setIcon, TextComponent, TFile } from "obsidian";
+import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
+import SelectModal from "src/optionModals/fields/SelectModal";
+import FieldSelectModal from "src/optionModals/SelectModal";
+import FieldSetting from "src/settings/FieldSetting";
+import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
-import { App, Menu, TFile, TextComponent, setIcon } from "obsidian";
-import FieldSelectModal from "src/optionModals/SelectModal";
-import MetadataMenu from "main";
-import SelectModal from "src/optionModals/fields/SelectModal";
-import FieldSetting from "src/settings/FieldSetting";
 
 export default class SelectField extends AbstractListBasedField {
 
@@ -16,19 +17,26 @@ export default class SelectField extends AbstractListBasedField {
         super(field, FieldType.Select)
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal | FieldCommandSuggestModal): void {
         const modal = new SelectModal(app, file, value, this.field);
         modal.titleEl.setText("Select value");
         if (SelectField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update ${name}`);
-                item.setIcon('right-triangle');
+                item.setIcon(FieldIcon[FieldType.Select]);
                 item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             });
         } else if (SelectField.isSelect(location)) {
             location.addOption(`update_${name}`, `Update <${name}>`);
             location.modals[`update_${name}`] = () => modal.open();
+        } else if (SelectField.isSuggest(location)) {
+            location.options.push({
+                id: `update_${name}`,
+                actionLabel: `<span>Update <b>${name}</b></span>`,
+                action: () => modal.open(),
+                icon: FieldIcon[FieldType.Select]
+            });
         };
     };
 

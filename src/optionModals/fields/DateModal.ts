@@ -6,6 +6,7 @@ import { FieldManager } from "src/fields/FieldManager";
 import { moment } from "obsidian";
 import flatpickr from "flatpickr";
 import MetadataMenu from "main";
+import { FieldIcon, FieldType } from "src/types/fieldTypes";
 
 export default class DateModal extends Modal {
 
@@ -115,7 +116,7 @@ export default class DateModal extends Modal {
             this.value = value
         });
         const calendarDisplayBtn = inputContainer.createEl("div", { cls: "metadata-menu-calendar-display-btn" })
-        setIcon(calendarDisplayBtn, "calendar-with-checkmark");
+        setIcon(calendarDisplayBtn, FieldIcon[FieldType.Date]);
         const datePickerContainer = form.createDiv({ cls: "metadata-menu-picker-container" });
         const datePicker = flatpickr(datePickerContainer, {
             locale: {

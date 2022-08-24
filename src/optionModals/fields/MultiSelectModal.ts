@@ -67,6 +67,11 @@ export default class MultiSelectModal extends Modal {
         const cancelButton = new ExtraButtonComponent(footer);
         cancelButton.setIcon("cross");
         cancelButton.onClick(() => this.close());
+        this.contentEl.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                saveButton.buttonEl.focus();
+            }
+        })
     };
 
     private buildValueToggler(valueGrid: HTMLDivElement, presetOption: string) {

@@ -1,28 +1,33 @@
 import MetadataMenu from "main";
-import { App, TFile, Menu, MarkdownView } from "obsidian";
-import Field from "src/fields/Field";
-import { FieldType, FieldManager } from "src/types/fieldTypes";
-import chooseSectionModal from "../optionModals/chooseSectionModal";
-import SelectModal from "src/optionModals/SelectModal";
-import { createFileClass, FileClass } from "src/fileClass/fileClass";
+import { App, MarkdownView, Menu, TFile } from "obsidian";
 import { getField } from "src/commands/getField";
-import FileClassAttributeSelectModal from "src/fileClass/FileClassAttributeSelectModal";
-import { getLineFields } from "../utils/parser";
-import Managers from "src/fields/fieldManagers/Managers";
+import Field from "src/fields/Field";
 import { FieldManager as F } from "src/fields/FieldManager";
+import Managers from "src/fields/fieldManagers/Managers";
+import { createFileClass, FileClass } from "src/fileClass/fileClass";
+import FileClassAttributeSelectModal from "src/fileClass/FileClassAttributeSelectModal";
 import FileClassQuery from "src/fileClass/FileClassQuery";
+import SelectModal from "src/optionModals/SelectModal";
+import { FieldManager, FieldType } from "src/types/fieldTypes";
+import chooseSectionModal from "../optionModals/chooseSectionModal";
+import FieldCommandSuggestModal from "../optionModals/FieldCommandSuggestModal";
+import { getLineFields } from "../utils/parser";
 
-function isMenu(location: Menu | SelectModal | "Command"): location is Menu {
+function isMenu(location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal): location is Menu {
 	return (location as Menu).addItem !== undefined;
 };
 
-function isSelect(location: Menu | SelectModal | "Command"): location is SelectModal {
+function isSelect(location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal): location is SelectModal {
 	return (location as SelectModal).modals !== undefined;
 };
 
-function isPaletteCommand(location: Menu | SelectModal | "Command"): location is "Command" {
-	return (location as string) === "Command";
+function isInsertFieldCommand(location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal): location is "InsertFieldCommand" {
+	return (location as string) === "InsertFieldCommand";
 }
+
+function isSuggest(location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal): location is FieldCommandSuggestModal {
+	return (location as FieldCommandSuggestModal).getItems !== undefined;
+};
 
 export default class OptionsList {
 
@@ -32,13 +37,13 @@ export default class OptionsList {
 	file: TFile;
 	plugin: MetadataMenu;
 	path: string;
-	location: Menu | SelectModal | "Command";
+	location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal;
 	fileClass: FileClass;
 	attributes: Record<string, string>;
 	fileClassForFields: boolean;
 	fileClassFields: string[];
 
-	constructor(plugin: MetadataMenu, file: TFile, location: Menu | SelectModal | "Command") {
+	constructor(plugin: MetadataMenu, file: TFile, location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal) {
 		this.file = file;
 		this.plugin = plugin;
 		this.location = location;
@@ -120,7 +125,7 @@ export default class OptionsList {
 		});
 	}
 
-	public async createExtraOptionList(): Promise<void> {
+	public async createExtraOptionList(openAfterCreate: boolean = true): Promise<void> {
 		await this.getGlobalFileClassForFields();
 		await this.getQueryFileClassForFields();
 		await this.fetchFrontmatterFields();
@@ -137,11 +142,22 @@ export default class OptionsList {
 			} else if (isSelect(this.location)) {
 				this.location.addOption("manage_fileClass_attributes", `Manage <${this.fileClass.name}> fields`);
 				this.location.modals["manage_fileClass_attributes"] = () => fileClassAttributeSelectModal.open();
+			} else if (isSuggest(this.location)) {
+				this.location.options.push({
+					id: "manage_fileClass_attributes",
+					actionLabel: `<span>Manage <b>${this.fileClass.name}</b> fileClass fields</span>`,
+					action: () => fileClassAttributeSelectModal.open(),
+					icon: "wrench-screwdriver-glyph"
+				})
 			};
 		}
 		if (isMenu(this.location)) { this.location.addSeparator(); };
-		if (isPaletteCommand(this.location)) {
+		if (isInsertFieldCommand(this.location)) {
 			this.addFieldAtCurrentPositionOption();
+		} else if (isSuggest(this.location)) {
+			this.buildFieldOptions();
+			await this.addFieldAtCurrentPositionOption();
+			if (openAfterCreate) this.location.open();
 		} else {
 			this.buildFieldOptions();
 			this.addSectionSelectModalOption();
@@ -157,6 +173,11 @@ export default class OptionsList {
 				const fieldManager = new FieldManager[field.type](field);
 				fieldManager.addFieldOption(key, value, this.plugin.app, this.file, this.location);
 			} else if (isSelect(this.location)) {
+				const defaultField = new Field(key)
+				defaultField.type = FieldType.Input
+				const fieldManager = new Managers.Input(defaultField)
+				fieldManager.addFieldOption(key, value, this.plugin.app, this.file, this.location)
+			} else if (isSuggest(this.location)) {
 				const defaultField = new Field(key)
 				defaultField.type = FieldType.Input
 				const fieldManager = new Managers.Input(defaultField)
@@ -179,13 +200,19 @@ export default class OptionsList {
 		} else if (isSelect(this.location)) {
 			this.location.addOption("add_field_at_section", "Add field at section...");
 			this.location.modals["add_field_at_section"] = () => modal.open();
+		} else if (isSuggest(this.location)) {
+			this.location.options.push({
+				id: "add_field_at_section",
+				actionLabel: "Add field at section...",
+				action: () => modal.open()
+			})
 		};
 	};
 
 	private async addFieldAtCurrentPositionOption(): Promise<void> {
 		const lineNumber = this.plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor.getCursor().line;
 		const result = await this.plugin.app.vault.read(this.file)
-		if (lineNumber) {
+		if (lineNumber !== undefined) {
 			let inFrontmatter: boolean = false;
 			const frontmatter = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatter
 			if (frontmatter) {
@@ -206,9 +233,16 @@ export default class OptionsList {
 				this.location.addOption("add_field_at_cursor", "Add field at cursor...");
 				this.location.modals["add_field_at_cursor"] = () => F.openFieldOrFieldSelectModal(
 					this.plugin, this.file, undefined, lineNumber, result.split('\n')[lineNumber], inFrontmatter, false, this.fileClass);
-			} else if (isPaletteCommand(this.location)) {
+			} else if (isInsertFieldCommand(this.location)) {
 				F.openFieldOrFieldSelectModal(
 					this.plugin, this.file, undefined, lineNumber, result.split('\n')[lineNumber], inFrontmatter, false, this.fileClass);
+			} else if (isSuggest(this.location)) {
+				this.location.options.push({
+					id: "add_field_at_cursor",
+					actionLabel: "Add field at cursor...",
+					action: () => F.openFieldOrFieldSelectModal(
+						this.plugin, this.file, undefined, lineNumber, result.split('\n')[lineNumber], inFrontmatter, false, this.fileClass)
+				})
 			};
 		}
 	}

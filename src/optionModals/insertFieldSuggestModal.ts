@@ -1,12 +1,18 @@
-import { Modal, DropdownComponent, TFile, FuzzySuggestModal, TextComponent } from "obsidian";
 import MetadataMenu from "main";
-import addNewFieldModal from "./addNewFieldModal";
-import { FileClass } from "src/fileClass/fileClass";
+import { FuzzyMatch, FuzzySuggestModal, setIcon, TFile } from "obsidian";
 import Field from "src/fields/Field";
-import { FieldManager, FieldType } from "src/types/fieldTypes";
+import { FileClass } from "src/fileClass/fileClass";
+import { FieldIcon, FieldManager, FieldType, FieldTypeTagClass } from "src/types/fieldTypes";
+import addNewFieldModal from "./addNewFieldModal";
 
 
-export default class InsertFieldSuggestModal extends FuzzySuggestModal<string> {
+interface Option {
+    actionLabel: string,
+    type?: FieldType
+}
+
+
+export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
     private lineNumber: number;
     private line: string;
     private plugin: MetadataMenu;
@@ -26,25 +32,44 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<string> {
         this.fileClass = fileClass
     };
 
-    getItems(): string[] {
+    getItems(): Option[] {
         if (this.fileClass) {
-            return ['++New++'].concat(this.fileClass.attributes.map(attr => attr.name));
+            return [{ actionLabel: '++New++' }]
+                .concat(this.fileClass.attributes.map(attr => {
+                    return { actionLabel: attr.name, type: attr.type }
+                }));
         } else {
-            return ['++New++'].concat(this.plugin.settings.presetFields.map(setting => setting.name));
+            return [{ actionLabel: '++New++' }]
+                .concat(this.plugin.settings.presetFields.map(setting => {
+                    return { actionLabel: setting.name, type: setting.type }
+                }));
         };
     }
 
-    getItemText(item: string): string {
-        return item;
+    getItemText(item: Option): string {
+        return item.actionLabel;
     }
 
-    onChooseItem(item: string, evt: MouseEvent | KeyboardEvent): void {
-        if (item === "++New++") {
+    renderSuggestion(item: FuzzyMatch<Option>, el: HTMLElement): void {
+        el.addClass("metadata-menu-command-suggest-item")
+        const iconContainer = el.createDiv({ cls: "metadata-menu-command-suggest-icon" })
+        item.item.type ? setIcon(iconContainer, FieldIcon[item.item.type]) : setIcon(iconContainer, "plus-with-circle")
+        el.createDiv({ text: item.item.actionLabel, cls: "metadata-menu-command-suggest-action-label" })
+        el.createDiv({ cls: "metadata-menu-command-suggest-spacer" })
+        if (item.item.type) {
+            const typeContainer = el.createEl("div")
+            typeContainer.setAttr("class", `metadata-menu-setting-item-info-type ${FieldTypeTagClass[item.item.type]}`)
+            typeContainer.setText(item.item.type)
+        }
+    }
+
+    onChooseItem(item: Option, evt: MouseEvent | KeyboardEvent): void {
+        if (item.actionLabel === "++New++") {
             const newFieldModal = new addNewFieldModal(this.plugin, this.lineNumber, this.file, this.inFrontmatter, this.top);
             newFieldModal.open();
             this.close();
         } else if (this.fileClass) {
-            const fileClassAttributesWithName = this.fileClass.attributes.filter(attr => attr.name == item);
+            const fileClassAttributesWithName = this.fileClass.attributes.filter(attr => attr.name == item.actionLabel);
             let field: Field | undefined
             let type: FieldType | undefined
             if (fileClassAttributesWithName.length > 0) {
@@ -58,7 +83,7 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<string> {
             }
             this.close()
         } else {
-            const field = this.plugin.settings.presetFields.filter(_field => _field.name == item)[0];
+            const field = this.plugin.settings.presetFields.filter(_field => _field.name == item.actionLabel)[0];
             const fieldManager = new FieldManager[field.type](field);
             fieldManager.createAndOpenFieldModal(this.app, this.file, item, this.lineNumber, this.inFrontmatter, this.top);
             this.close();

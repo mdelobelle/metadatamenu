@@ -33,6 +33,7 @@ export default class InputModal extends Modal {
             let next = tF.next();
             while (!next.done) {
                 if (next.value.groups) {
+                    console.log(next.value)
                     const value = next.value.groups.field
                     const [name, optionsString] = value.split(":").map(v => v.trim())
                     this.templateValues[name] = "";
@@ -55,8 +56,7 @@ export default class InputModal extends Modal {
     private renderValue() {
         let renderedString = this.field.options.template.slice()
         Object.keys(this.templateValues).forEach(k => {
-            const fieldRegex = new RegExp(`\\{\\{${k}(:[^\\}]*)?\\}\\}`, "u")
-            console.log(renderedString.match(fieldRegex));
+            const fieldRegex = new RegExp(`\\{\\{${k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(:[^\\}]*)?\\}\\}`, "u")
             renderedString = renderedString.replace(fieldRegex, this.templateValues[k])
         })
 
