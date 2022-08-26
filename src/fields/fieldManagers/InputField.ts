@@ -1,10 +1,11 @@
-import { FieldType } from "src/types/fieldTypes";
+import MetadataMenu from "main";
+import { App, Menu, setIcon, TextAreaComponent, TFile } from "obsidian";
+import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
+import InputModal from "src/optionModals/fields/InputModal";
+import FieldSelectModal from "src/optionModals/SelectModal";
+import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
-import InputModal from "src/optionModals/fields/InputModal";
-import { App, Menu, TextAreaComponent, TFile } from "obsidian";
-import FieldSelectModal from "src/optionModals/SelectModal";
-import MetadataMenu from "main";
 
 export default class InputField extends FieldManager {
 
@@ -16,19 +17,26 @@ export default class InputField extends FieldManager {
         return this.field.options.template
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | FieldSelectModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal | FieldCommandSuggestModal): void {
         const modal = new InputModal(app, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
-        if (InputField.isMenu(category)) {
-            category.addItem((item) => {
+        if (InputField.isMenu(location)) {
+            location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
-                item.setIcon('pencil');
+                item.setIcon(FieldIcon[FieldType.Input]);
                 item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             })
-        } else if (InputField.isSelect(category)) {
-            category.addOption(`update_${name}`, `Update <${name}>`);
-            category.modals[`update_${name}`] = () => modal.open();
+        } else if (InputField.isSelect(location)) {
+            location.addOption(`update_${name}`, `Update <${name}>`);
+            location.modals[`update_${name}`] = () => modal.open();
+        } else if (InputField.isSuggest(location)) {
+            location.options.push({
+                id: `update_${name}`,
+                actionLabel: `<span>Update <b>${name}</b></span>`,
+                action: () => modal.open(),
+                icon: FieldIcon[FieldType.Input]
+            });
         };
     };
 
@@ -36,6 +44,8 @@ export default class InputField extends FieldManager {
         const templateContainer = parentContainer.createDiv();
         templateContainer.createEl("span", { text: "Template", cls: 'metadata-menu-field-option' })
         const templateValue = new TextAreaComponent(templateContainer)
+        templateValue.inputEl.cols = 50;
+        templateValue.inputEl.rows = 4;
         templateValue.setValue(this.field.options.template || "")
         templateValue.onChange((value: string) => {
             this.field.options.template = value;
@@ -72,7 +82,7 @@ export default class InputField extends FieldManager {
         spacer.setAttr("class", "metadata-menu-dv-field-spacer")
         /* button to display input */
         const button = document.createElement("button")
-        button.setText("🖍")
+        setIcon(button, FieldIcon[FieldType.Input])
         button.setAttr('class', "metadata-menu-dv-field-button")
         if (!attrs?.options?.alwaysOn) {
             button.hide()
@@ -88,7 +98,7 @@ export default class InputField extends FieldManager {
         }
 
         const validateIcon = document.createElement("button")
-        validateIcon.textContent = "✅"
+        setIcon(validateIcon, "checkmark")
         validateIcon.setAttr("class", "metadata-menu-dv-field-button")
         validateIcon.onclick = (e) => {
             InputField.replaceValues(plugin.app, p["file"]["path"], this.field.name, input.value);
@@ -97,7 +107,7 @@ export default class InputField extends FieldManager {
         inputContainer?.appendChild(validateIcon)
         const cancelIcon = document.createElement("button")
         cancelIcon.setAttr("class", "metadata-menu-dv-field-button")
-        cancelIcon.textContent = "❌"
+        setIcon(cancelIcon, "cross");
         cancelIcon.onclick = (e) => {
             fieldContainer.removeChild(inputContainer)
             fieldContainer.appendChild(button)

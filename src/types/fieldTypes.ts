@@ -54,3 +54,14 @@ export const FieldManager: Record<keyof typeof FieldType, any> = {
     "File": Managers.File,
     "Date": Managers.Date
 }
+
+export const FieldIcon: Record<keyof typeof FieldType, string> = {
+    "Input": "pencil",
+    "Select": "right-triangle",
+    "Multi": "bullet-list",
+    "Cycle": "switch",
+    "Boolean": "checkmark",
+    "Number": "plus-minus-glyph",
+    "File": "link",
+    "Date": "calendar-with-checkmark"
+}

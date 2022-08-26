@@ -88,7 +88,7 @@ class FileClass {
     public async getAttributes(excludeParents: boolean = false): Promise<void> {
         try {
             const file = this.getClassFile();
-            let attributes: Array<FileClassAttribute> = [];
+            let parentAttributes: Array<FileClassAttribute> = [];
             let errors: string[] = [];
             const result = await this.plugin.app.vault.cachedRead(file)
             const parent = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.extends
@@ -97,11 +97,12 @@ class FileClass {
                 try {
                     const parentFileClass = await createFileClass(this.plugin, parent);
                     await parentFileClass.getAttributes();
-                    attributes = [...parentFileClass.attributes]
+                    parentAttributes = Array.isArray(excludedFields) ? [...parentFileClass.attributes.filter(attr => !excludedFields.includes(attr.name))] : [...parentFileClass.attributes]
                 } catch (error) {
                     errors.push(error)
                 }
             }
+            let attributes: Array<FileClassAttribute> = [];
             result.split('\n').forEach(line => {
                 try {
                     const attribute = new FileClassAttribute(line, this.name);
@@ -110,7 +111,7 @@ class FileClass {
                     errors.push(error);
                 }
             })
-            this.attributes = Array.isArray(excludedFields) ? attributes.filter(attr => !excludedFields.includes(attr.name)) : attributes;
+            this.attributes = parentAttributes.filter(attr => !attributes.map(_attr => _attr.name).includes(attr.name)).concat(attributes)
             this.errors = errors;
         } catch (error) {
             throw (error);

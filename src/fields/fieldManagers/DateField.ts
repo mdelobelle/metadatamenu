@@ -1,11 +1,11 @@
-import { FieldType } from "src/types/fieldTypes";
-import { FieldManager, SettingLocation } from "../FieldManager";
-import Field from "../Field";
-import { App, TFile, Menu, TextComponent, ToggleComponent, Notice } from "obsidian";
-import SelectModal from "src/optionModals/SelectModal";
 import MetadataMenu from "main";
-import { moment } from "obsidian";
+import { App, Menu, moment, setIcon, TextComponent, TFile, ToggleComponent } from "obsidian";
+import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
 import DateModal from "src/optionModals/fields/DateModal";
+import SelectModal from "src/optionModals/SelectModal";
+import { FieldIcon, FieldType } from "src/types/fieldTypes";
+import Field from "../Field";
+import { FieldManager, SettingLocation } from "../FieldManager";
 
 export default class DateField extends FieldManager {
 
@@ -16,19 +16,26 @@ export default class DateField extends FieldManager {
         super(field, FieldType.Date)
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | SelectModal | FieldCommandSuggestModal): void {
         const modal = new DateModal(app, file, this.field, value);
         modal.titleEl.setText(`Change date for <${name}>`);
-        if (DateField.isMenu(category)) {
-            category.addItem((item) => {
+        if (DateField.isMenu(location)) {
+            location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
-                item.setIcon('calendar-glyph');
+                item.setIcon(FieldIcon[FieldType.Date]);
                 item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             })
-        } else if (DateField.isSelect(category)) {
-            category.addOption(`update_${name}`, `Update <${name}>`);
-            category.modals[`update_${name}`] = () => modal.open();
+        } else if (DateField.isSelect(location)) {
+            location.addOption(`update_${name}`, `Update <${name}>`);
+            location.modals[`update_${name}`] = () => modal.open();
+        } else if (DateField.isSuggest(location)) {
+            location.options.push({
+                id: `update_${name}`,
+                actionLabel: `<span>Update <b>${name}</b></span>`,
+                action: () => modal.open(),
+                icon: FieldIcon[FieldType.Date]
+            })
         };
     }
 
@@ -84,7 +91,7 @@ export default class DateField extends FieldManager {
     ): Promise<void> {
         const fieldValue = dv.el('span', p[this.field.name], attrs);
         const dateBtn = document.createElement("button")
-        dateBtn.setText("📆")
+        setIcon(dateBtn, FieldIcon[FieldType.Date])
         dateBtn.addClass("metadata-menu-dv-field-button")
         /* end spacer */
         const spacer = document.createElement("div")

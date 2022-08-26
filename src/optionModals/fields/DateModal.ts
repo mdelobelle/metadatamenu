@@ -1,4 +1,4 @@
-import { App, Modal, TextComponent, TFile, ToggleComponent, ButtonComponent } from "obsidian";
+import { App, Modal, TextComponent, TFile, ToggleComponent, ButtonComponent, setIcon } from "obsidian";
 import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
@@ -6,6 +6,7 @@ import { FieldManager } from "src/fields/FieldManager";
 import { moment } from "obsidian";
 import flatpickr from "flatpickr";
 import MetadataMenu from "main";
+import { FieldIcon, FieldType } from "src/types/fieldTypes";
 
 export default class DateModal extends Modal {
 
@@ -115,8 +116,7 @@ export default class DateModal extends Modal {
             this.value = value
         });
         const calendarDisplayBtn = inputContainer.createEl("div", { cls: "metadata-menu-calendar-display-btn" })
-        calendarDisplayBtn.setText("📆")
-
+        setIcon(calendarDisplayBtn, FieldIcon[FieldType.Date]);
         const datePickerContainer = form.createDiv({ cls: "metadata-menu-picker-container" });
         const datePicker = flatpickr(datePickerContainer, {
             locale: {

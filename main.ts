@@ -1,16 +1,16 @@
-import { Plugin, MarkdownView, FileView, TFile } from 'obsidian';
-import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
-import { MetadataMenuSettings, DEFAULT_SETTINGS } from "src/settings/MetadataMenuSettings";
+import { FileView, MarkdownView, Plugin, TFile } from 'obsidian';
+import Field from 'src/fields/Field';
+import FileClassAttributeSelectModal from 'src/fileClass/FileClassAttributeSelectModal';
+import FileClassQuery from 'src/fileClass/FileClassQuery';
 import type { IMetadataMenuApi } from 'src/MetadataMenuApi';
 import { MetadataMenuApi } from 'src/MetadataMenuApi';
-import Field from 'src/fields/Field';
+import FieldCommandSuggestModal from 'src/optionModals/FieldCommandSuggestModal';
 import linkContextMenu from "src/options/linkContextMenu";
-import NoteFieldsCommandsModal from "src/options/NoteFieldsCommandsModal";
-import FileClassAttributeSelectModal from 'src/fileClass/FileClassAttributeSelectModal';
-import ValueSuggest from "src/suggester/metadataSuggester";
-import { migrateSettingsV1toV2 } from 'src/settings/migrateSettingV1toV2';
 import OptionsList from 'src/options/OptionsList';
-import FileClassQuery from 'src/fileClass/FileClassQuery';
+import { DEFAULT_SETTINGS, MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
+import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
+import { migrateSettingsV1toV2 } from 'src/settings/migrateSettingV1toV2';
+import ValueSuggest from "src/suggester/metadataSuggester";
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -43,18 +43,7 @@ export default class MetadataMenu extends Plugin {
 		this.registerEditorSuggest(new ValueSuggest(this.app, this));
 		this.api = new MetadataMenuApi(this).make();
 
-		this.addCommand({
-			id: "field_options",
-			name: "field options",
-			checkCallback: (checking: boolean) => {
-				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
-				if (checking) {
-					return !!(view?.file)
-				}
-				const fieldsOptionsModal = new NoteFieldsCommandsModal(this.app, this, view!.file)
-				fieldsOptionsModal.open()
-			},
-		});
+		this.addFieldCommand();
 
 		this.addInsertFieldAtPositionCommand();
 
@@ -67,6 +56,7 @@ export default class MetadataMenu extends Plugin {
 						if (file.parent.path + "/" !== this.settings.classFilesPath) {
 							this.addInsertFieldAtPositionCommand()
 						}
+						this.addFieldCommand();
 					}
 				}
 			})
@@ -101,10 +91,26 @@ export default class MetadataMenu extends Plugin {
 				if (checking) {
 					return !!(view?.file)
 				}
-				const optionsList = new OptionsList(this, view!.file, "Command");
+				const optionsList = new OptionsList(this, view!.file, "InsertFieldCommand");
 				optionsList.createExtraOptionList();
 			}
 		})
+	}
+
+	private addFieldCommand() {
+		this.addCommand({
+			id: "field_options",
+			name: "field options",
+			checkCallback: (checking: boolean) => {
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
+				if (checking) {
+					return !!(view?.file)
+				}
+				const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.app)
+				const optionsList = new OptionsList(this, view!.file, fieldCommandSuggestModal);
+				optionsList.createExtraOptionList();
+			},
+		});
 	}
 
 	async loadSettings() {

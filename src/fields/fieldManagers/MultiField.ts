@@ -1,10 +1,11 @@
-import { FieldType } from "src/types/fieldTypes";
+import MetadataMenu from "main";
+import { App, Menu, setIcon, TextComponent, TFile } from "obsidian";
+import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
+import MultiSelectModal from "src/optionModals/fields/MultiSelectModal";
+import FieldSelectModal from "src/optionModals/SelectModal";
+import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
-import { App, Menu, TFile, TextComponent } from "obsidian";
-import FieldSelectModal from "src/optionModals/SelectModal";
-import MetadataMenu from "main";
-import MultiSelectModal from "src/optionModals/fields/MultiSelectModal";
 
 export default class MultiField extends AbstractListBasedField {
 
@@ -15,19 +16,26 @@ export default class MultiField extends AbstractListBasedField {
         super(field, FieldType.Multi)
     }
 
-    addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | FieldSelectModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal | FieldCommandSuggestModal): void {
         const modal = new MultiSelectModal(app, file, this.field, value);
         modal.titleEl.setText("Select values");
-        if (MultiField.isMenu(category)) {
-            category.addItem((item) => {
+        if (MultiField.isMenu(location)) {
+            location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
-                item.setIcon('bullet-list');
+                item.setIcon(FieldIcon[FieldType.Multi]);
                 item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             });
-        } else if (MultiField.isSelect(category)) {
-            category.addOption(`update_${name}`, `Update <${name}>`);
-            category.modals[`update_${name}`] = () => modal.open();
+        } else if (MultiField.isSelect(location)) {
+            location.addOption(`update_${name}`, `Update <${name}>`);
+            location.modals[`update_${name}`] = () => modal.open();
+        } else if (MultiField.isSuggest(location)) {
+            location.options.push({
+                id: `update_${name}`,
+                actionLabel: `<span>Update <b>${name}</b></span>`,
+                action: () => modal.open(),
+                icon: FieldIcon[FieldType.Multi]
+            });
         };
     };
 
@@ -100,7 +108,7 @@ export default class MultiField extends AbstractListBasedField {
             }
         }
         const closeSelect = document.createElement("button");
-        closeSelect.setText("\u274C");
+        setIcon(closeSelect, "cross");
         closeSelect.addClass("metadata-menu-dv-field-button");
         closeSelect.addClass("multi");
         closeSelect.onclick = () => {
@@ -122,7 +130,7 @@ export default class MultiField extends AbstractListBasedField {
 
 
             const valueRemoveBtn = document.createElement("button");
-            valueRemoveBtn.setText("❌");
+            setIcon(valueRemoveBtn, "cross")
             valueRemoveBtn.addClass("metadata-menu-dv-field-button");
             valueRemoveBtn.addClass("multi");
             valueRemoveBtn.hide();
@@ -157,7 +165,7 @@ export default class MultiField extends AbstractListBasedField {
 
         /* button to display input */
         const addBtn = document.createElement("button");
-        addBtn.setText("➕");
+        setIcon(addBtn, "bullet-list");
         addBtn.setAttr('class', "metadata-menu-dv-field-button");
 
         valuesContainer.appendChild(addBtn);

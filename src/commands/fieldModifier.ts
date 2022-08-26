@@ -4,7 +4,7 @@ import { createFileClass } from "src/fileClass/fileClass";
 import { FieldManager } from "src/types/fieldTypes";
 import { FieldManager as F } from "src/fields/FieldManager";
 import chooseSectionModal from "src/optionModals/chooseSectionModal";
-import { TFile } from "obsidian";
+import { setIcon, TFile } from "obsidian";
 
 export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }): Promise<HTMLElement> {
 
@@ -20,7 +20,7 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
             fieldContainer.appendChild(emptyField);
         } else {
             const addFieldBtn = dv.el("button", attrs);
-            addFieldBtn.setText("⊕");
+            setIcon(addFieldBtn, "plus-with-circle")
             addFieldBtn.addClass("metadata-menu-dv-field-button");
             addFieldBtn.addClass("isolated");
             addFieldBtn.onclick = async () => {

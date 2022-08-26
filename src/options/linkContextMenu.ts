@@ -1,8 +1,8 @@
-import { FileView, TFile } from "obsidian";
 import MetadataMenu from "main";
-import OptionsList from "src/options/OptionsList";
+import { TFile } from "obsidian";
 import FileClassAttributeSelectModal from "src/fileClass/FileClassAttributeSelectModal";
-import NoteFieldsCommandsModal from "./NoteFieldsCommandsModal";
+import OptionsList from "src/options/OptionsList";
+import FieldCommandSuggestModal from "../optionModals/FieldCommandSuggestModal";
 
 export default class linkContextMenu {
 	private plugin: MetadataMenu;
@@ -26,7 +26,7 @@ export default class linkContextMenu {
 					if (file.parent.path + "/" == this.plugin.settings.classFilesPath) {
 						menu.addSeparator();
 						menu.addItem((item) => {
-							item.setIcon("gear");
+							item.setIcon("wrench-screwdriver-glyph");
 							item.setTitle(`Manage <${file.basename}> fields`);
 							item.onClick((evt) => {
 								const fileClassAttributeSelectModal = new FileClassAttributeSelectModal(this.plugin, file);
@@ -41,16 +41,15 @@ export default class linkContextMenu {
 						} else {
 
 							//New Field
-							this.optionsList = new OptionsList(this.plugin, this.file, menu);
+							const fieldOptions = new FieldCommandSuggestModal(app);
+							this.optionsList = new OptionsList(this.plugin, this.file, fieldOptions);
+							this.optionsList.createExtraOptionList(false);
 
 							//Field Options
 							menu.addItem((item) => {
 								item.setIcon("bullet-list"),
 									item.setTitle(`Field Options`),
-									item.onClick((evt) => {
-										const fieldOptions = new NoteFieldsCommandsModal(app, this.plugin, file);
-										fieldOptions.open();
-									})
+									item.onClick((evt) => { fieldOptions.open(); })
 								item.setSection("target-metadata");
 							})
 						}

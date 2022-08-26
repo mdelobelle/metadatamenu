@@ -158,6 +158,11 @@
     vertical-align: top
 }
 
+.metadata-menu-input-label {
+    font-weight: 500;
+    margin-top: 1em;
+}
+
 .metadata-menu-modal-value .checkbox-container {
     margin-right: 1em;
     margin-top: 3px;
@@ -226,6 +231,7 @@
 
 .metadata-menu-setting-item-name{
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .metadata-menu-setting-item span{
@@ -293,17 +299,44 @@
     min-width: 20em;
 }
 
+.metadata-menu-command-suggest-item{
+    display: flex;
+}
+
+.metadata-menu-command-suggest-icon{
+    margin: 0.2em 0.7em 0em 0.3em;
+}
+
+.metadata-menu-command-suggest-action-label{
+    white-space: nowrap;
+}
+
+.metadata-menu-command-suggest-spacer{
+    width: 100%;
+}
+
 /* dataview fields Styling */
 
 .metadata-menu-dv-field-button {
-    font-size: small;
     min-width: calc(var(--font-text-size) * 1.4);
     padding: 0 0.375em 0 0;
     margin-right: 0.375em;
 }
 
+.metadata-menu-dv-field-button svg {
+    width: 12px;
+    height: 12px;
+    margin: 0.3em 0.2em 0.2em 0.5em;
+}
+
 .metadata-menu-dv-field-button.isolated {
     padding-left: 0.375em;
+}
+
+.metadata-menu-dv-field-button.isolated svg {
+    width: 12px;
+    height: 12px;
+    margin: 0.3em 0.2em 0.2em 0.2em;
 }
 
 .metadata-menu-dv-field-button.active {

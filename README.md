@@ -19,6 +19,12 @@ https://youtu.be/sYudigxPEnY
 demo 4: Date type fields
 https://youtu.be/PrbYaVh7N7g
 
+demo 5: Templates for Input type fields:
+https://youtu.be/Mq2tbA0RVM8
+
+demo 6: FileClass
+https://youtu.be/QxXSuh7HUZY
+
 
 # General concepts
 

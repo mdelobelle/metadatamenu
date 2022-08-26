@@ -32,10 +32,13 @@ export default class BooleanModal extends Modal {
 
     private buildToggleEl(inputDiv: HTMLDivElement): void {
         const toggleEl = new ToggleComponent(inputDiv);
-        toggleEl.setValue(this.value);
-        toggleEl.onChange(value => { this.value = value })
         const footer = this.contentEl.createDiv({ cls: "metadata-menu-value-grid-footer" });
         const saveButton = new ButtonComponent(footer);
+        toggleEl.setValue(this.value);
+        toggleEl.onChange(value => {
+            this.value = value;
+            saveButton.buttonEl.focus();
+        })
         saveButton.setIcon("checkmark");
         saveButton.onClick(async () => {
             const value = this.value.toString()

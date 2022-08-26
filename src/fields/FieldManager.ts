@@ -1,13 +1,13 @@
-import { App, TFile, Menu, TextComponent, Command } from "obsidian";
-import SelectModal from "src/optionModals/SelectModal";
-import { FieldType } from "src/types/fieldTypes";
-import Field from "./Field";
-import FieldSettingsModal from "src/settings/FieldSettingsModal";
-import { replaceValues } from "src/commands/replaceValues";
 import MetadataMenu from "main";
-import { FieldManager as FM } from "src/types/fieldTypes";
-import fieldSelectModal from "src/optionModals/fieldSelectModal";
+import { App, Menu, TextComponent, TFile } from "obsidian";
+import { replaceValues } from "src/commands/replaceValues";
 import { FileClass } from "src/fileClass/fileClass";
+import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
+import InsertFieldSuggestModal from "src/optionModals/insertFieldSuggestModal";
+import SelectModal from "src/optionModals/SelectModal";
+import FieldSettingsModal from "src/settings/FieldSettingsModal";
+import { FieldManager as FM, FieldType } from "src/types/fieldTypes";
+import Field from "./Field";
 
 
 export interface FieldManager {
@@ -21,7 +21,7 @@ export const enum SettingLocation {
 
 export abstract class FieldManager {
 
-    abstract addMenuOption(name: string, value: string, app: App, file: TFile, category: Menu | SelectModal): void;
+    abstract addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | SelectModal | FieldCommandSuggestModal): void;
     abstract validateOptions(): boolean;
     abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
     abstract createDvField(plugin: MetadataMenu, dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }): Promise<void>
@@ -63,17 +63,20 @@ export abstract class FieldManager {
         }
     }
 
-    public static isMenu(category: Menu | SelectModal | "Command"): category is Menu {
-        return (category as Menu).addItem !== undefined;
+    public static isMenu(location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal): location is Menu {
+        return (location as Menu).addItem !== undefined;
     };
 
-    public static isSelect(category: Menu | SelectModal | "Command"): category is SelectModal {
-        return (category as SelectModal).modals !== undefined;
+    public static isSelect(location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal): location is SelectModal {
+        return (location as SelectModal).modals !== undefined;
     };
 
+    public static isSuggest(location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal): location is FieldCommandSuggestModal {
+        return (location as FieldCommandSuggestModal).getItems !== undefined;
+    };
 
-    public static isPaletteCommand(category: Menu | SelectModal | "Command"): category is "Command" {
-        return (category as string) === "Command";
+    public static isInsertFieldCommand(location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal): location is "InsertFieldCommand" {
+        return (location as string) === "InsertFieldCommand";
     }
 
     public static createAndOpenModal(plugin: MetadataMenu, file: TFile, fieldName: string, field: Field | undefined, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
@@ -88,7 +91,7 @@ export abstract class FieldManager {
 
     public static openFieldOrFieldSelectModal(plugin: MetadataMenu, file: TFile, fieldName: string | undefined, lineNumber: number, line: string, inFrontmatter: boolean, top: boolean, fileClass?: FileClass) {
         if (!fieldName) {
-            const modal = new fieldSelectModal(plugin, file, lineNumber, line, inFrontmatter, top, fileClass);
+            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, line, inFrontmatter, top, fileClass);
             modal.open();
         } else {
             if (fileClass) {
