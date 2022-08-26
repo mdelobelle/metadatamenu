@@ -79,13 +79,13 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
             }
             if (field) {
                 const fieldManager = new FieldManager[field.type](field);
-                fieldManager.createAndOpenFieldModal(this.app, this.file, item, this.lineNumber, this.inFrontmatter, this.top);
+                fieldManager.createAndOpenFieldModal(this.app, this.file, item.actionLabel, this.lineNumber, this.inFrontmatter, this.top);
             }
             this.close()
         } else {
             const field = this.plugin.settings.presetFields.filter(_field => _field.name == item.actionLabel)[0];
             const fieldManager = new FieldManager[field.type](field);
-            fieldManager.createAndOpenFieldModal(this.app, this.file, item, this.lineNumber, this.inFrontmatter, this.top);
+            fieldManager.createAndOpenFieldModal(this.app, this.file, item.actionLabel, this.lineNumber, this.inFrontmatter, this.top);
             this.close();
         };
     }
