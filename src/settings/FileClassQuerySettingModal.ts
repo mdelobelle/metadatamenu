@@ -4,7 +4,6 @@ import FileClassQuery from "src/fileClass/FileClassQuery";
 import FileClassQuerySetting from "./FileClassQuerySetting";
 
 export default class FileClassQuerySettingsModal extends Modal {
-    private namePromptComponent: TextComponent;
     private saved: boolean = false;
     private fileClassQuery: FileClassQuery;
     private plugin: MetadataMenu;
@@ -73,15 +72,17 @@ export default class FileClassQuerySettingsModal extends Modal {
         FileClassSelectorContainerLabel.setText(`Fileclass:`);
         const select = new DropdownComponent(parentNode);
         const fileClasses = this.plugin.app.vault.getFiles().filter(f => f.path.startsWith(this.plugin.settings.classFilesPath))
+        select.addOption("--Select a fileClass--", "--Select a fileClass--")
         fileClasses.forEach(fileClass => select.addOption(fileClass.basename, fileClass.basename))
         if (this.fileClassQuery.fileClassName) {
             select.setValue(this.fileClassQuery.fileClassName)
         }
         select.onChange(value => {
-            this.fileClassQuery = new FileClassQuery();
-            FileClassQuery.copyProperty(this.fileClassQuery, this.initialFileClassQuery);
-            this.fileClassQuery.name = this.namePromptComponent.getValue()
-            this.fileClassQuery.fileClassName = value
+            if (value != "--Select a fileClass--") {
+                this.fileClassQuery.fileClassName = value
+            } else {
+                this.fileClassQuery.fileClassName = ""
+            }
         })
     }
 
@@ -99,7 +100,7 @@ export default class FileClassQuerySettingsModal extends Modal {
 
         /* Sections */
         const nameContainer = mainDiv.createDiv();
-        this.namePromptComponent = this.createnameInputContainer(nameContainer);
+        this.createnameInputContainer(nameContainer);
         mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
 
         const fileClassSelectContainer = mainDiv.createDiv()
@@ -120,18 +121,20 @@ export default class FileClassQuerySettingsModal extends Modal {
         b.setTooltip("Save");
         b.setIcon("checkmark");
         b.onClick(async () => {
-            this.saved = true;
-            const currentExistingFileClassQuery = this.plugin.initialFileClassQueries.filter(p => p.id == this.fileClassQuery.id)[0];
-            if (currentExistingFileClassQuery) {
-                FileClassQuery.copyProperty(currentExistingFileClassQuery, this.fileClassQuery);
-            } else {
-                this.plugin.initialFileClassQueries.push(this.fileClassQuery);
-            };
-            FileClassQuery.copyProperty(this.initialFileClassQuery, this.fileClassQuery)
-            if (this.parentSetting) FileClassQuery.copyProperty(this.parentSetting.fileClassQuery, this.fileClassQuery);
-            this.parentSetting?.setTextContentWithname()
-            this.plugin.saveSettings();
-            this.close();
+            if (this.fileClassQuery.fileClassName && this.fileClassQuery.name && this.fileClassQuery.query) {
+                this.saved = true;
+                const currentExistingFileClassQuery = this.plugin.initialFileClassQueries.filter(p => p.id == this.fileClassQuery.id)[0];
+                if (currentExistingFileClassQuery) {
+                    FileClassQuery.copyProperty(currentExistingFileClassQuery, this.fileClassQuery);
+                } else {
+                    this.plugin.initialFileClassQueries.push(this.fileClassQuery);
+                };
+                FileClassQuery.copyProperty(this.initialFileClassQuery, this.fileClassQuery)
+                if (this.parentSetting) FileClassQuery.copyProperty(this.parentSetting.fileClassQuery, this.fileClassQuery);
+                this.parentSetting?.setTextContentWithname()
+                this.plugin.saveSettings();
+                this.close();
+            }
         });
         return b;
     };
