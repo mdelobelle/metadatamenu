@@ -22,9 +22,7 @@ export default class chooseSectionModal extends Modal {
 
         const result = await this.app.vault.read(this.file)
         this.titleEl.setText(`Add a ${this.fieldName ? "<" + this.fieldName + "> " : ""}field in this note after:`);
-        const container = this.contentEl.createDiv();
-
-        const selectEl = new DropdownComponent(container);
+        const selectEl = new DropdownComponent(this.contentEl);
         selectEl.selectEl.addClass("metadata-menu-field-add-section-select");
         selectEl.addOption("", "Select line");
         selectEl.addOption("top_0", "top");
@@ -72,7 +70,7 @@ export default class chooseSectionModal extends Modal {
 
 
         if (app.metadataCache.getCache(this.file.path)?.frontmatter) {
-            const addToFrontMatterBtn = new ButtonComponent(container)
+            const addToFrontMatterBtn = new ButtonComponent(this.contentEl)
             addToFrontMatterBtn.setClass("metadata-menu-field-add-frontmatter-btn")
             addToFrontMatterBtn.setButtonText("Add to frontmatter")
             addToFrontMatterBtn.onClick(() => {
@@ -81,7 +79,7 @@ export default class chooseSectionModal extends Modal {
                     this.plugin,
                     this.file,
                     this.fieldName,
-                    lineNumber,
+                    lineNumber + 1,
                     result.split('\n')[lineNumber],
                     true,
                     false,

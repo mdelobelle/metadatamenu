@@ -3,7 +3,6 @@ import { App, Menu, setIcon, TextComponent, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
 import SelectModal from "src/optionModals/fields/SelectModal";
-import FieldSelectModal from "src/optionModals/SelectModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
@@ -17,7 +16,7 @@ export default class CycleField extends AbstractListBasedField {
         super(field, FieldType.Cycle)
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal | FieldCommandSuggestModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const options = this.field.options;
         const keys = Object.keys(options);
         const keyForValue = keys.find(key => options[key] === value);
@@ -35,10 +34,6 @@ export default class CycleField extends AbstractListBasedField {
                 item.onClick(() => replaceValues(app, file, name, nextOption));
                 item.setSection("target-metadata");
             });
-        } else if (CycleField.isSelect(location)) {
-            location.addOption(`${name}_${value}_${nextOption}`, `${name} : ${value} ▷ ${nextOption}`);
-            location.modals[`${name}_${value}_${nextOption}`] = () =>
-                replaceValues(app, file, name, nextOption);
         } else if (CycleField.isSuggest(location)) {
             location.options.push({
                 id: `${name}_${value}_${nextOption}`,

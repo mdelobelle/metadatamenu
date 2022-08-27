@@ -2,7 +2,6 @@ import MetadataMenu from "main";
 import { App, Menu, Notice, setIcon, TextAreaComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
 import SingleFileModal from "src/optionModals/fields/SingleFileModal";
-import FieldSelectModal from "src/optionModals/SelectModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
@@ -53,7 +52,7 @@ export default class FileField extends FieldManager {
         }
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal | FieldCommandSuggestModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const modal = new SingleFileModal(app, file, this.field)
         modal.titleEl.setText("Select value");
         if (FileField.isMenu(location)) {
@@ -63,9 +62,6 @@ export default class FileField extends FieldManager {
                 item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             });
-        } else if (FileField.isSelect(location)) {
-            location.addOption(`update_${name}`, `Update <${name}>`);
-            location.modals[`update_${name}`] = () => modal.open();
         } else if (FileField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,

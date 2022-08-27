@@ -74,7 +74,7 @@
     margin-right: 10px
 }
 
-.metadata-menu-field-add-frontmatter-btn{
+button.metadata-menu-field-add-frontmatter-btn{
     width: 100%;
     font-size: 16px;
     padding: 0.5em 0;

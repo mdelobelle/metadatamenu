@@ -2,7 +2,6 @@ import MetadataMenu from "main";
 import { App, Menu, moment, setIcon, TextComponent, TFile, ToggleComponent } from "obsidian";
 import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
 import DateModal from "src/optionModals/fields/DateModal";
-import SelectModal from "src/optionModals/SelectModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager, SettingLocation } from "../FieldManager";
@@ -16,7 +15,7 @@ export default class DateField extends FieldManager {
         super(field, FieldType.Date)
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | SelectModal | FieldCommandSuggestModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const modal = new DateModal(app, file, this.field, value);
         modal.titleEl.setText(`Change date for <${name}>`);
         if (DateField.isMenu(location)) {
@@ -26,9 +25,6 @@ export default class DateField extends FieldManager {
                 item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             })
-        } else if (DateField.isSelect(location)) {
-            location.addOption(`update_${name}`, `Update <${name}>`);
-            location.modals[`update_${name}`] = () => modal.open();
         } else if (DateField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,

@@ -3,7 +3,6 @@ import { App, Menu, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
 import BooleanModal from "src/optionModals/fields/BooleanModal";
-import FieldSelectModal from "src/optionModals/SelectModal";
 import { FieldType, FieldIcon } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
@@ -14,7 +13,7 @@ export default class BooleanField extends FieldManager {
         super(field, FieldType.Boolean)
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal | FieldCommandSuggestModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const bValue = BooleanField.stringToBoolean(value);
         if (BooleanField.isMenu(location)) {
             location.addItem((item) => {
@@ -23,9 +22,6 @@ export default class BooleanField extends FieldManager {
                 item.onClick(() => replaceValues(app, file, name, (!bValue).toString()));
                 item.setSection("target-metadata");
             })
-        } else if (BooleanField.isSelect(location)) {
-            location.addOption(`update_${name}`, `<${name}> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);
-            location.modals[`update_${name}`] = () => replaceValues(app, file, name, (!bValue).toString());
         } else if (BooleanField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,

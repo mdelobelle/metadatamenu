@@ -4,7 +4,6 @@ import { replaceValues } from "src/commands/replaceValues";
 import { FileClass } from "src/fileClass/fileClass";
 import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
 import InsertFieldSuggestModal from "src/optionModals/insertFieldSuggestModal";
-import SelectModal from "src/optionModals/SelectModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldManager as FM, FieldType } from "src/types/fieldTypes";
 import Field from "./Field";
@@ -21,7 +20,7 @@ export const enum SettingLocation {
 
 export abstract class FieldManager {
 
-    abstract addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | SelectModal | FieldCommandSuggestModal): void;
+    abstract addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void;
     abstract validateOptions(): boolean;
     abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
     abstract createDvField(plugin: MetadataMenu, dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }): Promise<void>
@@ -63,19 +62,15 @@ export abstract class FieldManager {
         }
     }
 
-    public static isMenu(location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal): location is Menu {
+    public static isMenu(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal): location is Menu {
         return (location as Menu).addItem !== undefined;
     };
 
-    public static isSelect(location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal): location is SelectModal {
-        return (location as SelectModal).modals !== undefined;
-    };
-
-    public static isSuggest(location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal): location is FieldCommandSuggestModal {
+    public static isSuggest(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal): location is FieldCommandSuggestModal {
         return (location as FieldCommandSuggestModal).getItems !== undefined;
     };
 
-    public static isInsertFieldCommand(location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal): location is "InsertFieldCommand" {
+    public static isInsertFieldCommand(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal): location is "InsertFieldCommand" {
         return (location as string) === "InsertFieldCommand";
     }
 
