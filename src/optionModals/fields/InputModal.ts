@@ -33,7 +33,6 @@ export default class InputModal extends Modal {
             let next = tF.next();
             while (!next.done) {
                 if (next.value.groups) {
-                    console.log(next.value)
                     const value = next.value.groups.field
                     const [name, optionsString] = value.split(":").map(v => v.trim())
                     this.templateValues[name] = "";

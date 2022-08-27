@@ -58,7 +58,15 @@ export default class chooseSectionModal extends Modal {
             const lineNumber = Number(valueArray && valueArray.length > 1 ? valueArray[2] : 0);
             const inFrontmatter = position == "frontmatter" ? true : false;
             const top = position == "top" ? true : false;
-            F.openFieldOrFieldSelectModal(this.plugin, this.file, this.fieldName, lineNumber, result.split('\n')[lineNumber], inFrontmatter, top, this.fileClass)
+            F.openFieldOrFieldSelectModal(
+                this.plugin,
+                this.file,
+                this.fieldName,
+                lineNumber,
+                result.split('\n')[lineNumber],
+                inFrontmatter,
+                top,
+                this.fileClass)
             this.close();
         });
 
@@ -69,7 +77,15 @@ export default class chooseSectionModal extends Modal {
             addToFrontMatterBtn.setButtonText("Add to frontmatter")
             addToFrontMatterBtn.onClick(() => {
                 const lineNumber = result.split("\n").slice(1).findIndex(l => l === "---")
-                F.openFieldOrFieldSelectModal(this.plugin, this.file, this.fieldName, lineNumber, result.split('\n')[lineNumber], true, false, this.fileClass)
+                F.openFieldOrFieldSelectModal(
+                    this.plugin,
+                    this.file,
+                    this.fieldName,
+                    lineNumber,
+                    result.split('\n')[lineNumber],
+                    true,
+                    false,
+                    this.fileClass)
                 this.close();
             })
         }

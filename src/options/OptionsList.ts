@@ -157,11 +157,14 @@ export default class OptionsList {
 		} else if (isSuggest(this.location)) {
 			this.buildFieldOptions();
 			await this.addFieldAtCurrentPositionOption();
+			this.addSectionSelectModalOption();
+			await this.addFieldAtTheEndOfFrontmatterOption();
 			if (openAfterCreate) this.location.open();
 		} else {
 			this.buildFieldOptions();
 			this.addSectionSelectModalOption();
 			this.addFieldAtCurrentPositionOption();
+			this.addFieldAtTheEndOfFrontmatterOption();
 		}
 	}
 
@@ -204,10 +207,35 @@ export default class OptionsList {
 			this.location.options.push({
 				id: "add_field_at_section",
 				actionLabel: "Add field at section...",
-				action: () => modal.open()
+				action: () => modal.open(),
 			})
 		};
 	};
+
+	private async addFieldAtTheEndOfFrontmatterOption(): Promise<void> {
+		if (this.plugin.app.metadataCache.getCache(this.file.path)?.frontmatter) {
+			const result = await this.plugin.app.vault.read(this.file)
+			const lineNumber = result.split("\n").slice(1).findIndex(l => l === "---")
+			if (isMenu(this.location)) {
+				this.location.addItem((item) => {
+					item.setIcon("pin");
+					item.setTitle("Add field in frontmatter");
+					item.onClick(async (evt: MouseEvent) => {
+						F.openFieldOrFieldSelectModal(this.plugin, this.file, undefined, lineNumber, result.split('\n')[lineNumber], true, false)
+					});
+					item.setSection("target-metadata");
+				});
+			} else if (isSuggest(this.location)) {
+				this.location.options.push({
+					id: "add_field_in_frontmatter",
+					actionLabel: "Add a field in frontmatter...",
+					action: () => F.openFieldOrFieldSelectModal(
+						this.plugin, this.file, undefined, lineNumber, result.split('\n')[lineNumber], true, false, this.fileClass),
+					icon: "pin"
+				})
+			}
+		}
+	}
 
 	private async addFieldAtCurrentPositionOption(): Promise<void> {
 		const lineNumber = this.plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor.getCursor().line;

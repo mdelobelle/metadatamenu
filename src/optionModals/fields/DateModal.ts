@@ -58,8 +58,6 @@ export default class DateModal extends Modal {
         form.onsubmit = async (e: Event) => {
             e.preventDefault();
             let newValue: moment.Moment;
-            //@ts-ignore
-
             //try natural language date
             if (app.plugins.enabledPlugins.has('nldates-obsidian')) {
                 //@ts-ignore
@@ -81,6 +79,13 @@ export default class DateModal extends Modal {
                     insertValues(this.app, this.file, this.field.name, formattedValue, this.lineNumber, this.inFrontmatter, this.top);
                 };
                 this.close();
+            } else if (!this.value) {
+                if (this.lineNumber == -1) {
+                    replaceValues(this.app, this.file, this.field.name, "");
+                } else {
+                    insertValues(this.app, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.top);
+                };
+                this.close()
             } else {
                 this.errorField.show();
                 this.errorField.setText(`value must be a valid date`)
@@ -134,6 +139,5 @@ export default class DateModal extends Modal {
             datePicker.setDate(datePicker.parseDate(this.inputEl.getValue()) || new Date())
             datePicker.open()
         }
-
     };
 };
