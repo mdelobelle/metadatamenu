@@ -57,7 +57,7 @@ export default class chooseSectionModal extends Modal {
             const position = valueArray && valueArray.length > 0 ? valueArray[1] : 0;
             const lineNumber = Number(valueArray && valueArray.length > 1 ? valueArray[2] : 0);
             const inFrontmatter = position == "frontmatter" ? true : false;
-            const top = position == "top" ? true : false;
+            const after = position == "top" ? false : true;
             F.openFieldOrFieldSelectModal(
                 this.plugin,
                 this.file,
@@ -65,7 +65,7 @@ export default class chooseSectionModal extends Modal {
                 lineNumber,
                 result.split('\n')[lineNumber],
                 inFrontmatter,
-                top,
+                after,
                 this.fileClass)
             this.close();
         });

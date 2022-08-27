@@ -14,7 +14,7 @@ export default class DateModal extends Modal {
     private value: string;
     private lineNumber: number;
     private inFrontmatter: boolean;
-    private top: boolean;
+    private after: boolean;
     private insertAsLink: boolean;
     private field: Field;
     private inputEl: TextComponent;
@@ -22,7 +22,7 @@ export default class DateModal extends Modal {
     private format: string;
     private plugin: MetadataMenu;
 
-    constructor(app: App, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
+    constructor(app: App, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
         super(app);
         this.app = app;
         this.file = file;
@@ -30,7 +30,7 @@ export default class DateModal extends Modal {
         this.value = value.toString().replace(/^\[\[/g, "").replace(/\]\]$/g, "");
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
-        this.top = top;
+        this.after = after;
         this.insertAsLink = FieldManager.stringToBoolean(this.field.options.defaultInsertAsLink || "false") || false;
         this.format = this.field.options.dateFormat || this.field.options.defaultDateFormat;
         if (this.app.plugins.enabledPlugins.has("metadata-menu")) {
@@ -76,14 +76,14 @@ export default class DateModal extends Modal {
                 if (this.lineNumber == -1) {
                     replaceValues(this.app, this.file, this.field.name, formattedValue);
                 } else {
-                    insertValues(this.app, this.file, this.field.name, formattedValue, this.lineNumber, this.inFrontmatter, this.top);
+                    insertValues(this.app, this.file, this.field.name, formattedValue, this.lineNumber, this.inFrontmatter, this.after);
                 };
                 this.close();
             } else if (!this.value) {
                 if (this.lineNumber == -1) {
                     replaceValues(this.app, this.file, this.field.name, "");
                 } else {
-                    insertValues(this.app, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.top);
+                    insertValues(this.app, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after);
                 };
                 this.close()
             } else {

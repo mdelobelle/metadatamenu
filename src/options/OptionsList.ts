@@ -221,7 +221,7 @@ export default class OptionsList {
 					item.setIcon("pin");
 					item.setTitle("Add field in frontmatter");
 					item.onClick(async (evt: MouseEvent) => {
-						F.openFieldOrFieldSelectModal(this.plugin, this.file, undefined, lineNumber, result.split('\n')[lineNumber], true, false)
+						F.openFieldOrFieldSelectModal(this.plugin, this.file, undefined, lineNumber + 1, result.split('\n')[lineNumber], true, false)
 					});
 					item.setSection("target-metadata");
 				});
@@ -230,7 +230,7 @@ export default class OptionsList {
 					id: "add_field_in_frontmatter",
 					actionLabel: "Add a field in frontmatter...",
 					action: () => F.openFieldOrFieldSelectModal(
-						this.plugin, this.file, undefined, lineNumber, result.split('\n')[lineNumber], true, false, this.fileClass),
+						this.plugin, this.file, undefined, lineNumber + 1, result.split('\n')[lineNumber], true, false, this.fileClass),
 					icon: "pin"
 				})
 			}

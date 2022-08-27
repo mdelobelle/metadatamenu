@@ -11,16 +11,16 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
     private field: Field;
     private lineNumber: number;
     private inFrontmatter: boolean;
-    private top: boolean;
+    private after: boolean;
 
-    constructor(app: App, file: TFile, field: Field, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
+    constructor(app: App, file: TFile, field: Field, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
         super(app);
         this.app = app;
         this.file = file;
         this.field = field;
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
-        this.top = top;
+        this.after = after;
     }
 
     getItems(): TFile[] {
@@ -53,7 +53,7 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
                 FileField.buildMarkDownLink(this.app, this.file, item.basename),
                 this.lineNumber,
                 this.inFrontmatter,
-                this.top
+                this.after
             );
         };
     }

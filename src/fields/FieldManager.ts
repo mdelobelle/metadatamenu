@@ -26,7 +26,7 @@ export abstract class FieldManager {
     abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
     abstract createDvField(plugin: MetadataMenu, dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }): Promise<void>
     abstract getOptionsStr(): string;
-    abstract createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void
+    abstract createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void
 
     constructor(field: Field, type: FieldType) {
         if (field.type !== type) throw Error(`This field is not of type ${type}`)
@@ -79,19 +79,19 @@ export abstract class FieldManager {
         return (location as string) === "InsertFieldCommand";
     }
 
-    public static createAndOpenModal(plugin: MetadataMenu, file: TFile, fieldName: string, field: Field | undefined, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
+    public static createAndOpenModal(plugin: MetadataMenu, file: TFile, fieldName: string, field: Field | undefined, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
         if (field) {
             const fieldManager = new FM[field.type](field);
-            fieldManager.createAndOpenFieldModal(plugin.app, file, fieldName, lineNumber, inFrontmatter, top);
+            fieldManager.createAndOpenFieldModal(plugin.app, file, fieldName, lineNumber, inFrontmatter, after);
         } else {
             const fieldManager = FieldManager.createDefault(fieldName!);
-            fieldManager.createAndOpenFieldModal(plugin.app, file, fieldName!, lineNumber, inFrontmatter, top);
+            fieldManager.createAndOpenFieldModal(plugin.app, file, fieldName!, lineNumber, inFrontmatter, after);
         }
     }
 
-    public static openFieldOrFieldSelectModal(plugin: MetadataMenu, file: TFile, fieldName: string | undefined, lineNumber: number, line: string, inFrontmatter: boolean, top: boolean, fileClass?: FileClass) {
+    public static openFieldOrFieldSelectModal(plugin: MetadataMenu, file: TFile, fieldName: string | undefined, lineNumber: number, line: string, inFrontmatter: boolean, after: boolean, fileClass?: FileClass) {
         if (!fieldName) {
-            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, line, inFrontmatter, top, fileClass);
+            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, line, inFrontmatter, after, fileClass);
             modal.open();
         } else {
             if (fileClass) {
@@ -101,10 +101,10 @@ export abstract class FieldManager {
                     const fileClassAttribute = fileClassAttributesWithName[0];
                     field = fileClassAttribute.getField();
                 }
-                this.createAndOpenModal(plugin, file, fieldName, field, lineNumber, inFrontmatter, top);
+                this.createAndOpenModal(plugin, file, fieldName, field, lineNumber, inFrontmatter, after);
             } else {
                 const field = plugin.settings.presetFields.filter(_field => _field.name == fieldName)[0];
-                this.createAndOpenModal(plugin, file, fieldName, field, lineNumber, inFrontmatter, top);
+                this.createAndOpenModal(plugin, file, fieldName, field, lineNumber, inFrontmatter, after);
             };
         }
     }

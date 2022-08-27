@@ -14,17 +14,17 @@ export default class fieldSelectModal extends Modal {
     private plugin: MetadataMenu;
     private file: TFile;
     private inFrontmatter: boolean;
-    private top: boolean;
+    private after: boolean;
     private fileClass?: FileClass
 
-    constructor(plugin: MetadataMenu, file: TFile, lineNumber: number, line: string, inFrontmatter: boolean, top: boolean, fileClass?: FileClass) {
+    constructor(plugin: MetadataMenu, file: TFile, lineNumber: number, line: string, inFrontmatter: boolean, after: boolean, fileClass?: FileClass) {
         super(plugin.app);
         this.line = line;
         this.lineNumber = lineNumber;
         this.plugin = plugin;
         this.file = file;
         this.inFrontmatter = inFrontmatter;
-        this.top = top;
+        this.after = after;
         this.fileClass = fileClass
     };
 
@@ -48,7 +48,7 @@ export default class fieldSelectModal extends Modal {
         settingsSelector.selectEl.focus();
         settingsSelector.onChange(selectedFieldName => {
             if (selectedFieldName == "++New") {
-                const newFieldModal = new addNewFieldModal(this.plugin, this.lineNumber, this.file, this.inFrontmatter, this.top);
+                const newFieldModal = new addNewFieldModal(this.plugin, this.lineNumber, this.file, this.inFrontmatter, this.after);
                 newFieldModal.open();
                 this.close();
             } else if (this.fileClass) {
@@ -62,13 +62,13 @@ export default class fieldSelectModal extends Modal {
                 }
                 if (field) {
                     const fieldManager = new FieldManager[field.type](field);
-                    fieldManager.createAndOpenFieldModal(this.app, this.file, selectedFieldName, this.lineNumber, this.inFrontmatter, this.top);
+                    fieldManager.createAndOpenFieldModal(this.app, this.file, selectedFieldName, this.lineNumber, this.inFrontmatter, this.after);
                 }
                 this.close()
             } else {
                 const field = this.plugin.settings.presetFields.filter(_field => _field.name == selectedFieldName)[0];
                 const fieldManager = new FieldManager[field.type](field);
-                fieldManager.createAndOpenFieldModal(this.app, this.file, selectedFieldName, this.lineNumber, this.inFrontmatter, this.top);
+                fieldManager.createAndOpenFieldModal(this.app, this.file, selectedFieldName, this.lineNumber, this.inFrontmatter, this.after);
                 this.close();
             };
         });
