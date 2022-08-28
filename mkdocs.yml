@@ -1,3 +1,4 @@
 site_name: Metadata Menu
 theme:
   name: material
+docs_dir: documentation
