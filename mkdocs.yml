@@ -1,3 +1,24 @@
 site_name: Metadata Menu
 theme:
   name: material
+  icon:
+    repo: fontawesome/brands/github-alt
+  features:
+    - navigation.tabs
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      primary: blue-grey
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+repo_url: https://github.com/mdelobelle/metadata-menu
