@@ -3,7 +3,6 @@ import { App, Menu, setIcon, TextComponent, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
 import NumbertModal from "src/optionModals/fields/NumberModal";
-import FieldSelectModal from "src/optionModals/SelectModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
@@ -68,7 +67,7 @@ export default class NumberField extends FieldManager {
         )
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal | FieldCommandSuggestModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const modal = new NumbertModal(app, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
         if (NumberField.isMenu(location)) {
@@ -100,9 +99,6 @@ export default class NumberField extends FieldManager {
                         item.setSection("target-metadata");
                     })
             }
-        } else if (NumberField.isSelect(location)) {
-            location.addOption(`update_${name}`, `Update <${name}>`);
-            location.modals[`update_${name}`] = () => modal.open();
         } else if (NumberField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
@@ -174,8 +170,8 @@ export default class NumberField extends FieldManager {
         return !error
     }
 
-    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
-        const fieldModal = new NumbertModal(app, file, this.field, "", lineNumber, inFrontmatter, top);
+    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+        const fieldModal = new NumbertModal(app, file, this.field, "", lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

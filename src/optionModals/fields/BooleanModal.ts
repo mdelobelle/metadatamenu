@@ -9,17 +9,17 @@ export default class BooleanModal extends Modal {
     private value: boolean;
     private lineNumber: number;
     private inFrontmatter: boolean;
-    private top: boolean;
+    private after: boolean;
     private field: Field;
 
-    constructor(app: App, file: TFile, field: Field, value: boolean, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
+    constructor(app: App, file: TFile, field: Field, value: boolean, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
         super(app);
         this.app = app;
         this.file = file;
         this.value = value;
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
-        this.top = top;
+        this.after = after;
         this.field = field
     };
 
@@ -45,7 +45,7 @@ export default class BooleanModal extends Modal {
             if (this.lineNumber == -1) {
                 replaceValues(this.app, this.file, this.field.name, value);
             } else {
-                insertValues(this.app, this.file, this.field.name, value, this.lineNumber, this.inFrontmatter, this.top);
+                insertValues(this.app, this.file, this.field.name, value, this.lineNumber, this.inFrontmatter, this.after);
             };
             this.close();
         });

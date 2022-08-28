@@ -2,7 +2,6 @@ import MetadataMenu from "main";
 import { App, Menu, setIcon, TextAreaComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
 import InputModal from "src/optionModals/fields/InputModal";
-import FieldSelectModal from "src/optionModals/SelectModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
@@ -17,7 +16,7 @@ export default class InputField extends FieldManager {
         return this.field.options.template
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal | FieldCommandSuggestModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const modal = new InputModal(app, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
         if (InputField.isMenu(location)) {
@@ -27,9 +26,6 @@ export default class InputField extends FieldManager {
                 item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             })
-        } else if (InputField.isSelect(location)) {
-            location.addOption(`update_${name}`, `Update <${name}>`);
-            location.modals[`update_${name}`] = () => modal.open();
         } else if (InputField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
@@ -58,8 +54,8 @@ export default class InputField extends FieldManager {
         return true
     }
 
-    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
-        const fieldModal = new InputModal(app, file, this.field, "", lineNumber, inFrontmatter, top);
+    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+        const fieldModal = new InputModal(app, file, this.field, "", lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

@@ -7,7 +7,7 @@ export async function insertValues(
     value: string,
     lineNumber?: number,
     inFrontmatter?: boolean,
-    top?: boolean
+    after: boolean = true
 ): Promise<void> {
 
     let file: TFile;
@@ -23,16 +23,16 @@ export async function insertValues(
     }
     const result = await app.vault.read(file)
     let newContent: string[] = [];
-    if (top) {
-        newContent.push(`${fieldName}${inFrontmatter ? ":" : "::"} ${value}`);
-        result.split("\n").forEach((line, _lineNumber) => newContent.push(line));
-    } else {
-        result.split("\n").forEach((line, _lineNumber) => {
-            if (_lineNumber == lineNumber) {
-                newContent.push(`${fieldName}${inFrontmatter ? ":" : "::"} ${value}`);
-            };
+
+    result.split("\n").forEach((line, _lineNumber) => {
+        if (_lineNumber == lineNumber) {
+            if (after) newContent.push(line);
+            newContent.push(`${fieldName}${inFrontmatter ? ":" : "::"} ${value}`);
+            if (!after) newContent.push(line);
+        } else {
             newContent.push(line);
-        });
-    };
+        }
+    });
+
     app.vault.modify(file, newContent.join('\n'));
 }

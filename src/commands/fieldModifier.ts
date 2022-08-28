@@ -33,7 +33,7 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
                         if (attrs?.options?.inFrontmatter && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
                             const result = await plugin.app.vault.read(file)
                             const lineNumber = result.split("\n").slice(1).findIndex(l => l === "---")
-                            F.openFieldOrFieldSelectModal(plugin, file, fieldName, lineNumber, result.split('\n')[lineNumber], true, false, fileClass)
+                            F.openFieldOrFieldSelectModal(plugin, file, fieldName, lineNumber + 1, result.split('\n')[lineNumber], true, false, fileClass)
                         } else {
                             new chooseSectionModal(plugin, file, fileClass, fieldName).open();
                         }
@@ -43,7 +43,7 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
                             if (attrs?.options?.inFrontmatter && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
                                 const result = await plugin.app.vault.read(file)
                                 const lineNumber = result.split("\n").slice(1).findIndex(l => l === "---")
-                                F.openFieldOrFieldSelectModal(plugin, file, fieldName, lineNumber, result.split('\n')[lineNumber], true, false)
+                                F.openFieldOrFieldSelectModal(plugin, file, fieldName, lineNumber + 1, result.split('\n')[lineNumber], true, false)
                             } else {
                                 new chooseSectionModal(plugin, file, undefined, fieldName).open();
                             }

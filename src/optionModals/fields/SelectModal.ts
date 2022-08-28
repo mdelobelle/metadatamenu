@@ -12,9 +12,9 @@ export default class valueSelectModal extends Modal {
     private newValue: string | null;
     private lineNumber: number;
     private inFrontmatter: boolean;
-    private top: boolean;
+    private after: boolean;
 
-    constructor(app: App, file: TFile, value: string, field: Field, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
+    constructor(app: App, file: TFile, value: string, field: Field, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
         super(app);
         this.app = app;
         this.file = file;
@@ -23,7 +23,7 @@ export default class valueSelectModal extends Modal {
         this.newValue = null;
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
-        this.top = top;
+        this.after = after;
     };
 
     async onOpen() {
@@ -64,7 +64,7 @@ export default class valueSelectModal extends Modal {
                         replaceValues(this.app, this.file, this.field.name, this.newValue);
                     };
                 } else {
-                    insertValues(this.app, this.file, this.field.name, selectEl.getValue(), this.lineNumber, this.inFrontmatter, this.top);
+                    insertValues(this.app, this.file, this.field.name, selectEl.getValue(), this.lineNumber, this.inFrontmatter, this.after);
                 };
                 this.close();
             });

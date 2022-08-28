@@ -4,7 +4,6 @@ import { replaceValues } from "src/commands/replaceValues";
 import { FileClass } from "src/fileClass/fileClass";
 import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
 import InsertFieldSuggestModal from "src/optionModals/insertFieldSuggestModal";
-import SelectModal from "src/optionModals/SelectModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldManager as FM, FieldType } from "src/types/fieldTypes";
 import Field from "./Field";
@@ -21,12 +20,12 @@ export const enum SettingLocation {
 
 export abstract class FieldManager {
 
-    abstract addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | SelectModal | FieldCommandSuggestModal): void;
+    abstract addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void;
     abstract validateOptions(): boolean;
     abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
     abstract createDvField(plugin: MetadataMenu, dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }): Promise<void>
     abstract getOptionsStr(): string;
-    abstract createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void
+    abstract createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void
 
     constructor(field: Field, type: FieldType) {
         if (field.type !== type) throw Error(`This field is not of type ${type}`)
@@ -63,35 +62,31 @@ export abstract class FieldManager {
         }
     }
 
-    public static isMenu(location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal): location is Menu {
+    public static isMenu(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal): location is Menu {
         return (location as Menu).addItem !== undefined;
     };
 
-    public static isSelect(location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal): location is SelectModal {
-        return (location as SelectModal).modals !== undefined;
-    };
-
-    public static isSuggest(location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal): location is FieldCommandSuggestModal {
+    public static isSuggest(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal): location is FieldCommandSuggestModal {
         return (location as FieldCommandSuggestModal).getItems !== undefined;
     };
 
-    public static isInsertFieldCommand(location: Menu | SelectModal | "InsertFieldCommand" | FieldCommandSuggestModal): location is "InsertFieldCommand" {
+    public static isInsertFieldCommand(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal): location is "InsertFieldCommand" {
         return (location as string) === "InsertFieldCommand";
     }
 
-    public static createAndOpenModal(plugin: MetadataMenu, file: TFile, fieldName: string, field: Field | undefined, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
+    public static createAndOpenModal(plugin: MetadataMenu, file: TFile, fieldName: string, field: Field | undefined, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
         if (field) {
             const fieldManager = new FM[field.type](field);
-            fieldManager.createAndOpenFieldModal(plugin.app, file, fieldName, lineNumber, inFrontmatter, top);
+            fieldManager.createAndOpenFieldModal(plugin.app, file, fieldName, lineNumber, inFrontmatter, after);
         } else {
             const fieldManager = FieldManager.createDefault(fieldName!);
-            fieldManager.createAndOpenFieldModal(plugin.app, file, fieldName!, lineNumber, inFrontmatter, top);
+            fieldManager.createAndOpenFieldModal(plugin.app, file, fieldName!, lineNumber, inFrontmatter, after);
         }
     }
 
-    public static openFieldOrFieldSelectModal(plugin: MetadataMenu, file: TFile, fieldName: string | undefined, lineNumber: number, line: string, inFrontmatter: boolean, top: boolean, fileClass?: FileClass) {
+    public static openFieldOrFieldSelectModal(plugin: MetadataMenu, file: TFile, fieldName: string | undefined, lineNumber: number, line: string, inFrontmatter: boolean, after: boolean, fileClass?: FileClass) {
         if (!fieldName) {
-            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, line, inFrontmatter, top, fileClass);
+            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, line, inFrontmatter, after, fileClass);
             modal.open();
         } else {
             if (fileClass) {
@@ -101,10 +96,10 @@ export abstract class FieldManager {
                     const fileClassAttribute = fileClassAttributesWithName[0];
                     field = fileClassAttribute.getField();
                 }
-                this.createAndOpenModal(plugin, file, fieldName, field, lineNumber, inFrontmatter, top);
+                this.createAndOpenModal(plugin, file, fieldName, field, lineNumber, inFrontmatter, after);
             } else {
                 const field = plugin.settings.presetFields.filter(_field => _field.name == fieldName)[0];
-                this.createAndOpenModal(plugin, file, fieldName, field, lineNumber, inFrontmatter, top);
+                this.createAndOpenModal(plugin, file, fieldName, field, lineNumber, inFrontmatter, after);
             };
         }
     }

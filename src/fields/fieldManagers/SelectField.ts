@@ -2,7 +2,6 @@ import MetadataMenu from "main";
 import { App, Menu, setIcon, TextComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
 import SelectModal from "src/optionModals/fields/SelectModal";
-import FieldSelectModal from "src/optionModals/SelectModal";
 import FieldSetting from "src/settings/FieldSetting";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
@@ -17,7 +16,7 @@ export default class SelectField extends AbstractListBasedField {
         super(field, FieldType.Select)
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal | FieldCommandSuggestModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const modal = new SelectModal(app, file, value, this.field);
         modal.titleEl.setText("Select value");
         if (SelectField.isMenu(location)) {
@@ -27,9 +26,6 @@ export default class SelectField extends AbstractListBasedField {
                 item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             });
-        } else if (SelectField.isSelect(location)) {
-            location.addOption(`update_${name}`, `Update <${name}>`);
-            location.modals[`update_${name}`] = () => modal.open();
         } else if (SelectField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
@@ -40,8 +36,8 @@ export default class SelectField extends AbstractListBasedField {
         };
     };
 
-    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
-        const fieldModal = new SelectModal(app, file, "", this.field, lineNumber, inFrontmatter, top);
+    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+        const fieldModal = new SelectModal(app, file, "", this.field, lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }

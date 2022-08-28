@@ -9,12 +9,12 @@ export default class InputModal extends Modal {
     private value: string;
     private lineNumber: number;
     private inFrontmatter: boolean;
-    private top: boolean;
+    private after: boolean;
     private field: Field;
     private templateValues: Record<string, string> = {};
     private renderedValue: TextAreaComponent;
 
-    constructor(app: App, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
+    constructor(app: App, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
         super(app);
         this.app = app;
         this.file = file;
@@ -22,7 +22,7 @@ export default class InputModal extends Modal {
         this.value = value;
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
-        this.top = top;
+        this.after = after;
     };
 
     onOpen() {
@@ -33,7 +33,6 @@ export default class InputModal extends Modal {
             let next = tF.next();
             while (!next.done) {
                 if (next.value.groups) {
-                    console.log(next.value)
                     const value = next.value.groups.field
                     const [name, optionsString] = value.split(":").map(v => v.trim())
                     this.templateValues[name] = "";
@@ -105,7 +104,7 @@ export default class InputModal extends Modal {
             if (this.lineNumber == -1) {
                 replaceValues(this.app, this.file, this.field.name, inputValue);
             } else {
-                insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.top);
+                insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
             };
             this.close();
         }
@@ -126,7 +125,7 @@ export default class InputModal extends Modal {
             if (this.lineNumber == -1) {
                 replaceValues(this.app, this.file, this.field.name, inputValue);
             } else {
-                insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.top);
+                insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
             };
             this.close();
         };

@@ -11,11 +11,11 @@ export default class NumbertModal extends Modal {
     private value: string;
     private lineNumber: number;
     private inFrontmatter: boolean;
-    private top: boolean;
+    private after: boolean;
     private field: Field;
     private fieldManager: NumberField;
 
-    constructor(app: App, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
+    constructor(app: App, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
         super(app);
         this.app = app;
         this.file = file;
@@ -23,7 +23,7 @@ export default class NumbertModal extends Modal {
         this.value = value;
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
-        this.top = top;
+        this.after = after;
         this.fieldManager = new FieldManager[this.field.type](this.field)
     };
 
@@ -138,7 +138,7 @@ export default class NumbertModal extends Modal {
             if (this.lineNumber == -1) {
                 replaceValues(this.app, this.file, this.field.name, inputValue);
             } else {
-                insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.top);
+                insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
             };
             this.close();
         };

@@ -2,7 +2,6 @@ import MetadataMenu from "main";
 import { App, Menu, setIcon, TextComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
 import MultiSelectModal from "src/optionModals/fields/MultiSelectModal";
-import FieldSelectModal from "src/optionModals/SelectModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
@@ -16,7 +15,7 @@ export default class MultiField extends AbstractListBasedField {
         super(field, FieldType.Multi)
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldSelectModal | FieldCommandSuggestModal): void {
+    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const modal = new MultiSelectModal(app, file, this.field, value);
         modal.titleEl.setText("Select values");
         if (MultiField.isMenu(location)) {
@@ -26,9 +25,6 @@ export default class MultiField extends AbstractListBasedField {
                 item.onClick(() => modal.open());
                 item.setSection("target-metadata");
             });
-        } else if (MultiField.isSelect(location)) {
-            location.addOption(`update_${name}`, `Update <${name}>`);
-            location.modals[`update_${name}`] = () => modal.open();
         } else if (MultiField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
@@ -39,8 +35,8 @@ export default class MultiField extends AbstractListBasedField {
         };
     };
 
-    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, top?: boolean): void {
-        const fieldModal = new MultiSelectModal(app, file, this.field, "", lineNumber, inFrontmatter, top);
+    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+        const fieldModal = new MultiSelectModal(app, file, this.field, "", lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Select options for ${selectedFieldName}`);
         fieldModal.open();
     }

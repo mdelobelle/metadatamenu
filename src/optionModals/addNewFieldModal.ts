@@ -7,14 +7,14 @@ export default class addNewFieldModal extends Modal {
     private lineNumber: number;
     private file: TFile;
     private inFrontmatter: boolean;
-    private top: boolean;
+    private after: boolean;
 
-    constructor(plugin: MetadataMenu, lineNumber: number, file: TFile, inFrontmatter: boolean, top: boolean) {
+    constructor(plugin: MetadataMenu, lineNumber: number, file: TFile, inFrontmatter: boolean, after: boolean) {
         super(plugin.app);
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontmatter;
         this.file = file;
-        this.top = top;
+        this.after = after;
     }
 
     onOpen() {
@@ -34,7 +34,7 @@ export default class addNewFieldModal extends Modal {
         const saveButton = new ButtonComponent(footerButtons);
         saveButton.setIcon("checkmark");
         saveButton.onClick(async () => {
-            insertValues(this.app, this.file, nameInputEl.getValue(), valueInputEl.getValue(), this.lineNumber, this.inFrontmatter, this.top);
+            insertValues(this.app, this.file, nameInputEl.getValue(), valueInputEl.getValue(), this.lineNumber, this.inFrontmatter, this.after);
             this.close()
         });
         const cancelButton = new ExtraButtonComponent(footerButtons);

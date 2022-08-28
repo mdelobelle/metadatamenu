@@ -11,9 +11,9 @@ export default class MultiSelectModal extends Modal {
     private options: Array<string>;
     private lineNumber: number;
     private inFrontmatter: boolean;
-    private top: boolean;
+    private after: boolean;
 
-    constructor(app: App, file: TFile, field: Field, initialOptions: string, lineNumber: number = -1, inFrontMatter: boolean = false, top: boolean = false) {
+    constructor(app: App, file: TFile, field: Field, initialOptions: string, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
         super(app);
         this.app = app;
         this.file = file;
@@ -29,7 +29,7 @@ export default class MultiSelectModal extends Modal {
         };
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
-        this.top = top;
+        this.after = after;
     };
 
     async onOpen() {
@@ -60,7 +60,7 @@ export default class MultiSelectModal extends Modal {
                 replaceValues(this.app, this.file, this.field.name, this.options.join(","));
             } else {
                 const renderedValues = !this.inFrontmatter ? this.options.join(",") : this.options.length > 1 ? `[${this.options.join(", ")}]` : this.options[0]
-                insertValues(this.app, this.file, this.field.name, renderedValues, this.lineNumber, this.inFrontmatter, this.top);
+                insertValues(this.app, this.file, this.field.name, renderedValues, this.lineNumber, this.inFrontmatter, this.after);
             };
             this.close();
         });

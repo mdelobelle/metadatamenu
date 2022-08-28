@@ -22,9 +22,7 @@ export default class chooseSectionModal extends Modal {
 
         const result = await this.app.vault.read(this.file)
         this.titleEl.setText(`Add a ${this.fieldName ? "<" + this.fieldName + "> " : ""}field in this note after:`);
-        const container = this.contentEl.createDiv();
-
-        const selectEl = new DropdownComponent(container);
+        const selectEl = new DropdownComponent(this.contentEl);
         selectEl.selectEl.addClass("metadata-menu-field-add-section-select");
         selectEl.addOption("", "Select line");
         selectEl.addOption("top_0", "top");
@@ -57,19 +55,35 @@ export default class chooseSectionModal extends Modal {
             const position = valueArray && valueArray.length > 0 ? valueArray[1] : 0;
             const lineNumber = Number(valueArray && valueArray.length > 1 ? valueArray[2] : 0);
             const inFrontmatter = position == "frontmatter" ? true : false;
-            const top = position == "top" ? true : false;
-            F.openFieldOrFieldSelectModal(this.plugin, this.file, this.fieldName, lineNumber, result.split('\n')[lineNumber], inFrontmatter, top, this.fileClass)
+            const after = position == "top" ? false : true;
+            F.openFieldOrFieldSelectModal(
+                this.plugin,
+                this.file,
+                this.fieldName,
+                lineNumber,
+                result.split('\n')[lineNumber],
+                inFrontmatter,
+                after,
+                this.fileClass)
             this.close();
         });
 
 
         if (app.metadataCache.getCache(this.file.path)?.frontmatter) {
-            const addToFrontMatterBtn = new ButtonComponent(container)
+            const addToFrontMatterBtn = new ButtonComponent(this.contentEl)
             addToFrontMatterBtn.setClass("metadata-menu-field-add-frontmatter-btn")
             addToFrontMatterBtn.setButtonText("Add to frontmatter")
             addToFrontMatterBtn.onClick(() => {
                 const lineNumber = result.split("\n").slice(1).findIndex(l => l === "---")
-                F.openFieldOrFieldSelectModal(this.plugin, this.file, this.fieldName, lineNumber, result.split('\n')[lineNumber], true, false, this.fileClass)
+                F.openFieldOrFieldSelectModal(
+                    this.plugin,
+                    this.file,
+                    this.fieldName,
+                    lineNumber + 1,
+                    result.split('\n')[lineNumber],
+                    true,
+                    false,
+                    this.fileClass)
                 this.close();
             })
         }
