@@ -1,4 +1,4 @@
-import { App, Modal, TextComponent, TFile, ButtonComponent } from "obsidian";
+import { App, Modal, TextComponent, TFile, ButtonComponent, MarkdownEditView, MarkdownView } from "obsidian";
 import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
@@ -136,9 +136,9 @@ export default class NumbertModal extends Modal {
                 return
             }
             if (this.lineNumber == -1) {
-                replaceValues(this.app, this.file, this.field.name, inputValue);
+                await replaceValues(this.app, this.file, this.field.name, inputValue);
             } else {
-                insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
+                await insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
             };
             this.close();
         };

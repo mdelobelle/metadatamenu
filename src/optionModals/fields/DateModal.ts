@@ -74,16 +74,16 @@ export default class DateModal extends Modal {
                 const linkPath = app.metadataCache.getFirstLinkpathDest(this.field.options.linkPath || "" + newValue.format(this.format), this.file.path)
                 const formattedValue = this.insertAsLink ? `[[${this.field.options.linkPath || ""}${newValue.format(this.format)}${linkPath ? "|" + linkPath.basename : ""}]]` : newValue.format(this.format)
                 if (this.lineNumber == -1) {
-                    replaceValues(this.app, this.file, this.field.name, formattedValue);
+                    await replaceValues(this.app, this.file, this.field.name, formattedValue);
                 } else {
-                    insertValues(this.app, this.file, this.field.name, formattedValue, this.lineNumber, this.inFrontmatter, this.after);
+                    await insertValues(this.app, this.file, this.field.name, formattedValue, this.lineNumber, this.inFrontmatter, this.after);
                 };
                 this.close();
             } else if (!this.value) {
                 if (this.lineNumber == -1) {
-                    replaceValues(this.app, this.file, this.field.name, "");
+                    await replaceValues(this.app, this.file, this.field.name, "");
                 } else {
-                    insertValues(this.app, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after);
+                    await insertValues(this.app, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after);
                 };
                 this.close()
             } else {

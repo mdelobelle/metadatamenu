@@ -43,9 +43,9 @@ export default class BooleanModal extends Modal {
         saveButton.onClick(async () => {
             const value = this.value.toString()
             if (this.lineNumber == -1) {
-                replaceValues(this.app, this.file, this.field.name, value);
+                await replaceValues(this.app, this.file, this.field.name, value);
             } else {
-                insertValues(this.app, this.file, this.field.name, value, this.lineNumber, this.inFrontmatter, this.after);
+                await insertValues(this.app, this.file, this.field.name, value, this.lineNumber, this.inFrontmatter, this.after);
             };
             this.close();
         });

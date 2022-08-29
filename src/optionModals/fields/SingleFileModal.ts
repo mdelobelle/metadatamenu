@@ -37,16 +37,16 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
         return item.basename;
     }
 
-    onChooseItem(item: TFile): void {
+    async onChooseItem(item: TFile): Promise<void> {
         if (this.lineNumber == -1) {
-            replaceValues(
+            await replaceValues(
                 this.app,
                 this.file,
                 this.field.name,
                 FileField.buildMarkDownLink(this.app, this.file, item.basename)
             );
         } else {
-            insertValues(
+            await insertValues(
                 this.app,
                 this.file,
                 this.field.name,

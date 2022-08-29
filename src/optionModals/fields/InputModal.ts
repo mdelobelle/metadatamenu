@@ -99,12 +99,12 @@ export default class InputModal extends Modal {
         const saveBtnContainer = inputDiv.createDiv({ cls: "metadata-menu-textarea-buttons" })
         const saveBtn = saveBtnContainer.createEl("button")
         setIcon(saveBtn, "checkmark");
-        saveBtn.onclick = () => {
+        saveBtn.onclick = async () => {
             let inputValue = this.renderedValue.getValue();
             if (this.lineNumber == -1) {
-                replaceValues(this.app, this.file, this.field.name, inputValue);
+                await replaceValues(this.app, this.file, this.field.name, inputValue);
             } else {
-                insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
+                await insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
             };
             this.close();
         }
@@ -123,9 +123,9 @@ export default class InputModal extends Modal {
             e.preventDefault();
             let inputValue = inputEl.getValue();
             if (this.lineNumber == -1) {
-                replaceValues(this.app, this.file, this.field.name, inputValue);
+                await replaceValues(this.app, this.file, this.field.name, inputValue);
             } else {
-                insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
+                await insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
             };
             this.close();
         };

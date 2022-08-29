@@ -61,10 +61,10 @@ export default class valueSelectModal extends Modal {
             .onClick(async () => {
                 if (this.lineNumber == -1) {
                     if (this.newValue || this.newValue == "") {
-                        replaceValues(this.app, this.file, this.field.name, this.newValue);
+                        await replaceValues(this.app, this.file, this.field.name, this.newValue);
                     };
                 } else {
-                    insertValues(this.app, this.file, this.field.name, selectEl.getValue(), this.lineNumber, this.inFrontmatter, this.after);
+                    await insertValues(this.app, this.file, this.field.name, selectEl.getValue(), this.lineNumber, this.inFrontmatter, this.after);
                 };
                 this.close();
             });
