@@ -1,10 +1,9 @@
 site_name: Metadata Menu
 theme:
   name: material
+  logo: assets/obsidian.png
   icon:
     repo: fontawesome/brands/github-alt
-  features:
-    - navigation.tabs
   palette:
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
@@ -20,5 +19,19 @@ theme:
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+nav:
+  - Overview: index.md
+  - General Concepts: general.md
+  - Controls: controls.md
+  - Settings: settings.md
+  - FileClasses: fileclasses.md
+  - API: api.md
 
 repo_url: https://github.com/mdelobelle/metadata-menu
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.critic
+  - pymdownx.tabbed
