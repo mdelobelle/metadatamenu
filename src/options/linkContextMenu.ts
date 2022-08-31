@@ -32,6 +32,7 @@ export default class linkContextMenu {
 								const fileClassAttributeSelectModal = new FileClassAttributeSelectModal(this.plugin, file);
 								fileClassAttributeSelectModal.open();
 							});
+							item.setSection("target-metadata");
 						});
 					} else {
 						//If displayFieldsInContextMenu true, show all fields in note
@@ -47,9 +48,9 @@ export default class linkContextMenu {
 
 							//Field Options
 							menu.addItem((item) => {
-								item.setIcon("bullet-list"),
-									item.setTitle(`Field Options`),
-									item.onClick((evt) => { fieldOptions.open(); })
+								item.setIcon("bullet-list")
+								item.setTitle(`Field Options`)
+								item.onClick((evt) => { fieldOptions.open(); })
 								item.setSection("target-metadata");
 							})
 						}
