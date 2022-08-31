@@ -12,8 +12,12 @@ interface FileClassAttribute {
 
 class FileClassAttribute {
 
-    constructor(raw: string, origin: string) {
+    constructor(origin: string, name: string, type: FieldType = FieldType.Input, options: string[] | Record<string, string> = []) {
         this.origin = origin
+        this.name = name
+        this.type = type
+        this.options = options
+        /*
         const completeRegex = new RegExp(`^${genericFieldRegex}::(?<fieldSettings>.+)?`, "u");
         const nameRegex = new RegExp(`^${genericFieldRegex}$`, "u");
         let fieldName: string
@@ -37,6 +41,7 @@ class FileClassAttribute {
             const error = new Error("Improper value");
             throw error;
         }
+        */
     }
 
     public getField() {

@@ -84,9 +84,9 @@ export abstract class FieldManager {
         }
     }
 
-    public static openFieldOrFieldSelectModal(plugin: MetadataMenu, file: TFile, fieldName: string | undefined, lineNumber: number, line: string, inFrontmatter: boolean, after: boolean, fileClass?: FileClass) {
+    public static openFieldOrFieldSelectModal(plugin: MetadataMenu, file: TFile, fieldName: string | undefined, lineNumber: number, inFrontmatter: boolean, after: boolean, fileClass?: FileClass) {
         if (!fieldName) {
-            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, line, inFrontmatter, after, fileClass);
+            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, inFrontmatter, after, fileClass);
             modal.open();
         } else {
             if (fileClass) {

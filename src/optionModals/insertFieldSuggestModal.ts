@@ -14,16 +14,14 @@ interface Option {
 
 export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
     private lineNumber: number;
-    private line: string;
     private plugin: MetadataMenu;
     private file: TFile;
     private inFrontmatter: boolean;
     private after: boolean;
     private fileClass?: FileClass
 
-    constructor(plugin: MetadataMenu, file: TFile, lineNumber: number, line: string, inFrontmatter: boolean, after: boolean, fileClass?: FileClass) {
+    constructor(plugin: MetadataMenu, file: TFile, lineNumber: number, inFrontmatter: boolean, after: boolean, fileClass?: FileClass) {
         super(plugin.app);
-        this.line = line;
         this.lineNumber = lineNumber;
         this.plugin = plugin;
         this.file = file;
