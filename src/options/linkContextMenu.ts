@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { Menu, TAbstractFile, TFile } from "obsidian";
+import { Menu, Platform, TAbstractFile, TFile } from "obsidian";
 import OptionsList from "src/options/OptionsList";
 import FileClassOptionsList from "./FileClassOptionsList";
 
@@ -13,10 +13,12 @@ export default class linkContextMenu {
 
 	private buildOptions(file: TFile | TAbstractFile | null, menu: Menu): void {
 		if (file instanceof TFile && file.extension === 'md') {
-			//@ts-ignore
-			menu.setSectionSubmenu("metadata-menu.fields", { title: "Manage Fields", icon: "pencil" })
-			//@ts-ignore
-			menu.setSectionSubmenu("metadata-menu-fileclass.fileclass-fields", { title: "Manage Fileclass Fields", icon: "wrench" })
+			if (!Platform.isMobile) {
+				//@ts-ignore
+				menu.setSectionSubmenu("metadata-menu.fields", { title: "Manage Fields", icon: "pencil" })
+				//@ts-ignore
+				menu.setSectionSubmenu("metadata-menu-fileclass.fileclass-fields", { title: "Manage Fileclass Fields", icon: "wrench" })
+			}
 			//If fileClass
 			if (file.parent.path + "/" == this.plugin.settings.classFilesPath) {
 				const fileClassOptionsList = new FileClassOptionsList(this.plugin, file, menu)

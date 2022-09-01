@@ -56,6 +56,7 @@ export default class FileClassOptionsList {
             if (isMenu(this.location)) {
                 this.location.addItem((item) => {
                     item.setTitle(`${attr.name}`)
+                    item.setIcon("wrench")
                     item.onClick(() => {
                         modal.open()
                     })
