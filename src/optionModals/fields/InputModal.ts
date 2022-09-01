@@ -116,7 +116,9 @@ export default class InputModal extends Modal {
 
         const inputEl = new TextComponent(form);
         inputEl.inputEl.focus();
-        inputEl.setValue(this.value);
+
+        inputEl.setValue(`${this.value}`);
+
         inputEl.inputEl.addClass("metadata-menu-prompt-input");
 
         form.onsubmit = async (e: Event) => {

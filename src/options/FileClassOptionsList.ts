@@ -59,7 +59,7 @@ export default class FileClassOptionsList {
                     item.onClick(() => {
                         modal.open()
                     })
-                    item.setSection("metadata-menu.fileclass-fields")
+                    item.setSection("metadata-menu-fileclass.fileclass-fields")
                 })
             } else if (isSuggest(this.location)) {
                 this.location.options.push({
@@ -72,13 +72,13 @@ export default class FileClassOptionsList {
         });
         if (isMenu(this.location)) {
             this.location.addItem((item) => {
-                item.setTitle("Add new attribute")
+                item.setTitle("Add new fileClass attribute")
                 item.setIcon("plus-circle")
                 item.onClick(() => {
                     const modal = new FileClassAttributeModal(this.plugin, this.fileClass);
                     modal.open();
                 })
-                item.setSection("metadata-menu")
+                item.setSection("metadata-menu-fileclass")
             })
         } else if (isSuggest(this.location)) {
             const modal = new FileClassAttributeModal(this.plugin, this.fileClass);

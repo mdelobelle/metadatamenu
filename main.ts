@@ -54,22 +54,6 @@ export default class MetadataMenu extends Plugin {
 			})
 		)
 
-		this.registerEvent(
-			this.app.workspace.on('editor-menu', (menu, editor, view) => {
-
-				//@ts-ignore
-				menu.setSectionSubmenu("view.linked", { title: "Open linked view", icon: "lucide-link" })
-				menu.addItem((item) => {
-					item.setTitle("truc")
-					item.setSection("view.linked")
-				})
-				menu.addItem((subItem) => {
-					subItem.setTitle("machin")
-					subItem.setSection("view.linked")
-				})
-			})
-		)
-
 		this.addCommands(this.app.workspace.getActiveViewOfType(MarkdownView))
 
 		new linkContextMenu(this);

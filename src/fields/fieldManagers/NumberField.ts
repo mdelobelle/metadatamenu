@@ -84,17 +84,17 @@ export default class NumberField extends FieldManager {
             const fStep = parseFloat(step)
             const fValue = parseFloat(value)
             if (fStep) {
-                if (isNaN(fMin) || (fMin && fValue - fStep > fMin))
+                if (!isNaN(fMin) && fValue - fStep > fMin)
                     location.addItem((item) => {
                         item.setIcon(FieldIcon[FieldType.Number]);
-                        item.setTitle(`<${name}> ➡️ ${fValue - fStep}`);
+                        item.setTitle(`<${name}> ↘️ ${fValue - fStep}`);
                         item.onClick(() => replaceValues(app, file, name, (fValue - fStep).toString()));
                         item.setSection("metadata-menu.fields");
                     })
-                if (isNaN(fMax) || (fMax && fValue + fStep < fMax))
+                if (!isNaN(fMax) && fValue + fStep < fMax)
                     location.addItem((item) => {
                         item.setIcon(FieldIcon[FieldType.Number]);
-                        item.setTitle(`<${name}> ➡️ ${fValue + fStep}`);
+                        item.setTitle(`<${name}> ↗️ ${fValue + fStep}`);
                         item.onClick(() => replaceValues(app, file, name, (fValue + fStep).toString()));
                         item.setSection("metadata-menu.fields");
                     })

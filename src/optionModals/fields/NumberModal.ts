@@ -77,10 +77,11 @@ export default class NumbertModal extends Modal {
 
         const inputEl = new TextComponent(fieldContainer);
         inputEl.inputEl.focus();
-        inputEl.setValue(this.value);
+        inputEl.setValue(`${this.value}`);
 
         const minusBtn = new ButtonComponent(fieldContainer);
         minusBtn.setButtonText(`- ${!!step ? step : 1}`);
+        minusBtn.setDisabled(!this.fieldManager.canDecrement(inputEl.getValue()));
 
         const plusBtn = new ButtonComponent(fieldContainer);
         plusBtn.setButtonText(`+ ${!!step ? step : 1}`);

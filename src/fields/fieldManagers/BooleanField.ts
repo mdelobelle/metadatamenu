@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { App, Menu, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
-import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
+import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import BooleanModal from "src/optionModals/fields/BooleanModal";
 import { FieldType, FieldIcon } from "src/types/fieldTypes";
 import Field from "../Field";
