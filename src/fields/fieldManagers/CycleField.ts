@@ -32,7 +32,7 @@ export default class CycleField extends AbstractListBasedField {
                 item.setTitle(`${name} : ${value} ▷ ${nextOption}`);
                 item.setIcon(FieldIcon[FieldType.Cycle]);
                 item.onClick(() => replaceValues(app, file, name, nextOption));
-                item.setSection("target-metadata");
+                item.setSection("metadata-menu.fields");
             });
         } else if (CycleField.isSuggest(location)) {
             location.options.push({

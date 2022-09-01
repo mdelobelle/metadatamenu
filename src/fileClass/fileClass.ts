@@ -130,17 +130,11 @@ class FileClass {
                     throw (error);
                 }
             }
-            /*
-            result.split('\n').forEach(line => {
-                try {
-                    const attribute = new FileClassAttribute(line, this.name);
-                    attributes.push(attribute);
-                } catch (error) {
-                    errors.push(error);
-                }
-            })
-            */
-            this.attributes = parentAttributes.filter(attr => !attributes.map(_attr => _attr.name).includes(attr.name)).concat(attributes)
+            this.attributes = parentAttributes
+                .filter(attr => !attributes
+                    .map(_attr => _attr.name)
+                    .includes(attr.name)
+                ).concat(attributes.filter(p => !Object.keys(this.plugin.app.metadataCache.getFileCache(file)?.frontmatter || {}).includes(p.name)));
             this.errors = errors;
         } catch (error) {
             throw (error);

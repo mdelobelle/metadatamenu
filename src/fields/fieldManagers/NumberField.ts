@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { App, Menu, setIcon, TextComponent, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
-import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
+import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import NumbertModal from "src/optionModals/fields/NumberModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
@@ -75,7 +75,7 @@ export default class NumberField extends FieldManager {
                 item.setTitle(`Update <${name}>`);
                 item.setIcon(FieldIcon[FieldType.Number]);
                 item.onClick(() => modal.open());
-                item.setSection("target-metadata");
+                item.setSection("metadata-menu.fields");
             })
             const { min, max, step } = this.field.options
 
@@ -89,14 +89,14 @@ export default class NumberField extends FieldManager {
                         item.setIcon(FieldIcon[FieldType.Number]);
                         item.setTitle(`<${name}> ➡️ ${fValue - fStep}`);
                         item.onClick(() => replaceValues(app, file, name, (fValue - fStep).toString()));
-                        item.setSection("target-metadata");
+                        item.setSection("metadata-menu.fields");
                     })
                 if (isNaN(fMax) || (fMax && fValue + fStep < fMax))
                     location.addItem((item) => {
-                        item.setIcon('pencil');
+                        item.setIcon(FieldIcon[FieldType.Number]);
                         item.setTitle(`<${name}> ➡️ ${fValue + fStep}`);
                         item.onClick(() => replaceValues(app, file, name, (fValue + fStep).toString()));
-                        item.setSection("target-metadata");
+                        item.setSection("metadata-menu.fields");
                     })
             }
         } else if (NumberField.isSuggest(location)) {

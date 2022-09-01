@@ -60,7 +60,7 @@ export default class FileField extends FieldManager {
                 item.setTitle(`Update ${name}`);
                 item.setIcon(FieldIcon[FieldType.File]);
                 item.onClick(() => modal.open());
-                item.setSection("target-metadata");
+                item.setSection("metadata-menu.fields");
             });
         } else if (FileField.isSuggest(location)) {
             location.options.push({

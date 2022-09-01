@@ -1,13 +1,13 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
-import FileClassAttributeSelectModal from "src/fileClass/FileClassAttributeSelectModal";
 import OptionsList from "src/options/OptionsList";
-import FieldCommandSuggestModal from "../optionModals/FieldCommandSuggestModal";
+import FileClassOptionsList from "./FileClassOptionsList";
 
 export default class linkContextMenu {
 	private plugin: MetadataMenu;
 	private file: TFile;
 	private optionsList: OptionsList;
+	private fileClassOptionsList: FileClassOptionsList
 
 	constructor(plugin: MetadataMenu) {
 		this.plugin = plugin;
@@ -17,6 +17,11 @@ export default class linkContextMenu {
 	private createContextMenu(): void {
 		this.plugin.registerEvent(
 			this.plugin.app.workspace.on('file-menu', (menu, abstractFile, source) => {
+				menu.addSeparator();
+				//@ts-ignore
+				menu.setSectionSubmenu("metadata-menu.fields", { title: "Manage Fields", icon: "pencil" })
+				//@ts-ignore
+				menu.setSectionSubmenu("metadata-menu.fileclass-fields", { title: "Manage Fileclass Fields", icon: "wrench" })
 				const file = this.plugin.app.vault.getAbstractFileByPath(abstractFile.path);
 
 				if (file instanceof TFile && file.extension === 'md') {
@@ -24,37 +29,13 @@ export default class linkContextMenu {
 
 					//If fileClass
 					if (file.parent.path + "/" == this.plugin.settings.classFilesPath) {
-						menu.addSeparator();
-						menu.addItem((item) => {
-							item.setIcon("wrench-screwdriver-glyph");
-							item.setTitle(`Manage <${file.basename}> fields`);
-							item.onClick((evt) => {
-								const fileClassAttributeSelectModal = new FileClassAttributeSelectModal(this.plugin, file);
-								fileClassAttributeSelectModal.open();
-							});
-							item.setSection("target-metadata");
-						});
+						this.fileClassOptionsList = new FileClassOptionsList(this.plugin, this.file, menu)
+						this.fileClassOptionsList.createExtraOptionList();
 					} else {
-						//If displayFieldsInContextMenu true, show all fields in note
-						if (this.plugin.settings.displayFieldsInContextMenu) {
-							this.optionsList = new OptionsList(this.plugin, this.file, menu);
-							this.optionsList.createExtraOptionList();
-						} else {
-
-							//New Field
-							const fieldOptions = new FieldCommandSuggestModal(app);
-							this.optionsList = new OptionsList(this.plugin, this.file, fieldOptions);
-							this.optionsList.createExtraOptionList(false);
-
-							//Field Options
-							menu.addItem((item) => {
-								item.setIcon("bullet-list")
-								item.setTitle(`Field Options`)
-								item.onClick((evt) => { fieldOptions.open(); })
-								item.setSection("target-metadata");
-							})
-						}
+						this.optionsList = new OptionsList(this.plugin, this.file, menu);
+						this.optionsList.createExtraOptionList();
 					};
+
 				};
 			})
 		);

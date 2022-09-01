@@ -17,6 +17,7 @@ export default class FieldCommandSuggestModal extends FuzzySuggestModal<Option> 
     };
 
     getItems(): Option[] {
+        console.log(this.options)
         return this.options
     }
 

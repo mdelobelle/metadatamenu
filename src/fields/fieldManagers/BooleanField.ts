@@ -20,7 +20,7 @@ export default class BooleanField extends FieldManager {
                 item.setTitle(`<${name}> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);
                 item.setIcon(FieldIcon[FieldType.Boolean]);
                 item.onClick(() => replaceValues(app, file, name, (!bValue).toString()));
-                item.setSection("target-metadata");
+                item.setSection("metadata-menu.fields");
             })
         } else if (BooleanField.isSuggest(location)) {
             location.options.push({

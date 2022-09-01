@@ -24,7 +24,7 @@ export default class SelectField extends AbstractListBasedField {
                 item.setTitle(`Update ${name}`);
                 item.setIcon(FieldIcon[FieldType.Select]);
                 item.onClick(() => modal.open());
-                item.setSection("target-metadata");
+                item.setSection("metadata-menu.fields");
             });
         } else if (SelectField.isSuggest(location)) {
             location.options.push({

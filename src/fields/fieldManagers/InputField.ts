@@ -24,7 +24,7 @@ export default class InputField extends FieldManager {
                 item.setTitle(`Update <${name}>`);
                 item.setIcon(FieldIcon[FieldType.Input]);
                 item.onClick(() => modal.open());
-                item.setSection("target-metadata");
+                item.setSection("metadata-menu.fields");
             })
         } else if (InputField.isSuggest(location)) {
             location.options.push({

@@ -32,7 +32,7 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
                         const fileClass = FileClass.createFileClass(plugin, fileClassName);
                         if (attrs?.options?.inFrontmatter && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
                             const lineNumber = plugin.app.metadataCache.getCache(file.path)!.frontmatter!.position.end.line - 1
-                            F.openFieldOrFieldSelectModal(plugin, file, fieldName, lineNumber, true, false, fileClass)
+                            F.openFieldModal(plugin, file, fieldName, lineNumber, true, false, fileClass)
                         } else {
                             new chooseSectionModal(plugin, file, fileClass, fieldName).open();
                         }
@@ -41,7 +41,7 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
                         if (field?.type) {
                             if (attrs?.options?.inFrontmatter && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
                                 const lineNumber = plugin.app.metadataCache.getCache(file.path)!.frontmatter!.position.end.line - 1
-                                F.openFieldOrFieldSelectModal(plugin, file, fieldName, lineNumber, true, false)
+                                F.openFieldModal(plugin, file, fieldName, lineNumber, true, false)
                             } else {
                                 new chooseSectionModal(plugin, file, undefined, fieldName).open();
                             }

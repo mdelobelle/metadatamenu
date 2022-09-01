@@ -56,7 +56,7 @@ export default class chooseSectionModal extends Modal {
             const lineNumber = Number(valueArray && valueArray.length > 1 ? valueArray[2] : 0);
             const inFrontmatter = position == "frontmatter" ? true : false;
             const after = position == "top" ? false : true;
-            F.openFieldOrFieldSelectModal(
+            F.openFieldModal(
                 this.plugin,
                 this.file,
                 this.fieldName,
@@ -74,7 +74,7 @@ export default class chooseSectionModal extends Modal {
             addToFrontMatterBtn.setButtonText("Add to frontmatter")
             addToFrontMatterBtn.onClick(() => {
                 const lineNumber = app.metadataCache.getCache(this.file.path)!.frontmatter!.position.end.line - 1
-                F.openFieldOrFieldSelectModal(
+                F.openFieldModal(
                     this.plugin,
                     this.file,
                     this.fieldName,

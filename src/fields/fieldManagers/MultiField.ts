@@ -23,7 +23,7 @@ export default class MultiField extends AbstractListBasedField {
                 item.setTitle(`Update <${name}>`);
                 item.setIcon(FieldIcon[FieldType.Multi]);
                 item.onClick(() => modal.open());
-                item.setSection("target-metadata");
+                item.setSection("metadata-menu.fields");
             });
         } else if (MultiField.isSuggest(location)) {
             location.options.push({

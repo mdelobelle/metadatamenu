@@ -23,7 +23,7 @@ export default class DateField extends FieldManager {
                 item.setTitle(`Update <${name}>`);
                 item.setIcon(FieldIcon[FieldType.Date]);
                 item.onClick(() => modal.open());
-                item.setSection("target-metadata");
+                item.setSection("metadata-menu.fields");
             })
         } else if (DateField.isSuggest(location)) {
             location.options.push({
