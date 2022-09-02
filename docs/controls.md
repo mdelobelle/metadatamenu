@@ -4,10 +4,11 @@
 In Editor mode, type ":" after a field in frontmatter, or "::" after an inline-field to trigger the autocompletion for `Select` and `Multi` fields
 
 ## Control field from links, file and plugin options
-Right click on a link, a file in explorer, or opening a file's or plugin's context menu will automatically display an item per target note's frontmatter field and "inline fields" (dataview syntax)
+Right click in the live preview, on a link, a file in explorer, or opening a file's or plugin's context menu will automatically display an item per target note's frontmatter field and "inline fields" (dataview syntax)
 
 these options are accessible from:
 
+- the local menu in the live preview (right-click in the note)
 - the context menu of a link, 
 - the context menu of a calendar day, 
 - the context menu of a file in the file explorer,

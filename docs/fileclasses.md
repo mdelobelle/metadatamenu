@@ -2,6 +2,11 @@
 
 Manage preset values based on the context of a file (fileClass)
 
+!!! info "Dependency"
+
+    Dataview plugin required
+    
+
 ## Define a class for a file and authorized fields for this class
 
 a class file is basically a simple note
