@@ -1,4 +1,4 @@
-import { App, TFile } from "obsidian";
+import { App, MarkdownView, TFile } from "obsidian";
 
 export async function insertValues(
     app: App,
@@ -34,5 +34,10 @@ export async function insertValues(
         }
     });
 
-    app.vault.modify(file, newContent.join('\n'));
+    await app.vault.modify(file, newContent.join('\n'));
+    const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor
+    if (editor) {
+        const lineNumber = editor.getCursor().line
+        editor.setCursor({ line: editor.getCursor().line, ch: editor.getLine(lineNumber).length })
+    }
 }

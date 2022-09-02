@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { getField } from "src/commands/getField";
-import { createFileClass } from "src/fileClass/fileClass";
+import { FileClass } from "src/fileClass/fileClass";
 import { FieldManager } from "src/types/fieldTypes";
 import { FieldManager as F } from "src/fields/FieldManager";
 import chooseSectionModal from "src/optionModals/chooseSectionModal";
@@ -29,11 +29,10 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
                     const fileClassAlias = plugin.settings.fileClassAlias;
                     if (p[fileClassAlias] || plugin.settings.globalFileClass) {
                         const fileClassName = p[fileClassAlias] || plugin.settings.globalFileClass // inner fileClass has the priority over global fileClass
-                        const fileClass = await createFileClass(plugin, fileClassName);
+                        const fileClass = FileClass.createFileClass(plugin, fileClassName);
                         if (attrs?.options?.inFrontmatter && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
-                            const result = await plugin.app.vault.read(file)
-                            const lineNumber = result.split("\n").slice(1).findIndex(l => l === "---")
-                            F.openFieldOrFieldSelectModal(plugin, file, fieldName, lineNumber + 1, result.split('\n')[lineNumber], true, false, fileClass)
+                            const lineNumber = plugin.app.metadataCache.getCache(file.path)!.frontmatter!.position.end.line - 1
+                            F.openFieldModal(plugin, file, fieldName, lineNumber, true, false, fileClass)
                         } else {
                             new chooseSectionModal(plugin, file, fileClass, fieldName).open();
                         }
@@ -41,9 +40,8 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
                         const field = getField(plugin, fieldName);
                         if (field?.type) {
                             if (attrs?.options?.inFrontmatter && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
-                                const result = await plugin.app.vault.read(file)
-                                const lineNumber = result.split("\n").slice(1).findIndex(l => l === "---")
-                                F.openFieldOrFieldSelectModal(plugin, file, fieldName, lineNumber + 1, result.split('\n')[lineNumber], true, false)
+                                const lineNumber = plugin.app.metadataCache.getCache(file.path)!.frontmatter!.position.end.line - 1
+                                F.openFieldModal(plugin, file, fieldName, lineNumber, true, false)
                             } else {
                                 new chooseSectionModal(plugin, file, undefined, fieldName).open();
                             }
@@ -64,7 +62,7 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
         const fileClassAlias = plugin.settings.fileClassAlias;
         if (p[fileClassAlias] || plugin.settings.globalFileClass) {
             const fileClassName = p[fileClassAlias] || plugin.settings.globalFileClass // inner fileClass has the priority over global fileClass
-            const fileClass = await createFileClass(plugin, fileClassName);
+            const fileClass = FileClass.createFileClass(plugin, fileClassName);
             const field = getField(plugin, fieldName, fileClass);
             if (field?.type) {
                 const fieldManager = new FieldManager[field.type](field);

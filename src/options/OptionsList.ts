@@ -4,13 +4,13 @@ import { getField } from "src/commands/getField";
 import Field from "src/fields/Field";
 import { FieldManager as F } from "src/fields/FieldManager";
 import Managers from "src/fields/fieldManagers/Managers";
-import { createFileClass, FileClass } from "src/fileClass/fileClass";
-import FileClassAttributeSelectModal from "src/fileClass/FileClassAttributeSelectModal";
+import { FileClass } from "src/fileClass/fileClass";
 import FileClassQuery from "src/fileClass/FileClassQuery";
 import { FieldManager, FieldType } from "src/types/fieldTypes";
+import { genuineKeys } from "src/utils/dataviewUtils";
 import chooseSectionModal from "../optionModals/chooseSectionModal";
-import FieldCommandSuggestModal from "../optionModals/FieldCommandSuggestModal";
-import { getLineFields } from "../utils/parser";
+import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
+import FileClassOptionsList from "./FileClassOptionsList";
 
 function isMenu(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal): location is Menu {
 	return (location as Menu).addItem !== undefined;
@@ -47,10 +47,10 @@ export default class OptionsList {
 		this.fileClassForFields = false;
 	};
 
-	private async getGlobalFileClassForFields(): Promise<void> {
+	private getGlobalFileClassForFields(): void {
 		const fileClass = this.plugin.settings.globalFileClass as string;
 		try {
-			const _fileClass = await createFileClass(this.plugin, fileClass);
+			const _fileClass = FileClass.createFileClass(this.plugin, fileClass);
 			this.fileClass = _fileClass;
 			this.fileClassFields = _fileClass.attributes.map(attr => attr.name);
 			this.fileClassForFields = true;
@@ -59,20 +59,20 @@ export default class OptionsList {
 		}
 	}
 
-	private async getQueryFileClassForFields(): Promise<void> {
+	private getQueryFileClassForFields(): void {
 		const fileClassQueries = this.plugin.settings.fileClassQueries.map(fcq => fcq)
 		while (!this.fileClassForFields && fileClassQueries.length > 0) {
 			const fileClassQuery = new FileClassQuery();
 			Object.assign(fileClassQuery, fileClassQueries.pop() as FileClassQuery)
 			if (fileClassQuery.matchFile(this.file)) {
 				this.fileClassForFields = true;
-				this.fileClass = await createFileClass(this.plugin, fileClassQuery.fileClassName)
+				this.fileClass = FileClass.createFileClass(this.plugin, fileClassQuery.fileClassName)
 				this.fileClassFields = this.fileClass.attributes.map(attr => attr.name)
 			}
 		}
 	}
 
-	private async fetchFrontmatterFields(): Promise<void> {
+	private fetchFrontmatterFields(): void {
 		const frontmatter = this.plugin.app.metadataCache.getCache(this.file.path)?.frontmatter;
 		if (frontmatter) {
 			const { position, ...attributes } = frontmatter;
@@ -85,7 +85,7 @@ export default class OptionsList {
 			if (Object.keys(this.attributes).includes(fileClassAlias)) {
 				const fileClass = this.attributes[fileClassAlias];
 				try {
-					const _fileClass = await createFileClass(this.plugin, fileClass);
+					const _fileClass = FileClass.createFileClass(this.plugin, fileClass);
 					this.fileClass = _fileClass;
 					this.fileClassFields = _fileClass.attributes.map(attr => attr.name);
 					this.fileClassForFields = true;
@@ -101,62 +101,64 @@ export default class OptionsList {
 		}
 	}
 
-	private async fetchInlineFields(): Promise<void> {
-		const result = await this.plugin.app.vault.read(this.file);
-		result.split('\n').map(line => {
-			const lineFields = getLineFields(line);
-			lineFields.forEach(({ attribute, values }) => {
-				if (attribute && !this.plugin.settings.globallyIgnoredFields.includes(attribute.trim())) {
-					if (this.fileClassForFields) {
-						if (this.fileClassFields.includes(attribute.trim())) {
-							this.attributes[attribute.trim()] = values ? values.trim() : "";
+	private fetchInlineFields(): void {
+		const dataview = app.plugins.plugins["dataview"]
+		//@ts-ignore
+		if (dataview) {
+			const dvFile = dataview.api.page(this.file.path)
+			try {
+				genuineKeys(dvFile).forEach(key => {
+					if (!this.plugin.settings.globallyIgnoredFields.includes(key)) {
+						if (this.fileClassForFields) {
+							if (this.fileClassFields.includes(key)) {
+								this.attributes[key] = dvFile[key];
+							};
+						} else {
+							this.attributes[key] = dvFile[key]
 						};
-					} else {
-						this.attributes[attribute.trim()] = values ? values.trim() : "";
 					};
-				};
+				})
+			} catch (error) {
+				throw (error);
+			}
+		}
 
-			})
-		});
 	}
 
-	public async createExtraOptionList(openAfterCreate: boolean = true): Promise<void> {
-		await this.getGlobalFileClassForFields();
-		await this.getQueryFileClassForFields();
-		await this.fetchFrontmatterFields();
-		await this.fetchInlineFields();
-		if (this.fileClass) {
-			const fileClassAttributeSelectModal = new FileClassAttributeSelectModal(this.plugin, this.fileClass.getClassFile());
-			if (isMenu(this.location)) {
-				this.location.addSeparator();
-				this.location.addItem((item) => {
-					item.setIcon("gear");
-					item.setTitle(`Manage <${this.fileClass.name}> fields`);
-					item.onClick(() => fileClassAttributeSelectModal.open())
-				});
-			} else if (isSuggest(this.location)) {
-				this.location.options.push({
-					id: "manage_fileClass_attributes",
-					actionLabel: `<span>Manage <b>${this.fileClass.name}</b> fileClass fields</span>`,
-					action: () => fileClassAttributeSelectModal.open(),
-					icon: "wrench-screwdriver-glyph"
-				})
-			};
-		}
+	public createExtraOptionList(openAfterCreate: boolean = true): void {
+		this.getGlobalFileClassForFields();
+		this.getQueryFileClassForFields();
+		this.fetchFrontmatterFields();
+		this.fetchInlineFields();
 		if (isMenu(this.location)) { this.location.addSeparator(); };
 		if (isInsertFieldCommand(this.location)) {
 			this.addFieldAtCurrentPositionOption();
 		} else if (isSuggest(this.location)) {
 			this.buildFieldOptions();
-			await this.addFieldAtCurrentPositionOption();
+			this.addFieldAtCurrentPositionOption();
 			this.addSectionSelectModalOption();
-			await this.addFieldAtTheEndOfFrontmatterOption();
+			this.addFieldAtTheEndOfFrontmatterOption();
+			if (this.fileClass) {
+				const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.plugin.app)
+				const optionsList = new FileClassOptionsList(this.plugin, this.fileClass.getClassFile(), fieldCommandSuggestModal);
+				optionsList.createExtraOptionList(false);
+				this.location.options.push({
+					id: "manage_fileClass_attributes",
+					actionLabel: `<span>Manage <b>${this.fileClass.name}</b> fileClass fields</span>`,
+					action: () => { fieldCommandSuggestModal.open() },
+					icon: "wrench"
+				})
+			}
 			if (openAfterCreate) this.location.open();
 		} else {
 			this.buildFieldOptions();
 			this.addSectionSelectModalOption();
 			this.addFieldAtCurrentPositionOption();
 			this.addFieldAtTheEndOfFrontmatterOption();
+			if (this.fileClass) {
+				const fileClassOptionsList = new FileClassOptionsList(this.plugin, this.fileClass.getClassFile(), this.location)
+				fileClassOptionsList.createExtraOptionList(false);
+			}
 		}
 	}
 
@@ -185,7 +187,7 @@ export default class OptionsList {
 				item.onClick((evt: MouseEvent) => {
 					modal.open();
 				});
-				item.setSection("target-metadata");
+				item.setSection("metadata-menu");
 			});
 		} else if (isSuggest(this.location)) {
 			this.location.options.push({
@@ -197,35 +199,34 @@ export default class OptionsList {
 		};
 	};
 
-	private async addFieldAtTheEndOfFrontmatterOption(): Promise<void> {
+	private addFieldAtTheEndOfFrontmatterOption(): void {
 		if (this.plugin.app.metadataCache.getCache(this.file.path)?.frontmatter) {
-			const result = await this.plugin.app.vault.read(this.file)
-			const lineNumber = result.split("\n").slice(1).findIndex(l => l === "---")
+			const lineNumber = this.plugin.app.metadataCache.getCache(this.file.path)!.frontmatter!.position.end.line - 1
 			if (isMenu(this.location)) {
 				this.location.addItem((item) => {
 					item.setIcon("pin");
 					item.setTitle("Add field in frontmatter");
 					item.onClick(async (evt: MouseEvent) => {
-						F.openFieldOrFieldSelectModal(this.plugin, this.file, undefined, lineNumber + 1, result.split('\n')[lineNumber], true, false)
+						F.openFieldModal(this.plugin, this.file, undefined, lineNumber + 1, true, false)
 					});
-					item.setSection("target-metadata");
+					item.setSection("metadata-menu");
 				});
 			} else if (isSuggest(this.location)) {
 				this.location.options.push({
 					id: "add_field_in_frontmatter",
 					actionLabel: "Add a field in frontmatter...",
-					action: () => F.openFieldOrFieldSelectModal(
-						this.plugin, this.file, undefined, lineNumber + 1, result.split('\n')[lineNumber], true, false, this.fileClass),
+					action: () => F.openFieldModal(
+						this.plugin, this.file, undefined, lineNumber + 1, true, false, this.fileClass),
 					icon: "pin"
 				})
 			}
 		}
 	}
 
-	private async addFieldAtCurrentPositionOption(): Promise<void> {
-		const lineNumber = this.plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor.getCursor().line;
-		const result = await this.plugin.app.vault.read(this.file)
-		if (lineNumber !== undefined) {
+	private addFieldAtCurrentPositionOption(): void {
+		const currentView = this.plugin.app.workspace.getActiveViewOfType(MarkdownView)
+		const lineNumber = currentView?.editor.getCursor().line;
+		if (lineNumber !== undefined && this.file.path == currentView?.file.path) {
 			let inFrontmatter: boolean = false;
 			const frontmatter = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatter
 			if (frontmatter) {
@@ -237,20 +238,20 @@ export default class OptionsList {
 					item.setIcon("pin");
 					item.setTitle("Add field at cursor");
 					item.onClick((evt: MouseEvent) => {
-						F.openFieldOrFieldSelectModal(
-							this.plugin, this.file, undefined, lineNumber, result.split('\n')[lineNumber], inFrontmatter, false, this.fileClass)
+						F.openFieldModal(
+							this.plugin, this.file, undefined, lineNumber, inFrontmatter, false, this.fileClass)
 					});
-					item.setSection("target-metadata");
+					item.setSection("metadata-menu");
 				});
 			} else if (isInsertFieldCommand(this.location)) {
-				F.openFieldOrFieldSelectModal(
-					this.plugin, this.file, undefined, lineNumber, result.split('\n')[lineNumber], inFrontmatter, false, this.fileClass);
+				F.openFieldModal(
+					this.plugin, this.file, undefined, lineNumber, inFrontmatter, false, this.fileClass);
 			} else if (isSuggest(this.location)) {
 				this.location.options.push({
 					id: "add_field_at_cursor",
 					actionLabel: "Add field at cursor...",
-					action: () => F.openFieldOrFieldSelectModal(
-						this.plugin, this.file, undefined, lineNumber, result.split('\n')[lineNumber], inFrontmatter, false, this.fileClass),
+					action: () => F.openFieldModal(
+						this.plugin, this.file, undefined, lineNumber, inFrontmatter, false, this.fileClass),
 					icon: "pin"
 				})
 			};

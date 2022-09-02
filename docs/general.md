@@ -1,6 +1,6 @@
 # General Concepts
 
-Metadata Menu can manage any metadata field located in frontmatter (YAML syntax) or in the body of the note with the syntax `field::` (dataview style)
+Metadata Menu can manage any metadata field located in frontmatter (YAML syntax) or in the body of the note with the syntax `field::` (dataview style, dataview plugin is required)
 
 ## Field Types
 Metadata Menu gives a type to each field.
@@ -29,7 +29,7 @@ A field setting is composed of:
 A field setting can defined in:
 
 - Metadata Menu settings (see # Metadata Menu Settings)
-- in a fileClass note (see # Fileclass)
+- in a fileClass note (see # Fileclass , Dataview plugin is required)
 
 !!! info "Priority management"
 

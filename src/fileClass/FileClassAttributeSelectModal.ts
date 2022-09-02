@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { DropdownComponent, Modal, TFile } from "obsidian";
-import { createFileClass } from "src/fileClass/fileClass";
+import { FileClass } from "src/fileClass/fileClass";
 import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
 
 export default class FileClassAttributeSelectModal extends Modal {
@@ -16,7 +16,7 @@ export default class FileClassAttributeSelectModal extends Modal {
 
     async onOpen() {
         this.titleEl.setText(`Select the field to update`);
-        const fileClass = await createFileClass(this.plugin, this.file.basename, true) // limit fields manage to current fileClass
+        const fileClass = FileClass.createFileClass(this.plugin, this.file.basename, true) // limit fields manage to current fileClass
         this.titleEl.setText(`Select the field to update in ${fileClass.name}`);
         const selectContainer = this.contentEl.createDiv();
         const select = new DropdownComponent(selectContainer);

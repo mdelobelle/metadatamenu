@@ -11,7 +11,7 @@ import {
     parseYaml,
     Notice
 } from "obsidian";
-import { createFileClass, FileClass } from "src/fileClass/fileClass";
+import { FileClass } from "src/fileClass/fileClass";
 import { FieldManager, FieldType } from "src/types/fieldTypes";
 import { genericFieldRegex, getLineFields, encodeLink } from "../utils/parser";
 import FileField from "src/fields/fieldManagers/FileField";
@@ -132,7 +132,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 if (Object.keys(attributes).contains(fileClassAlias)) {
                     const fileClassValue = attributes[fileClassAlias];
                     try {
-                        const fileClass = await createFileClass(this.plugin, fileClassValue);
+                        const fileClass = FileClass.createFileClass(this.plugin, fileClassValue);
                         this.fileClass = fileClass;
                         const fileClassAttributes = this.fileClass.attributes;
                         if (fileClassAttributes.map(attr => attr.name).contains(fieldName)) {
@@ -176,7 +176,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                             //override presetValues if there is a valuesList
                             const valuesFile = this.plugin.app.vault.getAbstractFileByPath(presetField.valuesListNotePath);
                             if (valuesFile instanceof TFile && valuesFile.extension == "md") {
-                                const values: { value: string }[] = await (await this.plugin.app.vault.read(valuesFile)).split("\n")
+                                const values: { value: string }[] = (await this.plugin.app.vault.read(valuesFile)).split("\n")
                                     .filter(option => this.filterOption(firstValues, lastValue, option))
                                     .map(_value => Object({ value: _value }))
                                 return values;

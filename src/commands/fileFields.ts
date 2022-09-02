@@ -1,9 +1,9 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian"
-import { createFileClass, FileClass } from "src/fileClass/fileClass";
+import { FileClass } from "src/fileClass/fileClass";
 import FileClassQuery from "src/fileClass/FileClassQuery";
 import { FieldManager, FieldType } from "src/types/fieldTypes";
-import { getLineFields } from "src/utils/parser";
+import { genuineKeys } from "src/utils/dataviewUtils";
 import { getField } from "./getField";
 
 export class FieldInfo {
@@ -69,7 +69,7 @@ export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | s
     let fileClass: FileClass | undefined;
     if (plugin.settings.globalFileClass) {
         try {
-            fileClass = await createFileClass(plugin, plugin.settings.globalFileClass)
+            fileClass = FileClass.createFileClass(plugin, plugin.settings.globalFileClass)
         } catch (error) {
             fileClass = undefined;
         }
@@ -81,7 +81,7 @@ export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | s
             const fileClassQuery = new FileClassQuery();
             Object.assign(fileClassQuery, fileClassQueries.pop() as FileClassQuery)
             if (fileClassQuery.matchFile(file)) {
-                fileClass = await createFileClass(plugin, fileClassQuery.fileClassName);
+                fileClass = FileClass.createFileClass(plugin, fileClassQuery.fileClassName);
                 matchingFileClassQuery = fileClassQuery.name;
             }
         }
@@ -93,7 +93,7 @@ export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | s
         if (Object.keys(attributes).includes(fileClassAlias)) {
             const fileClassName = attributes[fileClassAlias];
             try {
-                fileClass = await createFileClass(plugin, fileClassName);
+                fileClass = FileClass.createFileClass(plugin, fileClassName);
                 matchingFileClassQuery = undefined;
             } catch (error) {
                 fileClass = undefined;
@@ -109,16 +109,23 @@ export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | s
     }
     // let's explore the rest of the file: get inline fields
 
-    const result: string = await plugin.app.vault.read(file)
-    result.split('\n').map(async line => {
-        const lineFields = getLineFields(line)
-        lineFields.forEach(async ({ attribute, values }) => {
-            const fieldName = attribute.trim()
-            const fieldInfo = new FieldInfo;
-            fieldInfo.unique = !Object.keys(fields).includes(fieldName);
-            fields[fieldName] = fieldInfo;
-            await fieldInfo.setInfos(plugin, fieldName, values, fileClass, matchingFileClassQuery);
-        })
-    });
+    const dataview = app.plugins.plugins["dataview"]
+    //@ts-ignore
+    if (dataview) {
+        const dvFile = dataview.api.page(file.path)
+        try {
+            genuineKeys(dvFile).forEach(async key => {
+                if (key !== "file") {
+                    const fieldInfo = new FieldInfo;
+                    fieldInfo.unique = !Object.keys(fields).includes(key);
+                    fields[key] = fieldInfo;
+                    await fieldInfo.setInfos(plugin, key, dvFile[key], fileClass, matchingFileClassQuery);
+                }
+            })
+        } catch (error) {
+            throw (error);
+        }
+    }
+
     return fields;
 }

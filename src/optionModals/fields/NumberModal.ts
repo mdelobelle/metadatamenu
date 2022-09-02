@@ -1,4 +1,4 @@
-import { App, Modal, TextComponent, TFile, ButtonComponent } from "obsidian";
+import { App, Modal, TextComponent, TFile, ButtonComponent, MarkdownEditView, MarkdownView } from "obsidian";
 import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
@@ -77,10 +77,11 @@ export default class NumbertModal extends Modal {
 
         const inputEl = new TextComponent(fieldContainer);
         inputEl.inputEl.focus();
-        inputEl.setValue(this.value);
+        inputEl.setValue(`${this.value}`);
 
         const minusBtn = new ButtonComponent(fieldContainer);
         minusBtn.setButtonText(`- ${!!step ? step : 1}`);
+        minusBtn.setDisabled(!this.fieldManager.canDecrement(inputEl.getValue()));
 
         const plusBtn = new ButtonComponent(fieldContainer);
         plusBtn.setButtonText(`+ ${!!step ? step : 1}`);
@@ -136,9 +137,9 @@ export default class NumbertModal extends Modal {
                 return
             }
             if (this.lineNumber == -1) {
-                replaceValues(this.app, this.file, this.field.name, inputValue);
+                await replaceValues(this.app, this.file, this.field.name, inputValue);
             } else {
-                insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
+                await insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
             };
             this.close();
         };

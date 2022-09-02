@@ -56,12 +56,11 @@ export default class chooseSectionModal extends Modal {
             const lineNumber = Number(valueArray && valueArray.length > 1 ? valueArray[2] : 0);
             const inFrontmatter = position == "frontmatter" ? true : false;
             const after = position == "top" ? false : true;
-            F.openFieldOrFieldSelectModal(
+            F.openFieldModal(
                 this.plugin,
                 this.file,
                 this.fieldName,
                 lineNumber,
-                result.split('\n')[lineNumber],
                 inFrontmatter,
                 after,
                 this.fileClass)
@@ -74,13 +73,12 @@ export default class chooseSectionModal extends Modal {
             addToFrontMatterBtn.setClass("metadata-menu-field-add-frontmatter-btn")
             addToFrontMatterBtn.setButtonText("Add to frontmatter")
             addToFrontMatterBtn.onClick(() => {
-                const lineNumber = result.split("\n").slice(1).findIndex(l => l === "---")
-                F.openFieldOrFieldSelectModal(
+                const lineNumber = app.metadataCache.getCache(this.file.path)!.frontmatter!.position.end.line - 1
+                F.openFieldModal(
                     this.plugin,
                     this.file,
                     this.fieldName,
-                    lineNumber + 1,
-                    result.split('\n')[lineNumber],
+                    lineNumber,
                     true,
                     false,
                     this.fileClass)

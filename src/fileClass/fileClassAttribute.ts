@@ -1,7 +1,5 @@
 import Field from "src/fields/Field";
-import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
-import { capitalize } from "src/utils/textUtils";
-import { genericFieldRegex } from "src/utils/parser";
+import { FieldType } from "src/types/fieldTypes";
 
 interface FileClassAttribute {
     name: string;
@@ -12,31 +10,11 @@ interface FileClassAttribute {
 
 class FileClassAttribute {
 
-    constructor(raw: string, origin: string) {
+    constructor(origin: string, name: string, type: FieldType = FieldType.Input, options: string[] | Record<string, string> = []) {
         this.origin = origin
-        const completeRegex = new RegExp(`^${genericFieldRegex}::(?<fieldSettings>.+)?`, "u");
-        const nameRegex = new RegExp(`^${genericFieldRegex}$`, "u");
-        let fieldName: string
-        let { attribute, fieldSettings } = raw.match(completeRegex)?.groups || {}
-        if (attribute) {
-            fieldName = attribute
-        } else {
-            let { attribute } = raw.match(nameRegex)?.groups || {}
-            fieldName = attribute
-        }
-        if (fieldName) {
-            this.name = fieldName.trim();
-            if (fieldSettings) {
-                const settings = JSON.parse(`${fieldSettings.trim()}`);
-                this.type = FieldTypeLabelMapping[capitalize(settings['type']) as keyof typeof FieldType];
-                this.options = settings['options'];
-            } else {
-                this.type = FieldType.Input // default type when no setting is provided
-            }
-        } else {
-            const error = new Error("Improper value");
-            throw error;
-        }
+        this.name = name
+        this.type = type
+        this.options = options
     }
 
     public getField() {

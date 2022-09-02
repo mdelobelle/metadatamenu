@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { App, Menu, Notice, setIcon, TextAreaComponent, TFile } from "obsidian";
-import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
+import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import SingleFileModal from "src/optionModals/fields/SingleFileModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
@@ -60,7 +60,7 @@ export default class FileField extends FieldManager {
                 item.setTitle(`Update ${name}`);
                 item.setIcon(FieldIcon[FieldType.File]);
                 item.onClick(() => modal.open());
-                item.setSection("target-metadata");
+                item.setSection("metadata-menu.fields");
             });
         } else if (FileField.isSuggest(location)) {
             location.options.push({

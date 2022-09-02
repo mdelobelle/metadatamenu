@@ -1,7 +1,9 @@
 import { FileClassAttribute } from "./fileClassAttribute";
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
-import { FieldType } from "src/types/fieldTypes";
+import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
+import { capitalize } from "src/utils/textUtils";
+import { genuineKeys } from "src/utils/dataviewUtils";
 
 interface FileClass {
     plugin: MetadataMenu;
@@ -85,33 +87,54 @@ class FileClass {
         return
     }
 
-    public async getAttributes(excludeParents: boolean = false): Promise<void> {
+    public getAttributes(excludeParents: boolean = false): void {
         try {
             const file = this.getClassFile();
             let parentAttributes: Array<FileClassAttribute> = [];
             let errors: string[] = [];
-            const result = await this.plugin.app.vault.cachedRead(file)
+            //const result = await this.plugin.app.vault.cachedRead(file)
             const parent = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.extends
             const excludedFields = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.excludes
             if (parent && !excludeParents) {
                 try {
-                    const parentFileClass = await createFileClass(this.plugin, parent);
-                    await parentFileClass.getAttributes();
+                    const parentFileClass = FileClass.createFileClass(this.plugin, parent);
+                    parentFileClass.getAttributes();
                     parentAttributes = Array.isArray(excludedFields) ? [...parentFileClass.attributes.filter(attr => !excludedFields.includes(attr.name))] : [...parentFileClass.attributes]
                 } catch (error) {
                     errors.push(error)
                 }
             }
             let attributes: Array<FileClassAttribute> = [];
-            result.split('\n').forEach(line => {
+            const dataview = app.plugins.plugins["dataview"]
+            //@ts-ignore
+            if (dataview) {
+                const dvFile = dataview.api.page(file.path)
                 try {
-                    const attribute = new FileClassAttribute(line, this.name);
-                    attributes.push(attribute);
+                    genuineKeys(dvFile).forEach(key => {
+                        if (key !== "file") {
+                            const item = typeof dvFile[key] !== "string"
+                                ? JSON.stringify(dvFile[key])
+                                : dvFile[key];
+                            try {
+                                const { type, options } = JSON.parse(item);
+                                const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
+                                const attr = new FileClassAttribute(this.name, key, fieldType, options)
+                                //deduplicate fields
+                                attributes.push(attr)
+                            } catch (e) {
+                                //do nothing
+                            }
+                        }
+                    })
                 } catch (error) {
-                    errors.push(error);
+                    throw (error);
                 }
-            })
-            this.attributes = parentAttributes.filter(attr => !attributes.map(_attr => _attr.name).includes(attr.name)).concat(attributes)
+            }
+            this.attributes = parentAttributes
+                .filter(attr => !attributes
+                    .map(_attr => _attr.name)
+                    .includes(attr.name)
+                ).concat(attributes.filter(p => !Object.keys(this.plugin.app.metadataCache.getFileCache(file)?.frontmatter || {}).includes(p.name)));
             this.errors = errors;
         } catch (error) {
             throw (error);
@@ -154,17 +177,13 @@ class FileClass {
         })
         await this.plugin.app.vault.modify(file, newContent.join('\n'));
     }
-}
 
-async function createFileClass(plugin: MetadataMenu, name: string, excludeParent: boolean = false): Promise<FileClass> {
-    return new Promise((resolve, reject) => {
+    static createFileClass(plugin: MetadataMenu, name: string, excludeParent: boolean = false): FileClass {
         const fileClass = new FileClass(plugin, name);
-        fileClass.getAttributes(excludeParent).then(() => {
-            resolve(fileClass);
-        }).catch((error) => {
-            reject(error);
-        })
-    })
+        fileClass.getAttributes(excludeParent)
+        return fileClass
+    }
 }
 
-export { createFileClass, FileClass };
+
+export { FileClass };

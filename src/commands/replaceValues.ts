@@ -1,4 +1,4 @@
-import { App, TFile } from "obsidian";
+import { App, MarkdownView, TFile } from "obsidian";
 import { fieldComponents, inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
 
 const enum Location {
@@ -95,5 +95,10 @@ export async function replaceValues(
             }
         }
     })
-    app.vault.modify(file, newContent.join('\n'));
+    await app.vault.modify(file, newContent.join('\n'));
+    const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor
+    if (editor) {
+        const lineNumber = editor.getCursor().line
+        editor.setCursor({ line: editor.getCursor().line, ch: editor.getLine(lineNumber).length })
+    }
 }

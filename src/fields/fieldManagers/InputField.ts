@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { App, Menu, setIcon, TextAreaComponent, TFile } from "obsidian";
-import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
+import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import InputModal from "src/optionModals/fields/InputModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
@@ -24,7 +24,7 @@ export default class InputField extends FieldManager {
                 item.setTitle(`Update <${name}>`);
                 item.setIcon(FieldIcon[FieldType.Input]);
                 item.onClick(() => modal.open());
-                item.setSection("target-metadata");
+                item.setSection("metadata-menu.fields");
             })
         } else if (InputField.isSuggest(location)) {
             location.options.push({

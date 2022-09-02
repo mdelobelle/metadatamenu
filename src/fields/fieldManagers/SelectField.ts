@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { App, Menu, setIcon, TextComponent, TFile } from "obsidian";
-import FieldCommandSuggestModal from "src/optionModals/FieldCommandSuggestModal";
+import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import SelectModal from "src/optionModals/fields/SelectModal";
 import FieldSetting from "src/settings/FieldSetting";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
@@ -24,7 +24,7 @@ export default class SelectField extends AbstractListBasedField {
                 item.setTitle(`Update ${name}`);
                 item.setIcon(FieldIcon[FieldType.Select]);
                 item.onClick(() => modal.open());
-                item.setSection("target-metadata");
+                item.setSection("metadata-menu.fields");
             });
         } else if (SelectField.isSuggest(location)) {
             location.options.push({
