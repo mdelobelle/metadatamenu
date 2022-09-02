@@ -109,20 +109,13 @@ export default class OptionsList {
 			try {
 				genuineKeys(dvFile).forEach(key => {
 					if (!this.plugin.settings.globallyIgnoredFields.includes(key)) {
-						if (this.fileClassForFields) {
-							if (this.fileClassFields.includes(key)) {
-								this.attributes[key] = dvFile[key];
-							};
-						} else {
-							this.attributes[key] = dvFile[key]
-						};
+						this.attributes[key] = dvFile[key]
 					};
 				})
 			} catch (error) {
 				throw (error);
 			}
 		}
-
 	}
 
 	public createExtraOptionList(openAfterCreate: boolean = true): void {

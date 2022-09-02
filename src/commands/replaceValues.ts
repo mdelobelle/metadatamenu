@@ -25,14 +25,14 @@ export const matchInlineFields = (regex: RegExp, line: string, attribute: string
     while (!next.done) {
         const match = next.value;
         if (match.groups && Object.keys(match.groups).every(j => fieldComponents.includes(j))) {
-            const { inList, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = match.groups
+            const { inList, inQuote, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = match.groups
             const inputArray = input ? input.replace(/(\,\s+)/g, ',').split(',') : [""];
             const newValue = inputArray.length == 1 ? inputArray[0] : `${inputArray.join(', ')}`;
             const start = LocationWrapper[location].start;
             const end = LocationWrapper[location].end;
             newFields.push({
                 oldField: match[0],
-                newField: `${start}${inList || ""}${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer}${newValue}${end}`,
+                newField: `${inQuote || ""}${start}${inList || ""}${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer}${newValue}${end}`,
             })
         }
         next = sR.next()
@@ -77,10 +77,10 @@ export async function replaceValues(
             const fullLineRegex = new RegExp(`^${inlineFieldRegex(attribute)}`, "u");
             const fR = encodedLine.match(fullLineRegex);
             if (fR?.groups && Object.keys(fR.groups).every(j => fieldComponents.includes(j))) {
-                const { inList, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = fR.groups
+                const { inList, inQuote, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = fR.groups
                 const inputArray = input ? input.replace(/(\,\s+)/g, ',').split(',') : [""];
                 const newValue = inputArray.length == 1 ? inputArray[0] : `${inputArray.join(', ')}`;
-                return `${inList || ""}${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer}${newValue}`;
+                return `${inQuote || ""}${inList || ""}${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer}${newValue}`;
             } else {
                 const newFields: FieldReplace[] = [];
                 const inSentenceRegexBrackets = new RegExp(`\\[${inlineFieldRegex(attribute)}\\]`, "gu");
