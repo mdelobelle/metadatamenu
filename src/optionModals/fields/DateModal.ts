@@ -27,7 +27,7 @@ export default class DateModal extends Modal {
         this.app = app;
         this.file = file;
         this.field = field;
-        this.value = value.toString().replace(/^\[\[/g, "").replace(/\]\]$/g, "");
+        this.value = value ? value.toString().replace(/^\[\[/g, "").replace(/\]\]$/g, "") : "";
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
         this.after = after;
