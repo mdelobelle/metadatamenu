@@ -8,6 +8,7 @@ export const enum FieldType {
     'Boolean' = "Boolean",
     "Number" = "Number",
     "File" = "File",
+    "MultiFile" = "MultiFile",
     "Date" = "Date"
 }
 
@@ -19,6 +20,7 @@ export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = 
     "Boolean": FieldType.Boolean,
     "Number": FieldType.Number,
     "File": FieldType.File,
+    "MultiFile": FieldType.MultiFile,
     "Date": FieldType.Date
 };
 
@@ -30,6 +32,7 @@ export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
     "Boolean": "boolean",
     "Number": "number",
     "File": "file",
+    "MultiFile": "file",
     "Date": "date"
 }
 
@@ -40,7 +43,8 @@ export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
     "Cycle": "Cycle through values from a list",
     "Boolean": "Accept true of false",
     "Number": "Accept a number",
-    "File": "Accept a link to a file in your vault",
+    "File": "Accept a link",
+    "MultiFile": "Accept multiple links",
     "Date": "Accept a date"
 }
 
@@ -52,6 +56,7 @@ export const FieldManager: Record<keyof typeof FieldType, any> = {
     "Boolean": Managers.Boolean,
     "Number": Managers.Number,
     "File": Managers.File,
+    "MultiFile": Managers.MultiFile,
     "Date": Managers.Date
 }
 
@@ -63,5 +68,6 @@ export const FieldIcon: Record<keyof typeof FieldType, string> = {
     "Boolean": "checkmark",
     "Number": "plus-minus-glyph",
     "File": "link",
+    "MultiFile": "link",
     "Date": "calendar-with-checkmark"
 }

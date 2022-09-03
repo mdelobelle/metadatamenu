@@ -1,19 +1,32 @@
 import MetadataMenu from "main";
 import { App, Menu, Notice, setIcon, TextAreaComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
-import SingleFileModal from "src/optionModals/fields/SingleFileModal";
+import MultiFileModal from "src/optionModals/fields/MultiFileModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager, SettingLocation } from "../FieldManager";
 
-export default class FileField extends FieldManager {
+export default class MultiFileField extends FieldManager {
 
     private fileValidatorField: HTMLDivElement
     private dvQueryString: TextAreaComponent
 
     constructor(field: Field) {
-        super(field, FieldType.File)
+        super(field, FieldType.MultiFile)
+    }
+
+    static buildMarkDownLink(app: App, file: TFile, path: string): string {
+        const destFile = app.metadataCache.getFirstLinkpathDest(path, file.path)
+        if (destFile) {
+            return app.fileManager.generateMarkdownLink(
+                destFile,
+                file.path,
+                undefined,
+                destFile.basename
+            )
+        }
+        return ""
     }
 
     getFiles = (): TFile[] => {
@@ -39,17 +52,16 @@ export default class FileField extends FieldManager {
         }
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
-        const modal = new SingleFileModal(app, file, this.field)
-        modal.titleEl.setText("Select value");
-        if (FileField.isMenu(location)) {
+    addFieldOption(name: string, value: any, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+        const modal = new MultiFileModal(app, file, this.field, value)
+        if (MultiFileField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update ${name}`);
                 item.setIcon(FieldIcon[FieldType.File]);
                 item.onClick(() => modal.open());
                 item.setSection("metadata-menu.fields");
             });
-        } else if (FileField.isSuggest(location)) {
+        } else if (MultiFileField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
@@ -60,7 +72,7 @@ export default class FileField extends FieldManager {
     }
 
     createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
-        const fieldModal = new SingleFileModal(app, file, this.field, lineNumber, inFrontmatter, after);
+        const fieldModal = new MultiFileModal(app, file, this.field, undefined, lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -81,9 +93,11 @@ export default class FileField extends FieldManager {
         spacer.setAttr("class", "metadata-menu-dv-field-spacer")
 
         const file = app.vault.getAbstractFileByPath(p["file"]["path"])
-        let fieldModal: SingleFileModal;
+        //let fieldModal: SingleFileModal;
+        let fieldModal: MultiFileModal;
         if (file instanceof TFile && file.extension == "md") {
-            fieldModal = new SingleFileModal(app, file, this.field)
+            //fieldModal = new SingleFileModal(app, file, this.field)
+            fieldModal = new MultiFileModal(app, file, this.field, p[this.field.name])
         } else {
             throw Error("path doesn't correspond to a proper file");
         }

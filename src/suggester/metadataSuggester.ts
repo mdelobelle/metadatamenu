@@ -98,7 +98,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                         .map(k => field.options[k])
                         .filter(option => this.filterOption(firstValues, lastValue, option))
                 return filteredOptions.map(option => Object({ value: option }));
-            } else if (field.type === FieldType.File) {
+            } else if ([FieldType.File, FieldType.MultiFile].includes(field.type)) {
                 const fieldManager: FileField = new FieldManager[field.type](field)
                 const files = fieldManager.getFiles();
                 if (lastValue) {
@@ -213,7 +213,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                         return values
                             .map(_value => Object({ value: _value }))
 
-                    } else if (presetField.type === FieldType.File) {
+                    } else if ([FieldType.File, FieldType.MultiFile].includes(presetField.type)) {
                         const fieldManager: FileField = new FieldManager[presetField.type](presetField)
                         const files = fieldManager.getFiles();
                         if (lastValue) {

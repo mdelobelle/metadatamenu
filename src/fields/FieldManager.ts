@@ -42,6 +42,19 @@ export abstract class FieldManager {
         this.field = field
     }
 
+    static buildMarkDownLink(app: App, file: TFile, path: string): string {
+        const destFile = app.metadataCache.getFirstLinkpathDest(path, file.path)
+        if (destFile) {
+            return app.fileManager.generateMarkdownLink(
+                destFile,
+                file.path,
+                undefined,
+                destFile.basename
+            )
+        }
+        return ""
+    }
+
     validateName(textInput: TextComponent, insertAfter: Element): boolean {
         let error = false;
         if (/^[#>-]/.test(this.field.name)) {

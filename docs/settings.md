@@ -61,7 +61,7 @@ If `min` (float) is defined, you won't be able to set or change the value of the
 #### `Max`
 If `max` (float) is defined, you won't be able to set or change the value of the field with a value greater than `max` (an error will be displayed)
 
-### `File` options
+### `File`, `MultiFile` options
 `Dataview query` accepts a call to the api function dv.pages that will return pages from your vault according to this function. 
 
 you’ll have to use dv.pages function explained here : https://blacksmithgu.github.io/obsidian-dataview/api/code-reference/#dvpagessource
