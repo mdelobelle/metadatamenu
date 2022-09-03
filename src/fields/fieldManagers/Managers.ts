@@ -6,6 +6,7 @@ import Cycle from './CycleField'
 import Multi from './MultiField'
 import File from './FileField'
 import Date from './DateField'
+import MultiFile from './MultiFileField'
 
 const Managers = {
     Input,
@@ -15,7 +16,8 @@ const Managers = {
     Cycle,
     Multi,
     File,
-    Date
+    Date,
+    MultiFile
 }
 
 export default Managers

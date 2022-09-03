@@ -51,9 +51,9 @@ these options are accessible from:
 
 1. Right-click on the link (or context menu, ...)
 2. Click on "🟰 .... " to change the field's value
-3. The modal will display a grid of switches for preset values
-4. Change the values by toggling the switches in the modal
-5. Click on the save button to save or click X or `esc` to cancel
+3. The modal will display a list for preset values
+4. Change the values by clicking on the values in the list
+5. Click on the save button to save or click X or `esc` to cancel, or click the trash button to empty the field
 
 ### Cycle through preset values (type: `Cycle`)
 
@@ -65,6 +65,14 @@ these options are accessible from:
 1. Right-click on the link (or context menu, ...)
 2. Click on " 🔎 Update ... "
 3. Type or select the link within the modal
+
+
+### Update a list of links to files (type: `MultiFile`)
+
+1. Right-click on the link (or context menu, ...)
+2. Click on " 🔎 Update ... "
+3. Click on the chosen links within the list
+4. Click on the save button to save or click X or `esc` to cancel, or click the trash button to empty the field
 
 
 ### Update a date (type: `Date`)

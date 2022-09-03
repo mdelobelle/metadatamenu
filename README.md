@@ -42,6 +42,7 @@ Available types are:
 - `Multi`: a field that can `Accept multiple values from a list`
 - `Cycle`: a field that will `Cycle through values from a list`
 - `File`: a field that will `Accept a link to a file from your vault`
+- `MultiFile`: a field that will `Accept multiple links`
 - `Date`: a field that will `Accept a date`
 
 ## Field settings

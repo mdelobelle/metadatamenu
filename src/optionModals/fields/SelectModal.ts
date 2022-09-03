@@ -1,11 +1,10 @@
-import { App, Modal, DropdownComponent, TFile, ButtonComponent } from "obsidian";
+import { App, Modal, DropdownComponent, TFile, ButtonComponent, SuggestModal } from "obsidian";
 import Field from "src/fields/Field";
 import { replaceValues } from "src/commands/replaceValues";
 import FieldSetting from "src/settings/FieldSetting";
 import { insertValues } from "src/commands/insertValues";
 
-export default class valueSelectModal extends Modal {
-
+export default class ValueSuggestModal extends SuggestModal<string>{
     private file: TFile;
     private value: string;
     private field: Field;
@@ -16,7 +15,6 @@ export default class valueSelectModal extends Modal {
 
     constructor(app: App, file: TFile, value: string, field: Field, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
         super(app);
-        this.app = app;
         this.file = file;
         this.field = field;
         this.value = value;
@@ -26,47 +24,28 @@ export default class valueSelectModal extends Modal {
         this.after = after;
     };
 
-    async onOpen() {
-        this.containerEl.addClass("metadata-menu");
-        const inputDiv = this.contentEl.createDiv({ cls: "metadata-menu-modal-value" });
-        await this.buildInputEl(inputDiv);
-    };
-
-    private async buildInputEl(inputDiv: HTMLDivElement): Promise<void> {
-        const selectEl = new DropdownComponent(inputDiv);
-        selectEl.selectEl.addClass("metadata-menu-select");
-
-        const options = this.field.options;
-        selectEl.addOption("", "--Empty--");
+    async getSuggestions(query: string): Promise<string[]> {
         const listNoteValues = await FieldSetting.getValuesListFromNote(this.field.valuesListNotePath, this.app)
-        listNoteValues.forEach(value => selectEl.addOption(value, value));
-        if (listNoteValues.includes(this.value)) {
-            selectEl.setValue(this.value);
-        };
+        let options: string[] = []
         if (listNoteValues.length === 0) {
-            Object.keys(options).forEach(key => {
-                selectEl.addOption(options[key], options[key]);
-            });
-            if (Object.values(options).includes(this.value)) {
-                selectEl.setValue(this.value);
-            };
+            options = Object.values(this.field.options).filter(o => o.toLowerCase().includes(query.toLowerCase()))
+        } else {
+            options = listNoteValues.filter(o => o.toLowerCase().includes(query.toLowerCase()))
         }
-        const submitButton = new ButtonComponent(inputDiv);
-        selectEl.onChange(value => {
-            this.newValue = value != "--Empty--" ? value : "";
-            submitButton.buttonEl.focus();
-        });
-        submitButton.setTooltip("Save")
-            .setIcon("checkmark")
-            .onClick(async () => {
-                if (this.lineNumber == -1) {
-                    if (this.newValue || this.newValue == "") {
-                        await replaceValues(this.app, this.file, this.field.name, this.newValue);
-                    };
-                } else {
-                    await insertValues(this.app, this.file, this.field.name, selectEl.getValue(), this.lineNumber, this.inFrontmatter, this.after);
-                };
-                this.close();
-            });
-    };
-};
+        return query ? [...options, "--empty--"] : ["--empty--", ...options]
+    }
+
+    renderSuggestion(value: string, el: HTMLElement) {
+        el.setText(value)
+        if (value === this.value) el.addClass("metadata-menu-value-selected")
+    }
+
+    async onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
+        this.newValue = item === "--empty--" ? "" : item
+        if (this.lineNumber == -1) {
+            await replaceValues(this.app, this.file, this.field.name, this.newValue);
+        } else {
+            await insertValues(this.app, this.file, this.field.name, this.newValue, this.lineNumber, this.inFrontmatter, this.after);
+        };
+    }
+}
