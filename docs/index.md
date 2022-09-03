@@ -1,6 +1,6 @@
 # Overview
 
-This plugin is made for data quality enthousiasts!
+This plugin is made for data quality enthusiasts!
 
 **Access and manage the metadata of your notes in [Obsidian](https://obsidian.md).**
 

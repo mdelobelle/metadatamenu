@@ -1,5 +1,5 @@
 # Metadata Menu
-This plugin is made for data quality enthousiasts: access and manage the metadata of your notes in Obsidian.
+This plugin is made for data quality enthusiasts: access and manage the metadata of your notes in Obsidian.
 
 Metadata Menu adds context menu items to modifiy target note's frontmatter fields and "inline fields" (dataview syntax) by right-clicking on the link, or within dataview tables
 
