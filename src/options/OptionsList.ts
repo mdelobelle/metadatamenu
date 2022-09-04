@@ -13,15 +13,15 @@ import chooseSectionModal from "../optionModals/chooseSectionModal";
 import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
 import FileClassOptionsList from "./FileClassOptionsList";
 
-function isMenu(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal): location is Menu {
+function isMenu(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal | "ManageAtCursorCommand"): location is Menu {
 	return (location as Menu).addItem !== undefined;
 };
 
-function isInsertFieldCommand(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal): location is "InsertFieldCommand" {
+function isInsertFieldCommand(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal | "ManageAtCursorCommand"): location is "InsertFieldCommand" {
 	return (location as string) === "InsertFieldCommand";
 }
 
-function isSuggest(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal): location is FieldCommandSuggestModal {
+function isSuggest(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal | "ManageAtCursorCommand"): location is FieldCommandSuggestModal {
 	return (location as FieldCommandSuggestModal).getItems !== undefined;
 };
 
@@ -33,14 +33,14 @@ export default class OptionsList {
 	file: TFile;
 	plugin: MetadataMenu;
 	path: string;
-	location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal;
+	location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal | "ManageAtCursorCommand";
 	fileClass: FileClass;
 	attributes: Record<string, string>;
 	fileClassForFields: boolean;
 	fileClassFields: string[];
 	includedFields: string[];
 
-	constructor(plugin: MetadataMenu, file: TFile, location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal, includedFields?: string[]) {
+	constructor(plugin: MetadataMenu, file: TFile, location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal | "ManageAtCursorCommand", includedFields?: string[]) {
 		this.file = file;
 		this.plugin = plugin;
 		this.location = location;
@@ -128,6 +128,19 @@ export default class OptionsList {
 		}
 	}
 
+	public createAndOpenFieldModal(fieldName: string): void {
+		this.getGlobalFileClassForFields();
+		this.getQueryFileClassForFields();
+		this.fetchFrontmatterFields();
+		this.fetchInlineFields();
+		const value = this.attributes[fieldName];
+		const field = getField(this.plugin, fieldName, this.fileClass);
+		if (field) {
+			const fieldManager = new FieldManager[field.type](field);
+			(fieldManager as F).createAndOpenFieldModal(this.plugin.app, this.file, field.name, this.attributes[field.name])
+		}
+	}
+
 	public createExtraOptionList(openAfterCreate: boolean = true): void {
 		this.getGlobalFileClassForFields();
 		this.getQueryFileClassForFields();
@@ -153,7 +166,7 @@ export default class OptionsList {
 				})
 			}
 			if (openAfterCreate) this.location.open();
-		} else {
+		} else if (isMenu(this.location)) {
 			this.buildFieldOptions();
 			this.addSectionSelectModalOption();
 			this.addFieldAtCurrentPositionOption();

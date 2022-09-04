@@ -138,53 +138,18 @@ export default class MetadataMenu extends Plugin {
 					const inFile = !!(view?.file && view.file.parent.path + "/" !== this.settings.classFilesPath)
 					return inFile && editor !== undefined
 				}
+				const optionsList = new OptionsList(this, view!.file, "ManageAtCursorCommand")
 				const frontmatter = this.app.metadataCache.getFileCache(view!.file)?.frontmatter;
-				let fileClass: FileClass | undefined;
-				if (frontmatter && view) {
-					const { position, ...attributes } = frontmatter
-					if (Object.keys(attributes).includes(this.settings.fileClassAlias)) {
-						const fileClassName = attributes[this.settings.fileClassAlias];
-						try {
-							fileClass = FileClass.createFileClass(this, fileClassName);
-						} catch (error) {
-							//do nothing
-						}
-					}
-				}
-				let field: Field | undefined;
 				if (frontmatter && editor
 					&& editor.getCursor().line > frontmatter.position.start.line
 					&& editor.getCursor().line < frontmatter.position.end.line) {
-					//we are in the frontmatter
-					const { position, ...attributes } = frontmatter
 					const attribute = frontMatterLineField(editor.getLine(editor.getCursor().line))
-					if (attribute) {
-						field = getField(this, attribute, fileClass);
-						if (field) {
-							const fieldManager = new FieldManager[field.type](field);
-							(fieldManager as FM).createAndOpenFieldModal(this.app, view.file, field.name, attributes[attribute])
-						}
-					}
-
+					if (attribute) optionsList.createAndOpenFieldModal(attribute)
 				} else if (editor) {
-					//we are in the body let's use dataview
 					const { attribute, values } = getLineFields(editor.getLine(editor.getCursor().line)).find(field =>
 						editor.getCursor().ch <= field.index + field.length
 						&& editor.getCursor().ch >= field.index) || {};
-					if (attribute) {
-						field = getField(this, attribute, fileClass);
-						const dataview = app.plugins.plugins["dataview"]
-						//@ts-ignore
-						let dvValue: any;
-						if (dataview) {
-							const dvFile = dataview.api.page(view.file.path)
-							dvValue = dvFile[attribute]
-						}
-						if (field) {
-							const fieldManager = new FieldManager[field.type](field);
-							(fieldManager as FM).createAndOpenFieldModal(this.app, view.file, field.name, dvValue || values)
-						}
-					}
+					if (attribute) optionsList.createAndOpenFieldModal(attribute)
 				}
 			}
 
