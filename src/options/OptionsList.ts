@@ -6,7 +6,8 @@ import { FieldManager as F } from "src/fields/FieldManager";
 import Managers from "src/fields/fieldManagers/Managers";
 import { FileClass } from "src/fileClass/fileClass";
 import FileClassQuery from "src/fileClass/FileClassQuery";
-import { FieldManager, FieldType } from "src/types/fieldTypes";
+import InputModal from "src/optionModals/fields/InputModal";
+import { FieldIcon, FieldManager, FieldType } from "src/types/fieldTypes";
 import { genuineKeys } from "src/utils/dataviewUtils";
 import chooseSectionModal from "../optionModals/chooseSectionModal";
 import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
@@ -37,15 +38,32 @@ export default class OptionsList {
 	attributes: Record<string, string>;
 	fileClassForFields: boolean;
 	fileClassFields: string[];
+	includedFields: string[];
 
-	constructor(plugin: MetadataMenu, file: TFile, location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal) {
+	constructor(plugin: MetadataMenu, file: TFile, location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal, includedFields?: string[]) {
 		this.file = file;
 		this.plugin = plugin;
 		this.location = location;
 		this.attributes = {};
 		this.fileClassFields = [];
 		this.fileClassForFields = false;
+		this.includedFields = includedFields ? [this.plugin.settings.fileClassAlias, ...includedFields] : [this.plugin.settings.fileClassAlias];
 	};
+
+	private addAttribute(key: string, value: any): void {
+		const includedFields = this.includedFields.filter(f => f !== this.plugin.settings.fileClassAlias)
+		if (includedFields.length > 0) {
+			if (
+				this.includedFields.includes(key)
+				&&
+				!this.plugin.settings.globallyIgnoredFields.includes(key)
+			) {
+				this.attributes[key] = value
+			}
+		} else if (!this.plugin.settings.globallyIgnoredFields.includes(key)) {
+			this.attributes[key] = value
+		}
+	}
 
 	private getGlobalFileClassForFields(): void {
 		const fileClass = this.plugin.settings.globalFileClass as string;
@@ -76,11 +94,7 @@ export default class OptionsList {
 		const frontmatter = this.plugin.app.metadataCache.getCache(this.file.path)?.frontmatter;
 		if (frontmatter) {
 			const { position, ...attributes } = frontmatter;
-			Object.keys(attributes).forEach(key => {
-				if (!this.plugin.settings.globallyIgnoredFields.includes(key)) {
-					this.attributes[key] = attributes[key];
-				};
-			});
+			Object.entries(attributes).forEach(attr => this.addAttribute(...attr));
 			const fileClassAlias = this.plugin.settings.fileClassAlias;
 			if (Object.keys(this.attributes).includes(fileClassAlias)) {
 				const fileClass = this.attributes[fileClassAlias];
@@ -107,11 +121,7 @@ export default class OptionsList {
 		if (dataview) {
 			const dvFile = dataview.api.page(this.file.path)
 			try {
-				genuineKeys(dvFile).forEach(key => {
-					if (!this.plugin.settings.globallyIgnoredFields.includes(key)) {
-						this.attributes[key] = dvFile[key]
-					};
-				})
+				genuineKeys(dvFile).forEach(key => this.addAttribute(key, dvFile[key]))
 			} catch (error) {
 				throw (error);
 			}
@@ -155,6 +165,26 @@ export default class OptionsList {
 		}
 	}
 
+	private buildFileClassFieldOptions(field: Field, value: string): void {
+		const modal = new InputModal(app, this.file, field, value);
+		modal.titleEl.setText(`Change Value for <${field.name}>`);
+		if (isMenu(this.location)) {
+			this.location.addItem((item) => {
+				item.setTitle(`Update ${field.name}`);
+				item.setIcon("wrench");
+				item.onClick(() => modal.open());
+				item.setSection("metadata-menu");
+			})
+		} else if (isSuggest(this.location)) {
+			this.location.options.push({
+				id: `update_${field.name}`,
+				actionLabel: `<span>Update <b>${field.name}</b></span>`,
+				action: () => modal.open(),
+				icon: FieldIcon[FieldType.Input]
+			});
+		};
+	}
+
 	private buildFieldOptions(): void {
 		Object.keys(this.attributes).forEach((key: string) => {
 			const value = this.attributes[key];
@@ -165,8 +195,12 @@ export default class OptionsList {
 			} else if (key !== "file" && (isSuggest(this.location) || isMenu(this.location))) {
 				const defaultField = new Field(key)
 				defaultField.type = FieldType.Input
-				const fieldManager = new Managers.Input(defaultField)
-				fieldManager.addFieldOption(key, value, this.plugin.app, this.file, this.location)
+				if (key === this.plugin.settings.fileClassAlias) {
+					this.buildFileClassFieldOptions(defaultField, value)
+				} else {
+					const fieldManager = new Managers.Input(defaultField)
+					fieldManager.addFieldOption(key, value, this.plugin.app, this.file, this.location)
+				}
 			}
 		});
 	}
@@ -200,7 +234,7 @@ export default class OptionsList {
 					item.setIcon("pin");
 					item.setTitle("Add field in frontmatter");
 					item.onClick(async (evt: MouseEvent) => {
-						F.openFieldModal(this.plugin, this.file, undefined, lineNumber + 1, true, false)
+						F.openFieldModal(this.plugin, this.file, undefined, "", lineNumber + 1, true, false)
 					});
 					item.setSection("metadata-menu");
 				});
@@ -209,7 +243,7 @@ export default class OptionsList {
 					id: "add_field_in_frontmatter",
 					actionLabel: "Add a field in frontmatter...",
 					action: () => F.openFieldModal(
-						this.plugin, this.file, undefined, lineNumber + 1, true, false, this.fileClass),
+						this.plugin, this.file, undefined, "", lineNumber + 1, true, false, this.fileClass),
 					icon: "pin"
 				})
 			}
@@ -232,19 +266,19 @@ export default class OptionsList {
 					item.setTitle("Add field at cursor");
 					item.onClick((evt: MouseEvent) => {
 						F.openFieldModal(
-							this.plugin, this.file, undefined, lineNumber, inFrontmatter, false, this.fileClass)
+							this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false, this.fileClass)
 					});
 					item.setSection("metadata-menu");
 				});
 			} else if (isInsertFieldCommand(this.location)) {
 				F.openFieldModal(
-					this.plugin, this.file, undefined, lineNumber, inFrontmatter, false, this.fileClass);
+					this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false, this.fileClass);
 			} else if (isSuggest(this.location)) {
 				this.location.options.push({
 					id: "add_field_at_cursor",
 					actionLabel: "Add field at cursor...",
 					action: () => F.openFieldModal(
-						this.plugin, this.file, undefined, lineNumber, inFrontmatter, false, this.fileClass),
+						this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false, this.fileClass),
 					icon: "pin"
 				})
 			};
