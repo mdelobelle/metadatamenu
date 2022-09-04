@@ -99,7 +99,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					.setPlaceholder('Enter fields as string, comma separated')
 					.setValue(this.plugin.settings.globallyIgnoredFields.join(', '))
 					.onChange(async (value) => {
-						this.plugin.settings.globallyIgnoredFields = value.replace(/\s/g, '').split(',');
+						this.plugin.settings.globallyIgnoredFields = value.split(',').map(item => item.trim());
 						await this.plugin.saveSettings();
 					});
 				text.inputEl.rows = 6;

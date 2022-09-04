@@ -35,7 +35,7 @@ export abstract class FieldManager {
         }
     ): Promise<void>
     abstract getOptionsStr(): string;
-    abstract createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void
+    abstract createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void
 
     constructor(field: Field, type: FieldType) {
         if (field.type !== type) throw Error(`This field is not of type ${type}`)
@@ -102,16 +102,17 @@ export abstract class FieldManager {
         file: TFile,
         fieldName: string,
         field: Field | undefined,
+        value?: string,
         lineNumber?: number,
         inFrontmatter?: boolean,
         after?: boolean
     ): void {
         if (field) {
             const fieldManager = new FM[field.type](field);
-            fieldManager.createAndOpenFieldModal(plugin.app, file, fieldName, lineNumber, inFrontmatter, after);
+            fieldManager.createAndOpenFieldModal(plugin.app, file, fieldName, value, lineNumber, inFrontmatter, after);
         } else {
             const fieldManager = FieldManager.createDefault(fieldName!);
-            fieldManager.createAndOpenFieldModal(plugin.app, file, fieldName!, lineNumber, inFrontmatter, after);
+            fieldManager.createAndOpenFieldModal(plugin.app, file, fieldName!, value, lineNumber, inFrontmatter, after);
         }
     }
 
@@ -119,6 +120,7 @@ export abstract class FieldManager {
         plugin: MetadataMenu,
         file: TFile,
         fieldName: string | undefined,
+        value: string,
         lineNumber: number,
         inFrontmatter: boolean,
         after: boolean,
@@ -135,10 +137,10 @@ export abstract class FieldManager {
                     const fileClassAttribute = fileClassAttributesWithName[0];
                     field = fileClassAttribute.getField();
                 }
-                this.createAndOpenModal(plugin, file, fieldName, field, lineNumber, inFrontmatter, after);
+                this.createAndOpenModal(plugin, file, fieldName, field, value, lineNumber, inFrontmatter, after);
             } else {
                 const field = plugin.settings.presetFields.filter(_field => _field.name == fieldName)[0];
-                this.createAndOpenModal(plugin, file, fieldName, field, lineNumber, inFrontmatter, after);
+                this.createAndOpenModal(plugin, file, fieldName, field, value, lineNumber, inFrontmatter, after);
             };
         }
     }

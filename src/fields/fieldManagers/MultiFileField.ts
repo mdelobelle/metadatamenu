@@ -71,8 +71,8 @@ export default class MultiFileField extends FieldManager {
         };
     }
 
-    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
-        const fieldModal = new MultiFileModal(app, file, this.field, undefined, lineNumber, inFrontmatter, after);
+    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+        const fieldModal = new MultiFileModal(app, file, this.field, value, lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

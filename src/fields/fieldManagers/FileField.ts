@@ -40,7 +40,7 @@ export default class FileField extends FieldManager {
     }
 
     addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
-        const modal = new SingleFileModal(app, file, this.field)
+        const modal = new SingleFileModal(app, file, this.field, value)
         modal.titleEl.setText("Select value");
         if (FileField.isMenu(location)) {
             location.addItem((item) => {
@@ -59,8 +59,8 @@ export default class FileField extends FieldManager {
         };
     }
 
-    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
-        const fieldModal = new SingleFileModal(app, file, this.field, lineNumber, inFrontmatter, after);
+    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+        const fieldModal = new SingleFileModal(app, file, this.field, value, lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -83,7 +83,7 @@ export default class FileField extends FieldManager {
         const file = app.vault.getAbstractFileByPath(p["file"]["path"])
         let fieldModal: SingleFileModal;
         if (file instanceof TFile && file.extension == "md") {
-            fieldModal = new SingleFileModal(app, file, this.field)
+            fieldModal = new SingleFileModal(app, file, this.field, p[this.field.name])
         } else {
             throw Error("path doesn't correspond to a proper file");
         }

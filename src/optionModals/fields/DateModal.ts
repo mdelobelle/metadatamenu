@@ -113,7 +113,10 @@ export default class DateModal extends Modal {
         this.inputEl = new TextComponent(inputContainer);
         this.inputEl.inputEl.focus();
         let currentDateValue = this.value.replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last();
-        this.inputEl.setPlaceholder(currentDateValue || "");
+        this.inputEl.setPlaceholder(
+            currentDateValue ?
+                moment(currentDateValue, this.field.options.dateFormat).format(this.field.options.dateFormat)
+                : "");
         this.inputEl.inputEl.addClass("metadata-menu-prompt-input");
         this.inputEl.onChange(value => {
             this.inputEl.inputEl.removeClass("is-invalid")
@@ -121,7 +124,7 @@ export default class DateModal extends Modal {
             this.errorField.setText("");
             this.value = value
         });
-        const calendarDisplayBtn = inputContainer.createEl("div", { cls: "metadata-menu-calendar-display-btn" })
+        const calendarDisplayBtn = inputContainer.createEl("button", { cls: "metadata-menu-calendar-display-btn" })
         setIcon(calendarDisplayBtn, FieldIcon[FieldType.Date]);
         const datePickerContainer = form.createDiv({ cls: "metadata-menu-picker-container" });
         const datePicker = flatpickr(datePickerContainer, {
@@ -137,6 +140,7 @@ export default class DateModal extends Modal {
         })
 
         calendarDisplayBtn.onclick = (e: MouseEvent) => {
+            e.preventDefault();
             datePicker.setDate(datePicker.parseDate(this.inputEl.getValue()) || new Date())
             datePicker.open()
         }

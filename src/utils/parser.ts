@@ -24,6 +24,16 @@ export const decodeLink = (value: string): string => {
         .replace(/🐓🕌/gu, "]]") : value
 }
 
+export const frontMatterLineField = (line: string): string | undefined => {
+    const frontMatterRegex = new RegExp(/(?<attribute>[0-9\w\p{Letter}\p{Emoji_Presentation}][-0-9\w\p{Letter}\p{Emoji_Presentation}\s]*)(?<beforeSeparatorSpacer>\s*):(?<afterSeparatorSpacer>\s*)(?<values>.*)/u)
+    const fR = line.match(frontMatterRegex);
+
+    if (fR?.groups) {
+        const { attribute, values } = fR?.groups
+        return attribute
+    }
+}
+
 export const getLineFields = (line: string): { attribute: string, values: string, index: number, length: number }[] => {
     const fields: { attribute: string, values: string, index: number, length: number }[] = []
     const fR = line.match(fullLineRegex);

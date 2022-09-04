@@ -21,7 +21,10 @@ export default class chooseSectionModal extends Modal {
     async onOpen() {
 
         const result = await this.app.vault.read(this.file)
-        this.titleEl.setText(`Add a ${this.fieldName ? "<" + this.fieldName + "> " : ""}field in this note after:`);
+        this.titleEl.setText(`Add a ${this.fieldName ? "<" + this.fieldName + "> " : ""
+            }field in "${this.file.basename.slice(0, 30)
+            }${this.file.basename.length < 30 ? "..." : ""
+            }" after:`);
         const selectEl = new DropdownComponent(this.contentEl);
         selectEl.selectEl.addClass("metadata-menu-field-add-section-select");
         selectEl.addOption("", "Select line");
@@ -60,6 +63,7 @@ export default class chooseSectionModal extends Modal {
                 this.plugin,
                 this.file,
                 this.fieldName,
+                "",
                 lineNumber,
                 inFrontmatter,
                 after,
@@ -78,6 +82,7 @@ export default class chooseSectionModal extends Modal {
                     this.plugin,
                     this.file,
                     this.fieldName,
+                    "",
                     lineNumber,
                     true,
                     false,
