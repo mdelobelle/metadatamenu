@@ -12,8 +12,8 @@ these options are accessible from:
 - the context menu of a link, 
 - the context menu of a calendar day, 
 - the context menu of a file in the file explorer,
-- the "more options" menu of a file
-- the command palette "Cmd+P" : Metadata Menu - field options
+- the menu of a file
+- the command palette "Cmd+P" : Metadata Menu - field options or insert field at cursor or manage field at cursor
 - other context menu (not tested)
 
 ### Update free value field (type: `Input`)
