@@ -69,6 +69,7 @@ export default class MetadataMenu extends Plugin {
 		this.addCommand({
 			id: "fileClassAttr_options",
 			name: "fileClass attributes options",
+			icon: "gear",
 			checkCallback: (checking: boolean) => {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
 				if (checking) {
@@ -85,6 +86,7 @@ export default class MetadataMenu extends Plugin {
 		this.addCommand({
 			id: "insert_fileClassAttr",
 			name: "Insert a new fileClass attribute",
+			icon: "list-plus",
 			checkCallback: (checking: boolean) => {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
 				if (checking) {
@@ -100,6 +102,7 @@ export default class MetadataMenu extends Plugin {
 		this.addCommand({
 			id: "insert_field_at_cursor",
 			name: "insert field at cursor",
+			icon: "list-plus",
 			checkCallback: (checking: boolean) => {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
 				if (checking) {
@@ -115,6 +118,7 @@ export default class MetadataMenu extends Plugin {
 		this.addCommand({
 			id: "field_options",
 			name: "field options",
+			icon: "gear",
 			checkCallback: (checking: boolean) => {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
 				if (checking) {
@@ -131,6 +135,7 @@ export default class MetadataMenu extends Plugin {
 		this.addCommand({
 			id: "field_at_cursor_options",
 			name: "Manage field at cursor",
+			icon: "text-cursor-input",
 			checkCallback: (checking: boolean) => {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 				const editor = view?.editor;
