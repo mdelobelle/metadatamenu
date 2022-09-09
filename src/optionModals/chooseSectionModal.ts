@@ -20,7 +20,7 @@ export default class chooseSectionModal extends Modal {
 
     async onOpen() {
 
-        const result = await this.app.vault.read(this.file)
+        const result = await this.plugin.app.vault.read(this.file)
         this.titleEl.setText(`Add a ${this.fieldName ? "<" + this.fieldName + "> " : ""
             }field in "${this.file.basename.slice(0, 30)
             }${this.file.basename.length < 30 ? "..." : ""
@@ -72,12 +72,12 @@ export default class chooseSectionModal extends Modal {
         });
 
 
-        if (app.metadataCache.getCache(this.file.path)?.frontmatter) {
+        if (this.plugin.app.metadataCache.getCache(this.file.path)?.frontmatter) {
             const addToFrontMatterBtn = new ButtonComponent(this.contentEl)
             addToFrontMatterBtn.setClass("metadata-menu-field-add-frontmatter-btn")
             addToFrontMatterBtn.setButtonText("Add to frontmatter")
             addToFrontMatterBtn.onClick(() => {
-                const lineNumber = app.metadataCache.getCache(this.file.path)!.frontmatter!.position.end.line - 1
+                const lineNumber = this.plugin.app.metadataCache.getCache(this.file.path)!.frontmatter!.position.end.line - 1
                 F.openFieldModal(
                     this.plugin,
                     this.file,

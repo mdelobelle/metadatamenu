@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { App, MarkdownView, Menu, TFile } from "obsidian";
+import { MarkdownView, Menu, TFile } from "obsidian";
 import { getField } from "src/commands/getField";
 import Field from "src/fields/Field";
 import { FieldManager as F } from "src/fields/FieldManager";
@@ -29,7 +29,6 @@ export default class OptionsList {
 
 	// adds options to context menu or to a dropdown modal trigger with "Field: Options" command in command pallette
 
-	app: App;
 	file: TFile;
 	plugin: MetadataMenu;
 	path: string;
@@ -80,7 +79,7 @@ export default class OptionsList {
 	private getQueryFileClassForFields(): void {
 		const fileClassQueries = this.plugin.settings.fileClassQueries.map(fcq => fcq)
 		while (!this.fileClassForFields && fileClassQueries.length > 0) {
-			const fileClassQuery = new FileClassQuery();
+			const fileClassQuery = new FileClassQuery(this.plugin);
 			Object.assign(fileClassQuery, fileClassQueries.pop() as FileClassQuery)
 			if (fileClassQuery.matchFile(this.file)) {
 				this.fileClassForFields = true;
@@ -116,7 +115,7 @@ export default class OptionsList {
 	}
 
 	private fetchInlineFields(): void {
-		const dataview = app.plugins.plugins["dataview"]
+		const dataview = this.plugin.app.plugins.plugins["dataview"]
 		//@ts-ignore
 		if (dataview) {
 			const dvFile = dataview.api.page(this.file.path)
@@ -136,8 +135,8 @@ export default class OptionsList {
 		const value = this.attributes[fieldName];
 		const field = getField(this.plugin, fieldName, this.fileClass);
 		if (field) {
-			const fieldManager = new FieldManager[field.type](field);
-			(fieldManager as F).createAndOpenFieldModal(this.plugin.app, this.file, field.name, this.attributes[field.name])
+			const fieldManager = new FieldManager[field.type](this.plugin, field);
+			(fieldManager as F).createAndOpenFieldModal(this.file, field.name, this.attributes[field.name])
 		}
 	}
 
@@ -179,7 +178,7 @@ export default class OptionsList {
 	}
 
 	private buildFileClassFieldOptions(field: Field, value: string): void {
-		const modal = new InputModal(app, this.file, field, value);
+		const modal = new InputModal(this.plugin, this.file, field, value);
 		modal.titleEl.setText(`Change Value for <${field.name}>`);
 		if (isMenu(this.location)) {
 			this.location.addItem((item) => {
@@ -199,20 +198,21 @@ export default class OptionsList {
 	}
 
 	private buildFieldOptions(): void {
+		console.log(this.attributes)
 		Object.keys(this.attributes).forEach((key: string) => {
 			const value = this.attributes[key];
 			const field = getField(this.plugin, key, this.fileClass);
 			if (field) {
-				const fieldManager = new FieldManager[field.type](field);
-				fieldManager.addFieldOption(key, value, this.plugin.app, this.file, this.location);
+				const fieldManager = new FieldManager[field.type](this.plugin, field);
+				fieldManager.addFieldOption(key, value, this.file, this.location);
 			} else if (key !== "file" && (isSuggest(this.location) || isMenu(this.location))) {
 				const defaultField = new Field(key)
 				defaultField.type = FieldType.Input
 				if (key === this.plugin.settings.fileClassAlias) {
 					this.buildFileClassFieldOptions(defaultField, value)
 				} else {
-					const fieldManager = new Managers.Input(defaultField)
-					fieldManager.addFieldOption(key, value, this.plugin.app, this.file, this.location)
+					const fieldManager = new Managers.Input(this.plugin, defaultField)
+					fieldManager.addFieldOption(key, value, this.file, this.location)
 				}
 			}
 		});

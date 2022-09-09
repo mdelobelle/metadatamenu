@@ -96,6 +96,9 @@ button.metadata-menu-field-add-frontmatter-btn {
 .metadata-menu-toggler-label {
   margin-right: 0.5em; }
 
+.metadata-menu-modal-fields-container {
+  width: 100%; }
+
 .yaml-metadata-menu-red {
   color: #C7254E; }
 
@@ -151,7 +154,7 @@ button.metadata-menu-field-add-frontmatter-btn {
 .metadata-menu-dateinput-with-picker {
   display: flex; }
 
-.metadata-menu-calendar-display-btn {
+.metadata-menu-modal-inline-btn {
   color: var(--text-normal);
   background-color: var(--background-secondary-alt);
   border-radius: 4px;
@@ -163,6 +166,9 @@ button.metadata-menu-field-add-frontmatter-btn {
   outline: none;
   user-select: none;
   white-space: nowrap; }
+
+.metadata-menu-modal-inline-btn.disabled {
+  opacity: 0.5; }
 
 /* Settings Styling */
 .metadata-menu-input input {

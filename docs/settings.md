@@ -91,6 +91,24 @@ If you want to render your date as a link to a note, specify the path of the fol
 #### `Insert as link by default`
 Toggle `on` if you want the option to insert the date as a link to be selected by default when creating/modifying a date field.
 
+#### `Shift Interval`
+The time duration used to shift the date in the future. You can use several durations:
+
+- `year`
+- `month`
+- `week`
+- `day`
+- `hour`
+- `minute`
+- `second`
+
+and even a combination of them
+
+Example of shift intervals: `2 days`, `1 week 3 days`, ...
+
+#### `Shift Intervals field`
+You can define intervals in a cycle field, for example for increasing intervals used in spaced repetition. Put the name of this cycle field in the `Shift Interval field` setting, and those intervals will be used to shift the date in the future.
+
 ## Fileclass settings
 If you want the same field to have different behaviours depending on the note they belong to, you can define field settings based on the "class" of the "note".
 This is a particular frontmatter attribute that you will have to give to your note.

@@ -1,4 +1,4 @@
-import { App, FuzzyMatch, FuzzySuggestModal, setIcon } from "obsidian";
+import { FuzzyMatch, FuzzySuggestModal, setIcon } from "obsidian";
 
 interface Option {
     id: string,
@@ -8,13 +8,7 @@ interface Option {
 }
 
 export default class FieldCommandSuggestModal extends FuzzySuggestModal<Option> {
-    public app: App;
     public options: Option[] = []
-
-    constructor(app: App) {
-        super(app);
-        this.app = app;
-    };
 
     getItems(): Option[] {
         return this.options

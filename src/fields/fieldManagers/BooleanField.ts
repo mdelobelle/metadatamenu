@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { App, Menu, TFile } from "obsidian";
+import { Menu, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import BooleanModal from "src/optionModals/fields/BooleanModal";
@@ -9,24 +9,24 @@ import { FieldManager } from "../FieldManager";
 
 export default class BooleanField extends FieldManager {
 
-    constructor(field: Field) {
-        super(field, FieldType.Boolean)
+    constructor(plugin: MetadataMenu, field: Field) {
+        super(plugin, field, FieldType.Boolean)
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const bValue = BooleanField.stringToBoolean(value);
         if (BooleanField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`<${name}> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);
                 item.setIcon(FieldIcon[FieldType.Boolean]);
-                item.onClick(() => replaceValues(app, file, name, (!bValue).toString()));
+                item.onClick(() => replaceValues(this.plugin, file, name, (!bValue).toString()));
                 item.setSection("metadata-menu.fields");
             })
         } else if (BooleanField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span><b>${name}</b> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}</span>`,
-                action: () => replaceValues(app, file, name, (!bValue).toString()),
+                action: () => replaceValues(this.plugin, file, name, (!bValue).toString()),
                 icon: FieldIcon[FieldType.Boolean]
             });
         };
@@ -53,15 +53,14 @@ export default class BooleanField extends FieldManager {
         return true
     }
 
-    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
         const bValue = BooleanField.stringToBoolean(value || "false");
-        const fieldModal = new BooleanModal(app, file, this.field, bValue, lineNumber, inFrontmatter, after)
+        const fieldModal = new BooleanModal(this.plugin, file, this.field, bValue, lineNumber, inFrontmatter, after)
         fieldModal.titleEl.setText(`Set value for ${selectedFieldName}`);
         fieldModal.open();
     }
 
     async createDvField(
-        plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
@@ -71,7 +70,7 @@ export default class BooleanField extends FieldManager {
         checkbox.checked = p[this.field.name]
         fieldContainer.appendChild(checkbox)
         checkbox.onchange = (value) => {
-            BooleanField.replaceValues(plugin.app, p["file"]["path"], this.field.name, checkbox.checked.toString());
+            BooleanField.replaceValues(this.plugin, p.file.path, this.field.name, checkbox.checked.toString());
         }
     }
 }

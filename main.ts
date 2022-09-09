@@ -1,11 +1,7 @@
 import { FileView, MarkdownView, Plugin, TFile, View } from 'obsidian';
-import { off } from 'process';
-import { getField } from 'src/commands/getField';
 import Field from 'src/fields/Field';
-import { FieldManager as FM } from 'src/fields/FieldManager';
 import { FileClass } from 'src/fileClass/fileClass';
 import { FileClassAttributeModal } from 'src/fileClass/FileClassAttributeModal';
-import FileClassAttributeSelectModal from 'src/fileClass/FileClassAttributeSelectModal';
 import FileClassQuery from 'src/fileClass/FileClassQuery';
 import type { IMetadataMenuApi } from 'src/MetadataMenuApi';
 import { MetadataMenuApi } from 'src/MetadataMenuApi';
@@ -17,8 +13,6 @@ import { DEFAULT_SETTINGS, MetadataMenuSettings } from "src/settings/MetadataMen
 import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import { migrateSettingsV1toV2 } from 'src/settings/migrateSettingV1toV2';
 import ValueSuggest from "src/suggester/metadataSuggester";
-import { FieldManager } from 'src/types/fieldTypes';
-import { genuineKeys } from 'src/utils/dataviewUtils';
 import { frontMatterLineField, getLineFields } from 'src/utils/parser';
 
 export default class MetadataMenu extends Plugin {
@@ -42,14 +36,14 @@ export default class MetadataMenu extends Plugin {
 		});
 
 		this.settings.fileClassQueries.forEach(query => {
-			const fileClassQuery = new FileClassQuery();
+			const fileClassQuery = new FileClassQuery(this);
 			Object.assign(fileClassQuery, query);
 			this.initialFileClassQueries.push(fileClassQuery);
 		})
 
-		this.addSettingTab(new MetadataMenuSettingTab(this.app, this));
+		this.addSettingTab(new MetadataMenuSettingTab(this));
 
-		this.registerEditorSuggest(new ValueSuggest(this.app, this));
+		this.registerEditorSuggest(new ValueSuggest(this));
 		this.api = new MetadataMenuApi(this).make();
 
 
@@ -163,7 +157,7 @@ export default class MetadataMenu extends Plugin {
 
 	private addCommands(view: View | undefined | null) {
 		if (view && view instanceof FileView) {
-			const file = app.vault.getAbstractFileByPath(view.file.path)
+			const file = this.app.vault.getAbstractFileByPath(view.file.path)
 			if (file instanceof TFile && file.extension === 'md') {
 				if (file.parent.path + "/" == this.settings.classFilesPath) {
 					this.addFileClassAttributeOptions();

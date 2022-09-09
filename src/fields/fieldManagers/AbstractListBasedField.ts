@@ -12,8 +12,8 @@ export default abstract class AbstractListBasedField extends FieldManager {
     abstract valuesPromptComponents: Array<TextComponent>;
     abstract presetValuesFields: HTMLDivElement;
 
-    constructor(field: Field, type: FieldType) {
-        super(field, type)
+    constructor(plugin: MetadataMenu, field: Field, type: FieldType) {
+        super(plugin, field, type)
     }
 
     //Settings
@@ -29,7 +29,6 @@ export default abstract class AbstractListBasedField extends FieldManager {
         const input = new TextComponent(listNoteContainerLabel);
 
         new FileSuggest(
-            plugin.app,
             input.inputEl,
             plugin,
             "/"
@@ -104,7 +103,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
             }
 
         } else if (this.field.valuesListNotePath) {
-            const listNoteValues = await FieldSetting.getValuesListFromNote(this.field.valuesListNotePath, app)
+            const listNoteValues = await FieldSetting.getValuesListFromNote(this.plugin, this.field.valuesListNotePath)
             return listNoteValues.contains(value.trim())
         } else {
             return false
@@ -168,7 +167,6 @@ export default abstract class AbstractListBasedField extends FieldManager {
     }
 
     async createDvField(
-        plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,

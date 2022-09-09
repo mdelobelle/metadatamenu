@@ -1,12 +1,13 @@
-import { App, Modal, TextComponent, TFile, ToggleComponent, ButtonComponent, setIcon } from "obsidian";
+import { Modal, TextComponent, TFile, ToggleComponent, ButtonComponent } from "obsidian";
 import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
-import { FieldManager } from "src/fields/FieldManager";
+import { FieldManager as FM } from "src/fields/FieldManager";
 import { moment } from "obsidian";
 import flatpickr from "flatpickr";
 import MetadataMenu from "main";
-import { FieldIcon, FieldType } from "src/types/fieldTypes";
+import { FieldIcon, FieldType, FieldManager } from "src/types/fieldTypes";
+import DateField from "src/fields/fieldManagers/DateField";
 
 export default class DateModal extends Modal {
 
@@ -21,48 +22,54 @@ export default class DateModal extends Modal {
     private errorField: HTMLDivElement;
     private format: string;
     private plugin: MetadataMenu;
+    private nextIntervalField?: Field;
+    private pushNextInterval: boolean = false;
+    private currentShift?: string
+    private nextShift?: string
+    private dateManager?: DateField
+    private initialValue?: string
+    private dvApi?: any
 
-    constructor(app: App, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
-        super(app);
-        this.app = app;
+    constructor(plugin: MetadataMenu, file: TFile, field: Field, initialValue: string, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
+        super(plugin.app);
+        this.plugin = plugin;
         this.file = file;
         this.field = field;
-        this.value = value ? value.toString().replace(/^\[\[/g, "").replace(/\]\]$/g, "") : "";
+        this.initialValue = initialValue ? initialValue.toString().replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last() || "" : "";
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
         this.after = after;
-        this.insertAsLink = FieldManager.stringToBoolean(this.field.options.defaultInsertAsLink || "false") || false;
+        this.insertAsLink = FM.stringToBoolean(this.field.options.defaultInsertAsLink || "false") || false;
         this.format = this.field.options.dateFormat || this.field.options.defaultDateFormat;
-        if (this.app.plugins.enabledPlugins.has("metadata-menu")) {
-            this.plugin = this.app.plugins.plugins["metadata-menu"]
-        }
+        this.dvApi = this.plugin.app.plugins.plugins["dataview"]?.api
+        if (this.dvApi) this.dateManager = new FieldManager[this.field.type](this.plugin, this.field);
+        this.value = this.initialValue;
     };
 
     onOpen() {
         const fieldContainer = this.contentEl.createDiv({ cls: "metadata-menu-modal-value" });
-        this.buildForm(fieldContainer);
+        this.buildFields(fieldContainer);
     };
 
-    private buildForm(parentContainer: HTMLDivElement) {
+    private buildFields(parentContainer: HTMLDivElement) {
 
-        const form = parentContainer.createEl("form");
-        form.type = "submit";
-        this.buildInputEl(form);
-        this.errorField = form.createEl("div", { cls: "metadata-menu-modal-value-error-field" });
+        const dateFieldsContainer = parentContainer.createEl("div", { cls: "metadata-menu-modal-fields-container" });
+        this.buildInputEl(dateFieldsContainer);
+        this.errorField = dateFieldsContainer.createEl("div", { cls: "metadata-menu-modal-value-error-field" });
         this.errorField.hide();
-        this.buildInsertAsLinkToggler(form);
-        const saveBtnContainer = form.createEl("div", { cls: "metadata-menu-value-grid-footer" });
+        this.buildInsertAsLinkToggler(dateFieldsContainer);
+        const saveBtnContainer = dateFieldsContainer.createEl("div", { cls: "metadata-menu-value-grid-footer" });
         const saveBtn = new ButtonComponent(saveBtnContainer)
         saveBtn.setIcon("checkmark")
 
-        form.onsubmit = async (e: Event) => {
+        saveBtn.onClick(async (e: Event) => {
             e.preventDefault();
             let newValue: moment.Moment;
             //try natural language date
-            if (app.plugins.enabledPlugins.has('nldates-obsidian')) {
+            if (this.plugin.app.plugins.enabledPlugins.has('nldates-obsidian')) {
                 //@ts-ignore
                 try {
-                    const nldates = app.plugins.plugins['nldates-obsidian'];
+                    const nldates = this.plugin.app.plugins.plugins['nldates-obsidian'];
                     newValue = nldates.parseDate(this.value).moment;
                 } catch (error) {
                     newValue = moment(this.value, this.format);
@@ -71,19 +78,22 @@ export default class DateModal extends Modal {
                 newValue = moment(this.value, this.format);
             }
             if (newValue.isValid()) {
-                const linkPath = app.metadataCache.getFirstLinkpathDest(this.field.options.linkPath || "" + newValue.format(this.format), this.file.path)
+                const linkPath = this.plugin.app.metadataCache.getFirstLinkpathDest(this.field.options.linkPath || "" + newValue.format(this.format), this.file.path)
                 const formattedValue = this.insertAsLink ? `[[${this.field.options.linkPath || ""}${newValue.format(this.format)}${linkPath ? "|" + linkPath.basename : ""}]]` : newValue.format(this.format)
                 if (this.lineNumber == -1) {
-                    await replaceValues(this.app, this.file, this.field.name, formattedValue);
+                    await replaceValues(this.plugin, this.file, this.field.name, formattedValue);
                 } else {
-                    await insertValues(this.app, this.file, this.field.name, formattedValue, this.lineNumber, this.inFrontmatter, this.after);
+                    await insertValues(this.plugin, this.file, this.field.name, formattedValue, this.lineNumber, this.inFrontmatter, this.after);
                 };
+                if (this.nextIntervalField && this.pushNextInterval && this.nextShift) {
+                    await replaceValues(this.plugin, this.file.path, this.nextIntervalField.name, this.nextShift)
+                }
                 this.close();
             } else if (!this.value) {
                 if (this.lineNumber == -1) {
-                    await replaceValues(this.app, this.file, this.field.name, "");
+                    await replaceValues(this.plugin, this.file, this.field.name, "");
                 } else {
-                    await insertValues(this.app, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after);
+                    await insertValues(this.plugin, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after);
                 };
                 this.close()
             } else {
@@ -92,30 +102,43 @@ export default class DateModal extends Modal {
                 this.inputEl.inputEl.addClass("is-invalid")
                 return
             }
-        };
+        });
     }
 
-    private buildInsertAsLinkToggler(form: HTMLFormElement) {
-        const togglerContainer = form.createDiv({ cls: "metadata-menu-toggler-with-label" })
+    private buildInsertAsLinkToggler(container: HTMLDivElement) {
+        const togglerContainer = container.createDiv({ cls: "metadata-menu-toggler-with-label" })
         const togglerContainerLabel = togglerContainer.createDiv({
             cls: "metadata-menu-toggler-label"
         });
         togglerContainerLabel.setText("Insert as link");
         const toggleEl = new ToggleComponent(togglerContainer);
-        toggleEl.setValue(FieldManager.stringToBoolean(this.field.options.defaultInsertAsLink || "false"))
+        toggleEl.setValue(FM.stringToBoolean(this.field.options.defaultInsertAsLink || "false"))
         toggleEl.onChange((value) => {
             this.insertAsLink = value
         });
     }
 
-    private buildInputEl(form: HTMLFormElement): void {
-        const inputContainer = form.createDiv({ cls: "metadata-menu-dateinput-with-picker" })
+    private toggleButton(button: ButtonComponent, value: string): void {
+        button.setDisabled(!!value)
+        if (value) {
+            button.buttonEl.addClass("disabled")
+        } else {
+            button.buttonEl.removeClass("disabled")
+        }
+    }
+
+    private buildInputEl(container: HTMLDivElement): void {
+        //let currentDvDuration: any;
+
+        if (this.dateManager) [this.currentShift, this.nextIntervalField, this.nextShift] = this.dateManager.shiftDuration(this.file);
+
+        const inputContainer = container.createDiv({ cls: "metadata-menu-dateinput-with-picker" })
         this.inputEl = new TextComponent(inputContainer);
         this.inputEl.inputEl.focus();
-        let currentDateValue = this.value.replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last();
+
         this.inputEl.setPlaceholder(
-            currentDateValue ?
-                moment(currentDateValue, this.field.options.dateFormat).format(this.field.options.dateFormat)
+            this.initialValue ?
+                moment(this.initialValue, this.field.options.dateFormat).format(this.field.options.dateFormat)
                 : "");
         this.inputEl.inputEl.addClass("metadata-menu-prompt-input");
         this.inputEl.onChange(value => {
@@ -123,26 +146,50 @@ export default class DateModal extends Modal {
             this.errorField.hide();
             this.errorField.setText("");
             this.value = value
+            this.toggleButton(shiftFromTodayBtn, value)
         });
-        const calendarDisplayBtn = inputContainer.createEl("button", { cls: "metadata-menu-calendar-display-btn" })
-        setIcon(calendarDisplayBtn, FieldIcon[FieldType.Date]);
-        const datePickerContainer = form.createDiv({ cls: "metadata-menu-picker-container" });
+        const calendarDisplayBtn = new ButtonComponent(inputContainer)
+        calendarDisplayBtn.buttonEl.addClass("metadata-menu-modal-inline-btn")
+        calendarDisplayBtn.setIcon(FieldIcon[FieldType.Date])
+        calendarDisplayBtn.setTooltip("open date picker")
+        const shiftFromTodayBtn = new ButtonComponent(inputContainer)
+        shiftFromTodayBtn.buttonEl.addClass("metadata-menu-modal-inline-btn")
+        shiftFromTodayBtn.setIcon("skip-forward")
+        shiftFromTodayBtn.setTooltip(`Shift ${this.field.name} ${this.currentShift || "1 day"} ahead`)
+
+        const datePickerContainer = container.createDiv({ cls: "metadata-menu-picker-container" });
         const datePicker = flatpickr(datePickerContainer, {
             locale: {
                 firstDayOfWeek: this.plugin.settings.firstDayOfWeek
-            }
+            },
+            defaultDate: "2022-09-22"
         });
         datePicker.config.onChange.push((value) => {
             const newDate = moment(value.toString()).format(this.format);
             this.inputEl.setValue(newDate);
             this.value = newDate;
-
+            this.toggleButton(shiftFromTodayBtn, this.value)
         })
 
-        calendarDisplayBtn.onclick = (e: MouseEvent) => {
+        calendarDisplayBtn.onClick((e: MouseEvent) => {
             e.preventDefault();
             datePicker.setDate(datePicker.parseDate(this.inputEl.getValue()) || new Date())
-            datePicker.open()
+            datePicker.open();
+        })
+
+        shiftFromTodayBtn.onClick(async (e: MouseEvent) => {
+            const currentDvDate = this.dvApi.date(moment(this.initialValue, this.format).toISOString());
+            const newDate = currentDvDate.plus(this.dvApi.duration(this.currentShift || "1 day"));
+            const newValue = moment(newDate.toString()).format(this.format)
+            this.inputEl.setValue(newValue);
+            this.value = newValue;
+            this.pushNextInterval = true;
+            this.toggleButton(shiftFromTodayBtn, this.inputEl.getValue())
+        })
+
+        if (!this.dvApi) {
+            shiftFromTodayBtn.buttonEl.hide();
+            shiftFromTodayBtn.setDisabled(true);
         }
     };
 };

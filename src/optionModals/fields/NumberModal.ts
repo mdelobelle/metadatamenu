@@ -1,4 +1,5 @@
-import { App, Modal, TextComponent, TFile, ButtonComponent, MarkdownEditView, MarkdownView } from "obsidian";
+import MetadataMenu from "main";
+import { Modal, TextComponent, TFile, ButtonComponent } from "obsidian";
 import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
@@ -6,7 +7,7 @@ import NumberField from "src/fields/fieldManagers/NumberField";
 import { FieldManager } from "src/types/fieldTypes";
 
 export default class NumbertModal extends Modal {
-
+    private plugin: MetadataMenu;
     private file: TFile;
     private value: string;
     private lineNumber: number;
@@ -15,16 +16,16 @@ export default class NumbertModal extends Modal {
     private field: Field;
     private fieldManager: NumberField;
 
-    constructor(app: App, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
-        super(app);
-        this.app = app;
+    constructor(plugin: MetadataMenu, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
+        super(plugin.app);
+        this.plugin = plugin;
         this.file = file;
         this.field = field;
         this.value = value;
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
         this.after = after;
-        this.fieldManager = new FieldManager[this.field.type](this.field)
+        this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
     };
 
     onOpen() {
@@ -137,9 +138,9 @@ export default class NumbertModal extends Modal {
                 return
             }
             if (this.lineNumber == -1) {
-                await replaceValues(this.app, this.file, this.field.name, inputValue);
+                await replaceValues(this.plugin, this.file, this.field.name, inputValue);
             } else {
-                await insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
+                await insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
             };
             this.close();
         };

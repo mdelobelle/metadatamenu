@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { App, Menu, setIcon, TextComponent, TFile } from "obsidian";
+import { Menu, setIcon, TextComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import SelectModal from "src/optionModals/fields/SelectModal";
 import FieldSetting from "src/settings/FieldSetting";
@@ -12,12 +12,12 @@ export default class SelectField extends AbstractListBasedField {
     valuesPromptComponents: Array<TextComponent> = [];
     presetValuesFields: HTMLDivElement;
 
-    constructor(field: Field) {
-        super(field, FieldType.Select)
+    constructor(plugin: MetadataMenu, field: Field) {
+        super(plugin, field, FieldType.Select)
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
-        const modal = new SelectModal(app, file, value, this.field);
+    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+        const modal = new SelectModal(this.plugin, file, value, this.field);
         modal.titleEl.setText("Select value");
         if (SelectField.isMenu(location)) {
             location.addItem((item) => {
@@ -36,15 +36,14 @@ export default class SelectField extends AbstractListBasedField {
         };
     };
 
-    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
-        const fieldModal = new SelectModal(app, file, value || "", this.field, lineNumber, inFrontmatter, after);
+    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+        const fieldModal = new SelectModal(this.plugin, file, value || "", this.field, lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }
 
 
     async createDvField(
-        plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
@@ -69,7 +68,7 @@ export default class SelectField extends AbstractListBasedField {
         selectContainer.appendChild(dismissBtn);
         const nullOption = new Option("--select--", undefined);
         select.add(nullOption);
-        const listNoteValues = await FieldSetting.getValuesListFromNote(this.field.valuesListNotePath, plugin.app)
+        const listNoteValues = await FieldSetting.getValuesListFromNote(this.plugin, this.field.valuesListNotePath)
         if (listNoteValues.length) {
             listNoteValues.forEach(o => {
                 const option = new Option(o, o);
@@ -88,7 +87,7 @@ export default class SelectField extends AbstractListBasedField {
                     }
                     fieldContainer.removeChild(selectContainer)
                     fieldContainer.appendChild(valueContainer)
-                    SelectField.replaceValues(plugin.app, p["file"]["path"], this.field.name, newValue);
+                    SelectField.replaceValues(this.plugin, p.file.path, this.field.name, newValue);
                 }
             });
         } else {
@@ -109,7 +108,7 @@ export default class SelectField extends AbstractListBasedField {
                     }
                     fieldContainer.removeChild(selectContainer)
                     fieldContainer.appendChild(valueContainer)
-                    SelectField.replaceValues(plugin.app, p["file"]["path"], this.field.name, newValue);
+                    SelectField.replaceValues(this.plugin, p.file.path, this.field.name, newValue);
                 }
             })
         }

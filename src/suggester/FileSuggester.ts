@@ -1,24 +1,24 @@
 // Credits go to Liam's Periodic Notes Plugin: https://github.com/liamcain/obsidian-periodic-notes
 
-import { App, TAbstractFile, TFile } from "obsidian";
+import { TAbstractFile, TFile } from "obsidian";
 import { TextInputSuggest } from "./suggest";
 import { get_tfiles_from_folder } from "../utils/fileUtils";
-import TemplaterPlugin from "main";
+import MetadataMenu from "main";
 
 export class FileSuggest extends TextInputSuggest<TFile> {
     constructor(
-        public app: App,
         public inputEl: HTMLInputElement,
-        private plugin: TemplaterPlugin,
+        private plugin: MetadataMenu,
         public folder: string
     ) {
-        super(app, inputEl);
+        super(inputEl);
+        this.plugin = plugin
     }
 
     getSuggestions(input_str: string): TFile[] {
         const all_files = []
         try {
-            all_files.push(...get_tfiles_from_folder(this.app, this.folder))
+            all_files.push(...get_tfiles_from_folder(this.plugin, this.folder))
         } catch (error) {
 
         }

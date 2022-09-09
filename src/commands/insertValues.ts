@@ -1,7 +1,8 @@
-import { App, MarkdownView, TFile } from "obsidian";
+import MetadataMenu from "main";
+import { MarkdownView, TFile } from "obsidian";
 
 export async function insertValues(
-    app: App,
+    plugin: MetadataMenu,
     fileOrFilePath: TFile | string,
     fieldName: string,
     value: string,
@@ -9,19 +10,18 @@ export async function insertValues(
     inFrontmatter?: boolean,
     after: boolean = true
 ): Promise<void> {
-
     let file: TFile;
     if (fileOrFilePath instanceof TFile) {
         file = fileOrFilePath;
     } else {
-        const _file = app.vault.getAbstractFileByPath(fileOrFilePath)
+        const _file = plugin.app.vault.getAbstractFileByPath(fileOrFilePath)
         if (_file instanceof TFile && _file.extension == "md") {
             file = _file;
         } else {
             throw Error("path doesn't correspond to a proper file");
         }
     }
-    const result = await app.vault.read(file)
+    const result = await plugin.app.vault.read(file)
     let newContent: string[] = [];
 
     result.split("\n").forEach((line, _lineNumber) => {
@@ -34,8 +34,8 @@ export async function insertValues(
         }
     });
 
-    await app.vault.modify(file, newContent.join('\n'));
-    const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor
+    await plugin.app.vault.modify(file, newContent.join('\n'));
+    const editor = plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor
     if (editor) {
         const lineNumber = editor.getCursor().line
         editor.setCursor({ line: editor.getCursor().line, ch: editor.getLine(lineNumber).length })

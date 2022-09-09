@@ -33,7 +33,7 @@ class FileClassAttributeModal extends Modal {
         } else {
             this.field = new Field();
         }
-        this.fieldManager = new FieldManager[this.field.type](this.field);
+        this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field);
         this.nameInputContainer = this.contentEl.createDiv();
         this.typeSelectContainer = this.contentEl.createDiv({ cls: 'metadata-menu-value-selector-container' });
         this.fieldOptionsContainer = this.contentEl.createDiv()
@@ -84,7 +84,7 @@ class FileClassAttributeModal extends Modal {
             while (this.fieldOptionsContainer.firstChild) {
                 this.fieldOptionsContainer.removeChild(this.fieldOptionsContainer.firstChild);
             }
-            this.fieldManager = new FieldManager[this.field.type](this.field)
+            this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
             this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.FileClassAttributeSettings)
         })
     }

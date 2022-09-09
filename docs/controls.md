@@ -80,7 +80,9 @@ these options are accessible from:
 1. Right-click on the link (or context menu, ...)
 2. Click on " 📅 Update ... "
 3. Type the date or select the date thanks to the date picker by clicking the "📅" button in the modal. If you have `Natural Language Dates` plugin installed, you can also type your date in natural language and have it parsed automatically
+3bis. Click on "⏭" to shift the date in the future according to the interval set
 4. Toggle `on` the `insert as link` option if you want your date to be included as a link
+
 
 
 ### Add a new field at section
@@ -207,3 +209,4 @@ Click the "📆" button next to the link to display a date select modal.
 
 type a new date (or select thanks to the datepicker) to replace the link in the target field.
 
+Click the "⏭" button to shift the date in the future according to the interval set

@@ -1,12 +1,13 @@
-import { TFile, App, FuzzySuggestModal, FuzzyMatch, ButtonComponent, setIcon, FileManager } from "obsidian";
+import { TFile, FuzzySuggestModal, FuzzyMatch, ButtonComponent, setIcon } from "obsidian";
 import Field from "src/fields/Field";
 import { replaceValues } from "src/commands/replaceValues";
 import { insertValues } from "src/commands/insertValues";
 import { FieldManager } from "src/types/fieldTypes";
 import { FieldManager as FM } from "src/fields/FieldManager";
+import MetadataMenu from "main";
 
 export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
-
+    private plugin: MetadataMenu;
     private file: TFile;
     private field: Field;
     private lineNumber: number;
@@ -14,20 +15,20 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
     private after: boolean;
     private selectedFiles: TFile[] = [];
 
-    constructor(app: App, file: TFile, field: Field, initialValueObject: any, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
-        super(app);
-        this.app = app;
+    constructor(plugin: MetadataMenu, file: TFile, field: Field, initialValueObject: any, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
+        super(plugin.app);
+        this.plugin = plugin;
         this.file = file;
         this.field = field;
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontMatter;
         this.after = after;
-        const dvApi = this.app.plugins.plugins["dataview"]?.api
+        const dvApi = this.plugin.app.plugins.plugins["dataview"]?.api
         if (dvApi) {
             const selectedValues: Array<any> = Array.isArray(initialValueObject) ? initialValueObject : [initialValueObject]
             selectedValues.forEach(value => {
                 if (dvApi.value.isLink(value)) {
-                    const file = this.app.vault.getAbstractFileByPath(value.path)
+                    const file = this.plugin.app.vault.getAbstractFileByPath(value.path)
                     if (file instanceof TFile) this.selectedFiles.push(file)
                 }
             })
@@ -66,7 +67,7 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
 
     getItems(): TFile[] {
         try {
-            const fileManager = new FieldManager[this.field.type](this.field);
+            const fileManager = new FieldManager[this.field.type](this.plugin, this.field);
             return fileManager.getFiles();
         } catch (error) {
             this.close();
@@ -79,17 +80,17 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
     }
 
     async replaceValues() {
-        const result = this.selectedFiles.map(file => FM.buildMarkDownLink(this.app, this.file, file.basename))
+        const result = this.selectedFiles.map(file => FM.buildMarkDownLink(this.plugin, this.file, file.basename))
         if (this.lineNumber == -1) {
             await replaceValues(
-                this.app,
+                this.plugin,
                 this.file,
                 this.field.name,
                 result.join(", ")
             );
         } else {
             await insertValues(
-                this.app,
+                this.plugin,
                 this.file,
                 this.field.name,
                 result.join(", "),
@@ -102,7 +103,7 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
 
     async clearValues() {
         await replaceValues(
-            this.app,
+            this.plugin,
             this.file,
             this.field.name,
             ""
@@ -153,27 +154,6 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
         this.renderSelected()
     }
 
-    async onChooseItem(item: TFile): Promise<void> {
-        /*
-        if (this.lineNumber == -1) {
-            await replaceValues(
-                this.app,
-                this.file,
-                this.field.name,
-                FileField.buildMarkDownLink(this.app, this.file, item.basename)
-            );
-        } else {
-            await insertValues(
-                this.app,
-                this.file,
-                this.field.name,
-                FileField.buildMarkDownLink(this.app, this.file, item.basename),
-                this.lineNumber,
-                this.inFrontmatter,
-                this.after
-            );
-        };
-        */
-    }
+    async onChooseItem(item: TFile): Promise<void> { }
 
 }

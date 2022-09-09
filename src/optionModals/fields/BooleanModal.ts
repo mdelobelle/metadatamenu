@@ -1,10 +1,12 @@
-import { App, Modal, ToggleComponent, TFile, ButtonComponent } from "obsidian";
+import MetadataMenu from "main";
+import { Modal, ToggleComponent, TFile, ButtonComponent } from "obsidian";
 import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
 
 export default class BooleanModal extends Modal {
 
+    private plugin: MetadataMenu
     private file: TFile;
     private value: boolean;
     private lineNumber: number;
@@ -12,9 +14,9 @@ export default class BooleanModal extends Modal {
     private after: boolean;
     private field: Field;
 
-    constructor(app: App, file: TFile, field: Field, value: boolean, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
-        super(app);
-        this.app = app;
+    constructor(plugin: MetadataMenu, file: TFile, field: Field, value: boolean, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
+        super(plugin.app);
+        this.plugin = plugin;
         this.file = file;
         this.value = value;
         this.lineNumber = lineNumber;
@@ -43,9 +45,9 @@ export default class BooleanModal extends Modal {
         saveButton.onClick(async () => {
             const value = this.value.toString()
             if (this.lineNumber == -1) {
-                await replaceValues(this.app, this.file, this.field.name, value);
+                await replaceValues(this.plugin, this.file, this.field.name, value);
             } else {
-                await insertValues(this.app, this.file, this.field.name, value, this.lineNumber, this.inFrontmatter, this.after);
+                await insertValues(this.plugin, this.file, this.field.name, value, this.lineNumber, this.inFrontmatter, this.after);
             };
             this.close();
         });

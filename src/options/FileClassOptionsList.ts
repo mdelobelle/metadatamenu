@@ -1,9 +1,8 @@
 import MetadataMenu from "main";
-import { App, Menu, TFile } from "obsidian";
+import { Menu, TFile } from "obsidian";
 import { FileClass } from "src/fileClass/fileClass";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
 import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
-import { FieldIcon } from "src/types/fieldTypes";
 import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
 
 function isMenu(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal): location is Menu {
@@ -22,7 +21,6 @@ export default class FileClassOptionsList {
 
     // adds options to context menu or to a dropdown modal trigger with "Field: Options" command in command pallette
 
-    app: App;
     file: TFile;
     plugin: MetadataMenu;
     path: string;

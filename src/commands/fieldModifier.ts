@@ -24,7 +24,8 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
             addFieldBtn.addClass("metadata-menu-dv-field-button");
             addFieldBtn.addClass("isolated");
             addFieldBtn.onclick = async () => {
-                const file = app.vault.getAbstractFileByPath(p.file.path)
+
+                const file = plugin.app.vault.getAbstractFileByPath(p.file.path)
                 if (file instanceof TFile && file.extension == "md") {
                     const fileClassAlias = plugin.settings.fileClassAlias;
                     if (p[fileClassAlias] || plugin.settings.globalFileClass) {
@@ -65,24 +66,24 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
             const fileClass = FileClass.createFileClass(plugin, fileClassName);
             const field = getField(plugin, fieldName, fileClass);
             if (field?.type) {
-                const fieldManager = new FieldManager[field.type](field);
-                await fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
+                const fieldManager = new FieldManager[field.type](plugin, field);
+                await fieldManager.createDvField(dv, p, fieldContainer, attrs);
             } else {
-                const fieldManager = F.createDefault(fieldName);
-                await fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
+                const fieldManager = F.createDefault(plugin, fieldName);
+                await fieldManager.createDvField(dv, p, fieldContainer, attrs);
             }
         } else if (plugin.settings.presetFields.filter(attr => attr.name == fieldName)) {
             const field = getField(plugin, fieldName)
             if (field?.type) {
-                const fieldManager = new FieldManager[field.type](field);
-                await fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
+                const fieldManager = new FieldManager[field.type](plugin, field);
+                await fieldManager.createDvField(dv, p, fieldContainer, attrs);
             } else {
-                const fieldManager = F.createDefault(fieldName);
-                await fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
+                const fieldManager = F.createDefault(plugin, fieldName);
+                await fieldManager.createDvField(dv, p, fieldContainer, attrs);
             }
         } else {
-            const fieldManager = F.createDefault(fieldName);
-            await fieldManager.createDvField(plugin, dv, p, fieldContainer, attrs);
+            const fieldManager = F.createDefault(plugin, fieldName);
+            await fieldManager.createDvField(dv, p, fieldContainer, attrs);
         }
     }
     return fieldContainer

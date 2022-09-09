@@ -1,3 +1,4 @@
+import MetadataMenu from "main";
 import { TFile } from "obsidian";
 
 interface FileClassQuery {
@@ -9,7 +10,11 @@ interface FileClassQuery {
 
 class FileClassQuery {
 
-    constructor(name: string = "",
+    private plugin: MetadataMenu
+
+    constructor(
+        plugin: MetadataMenu,
+        name: string = "",
         id: string = "",
         query: string = "",
         fileClassName: string = ""
@@ -18,6 +23,7 @@ class FileClassQuery {
         this.query = query;
         this.id = id;
         this.fileClassName = fileClassName;
+        this.plugin = plugin
     };
 
     public matchFile(file: TFile): boolean {
@@ -29,7 +35,7 @@ class FileClassQuery {
                 throw Error(`Wrong query for field <${this.name}>. Check your settings`)
             }
         };
-        const dataview = app.plugins.plugins["dataview"]
+        const dataview = this.plugin.app.plugins.plugins.dataview
         //@ts-ignore
         if (this.query && dataview?.settings.enableDataviewJs && dataview?.settings.enableInlineDataviewJs) {
             try {

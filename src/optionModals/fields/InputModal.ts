@@ -1,10 +1,11 @@
-import { App, DropdownComponent, Modal, setIcon, TextAreaComponent, TextComponent, TFile } from "obsidian";
+import MetadataMenu from "main";
+import { DropdownComponent, Modal, setIcon, TextAreaComponent, TextComponent, TFile } from "obsidian";
 import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
 
 export default class InputModal extends Modal {
-
+    private plugin: MetadataMenu;
     private file: TFile;
     private value: string;
     private lineNumber: number;
@@ -14,9 +15,9 @@ export default class InputModal extends Modal {
     private templateValues: Record<string, string> = {};
     private renderedValue: TextAreaComponent;
 
-    constructor(app: App, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
-        super(app);
-        this.app = app;
+    constructor(plugin: MetadataMenu, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
+        super(plugin.app);
+        this.plugin = plugin;
         this.file = file;
         this.field = field;
         this.value = value;
@@ -102,9 +103,9 @@ export default class InputModal extends Modal {
         saveBtn.onclick = async () => {
             let inputValue = this.renderedValue.getValue();
             if (this.lineNumber == -1) {
-                await replaceValues(this.app, this.file, this.field.name, inputValue);
+                await replaceValues(this.plugin, this.file, this.field.name, inputValue);
             } else {
-                await insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
+                await insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
             };
             this.close();
         }
@@ -125,9 +126,9 @@ export default class InputModal extends Modal {
             e.preventDefault();
             let inputValue = inputEl.getValue();
             if (this.lineNumber == -1) {
-                await replaceValues(this.app, this.file, this.field.name, inputValue);
+                await replaceValues(this.plugin, this.file, this.field.name, inputValue);
             } else {
-                await insertValues(this.app, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
+                await insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
             };
             this.close();
         };

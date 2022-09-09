@@ -1,6 +1,5 @@
 import MetadataMenu from "main";
 import {
-    App,
     Editor,
     EditorPosition,
     EditorSuggest,
@@ -23,7 +22,6 @@ interface IValueCompletion {
 
 export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     private plugin: MetadataMenu;
-    private app: App;
     private fileClass: FileClass;
     private fileClassForFields: boolean;
     private inFrontmatter: boolean = false;
@@ -32,9 +30,8 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     private didSelect: boolean = false;
     private fileClassFields: string[];
 
-    constructor(app: App, plugin: MetadataMenu) {
-        super(app);
-        this.app = app;
+    constructor(plugin: MetadataMenu) {
+        super(plugin.app);
         this.plugin = plugin;
         this.setInstructions([{ command: "Shift", purpose: "put a space after::" }]);
 
@@ -58,10 +55,9 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         if (!this.plugin.settings.isAutosuggestEnabled) {
             return null;
         };
-        //@ts-ignore
-        const frontmatter = this.plugin.app.metadataCache.getFileCache(file).frontmatter;
+        const frontmatter = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter;
         const fullLine = editor.getLine(editor.getCursor().line)
-        this.inFrontmatter = frontmatter !== undefined && frontmatter.position.start.line < cursor.line && cursor.line < frontmatter.position.end.line
+        this.inFrontmatter = !!frontmatter && frontmatter.position.start.line < cursor.line && cursor.line < frontmatter.position.end.line
         if (this.inFrontmatter) {
             const regex = new RegExp(`^${genericFieldRegex}:(?<values>.*)`, "u");
             if (!regex.test(fullLine)) return null;
@@ -99,15 +95,15 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                         .filter(option => this.filterOption(firstValues, lastValue, option))
                 return filteredOptions.map(option => Object({ value: option }));
             } else if ([FieldType.File, FieldType.MultiFile].includes(field.type)) {
-                const fieldManager: FileField = new FieldManager[field.type](field)
+                const fieldManager: FileField = new FieldManager[field.type](this.plugin, field)
                 const files = fieldManager.getFiles();
                 if (lastValue) {
                     return files
                         .filter(f => f.basename.includes(lastValue))
-                        .map(f => Object({ value: FileField.buildMarkDownLink(app, context.file, f.basename) }));
+                        .map(f => Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename) }));
                 } else {
                     return files
-                        .map(f => Object({ value: FileField.buildMarkDownLink(app, context.file, f.basename) }));
+                        .map(f => Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename) }));
                 }
             } else {
                 return []
@@ -158,7 +154,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             //tags specific cas
             if (fieldName === "tags" && this.inFrontmatter) {
                 //@ts-ignore
-                return Object.keys(this.app.metadataCache.getTags())
+                return Object.keys(this.plugin.app.metadataCache.getTags())
                     .filter(t => lastValue ? t.contains(lastValue) : t)
                     .sort()
                     .map(tag => Object({ value: tag.replace(/^#/, "") }))
@@ -166,7 +162,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             //test if note matches a fileclass query
             const fileClassQueries = this.plugin.settings.fileClassQueries.map(fcq => fcq)
             while (!this.fileClassForFields && fileClassQueries.length > 0) {
-                const fileClassQuery = new FileClassQuery();
+                const fileClassQuery = new FileClassQuery(this.plugin);
                 Object.assign(fileClassQuery, fileClassQueries.pop() as FileClassQuery)
                 if (fileClassQuery.matchFile(context.file)) {
                     this.fileClassForFields = true;
@@ -214,15 +210,15 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                             .map(_value => Object({ value: _value }))
 
                     } else if ([FieldType.File, FieldType.MultiFile].includes(presetField.type)) {
-                        const fieldManager: FileField = new FieldManager[presetField.type](presetField)
+                        const fieldManager: FileField = new FieldManager[presetField.type](this.plugin, presetField)
                         const files = fieldManager.getFiles();
                         if (lastValue) {
                             return files
                                 .filter(f => f.basename.includes(lastValue))
-                                .map(f => Object({ value: FileField.buildMarkDownLink(app, context.file, f.basename) }));
+                                .map(f => Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename) }));
                         } else {
                             return files
-                                .map(f => Object({ value: FileField.buildMarkDownLink(app, context.file, f.basename) }));
+                                .map(f => Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename) }));
                         }
                     } else {
                         return []
@@ -238,7 +234,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     };
 
     selectSuggestion(suggestion: IValueCompletion, event: KeyboardEvent | MouseEvent): void {
-        const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+        const activeView = this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
         if (!activeView) {
             return;
         };

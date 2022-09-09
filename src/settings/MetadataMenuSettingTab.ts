@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal, DropdownComponent, moment, setIcon } from "obsidian";
+import { PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal, DropdownComponent, moment, setIcon } from "obsidian";
 import MetadataMenu from "main";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import Field from "src/fields/Field";
@@ -31,9 +31,9 @@ class SettingsMigrationConfirmModal extends Modal {
 		confirmButton.setIcon("check");
 		confirmButton.onClick(() => {
 			//@ts-ignore
-			if (this.app.plugins.plugins.hasOwnProperty("supercharged-links-obsidian")) {
+			if (this.plugin.app.plugins.plugins.hasOwnProperty("supercharged-links-obsidian")) {
 				//@ts-ignore
-				let settings = this.app.plugins.plugins["supercharged-links-obsidian"].settings;
+				let settings = this.plugin.app.plugins.plugins["supercharged-links-obsidian"].settings;
 				//deep copying presetFields in initialProperty
 				this.plugin.initialProperties = [];
 				settings.presetFields.forEach((prop: Field) => {
@@ -58,7 +58,7 @@ class SettingsMigrationConfirmModal extends Modal {
 export default class MetadataMenuSettingTab extends PluginSettingTab {
 	private plugin: MetadataMenu;
 
-	constructor(app: App, plugin: MetadataMenu) {
+	constructor(plugin: MetadataMenu) {
 		super(app, plugin);
 		this.plugin = plugin;
 	};
@@ -149,7 +149,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					.setTooltip("Add New Property Manager")
 					.setButtonText("+")
 					.onClick(async () => {
-						let modal = new FieldSettingsModal(this.app, this.plugin, presetFieldsSettingsContainer);
+						let modal = new FieldSettingsModal(this.plugin, presetFieldsSettingsContainer);
 						modal.open();
 					});
 			});
@@ -158,7 +158,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		this.plugin.initialProperties.forEach(prop => {
 			const property = new Field();
 			Object.assign(property, prop);
-			new FieldSetting(presetFieldsSettingsContainer, property, this.app, this.plugin);
+			new FieldSetting(presetFieldsSettingsContainer, property, this.plugin);
 		});
 
 		presetFieldsSettingsContainer.isShown() ?
@@ -200,7 +200,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			.setName('class Files path')
 			.setDesc('Path to the files containing the authorized fields for a type of note')
 			.addSearch((cfs) => {
-				new FolderSuggest(this.app, cfs.inputEl);
+				new FolderSuggest(this.plugin, cfs.inputEl);
 				cfs.setPlaceholder("Folder")
 					.setValue(this.plugin.settings.classFilesPath)
 					.onChange((new_folder) => {
@@ -232,7 +232,6 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			.setDesc('Choose one fileClass to be applicable to all files (even it is not present as a fileClass attribute in their frontmatter). This will override the preset Fields defined above')
 			.addSearch((cfs) => {
 				new FileSuggest(
-					this.app,
 					cfs.inputEl,
 					this.plugin,
 					this.plugin.settings.classFilesPath
@@ -273,7 +272,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					.setTooltip("Add New Property Manager")
 					.setButtonText("+")
 					.onClick(async () => {
-						let modal = new FileClassQuerySettingsModal(this.app, this.plugin, queryFileClassSettings);
+						let modal = new FileClassQuerySettingsModal(this.plugin, queryFileClassSettings);
 						modal.open();
 					});
 			});
@@ -281,9 +280,9 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		/* Managed properties that currently have preset options */
 		this.plugin.initialFileClassQueries
 			.forEach(query => {
-				const fileClassQuery = new FileClassQuery();
+				const fileClassQuery = new FileClassQuery(this.plugin);
 				Object.assign(fileClassQuery, query);
-				new FileClassQuerySetting(queryFileClassSettings, fileClassQuery, this.app, this.plugin);
+				new FileClassQuerySetting(queryFileClassSettings, fileClassQuery, this.plugin);
 			});
 
 		classFilesSettingsContainer.isShown() ?

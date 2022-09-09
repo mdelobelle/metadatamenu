@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { App, Menu, TextComponent, TFile } from "obsidian";
+import { Menu, TextComponent, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 import { FileClass } from "src/fileClass/fileClass";
 import FCSM from "src/options/FieldCommandSuggestModal";
@@ -11,6 +11,7 @@ import Field from "./Field";
 
 export interface FieldManager {
     field: Field;
+    plugin: MetadataMenu
 }
 
 export const enum SettingLocation {
@@ -20,11 +21,10 @@ export const enum SettingLocation {
 
 export abstract class FieldManager {
 
-    abstract addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FCSM): void;
+    abstract addFieldOption(name: string, value: string, file: TFile, location: Menu | FCSM): void;
     abstract validateOptions(): boolean;
     abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
     abstract createDvField(
-        plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
@@ -35,17 +35,18 @@ export abstract class FieldManager {
         }
     ): Promise<void>
     abstract getOptionsStr(): string;
-    abstract createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void
+    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void
 
-    constructor(field: Field, type: FieldType) {
+    constructor(plugin: MetadataMenu, field: Field, type: FieldType) {
         if (field.type !== type) throw Error(`This field is not of type ${type}`)
         this.field = field
+        this.plugin = plugin
     }
 
-    static buildMarkDownLink(app: App, file: TFile, path: string): string {
-        const destFile = app.metadataCache.getFirstLinkpathDest(path, file.path)
+    static buildMarkDownLink(plugin: MetadataMenu, file: TFile, path: string): string {
+        const destFile = plugin.app.metadataCache.getFirstLinkpathDest(path, file.path)
         if (destFile) {
-            return app.fileManager.generateMarkdownLink(
+            return plugin.app.fileManager.generateMarkdownLink(
                 destFile,
                 file.path,
                 undefined,
@@ -78,10 +79,10 @@ export abstract class FieldManager {
         return true;
     }
 
-    public static replaceValues(app: App, path: string, fieldName: string, value: string): void {
-        const file = app.vault.getAbstractFileByPath(path)
+    public static replaceValues(plugin: MetadataMenu, path: string, fieldName: string, value: string): void {
+        const file = plugin.app.vault.getAbstractFileByPath(path)
         if (file instanceof TFile && file.extension == "md") {
-            replaceValues(app, file, fieldName, value)
+            replaceValues(plugin, file, fieldName, value)
         }
     }
 
@@ -108,11 +109,11 @@ export abstract class FieldManager {
         after?: boolean
     ): void {
         if (field) {
-            const fieldManager = new FM[field.type](field);
-            fieldManager.createAndOpenFieldModal(plugin.app, file, fieldName, value, lineNumber, inFrontmatter, after);
+            const fieldManager = new FM[field.type](plugin, field);
+            fieldManager.createAndOpenFieldModal(file, fieldName, value, lineNumber, inFrontmatter, after);
         } else {
-            const fieldManager = FieldManager.createDefault(fieldName!);
-            fieldManager.createAndOpenFieldModal(plugin.app, file, fieldName!, value, lineNumber, inFrontmatter, after);
+            const fieldManager = FieldManager.createDefault(plugin, fieldName!);
+            fieldManager.createAndOpenFieldModal(file, fieldName!, value, lineNumber, inFrontmatter, after);
         }
     }
 
@@ -145,9 +146,9 @@ export abstract class FieldManager {
         }
     }
 
-    public static createDefault(name: string): FieldManager {
+    public static createDefault(plugin: MetadataMenu, name: string): FieldManager {
         const field = Field.createDefault(name);
-        return new FM[field.type](field);
+        return new FM[field.type](plugin, field);
     }
 
     public static stringToBoolean(value: string): boolean {
