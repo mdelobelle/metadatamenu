@@ -92,7 +92,6 @@ class FileClass {
             const file = this.getClassFile();
             let parentAttributes: Array<FileClassAttribute> = [];
             let errors: string[] = [];
-            //const result = await this.plugin.app.vault.cachedRead(file)
             const parent = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.extends
             const excludedFields = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.excludes
             if (parent && !excludeParents) {
@@ -105,7 +104,7 @@ class FileClass {
                 }
             }
             let attributes: Array<FileClassAttribute> = [];
-            const dataview = app.plugins.plugins["dataview"]
+            const dataview = this.plugin.app.plugins.plugins["dataview"]
             //@ts-ignore
             if (dataview) {
                 const dvFile = dataview.api.page(file.path)

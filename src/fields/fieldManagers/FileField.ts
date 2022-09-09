@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { App, Menu, Notice, setIcon, TextAreaComponent, TFile } from "obsidian";
+import { Menu, Notice, setIcon, TextAreaComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import SingleFileModal from "src/optionModals/fields/SingleFileModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
@@ -12,8 +12,8 @@ export default class FileField extends FieldManager {
     private fileValidatorField: HTMLDivElement
     private dvQueryString: TextAreaComponent
 
-    constructor(field: Field) {
-        super(field, FieldType.File)
+    constructor(plugin: MetadataMenu, field: Field) {
+        super(plugin, field, FieldType.File)
     }
 
     getFiles = (): TFile[] => {
@@ -25,22 +25,22 @@ export default class FileField extends FieldManager {
                 new Notice(`Wrong query for field <${this.field.name}>\ncheck your settings`, 3000)
             }
         };
-        const dataview = app.plugins.plugins["dataview"]
+        const dataview = this.plugin.app.plugins.plugins["dataview"]
         //@ts-ignore
         if (this.field.options.dvQueryString && dataview?.settings.enableDataviewJs && dataview?.settings.enableInlineDataviewJs) {
             try {
                 const filesPath = getResults(dataview.api).values.map((v: any) => v.file.path)
-                return app.vault.getMarkdownFiles().filter(f => filesPath.includes(f.path));
+                return this.plugin.app.vault.getMarkdownFiles().filter(f => filesPath.includes(f.path));
             } catch (error) {
                 throw (error);
             }
         } else {
-            return app.vault.getMarkdownFiles();
+            return this.plugin.app.vault.getMarkdownFiles();
         }
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
-        const modal = new SingleFileModal(app, file, this.field, value)
+    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+        const modal = new SingleFileModal(this.plugin, file, this.field, value)
         modal.titleEl.setText("Select value");
         if (FileField.isMenu(location)) {
             location.addItem((item) => {
@@ -59,14 +59,13 @@ export default class FileField extends FieldManager {
         };
     }
 
-    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
-        const fieldModal = new SingleFileModal(app, file, this.field, value, lineNumber, inFrontmatter, after);
+    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+        const fieldModal = new SingleFileModal(this.plugin, file, this.field, value, lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
 
     async createDvField(
-        plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
@@ -80,10 +79,10 @@ export default class FileField extends FieldManager {
         const spacer = document.createElement("div")
         spacer.setAttr("class", "metadata-menu-dv-field-spacer")
 
-        const file = app.vault.getAbstractFileByPath(p["file"]["path"])
+        const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
         let fieldModal: SingleFileModal;
         if (file instanceof TFile && file.extension == "md") {
-            fieldModal = new SingleFileModal(app, file, this.field, p[this.field.name])
+            fieldModal = new SingleFileModal(this.plugin, file, this.field, p[this.field.name])
         } else {
             throw Error("path doesn't correspond to a proper file");
         }

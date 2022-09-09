@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { App, ButtonComponent, DropdownComponent, ExtraButtonComponent, Modal, Notice, Setting, TextComponent, TextAreaComponent } from "obsidian";
+import { ButtonComponent, DropdownComponent, ExtraButtonComponent, Modal, Notice, Setting, TextComponent, TextAreaComponent } from "obsidian";
 import Field from "src/fields/Field";
 import FieldSetting from "src/settings/FieldSetting";
 import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
@@ -17,8 +17,8 @@ export default class FieldSettingsModal extends Modal {
     private fieldOptionsContainer: HTMLDivElement;
     private fieldManager: F;
 
-    constructor(app: App, plugin: MetadataMenu, parentSettingContainer: HTMLElement, parentSetting?: FieldSetting, field?: Field) {
-        super(app);
+    constructor(plugin: MetadataMenu, parentSettingContainer: HTMLElement, parentSetting?: FieldSetting, field?: Field) {
+        super(plugin.app);
         this.plugin = plugin;
         this.parentSetting = parentSetting;
         this.initialField = new Field();
@@ -38,7 +38,7 @@ export default class FieldSettingsModal extends Modal {
             this.field.id = newId.toString();
             this.initialField.id = newId.toString();
         };
-        this.fieldManager = new FieldManager[this.field.type](this.field);
+        this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field);
     };
 
     async onOpen(): Promise<void> {
@@ -55,7 +55,7 @@ export default class FieldSettingsModal extends Modal {
         if (!this.new && this.parentSetting) {
             this.parentSetting.setTextContentWithname()
         } else if (this.saved) {
-            new FieldSetting(this.parentSettingContainer, this.field, this.app, this.plugin);
+            new FieldSetting(this.parentSettingContainer, this.field, this.plugin);
         };
     };
 
@@ -97,7 +97,7 @@ export default class FieldSettingsModal extends Modal {
             while (this.fieldOptionsContainer.firstChild) {
                 this.fieldOptionsContainer.removeChild(this.fieldOptionsContainer.firstChild);
             }
-            this.fieldManager = new FieldManager[this.field.type](this.field)
+            this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
             this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.PluginSettings)
         })
     }

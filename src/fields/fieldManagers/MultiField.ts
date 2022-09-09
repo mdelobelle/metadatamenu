@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { App, Menu, setIcon, TextComponent, TFile } from "obsidian";
+import { Menu, setIcon, TextComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import MultiSelectModal from "src/optionModals/fields/MultiSelectModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
@@ -11,12 +11,12 @@ export default class MultiField extends AbstractListBasedField {
     valuesPromptComponents: Array<TextComponent> = [];
     presetValuesFields: HTMLDivElement;
 
-    constructor(field: Field) {
-        super(field, FieldType.Multi)
+    constructor(plugin: MetadataMenu, field: Field) {
+        super(plugin, field, FieldType.Multi)
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
-        const modal = new MultiSelectModal(app, file, this.field, value);
+    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+        const modal = new MultiSelectModal(this.plugin, file, this.field, value);
         modal.titleEl.setText("Select values");
         if (MultiField.isMenu(location)) {
             location.addItem((item) => {
@@ -35,14 +35,13 @@ export default class MultiField extends AbstractListBasedField {
         };
     };
 
-    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
-        const fieldModal = new MultiSelectModal(app, file, this.field, value || "", lineNumber, inFrontmatter, after);
+    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+        const fieldModal = new MultiSelectModal(this.plugin, file, this.field, value || "", lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Select options for ${selectedFieldName}`);
         fieldModal.open();
     }
 
     async createDvField(
-        plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
@@ -85,7 +84,7 @@ export default class MultiField extends AbstractListBasedField {
             })
         select.onchange = () => {
             const newValues = [...currentValues, this.field.options[select.value]].join(", ");
-            MultiField.replaceValues(plugin.app, p["file"]["path"], this.field.name, newValues)
+            MultiField.replaceValues(this.plugin, p.file.path, this.field.name, newValues)
             singleSpacer.hide();
             doubleSpacer.show();
             addBtn.hide();
@@ -132,7 +131,7 @@ export default class MultiField extends AbstractListBasedField {
             valueRemoveBtn.hide();
             valueRemoveBtn.onclick = () => {
                 const remainingValues = currentValues.filter(cV => cV !== v).join(", ")
-                MultiField.replaceValues(plugin.app, p["file"]["path"], this.field.name, remainingValues);
+                MultiField.replaceValues(this.plugin, p.file.path, this.field.name, remainingValues);
             }
             valueContainer.appendChild(valueRemoveBtn);
 

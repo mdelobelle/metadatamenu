@@ -1,5 +1,5 @@
+import MetadataMenu from "main";
 import {
-    App,
     normalizePath,
     TAbstractFile,
     TFile,
@@ -7,25 +7,11 @@ import {
     Vault,
 } from "obsidian";
 
-export function resolve_tfile(app: App, file_str: string): TFile {
-    file_str = normalizePath(file_str);
 
-    const file = app.vault.getAbstractFileByPath(file_str);
-    if (!file) {
-        throw new Error(`File "${file_str}" doesn't exist`);
-    }
-    if (!(file instanceof TFile)) {
-        throw new Error(`${file_str} is a folder, not a file`);
-    }
-
-    return file;
-}
-
-
-export function resolve_tfolder(app: App, folder_str: string): TFolder {
+export function resolve_tfolder(plugin: MetadataMenu, folder_str: string): TFolder {
     folder_str = normalizePath(folder_str);
 
-    const folder = app.vault.getAbstractFileByPath(folder_str);
+    const folder = plugin.app.vault.getAbstractFileByPath(folder_str);
     if (!folder) {
         throw new Error(`Folder "${folder_str}" doesn't exist`);
     }
@@ -37,10 +23,10 @@ export function resolve_tfolder(app: App, folder_str: string): TFolder {
 }
 
 export function get_tfiles_from_folder(
-    app: App,
+    plugin: MetadataMenu,
     folder_str: string
 ): Array<TFile> {
-    const folder = resolve_tfolder(app, folder_str);
+    const folder = resolve_tfolder(plugin, folder_str);
 
     const files: Array<TFile> = [];
     Vault.recurseChildren(folder, (file: TAbstractFile) => {

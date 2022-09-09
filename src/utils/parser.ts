@@ -66,4 +66,4 @@ export const getLineFields = (line: string): { attribute: string, values: string
         return 0
     })
     return fields
-}   
+}

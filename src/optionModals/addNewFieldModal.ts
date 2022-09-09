@@ -4,6 +4,7 @@ import { insertValues } from "src/commands/insertValues";
 
 export default class addNewFieldModal extends Modal {
 
+    private plugin: MetadataMenu;
     private lineNumber: number;
     private file: TFile;
     private inFrontmatter: boolean;
@@ -11,6 +12,7 @@ export default class addNewFieldModal extends Modal {
 
     constructor(plugin: MetadataMenu, lineNumber: number, file: TFile, inFrontmatter: boolean, after: boolean) {
         super(plugin.app);
+        this.plugin = plugin;
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontmatter;
         this.file = file;
@@ -36,7 +38,7 @@ export default class addNewFieldModal extends Modal {
         const saveButton = new ButtonComponent(footerButtons);
         saveButton.setIcon("checkmark");
         saveButton.onClick(async () => {
-            await insertValues(this.app, this.file, nameInputEl.getValue(), valueInputEl.getValue(), this.lineNumber, this.inFrontmatter, this.after);
+            await insertValues(this.plugin, this.file, nameInputEl.getValue(), valueInputEl.getValue(), this.lineNumber, this.inFrontmatter, this.after);
             this.close()
         });
         const cancelButton = new ExtraButtonComponent(footerButtons);

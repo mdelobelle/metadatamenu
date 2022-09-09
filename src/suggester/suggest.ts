@@ -1,6 +1,6 @@
 // Credits go to Liam's Periodic Notes Plugin: https://github.com/liamcain/obsidian-periodic-notes
 
-import { App, ISuggestOwner, Scope } from "obsidian";
+import { ISuggestOwner, Scope } from "obsidian";
 import { createPopper, Instance as PopperInstance } from "@popperjs/core";
 
 const wrapAround = (value: number, size: number): number => {
@@ -110,7 +110,6 @@ class Suggest<T> {
 }
 
 export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
-    protected app: App;
     protected inputEl: HTMLInputElement | HTMLTextAreaElement;
 
     private popper: PopperInstance;
@@ -118,8 +117,7 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
     private suggestEl: HTMLElement;
     private suggest: Suggest<T>;
 
-    constructor(app: App, inputEl: HTMLInputElement | HTMLTextAreaElement) {
-        this.app = app;
+    constructor(inputEl: HTMLInputElement | HTMLTextAreaElement) {
         this.inputEl = inputEl;
         this.scope = new Scope();
 
@@ -153,7 +151,7 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
         if (suggestions.length > 0) {
             this.suggest.setSuggestions(suggestions);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            this.open((<any>this.app).dom.appContainerEl, this.inputEl);
+            this.open((<any>app).dom.appContainerEl, this.inputEl);
         } else {
             this.close();
         }
@@ -161,7 +159,7 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
 
     open(container: HTMLElement, inputEl: HTMLElement): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (<any>this.app).keymap.pushScope(this.scope);
+        (<any>app).keymap.pushScope(this.scope);
 
         container.appendChild(this.suggestEl);
         this.popper = createPopper(inputEl, this.suggestEl, {
@@ -191,7 +189,7 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
 
     close(): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (<any>this.app).keymap.popScope(this.scope);
+        (<any>app).keymap.popScope(this.scope);
 
         this.suggest.setSuggestions([]);
         if (this.popper) this.popper.destroy();

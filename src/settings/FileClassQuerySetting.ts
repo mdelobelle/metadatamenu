@@ -1,19 +1,17 @@
-import { App, Setting, TFile } from "obsidian";
+import { Setting } from "obsidian";
 import MetadataMenu from "main";
 import FileClassQuery from "src/fileClass/FileClassQuery";
 import FileClassQuerySettingsModal from "./FileClassQuerySettingModal";
 
 export default class FileClassQuerySetting extends Setting {
     public fileClassQuery: FileClassQuery;
-    private app: App;
     private plugin: MetadataMenu;
     private containerEl: HTMLElement;
 
-    constructor(containerEl: HTMLElement, property: FileClassQuery, app: App, plugin: MetadataMenu) {
+    constructor(containerEl: HTMLElement, property: FileClassQuery, plugin: MetadataMenu) {
         super(containerEl);
         this.containerEl = containerEl;
         this.fileClassQuery = property;
-        this.app = app;
         this.plugin = plugin;
         this.setTextContentWithname();
         this.addEditButton();
@@ -43,7 +41,7 @@ export default class FileClassQuerySetting extends Setting {
             b.setIcon("pencil")
                 .setTooltip("Edit")
                 .onClick(() => {
-                    let modal = new FileClassQuerySettingsModal(this.app, this.plugin, this.containerEl, this, this.fileClassQuery);
+                    let modal = new FileClassQuerySettingsModal(this.plugin, this.containerEl, this, this.fileClassQuery);
                     modal.open();
                 });
         });

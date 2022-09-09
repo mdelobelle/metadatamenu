@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { App, Menu, setIcon, TextComponent, TFile } from "obsidian";
+import { Menu, setIcon, TextComponent, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import NumbertModal from "src/optionModals/fields/NumberModal";
@@ -15,8 +15,8 @@ export default class NumberField extends FieldManager {
     private numberMinValue: TextComponent;
     private numberMaxValue: TextComponent;
 
-    constructor(field: Field) {
-        super(field, FieldType.Number)
+    constructor(plugin: MetadataMenu, field: Field) {
+        super(plugin, field, FieldType.Number)
     }
 
     getOptionsStr(): string {
@@ -67,8 +67,8 @@ export default class NumberField extends FieldManager {
         )
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
-        const modal = new NumbertModal(app, file, this.field, value);
+    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+        const modal = new NumbertModal(this.plugin, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
         if (NumberField.isMenu(location)) {
             location.addItem((item) => {
@@ -88,14 +88,14 @@ export default class NumberField extends FieldManager {
                     location.addItem((item) => {
                         item.setIcon(FieldIcon[FieldType.Number]);
                         item.setTitle(`<${name}> ↘️ ${fValue - fStep}`);
-                        item.onClick(() => replaceValues(app, file, name, (fValue - fStep).toString()));
+                        item.onClick(() => replaceValues(this.plugin, file, name, (fValue - fStep).toString()));
                         item.setSection("metadata-menu.fields");
                     })
                 if (!isNaN(fMax) && fValue + fStep < fMax)
                     location.addItem((item) => {
                         item.setIcon(FieldIcon[FieldType.Number]);
                         item.setTitle(`<${name}> ↗️ ${fValue + fStep}`);
-                        item.onClick(() => replaceValues(app, file, name, (fValue + fStep).toString()));
+                        item.onClick(() => replaceValues(this.plugin, file, name, (fValue + fStep).toString()));
                         item.setSection("metadata-menu.fields");
                     })
             }
@@ -170,8 +170,8 @@ export default class NumberField extends FieldManager {
         return !error
     }
 
-    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
-        const fieldModal = new NumbertModal(app, file, this.field, value || "", lineNumber, inFrontmatter, after);
+    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+        const fieldModal = new NumbertModal(this.plugin, file, this.field, value || "", lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -190,7 +190,6 @@ export default class NumberField extends FieldManager {
     }
 
     async createDvField(
-        plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
@@ -249,9 +248,9 @@ export default class NumberField extends FieldManager {
         validateIcon.setAttr("class", "metadata-menu-dv-field-button")
         validateIcon.onclick = async () => {
             if (await this.validateValue(input.value)) {
-                const file = plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
+                const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
                 if (file instanceof TFile && file.extension == "md") {
-                    await replaceValues(plugin.app, file, this.field.name, input.value)
+                    await replaceValues(this.plugin, file, this.field.name, input.value)
                     this.toggleDvButtons(decrementButton, incrementButton, input.value)
                 }
                 fieldContainer.removeChild(inputContainer)
@@ -285,9 +284,9 @@ export default class NumberField extends FieldManager {
         input.onkeydown = async (e) => {
             if (e.key === "Enter") {
                 if (await this.validateValue(input.value)) {
-                    const file = plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
+                    const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
                     if (file instanceof TFile && file.extension == "md") {
-                        await replaceValues(plugin.app, file, this.field.name, input.value);
+                        await replaceValues(this.plugin, file, this.field.name, input.value);
                         this.toggleDvButtons(decrementButton, incrementButton, input.value)
                     }
                     fieldContainer.removeChild(inputContainer)
@@ -318,10 +317,10 @@ export default class NumberField extends FieldManager {
             if (this.canDecrement(p[this.field.name])) {
                 const { step } = this.field.options;
                 const fStep = parseFloat(step)
-                const file = plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
+                const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
                 if (file instanceof TFile && file.extension == "md") {
                     const newValue = (!!fStep ? p[this.field.name] - fStep : p[this.field.name] - 1).toString();
-                    await replaceValues(plugin.app, file, this.field.name, newValue);
+                    await replaceValues(this.plugin, file, this.field.name, newValue);
                     this.toggleDvButtons(decrementButton, incrementButton, newValue);
                 }
             }
@@ -332,10 +331,10 @@ export default class NumberField extends FieldManager {
             if (this.canIncrement(p[this.field.name])) {
                 const { step } = this.field.options;
                 const fStep = parseFloat(step)
-                const file = plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
+                const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
                 if (file instanceof TFile && file.extension == "md") {
                     const newValue = (!!fStep ? p[this.field.name] + fStep : p[this.field.name] + 1).toString();
-                    replaceValues(plugin.app, file, this.field.name, newValue);
+                    replaceValues(this.plugin, file, this.field.name, newValue);
                     this.toggleDvButtons(decrementButton, incrementButton, newValue);
                 }
             }

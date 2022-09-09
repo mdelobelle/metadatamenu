@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { App, Menu, Notice, setIcon, TextAreaComponent, TFile } from "obsidian";
+import { Menu, Notice, setIcon, TextAreaComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import MultiFileModal from "src/optionModals/fields/MultiFileModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
@@ -12,14 +12,14 @@ export default class MultiFileField extends FieldManager {
     private fileValidatorField: HTMLDivElement
     private dvQueryString: TextAreaComponent
 
-    constructor(field: Field) {
-        super(field, FieldType.MultiFile)
+    constructor(plugin: MetadataMenu, field: Field) {
+        super(plugin, field, FieldType.MultiFile)
     }
 
-    static buildMarkDownLink(app: App, file: TFile, path: string): string {
-        const destFile = app.metadataCache.getFirstLinkpathDest(path, file.path)
+    static buildMarkDownLink(plugin: MetadataMenu, file: TFile, path: string): string {
+        const destFile = plugin.app.metadataCache.getFirstLinkpathDest(path, file.path)
         if (destFile) {
-            return app.fileManager.generateMarkdownLink(
+            return plugin.app.fileManager.generateMarkdownLink(
                 destFile,
                 file.path,
                 undefined,
@@ -38,22 +38,22 @@ export default class MultiFileField extends FieldManager {
                 new Notice(`Wrong query for field <${this.field.name}>\ncheck your settings`, 3000)
             }
         };
-        const dataview = app.plugins.plugins["dataview"]
+        const dataview = this.plugin.app.plugins.plugins["dataview"]
         //@ts-ignore
         if (this.field.options.dvQueryString && dataview?.settings.enableDataviewJs && dataview?.settings.enableInlineDataviewJs) {
             try {
                 const filesPath = getResults(dataview.api).values.map((v: any) => v.file.path)
-                return app.vault.getMarkdownFiles().filter(f => filesPath.includes(f.path));
+                return this.plugin.app.vault.getMarkdownFiles().filter(f => filesPath.includes(f.path));
             } catch (error) {
                 throw (error);
             }
         } else {
-            return app.vault.getMarkdownFiles();
+            return this.plugin.app.vault.getMarkdownFiles();
         }
     }
 
-    addFieldOption(name: string, value: any, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
-        const modal = new MultiFileModal(app, file, this.field, value)
+    addFieldOption(name: string, value: any, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+        const modal = new MultiFileModal(this.plugin, file, this.field, value)
         if (MultiFileField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update ${name}`);
@@ -71,14 +71,13 @@ export default class MultiFileField extends FieldManager {
         };
     }
 
-    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
-        const fieldModal = new MultiFileModal(app, file, this.field, value, lineNumber, inFrontmatter, after);
+    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+        const fieldModal = new MultiFileModal(this.plugin, file, this.field, value, lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
 
     async createDvField(
-        plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
@@ -92,12 +91,11 @@ export default class MultiFileField extends FieldManager {
         const spacer = document.createElement("div")
         spacer.setAttr("class", "metadata-menu-dv-field-spacer")
 
-        const file = app.vault.getAbstractFileByPath(p["file"]["path"])
+        const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
         //let fieldModal: SingleFileModal;
         let fieldModal: MultiFileModal;
         if (file instanceof TFile && file.extension == "md") {
-            //fieldModal = new SingleFileModal(app, file, this.field)
-            fieldModal = new MultiFileModal(app, file, this.field, p[this.field.name])
+            fieldModal = new MultiFileModal(this.plugin, file, this.field, p[this.field.name])
         } else {
             throw Error("path doesn't correspond to a proper file");
         }

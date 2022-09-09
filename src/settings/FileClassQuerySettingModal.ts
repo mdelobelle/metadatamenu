@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { App, ButtonComponent, DropdownComponent, ExtraButtonComponent, Modal, Setting, TextAreaComponent, TextComponent } from "obsidian";
+import { ButtonComponent, DropdownComponent, ExtraButtonComponent, Modal, Setting, TextAreaComponent, TextComponent } from "obsidian";
 import FileClassQuery from "src/fileClass/FileClassQuery";
 import FileClassQuerySetting from "./FileClassQuerySetting";
 
@@ -12,11 +12,11 @@ export default class FileClassQuerySettingsModal extends Modal {
     private new: boolean = true;
     private parentSettingContainer: HTMLElement;
 
-    constructor(app: App, plugin: MetadataMenu, parentSettingContainer: HTMLElement, parentSetting?: FileClassQuerySetting, fileClassQuery?: FileClassQuery) {
-        super(app);
+    constructor(plugin: MetadataMenu, parentSettingContainer: HTMLElement, parentSetting?: FileClassQuerySetting, fileClassQuery?: FileClassQuery) {
+        super(plugin.app);
         this.plugin = plugin;
         this.parentSetting = parentSetting;
-        this.initialFileClassQuery = new FileClassQuery();
+        this.initialFileClassQuery = new FileClassQuery(this.plugin);
         this.parentSettingContainer = parentSettingContainer;
         if (fileClassQuery) {
             this.new = false;
@@ -29,7 +29,7 @@ export default class FileClassQuerySettingsModal extends Modal {
                     newId = parseInt(prop.id) + 1;
                 };
             });
-            this.fileClassQuery = new FileClassQuery();
+            this.fileClassQuery = new FileClassQuery(this.plugin);
             this.fileClassQuery.id = newId.toString();
             this.initialFileClassQuery.id = newId.toString();
         };
@@ -49,7 +49,7 @@ export default class FileClassQuerySettingsModal extends Modal {
         if (!this.new && this.parentSetting) {
             this.parentSetting.setTextContentWithname()
         } else if (this.saved) {
-            new FileClassQuerySetting(this.parentSettingContainer, this.fileClassQuery, this.app, this.plugin);
+            new FileClassQuerySetting(this.parentSettingContainer, this.fileClassQuery, this.plugin);
         };
     };
 

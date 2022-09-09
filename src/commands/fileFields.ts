@@ -26,7 +26,7 @@ export class FieldInfo {
             if (fileClassFields.includes(fieldName)) {
                 const field = getField(plugin, fieldName, fileClass);
                 if (field) {
-                    const fieldManager = new FieldManager[field.type](field);
+                    const fieldManager = new FieldManager[field.type](plugin, field);
                     this.isValid = await fieldManager.validateValue(value)
                     const attribute = fileClass.attributes.filter(a => a.name === fieldName)[0];
                     this.fileClass = attribute.origin;
@@ -38,7 +38,7 @@ export class FieldInfo {
         } else if (plugin.settings.presetFields.map(f => f.name).includes(fieldName)) {
             const field = getField(plugin, fieldName);
             if (field) {
-                const fieldManager = new FieldManager[field.type](field);
+                const fieldManager = new FieldManager[field.type](plugin, field);
                 this.isValid = await fieldManager.validateValue(value)
                 this.type = field.type;
                 this.options = field.options;
@@ -57,7 +57,7 @@ export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | s
     if (fileOrfilePath instanceof TFile) {
         file = fileOrfilePath;
     } else {
-        const _file = app.vault.getAbstractFileByPath(fileOrfilePath)
+        const _file = plugin.app.vault.getAbstractFileByPath(fileOrfilePath)
         if (_file instanceof TFile && _file.extension == "md") {
             file = _file;
         } else {
@@ -78,7 +78,7 @@ export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | s
     let matchingFileClassQuery: string | undefined = undefined;
     if (fileClassQueries.length > 0) {
         while (!matchingFileClassQuery && fileClassQueries.length > 0) {
-            const fileClassQuery = new FileClassQuery();
+            const fileClassQuery = new FileClassQuery(plugin);
             Object.assign(fileClassQuery, fileClassQueries.pop() as FileClassQuery)
             if (fileClassQuery.matchFile(file)) {
                 fileClass = FileClass.createFileClass(plugin, fileClassQuery.fileClassName);
@@ -109,7 +109,7 @@ export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | s
     }
     // let's explore the rest of the file: get inline fields
 
-    const dataview = app.plugins.plugins["dataview"]
+    const dataview = plugin.app.plugins.plugins.dataview
     //@ts-ignore
     if (dataview) {
         const dvFile = dataview.api.page(file.path)

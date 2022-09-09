@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { App, Menu, setIcon, TextComponent, TFile } from "obsidian";
+import { Menu, setIcon, TextComponent, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import SelectModal from "src/optionModals/fields/SelectModal";
@@ -12,11 +12,11 @@ export default class CycleField extends AbstractListBasedField {
     valuesPromptComponents: Array<TextComponent> = [];
     presetValuesFields: HTMLDivElement;
 
-    constructor(field: Field) {
-        super(field, FieldType.Cycle)
+    constructor(plugin: MetadataMenu, field: Field) {
+        super(plugin, field, FieldType.Cycle)
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    nextOption(value: string): string {
         const options = this.field.options;
         const keys = Object.keys(options);
         const keyForValue = keys.find(key => options[key] === value);
@@ -27,32 +27,37 @@ export default class CycleField extends AbstractListBasedField {
         } else {
             nextOption = options[Object.keys(options)[0]];
         };
+        return nextOption
+    }
+
+    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+        const options = this.field.options;
+
         if (CycleField.isMenu(location)) {
             location.addItem((item) => {
-                item.setTitle(`${name} : ${value} ▷ ${nextOption}`);
+                item.setTitle(`${name} : ${value} ▷ ${this.nextOption(value)}`);
                 item.setIcon(FieldIcon[FieldType.Cycle]);
-                item.onClick(() => replaceValues(app, file, name, nextOption));
+                item.onClick(() => replaceValues(this.plugin, file, name, this.nextOption(value)));
                 item.setSection("metadata-menu.fields");
             });
         } else if (CycleField.isSuggest(location)) {
             location.options.push({
-                id: `${name}_${value}_${nextOption}`,
-                actionLabel: `<span><b>${name}</b> : ${value} ▷ ${nextOption}</span>`,
+                id: `${name}_${value}_${this.nextOption(value)}`,
+                actionLabel: `<span><b>${name}</b> : ${value} ▷ ${this.nextOption(value)}</span>`,
                 action: () =>
-                    replaceValues(app, file, name, nextOption),
+                    replaceValues(this.plugin, file, name, this.nextOption(value)),
                 icon: FieldIcon[FieldType.Cycle]
             })
         };
     };
 
-    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
-        const fieldModal = new SelectModal(app, file, value || "", this.field, lineNumber, inFrontmatter, after);
+    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+        const fieldModal = new SelectModal(this.plugin, file, value || "", this.field, lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }
 
     async createDvField(
-        plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
@@ -92,7 +97,7 @@ export default class CycleField extends AbstractListBasedField {
 
         /* button on click : go to next version*/
         button.onclick = (e) => {
-            CycleField.replaceValues(plugin.app, p["file"]["path"], this.field.name, nextOption);
+            CycleField.replaceValues(this.plugin, p.file.path, this.field.name, nextOption);
             if (!attrs?.options?.alwaysOn) {
                 button.hide();
                 spacer.show();

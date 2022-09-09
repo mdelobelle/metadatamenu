@@ -1,4 +1,5 @@
-import { App, MarkdownView, TFile } from "obsidian";
+import MetadataMenu from "main";
+import { MarkdownView, TFile } from "obsidian";
 import { fieldComponents, inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
 
 const enum Location {
@@ -41,7 +42,7 @@ export const matchInlineFields = (regex: RegExp, line: string, attribute: string
 }
 
 export async function replaceValues(
-    app: App,
+    plugin: MetadataMenu,
     fileOrFilePath: TFile | string,
     attribute: string,
     input: string
@@ -50,18 +51,18 @@ export async function replaceValues(
     if (fileOrFilePath instanceof TFile) {
         file = fileOrFilePath;
     } else {
-        const _file = app.vault.getAbstractFileByPath(fileOrFilePath)
+        const _file = plugin.app.vault.getAbstractFileByPath(fileOrFilePath)
         if (_file instanceof TFile && _file.extension == "md") {
             file = _file;
         } else {
             throw Error("path doesn't correspond to a proper file");
         }
     }
-    const content = (await app.vault.cachedRead(file)).split('\n');
-    const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
+    const content = (await plugin.app.vault.cachedRead(file)).split('\n');
+    const frontmatter = plugin.app.metadataCache.getFileCache(file)?.frontmatter;
     const { position: { start, end } } = frontmatter ? frontmatter : { position: { start: undefined, end: undefined } };
     const newContent = content.map((line, i) => {
-        if (frontmatter && i >= start.line && i <= end.line) {
+        if (start && end && i >= start.line && i <= end.line) {
             const regex = new RegExp(`${attribute}:`, 'u');
             const r = line.match(regex);
             if (r && r.length > 0) {
@@ -95,8 +96,8 @@ export async function replaceValues(
             }
         }
     })
-    await app.vault.modify(file, newContent.join('\n'));
-    const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor
+    await plugin.app.vault.modify(file, newContent.join('\n'));
+    const editor = plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor
     if (editor) {
         const lineNumber = editor.getCursor().line
         editor.setCursor({ line: editor.getCursor().line, ch: editor.getLine(lineNumber).length })

@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { App, Menu, setIcon, TextAreaComponent, TFile } from "obsidian";
+import { Menu, setIcon, TextAreaComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import InputModal from "src/optionModals/fields/InputModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
@@ -8,16 +8,16 @@ import { FieldManager } from "../FieldManager";
 
 export default class InputField extends FieldManager {
 
-    constructor(field: Field) {
-        super(field, FieldType.Input)
+    constructor(plugin: MetadataMenu, field: Field) {
+        super(plugin, field, FieldType.Input)
     }
 
     getOptionsStr(): string {
         return this.field.options.template
     }
 
-    addFieldOption(name: string, value: string, app: App, file: TFile, location: Menu | FieldCommandSuggestModal): void {
-        const modal = new InputModal(app, file, this.field, value);
+    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+        const modal = new InputModal(this.plugin, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
         if (InputField.isMenu(location)) {
             location.addItem((item) => {
@@ -54,14 +54,13 @@ export default class InputField extends FieldManager {
         return true
     }
 
-    createAndOpenFieldModal(app: App, file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
-        const fieldModal = new InputModal(app, file, this.field, value || "", lineNumber, inFrontmatter, after);
+    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+        const fieldModal = new InputModal(this.plugin, file, this.field, value || "", lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
 
     async createDvField(
-        plugin: MetadataMenu,
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
@@ -97,7 +96,7 @@ export default class InputField extends FieldManager {
         setIcon(validateIcon, "checkmark")
         validateIcon.setAttr("class", "metadata-menu-dv-field-button")
         validateIcon.onclick = (e) => {
-            InputField.replaceValues(plugin.app, p["file"]["path"], this.field.name, input.value);
+            InputField.replaceValues(this.plugin, p.file.path, this.field.name, input.value);
             fieldContainer.removeChild(inputContainer)
         }
         inputContainer?.appendChild(validateIcon)
@@ -115,7 +114,7 @@ export default class InputField extends FieldManager {
 
         input.onkeydown = (e) => {
             if (e.key === "Enter") {
-                InputField.replaceValues(plugin.app, p["file"]["path"], this.field.name, input.value);
+                InputField.replaceValues(this.plugin, p.file.path, this.field.name, input.value);
                 fieldContainer.removeChild(inputContainer)
             }
             if (e.key === 'Escape') {
@@ -128,9 +127,9 @@ export default class InputField extends FieldManager {
         /* button on click : remove button and field and display input field*/
         button.onclick = (e) => {
             if (this.field.options.template) {
-                const file = plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
+                const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
                 if (file instanceof TFile && file.extension === 'md') {
-                    const inputModal = new InputModal(plugin.app, file, this.field, p[this.field.name]);
+                    const inputModal = new InputModal(this.plugin, file, this.field, p[this.field.name]);
                     inputModal.open();
                 }
 
