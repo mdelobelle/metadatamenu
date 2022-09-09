@@ -27,5 +27,7 @@ It also enables frontmatter of inline-field autocompletion with suggested values
 
 [demo 6](https://youtu.be/QxXSuh7HUZY): FileClass
 
+[demo 7](): Time shifting for spaced repetition or date postponing
+
 
 
