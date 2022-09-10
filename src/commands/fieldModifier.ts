@@ -23,7 +23,46 @@ function getQueryFileClassForFields(plugin: MetadataMenu, file: TFile): FileClas
     return fileClass
 }
 
-export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }): Promise<HTMLElement> {
+function buildAndOpenModal(
+    plugin: MetadataMenu,
+    file: TFile,
+    fieldName: string,
+    fileClass?: FileClass,
+    attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
+): void {
+    if (attrs?.options?.inFrontmatter && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
+        const lineNumber = plugin.app.metadataCache.getCache(file.path)!.frontmatter!.position.end.line - 1
+        F.openFieldModal(plugin, file, fieldName, "", lineNumber, true, false, fileClass)
+    } else {
+        new chooseSectionModal(plugin, file, fileClass, fieldName).open();
+    }
+}
+
+async function createDvField(plugin: MetadataMenu,
+    dv: any,
+    p: any,
+    fieldContainer: HTMLElement,
+    fieldName: string,
+    fileClass?: FileClass,
+    attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
+): Promise<void> {
+    const field = getField(plugin, fieldName, fileClass);
+    if (field?.type) {
+        const fieldManager = new FieldManager[field.type](plugin, field);
+        await fieldManager.createDvField(dv, p, fieldContainer, attrs);
+    } else {
+        const fieldManager = F.createDefault(plugin, fieldName);
+        await fieldManager.createDvField(dv, p, fieldContainer, attrs);
+    }
+}
+
+export async function fieldModifier(
+    plugin: MetadataMenu,
+    dv: any,
+    p: any,
+    fieldName: string,
+    attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
+): Promise<HTMLElement> {
 
     /* fieldContainer*/
     const fieldContainer: HTMLElement = dv.el("div", "")
@@ -47,40 +86,19 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
                     const fileClassAlias = plugin.settings.fileClassAlias;
                     const queryFileClass = getQueryFileClassForFields(plugin, file)
                     if (p[fileClassAlias]) {
-                        const fileClassName = p[fileClassAlias]
+                        const fileClassName = p[fileClassAlias] as string
                         const fileClass = FileClass.createFileClass(plugin, fileClassName);
-                        if (attrs?.options?.inFrontmatter && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
-                            const lineNumber = plugin.app.metadataCache.getCache(file.path)!.frontmatter!.position.end.line - 1
-                            F.openFieldModal(plugin, file, fieldName, "", lineNumber, true, false, fileClass)
-                        } else {
-                            new chooseSectionModal(plugin, file, fileClass, fieldName).open();
-                        }
+                        buildAndOpenModal(plugin, file, fieldName, fileClass, attrs)
                     } else if (queryFileClass) {
-                        if (attrs?.options?.inFrontmatter && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
-                            const lineNumber = plugin.app.metadataCache.getCache(file.path)!.frontmatter!.position.end.line - 1
-                            F.openFieldModal(plugin, file, fieldName, "", lineNumber, true, false, queryFileClass)
-                        } else {
-                            new chooseSectionModal(plugin, file, queryFileClass, fieldName).open();
-                        }
-
+                        buildAndOpenModal(plugin, file, fieldName, queryFileClass, attrs)
                     } else if (plugin.settings.globalFileClass) {
                         const fileClassName = plugin.settings.globalFileClass
                         const fileClass = FileClass.createFileClass(plugin, fileClassName);
-                        if (attrs?.options?.inFrontmatter && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
-                            const lineNumber = plugin.app.metadataCache.getCache(file.path)!.frontmatter!.position.end.line - 1
-                            F.openFieldModal(plugin, file, fieldName, "", lineNumber, true, false, fileClass)
-                        } else {
-                            new chooseSectionModal(plugin, file, fileClass, fieldName).open();
-                        }
+                        buildAndOpenModal(plugin, file, fieldName, fileClass, attrs)
                     } else if (plugin.settings.presetFields.filter(attr => attr.name == fieldName)) {
                         const field = getField(plugin, fieldName);
                         if (field?.type) {
-                            if (attrs?.options?.inFrontmatter && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
-                                const lineNumber = plugin.app.metadataCache.getCache(file.path)!.frontmatter!.position.end.line - 1
-                                F.openFieldModal(plugin, file, fieldName, "", lineNumber, true, false)
-                            } else {
-                                new chooseSectionModal(plugin, file, undefined, fieldName).open();
-                            }
+                            buildAndOpenModal(plugin, file, fieldName, undefined, attrs)
                         } else {
                             new chooseSectionModal(plugin, file, undefined).open();
                         }
@@ -96,29 +114,25 @@ export async function fieldModifier(plugin: MetadataMenu, dv: any, p: any, field
         }
     } else {
         const fileClassAlias = plugin.settings.fileClassAlias;
-        if (p[fileClassAlias] || plugin.settings.globalFileClass) {
-            const fileClassName = p[fileClassAlias] || plugin.settings.globalFileClass // inner fileClass has the priority over global fileClass
-            const fileClass = FileClass.createFileClass(plugin, fileClassName);
-            const field = getField(plugin, fieldName, fileClass);
-            if (field?.type) {
-                const fieldManager = new FieldManager[field.type](plugin, field);
-                await fieldManager.createDvField(dv, p, fieldContainer, attrs);
+        const file = plugin.app.vault.getAbstractFileByPath(p.file.path)
+        if (file instanceof TFile && file.extension == "md") {
+            const queryFileClass = getQueryFileClassForFields(plugin, file)
+            if (p[fileClassAlias]) {
+                const fileClassName = p[fileClassAlias] || plugin.settings.globalFileClass // inner fileClass has the priority over global fileClass
+                const fileClass = FileClass.createFileClass(plugin, fileClassName);
+                createDvField(plugin, dv, p, fieldContainer, fieldName, fileClass, attrs)
+            } else if (queryFileClass) {
+                createDvField(plugin, dv, p, fieldContainer, fieldName, queryFileClass, attrs)
+            } else if (plugin.settings.globalFileClass) {
+                const fileClassName = plugin.settings.globalFileClass // inner fileClass has the priority over global fileClass
+                const fileClass = FileClass.createFileClass(plugin, fileClassName);
+                createDvField(plugin, dv, p, fieldContainer, fieldName, fileClass, attrs)
+            } else if (plugin.settings.presetFields.filter(attr => attr.name == fieldName)) {
+                createDvField(plugin, dv, p, fieldContainer, fieldName, undefined, attrs)
             } else {
                 const fieldManager = F.createDefault(plugin, fieldName);
                 await fieldManager.createDvField(dv, p, fieldContainer, attrs);
             }
-        } else if (plugin.settings.presetFields.filter(attr => attr.name == fieldName)) {
-            const field = getField(plugin, fieldName)
-            if (field?.type) {
-                const fieldManager = new FieldManager[field.type](plugin, field);
-                await fieldManager.createDvField(dv, p, fieldContainer, attrs);
-            } else {
-                const fieldManager = F.createDefault(plugin, fieldName);
-                await fieldManager.createDvField(dv, p, fieldContainer, attrs);
-            }
-        } else {
-            const fieldManager = F.createDefault(plugin, fieldName);
-            await fieldManager.createDvField(dv, p, fieldContainer, attrs);
         }
     }
     return fieldContainer
