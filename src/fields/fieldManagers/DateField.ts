@@ -39,7 +39,7 @@ export default class DateField extends FieldManager {
                 location.addItem((item) => {
                     item.setTitle(`Shift <${name}> ${currentShift} ahead`);
                     item.setIcon("skip-forward");
-                    item.onClick(() => { console.log("test"); this.shiftDate(dvApi, p, file) });
+                    item.onClick(() => { this.shiftDate(dvApi, p, file) });
                     item.setSection("metadata-menu.fields");
                 })
             }

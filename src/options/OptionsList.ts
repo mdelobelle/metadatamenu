@@ -198,7 +198,6 @@ export default class OptionsList {
 	}
 
 	private buildFieldOptions(): void {
-		console.log(this.attributes)
 		Object.keys(this.attributes).forEach((key: string) => {
 			const value = this.attributes[key];
 			const field = getField(this.plugin, key, this.fileClass);

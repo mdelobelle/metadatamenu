@@ -64,7 +64,6 @@ export default class FieldSetting extends Setting {
     };
 
     public static async getValuesListFromNote(plugin: MetadataMenu, notePath: string): Promise<string[]> {
-        console.log(plugin)
         let values: Array<string> = [];
         const file = plugin.app.vault.getAbstractFileByPath(notePath);
         if (file instanceof TFile && file.extension == "md") {

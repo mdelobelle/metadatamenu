@@ -308,6 +308,14 @@ button.metadata-menu-field-add-frontmatter-btn{
     display: flex;
 }
 
+.metadata-menu-value-suggester-info {
+    white-space: nowrap;
+    margin: 30px 12px 12px 0;
+    font-size: x-small;
+    font-style: italic;
+    color: var(--color-accent);
+}
+
 .metadata-menu-command-suggest-icon{
     margin: 0.2em 0.7em 0em 0.3em;
 }

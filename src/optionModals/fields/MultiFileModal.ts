@@ -36,8 +36,16 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
     }
 
     onOpen() {
+        this.containerEl.onkeydown = async (e) => {
+            if (e.key == "Enter" && e.shiftKey) {
+                await this.replaceValues();
+                this.close()
+            }
+        }
         const buttonContainer = this.containerEl.createDiv({ cls: "metadata-menu-value-suggester-actions" })
         buttonContainer.createDiv({ cls: "metadata-menu-value-suggester-actions-spacer" })
+        const infoContainer = buttonContainer.createDiv({ cls: "metadata-menu-value-suggester-info" })
+        infoContainer.setText("Shift+Enter to save")
         //confirm button
         const confirmButton = new ButtonComponent(buttonContainer)
         confirmButton.setIcon("checkmark")
