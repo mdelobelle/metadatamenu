@@ -59,7 +59,7 @@ export default class MultiField extends AbstractListBasedField {
             if (Object.keys(p[this.field.name]).includes("path")) {
                 currentValues = [`[[${p[this.field.name].path.replace(".md", "")}]]`]
             } else if (Array.isArray(p[this.field.name])) {
-                currentValues.push(...p[this.field.name].last().split(",").map((v: string) => v.trim()))
+                currentValues.push(...p[this.field.name].map((v: string) => v.trim()))
             }
             else {
                 currentValues = p[this.field.name].split(",").map((v: string) => v.trim());

@@ -3,6 +3,7 @@ import { Menu, Platform, requireApiVersion, TAbstractFile, TFile } from "obsidia
 import OptionsList from "src/options/OptionsList";
 import FileClassOptionsList from "./FileClassOptionsList";
 import { frontMatterLineField, getLineFields } from "src/utils/parser";
+import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
 
 export default class linkContextMenu {
 	private plugin: MetadataMenu;
@@ -21,14 +22,28 @@ export default class linkContextMenu {
 				//@ts-ignore
 				menu.setSectionSubmenu("metadata-menu-fileclass.fileclass-fields", { title: "Manage Fileclass Fields", icon: "wrench" })
 			}
-			//If fileClass
-			if (file.parent.path + "/" == this.plugin.settings.classFilesPath) {
-				const fileClassOptionsList = new FileClassOptionsList(this.plugin, file, menu)
-				fileClassOptionsList.createExtraOptionList();
+			if (this.plugin.settings.displayFieldsInContextMenu) {
+				//If fileClass
+				if (file.parent.path + "/" == this.plugin.settings.classFilesPath) {
+					const fileClassOptionsList = new FileClassOptionsList(this.plugin, file, menu)
+					fileClassOptionsList.createExtraOptionList();
+				} else {
+					const optionsList = new OptionsList(this.plugin, file, menu, includedFields);
+					optionsList.createExtraOptionList();
+				};
 			} else {
-				const optionsList = new OptionsList(this.plugin, file, menu, includedFields);
-				optionsList.createExtraOptionList();
-			};
+				menu.addItem((item) => {
+					item.setIcon("list")
+					item.setTitle("Field Options")
+					item.onClick(() => {
+						const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.plugin.app)
+						const optionsList = new OptionsList(this.plugin, file, fieldCommandSuggestModal);
+						optionsList.createExtraOptionList();
+					})
+				})
+			}
+
+
 
 		};
 	}
