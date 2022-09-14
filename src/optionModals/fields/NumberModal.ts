@@ -7,24 +7,19 @@ import NumberField from "src/fields/fieldManagers/NumberField";
 import { FieldManager } from "src/types/fieldTypes";
 
 export default class NumbertModal extends Modal {
-    private plugin: MetadataMenu;
-    private file: TFile;
-    private value: string;
-    private lineNumber: number;
-    private inFrontmatter: boolean;
-    private after: boolean;
-    private field: Field;
+
     private fieldManager: NumberField;
 
-    constructor(plugin: MetadataMenu, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
+    constructor(
+        private plugin: MetadataMenu,
+        private file: TFile,
+        private field: Field,
+        private value: string,
+        private lineNumber: number = -1,
+        private inFrontmatter: boolean = false,
+        private after: boolean = false
+    ) {
         super(plugin.app);
-        this.plugin = plugin;
-        this.file = file;
-        this.field = field;
-        this.value = value;
-        this.lineNumber = lineNumber;
-        this.inFrontmatter = inFrontMatter;
-        this.after = after;
         this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
     };
 

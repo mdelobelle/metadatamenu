@@ -6,8 +6,6 @@ import { capitalize } from "src/utils/textUtils";
 import { genuineKeys } from "src/utils/dataviewUtils";
 
 interface FileClass {
-    plugin: MetadataMenu;
-    name: string;
     attributes: Array<FileClassAttribute>;
     objects: FileClassManager;
     errors: string[];
@@ -16,11 +14,8 @@ interface FileClass {
 }
 
 class FileClassManager {
-    public instance: FileClass;
 
-    constructor(instance: FileClass) {
-        this.instance = instance;
-    }
+    constructor(public instance: FileClass) { }
 
     public all() {
         const filesWithFileClassName = this.instance.plugin.app.vault.getMarkdownFiles().filter(file => {
@@ -63,9 +58,7 @@ class FileClassManager {
 }
 
 class FileClass {
-    constructor(plugin: MetadataMenu, name: string) {
-        this.plugin = plugin;
-        this.name = name;
+    constructor(public plugin: MetadataMenu, public name: string) {
         this.objects = new FileClassManager(this);
         this.attributes = [];
     }

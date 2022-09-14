@@ -8,12 +8,6 @@ import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldManager as FM, FieldType } from "src/types/fieldTypes";
 import Field from "./Field";
 
-
-export interface FieldManager {
-    field: Field;
-    plugin: MetadataMenu
-}
-
 export const enum SettingLocation {
     "PluginSettings",
     "FileClassAttributeSettings"
@@ -33,14 +27,12 @@ export abstract class FieldManager {
             attr?: Record<string, string>,
             options?: Record<string, string>
         }
-    ): Promise<void>
+    ): void
     abstract getOptionsStr(): string;
     abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void
 
-    constructor(plugin: MetadataMenu, field: Field, type: FieldType) {
+    constructor(public plugin: MetadataMenu, public field: Field, public type: FieldType) {
         if (field.type !== type) throw Error(`This field is not of type ${type}`)
-        this.field = field
-        this.plugin = plugin
     }
 
     static buildMarkDownLink(plugin: MetadataMenu, file: TFile, path: string): string {
@@ -56,7 +48,7 @@ export abstract class FieldManager {
         return ""
     }
 
-    validateName(textInput: TextComponent, insertAfter: Element): boolean {
+    public validateName(textInput: TextComponent, insertAfter: Element): boolean {
         let error = false;
         if (/^[#>-]/.test(this.field.name)) {
             FieldSettingsModal.setValidationError(
@@ -75,7 +67,7 @@ export abstract class FieldManager {
         return !error
     }
 
-    async validateValue(value: string): Promise<boolean> {
+    public validateValue(value: string): boolean {
         return true;
     }
 

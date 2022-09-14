@@ -6,18 +6,17 @@ import FileClassQuerySetting from "./FileClassQuerySetting";
 export default class FileClassQuerySettingsModal extends Modal {
     private saved: boolean = false;
     private fileClassQuery: FileClassQuery;
-    private plugin: MetadataMenu;
     private initialFileClassQuery: FileClassQuery;
-    private parentSetting?: FileClassQuerySetting;
     private new: boolean = true;
-    private parentSettingContainer: HTMLElement;
 
-    constructor(plugin: MetadataMenu, parentSettingContainer: HTMLElement, parentSetting?: FileClassQuerySetting, fileClassQuery?: FileClassQuery) {
+    constructor(
+        private plugin: MetadataMenu,
+        private parentSettingContainer: HTMLElement,
+        private parentSetting?: FileClassQuerySetting,
+        fileClassQuery?: FileClassQuery
+    ) {
         super(plugin.app);
-        this.plugin = plugin;
-        this.parentSetting = parentSetting;
         this.initialFileClassQuery = new FileClassQuery(this.plugin);
-        this.parentSettingContainer = parentSettingContainer;
         if (fileClassQuery) {
             this.new = false;
             this.fileClassQuery = fileClassQuery;

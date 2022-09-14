@@ -18,13 +18,13 @@ export class FieldInfo {
     protected valuesListNotePath?: string = undefined;
     public unique: boolean = true
 
-    public async setInfos(
+    public setInfos(
         plugin: MetadataMenu,
         fieldName: string,
         value: string,
         fileClass?: FileClass,
         matchingFileClassQuery?: string | undefined
-    ): Promise<void> {
+    ): void {
         this.value = value;
         this.ignoreInMenu = plugin.settings.globallyIgnoredFields.includes(fieldName);
         if (fileClass) {
@@ -33,7 +33,7 @@ export class FieldInfo {
                 const field = getField(plugin, fieldName, fileClass);
                 if (field) {
                     const fieldManager = new FieldManager[field.type](plugin, field);
-                    this.isValid = await fieldManager.validateValue(value)
+                    this.isValid = fieldManager.validateValue(value)
                     const attribute = fileClass.attributes.filter(a => a.name === fieldName)[0];
                     this.fileClass = attribute.origin;
                     this.fileClassQuery = matchingFileClassQuery;
@@ -45,7 +45,7 @@ export class FieldInfo {
             const field = getField(plugin, fieldName);
             if (field) {
                 const fieldManager = new FieldManager[field.type](plugin, field);
-                this.isValid = await fieldManager.validateValue(value)
+                this.isValid = fieldManager.validateValue(value)
                 this.type = field.type;
                 this.options = field.options;
                 this.valuesListNotePath = field.valuesListNotePath;
@@ -55,7 +55,7 @@ export class FieldInfo {
     }
 }
 
-export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | string): Promise<Record<string, FieldInfo>> {
+export function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | string): Record<string, FieldInfo> {
     /*
     returns all fields with source, type, options, isValid, ignored
     */

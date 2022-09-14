@@ -2,7 +2,6 @@ import MetadataMenu from "main";
 import { Menu, setIcon, TextComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import SelectModal from "src/optionModals/fields/SelectModal";
-import FieldSetting from "src/settings/FieldSetting";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
@@ -16,7 +15,7 @@ export default class SelectField extends AbstractListBasedField {
         super(plugin, field, FieldType.Select)
     }
 
-    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const modal = new SelectModal(this.plugin, file, value, this.field);
         modal.titleEl.setText("Select value");
         if (SelectField.isMenu(location)) {
@@ -36,19 +35,19 @@ export default class SelectField extends AbstractListBasedField {
         };
     };
 
-    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
         const fieldModal = new SelectModal(this.plugin, file, value || "", this.field, lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }
 
 
-    async createDvField(
+    public createDvField(
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
-    ): Promise<void> {
+    ): void {
         const valueContainer = document.createElement("div");;
         const valueLabel = dv.el("span", p[this.field.name] || "");
         valueContainer.appendChild(valueLabel);
@@ -68,8 +67,8 @@ export default class SelectField extends AbstractListBasedField {
         selectContainer.appendChild(dismissBtn);
         const nullOption = new Option("--select--", undefined);
         select.add(nullOption);
-        const listNoteValues = await FieldSetting.getValuesListFromNote(this.plugin, this.field.valuesListNotePath)
-        if (listNoteValues.length) {
+        const listNoteValues = this.plugin.fieldIndex.valuesListNotePathValues.get(this.field.valuesListNotePath)
+        if (listNoteValues?.length) {
             listNoteValues.forEach(o => {
                 const option = new Option(o, o);
                 if (p[this.field.name] === o ||

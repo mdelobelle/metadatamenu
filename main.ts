@@ -183,7 +183,7 @@ export default class MetadataMenu extends Plugin {
 		this.settings.presetFields = this.initialProperties;
 		this.settings.fileClassQueries = this.initialFileClassQueries;
 		await this.saveData(this.settings);
-		this.fieldIndex.fullIndex();
+		await this.fieldIndex.fullIndex();
 	};
 
 	onunload() {

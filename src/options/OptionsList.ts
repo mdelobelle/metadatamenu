@@ -38,7 +38,6 @@ export default class OptionsList {
 		private includedFields?: string[]
 	) {
 		this.file = file;
-		this.plugin = plugin;
 		this.location = location;
 		this.attributes = {};
 		this.includedFields = includedFields ? [this.plugin.settings.fileClassAlias, ...includedFields] : [this.plugin.settings.fileClassAlias];

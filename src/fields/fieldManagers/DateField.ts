@@ -22,7 +22,7 @@ export default class DateField extends FieldManager {
         super(plugin, field, FieldType.Date)
     }
 
-    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const modal = new DateModal(this.plugin, file, this.field, value);
         modal.titleEl.setText(`Change date for <${name}>`);
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api;
@@ -65,13 +65,13 @@ export default class DateField extends FieldManager {
         };
     }
 
-    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
         const fieldModal = new DateModal(this.plugin, file, this.field, value || "", lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Enter date for ${selectedFieldName}`);
         fieldModal.open();
     }
 
-    createDateContainer(parentContainer: HTMLDivElement): void {
+    private createDateContainer(parentContainer: HTMLDivElement): void {
         if (!this.field.options.dateFormat) this.field.options.dateFormat = this.defaultDateFormat
         if (!this.field.options.defaultInsertAsLink) this.field.options.defaultInsertAsLink = "false"
         const dateFormatContainer = parentContainer.createDiv();
@@ -135,13 +135,13 @@ export default class DateField extends FieldManager {
 
     }
 
-    createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
+    public createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
         this.dateValidatorField = parentContainer.createDiv({ cls: "metadata-menu-number-options" });
         this.createDateContainer(this.dateValidatorField);
         this.dateValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
     }
 
-    private async shiftDate(dv: any, p: any, file: TFile): Promise<void> {
+    public async shiftDate(dv: any, p: any, file: TFile): Promise<void> {
         const { dateFormat, defaultInsertAsLink, linkPath } = this.field.options
         const fieldManager: DateField = new FM[this.field.type](this.plugin, this.field);
         const [currentShift, nextIntervalField, nextShift]: [string | undefined, Field | undefined, string | undefined] = fieldManager.shiftDuration(file);
@@ -160,12 +160,12 @@ export default class DateField extends FieldManager {
 
     }
 
-    async createDvField(
+    public createDvField(
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }
-    ): Promise<void> {
+    ): void {
         const fieldValue = dv.el('span', p[this.field.name], attrs);
         const dateBtn = document.createElement("button")
         setIcon(dateBtn, FieldIcon[FieldType.Date])
@@ -227,15 +227,15 @@ export default class DateField extends FieldManager {
         fieldContainer.appendChild(spacer);
     }
 
-    getOptionsStr(): string {
+    public getOptionsStr(): string {
         return this.field.options.dateFormat;
     }
 
-    validateOptions(): boolean {
+    public validateOptions(): boolean {
         return true;
     }
 
-    async validateValue(value: string): Promise<boolean> {
+    public validateValue(value: string): boolean {
         if (typeof (value) == 'string') {
             return moment(value.replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last(), this.field.options.dateFormat).isValid()
         } else {
@@ -244,7 +244,7 @@ export default class DateField extends FieldManager {
 
     }
 
-    shiftDuration(file: TFile): [string | undefined, Field | undefined, string | undefined] {
+    public shiftDuration(file: TFile): [string | undefined, Field | undefined, string | undefined] {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
             const interval = this.field.options.dateShiftInterval

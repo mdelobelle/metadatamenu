@@ -1,30 +1,15 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
 
-interface FileClassQuery {
-    id: string;
-    name: string;
-    query: string;
-    fileClassName: string;
-}
-
 class FileClassQuery {
 
-    private plugin: MetadataMenu
-
     constructor(
-        plugin: MetadataMenu,
-        name: string = "",
-        id: string = "",
-        query: string = "",
-        fileClassName: string = ""
-    ) {
-        this.name = name;
-        this.query = query;
-        this.id = id;
-        this.fileClassName = fileClassName;
-        this.plugin = plugin
-    };
+        private plugin: MetadataMenu,
+        public name: string = "",
+        public id: string = "",
+        public query: string = "",
+        public fileClassName: string = ""
+    ) { };
 
     //@ts-ignore
     public getResults(api: DataviewPlugin["api"]): any {

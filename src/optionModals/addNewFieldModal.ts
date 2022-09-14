@@ -4,20 +4,13 @@ import { insertValues } from "src/commands/insertValues";
 
 export default class addNewFieldModal extends Modal {
 
-    private plugin: MetadataMenu;
-    private lineNumber: number;
-    private file: TFile;
-    private inFrontmatter: boolean;
-    private after: boolean;
-
-    constructor(plugin: MetadataMenu, lineNumber: number, file: TFile, inFrontmatter: boolean, after: boolean) {
-        super(plugin.app);
-        this.plugin = plugin;
-        this.lineNumber = lineNumber;
-        this.inFrontmatter = inFrontmatter;
-        this.file = file;
-        this.after = after;
-    }
+    constructor(
+        private plugin: MetadataMenu,
+        private lineNumber: number,
+        private file: TFile,
+        private inFrontmatter: boolean,
+        private after: boolean
+    ) { super(plugin.app) }
 
     onOpen() {
         this.titleEl.setText("Insert new field");

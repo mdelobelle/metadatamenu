@@ -195,14 +195,9 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 if (presetField) {
                     if ([FieldType.Cycle, FieldType.Multi, FieldType.Select].contains(presetField.type)) {
                         if (presetField.valuesListNotePath) {
-                            //override presetValues if there is a valuesList
-                            const valuesFile = this.plugin.app.vault.getAbstractFileByPath(presetField.valuesListNotePath);
-                            if (valuesFile instanceof TFile && valuesFile.extension == "md") {
-                                const values: { value: string }[] = (await this.plugin.app.vault.read(valuesFile)).split("\n")
-                                    .filter(option => this.filterOption(firstValues, lastValue, option))
-                                    .map(_value => Object({ value: _value }))
-                                return values;
-                            };
+                            return this.plugin.fieldIndex.valuesListNotePathValues.get(presetField.valuesListNotePath)!
+                                .filter(option => this.filterOption(firstValues, lastValue, option))
+                                .map(_value => Object({ value: _value }))
                         };
                         const values = Object.entries(presetField.options).map(option => option[1])
                             .filter(option => this.filterOption(firstValues, lastValue, option))

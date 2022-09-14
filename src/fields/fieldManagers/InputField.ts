@@ -60,12 +60,12 @@ export default class InputField extends FieldManager {
         fieldModal.open();
     }
 
-    public async createDvField(
+    public createDvField(
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
-    ): Promise<void> {
+    ): void {
         const fieldValue = dv.el('span', p[this.field.name], attrs)
         const inputContainer = document.createElement("div")
         const input = document.createElement("input")

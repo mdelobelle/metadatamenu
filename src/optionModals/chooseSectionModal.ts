@@ -5,17 +5,13 @@ import { FieldManager as F } from "src/fields/FieldManager";
 
 export default class chooseSectionModal extends Modal {
 
-    private plugin: MetadataMenu;
-    private file: TFile;
-    private fileClass?: FileClass
-    private fieldName?: string
-
-    constructor(plugin: MetadataMenu, file: TFile, fileClass?: FileClass, fieldName?: string) {
+    constructor(
+        private plugin: MetadataMenu,
+        private file: TFile,
+        private fileClass?: FileClass,
+        private fieldName?: string
+    ) {
         super(plugin.app);
-        this.file = file;
-        this.plugin = plugin;
-        this.fileClass = fileClass
-        this.fieldName = fieldName
     };
 
     async onOpen() {

@@ -5,26 +5,18 @@ import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
 
 export default class InputModal extends Modal {
-    private plugin: MetadataMenu;
-    private file: TFile;
-    private value: string;
-    private lineNumber: number;
-    private inFrontmatter: boolean;
-    private after: boolean;
-    private field: Field;
     private templateValues: Record<string, string> = {};
     private renderedValue: TextAreaComponent;
 
-    constructor(plugin: MetadataMenu, file: TFile, field: Field, value: string, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
-        super(plugin.app);
-        this.plugin = plugin;
-        this.file = file;
-        this.field = field;
-        this.value = value;
-        this.lineNumber = lineNumber;
-        this.inFrontmatter = inFrontMatter;
-        this.after = after;
-    };
+    constructor(
+        private plugin: MetadataMenu,
+        private file: TFile,
+        private field: Field,
+        private value: string,
+        private lineNumber: number = -1,
+        private inFrontmatter: boolean = false,
+        private after: boolean = false
+    ) { super(plugin.app); };
 
     onOpen() {
         const inputDiv = this.contentEl.createDiv();

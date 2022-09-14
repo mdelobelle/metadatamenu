@@ -109,12 +109,12 @@ export default class MultiSuggestModal extends SuggestModal<string> {
             }
         })
     }
-    async getSuggestions(query: string): Promise<string[]> {
-        const listNoteValues = await FieldSetting.getValuesListFromNote(this.plugin, this.field.valuesListNotePath)
-        if (listNoteValues.length === 0) {
+    getSuggestions(query: string): string[] {
+        const listNoteValues = this.plugin.fieldIndex.valuesListNotePathValues.get(this.field.valuesListNotePath)
+        if (listNoteValues?.length === 0) {
             return Object.values(this.field.options).filter(o => o.toLowerCase().includes(query.toLowerCase()))
         } else {
-            return listNoteValues.filter(o => o.toLowerCase().includes(query.toLowerCase()))
+            return listNoteValues!.filter(o => o.toLowerCase().includes(query.toLowerCase()))
         }
     }
 

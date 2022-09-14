@@ -20,18 +20,14 @@ function isSuggest(location: Menu | "InsertFieldCommand" | FieldCommandSuggestMo
 export default class FileClassOptionsList {
 
     // adds options to context menu or to a dropdown modal trigger with "Field: Options" command in command pallette
+    private path: string;
+    private fileClass: FileClass | undefined;
 
-    //file: TFile;
-    //plugin: MetadataMenu;
-    path: string;
-    //location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal;
-    fileClass: FileClass | undefined;
-
-    constructor(private plugin: MetadataMenu, private file: TFile, private location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal) {
-        this.file = file;
-        this.plugin = plugin;
-        this.location = location;
-        //this.fileClass = FileClass.createFileClass(this.plugin, file.basename)
+    constructor(
+        private plugin: MetadataMenu,
+        private file: TFile,
+        private location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal
+    ) {
         this.fileClass = this.plugin.fieldIndex.fileClassesPath.get(this.file.path)
     };
 

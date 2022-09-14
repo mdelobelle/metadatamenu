@@ -6,21 +6,21 @@ import Field from "src/fields/Field";
 
 export default class BooleanModal extends Modal {
 
-    private plugin: MetadataMenu
-    private file: TFile;
-    private value: boolean;
-    private lineNumber: number;
-    private inFrontmatter: boolean;
-    private after: boolean;
-    private field: Field;
-
-    constructor(plugin: MetadataMenu, file: TFile, field: Field, value: boolean, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
+    constructor(
+        private plugin: MetadataMenu,
+        private file: TFile,
+        private field: Field,
+        private value: boolean,
+        private lineNumber: number = -1,
+        private inFrontmatter: boolean = false,
+        private after: boolean = false
+    ) {
         super(plugin.app);
         this.plugin = plugin;
         this.file = file;
         this.value = value;
         this.lineNumber = lineNumber;
-        this.inFrontmatter = inFrontMatter;
+        this.inFrontmatter = inFrontmatter;
         this.after = after;
         this.field = field
     };

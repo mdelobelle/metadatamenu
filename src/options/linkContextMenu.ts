@@ -6,10 +6,8 @@ import { frontMatterLineField, getLineFields } from "src/utils/parser";
 import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
 
 export default class linkContextMenu {
-	private plugin: MetadataMenu;
 
-	constructor(plugin: MetadataMenu) {
-		this.plugin = plugin;
+	constructor(private plugin: MetadataMenu) {
 		this.createContextMenu();
 	};
 

@@ -15,7 +15,7 @@ export default class MultiField extends AbstractListBasedField {
         super(plugin, field, FieldType.Multi)
     }
 
-    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const modal = new MultiSelectModal(this.plugin, file, this.field, value);
         modal.titleEl.setText("Select values");
         if (MultiField.isMenu(location)) {
@@ -35,18 +35,18 @@ export default class MultiField extends AbstractListBasedField {
         };
     };
 
-    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
         const fieldModal = new MultiSelectModal(this.plugin, file, this.field, value || "", lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Select options for ${selectedFieldName}`);
         fieldModal.open();
     }
 
-    async createDvField(
+    public createDvField(
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
-    ): Promise<void> {
+    ): void {
         /* 
         this control displays by default the list of value
         when mouseover: we display a "+" button at the beggining of the field to add a new value and a "x" button after the value hovered to remove it from list

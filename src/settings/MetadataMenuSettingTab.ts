@@ -11,13 +11,11 @@ import FileClassQuerySetting from "./FileClassQuerySetting";
 
 class SettingsMigrationConfirmModal extends Modal {
 
-	private plugin: MetadataMenu;
-	private tab: MetadataMenuSettingTab;
-
-	constructor(plugin: MetadataMenu, tab: MetadataMenuSettingTab) {
+	constructor(
+		private plugin: MetadataMenu,
+		private tab: MetadataMenuSettingTab
+	) {
 		super(plugin.app);
-		this.plugin = plugin;
-		this.tab = tab;
 	};
 
 	onOpen(): void {

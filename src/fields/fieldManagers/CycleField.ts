@@ -16,7 +16,7 @@ export default class CycleField extends AbstractListBasedField {
         super(plugin, field, FieldType.Cycle)
     }
 
-    nextOption(value: string): string {
+    public nextOption(value: string): string {
         const options = this.field.options;
         const keys = Object.keys(options);
         const keyForValue = keys.find(key => options[key] === value);
@@ -30,7 +30,7 @@ export default class CycleField extends AbstractListBasedField {
         return nextOption
     }
 
-    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const options = this.field.options;
 
         if (CycleField.isMenu(location)) {
@@ -51,18 +51,18 @@ export default class CycleField extends AbstractListBasedField {
         };
     };
 
-    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
         const fieldModal = new SelectModal(this.plugin, file, value || "", this.field, lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }
 
-    async createDvField(
+    public createDvField(
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
-    ): Promise<void> {
+    ): void {
         const options = this.field.options;
         const keys = Object.keys(options);
         const keyForValue = keys.find(key => options[key] === p[this.field.name]);
@@ -94,6 +94,7 @@ export default class CycleField extends AbstractListBasedField {
                 spacer.show();
             }
         }
+
 
         /* button on click : go to next version*/
         button.onclick = (e) => {

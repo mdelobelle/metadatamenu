@@ -3,6 +3,7 @@ import MetadataMenu from "main"
 import Field from "./Field";
 import { FileClass } from "src/fileClass/fileClass";
 import FileClassQuery from "src/fileClass/FileClassQuery";
+import FieldSetting from "src/settings/FieldSetting";
 
 
 export default class FieldIndex extends Component {
@@ -15,10 +16,10 @@ export default class FieldIndex extends Component {
     public filesFileClass: Map<string, FileClass>
     public fileClassesPath: Map<string, FileClass>
     public fileClassesName: Map<string, FileClass>
+    public valuesListNotePathValues: Map<string, string[]>
 
     constructor(private plugin: MetadataMenu, public cacheVersion: string, public onChange: () => void) {
         super()
-        this.plugin = plugin;
         this.fileClassesFields = new Map();
         this.fieldsFromGlobalFileClass = [];
         this.filesFieldsFromFileClassQueries = new Map();
@@ -27,6 +28,7 @@ export default class FieldIndex extends Component {
         this.filesFileClass = new Map();
         this.fileClassesPath = new Map();
         this.fileClassesName = new Map();
+        this.valuesListNotePathValues = new Map();
     }
 
     async onload(): Promise<void> {
@@ -67,14 +69,23 @@ export default class FieldIndex extends Component {
         )
     }
 
-    fullIndex(): void {
+    async fullIndex(): Promise<void> {
         const indexStart = Date.now()
         this.getGlobalFileClass();
         this.getFileClasses();
         this.resolveFileClassQueries();
         this.getFilesFieldsFromFileClass();
         this.getFilesFields();
+        await this.getValuesListNotePathValues();
         console.log(`Fields indexed in ${(Date.now() - indexStart) / 1000.0}s`)
+    }
+
+    async getValuesListNotePathValues(): Promise<void> {
+        this.plugin.settings.presetFields.forEach(async setting => {
+            if (setting.valuesListNotePath) {
+                this.valuesListNotePathValues.set(setting.valuesListNotePath, await FieldSetting.getValuesListFromNote(this.plugin, setting.valuesListNotePath))
+            }
+        })
     }
 
     getGlobalFileClass(): void {
@@ -136,14 +147,14 @@ export default class FieldIndex extends Component {
             .filter(f => !f.path.includes(this.plugin.settings.classFilesPath))
             .forEach(f => {
                 const fileFieldsFromInnerFileClasses = this.filesFieldsFromInnerFileClasses.get(f.path)
-                if (fileFieldsFromInnerFileClasses) {
+                if (fileFieldsFromInnerFileClasses?.length) {
                     this.filesFields.set(f.path, fileFieldsFromInnerFileClasses);
                     return
                 } else {
                     const fileClassFromQuery = this.filesFieldsFromFileClassQueries.get(f.path);
                     if (fileClassFromQuery) {
                         this.filesFields.set(f.path, fileClassFromQuery)
-                    } else if (this.fieldsFromGlobalFileClass) {
+                    } else if (this.fieldsFromGlobalFileClass.length) {
                         this.filesFields.set(f.path, this.fieldsFromGlobalFileClass)
                     } else {
                         this.filesFields.set(f.path, this.plugin.settings.presetFields)
