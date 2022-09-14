@@ -150,8 +150,17 @@ export default class MultiFileField extends FieldManager {
         return true;
     }
 
-    async validateValue(value: string): Promise<boolean> {
-        const basename = value.trim().replace(/^\[\[/g, "").replace(/\]\]$/g, "");
-        return !!this.getFiles().map(f => f.basename).find(item => item === basename);
+    async validateValue(value: string | { path: string } | { path: string }[]): Promise<boolean> {
+        let isValid: boolean = true
+        if (Array.isArray(value)) {
+            value.forEach((link: { path: string }) => {
+                const basename = link.path.trim().replace(/^\[\[/g, "").replace(/\]\]$/g, "");
+                if (!this.getFiles().map(f => f.basename).find(item => item === basename)) isValid = isValid && false
+            })
+        } else {
+            const basename = (value as { path: string }).path.trim().replace(/^\[\[/g, "").replace(/\]\]$/g, "");
+            if (!this.getFiles().map(f => f.basename).find(item => item === basename)) isValid = isValid && false
+        }
+        return isValid
     }
 }

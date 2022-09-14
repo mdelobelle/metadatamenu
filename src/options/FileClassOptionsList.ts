@@ -21,22 +21,23 @@ export default class FileClassOptionsList {
 
     // adds options to context menu or to a dropdown modal trigger with "Field: Options" command in command pallette
 
-    file: TFile;
-    plugin: MetadataMenu;
+    //file: TFile;
+    //plugin: MetadataMenu;
     path: string;
-    location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal;
-    fileClass: FileClass;
+    //location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal;
+    fileClass: FileClass | undefined;
 
-    constructor(plugin: MetadataMenu, file: TFile, location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal) {
+    constructor(private plugin: MetadataMenu, private file: TFile, private location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal) {
         this.file = file;
         this.plugin = plugin;
         this.location = location;
-        this.fileClass = FileClass.createFileClass(this.plugin, file.basename)
+        //this.fileClass = FileClass.createFileClass(this.plugin, file.basename)
+        this.fileClass = this.plugin.fieldIndex.fileClassesPath.get(this.file.path)
     };
 
     public createExtraOptionList(openAfterCreate: boolean = true): void {
         if (isMenu(this.location)) { this.location.addSeparator(); };
-        if (isInsertFieldCommand(this.location)) {
+        if (isInsertFieldCommand(this.location) && this.fileClass) {
             const modal = new FileClassAttributeModal(this.plugin, this.fileClass);
             modal.open();
         } else if (isSuggest(this.location)) {
@@ -49,8 +50,8 @@ export default class FileClassOptionsList {
     }
 
     private buildFieldOptions(): void {
-        this.fileClass.attributes.forEach((attr: FileClassAttribute) => {
-            const modal = new FileClassAttributeModal(this.plugin, this.fileClass, attr)
+        this.fileClass?.attributes.forEach((attr: FileClassAttribute) => {
+            const modal = new FileClassAttributeModal(this.plugin, this.fileClass!, attr)
             if (isMenu(this.location)) {
                 this.location.addItem((item) => {
                     item.setTitle(`${attr.name}`)
@@ -69,17 +70,17 @@ export default class FileClassOptionsList {
                 });
             }
         });
-        if (isMenu(this.location)) {
+        if (isMenu(this.location) && this.fileClass) {
             this.location.addItem((item) => {
                 item.setTitle("Add new fileClass attribute")
                 item.setIcon("plus-circle")
                 item.onClick(() => {
-                    const modal = new FileClassAttributeModal(this.plugin, this.fileClass);
+                    const modal = new FileClassAttributeModal(this.plugin, this.fileClass!);
                     modal.open();
                 })
                 item.setSection("metadata-menu-fileclass")
             })
-        } else if (isSuggest(this.location)) {
+        } else if (isSuggest(this.location) && this.fileClass) {
             const modal = new FileClassAttributeModal(this.plugin, this.fileClass);
             this.location.options.push({
                 id: "add_fileClass_attribute",

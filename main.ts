@@ -1,5 +1,6 @@
 import { FileView, MarkdownView, Plugin, TFile, View } from 'obsidian';
 import Field from 'src/fields/Field';
+import FieldIndex from 'src/fields/FieldIndex';
 import { FileClass } from 'src/fileClass/fileClass';
 import { FileClassAttributeModal } from 'src/fileClass/FileClassAttributeModal';
 import FileClassQuery from 'src/fileClass/FileClassQuery';
@@ -21,6 +22,7 @@ export default class MetadataMenu extends Plugin {
 	public initialProperties: Array<Field> = [];
 	public initialFileClassQueries: Array<FileClassQuery> = [];
 	public settingTab: MetadataMenuSettingTab;
+	public fieldIndex: FieldIndex;
 
 	async onload(): Promise<void> {
 		console.log('Metadata Menu loaded');
@@ -28,6 +30,8 @@ export default class MetadataMenu extends Plugin {
 		if (this.settings.settingsVersion === undefined) {
 			await migrateSettingsV1toV2(this)
 		}
+
+		this.fieldIndex = this.addChild(new FieldIndex(this, "1", () => { }))
 
 		this.settings.presetFields.forEach(prop => {
 			const property = new Field();
@@ -179,6 +183,7 @@ export default class MetadataMenu extends Plugin {
 		this.settings.presetFields = this.initialProperties;
 		this.settings.fileClassQueries = this.initialFileClassQueries;
 		await this.saveData(this.settings);
+		this.fieldIndex.fullIndex();
 	};
 
 	onunload() {

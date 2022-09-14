@@ -7,18 +7,24 @@ import { genuineKeys } from "src/utils/dataviewUtils";
 import { getField } from "./getField";
 
 export class FieldInfo {
-    type?: FieldType = undefined;
-    sourceType?: "fileClass" | "settings" = undefined;
-    fileClass?: string = undefined;
-    fileClassQuery?: string = undefined;
-    options?: Record<string, string> | string[] = undefined;
-    isValid?: boolean = undefined;
-    ignoreInMenu: boolean
-    value: string = "";
-    valuesListNotePath?: string = undefined;
-    unique: boolean = true
+    protected type?: FieldType = undefined;
+    protected sourceType?: "fileClass" | "settings" = undefined;
+    protected fileClass?: string = undefined;
+    protected fileClassQuery?: string = undefined;
+    protected options?: Record<string, string> | string[] = undefined;
+    protected isValid?: boolean = undefined;
+    protected ignoreInMenu: boolean
+    protected value: string = "";
+    protected valuesListNotePath?: string = undefined;
+    public unique: boolean = true
 
-    async setInfos(plugin: MetadataMenu, fieldName: string, value: string, fileClass?: FileClass, matchingFileClassQuery?: string | undefined): Promise<void> {
+    public async setInfos(
+        plugin: MetadataMenu,
+        fieldName: string,
+        value: string,
+        fileClass?: FileClass,
+        matchingFileClassQuery?: string | undefined
+    ): Promise<void> {
         this.value = value;
         this.ignoreInMenu = plugin.settings.globallyIgnoredFields.includes(fieldName);
         if (fileClass) {

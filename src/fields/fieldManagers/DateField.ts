@@ -10,6 +10,7 @@ import { FileClass } from "src/fileClass/fileClass";
 import CycleField from "./CycleField";
 import { FieldManager as FM } from "src/types/fieldTypes";
 import { replaceValues } from "src/commands/replaceValues";
+import { Link } from "src/types/dataviewTypes";
 
 export default class DateField extends FieldManager {
 
@@ -235,7 +236,12 @@ export default class DateField extends FieldManager {
     }
 
     async validateValue(value: string): Promise<boolean> {
-        return moment(value.replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last(), this.field.options.dateFormat).isValid()
+        if (typeof (value) == 'string') {
+            return moment(value.replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last(), this.field.options.dateFormat).isValid()
+        } else {
+            return moment((value as { path: string }).path.replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last(), this.field.options.dateFormat).isValid()
+        }
+
     }
 
     shiftDuration(file: TFile): [string | undefined, Field | undefined, string | undefined] {

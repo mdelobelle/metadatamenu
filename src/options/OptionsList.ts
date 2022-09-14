@@ -1,11 +1,9 @@
 import MetadataMenu from "main";
 import { MarkdownView, Menu, TFile } from "obsidian";
-import { getField } from "src/commands/getField";
 import Field from "src/fields/Field";
 import { FieldManager as F } from "src/fields/FieldManager";
 import Managers from "src/fields/fieldManagers/Managers";
 import { FileClass } from "src/fileClass/fileClass";
-import FileClassQuery from "src/fileClass/FileClassQuery";
 import InputModal from "src/optionModals/fields/InputModal";
 import { FieldIcon, FieldManager, FieldType } from "src/types/fieldTypes";
 import { genuineKeys } from "src/utils/dataviewUtils";
@@ -28,93 +26,28 @@ function isSuggest(location: Menu | "InsertFieldCommand" | FieldCommandSuggestMo
 export default class OptionsList {
 
 	// adds options to context menu or to a dropdown modal trigger with "Field: Options" command in command pallette
-
-	file: TFile;
-	plugin: MetadataMenu;
 	path: string;
-	location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal | "ManageAtCursorCommand";
-	fileClass: FileClass;
+	fileClass: FileClass | undefined;
 	attributes: Record<string, string>;
-	fileClassForFields: boolean;
-	fileClassFields: string[];
-	includedFields: string[];
+	fieldsFromIndex: Record<string, Field> = {};
 
-	constructor(plugin: MetadataMenu, file: TFile, location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal | "ManageAtCursorCommand", includedFields?: string[]) {
+	constructor(
+		private plugin: MetadataMenu,
+		private file: TFile,
+		private location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal | "ManageAtCursorCommand",
+		private includedFields?: string[]
+	) {
 		this.file = file;
 		this.plugin = plugin;
 		this.location = location;
 		this.attributes = {};
-		this.fileClassFields = [];
-		this.fileClassForFields = false;
 		this.includedFields = includedFields ? [this.plugin.settings.fileClassAlias, ...includedFields] : [this.plugin.settings.fileClassAlias];
+		this.fileClass = this.plugin.fieldIndex.filesFileClass.get(this.file.path)
+		this.getFieldsFromIndex();
+		this.getFieldsValues();
 	};
 
-	private addAttribute(key: string, value: any): void {
-		const includedFields = this.includedFields.filter(f => f !== this.plugin.settings.fileClassAlias)
-		if (includedFields.length > 0) {
-			if (
-				this.includedFields.includes(key)
-				&&
-				!this.plugin.settings.globallyIgnoredFields.includes(key)
-			) {
-				this.attributes[key] = value
-			}
-		} else if (!this.plugin.settings.globallyIgnoredFields.includes(key)) {
-			this.attributes[key] = value
-		}
-	}
-
-	private getGlobalFileClassForFields(): void {
-		const fileClass = this.plugin.settings.globalFileClass as string;
-		try {
-			const _fileClass = FileClass.createFileClass(this.plugin, fileClass);
-			this.fileClass = _fileClass;
-			this.fileClassFields = _fileClass.attributes.map(attr => attr.name);
-			this.fileClassForFields = true;
-		} catch (error) {
-			//do nothing
-		}
-	}
-
-	private getQueryFileClassForFields(): void {
-		const fileClassQueries = this.plugin.settings.fileClassQueries.map(fcq => fcq)
-		while (!this.fileClassForFields && fileClassQueries.length > 0) {
-			const fileClassQuery = new FileClassQuery(this.plugin);
-			Object.assign(fileClassQuery, fileClassQueries.pop() as FileClassQuery)
-			if (fileClassQuery.matchFile(this.file)) {
-				this.fileClassForFields = true;
-				this.fileClass = FileClass.createFileClass(this.plugin, fileClassQuery.fileClassName)
-				this.fileClassFields = this.fileClass.attributes.map(attr => attr.name)
-			}
-		}
-	}
-
-	private fetchFrontmatterFields(): void {
-		const frontmatter = this.plugin.app.metadataCache.getCache(this.file.path)?.frontmatter;
-		if (frontmatter) {
-			const { position, ...attributes } = frontmatter;
-			Object.entries(attributes).forEach(attr => this.addAttribute(...attr));
-			const fileClassAlias = this.plugin.settings.fileClassAlias;
-			if (Object.keys(this.attributes).includes(fileClassAlias)) {
-				const fileClass = this.attributes[fileClassAlias];
-				try {
-					const _fileClass = FileClass.createFileClass(this.plugin, fileClass);
-					this.fileClass = _fileClass;
-					this.fileClassFields = _fileClass.attributes.map(attr => attr.name);
-					this.fileClassForFields = true;
-					Object.keys(attributes).forEach(key => {
-						if (!this.fileClassFields.includes(key) && key != fileClassAlias) {
-							delete this.attributes[key];
-						};
-					});
-				} catch (error) {
-					//do nothing
-				}
-			}
-		}
-	}
-
-	private fetchInlineFields(): void {
+	private getFieldsValues(): void {
 		const dataview = this.plugin.app.plugins.plugins["dataview"]
 		//@ts-ignore
 		if (dataview) {
@@ -127,13 +60,29 @@ export default class OptionsList {
 		}
 	}
 
+	private addAttribute(key: string, value: any): void {
+		const includedFields = this.includedFields!.filter(f => f !== this.plugin.settings.fileClassAlias)
+		if (includedFields.length > 0) {
+			if (
+				this.includedFields!.includes(key)
+				&&
+				!this.plugin.settings.globallyIgnoredFields.includes(key)
+			) {
+				this.attributes[key] = value
+			}
+		} else if (!this.plugin.settings.globallyIgnoredFields.includes(key)) {
+			this.attributes[key] = value
+		}
+	}
+
+	private getFieldsFromIndex(): void {
+		const index = this.plugin.fieldIndex
+		const fields = index.filesFields.get(this.file.path)
+		fields?.forEach(field => this.fieldsFromIndex[field.name] = field)
+	}
+
 	public createAndOpenFieldModal(fieldName: string): void {
-		this.getGlobalFileClassForFields();
-		this.getQueryFileClassForFields();
-		this.fetchFrontmatterFields();
-		this.fetchInlineFields();
-		const value = this.attributes[fieldName];
-		const field = getField(this.plugin, fieldName, this.fileClass);
+		const field = this.fieldsFromIndex[fieldName]
 		if (field) {
 			const fieldManager = new FieldManager[field.type](this.plugin, field);
 			(fieldManager as F).createAndOpenFieldModal(this.file, field.name, this.attributes[field.name])
@@ -141,10 +90,6 @@ export default class OptionsList {
 	}
 
 	public createExtraOptionList(openAfterCreate: boolean = true): void {
-		this.getGlobalFileClassForFields();
-		this.getQueryFileClassForFields();
-		this.fetchFrontmatterFields();
-		this.fetchInlineFields();
 		if (isMenu(this.location)) { this.location.addSeparator(); };
 		if (isInsertFieldCommand(this.location)) {
 			this.addFieldAtCurrentPositionOption();
@@ -200,7 +145,9 @@ export default class OptionsList {
 	private buildFieldOptions(): void {
 		Object.keys(this.attributes).forEach((key: string) => {
 			const value = this.attributes[key];
-			const field = getField(this.plugin, key, this.fileClass);
+			//const field = getField(this.plugin, key, this.fileClass);
+			const field = this.fieldsFromIndex[key]
+
 			if (field) {
 				const fieldManager = new FieldManager[field.type](this.plugin, field);
 				fieldManager.addFieldOption(key, value, this.file, this.location);
@@ -214,6 +161,7 @@ export default class OptionsList {
 					fieldManager.addFieldOption(key, value, this.file, this.location)
 				}
 			}
+
 		});
 	}
 
