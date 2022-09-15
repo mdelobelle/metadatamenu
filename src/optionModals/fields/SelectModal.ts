@@ -24,7 +24,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
     getSuggestions(query: string): string[] {
         const listNoteValues = this.plugin.fieldIndex.valuesListNotePathValues.get(this.field.valuesListNotePath)
         let options: string[] = []
-        if (listNoteValues?.length === 0) {
+        if (listNoteValues?.length === 0 || !listNoteValues) {
             options = Object.values(this.field.options).filter(o => o.toLowerCase().includes(query.toLowerCase()))
         } else {
             options = listNoteValues!.filter(o => o.toLowerCase().includes(query.toLowerCase()))
