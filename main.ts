@@ -40,7 +40,7 @@ export default class MetadataMenu extends Plugin {
 		});
 
 		this.settings.fileClassQueries.forEach(query => {
-			const fileClassQuery = new FileClassQuery(this);
+			const fileClassQuery = new FileClassQuery();
 			Object.assign(fileClassQuery, query);
 			this.initialFileClassQueries.push(fileClassQuery);
 		})
@@ -178,6 +178,7 @@ export default class MetadataMenu extends Plugin {
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	};
+
 
 	async saveSettings() {
 		this.settings.presetFields = this.initialProperties;

@@ -4,7 +4,6 @@ import { TFile } from "obsidian";
 class FileClassQuery {
 
     constructor(
-        private plugin: MetadataMenu,
         public name: string = "",
         public id: string = "",
         public query: string = "",
@@ -22,7 +21,7 @@ class FileClassQuery {
 
     public matchFile(file: TFile): boolean {
 
-        const dataview = this.plugin.app.plugins.plugins.dataview
+        const dataview = app.plugins.plugins.dataview
         //@ts-ignore
         if (this.query && dataview?.settings.enableDataviewJs && dataview?.settings.enableInlineDataviewJs) {
             try {

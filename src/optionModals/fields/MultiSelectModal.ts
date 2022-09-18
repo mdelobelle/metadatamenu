@@ -29,7 +29,8 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         };
     };
 
-    onOpen() {
+    async onOpen() {
+        super.onOpen()
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter" && e.shiftKey) {
                 await this.replaceValues();
@@ -62,9 +63,7 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         })
         clearButton.buttonEl.addClass("metadata-menu-value-suggester-button")
         clearButton.buttonEl.addClass("danger")
-
-        this.modalEl.insertBefore(buttonContainer, this.modalEl.childNodes[0])
-        super.onOpen()
+        this.modalEl.appendChild(buttonContainer)
     }
 
     async replaceValues() {
@@ -126,6 +125,8 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         }
         this.inputEl.focus()
     }
+
+
 
     selectSuggestion(value: string, evt: MouseEvent | KeyboardEvent): void {
         if (this.selectedOptions.includes(value)) {

@@ -1,0 +1,76 @@
+{
+  "presetFields": [
+    {
+      "name": "Status",
+      "options": {},
+      "id": "6",
+      "valuesListNotePath": "⚙️/🗂 lists/Status.md",
+      "type": "Select"
+    },
+    {
+      "name": "Code",
+      "options": {},
+      "id": "8",
+      "valuesListNotePath": "⚙️/🗂 lists/Coding.md",
+      "type": "Select"
+    },
+    {
+      "name": "1o1 meeting",
+      "options": {
+        "template": "meeting with {{name}} about {{topic}} of duration {{duration:[\"30min\", \"1h\", \"2h\"]}}"
+      },
+      "id": "9",
+      "valuesListNotePath": "",
+      "type": "Input"
+    },
+    {
+      "name": "next session",
+      "options": {
+        "dateFormat": "YYYY-MM-DD",
+        "defaultInsertAsLink": "false",
+        "nextShiftIntervalField": "next interval"
+      },
+      "id": "10",
+      "valuesListNotePath": "",
+      "type": "Date"
+    },
+    {
+      "name": "next interval",
+      "options": {
+        "1": "1 day",
+        "2": "2 days",
+        "3": "5 days",
+        "4": "1 week",
+        "5": "2 weeks"
+      },
+      "id": "11",
+      "valuesListNotePath": "",
+      "type": "Cycle"
+    }
+  ],
+  "fileClassQueries": [
+    {
+      "name": "dailyLog",
+      "query": "dv.pages('\"📆/📝\"')",
+      "id": "1",
+      "fileClassName": "DailyLog"
+    },
+    {
+      "name": "dailyNote",
+      "query": "dv.pages('\"📆/📅\"')",
+      "id": "2",
+      "fileClassName": "Daily"
+    }
+  ],
+  "displayFieldsInContextMenu": true,
+  "globallyIgnoredFields": [
+    ""
+  ],
+  "classFilesPath": "⚙️/fileClass/",
+  "isAutosuggestEnabled": true,
+  "fileClassAlias": "category",
+  "settingsVersion": 2,
+  "globalFileClass": "",
+  "firstDayOfWeek": 1,
+  "getFromInlineField": false
+}

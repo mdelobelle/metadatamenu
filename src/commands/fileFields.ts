@@ -84,7 +84,7 @@ export function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | string)
     let matchingFileClassQuery: string | undefined = undefined;
     if (fileClassQueries.length > 0) {
         while (!matchingFileClassQuery && fileClassQueries.length > 0) {
-            const fileClassQuery = new FileClassQuery(plugin);
+            const fileClassQuery = new FileClassQuery();
             Object.assign(fileClassQuery, fileClassQueries.pop() as FileClassQuery)
             if (fileClassQuery.matchFile(file)) {
                 fileClass = FileClass.createFileClass(plugin, fileClassQuery.fileClassName);

@@ -278,7 +278,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		/* Managed properties that currently have preset options */
 		this.plugin.initialFileClassQueries
 			.forEach(query => {
-				const fileClassQuery = new FileClassQuery(this.plugin);
+				const fileClassQuery = new FileClassQuery();
 				Object.assign(fileClassQuery, query);
 				new FileClassQuerySetting(queryFileClassSettings, fileClassQuery, this.plugin);
 			});

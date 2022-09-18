@@ -13,7 +13,7 @@ function getQueryFileClassForFields(plugin: MetadataMenu, file: TFile): FileClas
     let fileClass: FileClass | undefined;
     const fileClassQueries = plugin.settings.fileClassQueries.map(fcq => fcq)
     while (!fileClassForFields && fileClassQueries.length > 0) {
-        const fileClassQuery = new FileClassQuery(plugin);
+        const fileClassQuery = new FileClassQuery();
         Object.assign(fileClassQuery, fileClassQueries.pop() as FileClassQuery)
         if (fileClassQuery.matchFile(file)) {
             fileClassForFields = true;

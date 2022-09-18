@@ -162,7 +162,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             //test if note matches a fileclass query
             const fileClassQueries = this.plugin.settings.fileClassQueries.map(fcq => fcq)
             while (!this.fileClassForFields && fileClassQueries.length > 0) {
-                const fileClassQuery = new FileClassQuery(this.plugin);
+                const fileClassQuery = new FileClassQuery();
                 Object.assign(fileClassQuery, fileClassQueries.pop() as FileClassQuery)
                 if (fileClassQuery.matchFile(context.file)) {
                     this.fileClassForFields = true;

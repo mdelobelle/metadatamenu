@@ -17,6 +17,7 @@ export default class FieldIndex extends Component {
     public fileClassesPath: Map<string, FileClass>
     public fileClassesName: Map<string, FileClass>
     public valuesListNotePathValues: Map<string, string[]>
+    public filesFileClassName: Map<string, string | undefined>
 
     constructor(private plugin: MetadataMenu, public cacheVersion: string, public onChange: () => void) {
         super()
@@ -28,56 +29,31 @@ export default class FieldIndex extends Component {
         this.filesFileClass = new Map();
         this.fileClassesPath = new Map();
         this.fileClassesName = new Map();
+        this.filesFileClassName = new Map();
         this.valuesListNotePathValues = new Map();
     }
 
     async onload(): Promise<void> {
         const dv = this.plugin.app.plugins.plugins.dataview
+
         if (dv?.api.index.initialized) this.fullIndex();
         this.plugin.registerEvent(
             this.plugin.app.metadataCache.on("dataview:index-ready", () => this.fullIndex())
         )
-
         this.plugin.registerEvent(
-            this.plugin.app.metadataCache.on("dataview:metadata-change", (op: any, file: TFile, oldPath: string) => {
-                switch (op) {
-                    case "delete":
-                        if (file.path.startsWith(this.plugin.settings.classFilesPath)) {
-                            this.fullIndex()
-                        } else {
-                            this.filesFields.delete(file.path)
-                        }
-                        break;
-
-                    case "rename":
-                        if (file.path.startsWith(this.plugin.settings.classFilesPath)) {
-                            this.fullIndex()
-                        } else if (file instanceof TFile && file.extension == "md") {
-                            const fields = this.filesFields.get(oldPath) || [];
-                            this.filesFields.set(file.path, fields);
-                            this.filesFields.delete(oldPath)
-                        }
-                        break;
-                    case "update":
-                        this.fullIndex()
-                        break;
-
-                    default:
-                        break;
-                }
+            this.plugin.app.metadataCache.on('resolved', () => {
+                if (this.plugin.app.metadataCache.inProgressTaskCount === 0) this.fullIndex()
             })
         )
     }
 
     async fullIndex(): Promise<void> {
-        const indexStart = Date.now()
         this.getGlobalFileClass();
         this.getFileClasses();
         this.resolveFileClassQueries();
         this.getFilesFieldsFromFileClass();
         this.getFilesFields();
         await this.getValuesListNotePathValues();
-        console.log(`Fields indexed in ${(Date.now() - indexStart) / 1000.0}s`)
     }
 
     async getValuesListNotePathValues(): Promise<void> {
@@ -107,15 +83,14 @@ export default class FieldIndex extends Component {
                 this.fileClassesName.set(fileClass.name, fileClass)
             })
     }
-
     resolveFileClassQueries(): void {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         this.plugin.settings.fileClassQueries.forEach(sfcq => {
-            const fcq = new FileClassQuery(this.plugin, sfcq.name, sfcq.id, sfcq.query, sfcq.fileClassName)
+            const fcq = new FileClassQuery(sfcq.name, sfcq.id, sfcq.query, sfcq.fileClassName)
             fcq.getResults(dvApi).forEach((result: any) => {
                 if (this.fileClassesName.get(fcq.fileClassName)) {
                     this.filesFileClass.set(result.file.path, this.fileClassesName.get(fcq.fileClassName)!);
-
+                    this.filesFileClassName.set(result.file.path, fcq.fileClassName)
                 }
                 const fileFileClassesFieldsFromQuery = this.fileClassesFields.get(fcq.fileClassName)
                 if (fileFileClassesFieldsFromQuery) this.filesFieldsFromFileClassQueries.set(result.file.path, fileFileClassesFieldsFromQuery)
@@ -129,7 +104,10 @@ export default class FieldIndex extends Component {
             .forEach(f => {
                 const fileFileClassName = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.[this.plugin.settings.fileClassAlias]
                 if (fileFileClassName) {
-                    if (this.fileClassesName.get(fileFileClassName)) this.filesFileClass.set(f.path, this.fileClassesName.get(fileFileClassName)!)
+                    if (this.fileClassesName.get(fileFileClassName)) {
+                        this.filesFileClass.set(f.path, this.fileClassesName.get(fileFileClassName)!);
+                        this.filesFileClassName.set(f.path, fileFileClassName)
+                    }
                     const fileClassesFieldsFromFile = this.fileClassesFields.get(fileFileClassName)
                     if (fileClassesFieldsFromFile) {
                         this.filesFieldsFromInnerFileClasses.set(f.path, fileClassesFieldsFromFile);
@@ -156,8 +134,10 @@ export default class FieldIndex extends Component {
                         this.filesFields.set(f.path, fileClassFromQuery)
                     } else if (this.fieldsFromGlobalFileClass.length) {
                         this.filesFields.set(f.path, this.fieldsFromGlobalFileClass)
+                        this.filesFileClassName.set(f.path, this.plugin.settings.globalFileClass)
                     } else {
                         this.filesFields.set(f.path, this.plugin.settings.presetFields)
+                        this.filesFileClassName.set(f.path, undefined)
                     }
                 }
             })

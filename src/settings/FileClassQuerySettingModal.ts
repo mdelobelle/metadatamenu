@@ -16,7 +16,7 @@ export default class FileClassQuerySettingsModal extends Modal {
         fileClassQuery?: FileClassQuery
     ) {
         super(plugin.app);
-        this.initialFileClassQuery = new FileClassQuery(this.plugin);
+        this.initialFileClassQuery = new FileClassQuery();
         if (fileClassQuery) {
             this.new = false;
             this.fileClassQuery = fileClassQuery;
@@ -28,7 +28,7 @@ export default class FileClassQuerySettingsModal extends Modal {
                     newId = parseInt(prop.id) + 1;
                 };
             });
-            this.fileClassQuery = new FileClassQuery(this.plugin);
+            this.fileClassQuery = new FileClassQuery();
             this.fileClassQuery.id = newId.toString();
             this.initialFileClassQuery.id = newId.toString();
         };

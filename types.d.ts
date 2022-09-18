@@ -1,7 +1,6 @@
 import "obsidian";
 //@ts-ignore
 import { DataviewApi } from "obsidian-dataview";
-import { MetadataMenuApi } from "src/MetadataMenuApi"
 
 declare module "obsidian" {
     interface App {
@@ -13,13 +12,11 @@ declare module "obsidian" {
                 dataview?: {
                     api?: DataviewApi;
                 };
-                metadatamenu?: {
-                    api?: MetadataMenuApi;
-                };
             };
         };
     }
     interface MetadataCache {
+        inProgressTaskCount: number;
         on(
             name: "dataview:api-ready",
             //@ts-ignore

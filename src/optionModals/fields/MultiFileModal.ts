@@ -33,6 +33,7 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
     }
 
     onOpen() {
+        super.onOpen()
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter" && e.shiftKey) {
                 await this.replaceValues();
@@ -66,8 +67,7 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
         clearButton.buttonEl.addClass("metadata-menu-value-suggester-button")
         clearButton.buttonEl.addClass("danger")
 
-        this.modalEl.insertBefore(buttonContainer, this.modalEl.childNodes[0])
-        super.onOpen()
+        this.modalEl.appendChild(buttonContainer)
     }
 
     getItems(): TFile[] {
@@ -126,7 +126,6 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
             const iconContainer = el.createDiv({ cls: "metadata-menu-command-suggest-icon" })
             setIcon(iconContainer, "check-circle")
         }
-        this.inputEl.focus()
     }
 
     renderSelected() {
