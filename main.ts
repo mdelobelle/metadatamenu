@@ -159,6 +159,18 @@ export default class MetadataMenu extends Plugin {
 		})
 	}
 
+	private addUpdateLookups() {
+		this.addCommand({
+			id: "update_lookups",
+			name: "Update lookup fields",
+			icon: "file-search",
+			checkCallback: (checking: boolean) => {
+				if (checking) return true;
+				this.fieldIndex.fullIndex(true);
+			}
+		})
+	}
+
 	private addCommands(view: View | undefined | null) {
 		if (view && view instanceof FileView) {
 			const file = this.app.vault.getAbstractFileByPath(view.file.path)
@@ -173,6 +185,7 @@ export default class MetadataMenu extends Plugin {
 				}
 			}
 		}
+		this.addUpdateLookups()
 	}
 
 	async loadSettings() {
@@ -185,6 +198,9 @@ export default class MetadataMenu extends Plugin {
 		this.settings.fileClassQueries = this.initialFileClassQueries;
 		await this.saveData(this.settings);
 		await this.fieldIndex.fullIndex();
+		this.fieldIndex.resolveLookups();
+		await this.fieldIndex.updateLookups(true);
+
 	};
 
 	onunload() {

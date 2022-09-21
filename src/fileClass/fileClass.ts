@@ -134,7 +134,6 @@ class FileClass {
     }
 
     public async updateAttribute(newType: keyof typeof FieldType, newName: string, newOptions?: string[] | Record<string, string>, attr?: FileClassAttribute): Promise<void> {
-        console.log("ici")
         const file = this.getClassFile();
         let result = await this.plugin.app.vault.read(file)
         if (attr) {
