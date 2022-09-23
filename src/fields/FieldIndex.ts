@@ -50,13 +50,13 @@ export default class FieldIndex extends Component {
         if (this.dv?.api.index.initialized) {
             this.dv = this.plugin.app.plugins.plugins.dataview
             this.lastRevision = this.dv.api.index.revision
-            await this.fullIndex();
+            await this.fullIndex("dv init");
         }
 
         this.plugin.registerEvent(
             this.plugin.app.metadataCache.on("dataview:index-ready", async () => {
                 this.dv = this.plugin.app.plugins.plugins.dataview
-                await this.fullIndex(true);
+                await this.fullIndex("dv index", true);
                 this.lastRevision = this.dv.api.index.revision
             })
         )
@@ -64,7 +64,7 @@ export default class FieldIndex extends Component {
         this.plugin.registerEvent(
             this.plugin.app.metadataCache.on('resolved', async () => {
                 if (this.plugin.app.metadataCache.inProgressTaskCount === 0) {
-                    await this.fullIndex();
+                    await this.fullIndex("cache resolved");
                     this.lastRevision = this.dv?.api.index.revision || 0
                 }
             })
@@ -72,16 +72,19 @@ export default class FieldIndex extends Component {
 
         this.plugin.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
-                if (this.dv.api.index.revision != this.lastRevision) {
-                    await this.fullIndex();
+                if (op === "update" && this.dv.api.index.revision !== this.lastRevision) {
+                    this.resolveLookups();
+                    await this.updateLookups();
                     this.lastRevision = this.dv.api.index.revision
                 }
             })
         )
+
     }
 
-    async fullIndex(force_update_lookups = false): Promise<void> {
-        console.log("full index", this.dv.api.index.revision)
+    async fullIndex(event: string, force_update_lookups = false): Promise<void> {
+        //console.log("start full index", event, this.lastRevision, "->", this.dv?.api.index.revision)
+        const start = Date.now()
         this.getGlobalFileClass();
         this.getFileClasses();
         this.resolveFileClassQueries();
@@ -90,10 +93,11 @@ export default class FieldIndex extends Component {
         await this.getValuesListNotePathValues();
         this.resolveLookups();
         await this.updateLookups(force_update_lookups);
+
+        console.log("full index", event, this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     }
 
     resolveLookups(): void {
-        //let shouldUpdateLookup = false;
         Array.from(this.filesFields).filter((value: [string, Field[]]) => {
             const [filePath, fields] = value;
             const dvPage = this.dv.api.page(filePath);
@@ -102,7 +106,6 @@ export default class FieldIndex extends Component {
 
                     const queryRelatedDVFiles = (new Function("dv", `return ${lookupField.options.dvQueryString}`))(this.dv.api).values as Array<any>
                     const fileRelatedDVFiles = queryRelatedDVFiles.filter(f => f[lookupField.options.targetFieldName]?.path === filePath)
-                    //if (!this.fileLookupFiles.get(`${filePath}__related__${lookupField.name}`)) shouldUpdateLookup = true
                     this.fileLookupFiles.set(`${filePath}__related__${lookupField.name}`, fileRelatedDVFiles)
                     fileRelatedDVFiles.forEach(dvFile => {
                         const parents = this.fileLookupParents.get(dvFile.file.path) || []
@@ -127,10 +130,10 @@ export default class FieldIndex extends Component {
                 this.fileLookupFieldLastValue.delete(id);
             }
         }
-        //if (shouldUpdateLookup) this.updateLookups()
     }
 
     async updateLookups(force_update: boolean = false): Promise<void> {
+        //console.log("start update lookups", this.lastRevision, "->", this.dv?.api.index.revision)
         let renderingErrors: string[] = []
         for (let id of this.fileLookupFiles.keys()) {
             const [filePath, fieldName] = id.split("__related__")
@@ -204,6 +207,7 @@ export default class FieldIndex extends Component {
             }
         }
         if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`)
+        //console.log("finished update lookups", this.lastRevision, "->", this.dv?.api.index.revision)
     }
 
     async getValuesListNotePathValues(): Promise<void> {

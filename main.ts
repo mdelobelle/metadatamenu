@@ -166,7 +166,7 @@ export default class MetadataMenu extends Plugin {
 			icon: "file-search",
 			checkCallback: (checking: boolean) => {
 				if (checking) return true;
-				this.fieldIndex.fullIndex(true);
+				this.fieldIndex.fullIndex("command", true);
 			}
 		})
 	}
@@ -197,10 +197,7 @@ export default class MetadataMenu extends Plugin {
 		this.settings.presetFields = this.initialProperties;
 		this.settings.fileClassQueries = this.initialFileClassQueries;
 		await this.saveData(this.settings);
-		await this.fieldIndex.fullIndex();
-		this.fieldIndex.resolveLookups();
-		await this.fieldIndex.updateLookups(true);
-
+		await this.fieldIndex.fullIndex("setting", true);
 	};
 
 	onunload() {
