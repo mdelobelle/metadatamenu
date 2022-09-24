@@ -73,8 +73,12 @@ export default class FieldIndex extends Component {
         this.plugin.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
                 if (op === "update" && this.dv.api.index.revision !== this.lastRevision) {
-                    this.resolveLookups();
-                    await this.updateLookups();
+                    if (file.path.includes(this.plugin.settings.classFilesPath)) {
+                        this.fullIndex("fileClass changed")
+                    } else {
+                        this.resolveLookups();
+                        await this.updateLookups();
+                    }
                     this.lastRevision = this.dv.api.index.revision
                 }
             })
@@ -83,7 +87,7 @@ export default class FieldIndex extends Component {
     }
 
     async fullIndex(event: string, force_update_lookups = false): Promise<void> {
-        //console.log("start full index", event, this.lastRevision, "->", this.dv?.api.index.revision)
+        console.log("start full index", event, this.lastRevision, "->", this.dv?.api.index.revision)
         const start = Date.now()
         this.getGlobalFileClass();
         this.getFileClasses();
@@ -93,7 +97,6 @@ export default class FieldIndex extends Component {
         await this.getValuesListNotePathValues();
         this.resolveLookups();
         await this.updateLookups(force_update_lookups);
-
         console.log("full index", event, this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     }
 
@@ -171,7 +174,7 @@ export default class FieldIndex extends Component {
 
                             const summarizingFunction = new Function("pages",
                                 customSummarizingFunction
-                                    .replace("{{summarizedFieldName}}", field.options.summarizedFieldName))
+                                    .replace(/\{\{summarizedFieldName\}\}/g, field.options.summarizedFieldName))
                             try {
                                 newValue = summarizingFunction(pages).toString();
                             } catch {
@@ -183,10 +186,9 @@ export default class FieldIndex extends Component {
                     case Lookup.Type.BuiltinSummarizing:
                         {
                             const builtinFunction = field.options.builtinSummarizingFunction as keyof typeof Lookup.BuiltinSummarizing
-
                             const summarizingFunction = new Function("pages",
                                 Lookup.BuiltinSummarizingFunction[builtinFunction]
-                                    .replace("{{summarizedFieldName}}", field.options.summarizedFieldName))
+                                    .replace(/\{\{summarizedFieldName\}\}/g, field.options.summarizedFieldName))
                             try {
                                 newValue = summarizingFunction(pages).toString();
                             } catch {

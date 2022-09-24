@@ -2,21 +2,27 @@ export enum BuiltinSummarizing {
     "Sum" = "Sum",
     "Count" = "Count",
     "CountAll" = "CountAll",
-    "Average" = "Average"
+    "Average" = "Average",
+    "Max" = "Max",
+    "Min" = "Min"
 }
 
 export const BuiltinSummarizingFunctionDescription: Record<keyof typeof BuiltinSummarizing, string> = {
     "Sum": "Returns the sum of <{{summarizedFieldName}}> fields in the pages matching the query",
     "Count": "Counts all pages matching the query where <{{summarizedFieldName}}> is non empty",
     "CountAll": "Counts all pages matching the query (including empty fields)",
-    "Average": "Returns the average value of <{{summarizedFieldName}}> fields in the pages matching the query"
+    "Average": "Returns the average value of <{{summarizedFieldName}}> fields in the pages matching the query",
+    "Max": "Returns the maximum value of <{{summarizedFieldName}}> fields in the pages matching the query",
+    "Min": "Returns the minimum value of <{{summarizedFieldName}}> fields in the pages matching the query",
 }
 
 export const BuiltinSummarizingFunction: Record<keyof typeof BuiltinSummarizing, string> = {
     "Sum": "const i=0;const sum = pages.reduce((p, c) => p + c[\"{{summarizedFieldName}}\"], i); return sum",
     "CountAll": "return pages.length",
     "Count": "return pages.filter(p => !!p[\"{{summarizedFieldName}}\"]).length",
-    "Average": "const i=0.0;const sum = pages.reduce((p, c) => p + c[\"{{summarizedFieldName}}\"], i); return sum / pages.length"
+    "Average": "const i=0.0;const sum = pages.reduce((p, c) => p + c[\"{{summarizedFieldName}}\"], i); return sum / pages.length",
+    "Max": "return pages.reduce((p,c) => p[\"{{summarizedFieldName}}\"] >= c[\"{{summarizedFieldName}}\"] ? p : c)[\"{{summarizedFieldName}}\"]",
+    "Min": "return pages.reduce((p,c) => p[\"{{summarizedFieldName}}\"]!==null && p[\"{{summarizedFieldName}}\"] <= c[\"{{summarizedFieldName}}\"] ? p : c)[\"{{summarizedFieldName}}\"]"
 }
 
 export enum Type {

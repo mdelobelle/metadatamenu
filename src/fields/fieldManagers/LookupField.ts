@@ -23,7 +23,13 @@ export default class LookupField extends FieldManager {
     }
 
     createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
-
+        //no field modal, we include the field directly
+        if (lineNumber == -1) {
+            replaceValues(this.plugin, file, this.field.name, "");
+        } else {
+            insertValues(this.plugin, file, this.field.name, "", lineNumber, inFrontmatter, after);
+        };
+        //this.plugin.fieldIndex.fullIndex("insert", true);
     }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }): void {
