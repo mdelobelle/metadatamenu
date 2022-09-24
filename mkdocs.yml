@@ -27,7 +27,7 @@ nav:
   - FileClasses: fileclasses.md
   - API: api.md
 
-repo_url: https://github.com/mdelobelle/metadata-menu
+repo_url: https://github.com/mdelobelle/metadatamenu
 
 markdown_extensions:
   - admonition
