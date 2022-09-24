@@ -49,7 +49,7 @@ export default class LookupField extends FieldManager {
     private createLookupContainer(parentContainer: HTMLDivElement): void {
 
         const dvQueryStringContainer = parentContainer.createDiv();
-        dvQueryStringContainer.createEl("span", { text: "Pages to look for in your vault (Dataview Query)", cls: 'metadata-menu-field-option' });
+        dvQueryStringContainer.createEl("span", { text: "Pages to look for in your vault (DataviewJS Query)", cls: 'metadata-menu-field-option' });
         dvQueryStringContainer.createEl("span", { text: "DataviewJS query of the form `dv.pages(...)`", cls: 'metadata-menu-field-option-subtext' });
         const dvQueryString = new TextAreaComponent(dvQueryStringContainer);
         dvQueryString.inputEl.cols = 50;

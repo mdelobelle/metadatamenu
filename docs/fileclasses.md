@@ -97,7 +97,7 @@ Because it can be overwhelming to remember this syntax, you can manage "type" an
 - the more-options menu of a fileClass file
 - a command within a fileClass file (`alt+P`) -> `Metadata Menu: fileClass attributes options`
 
-You will be asked to choose the field that you want to modify or if you want to add a new one. After having selected a field, you will acces to a form to modify the type and options of the field (same form as in the plugin's settings)
+You will be asked to choose the field that you want to modify or if you want to add a new one. After having selected a field, you will acces to a form to modify the type and options of the field (same form as in the plugin's [settings](settings.md#preset-field-settings))
 
 ## fileClass inheritance
 

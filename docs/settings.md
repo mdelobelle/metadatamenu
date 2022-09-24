@@ -109,6 +109,56 @@ Example of shift intervals: `2 days`, `1 week 3 days`, ...
 #### `Shift Intervals field`
 You can define intervals in a cycle field, for example for increasing intervals used in spaced repetition. Put the name of this cycle field in the `Shift Interval field` setting, and those intervals will be used to shift the date in the future.
 
+
+### `Lookup` options
+
+A lookup field will look for targetted fields (aka related field) in targetted notes (aka Dataview JS Query results) and display the result in a presistent manner. Unlike a dataview view, a lookup field will change the content of the file by updating the value of the lookup field. 
+So even if you disable dataview plugin, the lookup field will still contain the value. 
+Lookup fields can therefore be "published".
+
+#### `Pages to look for in your vault (DataviewJS Query)`
+
+A DataviewJS query of the form `dv.pages(...)` that has to return a data array of `page` object (see [Dataview Pages source definition](https://blacksmithgu.github.io/obsidian-dataview/api/code-reference/#dvpagessource))
+
+#### `Name of the related field`
+
+The name of the field that the plugin should look for in pages returned by the query. The plugin will filter the results returned by the query with to match the value of the `related field` with the source note's link
+
+#### `Type of output`
+
+Lookup field can display the result in a very various ways:
+
+##### Links
+Simple list of links of the notes matching the query, comma separated
+
+##### Built-in Summarizing function
+
+NB: For this option you'll have to set the name of the target field on which you want to apply the built-in function in the `Summarized field name` input (not necessary for the `CountAll` function)
+
+- `Sum`: sum of the values of a specific field in the notes returned by the query 
+- `Count`: Counts all pages matching the query where the "Summarized field" is non empty
+- `CountAll`: Counts all the pages matching the query
+- `Average`: Returns the average value of summarized fields in the pages matching the query
+- `Max`: Returns the maximum value of summarized fields in the pages matching the query
+- `Min`: Returns the minimum value of summarized fields in the pages matching the query
+
+##### Custom list rendering function
+
+like the [Links](#links) option, but you can customize the way each value is displayed. The object `page` is available (see [Dataview page object](https://blacksmithgu.github.io/obsidian-dataview/data-annotation/#pages) for all attributes available in the `page object`) and can be used to build your output.
+The output has to be a string. 
+
+##### Custom summarizing function
+
+like the [Built-in summarizing function](#built-in-summarizing-function) option but you can customize the function you want to apply on the data array of pages returned by the query. 
+
+The `pages` [data array](https://blacksmithgu.github.io/obsidian-dataview/api/code-reference/#dvpagessource) object is available.
+
+You have the write the code of the function, this function has to return something.
+
+Example1: `return pages.length`
+
+Example2: `const i=0.0;const sum = pages.reduce((p, c) => p + c["age"], i); return sum / pages.length`
+
 ## Fileclass settings
 If you want the same field to have different behaviours depending on the note they belong to, you can define field settings based on the "class" of the "note".
 This is a particular frontmatter attribute that you will have to give to your note.
