@@ -4,7 +4,6 @@ import { FieldManager, SettingLocation } from "../FieldManager";
 import { TextComponent, ButtonComponent, setIcon } from "obsidian";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import MetadataMenu from "main";
-import FieldSetting from "src/settings/FieldSetting";
 import { FileSuggest } from "src/suggester/FileSuggester";
 
 export default abstract class AbstractListBasedField extends FieldManager {
@@ -94,7 +93,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
         return input;
     };
 
-    async validateValue(value: string): Promise<boolean> {
+    public validateValue(value: string): boolean {
         if (this.field.options && Object.values(this.field.options).length > 0) {
             if (value) {
                 return Object.values(this.field.options).includes(value.trim())
@@ -103,21 +102,20 @@ export default abstract class AbstractListBasedField extends FieldManager {
             }
 
         } else if (this.field.valuesListNotePath) {
-            const listNoteValues = await FieldSetting.getValuesListFromNote(this.plugin, this.field.valuesListNotePath)
-            return listNoteValues.contains(value.trim())
+            const listNoteValues = this.plugin.fieldIndex.valuesListNotePathValues.get(this.field.valuesListNotePath)
+            return listNoteValues !== undefined ? listNoteValues.contains(value.trim()) : false
         } else {
             return false
         }
-
     }
 
-    getOptionsStr(): string {
+    public getOptionsStr(): string {
         if (this.field.valuesListNotePath) return this.field.valuesListNotePath
         else if (Object.values(this.field.options).length) return Object.values(this.field.options).join(", ")
         else return ""
     }
 
-    validateOptions(): boolean {
+    public validateOptions(): boolean {
         let error = false;
         this.valuesPromptComponents.forEach(input => {
             if (/[,]/gu.test(input.inputEl.value) && input.inputEl.parentElement?.lastElementChild) {
@@ -138,20 +136,20 @@ export default abstract class AbstractListBasedField extends FieldManager {
         return !error
     }
 
-    createAddButton(valuesList: HTMLDivElement, valuesListBody: HTMLDivElement, valuesListHeader: HTMLDivElement): void {
+    private createAddButton(valuesList: HTMLDivElement, valuesListBody: HTMLDivElement, valuesListHeader: HTMLDivElement): void {
         const valuesListFooter = valuesList.createDiv();
         const addValue = valuesListFooter.createEl('button');
         addValue.type = 'button';
         addValue.textContent = 'Add';
         addValue.onClickEvent(async (evt: MouseEvent) => {
             evt.preventDefault;
-            const newKey = await this.field.insertNewValue("")
+            const newKey = this.field.insertNewValue("")
             this.createValueContainer(valuesListBody, valuesListHeader, newKey)
         });
         valuesList.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
     }
 
-    createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
+    public createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
         if (location === SettingLocation.PluginSettings) this.createListNoteContainer(parentContainer, plugin);
         this.presetValuesFields = parentContainer.createDiv()
         this.presetValuesFields.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
@@ -166,12 +164,12 @@ export default abstract class AbstractListBasedField extends FieldManager {
         this.createAddButton(valuesList, valuesListBody, valuesListHeader)
     }
 
-    async createDvField(
+    public createDvField(
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
-    ): Promise<void> {
+    ): void {
         const fieldValue = dv.el("span", p[this.field.name]);
         fieldContainer.appendChild(fieldValue);
     }

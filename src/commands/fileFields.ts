@@ -7,18 +7,24 @@ import { genuineKeys } from "src/utils/dataviewUtils";
 import { getField } from "./getField";
 
 export class FieldInfo {
-    type?: FieldType = undefined;
-    sourceType?: "fileClass" | "settings" = undefined;
-    fileClass?: string = undefined;
-    fileClassQuery?: string = undefined;
-    options?: Record<string, string> | string[] = undefined;
-    isValid?: boolean = undefined;
-    ignoreInMenu: boolean
-    value: string = "";
-    valuesListNotePath?: string = undefined;
-    unique: boolean = true
+    protected type?: FieldType = undefined;
+    protected sourceType?: "fileClass" | "settings" = undefined;
+    protected fileClass?: string = undefined;
+    protected fileClassQuery?: string = undefined;
+    protected options?: Record<string, string> | string[] = undefined;
+    protected isValid?: boolean = undefined;
+    protected ignoreInMenu: boolean
+    protected value: string = "";
+    protected valuesListNotePath?: string = undefined;
+    public unique: boolean = true
 
-    async setInfos(plugin: MetadataMenu, fieldName: string, value: string, fileClass?: FileClass, matchingFileClassQuery?: string | undefined): Promise<void> {
+    public setInfos(
+        plugin: MetadataMenu,
+        fieldName: string,
+        value: string,
+        fileClass?: FileClass,
+        matchingFileClassQuery?: string | undefined
+    ): void {
         this.value = value;
         this.ignoreInMenu = plugin.settings.globallyIgnoredFields.includes(fieldName);
         if (fileClass) {
@@ -27,7 +33,7 @@ export class FieldInfo {
                 const field = getField(plugin, fieldName, fileClass);
                 if (field) {
                     const fieldManager = new FieldManager[field.type](plugin, field);
-                    this.isValid = await fieldManager.validateValue(value)
+                    this.isValid = fieldManager.validateValue(value)
                     const attribute = fileClass.attributes.filter(a => a.name === fieldName)[0];
                     this.fileClass = attribute.origin;
                     this.fileClassQuery = matchingFileClassQuery;
@@ -39,7 +45,7 @@ export class FieldInfo {
             const field = getField(plugin, fieldName);
             if (field) {
                 const fieldManager = new FieldManager[field.type](plugin, field);
-                this.isValid = await fieldManager.validateValue(value)
+                this.isValid = fieldManager.validateValue(value)
                 this.type = field.type;
                 this.options = field.options;
                 this.valuesListNotePath = field.valuesListNotePath;
@@ -49,7 +55,7 @@ export class FieldInfo {
     }
 }
 
-export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | string): Promise<Record<string, FieldInfo>> {
+export function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | string): Record<string, FieldInfo> {
     /*
     returns all fields with source, type, options, isValid, ignored
     */
@@ -78,7 +84,7 @@ export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | s
     let matchingFileClassQuery: string | undefined = undefined;
     if (fileClassQueries.length > 0) {
         while (!matchingFileClassQuery && fileClassQueries.length > 0) {
-            const fileClassQuery = new FileClassQuery(plugin);
+            const fileClassQuery = new FileClassQuery();
             Object.assign(fileClassQuery, fileClassQueries.pop() as FileClassQuery)
             if (fileClassQuery.matchFile(file)) {
                 fileClass = FileClass.createFileClass(plugin, fileClassQuery.fileClassName);

@@ -12,11 +12,11 @@ export default class InputField extends FieldManager {
         super(plugin, field, FieldType.Input)
     }
 
-    getOptionsStr(): string {
+    public getOptionsStr(): string {
         return this.field.options.template
     }
 
-    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const modal = new InputModal(this.plugin, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
         if (InputField.isMenu(location)) {
@@ -36,7 +36,7 @@ export default class InputField extends FieldManager {
         };
     };
 
-    createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu): void {
+    public createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu): void {
         const templateContainer = parentContainer.createDiv();
         templateContainer.createEl("span", { text: "Template", cls: 'metadata-menu-field-option' })
         const templateValue = new TextAreaComponent(templateContainer)
@@ -49,23 +49,23 @@ export default class InputField extends FieldManager {
         })
     }
 
-    validateOptions(): boolean {
+    public validateOptions(): boolean {
         //always true since there are no options
         return true
     }
 
-    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
         const fieldModal = new InputModal(this.plugin, file, this.field, value || "", lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
 
-    async createDvField(
+    public createDvField(
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
-    ): Promise<void> {
+    ): void {
         const fieldValue = dv.el('span', p[this.field.name], attrs)
         const inputContainer = document.createElement("div")
         const input = document.createElement("input")

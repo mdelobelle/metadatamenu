@@ -1,45 +1,31 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
 
-interface FileClassQuery {
-    id: string;
-    name: string;
-    query: string;
-    fileClassName: string;
-}
-
 class FileClassQuery {
 
-    private plugin: MetadataMenu
-
     constructor(
-        plugin: MetadataMenu,
-        name: string = "",
-        id: string = "",
-        query: string = "",
-        fileClassName: string = ""
-    ) {
-        this.name = name;
-        this.query = query;
-        this.id = id;
-        this.fileClassName = fileClassName;
-        this.plugin = plugin
+        public name: string = "",
+        public id: string = "",
+        public query: string = "",
+        public fileClassName: string = ""
+    ) { };
+
+    //@ts-ignore
+    public getResults(api: DataviewPlugin["api"]): any {
+        try {
+            return (new Function("dv", `return ${this.query}`))(api)
+        } catch (error) {
+            throw Error(`Wrong query for field <${this.name}>. Check your settings`)
+        }
     };
 
     public matchFile(file: TFile): boolean {
-        //@ts-ignore
-        const getResults = (api: DataviewPlugin["api"]) => {
-            try {
-                return (new Function("dv", `return ${this.query}`))(api)
-            } catch (error) {
-                throw Error(`Wrong query for field <${this.name}>. Check your settings`)
-            }
-        };
-        const dataview = this.plugin.app.plugins.plugins.dataview
+
+        const dataview = app.plugins.plugins.dataview
         //@ts-ignore
         if (this.query && dataview?.settings.enableDataviewJs && dataview?.settings.enableInlineDataviewJs) {
             try {
-                const filesPath = getResults(dataview.api).values.map((v: any) => v.file.path) as string[]
+                const filesPath = this.getResults(dataview.api).values.map((v: any) => v.file.path) as string[]
                 return filesPath.includes(file.path);
             } catch (error) {
                 return false;

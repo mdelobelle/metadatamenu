@@ -11,16 +11,12 @@ export interface IMetadataMenuApi {
     replaceValues: (fileOrFilePath: TFile | string, attribute: string, input: string) => Promise<void>;
     insertValues: (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean) => Promise<void>
     fileFields: (fileOrFilePath: TFile | string) => Promise<Record<string, FieldInfo>>;
-    fieldModifier: (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => Promise<HTMLElement>;
+    fieldModifier: (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => HTMLElement;
 }
 
 export class MetadataMenuApi {
 
-    private plugin: MetadataMenu
-
-    constructor(plugin: MetadataMenu) {
-        this.plugin = plugin
-    }
+    constructor(private plugin: MetadataMenu) { }
 
     public make(): IMetadataMenuApi {
         return {
@@ -28,7 +24,7 @@ export class MetadataMenuApi {
             replaceValues: this.replaceValues(),
             insertValues: this.insertValues(),
             fieldModifier: this.fieldModifier(),
-            fileFields: this.fileFields()
+            fileFields: this.fileFields(),
         };
     }
 
@@ -44,7 +40,7 @@ export class MetadataMenuApi {
         return async (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean) => insertValues(this.plugin, fileOrFilePath, fieldName, value, lineNumber, inFrontmatter, after)
     }
 
-    private fieldModifier(): (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => Promise<HTMLElement> {
+    private fieldModifier(): (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => HTMLElement {
         return (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => fieldModifier(this.plugin, dv, p, fieldName, attrs)
     }
 

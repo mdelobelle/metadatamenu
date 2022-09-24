@@ -189,6 +189,10 @@ button.metadata-menu-field-add-frontmatter-btn {
   display: flex;
   margin-top: 1em; }
 
+.metadata-menu-field-option-subtext {
+  display: flex;
+  font-size: smaller; }
+
 .metadata-menu-setting-item {
   display: flex; }
 
@@ -345,9 +349,15 @@ button.metadata-menu-field-add-frontmatter-btn {
 .metadata-menu-value-suggester-button {
   margin: 12px 12px 12px 0; }
 
+.metadata-menu-value-suggester-button:disabled {
+  opacity: 50%; }
+
 .metadata-menu-value-suggester-button.danger {
-  background-color: var(--color-red);
+  background-color: var(--color-purple);
   color: var(--color-base-00); }
+
+.metadata-menu-value-suggester-input-container {
+  display: flex; }
 
 /* ---------------------------- */
 /*   Flatpick style             */

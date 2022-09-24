@@ -33,7 +33,6 @@ This is an asynchronous function, so you should await it.
 `fieldModifier(dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> })`
 
 Takes a dataview api instance, a page, a field name and optional attributes and returns a HTML element to modify the value of the field in the target note
-This is async and should be awaited
 
 ### fileFields
 `fileFields(fileOrFilePath: TFile | string)`

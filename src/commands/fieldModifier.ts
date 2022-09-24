@@ -13,7 +13,7 @@ function getQueryFileClassForFields(plugin: MetadataMenu, file: TFile): FileClas
     let fileClass: FileClass | undefined;
     const fileClassQueries = plugin.settings.fileClassQueries.map(fcq => fcq)
     while (!fileClassForFields && fileClassQueries.length > 0) {
-        const fileClassQuery = new FileClassQuery(plugin);
+        const fileClassQuery = new FileClassQuery();
         Object.assign(fileClassQuery, fileClassQueries.pop() as FileClassQuery)
         if (fileClassQuery.matchFile(file)) {
             fileClassForFields = true;
@@ -38,31 +38,31 @@ function buildAndOpenModal(
     }
 }
 
-async function createDvField(plugin: MetadataMenu,
+function createDvField(plugin: MetadataMenu,
     dv: any,
     p: any,
     fieldContainer: HTMLElement,
     fieldName: string,
     fileClass?: FileClass,
     attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
-): Promise<void> {
+): void {
     const field = getField(plugin, fieldName, fileClass);
     if (field?.type) {
         const fieldManager = new FieldManager[field.type](plugin, field);
-        await fieldManager.createDvField(dv, p, fieldContainer, attrs);
+        fieldManager.createDvField(dv, p, fieldContainer, attrs);
     } else {
         const fieldManager = F.createDefault(plugin, fieldName);
-        await fieldManager.createDvField(dv, p, fieldContainer, attrs);
+        fieldManager.createDvField(dv, p, fieldContainer, attrs);
     }
 }
 
-export async function fieldModifier(
+export function fieldModifier(
     plugin: MetadataMenu,
     dv: any,
     p: any,
     fieldName: string,
     attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
-): Promise<HTMLElement> {
+): HTMLElement {
 
     /* fieldContainer*/
     const fieldContainer: HTMLElement = dv.el("div", "")
@@ -131,7 +131,7 @@ export async function fieldModifier(
                 createDvField(plugin, dv, p, fieldContainer, fieldName, undefined, attrs)
             } else {
                 const fieldManager = F.createDefault(plugin, fieldName);
-                await fieldManager.createDvField(dv, p, fieldContainer, attrs);
+                fieldManager.createDvField(dv, p, fieldContainer, attrs);
             }
         }
     }

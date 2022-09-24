@@ -11,13 +11,11 @@ import FileClassQuerySetting from "./FileClassQuerySetting";
 
 class SettingsMigrationConfirmModal extends Modal {
 
-	private plugin: MetadataMenu;
-	private tab: MetadataMenuSettingTab;
-
-	constructor(plugin: MetadataMenu, tab: MetadataMenuSettingTab) {
+	constructor(
+		private plugin: MetadataMenu,
+		private tab: MetadataMenuSettingTab
+	) {
 		super(plugin.app);
-		this.plugin = plugin;
-		this.tab = tab;
 	};
 
 	onOpen(): void {
@@ -280,7 +278,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		/* Managed properties that currently have preset options */
 		this.plugin.initialFileClassQueries
 			.forEach(query => {
-				const fileClassQuery = new FileClassQuery(this.plugin);
+				const fileClassQuery = new FileClassQuery();
 				Object.assign(fileClassQuery, query);
 				new FileClassQuerySetting(queryFileClassSettings, fileClassQuery, this.plugin);
 			});

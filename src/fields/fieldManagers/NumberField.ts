@@ -19,13 +19,13 @@ export default class NumberField extends FieldManager {
         super(plugin, field, FieldType.Number)
     }
 
-    getOptionsStr(): string {
+    public getOptionsStr(): string {
         const options: string[] = [];
         Object.keys(this.field.options).forEach((k) => { if (this.field.options[k]) options.push(`${k}: ${this.field.options[k]}`) })
         return options.join(" | ")
     }
 
-    canDecrement(value: string): boolean {
+    public canDecrement(value: string): boolean {
         const { step, min } = this.field.options;
         const fStep = parseFloat(step);
         const fMin = parseFloat(min);
@@ -41,7 +41,7 @@ export default class NumberField extends FieldManager {
         )
     }
 
-    canIncrement(value: string): boolean {
+    public canIncrement(value: string): boolean {
         const { step, max } = this.field.options;
         const fStep = parseFloat(step);
         const fMax = parseFloat(max);
@@ -57,7 +57,7 @@ export default class NumberField extends FieldManager {
         )
     }
 
-    async validateValue(value: string): Promise<boolean> {
+    public validateValue(value: string): boolean {
         const { min, max } = this.field.options;
         const fMin = parseFloat(min);
         const fMax = parseFloat(max);
@@ -67,7 +67,7 @@ export default class NumberField extends FieldManager {
         )
     }
 
-    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const modal = new NumbertModal(this.plugin, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
         if (NumberField.isMenu(location)) {
@@ -109,7 +109,7 @@ export default class NumberField extends FieldManager {
         };
     };
 
-    createNumberContainer(parentContainer: HTMLDivElement): void {
+    private createNumberContainer(parentContainer: HTMLDivElement): void {
         const numberStepValueContainer = parentContainer.createDiv();
         numberStepValueContainer.createEl("span", { text: "Step (optional)", cls: 'metadata-menu-field-option' })
         this.numberStepValue = new TextComponent(numberStepValueContainer)
@@ -138,13 +138,13 @@ export default class NumberField extends FieldManager {
         })
     }
 
-    createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu): void {
+    public createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu): void {
         this.numberValidatorField = parentContainer.createDiv({ cls: "metadata-menu-number-options" })
         this.createNumberContainer(this.numberValidatorField)
         this.numberValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
     }
 
-    validateOptions(): boolean {
+    public validateOptions(): boolean {
         let error = false
         if (this.field.options.step && isNaN(parseFloat(this.field.options.step))) {
             FieldSettingsModal.setValidationError(
@@ -170,7 +170,7 @@ export default class NumberField extends FieldManager {
         return !error
     }
 
-    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
         const fieldModal = new NumbertModal(this.plugin, file, this.field, value || "", lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
@@ -189,12 +189,12 @@ export default class NumberField extends FieldManager {
         }
     }
 
-    async createDvField(
+    public createDvField(
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
-    ): Promise<void> {
+    ): void {
 
         const fieldValue = dv.el('span', p[this.field.name], attrs)
         const inputContainer = document.createElement("div");
@@ -247,7 +247,7 @@ export default class NumberField extends FieldManager {
         setIcon(validateIcon, "checkmark")
         validateIcon.setAttr("class", "metadata-menu-dv-field-button")
         validateIcon.onclick = async () => {
-            if (await this.validateValue(input.value)) {
+            if (this.validateValue(input.value)) {
                 const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
                 if (file instanceof TFile && file.extension == "md") {
                     await replaceValues(this.plugin, file, this.field.name, input.value)
@@ -283,7 +283,7 @@ export default class NumberField extends FieldManager {
 
         input.onkeydown = async (e) => {
             if (e.key === "Enter") {
-                if (await this.validateValue(input.value)) {
+                if (this.validateValue(input.value)) {
                     const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
                     if (file instanceof TFile && file.extension == "md") {
                         await replaceValues(this.plugin, file, this.field.name, input.value);

@@ -1,21 +1,14 @@
 import Field from "src/fields/Field";
 import { FieldType } from "src/types/fieldTypes";
 
-interface FileClassAttribute {
-    name: string;
-    type: FieldType;
-    options: string[] | Record<string, string>;
-    origin: string;
-}
-
 class FileClassAttribute {
 
-    constructor(origin: string, name: string, type: FieldType = FieldType.Input, options: string[] | Record<string, string> = []) {
-        this.origin = origin
-        this.name = name
-        this.type = type
-        this.options = options
-    }
+    constructor(
+        public origin: string,
+        public name: string,
+        public type: FieldType = FieldType.Input,
+        public options: string[] | Record<string, string> = []
+    ) { }
 
     public getField() {
         let options: Record<string, string> = {};

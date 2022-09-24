@@ -9,20 +9,19 @@ export default class FieldSettingsModal extends Modal {
     private namePromptComponent: TextComponent;
     private saved: boolean = false;
     private field: Field;
-    private plugin: MetadataMenu;
     private initialField: Field;
-    private parentSetting?: FieldSetting;
     private new: boolean = true;
-    private parentSettingContainer: HTMLElement;
     private fieldOptionsContainer: HTMLDivElement;
     private fieldManager: F;
 
-    constructor(plugin: MetadataMenu, parentSettingContainer: HTMLElement, parentSetting?: FieldSetting, field?: Field) {
+    constructor(
+        private plugin: MetadataMenu,
+        private parentSettingContainer: HTMLElement,
+        private parentSetting?: FieldSetting,
+        field?: Field
+    ) {
         super(plugin.app);
-        this.plugin = plugin;
-        this.parentSetting = parentSetting;
         this.initialField = new Field();
-        this.parentSettingContainer = parentSettingContainer;
         if (field) {
             this.new = false;
             this.field = field;

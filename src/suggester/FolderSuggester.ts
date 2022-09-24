@@ -6,11 +6,11 @@ import { TextInputSuggest } from "./suggest";
 
 export class FolderSuggest extends TextInputSuggest<TFolder> {
 
-    private plugin: MetadataMenu
-
-    constructor(plugin: MetadataMenu, inputEl: HTMLInputElement | HTMLTextAreaElement) {
+    constructor(
+        private plugin: MetadataMenu,
+        public inputEl: HTMLInputElement | HTMLTextAreaElement
+    ) {
         super(inputEl);
-        this.plugin = plugin
     }
 
     getSuggestions(inputStr: string): TFolder[] {

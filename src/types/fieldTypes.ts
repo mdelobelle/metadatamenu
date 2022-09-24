@@ -9,7 +9,8 @@ export const enum FieldType {
     "Number" = "Number",
     "File" = "File",
     "MultiFile" = "MultiFile",
-    "Date" = "Date"
+    "Date" = "Date",
+    "Lookup" = "Lookup"
 }
 
 export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = {
@@ -21,7 +22,8 @@ export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = 
     "Number": FieldType.Number,
     "File": FieldType.File,
     "MultiFile": FieldType.MultiFile,
-    "Date": FieldType.Date
+    "Date": FieldType.Date,
+    "Lookup": FieldType.Lookup
 };
 
 export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
@@ -33,7 +35,8 @@ export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
     "Number": "number",
     "File": "file",
     "MultiFile": "file",
-    "Date": "date"
+    "Date": "date",
+    "Lookup": "lookup"
 }
 
 export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
@@ -45,7 +48,8 @@ export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
     "Number": "Accept a number",
     "File": "Accept a link",
     "MultiFile": "Accept multiple links",
-    "Date": "Accept a date"
+    "Date": "Accept a date",
+    "Lookup": "Accept a lookup query"
 }
 
 export const FieldManager: Record<keyof typeof FieldType, any> = {
@@ -57,7 +61,8 @@ export const FieldManager: Record<keyof typeof FieldType, any> = {
     "Number": Managers.Number,
     "File": Managers.File,
     "MultiFile": Managers.MultiFile,
-    "Date": Managers.Date
+    "Date": Managers.Date,
+    "Lookup": Managers.Lookup
 }
 
 export const FieldIcon: Record<keyof typeof FieldType, string> = {
@@ -69,5 +74,6 @@ export const FieldIcon: Record<keyof typeof FieldType, string> = {
     "Number": "plus-minus-glyph",
     "File": "link",
     "MultiFile": "link",
-    "Date": "calendar-with-checkmark"
+    "Date": "calendar-with-checkmark",
+    "Lookup": "file-search"
 }

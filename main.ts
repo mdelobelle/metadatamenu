@@ -1,5 +1,6 @@
 import { FileView, MarkdownView, Plugin, TFile, View } from 'obsidian';
 import Field from 'src/fields/Field';
+import FieldIndex from 'src/fields/FieldIndex';
 import { FileClass } from 'src/fileClass/fileClass';
 import { FileClassAttributeModal } from 'src/fileClass/FileClassAttributeModal';
 import FileClassQuery from 'src/fileClass/FileClassQuery';
@@ -21,6 +22,7 @@ export default class MetadataMenu extends Plugin {
 	public initialProperties: Array<Field> = [];
 	public initialFileClassQueries: Array<FileClassQuery> = [];
 	public settingTab: MetadataMenuSettingTab;
+	public fieldIndex: FieldIndex;
 
 	async onload(): Promise<void> {
 		console.log('Metadata Menu loaded');
@@ -29,6 +31,8 @@ export default class MetadataMenu extends Plugin {
 			await migrateSettingsV1toV2(this)
 		}
 
+		this.fieldIndex = this.addChild(new FieldIndex(this, "1", () => { }))
+
 		this.settings.presetFields.forEach(prop => {
 			const property = new Field();
 			Object.assign(property, prop);
@@ -36,7 +40,7 @@ export default class MetadataMenu extends Plugin {
 		});
 
 		this.settings.fileClassQueries.forEach(query => {
-			const fileClassQuery = new FileClassQuery(this);
+			const fileClassQuery = new FileClassQuery();
 			Object.assign(fileClassQuery, query);
 			this.initialFileClassQueries.push(fileClassQuery);
 		})
@@ -155,6 +159,18 @@ export default class MetadataMenu extends Plugin {
 		})
 	}
 
+	private addUpdateLookups() {
+		this.addCommand({
+			id: "update_lookups",
+			name: "Update lookup fields",
+			icon: "file-search",
+			checkCallback: (checking: boolean) => {
+				if (checking) return true;
+				this.fieldIndex.fullIndex("command", true);
+			}
+		})
+	}
+
 	private addCommands(view: View | undefined | null) {
 		if (view && view instanceof FileView) {
 			const file = this.app.vault.getAbstractFileByPath(view.file.path)
@@ -169,16 +185,19 @@ export default class MetadataMenu extends Plugin {
 				}
 			}
 		}
+		this.addUpdateLookups()
 	}
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	};
 
+
 	async saveSettings() {
 		this.settings.presetFields = this.initialProperties;
 		this.settings.fileClassQueries = this.initialFileClassQueries;
 		await this.saveData(this.settings);
+		await this.fieldIndex.fullIndex("setting", true);
 	};
 
 	onunload() {

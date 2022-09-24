@@ -210,3 +210,9 @@ Click the "📆" button next to the link to display a date select modal.
 type a new date (or select thanks to the datepicker) to replace the link in the target field.
 
 Click the "⏭" button to shift the date in the future according to the interval set
+
+## Globally update lookup fields
+
+Lookup fields automatically update themselves. Even if you shouldn't modify a lookup field , if that happens the lookup field won't be automatically updated until one of its related notes is updated.
+
+If you want to force-update this lookup field you can use the command palette command `Metadata Menu: Update lookup fields`

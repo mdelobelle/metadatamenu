@@ -7,6 +7,7 @@ import Multi from './MultiField'
 import File from './FileField'
 import Date from './DateField'
 import MultiFile from './MultiFileField'
+import Lookup from './LookupField'
 
 const Managers = {
     Input,
@@ -17,7 +18,8 @@ const Managers = {
     Multi,
     File,
     Date,
-    MultiFile
+    MultiFile,
+    Lookup
 }
 
 export default Managers

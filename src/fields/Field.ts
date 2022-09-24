@@ -1,30 +1,16 @@
 import { FieldType } from "../types/fieldTypes"
 
-interface Field {
-    id: string;
-    name: string;
-    options: Record<string, string>;
-    valuesListNotePath: string;
-    type: FieldType
-}
-
 class Field {
 
-    constructor(name: string = "",
-        options: Record<string, string> = {},
-        id: string = "",
-        valuesListNotePath: string = "",
-        type: FieldType = FieldType.Input
-    ) {
-        this.name = name;
-        this.options = options;
-        this.id = id;
-        this.valuesListNotePath = valuesListNotePath;
-        this.type = type
-        this.insertNewValue.bind(this);
-    };
+    constructor(
+        public name: string = "",
+        public options: Record<string, string> = {},
+        public id: string = "",
+        public valuesListNotePath: string = "",
+        public type: FieldType = FieldType.Input
+    ) { };
 
-    public async insertNewValue(value: string): Promise<string> {
+    public insertNewValue(value: string): string {
         let newKey = 1;
         Object.keys(this.options).forEach(key => {
             if (parseInt(key) && parseInt(key) >= newKey) {

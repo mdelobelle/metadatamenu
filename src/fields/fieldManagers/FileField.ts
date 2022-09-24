@@ -16,7 +16,7 @@ export default class FileField extends FieldManager {
         super(plugin, field, FieldType.File)
     }
 
-    getFiles = (): TFile[] => {
+    public getFiles = (): TFile[] => {
         //@ts-ignore
         const getResults = (api: DataviewPlugin["api"]) => {
             try {
@@ -39,7 +39,7 @@ export default class FileField extends FieldManager {
         }
     }
 
-    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const modal = new SingleFileModal(this.plugin, file, this.field, value)
         modal.titleEl.setText("Select value");
         if (FileField.isMenu(location)) {
@@ -59,18 +59,18 @@ export default class FileField extends FieldManager {
         };
     }
 
-    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
         const fieldModal = new SingleFileModal(this.plugin, file, this.field, value, lineNumber, inFrontmatter, after);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
 
-    async createDvField(
+    public createDvField(
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
-    ): Promise<void> {
+    ): void {
         const fieldValue = dv.el('span', p[this.field.name], attrs);
         const searchBtn = document.createElement("button")
         setIcon(searchBtn, FieldIcon[FieldType.File])
@@ -109,7 +109,7 @@ export default class FileField extends FieldManager {
         fieldContainer.appendChild(spacer);
     }
 
-    createFileContainer(parentContainer: HTMLDivElement): void {
+    private createFileContainer(parentContainer: HTMLDivElement): void {
         const dvQueryStringContainer = parentContainer.createDiv();
         dvQueryStringContainer.createEl("span", { text: "Dataview Query (optional)", cls: 'metadata-menu-field-option' });
         this.dvQueryString = new TextAreaComponent(dvQueryStringContainer);
@@ -123,21 +123,21 @@ export default class FileField extends FieldManager {
         })
     }
 
-    createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
+    public createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
         this.fileValidatorField = parentContainer.createDiv({ cls: "metadata-menu-number-options" })
         this.createFileContainer(this.fileValidatorField)
         this.fileValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
     }
 
-    getOptionsStr(): string {
+    public getOptionsStr(): string {
         return this.field.options.dvQueryString || "";
     }
 
-    validateOptions(): boolean {
+    public validateOptions(): boolean {
         return true;
     }
 
-    async validateValue(value: string): Promise<boolean> {
+    public validateValue(value: string): boolean {
         const basename = value.trim().replace(/^\[\[/g, "").replace(/\]\]$/g, "");
         return !!this.getFiles().map(f => f.basename).find(item => item === basename);
     }

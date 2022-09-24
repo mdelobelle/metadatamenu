@@ -5,13 +5,8 @@ import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
 
 export default class FileClassAttributeSelectModal extends Modal {
 
-    plugin: MetadataMenu;
-    file: TFile;
-
-    constructor(plugin: MetadataMenu, file: TFile) {
+    constructor(private plugin: MetadataMenu, private file: TFile) {
         super(plugin.app);
-        this.file = file;
-        this.plugin = plugin;
     }
 
     async onOpen() {

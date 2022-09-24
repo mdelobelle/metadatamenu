@@ -7,22 +7,19 @@ import { FieldManager as FM } from "src/fields/FieldManager";
 import MetadataMenu from "main";
 
 export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
-    private plugin: MetadataMenu;
-    private file: TFile;
-    private field: Field;
-    private lineNumber: number;
-    private inFrontmatter: boolean;
-    private after: boolean;
+
     private selectedFiles: TFile[] = [];
 
-    constructor(plugin: MetadataMenu, file: TFile, field: Field, initialValueObject: any, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
+    constructor(
+        private plugin: MetadataMenu,
+        private file: TFile,
+        private field: Field,
+        initialValueObject: any,
+        private lineNumber: number = -1,
+        private inFrontmatter: boolean = false,
+        private after: boolean = false
+    ) {
         super(plugin.app);
-        this.plugin = plugin;
-        this.file = file;
-        this.field = field;
-        this.lineNumber = lineNumber;
-        this.inFrontmatter = inFrontMatter;
-        this.after = after;
         const dvApi = this.plugin.app.plugins.plugins["dataview"]?.api
         if (dvApi) {
             const selectedValues: Array<any> = Array.isArray(initialValueObject) ? initialValueObject : [initialValueObject]
@@ -36,6 +33,7 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
     }
 
     onOpen() {
+        super.onOpen()
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter" && e.shiftKey) {
                 await this.replaceValues();
@@ -69,8 +67,7 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
         clearButton.buttonEl.addClass("metadata-menu-value-suggester-button")
         clearButton.buttonEl.addClass("danger")
 
-        this.modalEl.insertBefore(buttonContainer, this.modalEl.childNodes[0])
-        super.onOpen()
+        this.modalEl.appendChild(buttonContainer)
     }
 
     getItems(): TFile[] {
@@ -129,7 +126,6 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
             const iconContainer = el.createDiv({ cls: "metadata-menu-command-suggest-icon" })
             setIcon(iconContainer, "check-circle")
         }
-        this.inputEl.focus()
     }
 
     renderSelected() {

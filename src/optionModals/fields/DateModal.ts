@@ -11,34 +11,29 @@ import DateField from "src/fields/fieldManagers/DateField";
 
 export default class DateModal extends Modal {
 
-    private file: TFile;
     private value: string;
-    private lineNumber: number;
-    private inFrontmatter: boolean;
-    private after: boolean;
     private insertAsLink: boolean;
-    private field: Field;
     private inputEl: TextComponent;
     private errorField: HTMLDivElement;
     private format: string;
-    private plugin: MetadataMenu;
     private nextIntervalField?: Field;
     private pushNextInterval: boolean = false;
     private currentShift?: string
     private nextShift?: string
     private dateManager?: DateField
-    private initialValue?: string
     private dvApi?: any
 
-    constructor(plugin: MetadataMenu, file: TFile, field: Field, initialValue: string, lineNumber: number = -1, inFrontMatter: boolean = false, after: boolean = false) {
+    constructor(
+        private plugin: MetadataMenu,
+        private file: TFile,
+        private field: Field,
+        private initialValue: string,
+        private lineNumber: number = -1,
+        private inFrontmatter: boolean = false,
+        private after: boolean = false
+    ) {
         super(plugin.app);
-        this.plugin = plugin;
-        this.file = file;
-        this.field = field;
         this.initialValue = initialValue ? initialValue.toString().replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last() || "" : "";
-        this.lineNumber = lineNumber;
-        this.inFrontmatter = inFrontMatter;
-        this.after = after;
         this.insertAsLink = FM.stringToBoolean(this.field.options.defaultInsertAsLink || "false") || false;
         this.format = this.field.options.dateFormat || this.field.options.defaultDateFormat;
         this.dvApi = this.plugin.app.plugins.plugins["dataview"]?.api

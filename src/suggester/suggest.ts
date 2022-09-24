@@ -8,19 +8,15 @@ const wrapAround = (value: number, size: number): number => {
 };
 
 class Suggest<T> {
-    private owner: ISuggestOwner<T>;
     private values: T[];
     private suggestions: HTMLDivElement[];
     private selectedItem: number;
-    private containerEl: HTMLElement;
 
     constructor(
-        owner: ISuggestOwner<T>,
-        containerEl: HTMLElement,
+        private owner: ISuggestOwner<T>,
+        private containerEl: HTMLElement,
         scope: Scope
     ) {
-        this.owner = owner;
-        this.containerEl = containerEl;
 
         containerEl.on(
             "click",

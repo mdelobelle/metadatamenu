@@ -13,7 +13,7 @@ export default class BooleanField extends FieldManager {
         super(plugin, field, FieldType.Boolean)
     }
 
-    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
         const bValue = BooleanField.stringToBoolean(value);
         if (BooleanField.isMenu(location)) {
             location.addItem((item) => {
@@ -31,15 +31,15 @@ export default class BooleanField extends FieldManager {
             });
         };
     };
-    getOptionsStr(): string {
+    public getOptionsStr(): string {
         return ""
     }
 
-    createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu): void {
+    public createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu): void {
         //no need of settings for boolean field
     }
 
-    async validateValue(value: string): Promise<boolean> {
+    public validateValue(value: string): boolean {
         try {
             const bValue = BooleanField.stringToBoolean(value)
             return isBoolean(bValue)
@@ -48,24 +48,24 @@ export default class BooleanField extends FieldManager {
         }
     }
 
-    validateOptions(): boolean {
+    public validateOptions(): boolean {
         //always true since there are no options
         return true
     }
 
-    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
         const bValue = BooleanField.stringToBoolean(value || "false");
         const fieldModal = new BooleanModal(this.plugin, file, this.field, bValue, lineNumber, inFrontmatter, after)
         fieldModal.titleEl.setText(`Set value for ${selectedFieldName}`);
         fieldModal.open();
     }
 
-    async createDvField(
+    public createDvField(
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
-    ): Promise<void> {
+    ): void {
         const checkbox: HTMLInputElement = dv.el("input", "", { ...attrs, "type": "checkbox" })
         checkbox.checked = p[this.field.name]
         fieldContainer.appendChild(checkbox)

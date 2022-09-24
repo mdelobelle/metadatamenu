@@ -6,18 +6,16 @@ import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldManager as F } from "src/fields/FieldManager";
 
 export default class FieldSetting extends Setting {
-    public field: Field;
-    private plugin: MetadataMenu;
-    private containerEl: HTMLElement;
     private fieldNameContainer: HTMLSpanElement;
     private typeContainer: HTMLSpanElement;
     private fieldOptionsContainer: HTMLSpanElement;
 
-    constructor(containerEl: HTMLElement, property: Field, plugin: MetadataMenu) {
+    constructor(
+        private containerEl: HTMLElement,
+        public field: Field,
+        private plugin: MetadataMenu
+    ) {
         super(containerEl);
-        this.containerEl = containerEl;
-        this.field = property;
-        this.plugin = plugin;
         this.setTextContentWithname();
         this.addEditButton();
         this.addDeleteButton();

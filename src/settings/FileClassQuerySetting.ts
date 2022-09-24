@@ -5,14 +5,14 @@ import FileClassQuerySettingsModal from "./FileClassQuerySettingModal";
 
 export default class FileClassQuerySetting extends Setting {
     public fileClassQuery: FileClassQuery;
-    private plugin: MetadataMenu;
-    private containerEl: HTMLElement;
 
-    constructor(containerEl: HTMLElement, property: FileClassQuery, plugin: MetadataMenu) {
+    constructor(
+        private containerEl: HTMLElement,
+        property: FileClassQuery,
+        private plugin: MetadataMenu
+    ) {
         super(containerEl);
-        this.containerEl = containerEl;
         this.fileClassQuery = property;
-        this.plugin = plugin;
         this.setTextContentWithname();
         this.addEditButton();
         this.addDeleteButton();

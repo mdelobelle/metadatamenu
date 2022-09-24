@@ -6,8 +6,8 @@ export const inlineFieldRegex = (attribute: string) => `(?<inQuote>\>(\\s+)?)?(?
 
 export const fullLineRegex = new RegExp(`^${genericFieldRegex}::\s*(?<values>.*)?`, "u");
 
-//search for them
 export const inSentenceRegexBrackets = new RegExp(`\\[${genericFieldRegex}::\s*(?<values>[^\\]]+)?\\]`, "gu");
+
 export const inSentenceRegexPar = new RegExp(`\\(${genericFieldRegex}::\s*(?<values>[^\\]]+)?\\)`, "gu");
 
 export const encodeLink = (value: string): string => {

@@ -8,9 +8,6 @@ import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
 
 class FileClassAttributeModal extends Modal {
 
-    private attr?: FileClassAttribute;
-    private fileClass: FileClass;
-    private plugin: MetadataMenu
     private nameInputContainer: HTMLDivElement;
     private nameInput: TextComponent;
     private attrName: HTMLElement;
@@ -21,11 +18,8 @@ class FileClassAttributeModal extends Modal {
     private fieldOptionsContainer: HTMLDivElement;
 
 
-    constructor(plugin: MetadataMenu, fileClass: FileClass, attr?: FileClassAttribute) {
+    constructor(private plugin: MetadataMenu, private fileClass: FileClass, private attr?: FileClassAttribute) {
         super(plugin.app);
-        this.plugin = plugin
-        this.attr = attr;
-        this.fileClass = fileClass;
         this.initialField = new Field();
         if (this.attr) {
             this.field = attr!.getField()
