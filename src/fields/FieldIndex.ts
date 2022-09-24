@@ -87,7 +87,7 @@ export default class FieldIndex extends Component {
     }
 
     async fullIndex(event: string, force_update_lookups = false): Promise<void> {
-        console.log("start full index", event, this.lastRevision, "->", this.dv?.api.index.revision)
+        //console.log("start full index", event, this.lastRevision, "->", this.dv?.api.index.revision)
         const start = Date.now()
         this.getGlobalFileClass();
         this.getFileClasses();
@@ -97,7 +97,7 @@ export default class FieldIndex extends Component {
         await this.getValuesListNotePathValues();
         this.resolveLookups();
         await this.updateLookups(force_update_lookups);
-        console.log("full index", event, this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
+        //console.log("full index", event, this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     }
 
     resolveLookups(): void {
