@@ -29,5 +29,5 @@ It also enables frontmatter of inline-field autocompletion with suggested values
 
 [demo 7](https://youtu.be/6dEk9no269g): Time shifting for spaced repetition or date postponing
 
-
+[demo 8](https://youtu.be/ad0nJf8TZP8): Lookup fields
 
