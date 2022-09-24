@@ -135,13 +135,12 @@ with `options: {inFrontmatter: false}` (default) a modal will be displayed to se
 const {fieldModifier: f} = this.app.plugins.plugins["metadata-menu"].api // destruct metadata-menu api to use fieldModifier function and give an alias: "f"
 
 dv.table(["file", "Masterization", "Tune"], 
-    await Promise.all( // await all modifiers to resolve their promise
         dv.pages()
         .where(p => p.fileClass === "music")
-        .map(async p => [
+        .map(p => [
             p.file.link, 
-            await f(dv, p, "masterization", {options: {alwaysOn: true}}),  // pass dv (dataview api instance), p (the page), the field name to fieldModifier (: "f") and an object with options: {alwaysOn: true} so taht the control is always visible
-            await f(dv, p, "tune") // pass dv (dataview api instance), p (the page), and the field name to fieldModifier (: "f")
+            f(dv, p, "masterization", {options: {alwaysOn: true}}),  // pass dv (dataview api instance), p (the page), the field name to fieldModifier (: "f") and an object with options: {alwaysOn: true} so taht the control is always visible
+            f(dv, p, "tune") // pass dv (dataview api instance), p (the page), and the field name to fieldModifier (: "f")
             ])
     )
 )
