@@ -6,7 +6,7 @@ export interface MetadataMenuSettings {
 	fileClassQueries: Array<FileClassQuery>;
 	displayFieldsInContextMenu: boolean;
 	globallyIgnoredFields: Array<string>;
-	classFilesPath: string;
+	classFilesPath: string | null;
 	isAutosuggestEnabled: boolean;
 	fileClassAlias: string;
 	settingsVersion?: number;
@@ -19,7 +19,7 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	fileClassQueries: [],
 	displayFieldsInContextMenu: true,
 	globallyIgnoredFields: [],
-	classFilesPath: "",
+	classFilesPath: null,
 	isAutosuggestEnabled: true,
 	fileClassAlias: "fileClass",
 	settingsVersion: undefined,

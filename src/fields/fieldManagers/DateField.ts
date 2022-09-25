@@ -254,7 +254,12 @@ export default class DateField extends FieldManager {
             const frontmatter = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter
             if (frontmatter) {
                 const fileClassName = frontmatter[this.plugin.settings.fileClassAlias]
-                fileClass = fileClassName ? FileClass.createFileClass(this.plugin, fileClassName) : undefined
+                let fileClass: FileClass | undefined
+                try {
+                    fileClass = fileClassName ? FileClass.createFileClass(this.plugin, fileClassName) : undefined
+                } catch {
+                    fileClass = undefined
+                }
             }
             const cycle = getField(this.plugin, cycleIntervalField, fileClass)
             if (cycle) {

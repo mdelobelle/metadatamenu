@@ -166,8 +166,12 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 Object.assign(fileClassQuery, fileClassQueries.pop() as FileClassQuery)
                 if (fileClassQuery.matchFile(context.file)) {
                     this.fileClassForFields = true;
-                    this.fileClass = FileClass.createFileClass(this.plugin, fileClassQuery.fileClassName)
-                    this.fileClassFields = this.fileClass.attributes.map(attr => attr.name)
+                    try {
+                        this.fileClass = FileClass.createFileClass(this.plugin, fileClassQuery.fileClassName)
+                        this.fileClassFields = this.fileClass.attributes.map(attr => attr.name)
+                    } catch (error) {
+
+                    }
                 }
             }
             //if this note has a fileClass, check if field options are defined in the FileClass

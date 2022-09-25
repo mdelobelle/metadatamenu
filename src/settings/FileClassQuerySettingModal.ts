@@ -70,7 +70,7 @@ export default class FileClassQuerySettingsModal extends Modal {
         const FileClassSelectorContainerLabel = parentNode.createDiv();
         FileClassSelectorContainerLabel.setText(`Fileclass:`);
         const select = new DropdownComponent(parentNode);
-        const fileClasses = this.plugin.app.vault.getFiles().filter(f => f.path.startsWith(this.plugin.settings.classFilesPath))
+        const fileClasses = this.plugin.app.vault.getFiles().filter(f => this.plugin.settings.classFilesPath && f.path.startsWith(this.plugin.settings.classFilesPath))
         select.addOption("--Select a fileClass--", "--Select a fileClass--")
         fileClasses.forEach(fileClass => select.addOption(fileClass.basename, fileClass.basename))
         if (this.fileClassQuery.fileClassName) {
