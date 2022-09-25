@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { TFile, Menu, TextAreaComponent, TextComponent, DropdownComponent } from "obsidian";
+import { TFile, Menu, TextAreaComponent, TextComponent, DropdownComponent, Notice } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
@@ -166,5 +166,123 @@ export default class LookupField extends FieldManager {
 
     validateOptions(): boolean {
         return true
+    }
+}
+
+export async function updateLookups(plugin: MetadataMenu, force_update: boolean = false): Promise<void> {
+    console.log("start update lookups", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
+    const f = plugin.fieldIndex;
+    let renderingErrors: string[] = []
+    for (let id of f.fileLookupFiles.keys()) {
+        const [filePath, fieldName] = id.split("__related__")
+        const tFile = plugin.app.vault.getAbstractFileByPath(filePath) as TFile
+        if (tFile) {
+            let newValue = "";
+            const pages = f.fileLookupFiles.get(id)
+            const field = f.filesFields.get(filePath)?.find(field => field.name == fieldName)
+            switch (field?.options.outputType) {
+                case Lookup.Type.LinksList:
+                    {
+                        const newValuesArray = pages?.map((dvFile: any) => {
+                            return FieldManager.buildMarkDownLink(plugin, tFile, dvFile.file.path);
+                        });
+                        newValue = (newValuesArray || []).join(", ");
+                    }
+                    break
+                case Lookup.Type.CustomList:
+                    {
+                        const renderingFunction = new Function("page", `return ${field.options.customListFunction}`)
+                        const newValuesArray = pages?.map((dvFile: any) => {
+                            try {
+                                return renderingFunction(dvFile)
+                            } catch {
+                                if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
+                                return ""
+                            }
+                        })
+                        newValue = (newValuesArray || []).join(", ");
+                    }
+                    break
+                case Lookup.Type.CustomSummarizing:
+                    {
+                        const customSummarizingFunction = field.options.customSummarizingFunction
+
+                        const summarizingFunction = new Function("pages",
+                            customSummarizingFunction
+                                .replace(/\{\{summarizedFieldName\}\}/g, field.options.summarizedFieldName))
+                        try {
+                            newValue = summarizingFunction(pages).toString();
+                        } catch {
+                            if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
+                            newValue = ""
+                        }
+                    }
+                    break
+                case Lookup.Type.BuiltinSummarizing:
+                    {
+                        const builtinFunction = field.options.builtinSummarizingFunction as keyof typeof Lookup.BuiltinSummarizing
+                        const summarizingFunction = new Function("pages",
+                            Lookup.BuiltinSummarizingFunction[builtinFunction]
+                                .replace(/\{\{summarizedFieldName\}\}/g, field.options.summarizedFieldName))
+                        try {
+                            newValue = summarizingFunction(pages).toString();
+                        } catch {
+                            if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
+                            newValue = ""
+                        }
+                    }
+                    break
+                default:
+                    break
+            }
+            //check if value has changed in order not to create an infinite loop
+            const currentValue = f.fileLookupFieldLastValue.get(id)
+            if (force_update || (!currentValue && newValue !== "") || currentValue !== newValue) {
+                await replaceValues(plugin, tFile, fieldName, newValue);
+                f.fileLookupFieldLastValue.set(id, newValue)
+            }
+        }
+    }
+    if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`)
+    console.log("finished update lookups", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
+}
+
+export function resolveLookups(plugin: MetadataMenu): void {
+    const f = plugin.fieldIndex;
+    Array.from(f.filesFields).filter((value: [string, Field[]]) => {
+        const [filePath, fields] = value;
+        const dvPage = f.dv.api.page(filePath);
+        if (dvPage) {
+            fields.filter(field => field.type === FieldType.Lookup && Object.keys(dvPage).includes(field.name)).forEach(lookupField => {
+
+                const queryRelatedDVFiles = (new Function("dv", `return ${lookupField.options.dvQueryString}`))(f.dv.api).values as Array<any>
+                const fileRelatedDVFiles = queryRelatedDVFiles.filter(f => f[lookupField.options.targetFieldName]?.path === filePath)
+                const existingFileLookupFields = f.fileLookupFiles.get(`${filePath}__related__${lookupField.name}`)
+                f.fileLookupFiles.set(`${filePath}__related__${lookupField.name}`, fileRelatedDVFiles)
+                f.previousFileLookupFilesValues.set(`${filePath}__related__${lookupField.name}`, (existingFileLookupFields || fileRelatedDVFiles).length)
+                fileRelatedDVFiles.forEach(dvFile => {
+                    const parents = f.fileLookupParents.get(dvFile.file.path) || []
+                    if (!parents.includes(filePath)) parents.push(filePath)
+                    f.fileLookupParents.set(dvFile.file.path, parents)
+                })
+            })
+        }
+    })
+    for (let id of f.fileLookupFiles.keys()) {
+        const [filePath, fieldName] = id.split("__related__")
+        const dvPage = f.dv.api.page(filePath);
+        if (dvPage === undefined) {
+            for (const file in f.fileLookupParents.keys()) {
+                const newParents = f.fileLookupParents.get(file)?.remove(filePath) || []
+                f.fileLookupParents.set(file, newParents);
+            }
+            f.fileLookupFiles.delete(id);
+            f.fileLookupFieldLastValue.delete(id);
+            f.previousFileLookupFilesValues.delete(id)
+        } else if (dvPage[fieldName] === undefined) {
+            f.fileLookupFiles.delete(id);
+            f.fileLookupFieldLastValue.delete(id);
+            f.previousFileLookupFilesValues.delete(id)
+        }
     }
 }

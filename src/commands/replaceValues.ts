@@ -1,5 +1,8 @@
 import MetadataMenu from "main";
 import { MarkdownView, TFile } from "obsidian";
+import Field from "src/fields/Field";
+import { FieldType } from "src/types/fieldTypes";
+import { getListBounds } from "src/utils/list";
 import { fieldComponents, inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
 
 const enum Location {
@@ -60,6 +63,10 @@ export async function replaceValues(
     }
     const content = (await plugin.app.vault.cachedRead(file)).split('\n');
     const frontmatter = plugin.app.metadataCache.getFileCache(file)?.frontmatter;
+    //first look for lookup lists
+
+    const skippedLines: number[] = []
+
     const { position: { start, end } } = frontmatter ? frontmatter : { position: { start: undefined, end: undefined } };
     const newContent = content.map((line, i) => {
         if (start && end && i >= start.line && i <= end.line) {
@@ -78,11 +85,33 @@ export async function replaceValues(
             const fullLineRegex = new RegExp(`^${inlineFieldRegex(attribute)}`, "u");
             const fR = encodedLine.match(fullLineRegex);
             if (fR?.groups && Object.keys(fR.groups).every(j => fieldComponents.includes(j))) {
+                //check if this field is a lookup and get list boundaries
+                const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === attribute)
+                if (field?.type === FieldType.Lookup) {
+                    const previousItemsCount = plugin.fieldIndex.previousFileLookupFilesValues.get(file.path + "__related__" + attribute) || 0
+                    console.log(previousItemsCount)
+                    const bounds = getListBounds(plugin, file, i)
+                    if (bounds) {
+                        const { start } = bounds;
+                        for (let j = start + 1; j < start + previousItemsCount + 1; j++) {
+                            skippedLines.push(j)
+                        }
+                    }
+                    console.log(bounds)
+                    console.log(skippedLines)
+                }
                 const { inList, inQuote, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = fR.groups
                 const inputArray = input ? input.replace(/(\,\s+)/g, ',').split(',') : [""];
-                const newValue = inputArray.length == 1 ? inputArray[0] : `${inputArray.join(', ')}`;
+                let newValue: string;
+                if (field?.type === FieldType.Lookup) {
+                    console.log(field.name)
+                    newValue = inputArray.length == 1 ? "\n- " + inputArray[0] : `${inputArray.length > 0 ? "\n" : ""}${inputArray.map(item => "- " + item).join('\n')}`;
+                } else {
+                    newValue = inputArray.length == 1 ? inputArray[0] : `${inputArray.join(', ')}`;
+                }
                 return `${inQuote || ""}${inList || ""}${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer}${newValue}`;
             } else {
+                console.log('avant: ', encodedLine)
                 const newFields: FieldReplace[] = [];
                 const inSentenceRegexBrackets = new RegExp(`\\[${inlineFieldRegex(attribute)}\\]`, "gu");
                 const inSentenceRegexPar = new RegExp(`\\(${inlineFieldRegex(attribute)}\\)`, "gu");
@@ -92,11 +121,12 @@ export async function replaceValues(
                     const fieldRegex = new RegExp(field.oldField.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "u")
                     encodedLine = encodedLine.replace(fieldRegex, field.newField);
                 })
+                console.log('après: ', encodedLine)
                 return decodeLink(encodedLine);
             }
         }
     })
-    await plugin.app.vault.modify(file, newContent.join('\n'));
+    await plugin.app.vault.modify(file, newContent.filter((line, i) => !skippedLines.includes(i)).join('\n'));
     const editor = plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor
     if (editor) {
         const lineNumber = editor.getCursor().line
