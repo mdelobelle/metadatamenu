@@ -200,10 +200,10 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			.addSearch((cfs) => {
 				new FolderSuggest(this.plugin, cfs.inputEl);
 				cfs.setPlaceholder("Folder")
-					.setValue(this.plugin.settings.classFilesPath)
+					.setValue(this.plugin.settings.classFilesPath || "")
 					.onChange((new_folder) => {
-						const newPath = new_folder.endsWith("/") ? new_folder : new_folder + "/";
-						this.plugin.settings.classFilesPath = newPath;
+						const newPath = new_folder.endsWith("/") || !new_folder ? new_folder : new_folder + "/";
+						this.plugin.settings.classFilesPath = newPath || null;
 						this.plugin.saveSettings();
 					});
 				// @ts-ignore
@@ -232,7 +232,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				new FileSuggest(
 					cfs.inputEl,
 					this.plugin,
-					this.plugin.settings.classFilesPath
+					this.plugin.settings.classFilesPath || ""
 				);
 				cfs.setPlaceholder("Global fileClass")
 				cfs.setValue(

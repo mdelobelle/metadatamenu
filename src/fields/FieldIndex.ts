@@ -72,7 +72,8 @@ export default class FieldIndex extends Component {
         this.plugin.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
                 if (op === "update" && this.dv.api.index.revision !== this.lastRevision) {
-                    if (file.path.includes(this.plugin.settings.classFilesPath)) {
+                    const classFilesPath = this.plugin.settings.classFilesPath
+                    if (classFilesPath && file.path.includes(classFilesPath)) {
                         this.fullIndex("fileClass changed")
                     } else {
                         this.resolveLookups();
@@ -120,19 +121,29 @@ export default class FieldIndex extends Component {
         if (!globalFileClass) {
             this.fieldsFromGlobalFileClass = []
         } else {
-            this.fieldsFromGlobalFileClass = FileClass.createFileClass(this.plugin, globalFileClass).attributes.map(attr => attr.getField())
+            try {
+                this.fieldsFromGlobalFileClass = FileClass.createFileClass(this.plugin, globalFileClass).attributes.map(attr => attr.getField())
+            } catch (error) { }
         }
     }
 
     getFileClasses(): void {
-        this.plugin.app.vault.getMarkdownFiles()
-            .filter(f => f.path.includes(this.plugin.settings.classFilesPath))
-            .forEach(f => {
-                const fileClass = FileClass.createFileClass(this.plugin, f.basename)
-                this.fileClassesFields.set(f.basename, fileClass.attributes.map(attr => attr.getField()))
-                this.fileClassesPath.set(f.path, fileClass)
-                this.fileClassesName.set(fileClass.name, fileClass)
-            })
+        if (this.plugin.settings.classFilesPath) {
+            this.plugin.app.vault.getMarkdownFiles()
+                .filter(f => f.path.includes(this.plugin.settings.classFilesPath!))
+                .forEach(f => {
+                    try {
+                        const fileClass = FileClass.createFileClass(this.plugin, f.basename)
+                        this.fileClassesFields.set(f.basename, fileClass.attributes.map(attr => attr.getField()))
+                        this.fileClassesPath.set(f.path, fileClass)
+                        this.fileClassesName.set(fileClass.name, fileClass)
+                    } catch {
+
+                    }
+
+                })
+        }
+
     }
     resolveFileClassQueries(): void {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
@@ -151,7 +162,7 @@ export default class FieldIndex extends Component {
 
     getFilesFieldsFromFileClass(): void {
         this.plugin.app.vault.getMarkdownFiles()
-            .filter(f => !f.path.includes(this.plugin.settings.classFilesPath))
+            .filter(f => !this.plugin.settings.classFilesPath || !f.path.includes(this.plugin.settings.classFilesPath))
             .forEach(f => {
                 const fileFileClassName = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.[this.plugin.settings.fileClassAlias]
                 if (fileFileClassName) {
@@ -173,7 +184,7 @@ export default class FieldIndex extends Component {
 
     getFilesFields(): void {
         this.plugin.app.vault.getMarkdownFiles()
-            .filter(f => !f.path.includes(this.plugin.settings.classFilesPath))
+            .filter(f => !this.plugin.settings.classFilesPath || !f.path.includes(this.plugin.settings.classFilesPath))
             .forEach(f => {
                 const fileFieldsFromInnerFileClasses = this.filesFieldsFromInnerFileClasses.get(f.path)
                 if (fileFieldsFromInnerFileClasses?.length) {

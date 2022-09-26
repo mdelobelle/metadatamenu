@@ -1,4 +1,4 @@
-import { FileView, MarkdownView, Plugin, TFile, View } from 'obsidian';
+import { FileView, MarkdownView, Notice, Plugin, TFile, View } from 'obsidian';
 import Field from 'src/fields/Field';
 import FieldIndex from 'src/fields/FieldIndex';
 import { FileClass } from 'src/fileClass/fileClass';
@@ -90,8 +90,12 @@ export default class MetadataMenu extends Plugin {
 				if (checking) {
 					return !!(view?.file) && `${view.file.parent.path}/` == this.settings.classFilesPath
 				}
-				const fileClassAttributeModal = new FileClassAttributeModal(this, FileClass.createFileClass(this, view!.file.basename))
-				fileClassAttributeModal.open()
+				try {
+					const fileClassAttributeModal = new FileClassAttributeModal(this, FileClass.createFileClass(this, view!.file.basename))
+					fileClassAttributeModal.open()
+				} catch (error) {
+					new Notice("This is not a valid fileClass")
+				}
 			},
 		});
 	}
