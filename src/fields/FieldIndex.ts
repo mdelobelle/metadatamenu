@@ -27,16 +27,7 @@ export default class FieldIndex extends Component {
 
     constructor(private plugin: MetadataMenu, public cacheVersion: string, public onChange: () => void) {
         super()
-        this.fileClassesFields = new Map();
-        this.fieldsFromGlobalFileClass = [];
-        this.filesFieldsFromFileClassQueries = new Map();
-        this.filesFieldsFromInnerFileClasses = new Map();
-        this.filesFields = new Map();
-        this.filesFileClass = new Map();
-        this.fileClassesPath = new Map();
-        this.fileClassesName = new Map();
-        this.filesFileClassName = new Map();
-        this.valuesListNotePathValues = new Map();
+        this.flushCache();
         this.fileLookupFiles = new Map();
         this.fileLookupParents = new Map();
         this.fileLookupFieldLastValue = new Map();
@@ -86,9 +77,23 @@ export default class FieldIndex extends Component {
 
     }
 
+    private flushCache() {
+        this.fileClassesFields = new Map();
+        this.fieldsFromGlobalFileClass = [];
+        this.filesFieldsFromFileClassQueries = new Map();
+        this.filesFieldsFromInnerFileClasses = new Map();
+        this.filesFields = new Map();
+        this.filesFileClass = new Map();
+        this.fileClassesPath = new Map();
+        this.fileClassesName = new Map();
+        this.filesFileClassName = new Map();
+        this.valuesListNotePathValues = new Map();
+    }
+
     async fullIndex(event: string, force_update_lookups = false): Promise<void> {
         //console.log("start full index", event, this.lastRevision, "->", this.dv?.api.index.revision)
         const start = Date.now()
+        this.flushCache();
         this.getGlobalFileClass();
         this.getFileClasses();
         this.resolveFileClassQueries();

@@ -82,14 +82,14 @@ export async function replaceValues(
         } else {
             const encodedInput = encodeLink(input)
             let encodedLine = encodeLink(line)
-            const fullLineRegex = new RegExp(`^${inlineFieldRegex(attribute)}`, "u");
+            const fullLineRegex = new RegExp(`^${inlineFieldRegex(attribute)}(?<values>[^\\]]*)`, "u");
             const fR = encodedLine.match(fullLineRegex);
             if (fR?.groups && Object.keys(fR.groups).every(j => fieldComponents.includes(j))) {
                 //check if this field is a lookup and get list boundaries
                 const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === attribute)
                 if (field?.type === FieldType.Lookup) {
                     const previousItemsCount = plugin.fieldIndex.previousFileLookupFilesValues.get(file.path + "__related__" + attribute) || 0
-                    console.log(previousItemsCount)
+                    //console.log(previousItemsCount)
                     const bounds = getListBounds(plugin, file, i)
                     if (bounds) {
                         const { start } = bounds;
@@ -97,31 +97,31 @@ export async function replaceValues(
                             skippedLines.push(j)
                         }
                     }
-                    console.log(bounds)
-                    console.log(skippedLines)
+                    //console.log(bounds)
+                    //console.log(skippedLines)
                 }
                 const { inList, inQuote, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = fR.groups
                 const inputArray = input ? input.replace(/(\,\s+)/g, ',').split(',') : [""];
                 let newValue: string;
                 if (field?.type === FieldType.Lookup) {
-                    console.log(field.name)
+                    //console.log(field.name)
                     newValue = inputArray.length == 1 ? "\n- " + inputArray[0] : `${inputArray.length > 0 ? "\n" : ""}${inputArray.map(item => "- " + item).join('\n')}`;
                 } else {
                     newValue = inputArray.length == 1 ? inputArray[0] : `${inputArray.join(', ')}`;
                 }
                 return `${inQuote || ""}${inList || ""}${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer}${newValue}`;
             } else {
-                console.log('avant: ', encodedLine)
+                //console.log('avant: ', encodedLine)
                 const newFields: FieldReplace[] = [];
-                const inSentenceRegexBrackets = new RegExp(`\\[${inlineFieldRegex(attribute)}\\]`, "gu");
-                const inSentenceRegexPar = new RegExp(`\\(${inlineFieldRegex(attribute)}\\)`, "gu");
+                const inSentenceRegexBrackets = new RegExp(`\\[${inlineFieldRegex(attribute)}(?<values>[^\\]]+)?\\]`, "gu");
+                const inSentenceRegexPar = new RegExp(`\\(${inlineFieldRegex(attribute)}(?<values>[^\\)]+)?\\)`, "gu");
                 newFields.push(...matchInlineFields(inSentenceRegexBrackets, encodedLine, attribute, encodedInput, Location.brackets))
                 newFields.push(...matchInlineFields(inSentenceRegexPar, encodedLine, attribute, encodedInput, Location.parenthesis))
                 newFields.forEach(field => {
                     const fieldRegex = new RegExp(field.oldField.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "u")
                     encodedLine = encodedLine.replace(fieldRegex, field.newField);
                 })
-                console.log('après: ', encodedLine)
+                //console.log('après: ', encodedLine)
                 return decodeLink(encodedLine);
             }
         }

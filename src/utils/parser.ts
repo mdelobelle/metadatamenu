@@ -2,13 +2,13 @@ export const fieldComponents = ['inQuote', 'inList', 'startStyle', 'attribute', 
 
 export const genericFieldRegex = "(?<inQuote>\>(\\s+)?)?(?<inList>- )?(?<startStyle>[_\\*~`]*)(?<attribute>[0-9\\w\\p{Letter}\\p{Emoji_Presentation}][-0-9\\w\\p{Letter}\\p{Emoji_Presentation}\\s]*)(?<endStyle>[_\\*~`]*)(?<beforeSeparatorSpacer>\\s*)";
 
-export const inlineFieldRegex = (attribute: string) => `(?<inQuote>\>(\\s+)?)?(?<inList>- )?(?<startStyle>[_\\*~\`]*)(?<attribute>${attribute})(?<endStyle>[_\\*~\`]*)(?<beforeSeparatorSpacer>\\s*)::(?<afterSeparatorSpacer>\\s*)(?<values>[^\\]]*)`;
+export const inlineFieldRegex = (attribute: string) => `(?<inQuote>\>(\\s+)?)?(?<inList>- )?(?<startStyle>[_\\*~\`]*)(?<attribute>${attribute})(?<endStyle>[_\\*~\`]*)(?<beforeSeparatorSpacer>\\s*)::(?<afterSeparatorSpacer>\\s*)`;
 
 export const fullLineRegex = new RegExp(`^${genericFieldRegex}::\s*(?<values>.*)?`, "u");
 
 export const inSentenceRegexBrackets = new RegExp(`\\[${genericFieldRegex}::\s*(?<values>[^\\]]+)?\\]`, "gu");
 
-export const inSentenceRegexPar = new RegExp(`\\(${genericFieldRegex}::\s*(?<values>[^\\]]+)?\\)`, "gu");
+export const inSentenceRegexPar = new RegExp(`\\(${genericFieldRegex}::\s*(?<values>[^\\)]+)?\\)`, "gu");
 
 export const encodeLink = (value: string): string => {
     /* replace link brackets by "impossible" combination of characters so that they won't be mixed up with inSentence field brackets when seaching with regex*/
