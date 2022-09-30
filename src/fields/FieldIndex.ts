@@ -24,6 +24,8 @@ export default class FieldIndex extends Component {
     public fileLookupParents: Map<string, string[]>
     public dv: any
     public lastRevision: 0
+    public fileChanged: boolean = false
+    public dvReady: boolean = false
 
     constructor(private plugin: MetadataMenu, public cacheVersion: string, public onChange: () => void) {
         super()
@@ -40,12 +42,14 @@ export default class FieldIndex extends Component {
         if (this.dv?.api.index.initialized) {
             this.dv = this.plugin.app.plugins.plugins.dataview
             this.lastRevision = this.dv.api.index.revision
-            await this.fullIndex("dv init");
+            this.dvReady = true
+            await this.fullIndex("dv is running");
         }
 
         this.plugin.registerEvent(
             this.plugin.app.metadataCache.on("dataview:index-ready", async () => {
                 this.dv = this.plugin.app.plugins.plugins.dataview
+                this.dvReady = true
                 await this.fullIndex("dv index", true);
                 this.lastRevision = this.dv.api.index.revision
             })
@@ -53,7 +57,9 @@ export default class FieldIndex extends Component {
 
         this.plugin.registerEvent(
             this.plugin.app.metadataCache.on('resolved', async () => {
+                //console.log("obsidian resolved")
                 if (this.plugin.app.metadataCache.inProgressTaskCount === 0) {
+                    this.fileChanged = true
                     await this.fullIndex("cache resolved");
                     this.lastRevision = this.dv?.api.index.revision || 0
                 }
@@ -62,13 +68,14 @@ export default class FieldIndex extends Component {
 
         this.plugin.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
-                if (op === "update" && this.dv.api.index.revision !== this.lastRevision) {
+                //console.log("some file changed", this.fileChanged);
+                if (op === "update" && this.dv?.api.index.revision !== this.lastRevision && this.fileChanged && this.dvReady) {
                     const classFilesPath = this.plugin.settings.classFilesPath
                     if (classFilesPath && file.path.includes(classFilesPath)) {
                         this.fullIndex("fileClass changed")
                     } else {
                         this.resolveLookups();
-                        await this.updateLookups();
+                        await this.updateLookups(false, file.basename);
                     }
                     this.lastRevision = this.dv.api.index.revision
                 }
@@ -91,7 +98,7 @@ export default class FieldIndex extends Component {
     }
 
     async fullIndex(event: string, force_update_lookups = false): Promise<void> {
-        //console.log("start full index", event, this.lastRevision, "->", this.dv?.api.index.revision)
+        //console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
         const start = Date.now()
         this.flushCache();
         this.getGlobalFileClass();
@@ -101,15 +108,15 @@ export default class FieldIndex extends Component {
         this.getFilesFields();
         await this.getValuesListNotePathValues();
         this.resolveLookups();
-        await this.updateLookups(force_update_lookups);
-        //console.log("full index", event, this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
+        await this.updateLookups(force_update_lookups, "full Index");
+        //console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     }
 
     resolveLookups(): void {
         resolveLookups(this.plugin);
     }
 
-    async updateLookups(force_update: boolean = false): Promise<void> {
+    async updateLookups(force_update: boolean = false, source: string = ""): Promise<void> {
         await updateLookups(this.plugin, force_update);
     }
 
