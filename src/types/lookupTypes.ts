@@ -27,44 +27,58 @@ export const BuiltinSummarizingFunction: Record<keyof typeof BuiltinSummarizing,
 
 export enum Type {
     "LinksList" = "LinksList",
+    "LinksIndentedList" = "LinksIndentedList",
     "BuiltinSummarizing" = "BuiltinSummarizing",
     "CustomList" = "CustomList",
+    "CustomIndentedList" = "CustomIndentedList",
     "CustomSummarizing" = "CustomSummarizing"
 }
 
 export const MappingLabel: Record<keyof typeof Type, Type> = {
     "LinksList": Type.LinksList,
+    "LinksIndentedList": Type.LinksIndentedList,
     "BuiltinSummarizing": Type.BuiltinSummarizing,
     "CustomList": Type.CustomList,
+    "CustomIndentedList": Type.CustomIndentedList,
     "CustomSummarizing": Type.CustomSummarizing
 }
 
 export const Description: Record<keyof typeof Type, string> = {
-    "LinksList": "List of related links",
+    "LinksList": "List of related links displayed inline",
+    "LinksIndentedList": "List of related links displayed below the field",
     "BuiltinSummarizing": "Built-in summarizing function",
-    "CustomList": "Custom list rendering function",
+    "CustomList": "Custom list rendering function displayed inline",
+    "CustomIndentedList": "Custom list rendering function displayed below the field",
     "CustomSummarizing": "Custom summarizing function"
 }
 
 export const OptionLabel: Record<keyof typeof Type, string> = {
     "LinksList": "",
+    "LinksIndentedList": "",
     "BuiltinSummarizing": "Built-in summarize function:",
     "CustomList": "Query's results' list's rendering function:",
+    "CustomIndentedList": "Query's results' list's rendering function:",
     "CustomSummarizing": "Query's results' list's summarizing function:"
 }
 
 
 export const OptionSubLabel: Record<keyof typeof Type, string> = {
     "LinksList": "",
+    "LinksIndentedList": "",
     "BuiltinSummarizing": "",
     "CustomList": `function(page) { return <function using "page">; }`,
+    "CustomIndentedList": `function(page) { return <function using "page">; }`,
     "CustomSummarizing": `function(page) { return <function using "page">; }`
 }
 
 export const Helper: Record<keyof typeof Type, string> = {
     "LinksList": "",
+    "LinksIndentedList": "",
     "BuiltinSummarizing": "",
     "CustomList": "Javascript string, " +
+        "the \"page\" (dataview page type) variable is available\n" +
+        "example 1: page.file.name\nexample 2: `${page.file.name} of gender ${page.gender}`",
+    "CustomIndentedList": "Javascript string, " +
         "the \"page\" (dataview page type) variable is available\n" +
         "example 1: page.file.name\nexample 2: `${page.file.name} of gender ${page.gender}`",
     "CustomSummarizing": "Javascript string, the \"pages\" (dataview pages type) " +
@@ -76,7 +90,14 @@ export const Helper: Record<keyof typeof Type, string> = {
 
 export const Default: Record<keyof typeof Type, string> = {
     "LinksList": "",
+    "LinksIndentedList": "",
     "BuiltinSummarizing": BuiltinSummarizing.Count,
     "CustomList": "page.file.name",
+    "CustomIndentedList": "page.file.name",
     "CustomSummarizing": "return pages.length"
 }
+
+export const indentedListLookupTypes = [
+    Type.LinksIndentedList,
+    Type.CustomIndentedList
+]

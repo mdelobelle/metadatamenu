@@ -117,7 +117,7 @@ export default class FieldIndex extends Component {
     }
 
     async updateLookups(force_update: boolean = false, source: string = ""): Promise<void> {
-        await updateLookups(this.plugin, force_update);
+        await updateLookups(this.plugin, force_update, source);
     }
 
     async getValuesListNotePathValues(): Promise<void> {

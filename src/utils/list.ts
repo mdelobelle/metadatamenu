@@ -7,11 +7,19 @@ export function getListBounds(plugin: MetadataMenu, file: TFile, parent: number)
     const subParentsLines = [-parent - 1];
     let start: number = parent;
     let end: number = -1;
+    let outOfList: boolean = false;
     listItems.forEach(listItem => {
-        if (subParentsLines.includes(listItem.parent)) {
+        if (subParentsLines.includes(listItem.parent) && !outOfList) {
             subParentsLines.push(listItem.position.start.line);
-            start = start <= listItem.position.start.line ? start : listItem.position.start.line;
-            end = end <= listItem.position.end.line ? listItem.position.end.line : end
+            if (start > listItem.position.start.line) start = listItem.position.start.line;
+            if (end <= listItem.position.end.line) {
+                if (listItem.position.end.line == listItem.position.start.line) {
+                    end = listItem.position.end.line;
+                } else {
+                    end = listItem.position.start.line;
+                    outOfList = true
+                }
+            }
         }
     })
     if (end >= 0) {

@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { MarkdownView, TFile } from "obsidian";
-import Field from "src/fields/Field";
+import * as Lookup from "src/types/lookupTypes";
 import { FieldType } from "src/types/fieldTypes";
 import { getListBounds } from "src/utils/list";
 import { fieldComponents, inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
@@ -91,9 +91,10 @@ export async function replaceValues(
                     const previousItemsCount = plugin.fieldIndex.previousFileLookupFilesValues.get(file.path + "__related__" + attribute) || 0
                     //console.log(previousItemsCount)
                     const bounds = getListBounds(plugin, file, i)
+                    //console.log(bounds)
                     if (bounds) {
-                        const { start } = bounds;
-                        for (let j = start + 1; j < start + previousItemsCount + 1; j++) {
+                        const { start, end } = bounds;
+                        for (let j = start + 1; j < start + previousItemsCount + 1 && j < end + 1; j++) {
                             skippedLines.push(j)
                         }
                     }
@@ -101,9 +102,9 @@ export async function replaceValues(
                     //console.log(skippedLines)
                 }
                 const { inList, inQuote, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = fR.groups
-                const inputArray = input ? input.replace(/(\,\s+)/g, ',').split(',') : [""];
+                const inputArray = input ? input.replace(/(\,\s+)/g, ',').split(',').sort() : [];
                 let newValue: string;
-                if (field?.type === FieldType.Lookup) {
+                if (field?.type === FieldType.Lookup && Lookup.indentedListLookupTypes.includes(field?.options.outputType as Lookup.Type)) {
                     //console.log(field.name)
                     newValue = inputArray.length == 1 ? "\n- " + inputArray[0] : `${inputArray.length > 0 ? "\n" : ""}${inputArray.map(item => "- " + item).join('\n')}`;
                 } else {

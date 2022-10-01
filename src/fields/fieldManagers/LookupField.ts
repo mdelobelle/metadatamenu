@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { TFile, Menu, TextAreaComponent, TextComponent, DropdownComponent, Notice } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
-import { FieldIcon, FieldType } from "src/types/fieldTypes";
+import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { SettingLocation } from "../FieldManager";
 import { FieldManager } from "../FieldManager";
@@ -29,21 +29,25 @@ export default class LookupField extends FieldManager {
         } else {
             insertValues(this.plugin, file, this.field.name, "", lineNumber, inFrontmatter, after);
         };
-        //this.plugin.fieldIndex.fullIndex("insert", true);
     }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }): void {
 
     }
 
-    private displaySelectedOutputOptionContainer(optionContainers: Record<string, HTMLElement | undefined>, value: string) {
-        Object.keys(optionContainers).forEach(option => {
-            if (value === option) {
-                optionContainers[option]?.show()
+    private displaySelectedOutputOptionContainer(optionContainers: [Array<keyof typeof Lookup.Type>, HTMLElement | undefined][], value: keyof typeof Lookup.Type) {
+        optionContainers.forEach(options_set => {
+            if (options_set[0].includes(value)) {
+                options_set[1]?.show()
             } else {
-                optionContainers[option]?.hide()
+                options_set[1]?.hide()
             }
         })
+    }
+
+    private displaySelectedOutputWarningContainer(optionWarningContainer: HTMLDivElement, value: keyof typeof Lookup.Type) {
+        [Lookup.Type.LinksIndentedList.toString(), Lookup.Type.CustomIndentedList.toString()].includes(value) ?
+            optionWarningContainer.show() : optionWarningContainer.hide();
     }
 
     private createLookupContainer(parentContainer: HTMLDivElement): void {
@@ -81,6 +85,15 @@ export default class LookupField extends FieldManager {
             outputTypeList.addOption(outputType, Lookup.Description[outputType])
         })
         outputTypeList.setValue(this.field.options.outputType)
+
+        const outputWarningContainer = parentContainer.createDiv();
+        outputWarningContainer.createEl("p", {
+            text:
+                "Warning: this may override some lines under your list. " +
+                "There shouldn't be an extra manual item in the list that is automatically " +
+                "rendered by this field: it would be overriden after each field indexing",
+            cls: "metadata-menu-field-option-warning"
+        });
 
         //Built in summarizng function options
         const builtinOptionsContainer = parentContainer.createDiv();
@@ -126,6 +139,7 @@ export default class LookupField extends FieldManager {
             this.field.options.customListFunction = value
         })
 
+
         const outputSummarizingFunctionContainer = parentContainer.createDiv();
         this.field.options.customSummarizingFunction = this.field.options.customSummarizingFunction || Lookup.Default.CustomSummarizing
         outputSummarizingFunctionContainer.createEl("span", { text: Lookup.OptionLabel.CustomSummarizing, cls: "metadata-menu-field-option" });
@@ -139,18 +153,20 @@ export default class LookupField extends FieldManager {
             this.field.options.customSummarizingFunction = value
         })
 
-        const optionContainers: Record<keyof typeof Lookup.Type, HTMLElement | undefined> = {
-            "LinksList": undefined,
-            "BuiltinSummarizing": builtinOptionsContainer,
-            "CustomList": outputRenderingFunctionContainer,
-            "CustomSummarizing": outputSummarizingFunctionContainer
-        }
+        const optionContainers: [Array<keyof typeof Lookup.Type>, HTMLElement | undefined][] = [
+            [["LinksList", "LinksIndentedList"], undefined],
+            [["BuiltinSummarizing"], builtinOptionsContainer],
+            [["CustomList", "CustomIndentedList"], outputRenderingFunctionContainer],
+            [["CustomSummarizing"], outputSummarizingFunctionContainer]
+        ]
 
-        this.displaySelectedOutputOptionContainer(optionContainers, outputTypeList.getValue())
+        this.displaySelectedOutputOptionContainer(optionContainers, outputTypeList.getValue() as keyof typeof Lookup.Type)
+        this.displaySelectedOutputWarningContainer(outputWarningContainer, outputTypeList.getValue() as keyof typeof Lookup.Type)
 
-        outputTypeList.onChange(value => {
+        outputTypeList.onChange((value: keyof typeof Lookup.Type) => {
             this.field.options.outputType = value;
             this.displaySelectedOutputOptionContainer(optionContainers, value)
+            this.displaySelectedOutputWarningContainer(outputWarningContainer, value)
         })
     }
 
@@ -169,8 +185,8 @@ export default class LookupField extends FieldManager {
     }
 }
 
-export async function updateLookups(plugin: MetadataMenu, force_update: boolean = false): Promise<void> {
-    //console.log("start update lookups", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
+export async function updateLookups(plugin: MetadataMenu, force_update: boolean = false, source: string = ""): Promise<void> {
+    //console.log("start update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
     const f = plugin.fieldIndex;
     let renderingErrors: string[] = []
     for (let id of f.fileLookupFiles.keys()) {
@@ -182,6 +198,7 @@ export async function updateLookups(plugin: MetadataMenu, force_update: boolean 
             const field = f.filesFields.get(filePath)?.find(field => field.name == fieldName)
             switch (field?.options.outputType) {
                 case Lookup.Type.LinksList:
+                case Lookup.Type.LinksIndentedList:
                     {
                         const newValuesArray = pages?.map((dvFile: any) => {
                             return FieldManager.buildMarkDownLink(plugin, tFile, dvFile.file.path);
@@ -190,6 +207,7 @@ export async function updateLookups(plugin: MetadataMenu, force_update: boolean 
                     }
                     break
                 case Lookup.Type.CustomList:
+                case Lookup.Type.CustomIndentedList:
                     {
                         const renderingFunction = new Function("page", `return ${field.options.customListFunction}`)
                         const newValuesArray = pages?.map((dvFile: any) => {
@@ -240,14 +258,16 @@ export async function updateLookups(plugin: MetadataMenu, force_update: boolean 
             if (force_update || (!currentValue && newValue !== "") || currentValue !== newValue) {
                 await replaceValues(plugin, tFile, fieldName, newValue);
                 f.fileLookupFieldLastValue.set(id, newValue)
+            } else if (source !== "full Index") {
+                plugin.fieldIndex.fileChanged = false
             }
         }
     }
     if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`)
-    //console.log("finished update lookups", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
+    //console.log("finished update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
 }
 
-export function resolveLookups(plugin: MetadataMenu): void {
+export function resolveLookups(plugin: MetadataMenu, source: string = ""): void {
     const f = plugin.fieldIndex;
     Array.from(f.filesFields).filter((value: [string, Field[]]) => {
         const [filePath, fields] = value;
