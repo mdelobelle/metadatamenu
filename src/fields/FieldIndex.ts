@@ -1,4 +1,4 @@
-import { Component, Notice, TFile } from "obsidian"
+import { Component, moment, Notice, TFile } from "obsidian"
 import MetadataMenu from "main"
 import Field from "./Field";
 import { FileClass } from "src/fileClass/fileClass";
@@ -13,19 +13,20 @@ export default class FieldIndex extends Component {
     public filesFieldsFromFileClassQueries: Map<string, Field[]>;
     public filesFieldsFromInnerFileClasses: Map<string, Field[]>;
     public filesFields: Map<string, Field[]>;
-    public filesFileClass: Map<string, FileClass>
-    public fileClassesPath: Map<string, FileClass>
-    public fileClassesName: Map<string, FileClass>
-    public valuesListNotePathValues: Map<string, string[]>
-    public filesFileClassName: Map<string, string | undefined>
-    public fileLookupFiles: Map<string, any[]>
-    public previousFileLookupFilesValues: Map<string, number>
-    public fileLookupFieldLastValue: Map<string, string>
-    public fileLookupParents: Map<string, string[]>
-    public dv: any
-    public lastRevision: 0
-    public fileChanged: boolean = false
-    public dvReady: boolean = false
+    public filesFileClass: Map<string, FileClass>;
+    public fileClassesPath: Map<string, FileClass>;
+    public fileClassesName: Map<string, FileClass>;
+    public valuesListNotePathValues: Map<string, string[]>;
+    public filesFileClassName: Map<string, string | undefined>;
+    public fileLookupFiles: Map<string, any[]>;
+    public previousFileLookupFilesValues: Map<string, number>;
+    public fileLookupFieldLastValue: Map<string, string>;
+    public fileLookupParents: Map<string, string[]>;
+    public dv: any;
+    public lastRevision: 0;
+    public fileChanged: boolean = false;
+    public dvReady: boolean = false;
+    public loadTime: number;
 
     constructor(private plugin: MetadataMenu, public cacheVersion: string, public onChange: () => void) {
         super()
@@ -34,42 +35,52 @@ export default class FieldIndex extends Component {
         this.fileLookupParents = new Map();
         this.fileLookupFieldLastValue = new Map();
         this.previousFileLookupFilesValues = new Map();
-        this.dv = this.plugin.app.plugins.plugins.dataview
+        this.dv = this.plugin.app.plugins.plugins.dataview;
     }
 
     async onload(): Promise<void> {
 
+        this.loadTime = Date.now()
+
         if (this.dv?.api.index.initialized) {
-            this.dv = this.plugin.app.plugins.plugins.dataview
-            this.lastRevision = this.dv.api.index.revision
-            this.dvReady = true
+            this.dv = this.plugin.app.plugins.plugins.dataview;
+            this.lastRevision = this.dv.api.index.revision;
+            this.dvReady = true;
             await this.fullIndex("dv is running");
         }
 
         this.plugin.registerEvent(
             this.plugin.app.metadataCache.on("dataview:index-ready", async () => {
-                this.dv = this.plugin.app.plugins.plugins.dataview
-                this.dvReady = true
+                this.dv = this.plugin.app.plugins.plugins.dataview;
+                this.dvReady = true;
                 await this.fullIndex("dv index", true);
-                this.lastRevision = this.dv.api.index.revision
+                this.lastRevision = this.dv.api.index.revision;
             })
         )
 
         this.plugin.registerEvent(
             this.plugin.app.metadataCache.on('resolved', async () => {
-                //console.log("obsidian resolved")
+                console.log("obsidian resolved")
                 if (this.plugin.app.metadataCache.inProgressTaskCount === 0) {
-                    this.fileChanged = true
+                    this.fileChanged = true;
                     await this.fullIndex("cache resolved");
-                    this.lastRevision = this.dv?.api.index.revision || 0
+                    this.lastRevision = this.dv?.api.index.revision || 0;
                 }
             })
         )
 
         this.plugin.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
-                //console.log("some file changed", this.fileChanged);
-                if (op === "update" && this.dv?.api.index.revision !== this.lastRevision && this.fileChanged && this.dvReady) {
+                console.log("some file changed", this.fileChanged);
+                if (op === "update"
+                    //dataview is triggering "update" on metadatacache.on("resolve") even if no change in the file. It occurs at app launch
+                    //check if the file mtime is older that plugin load -> in this case no file has change, no need to upldate lookups
+                    //@ts-ignore
+                    && this.plugin.app.metadataCache.fileCache[file.path].mtime >= this.loadTime
+                    && this.dv?.api.index.revision !== this.lastRevision
+                    && this.fileChanged
+                    && this.dvReady
+                ) {
                     const classFilesPath = this.plugin.settings.classFilesPath
                     if (classFilesPath && file.path.includes(classFilesPath)) {
                         this.fullIndex("fileClass changed")
@@ -81,7 +92,6 @@ export default class FieldIndex extends Component {
                 }
             })
         )
-
     }
 
     private flushCache() {
@@ -98,7 +108,7 @@ export default class FieldIndex extends Component {
     }
 
     async fullIndex(event: string, force_update_lookups = false): Promise<void> {
-        //console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
+        console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
         const start = Date.now()
         this.flushCache();
         this.getGlobalFileClass();
@@ -109,7 +119,7 @@ export default class FieldIndex extends Component {
         await this.getValuesListNotePathValues();
         this.resolveLookups();
         await this.updateLookups(force_update_lookups, "full Index");
-        //console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
+        console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     }
 
     resolveLookups(): void {
@@ -123,7 +133,13 @@ export default class FieldIndex extends Component {
     async getValuesListNotePathValues(): Promise<void> {
         this.plugin.settings.presetFields.forEach(async setting => {
             if (setting.valuesListNotePath) {
-                this.valuesListNotePathValues.set(setting.valuesListNotePath, await FieldSetting.getValuesListFromNote(this.plugin, setting.valuesListNotePath))
+                this.valuesListNotePathValues.set(
+                    setting.valuesListNotePath,
+                    await FieldSetting.getValuesListFromNote(
+                        this.plugin,
+                        setting.valuesListNotePath
+                    )
+                )
             }
         })
     }
@@ -134,7 +150,11 @@ export default class FieldIndex extends Component {
             this.fieldsFromGlobalFileClass = []
         } else {
             try {
-                this.fieldsFromGlobalFileClass = FileClass.createFileClass(this.plugin, globalFileClass).attributes.map(attr => attr.getField())
+                this.fieldsFromGlobalFileClass = FileClass
+                    .createFileClass(
+                        this.plugin,
+                        globalFileClass)
+                    .attributes.map(attr => attr.getField())
             } catch (error) { }
         }
     }
@@ -146,7 +166,10 @@ export default class FieldIndex extends Component {
                 .forEach(f => {
                     try {
                         const fileClass = FileClass.createFileClass(this.plugin, f.basename)
-                        this.fileClassesFields.set(f.basename, fileClass.attributes.map(attr => attr.getField()))
+                        this.fileClassesFields.set(
+                            f.basename,
+                            fileClass.attributes.map(attr => attr.getField())
+                        )
                         this.fileClassesPath.set(f.path, fileClass)
                         this.fileClassesName.set(fileClass.name, fileClass)
                     } catch {
@@ -163,7 +186,10 @@ export default class FieldIndex extends Component {
             const fcq = new FileClassQuery(sfcq.name, sfcq.id, sfcq.query, sfcq.fileClassName)
             fcq.getResults(dvApi).forEach((result: any) => {
                 if (this.fileClassesName.get(fcq.fileClassName)) {
-                    this.filesFileClass.set(result.file.path, this.fileClassesName.get(fcq.fileClassName)!);
+                    this.filesFileClass.set(
+                        result.file.path,
+                        this.fileClassesName.get(fcq.fileClassName)!
+                    );
                     this.filesFileClassName.set(result.file.path, fcq.fileClassName)
                 }
                 const fileFileClassesFieldsFromQuery = this.fileClassesFields.get(fcq.fileClassName)
@@ -174,7 +200,9 @@ export default class FieldIndex extends Component {
 
     getFilesFieldsFromFileClass(): void {
         this.plugin.app.vault.getMarkdownFiles()
-            .filter(f => !this.plugin.settings.classFilesPath || !f.path.includes(this.plugin.settings.classFilesPath))
+            .filter(f => !this.plugin.settings.classFilesPath
+                || !f.path.includes(this.plugin.settings.classFilesPath)
+            )
             .forEach(f => {
                 const fileFileClassName = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.[this.plugin.settings.fileClassAlias]
                 if (fileFileClassName) {

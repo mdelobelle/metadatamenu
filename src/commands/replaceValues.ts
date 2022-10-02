@@ -104,7 +104,7 @@ export async function replaceValues(
                 const { inList, inQuote, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = fR.groups
                 const inputArray = input ? input.replace(/(\,\s+)/g, ',').split(',').sort() : [];
                 let newValue: string;
-                if (field?.type === FieldType.Lookup && Lookup.indentedListLookupTypes.includes(field?.options.outputType as Lookup.Type)) {
+                if (field?.type === FieldType.Lookup && Lookup.bulletListLookupTypes.includes(field?.options.outputType as Lookup.Type)) {
                     //console.log(field.name)
                     newValue = inputArray.length == 1 ? "\n- " + inputArray[0] : `${inputArray.length > 0 ? "\n" : ""}${inputArray.map(item => "- " + item).join('\n')}`;
                 } else {

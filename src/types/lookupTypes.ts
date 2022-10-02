@@ -27,58 +27,58 @@ export const BuiltinSummarizingFunction: Record<keyof typeof BuiltinSummarizing,
 
 export enum Type {
     "LinksList" = "LinksList",
-    "LinksIndentedList" = "LinksIndentedList",
+    "LinksBulletList" = "LinksBulletList",
     "BuiltinSummarizing" = "BuiltinSummarizing",
     "CustomList" = "CustomList",
-    "CustomIndentedList" = "CustomIndentedList",
+    "CustomBulletList" = "CustomBulletList",
     "CustomSummarizing" = "CustomSummarizing"
 }
 
 export const MappingLabel: Record<keyof typeof Type, Type> = {
     "LinksList": Type.LinksList,
-    "LinksIndentedList": Type.LinksIndentedList,
+    "LinksBulletList": Type.LinksBulletList,
     "BuiltinSummarizing": Type.BuiltinSummarizing,
     "CustomList": Type.CustomList,
-    "CustomIndentedList": Type.CustomIndentedList,
+    "CustomBulletList": Type.CustomBulletList,
     "CustomSummarizing": Type.CustomSummarizing
 }
 
 export const Description: Record<keyof typeof Type, string> = {
     "LinksList": "List of related links displayed inline",
-    "LinksIndentedList": "List of related links displayed below the field",
+    "LinksBulletList": "List of related links displayed below the field",
     "BuiltinSummarizing": "Built-in summarizing function",
     "CustomList": "Custom list rendering function displayed inline",
-    "CustomIndentedList": "Custom list rendering function displayed below the field",
+    "CustomBulletList": "Custom list rendering function displayed below the field",
     "CustomSummarizing": "Custom summarizing function"
 }
 
 export const OptionLabel: Record<keyof typeof Type, string> = {
     "LinksList": "",
-    "LinksIndentedList": "",
+    "LinksBulletList": "",
     "BuiltinSummarizing": "Built-in summarize function:",
     "CustomList": "Query's results' list's rendering function:",
-    "CustomIndentedList": "Query's results' list's rendering function:",
+    "CustomBulletList": "Query's results' list's rendering function:",
     "CustomSummarizing": "Query's results' list's summarizing function:"
 }
 
 
 export const OptionSubLabel: Record<keyof typeof Type, string> = {
     "LinksList": "",
-    "LinksIndentedList": "",
+    "LinksBulletList": "",
     "BuiltinSummarizing": "",
     "CustomList": `function(page) { return <function using "page">; }`,
-    "CustomIndentedList": `function(page) { return <function using "page">; }`,
+    "CustomBulletList": `function(page) { return <function using "page">; }`,
     "CustomSummarizing": `function(page) { return <function using "page">; }`
 }
 
 export const Helper: Record<keyof typeof Type, string> = {
     "LinksList": "",
-    "LinksIndentedList": "",
+    "LinksBulletList": "",
     "BuiltinSummarizing": "",
     "CustomList": "Javascript string, " +
         "the \"page\" (dataview page type) variable is available\n" +
         "example 1: page.file.name\nexample 2: `${page.file.name} of gender ${page.gender}`",
-    "CustomIndentedList": "Javascript string, " +
+    "CustomBulletList": "Javascript string, " +
         "the \"page\" (dataview page type) variable is available\n" +
         "example 1: page.file.name\nexample 2: `${page.file.name} of gender ${page.gender}`",
     "CustomSummarizing": "Javascript string, the \"pages\" (dataview pages type) " +
@@ -90,14 +90,14 @@ export const Helper: Record<keyof typeof Type, string> = {
 
 export const Default: Record<keyof typeof Type, string> = {
     "LinksList": "",
-    "LinksIndentedList": "",
+    "LinksBulletList": "",
     "BuiltinSummarizing": BuiltinSummarizing.Count,
     "CustomList": "page.file.name",
-    "CustomIndentedList": "page.file.name",
+    "CustomBulletList": "page.file.name",
     "CustomSummarizing": "return pages.length"
 }
 
-export const indentedListLookupTypes = [
-    Type.LinksIndentedList,
-    Type.CustomIndentedList
+export const bulletListLookupTypes = [
+    Type.LinksBulletList,
+    Type.CustomBulletList
 ]

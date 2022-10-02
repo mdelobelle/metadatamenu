@@ -46,7 +46,7 @@ export default class LookupField extends FieldManager {
     }
 
     private displaySelectedOutputWarningContainer(optionWarningContainer: HTMLDivElement, value: keyof typeof Lookup.Type) {
-        [Lookup.Type.LinksIndentedList.toString(), Lookup.Type.CustomIndentedList.toString()].includes(value) ?
+        [Lookup.Type.LinksBulletList.toString(), Lookup.Type.CustomBulletList.toString()].includes(value) ?
             optionWarningContainer.show() : optionWarningContainer.hide();
     }
 
@@ -154,9 +154,9 @@ export default class LookupField extends FieldManager {
         })
 
         const optionContainers: [Array<keyof typeof Lookup.Type>, HTMLElement | undefined][] = [
-            [["LinksList", "LinksIndentedList"], undefined],
+            [["LinksList", "LinksBulletList"], undefined],
             [["BuiltinSummarizing"], builtinOptionsContainer],
-            [["CustomList", "CustomIndentedList"], outputRenderingFunctionContainer],
+            [["CustomList", "CustomBulletList"], outputRenderingFunctionContainer],
             [["CustomSummarizing"], outputSummarizingFunctionContainer]
         ]
 
@@ -177,7 +177,7 @@ export default class LookupField extends FieldManager {
     }
 
     getOptionsStr(): string {
-        return ""
+        return this.field.options.outputType
     }
 
     validateOptions(): boolean {
@@ -186,7 +186,7 @@ export default class LookupField extends FieldManager {
 }
 
 export async function updateLookups(plugin: MetadataMenu, force_update: boolean = false, source: string = ""): Promise<void> {
-    //console.log("start update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
+    console.log("start update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
     const f = plugin.fieldIndex;
     let renderingErrors: string[] = []
     for (let id of f.fileLookupFiles.keys()) {
@@ -198,7 +198,7 @@ export async function updateLookups(plugin: MetadataMenu, force_update: boolean 
             const field = f.filesFields.get(filePath)?.find(field => field.name == fieldName)
             switch (field?.options.outputType) {
                 case Lookup.Type.LinksList:
-                case Lookup.Type.LinksIndentedList:
+                case Lookup.Type.LinksBulletList:
                     {
                         const newValuesArray = pages?.map((dvFile: any) => {
                             return FieldManager.buildMarkDownLink(plugin, tFile, dvFile.file.path);
@@ -207,7 +207,7 @@ export async function updateLookups(plugin: MetadataMenu, force_update: boolean 
                     }
                     break
                 case Lookup.Type.CustomList:
-                case Lookup.Type.CustomIndentedList:
+                case Lookup.Type.CustomBulletList:
                     {
                         const renderingFunction = new Function("page", `return ${field.options.customListFunction}`)
                         const newValuesArray = pages?.map((dvFile: any) => {
@@ -264,7 +264,7 @@ export async function updateLookups(plugin: MetadataMenu, force_update: boolean 
         }
     }
     if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`)
-    //console.log("finished update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
+    console.log("finished update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
 }
 
 export function resolveLookups(plugin: MetadataMenu, source: string = ""): void {
