@@ -28,6 +28,7 @@ export default class FieldIndex extends Component {
     public lastRevision: 0
     public fileChanged: boolean = false
     public dvReady: boolean = false
+    public loadTime: number
 
     constructor(private plugin: MetadataMenu, public cacheVersion: string, public onChange: () => void) {
         super()
@@ -48,6 +49,8 @@ export default class FieldIndex extends Component {
     }
 
     async onload(): Promise<void> {
+
+        this.loadTime = Date.now()
 
         if (this.dv?.api.index.initialized) {
             this.dv = this.plugin.app.plugins.plugins.dataview
@@ -79,7 +82,13 @@ export default class FieldIndex extends Component {
         this.plugin.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
                 //console.log("some file changed", this.fileChanged);
-                if (op === "update" && this.dv?.api.index.revision !== this.lastRevision && this.fileChanged && this.dvReady) {
+                if (op === "update"
+                    && this.dv?.api.index.revision !== this.lastRevision
+                    && this.fileChanged
+                    && this.dvReady
+                    //@ts-ignore
+                    && this.plugin.app.metadataCache.fileCache[file.path].mtime >= this.loadTime
+                ) {
                     const classFilesPath = this.plugin.settings.classFilesPath
                     if (classFilesPath && file.path.includes(classFilesPath)) {
                         this.fullIndex("fileClass changed")
