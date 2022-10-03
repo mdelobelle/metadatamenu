@@ -70,7 +70,7 @@ export async function replaceValues(
     const { position: { start, end } } = frontmatter ? frontmatter : { position: { start: undefined, end: undefined } };
     const newContent = content.map((line, i) => {
         if (start && end && i >= start.line && i <= end.line) {
-            const regex = new RegExp(`${attribute}:`, 'u');
+            const regex = new RegExp(`^${attribute}:`, 'u');
             const r = line.match(regex);
             if (r && r.length > 0) {
                 const inputArray = input ? input.replace(/(\,\s+)/g, ',').split(',') : [""];

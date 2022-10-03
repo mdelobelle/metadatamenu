@@ -1,4 +1,4 @@
-import { Component, moment, Notice, TFile } from "obsidian"
+import { Component, TFile } from "obsidian"
 import MetadataMenu from "main"
 import Field from "./Field";
 import { FileClass } from "src/fileClass/fileClass";
