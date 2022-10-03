@@ -60,7 +60,7 @@ export default class FieldIndex extends Component {
 
         this.plugin.registerEvent(
             this.plugin.app.metadataCache.on('resolved', async () => {
-                console.log("obsidian resolved")
+                //console.log("obsidian resolved")
                 if (this.plugin.app.metadataCache.inProgressTaskCount === 0) {
                     this.fileChanged = true;
                     await this.fullIndex("cache resolved");
@@ -71,7 +71,7 @@ export default class FieldIndex extends Component {
 
         this.plugin.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
-                console.log("some file changed", this.fileChanged);
+                //console.log("some file changed", this.fileChanged);
                 if (op === "update"
                     //dataview is triggering "update" on metadatacache.on("resolve") even if no change in the file. It occurs at app launch
                     //check if the file mtime is older that plugin load -> in this case no file has change, no need to upldate lookups
@@ -108,7 +108,7 @@ export default class FieldIndex extends Component {
     }
 
     async fullIndex(event: string, force_update_lookups = false): Promise<void> {
-        console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
+        //console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
         const start = Date.now()
         this.flushCache();
         this.getGlobalFileClass();
@@ -119,7 +119,7 @@ export default class FieldIndex extends Component {
         await this.getValuesListNotePathValues();
         this.resolveLookups();
         await this.updateLookups(force_update_lookups, "full Index");
-        console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
+        //console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     }
 
     resolveLookups(): void {
