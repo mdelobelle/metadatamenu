@@ -193,6 +193,13 @@ button.metadata-menu-field-add-frontmatter-btn {
   display: flex;
   font-size: smaller; }
 
+.metadata-menu-field-option-warning {
+  font-size: smaller;
+  background-color: var(--color-accent);
+  color: var(--text-on-accent);
+  padding: 0.5em;
+  border-radius: 0.5em; }
+
 .metadata-menu-setting-item {
   display: flex; }
 

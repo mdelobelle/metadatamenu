@@ -24,17 +24,17 @@ export async function getValues(plugin: MetadataMenu, fileOrfilePath: TFile | st
             const r = line.match(regex);
             if (r && r.length > 0) result.push(r[1]);
         } else {
-            const fullLineRegex = new RegExp(`^${inlineFieldRegex(attribute)}`, "u");
+            const fullLineRegex = new RegExp(`^${inlineFieldRegex(attribute)}(?<values>[^\\]]*)`, "u");
             const fR = encodeLink(line).match(fullLineRegex);
             if (fR?.groups) { result.push(decodeLink(fR.groups.values)) };
-            const inSentenceRegexBrackets = new RegExp(`\\[${inlineFieldRegex(attribute)}\\]`, "gu");
+            const inSentenceRegexBrackets = new RegExp(`\\[${inlineFieldRegex(attribute)}(?<values>[^\\]]+)?\\]`, "gu");
             const sRB = encodeLink(line).matchAll(inSentenceRegexBrackets);
             let next = sRB.next();
             while (!next.done) {
                 if (next.value.groups) { result.push(decodeLink(next.value.groups.values)) }
                 next = sRB.next()
             }
-            const inSentenceRegexPar = new RegExp(`\\(${inlineFieldRegex(attribute)}\\)`, "gu");
+            const inSentenceRegexPar = new RegExp(`\\(${inlineFieldRegex(attribute)}(?<values>[^\\)]+)?\\)`, "gu");
             const sRP = encodeLink(line).matchAll(inSentenceRegexPar);
             next = sRP.next();
             while (!next.done) {

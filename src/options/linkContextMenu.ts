@@ -13,7 +13,8 @@ export default class linkContextMenu {
 
 	private buildOptions(file: TFile | TAbstractFile | null, menu: Menu, includedFields?: string[]): void {
 		if (file instanceof TFile && file.extension === 'md') {
-			if (!Platform.isMobile && requireApiVersion("0.16.0")) {//@ts-ignore
+			if (!Platform.isMobile && requireApiVersion("0.16.0")) {
+				//@ts-ignore
 				menu.setSectionSubmenu("metadata-menu.current_field", { title: "Current Field", icon: "pencil" })
 				//@ts-ignore
 				menu.setSectionSubmenu("metadata-menu.fields", { title: "Manage Fields", icon: "pencil" })
