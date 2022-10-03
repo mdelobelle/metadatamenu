@@ -128,8 +128,11 @@ The name of the field that the plugin should look for in pages returned by the q
 
 Lookup field can display the result in a very various ways:
 
-##### Links
+##### Links list
 Simple list of links of the notes matching the query, comma separated
+
+##### Links indented list
+Just like [Links list](#links-list), displayed as a bullet list below the field
 
 ##### Built-in Summarizing function
 
@@ -146,6 +149,10 @@ NB: For this option you'll have to set the name of the target field on which you
 
 like the [Links](#links) option, but you can customize the way each value is displayed. The object `page` is available (see [Dataview page object](https://blacksmithgu.github.io/obsidian-dataview/data-annotation/#pages) for all attributes available in the `page object`) and can be used to build your output.
 The output has to be a string. 
+
+##### Custom indented list rendering function
+
+Just like the [Custom list](#custom-list-rendering-function). Displayed as a bullet list below the field
 
 ##### Custom summarizing function
 
