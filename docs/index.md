@@ -31,3 +31,5 @@ It also enables frontmatter of inline-field autocompletion with suggested values
 
 [demo 8](https://youtu.be/ad0nJf8TZP8): Lookup fields
 
+[demo 9](https://youtu.be/zUcZWG7nWF4): Lookup fields as bullet list
+
