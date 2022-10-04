@@ -35,14 +35,14 @@ export abstract class FieldManager {
         if (field.type !== type) throw Error(`This field is not of type ${type}`)
     }
 
-    static buildMarkDownLink(plugin: MetadataMenu, file: TFile, path: string): string {
+    static buildMarkDownLink(plugin: MetadataMenu, file: TFile, path: string, alias?: string): string {
         const destFile = plugin.app.metadataCache.getFirstLinkpathDest(path, file.path)
         if (destFile) {
             return plugin.app.fileManager.generateMarkdownLink(
                 destFile,
                 file.path,
                 undefined,
-                destFile.basename
+                alias,
             )
         }
         return ""

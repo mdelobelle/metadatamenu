@@ -134,6 +134,23 @@ export default class MultiFileField extends FieldManager {
             this.field.options.dvQueryString = value;
             FieldSettingsModal.removeValidationError(this.dvQueryString);
         })
+
+        const customeRenderingContainer = parentContainer.createDiv();
+        customeRenderingContainer.createEl("span", { text: "Query's results' list's rendering function:", cls: 'metadata-menu-field-option' });
+        customeRenderingContainer.createEl("code", {
+            text: `function(page) { return <function using "page">; }`
+        })
+        const customRendering = new TextAreaComponent(customeRenderingContainer);
+        customRendering.inputEl.cols = 50;
+        customRendering.inputEl.rows = 4;
+        customRendering.setValue(this.field.options.customRendering || "");
+        customRendering.setPlaceholder("Javascript string, " +
+            "the \"page\" (dataview page type) variable is available\n" +
+            "example 1: page.file.name\nexample 2: `${page.file.name} of gender ${page.gender}`")
+        customRendering.onChange(value => {
+            this.field.options.customRendering = value;
+            FieldSettingsModal.removeValidationError(customRendering);
+        })
     }
 
     public createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {

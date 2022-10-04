@@ -459,3 +459,14 @@ button.metadata-menu-field-add-frontmatter-btn{
 .metadata-menu-value-suggester-input-container{
     display: flex;
 }
+
+.metadata-menu-suggester-item-with-alias{
+    display: flex;
+}
+
+.metadata-menu-suggester-item-with-alias-filepath{
+    font-size: x-small;
+    margin-left: 1em;
+    padding-top: 0.4em;
+    color: var(--color-base-60);
+}

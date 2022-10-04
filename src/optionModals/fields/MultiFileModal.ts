@@ -85,7 +85,14 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
     }
 
     async replaceValues() {
-        const result = this.selectedFiles.map(file => FM.buildMarkDownLink(this.plugin, this.file, file.basename))
+        const result = this.selectedFiles.map(file => {
+            const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+            let alias: string | undefined = undefined;
+            if (dvApi && this.field.options.customRendering) {
+                alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(file.path))
+            }
+            return FM.buildMarkDownLink(this.plugin, this.file, file.basename, alias)
+        })
         if (this.lineNumber == -1) {
             await replaceValues(
                 this.plugin,
@@ -116,7 +123,16 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
     }
 
     renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {
-        el.setText(value.item.basename)
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        if (dvApi && this.field.options.customRendering) {
+            const suggestionContainer = el.createDiv({ cls: "metadata-menu-suggester-item-with-alias" });
+            const label = suggestionContainer.createDiv({ cls: "metadata-menu-suggester-item-with-alias-label" })
+            label.setText(new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(value.item.path)))
+            const filePath = suggestionContainer.createDiv({ cls: "metadata-menu-suggester-item-with-alias-filepath" })
+            filePath.setText(value.item.path)
+        } else {
+            el.setText(value.item.basename)
+        }
         el.addClass("metadata-menu-value-suggester-value-container")
         const spacer = this.containerEl.createDiv({ cls: "metadata-menu-value-suggester-value-container-spacer" })
         el.appendChild(spacer)

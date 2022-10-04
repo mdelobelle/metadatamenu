@@ -44,7 +44,17 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
     }
 
     renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {
-        el.setText(value.item.basename)
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        let alias: string | undefined = undefined;
+        if (dvApi && this.field.options.customRendering) {
+            const suggestionContainer = el.createDiv({ cls: "metadata-menu-suggester-item-with-alias" });
+            const label = suggestionContainer.createDiv({ cls: "metadata-menu-suggester-item-with-alias-label" })
+            label.setText(new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(value.item.path)))
+            const filePath = suggestionContainer.createDiv({ cls: "metadata-menu-suggester-item-with-alias-filepath" })
+            filePath.setText(value.item.path)
+        } else {
+            el.setText(value.item.basename)
+        }
         el.addClass("metadata-menu-value-suggester-value-container")
         const spacer = this.containerEl.createDiv({ cls: "metadata-menu-value-suggester-value-container-spacer" })
         el.appendChild(spacer)
@@ -58,19 +68,24 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
 
 
     async onChooseItem(item: TFile): Promise<void> {
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        let alias: string | undefined = undefined;
+        if (dvApi && this.field.options.customRendering) {
+            alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(item.path))
+        }
         if (this.lineNumber == -1) {
             await replaceValues(
                 this.plugin,
                 this.file,
                 this.field.name,
-                FileField.buildMarkDownLink(this.plugin, this.file, item.basename)
+                FileField.buildMarkDownLink(this.plugin, this.file, item.basename, alias)
             );
         } else {
             await insertValues(
                 this.plugin,
                 this.file,
                 this.field.name,
-                FileField.buildMarkDownLink(this.plugin, this.file, item.basename),
+                FileField.buildMarkDownLink(this.plugin, this.file, item.basename, alias),
                 this.lineNumber,
                 this.inFrontmatter,
                 this.after
