@@ -186,7 +186,7 @@ export default class LookupField extends FieldManager {
 }
 
 export async function updateLookups(plugin: MetadataMenu, force_update: boolean = false, source: string = ""): Promise<void> {
-    console.log("start update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
+    //console.log("start update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
     const f = plugin.fieldIndex;
     let renderingErrors: string[] = []
     for (let id of f.fileLookupFiles.keys()) {
@@ -264,7 +264,7 @@ export async function updateLookups(plugin: MetadataMenu, force_update: boolean 
         }
     }
     if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`)
-    console.log("finished update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
+    //console.log("finished update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
 }
 
 export function resolveLookups(plugin: MetadataMenu, source: string = ""): void {
