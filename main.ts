@@ -12,7 +12,7 @@ import linkContextMenu from "src/options/linkContextMenu";
 import OptionsList from 'src/options/OptionsList';
 import { DEFAULT_SETTINGS, MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
 import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
-import { migrateSettingsV1toV2 } from 'src/settings/migrateSettingV1toV2';
+import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import { frontMatterLineField, getLineFields } from 'src/utils/parser';
 
@@ -27,9 +27,9 @@ export default class MetadataMenu extends Plugin {
 	async onload(): Promise<void> {
 		console.log('Metadata Menu loaded');
 		await this.loadSettings();
-		if (this.settings.settingsVersion === undefined) {
-			await migrateSettingsV1toV2(this)
-		}
+		if (this.settings.settingsVersion === undefined) await SettingsMigration.migrateSettingsV1toV2(this)
+		if (this.settings.settingsVersion === 2) await SettingsMigration.migrateSettingsV2toV3(this)
+
 
 		this.fieldIndex = this.addChild(new FieldIndex(this, "1", () => { }))
 

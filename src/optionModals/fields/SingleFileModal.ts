@@ -45,7 +45,6 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
 
     renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        let alias: string | undefined = undefined;
         if (dvApi && this.field.options.customRendering) {
             const suggestionContainer = el.createDiv({ cls: "metadata-menu-suggester-item-with-alias" });
             const label = suggestionContainer.createDiv({ cls: "metadata-menu-suggester-item-with-alias-label" })

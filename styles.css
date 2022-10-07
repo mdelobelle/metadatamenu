@@ -366,6 +366,18 @@ button.metadata-menu-field-add-frontmatter-btn {
 .metadata-menu-value-suggester-input-container {
   display: flex; }
 
+.metadata-menu-value-suggester-notice-container {
+  display: flex;
+  background-color: var(--color-accent);
+  color: var(--text-on-accent); }
+
+.metadata-menu-value-suggester-notice-label {
+  margin: 0 1em;
+  padding-top: 0.3em; }
+
+.metadata-menu-value-suggester-notice-spacer {
+  width: 100%; }
+
 .metadata-menu-suggester-item-with-alias {
   display: flex; }
 

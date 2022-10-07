@@ -3,11 +3,12 @@ import Field from "src/fields/Field";
 import { replaceValues } from "src/commands/replaceValues";
 import { insertValues } from "src/commands/insertValues";
 import MetadataMenu from "main";
-import { off } from "process";
+import * as selectValuesSource from "src/types/selectValuesSourceTypes"
+import { FieldManager } from "src/types/fieldTypes";
+import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
 
 export default class ValueSuggestModal extends SuggestModal<string>{
 
-    private newValue: string | null;
     private addButton: ButtonComponent;
 
     constructor(
@@ -20,7 +21,6 @@ export default class ValueSuggestModal extends SuggestModal<string>{
         private after: boolean = false
     ) {
         super(plugin.app);
-        this.newValue = null;
     };
 
     async onOpen(): Promise<void> {
@@ -69,23 +69,37 @@ export default class ValueSuggestModal extends SuggestModal<string>{
                 let newOptions: string[] | Record<string, string>;
                 if (Array.isArray(fileClassAttribute.options)) {
                     newOptions = [...fileClassAttribute.options, newValue]
+                    await fileClass.updateAttribute(fileClassAttribute.type, fileClassAttribute.name, newOptions, fileClassAttribute);
+                } else if (fileClassAttribute.options.sourceType === selectValuesSource.Type.ValuesList) {
+                    newOptions = fileClassAttribute.options.valuesList as Record<string, string>;
+                    newOptions[`${Object.keys(fileClassAttribute.options.valuesList).length}`] = newValue
+                    await fileClass.updateAttribute(fileClassAttribute.type, fileClassAttribute.name, newOptions, fileClassAttribute);
+                } else if (fileClassAttribute.options.sourceType === selectValuesSource.Type.ValuesListNotePath) {
+                    const valuesFile = this.plugin.app.vault.getAbstractFileByPath(fileClassAttribute.options.valuesListNotePath);
+                    if (valuesFile instanceof TFile && valuesFile.extension == "md") {
+                        const result = await this.plugin.app.vault.read(valuesFile)
+                        this.plugin.app.vault.modify(valuesFile, `${result}\n${newValue}`);
+                    }
                 } else {
                     newOptions = fileClassAttribute.options;
                     newOptions[`${Object.keys(fileClassAttribute.options).length}`] = newValue
+                    await fileClass.updateAttribute(fileClassAttribute.type, fileClassAttribute.name, newOptions, fileClassAttribute);
                 }
-                await fileClass.updateAttribute(fileClassAttribute.type, fileClassAttribute.name, newOptions, fileClassAttribute);
             }
         } else {
             const presetField = this.plugin.settings.presetFields.find(field => field.name === this.field.name)
-            if (presetField?.valuesListNotePath) {
-                const valuesFile = this.plugin.app.vault.getAbstractFileByPath(presetField.valuesListNotePath)
+            if (presetField?.options.sourceType === selectValuesSource.Type.ValuesListNotePath) {
+                const valuesFile = this.plugin.app.vault.getAbstractFileByPath(presetField.options.valuesListNotePath)
                 if (valuesFile instanceof TFile && valuesFile.extension == "md") {
                     const result = await this.plugin.app.vault.read(valuesFile)
                     this.plugin.app.vault.modify(valuesFile, `${result}\n${newValue}`);
                 }
-            } else if (presetField?.options) {
-                const currentExistingField = this.plugin.initialProperties.filter(p => p.id == this.field.id)[0];
-                currentExistingField.insertNewValue(newValue);
+            } else if (presetField?.options.sourceType === selectValuesSource.Type.ValuesList) {
+                const currentExistingField = this.plugin.initialProperties.find(p => p.id == this.field.id);
+                if (currentExistingField) {
+                    const valuesList = currentExistingField.options.valuesList
+                    valuesList[`${Object.keys(valuesList).length + 1}`] = newValue
+                }
                 this.plugin.saveSettings();
             }
         }
@@ -102,13 +116,8 @@ export default class ValueSuggestModal extends SuggestModal<string>{
     }
 
     getSuggestions(query: string): string[] {
-        const listNoteValues = this.plugin.fieldIndex.valuesListNotePathValues.get(this.field.valuesListNotePath)
-        let values: string[];
-        if (listNoteValues?.length === 0 || !listNoteValues) {
-            values = Object.values(this.field.options).filter(o => o.toLowerCase().includes(query.toLowerCase()))
-        } else {
-            values = listNoteValues!.filter(o => o.toLowerCase().includes(query.toLowerCase()))
-        }
+        const fieldManager = new FieldManager[this.field.type](this.plugin, this.field) as AbstractListBasedField
+        const values = fieldManager.getOptionsList().filter(o => o.toLowerCase().includes(query.toLowerCase()))
         if (this.addButton) {
             values.some(p => p === query) ? this.addButton.buttonEl.hide() : this.addButton.buttonEl.show();
         };
@@ -122,9 +131,9 @@ export default class ValueSuggestModal extends SuggestModal<string>{
 
     private async saveItem(item: string): Promise<void> {
         if (this.lineNumber == -1) {
-            await replaceValues(this.plugin, this.file, this.field.name, item);
+            await replaceValues(this.plugin, this.file, this.field.name, item.toString());
         } else {
-            await insertValues(this.plugin, this.file, this.field.name, item, this.lineNumber, this.inFrontmatter, this.after);
+            await insertValues(this.plugin, this.file, this.field.name, item.toString(), this.lineNumber, this.inFrontmatter, this.after);
         };
     }
 
