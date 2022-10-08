@@ -247,7 +247,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
         //manage new field and fileClass legacy field
         if (!this.field.options.sourceType) {
             //this is a new field or fileClass legacy field
-            if (typeof this.field.options === "object" && Object.keys(this.field.options).every(key => parseInt(key) !== NaN)) {
+            if (typeof this.field.options === "object" && Object.keys(this.field.options).every(key => !isNaN(parseInt(key)))) {
                 //this is a fileClass legacy field
                 const valuesList: Record<string, string> = {}
                 Object.keys(this.field.options).forEach((key: string) => valuesList[key] = this.field.options[key]);

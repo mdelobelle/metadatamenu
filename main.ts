@@ -50,7 +50,6 @@ export default class MetadataMenu extends Plugin {
 		this.registerEditorSuggest(new ValueSuggest(this));
 		this.api = new MetadataMenuApi(this).make();
 
-
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', (leaf) => {
 				const view = leaf?.view
