@@ -1,4 +1,4 @@
-import { TFile, ButtonComponent, SuggestModal, setIcon, Notice } from "obsidian";
+import { TFile, ButtonComponent, SuggestModal, setIcon, Notice, parseLinktext } from "obsidian";
 import Field from "src/fields/Field";
 import { replaceValues } from "src/commands/replaceValues";
 import { insertValues } from "src/commands/insertValues";
@@ -6,6 +6,8 @@ import MetadataMenu from "main";
 import { FieldManager } from "src/types/fieldTypes";
 import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
 import * as selectValuesSource from "src/types/selectValuesSourceTypes"
+import { relativeTimeRounding } from "moment";
+import FileField from "src/fields/fieldManagers/FileField";
 
 export default class MultiSuggestModal extends SuggestModal<string> {
 
@@ -24,7 +26,20 @@ export default class MultiSuggestModal extends SuggestModal<string> {
     ) {
         super(plugin.app);
         if (initialOptions) {
-            if (initialOptions.toString().startsWith("[[")) {
+            if (Array.isArray(initialOptions)) {
+                const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+                if (dvApi && initialOptions.some(o => dvApi.value.isLink(o))) {
+                    this.selectedOptions = initialOptions.map(item => {
+                        if (dvApi.value.isLink(item)) {
+                            return FileField.buildMarkDownLink(this.plugin, this.file, item.path)
+                        } else {
+                            return item.toString()
+                        }
+                    })
+                }
+                this.selectedOptions = initialOptions.map(item => item.toString())
+            }
+            else if (initialOptions.toString().startsWith("[[")) {
                 this.selectedOptions = initialOptions.split(",").map(item => item.trim());
             } else {
                 this.selectedOptions = initialOptions.toString().replace(/^\[(.*)\]$/, "$1").split(",").map(item => item.trim());

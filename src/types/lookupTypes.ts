@@ -34,6 +34,15 @@ export enum Type {
     "CustomSummarizing" = "CustomSummarizing"
 }
 
+export const ShortDescription: Record<keyof typeof Type, string> = {
+    "LinksList": "Inline list of links",
+    "LinksBulletList": "Bullet list of links",
+    "BuiltinSummarizing": "",
+    "CustomList": "Inline list of customized links",
+    "CustomBulletList": "Bullet list of customized links",
+    "CustomSummarizing": "Custom summarizing function"
+}
+
 export const MappingLabel: Record<keyof typeof Type, Type> = {
     "LinksList": Type.LinksList,
     "LinksBulletList": Type.LinksBulletList,

@@ -8,13 +8,13 @@ import {
     MarkdownView,
     TFile,
     parseYaml,
-    Notice
+    Notice,
 } from "obsidian";
-import { FileClass } from "src/fileClass/fileClass";
 import { FieldManager, FieldType } from "src/types/fieldTypes";
 import { genericFieldRegex, getLineFields, encodeLink } from "../utils/parser";
 import FileField from "src/fields/fieldManagers/FileField";
 import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
+import Field from "src/fields/Field";
 
 interface IValueCompletion {
     value: string;
@@ -22,11 +22,11 @@ interface IValueCompletion {
 
 export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     private plugin: MetadataMenu;
-    private fileClass: FileClass;
     private inFrontmatter: boolean = false;
     private inFullLine: boolean = false;
     private inSentence: boolean = false;
     private didSelect: boolean = false;
+    private field?: Field;
 
     constructor(plugin: MetadataMenu) {
         super(plugin.app);
@@ -108,7 +108,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
 
         if (matchField.attribute) {
             const fieldName = matchField.attribute;
-            const field = this.plugin.fieldIndex.filesFields.get(context.file.path)?.find(f => f.name === fieldName);
+            this.field = this.plugin.fieldIndex.filesFields.get(context.file.path)?.find(f => f.name === fieldName);
             const valuesList = matchField.values?.replace(/^\[|^\s\[|^\(|^\s\(/, '')
                 .replace(/\]$|\)$/, '')
                 .split(",").map(o => encodeLink(o.trim()))
@@ -122,12 +122,12 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                     .sort()
                     .map(tag => Object({ value: tag.replace(/^#/, "") }))
             }
-            if (field && [FieldType.Cycle, FieldType.Multi, FieldType.Select].contains(field.type)) {
-                const fieldManager = new FieldManager[field.type](this.plugin, field)
+            if (this.field && [FieldType.Cycle, FieldType.Multi, FieldType.Select].contains(this.field.type)) {
+                const fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
                 return (fieldManager as AbstractListBasedField).getOptionsList().filter(option => this.filterOption(firstValues, lastValue, option))
                     .map(_value => Object({ value: _value }))
-            } else if (field && [FieldType.File, FieldType.MultiFile].includes(field.type)) {
-                const fieldManager: FileField = new FieldManager[field.type](this.plugin, field)
+            } else if (this.field && [FieldType.File, FieldType.MultiFile].includes(this.field.type)) {
+                const fieldManager: FileField = new FieldManager[this.field.type](this.plugin, this.field)
                 const files = fieldManager.getFiles();
                 if (lastValue) {
                     return files
@@ -145,7 +145,14 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     };
 
     renderSuggestion(suggestion: IValueCompletion, el: HTMLElement): void {
-        el.setText(suggestion.value);
+        const rawValue = suggestion.value.replace(/^\[\[/, "").replace(/\]\]$/, "")
+        const targetFile = this.plugin.app.metadataCache.getFirstLinkpathDest(rawValue, this.context!.file.path)
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        if (dvApi && this.field && this.field.options.customRendering && targetFile) {
+            el.setText(new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(targetFile.path)))
+        } else {
+            el.setText(rawValue)
+        }
     };
 
     selectSuggestion(suggestion: IValueCompletion, event: KeyboardEvent | MouseEvent): void {

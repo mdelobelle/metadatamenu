@@ -177,7 +177,13 @@ export default class LookupField extends FieldManager {
     }
 
     getOptionsStr(): string {
-        return this.field.options.outputType
+        const shortDescription = Lookup.ShortDescription[this.field.options.outputType as Lookup.Type]
+        let complement: string = ""
+        if (this.field.options.outputType === Lookup.Type.BuiltinSummarizing) {
+            complement = ` ${this.field.options.builtinSummarizingFunction}` +
+                `${this.field.options.builtinSummarizingFunction !== Lookup.BuiltinSummarizing.CountAll ? " " + this.field.options.summarizedFieldName : ""}`
+        }
+        return shortDescription + complement
     }
 
     validateOptions(): boolean {
@@ -274,9 +280,15 @@ export function resolveLookups(plugin: MetadataMenu, source: string = ""): void 
         const dvPage = f.dv.api.page(filePath);
         if (dvPage) {
             fields.filter(field => field.type === FieldType.Lookup && Object.keys(dvPage).includes(field.name)).forEach(lookupField => {
-
                 const queryRelatedDVFiles = (new Function("dv", `return ${lookupField.options.dvQueryString}`))(f.dv.api).values as Array<any>
-                const fileRelatedDVFiles = queryRelatedDVFiles.filter(f => f[lookupField.options.targetFieldName]?.path === filePath)
+                const fileRelatedDVFiles = queryRelatedDVFiles.filter(dvFile => {
+                    const targetValue = dvFile[lookupField.options.targetFieldName];
+                    if (Array.isArray(targetValue)) {
+                        return targetValue.filter(v => f.dv.api.value.isLink(v)).map(v => v.path).includes(filePath)
+                    } else {
+                        return targetValue?.path === filePath
+                    }
+                })
                 const existingFileLookupFields = f.fileLookupFiles.get(`${filePath}__related__${lookupField.name}`)
                 f.fileLookupFiles.set(`${filePath}__related__${lookupField.name}`, fileRelatedDVFiles)
                 f.previousFileLookupFilesValues.set(`${filePath}__related__${lookupField.name}`, (existingFileLookupFields || fileRelatedDVFiles).length)
