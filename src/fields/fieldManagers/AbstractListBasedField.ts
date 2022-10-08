@@ -215,11 +215,12 @@ export default abstract class AbstractListBasedField extends FieldManager {
 
     private createValuesFromDVQueryContainer(parentContainer: HTMLDivElement): HTMLDivElement {
         const valuesFromDVQueryContainer = parentContainer.createDiv({})
-        valuesFromDVQueryContainer.createDiv({ text: "dvQuery", cls: "metadata-menu-field-option" })
+        valuesFromDVQueryContainer.createEl("span", { text: "Dataview function", cls: "metadata-menu-field-option" });
+        valuesFromDVQueryContainer.createEl("span", { text: "Dataview query returning a list of string (dv attribute is available)", cls: "metadata-menu-field-option-subtext" });
         const valuesFromDVQuery = new TextAreaComponent(valuesFromDVQueryContainer);
         valuesFromDVQuery.inputEl.cols = 65;
         valuesFromDVQuery.inputEl.rows = 8;
-        valuesFromDVQuery.setPlaceholder("a dvquery")
+        valuesFromDVQuery.setPlaceholder("ex: dv.pages('#student').map(p => p.name)")
         valuesFromDVQuery.setValue(this.field.options.valuesFromDVQuery || "");
         valuesFromDVQuery.onChange((value) => {
             this.field.options.valuesFromDVQuery = value
