@@ -19,14 +19,16 @@ export default class BooleanField extends FieldManager {
             location.addItem((item) => {
                 item.setTitle(`<${name}> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);
                 item.setIcon(FieldIcon[FieldType.Boolean]);
-                item.onClick(() => replaceValues(this.plugin, file, name, (!bValue).toString()));
+                item.onClick(async () => await this.plugin.fileTaskManager
+                    .pushTask(() => { replaceValues(this.plugin, file, name, (!bValue).toString()) }));
                 item.setSection("metadata-menu.fields");
             })
         } else if (BooleanField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span><b>${name}</b> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}</span>`,
-                action: () => replaceValues(this.plugin, file, name, (!bValue).toString()),
+                action: async () => await this.plugin.fileTaskManager
+                    .pushTask(() => { replaceValues(this.plugin, file, name, (!bValue).toString()) }),
                 icon: FieldIcon[FieldType.Boolean]
             });
         };

@@ -76,19 +76,24 @@ export default class DateModal extends Modal {
                 const linkPath = this.plugin.app.metadataCache.getFirstLinkpathDest(this.field.options.linkPath || "" + newValue.format(this.format), this.file.path)
                 const formattedValue = this.insertAsLink ? `[[${this.field.options.linkPath || ""}${newValue.format(this.format)}${linkPath ? "|" + linkPath.basename : ""}]]` : newValue.format(this.format)
                 if (this.lineNumber == -1) {
-                    await replaceValues(this.plugin, this.file, this.field.name, formattedValue);
+                    await this.plugin.fileTaskManager
+                        .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, formattedValue) });
                 } else {
-                    await insertValues(this.plugin, this.file, this.field.name, formattedValue, this.lineNumber, this.inFrontmatter, this.after);
+                    await this.plugin.fileTaskManager
+                        .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, formattedValue, this.lineNumber, this.inFrontmatter, this.after) });
                 };
                 if (this.nextIntervalField && this.pushNextInterval && this.nextShift) {
-                    await replaceValues(this.plugin, this.file.path, this.nextIntervalField.name, this.nextShift)
+                    await this.plugin.fileTaskManager
+                        .pushTask(() => { replaceValues(this.plugin, this.file.path, this.nextIntervalField!.name, this.nextShift!) });
                 }
                 this.close();
             } else if (!this.value) {
                 if (this.lineNumber == -1) {
-                    await replaceValues(this.plugin, this.file, this.field.name, "");
+                    await this.plugin.fileTaskManager
+                        .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, "") });
                 } else {
-                    await insertValues(this.plugin, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after);
+                    await this.plugin.fileTaskManager
+                        .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after) });
                 };
                 this.close()
             } else {

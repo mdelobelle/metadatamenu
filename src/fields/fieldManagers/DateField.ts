@@ -152,11 +152,13 @@ export default class DateField extends FieldManager {
         const newDate = currentDvDate.plus(dv.duration(currentShift || "1 day"));
         const newValue = moment(newDate.toString()).format(dateFormat)
         if (nextIntervalField && nextShift) {
-            await replaceValues(this.plugin, file.path, nextIntervalField.name, nextShift)
+            await this.plugin.fileTaskManager
+                .pushTask(() => { replaceValues(this.plugin, file.path, nextIntervalField.name, nextShift) });
         }
         const linkFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath || "" + newValue.format(dateFormat), file.path)
         const formattedValue = DateField.stringToBoolean(defaultInsertAsLink) ? `[[${linkPath || ""}${newValue}${linkFile ? "|" + linkFile.basename : ""}]]` : newValue
-        await replaceValues(this.plugin, file.path, this.field.name, formattedValue)
+        await this.plugin.fileTaskManager
+            .pushTask(() => { replaceValues(this.plugin, file.path, this.field.name, formattedValue) });
 
     }
 

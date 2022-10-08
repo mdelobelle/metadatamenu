@@ -22,12 +22,14 @@ export default class LookupField extends FieldManager {
 
     }
 
-    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): Promise<void> {
         //no field modal, we include the field directly
         if (lineNumber == -1) {
-            replaceValues(this.plugin, file, this.field.name, "");
+            await this.plugin.fileTaskManager
+                .pushTask(() => { replaceValues(this.plugin, file, this.field.name, "") });
         } else {
-            insertValues(this.plugin, file, this.field.name, "", lineNumber, inFrontmatter, after);
+            await this.plugin.fileTaskManager
+                .pushTask(() => { insertValues(this.plugin, file, this.field.name, "", lineNumber, inFrontmatter, after) });
         };
     }
 
@@ -262,7 +264,9 @@ export async function updateLookups(plugin: MetadataMenu, force_update: boolean 
             //check if value has changed in order not to create an infinite loop
             const currentValue = f.fileLookupFieldLastValue.get(id)
             if (force_update || (!currentValue && newValue !== "") || currentValue !== newValue) {
-                await replaceValues(plugin, tFile, fieldName, newValue);
+                const previousValuesCount = plugin.fieldIndex.previousFileLookupFilesValues.get(tFile.path + "__related__" + fieldName) || 0
+                await plugin.fileTaskManager.pushTask(() => replaceValues(plugin, tFile, fieldName, newValue, previousValuesCount));
+                //await replaceValues(plugin, tFile, fieldName, newValue);
                 f.fileLookupFieldLastValue.set(id, newValue)
             } else if (source !== "full Index") {
                 plugin.fieldIndex.fileChanged = false
@@ -275,7 +279,7 @@ export async function updateLookups(plugin: MetadataMenu, force_update: boolean 
 
 export function resolveLookups(plugin: MetadataMenu, source: string = ""): void {
     const f = plugin.fieldIndex;
-    Array.from(f.filesFields).filter((value: [string, Field[]]) => {
+    Array.from(f.filesFields).forEach((value: [string, Field[]]) => {
         const [filePath, fields] = value;
         const dvPage = f.dv.api.page(filePath);
         if (dvPage) {

@@ -109,9 +109,11 @@ export default class ValueSuggestModal extends SuggestModal<string>{
 
     async clearValues() {
         if (this.lineNumber == -1) {
-            await replaceValues(this.plugin, this.file, this.field.name, "");
+            await this.plugin.fileTaskManager
+                .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, "") });
         } else {
-            await insertValues(this.plugin, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after);
+            await this.plugin.fileTaskManager
+                .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after) });
         };
     }
 
@@ -131,9 +133,11 @@ export default class ValueSuggestModal extends SuggestModal<string>{
 
     private async saveItem(item: string): Promise<void> {
         if (this.lineNumber == -1) {
-            await replaceValues(this.plugin, this.file, this.field.name, item.toString());
+            await this.plugin.fileTaskManager
+                .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, item.toString()) });
         } else {
-            await insertValues(this.plugin, this.file, this.field.name, item.toString(), this.lineNumber, this.inFrontmatter, this.after);
+            await this.plugin.fileTaskManager
+                .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, item.toString(), this.lineNumber, this.inFrontmatter, this.after) });
         };
     }
 

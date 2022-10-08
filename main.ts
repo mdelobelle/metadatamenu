@@ -1,6 +1,6 @@
 import { FileView, MarkdownView, Notice, Plugin, TFile, View } from 'obsidian';
 import Field from 'src/fields/Field';
-import FieldIndex from 'src/fields/FieldIndex';
+import FieldIndex from 'src/components/FieldIndex';
 import { FileClass } from 'src/fileClass/fileClass';
 import { FileClassAttributeModal } from 'src/fileClass/FileClassAttributeModal';
 import FileClassQuery from 'src/fileClass/FileClassQuery';
@@ -15,6 +15,7 @@ import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import { frontMatterLineField, getLineFields } from 'src/utils/parser';
+import { FileTaskManager } from 'src/components/FileTaskManager';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -23,6 +24,7 @@ export default class MetadataMenu extends Plugin {
 	public initialFileClassQueries: Array<FileClassQuery> = [];
 	public settingTab: MetadataMenuSettingTab;
 	public fieldIndex: FieldIndex;
+	public fileTaskManager: FileTaskManager
 
 	async onload(): Promise<void> {
 		console.log('Metadata Menu loaded');
@@ -32,6 +34,7 @@ export default class MetadataMenu extends Plugin {
 
 
 		this.fieldIndex = this.addChild(new FieldIndex(this, "1", () => { }))
+		this.fileTaskManager = this.addChild(new FileTaskManager(this, "1", () => { }))
 
 		this.settings.presetFields.forEach(prop => {
 			const property = new Field();

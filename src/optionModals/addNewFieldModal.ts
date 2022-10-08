@@ -31,7 +31,8 @@ export default class addNewFieldModal extends Modal {
         const saveButton = new ButtonComponent(footerButtons);
         saveButton.setIcon("checkmark");
         saveButton.onClick(async () => {
-            await insertValues(this.plugin, this.file, nameInputEl.getValue(), valueInputEl.getValue(), this.lineNumber, this.inFrontmatter, this.after);
+            await this.plugin.fileTaskManager
+                .pushTask(() => { insertValues(this.plugin, this.file, nameInputEl.getValue(), valueInputEl.getValue(), this.lineNumber, this.inFrontmatter, this.after) });
             this.close()
         });
         const cancelButton = new ExtraButtonComponent(footerButtons);

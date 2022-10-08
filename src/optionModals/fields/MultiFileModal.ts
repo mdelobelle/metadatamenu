@@ -35,7 +35,7 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
     onOpen() {
         super.onOpen()
         this.containerEl.onkeydown = async (e) => {
-            if (e.key == "Enter" && e.shiftKey) {
+            if (e.key == "Enter" && e.altKey) {
                 await this.replaceValues();
                 this.close()
             }
@@ -43,7 +43,7 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
         const buttonContainer = this.containerEl.createDiv({ cls: "metadata-menu-value-suggester-actions" })
         buttonContainer.createDiv({ cls: "metadata-menu-value-suggester-actions-spacer" })
         const infoContainer = buttonContainer.createDiv({ cls: "metadata-menu-value-suggester-info" })
-        infoContainer.setText("Shift+Enter to save")
+        infoContainer.setText("Alt+Enter to save")
         //confirm button
         const confirmButton = new ButtonComponent(buttonContainer)
         confirmButton.setIcon("checkmark")
@@ -94,32 +94,41 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
             return FM.buildMarkDownLink(this.plugin, this.file, file.basename, alias)
         })
         if (this.lineNumber == -1) {
-            await replaceValues(
-                this.plugin,
-                this.file,
-                this.field.name,
-                result.join(", ")
-            );
+            await this.plugin.fileTaskManager
+                .pushTask(() => {
+                    replaceValues(
+                        this.plugin,
+                        this.file,
+                        this.field.name,
+                        result.join(", ")
+                    )
+                });
         } else {
-            await insertValues(
-                this.plugin,
-                this.file,
-                this.field.name,
-                result.join(", "),
-                this.lineNumber,
-                this.inFrontmatter,
-                this.after
-            );
+            await this.plugin.fileTaskManager
+                .pushTask(() => {
+                    insertValues(
+                        this.plugin,
+                        this.file,
+                        this.field.name,
+                        result.join(", "),
+                        this.lineNumber,
+                        this.inFrontmatter,
+                        this.after
+                    )
+                });
         };
     }
 
     async clearValues() {
-        await replaceValues(
-            this.plugin,
-            this.file,
-            this.field.name,
-            ""
-        );
+        await this.plugin.fileTaskManager
+            .pushTask(() => {
+                replaceValues(
+                    this.plugin,
+                    this.file,
+                    this.field.name,
+                    ""
+                )
+            });
     }
 
     renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {

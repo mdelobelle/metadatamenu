@@ -48,7 +48,8 @@ export async function replaceValues(
     plugin: MetadataMenu,
     fileOrFilePath: TFile | string,
     attribute: string,
-    input: string
+    input: string,
+    previousItemsCount: number = 0
 ): Promise<void> {
     let file: TFile;
     if (fileOrFilePath instanceof TFile) {
@@ -88,7 +89,8 @@ export async function replaceValues(
                 //check if this field is a lookup and get list boundaries
                 const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === attribute)
                 if (field?.type === FieldType.Lookup) {
-                    const previousItemsCount = plugin.fieldIndex.previousFileLookupFilesValues.get(file.path + "__related__" + attribute) || 0
+
+                    //console.log(previousItemsCount)
                     const bounds = getListBounds(plugin, file, i)
                     if (bounds) {
                         const { start, end } = bounds;
@@ -119,7 +121,7 @@ export async function replaceValues(
                 return decodeLink(encodedLine);
             }
         }
-    })
+    });
     await plugin.app.vault.modify(file, newContent.filter((line, i) => !skippedLines.includes(i)).join('\n'));
     const editor = plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor
     if (editor) {

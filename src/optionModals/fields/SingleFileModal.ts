@@ -73,22 +73,28 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
             alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(item.path))
         }
         if (this.lineNumber == -1) {
-            await replaceValues(
-                this.plugin,
-                this.file,
-                this.field.name,
-                FileField.buildMarkDownLink(this.plugin, this.file, item.basename, alias)
-            );
+            await this.plugin.fileTaskManager
+                .pushTask(() => {
+                    replaceValues(
+                        this.plugin,
+                        this.file,
+                        this.field.name,
+                        FileField.buildMarkDownLink(this.plugin, this.file, item.basename, alias)
+                    )
+                });
         } else {
-            await insertValues(
-                this.plugin,
-                this.file,
-                this.field.name,
-                FileField.buildMarkDownLink(this.plugin, this.file, item.basename, alias),
-                this.lineNumber,
-                this.inFrontmatter,
-                this.after
-            );
+            await this.plugin.fileTaskManager
+                .pushTask(() => {
+                    insertValues(
+                        this.plugin,
+                        this.file,
+                        this.field.name,
+                        FileField.buildMarkDownLink(this.plugin, this.file, item.basename, alias),
+                        this.lineNumber,
+                        this.inFrontmatter,
+                        this.after
+                    )
+                });
         };
     }
 

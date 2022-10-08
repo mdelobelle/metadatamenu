@@ -1,10 +1,10 @@
 import { Component, TFile } from "obsidian"
 import MetadataMenu from "main"
-import Field from "./Field";
+import Field from "../fields/Field";
 import { FileClass } from "src/fileClass/fileClass";
 import FileClassQuery from "src/fileClass/FileClassQuery";
 import FieldSetting from "src/settings/FieldSetting";
-import { updateLookups, resolveLookups } from "./fieldManagers/LookupField";
+import { updateLookups, resolveLookups } from "../fields/fieldManagers/LookupField";
 
 export default class FieldIndex extends Component {
 

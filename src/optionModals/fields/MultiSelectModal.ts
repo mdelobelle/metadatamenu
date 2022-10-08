@@ -52,7 +52,7 @@ export default class MultiSuggestModal extends SuggestModal<string> {
     async onOpen() {
         super.onOpen()
         this.containerEl.onkeydown = async (e) => {
-            if (e.key == "Enter" && e.shiftKey) {
+            if (e.key == "Enter" && e.altKey) {
                 await this.replaceValues();
                 this.close()
             }
@@ -73,7 +73,7 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         const buttonContainer = this.containerEl.createDiv({ cls: "metadata-menu-value-suggester-actions" })
         buttonContainer.createDiv({ cls: "metadata-menu-value-suggester-actions-spacer" })
         const infoContainer = buttonContainer.createDiv({ cls: "metadata-menu-value-suggester-info" })
-        infoContainer.setText("Shift+Enter to save")
+        infoContainer.setText("Alt+Enter to save")
         // addButton
         this.addButton = new ButtonComponent(inputContainer)
         this.addButton.setIcon("plus")
@@ -175,19 +175,23 @@ export default class MultiSuggestModal extends SuggestModal<string> {
     async replaceValues() {
         const options = this.selectedOptions;
         if (this.lineNumber == -1) {
-            await replaceValues(this.plugin, this.file, this.field.name, options.join(", "));
+            await this.plugin.fileTaskManager
+                .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, options.join(", ")) });
         } else {
             const renderedValues = !this.inFrontmatter ? options.join(", ") : options.length > 1 ? `[${options.join(", ")}]` : `${options[0]}`
-            await insertValues(this.plugin, this.file, this.field.name, renderedValues, this.lineNumber, this.inFrontmatter, this.after);
+            await this.plugin.fileTaskManager
+                .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, renderedValues, this.lineNumber, this.inFrontmatter, this.after) });
         };
         this.close();
     }
 
     async clearValues() {
         if (this.lineNumber == -1) {
-            await replaceValues(this.plugin, this.file, this.field.name, "");
+            await this.plugin.fileTaskManager
+                .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, "") });
         } else {
-            await insertValues(this.plugin, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after);
+            await this.plugin.fileTaskManager
+                .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after) });
         };
     }
 

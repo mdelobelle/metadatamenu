@@ -31,15 +31,16 @@ export default class CycleField extends AbstractListBasedField {
             location.addItem((item) => {
                 item.setTitle(`${name} : ${value} ▷ ${this.nextOption(value)}`);
                 item.setIcon(FieldIcon[FieldType.Cycle]);
-                item.onClick(() => replaceValues(this.plugin, file, name, this.nextOption(value).toString()));
+                item.onClick(async () => await this.plugin.fileTaskManager
+                    .pushTask(() => { replaceValues(this.plugin, file, name, this.nextOption(value).toString()) }));
                 item.setSection("metadata-menu.fields");
             });
         } else if (CycleField.isSuggest(location)) {
             location.options.push({
                 id: `${name}_${value}_${this.nextOption(value)}`,
                 actionLabel: `<span><b>${name}</b> : ${value} ▷ ${this.nextOption(value)}</span>`,
-                action: () =>
-                    replaceValues(this.plugin, file, name, this.nextOption(value).toString()),
+                action: async () => await this.plugin.fileTaskManager
+                    .pushTask(() => { replaceValues(this.plugin, file, name, this.nextOption(value).toString()) }),
                 icon: FieldIcon[FieldType.Cycle]
             })
         };

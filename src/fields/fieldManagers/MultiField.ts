@@ -80,9 +80,9 @@ export default class MultiField extends AbstractListBasedField {
             }
             select.add(value);
         })
-        select.onchange = () => {
+        select.onchange = async () => {
             const newValues = [...currentValues, select.value].join(", ");
-            MultiField.replaceValues(this.plugin, p.file.path, this.field.name, newValues)
+            MultiField.replaceValues(this.plugin, p.file.path, this.field.name, newValues);
             singleSpacer.hide();
             doubleSpacer.show();
             addBtn.hide();
@@ -127,7 +127,7 @@ export default class MultiField extends AbstractListBasedField {
             valueRemoveBtn.addClass("metadata-menu-dv-field-button");
             valueRemoveBtn.addClass("multi");
             valueRemoveBtn.hide();
-            valueRemoveBtn.onclick = () => {
+            valueRemoveBtn.onclick = async () => {
                 const remainingValues = currentValues.filter(cV => cV !== v).join(", ")
                 MultiField.replaceValues(this.plugin, p.file.path, this.field.name, remainingValues);
             }

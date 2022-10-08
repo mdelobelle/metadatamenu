@@ -71,10 +71,10 @@ export abstract class FieldManager {
         return true;
     }
 
-    public static replaceValues(plugin: MetadataMenu, path: string, fieldName: string, value: string): void {
+    public static async replaceValues(plugin: MetadataMenu, path: string, fieldName: string, value: string): Promise<void> {
         const file = plugin.app.vault.getAbstractFileByPath(path)
         if (file instanceof TFile && file.extension == "md") {
-            replaceValues(plugin, file, fieldName, value)
+            await plugin.fileTaskManager.pushTask(() => { replaceValues(plugin, file, fieldName, value) });
         }
     }
 

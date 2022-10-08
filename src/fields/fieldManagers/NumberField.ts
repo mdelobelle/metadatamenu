@@ -88,14 +88,16 @@ export default class NumberField extends FieldManager {
                     location.addItem((item) => {
                         item.setIcon(FieldIcon[FieldType.Number]);
                         item.setTitle(`<${name}> ↘️ ${fValue - fStep}`);
-                        item.onClick(() => replaceValues(this.plugin, file, name, (fValue - fStep).toString()));
+                        item.onClick(async () => await this.plugin.fileTaskManager
+                            .pushTask(() => { replaceValues(this.plugin, file, name, (fValue - fStep).toString()) }));
                         item.setSection("metadata-menu.fields");
                     })
                 if (!isNaN(fMax) && fValue + fStep < fMax)
                     location.addItem((item) => {
                         item.setIcon(FieldIcon[FieldType.Number]);
                         item.setTitle(`<${name}> ↗️ ${fValue + fStep}`);
-                        item.onClick(() => replaceValues(this.plugin, file, name, (fValue + fStep).toString()));
+                        item.onClick(async () => await this.plugin.fileTaskManager
+                            .pushTask(() => { replaceValues(this.plugin, file, name, (fValue + fStep).toString()) }));
                         item.setSection("metadata-menu.fields");
                     })
             }
@@ -250,7 +252,8 @@ export default class NumberField extends FieldManager {
             if (this.validateValue(input.value)) {
                 const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
                 if (file instanceof TFile && file.extension == "md") {
-                    await replaceValues(this.plugin, file, this.field.name, input.value)
+                    await this.plugin.fileTaskManager
+                        .pushTask(() => { replaceValues(this.plugin, file, this.field.name, input.value) });
                     this.toggleDvButtons(decrementButton, incrementButton, input.value)
                 }
                 fieldContainer.removeChild(inputContainer)
@@ -286,7 +289,8 @@ export default class NumberField extends FieldManager {
                 if (this.validateValue(input.value)) {
                     const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
                     if (file instanceof TFile && file.extension == "md") {
-                        await replaceValues(this.plugin, file, this.field.name, input.value);
+                        await this.plugin.fileTaskManager
+                            .pushTask(() => { replaceValues(this.plugin, file, this.field.name, input.value) });
                         this.toggleDvButtons(decrementButton, incrementButton, input.value)
                     }
                     fieldContainer.removeChild(inputContainer)
@@ -320,21 +324,23 @@ export default class NumberField extends FieldManager {
                 const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
                 if (file instanceof TFile && file.extension == "md") {
                     const newValue = (!!fStep ? p[this.field.name] - fStep : p[this.field.name] - 1).toString();
-                    await replaceValues(this.plugin, file, this.field.name, newValue);
+                    await this.plugin.fileTaskManager
+                        .pushTask(() => { replaceValues(this.plugin, file, this.field.name, newValue) });
                     this.toggleDvButtons(decrementButton, incrementButton, newValue);
                 }
             }
         }
 
         /* increment button on click: increment by step or by 1 */
-        incrementButton.onclick = () => {
+        incrementButton.onclick = async () => {
             if (this.canIncrement(p[this.field.name])) {
                 const { step } = this.field.options;
                 const fStep = parseFloat(step)
                 const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
                 if (file instanceof TFile && file.extension == "md") {
                     const newValue = (!!fStep ? p[this.field.name] + fStep : p[this.field.name] + 1).toString();
-                    replaceValues(this.plugin, file, this.field.name, newValue);
+                    await this.plugin.fileTaskManager
+                        .pushTask(() => { replaceValues(this.plugin, file, this.field.name, newValue) });
                     this.toggleDvButtons(decrementButton, incrementButton, newValue);
                 }
             }
