@@ -124,7 +124,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
         const fieldManager = new FieldManager[this.field.type](this.plugin, this.field) as AbstractListBasedField
         const values = fieldManager.getOptionsList(dvFile).filter(o => o.toLowerCase().includes(query.toLowerCase()))
         if (this.addButton) {
-            values.some(p => p === query) && this.field.options.sourceType !== selectValuesSource.Type.ValuesFromDVQuery ?
+            (values.some(p => p === query) || this.field.options.sourceType == selectValuesSource.Type.ValuesFromDVQuery || !query) ?
                 this.addButton.buttonEl.hide() :
                 this.addButton.buttonEl.show();
         };

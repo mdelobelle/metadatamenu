@@ -125,7 +125,7 @@ export default class FileField extends FieldManager {
 
         const customeRenderingContainer = parentContainer.createDiv();
         customeRenderingContainer.createEl("span", { text: "Alias", cls: 'metadata-menu-field-option' });
-        customeRenderingContainer.createEl("span", { text: "Personalise the rendering of your links' aliases with a function returning a string (page attribute is available)", cls: 'metadata-menu-field-option-subtext' });
+        customeRenderingContainer.createEl("span", { text: "Personalise the rendering of your links' aliases with a function returning a string (<page> object is available)", cls: 'metadata-menu-field-option-subtext' });
         customeRenderingContainer.createEl("code", {
             text: `function(page) { return <function using "page">; }`
         })

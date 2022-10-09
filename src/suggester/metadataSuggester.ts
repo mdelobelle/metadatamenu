@@ -87,6 +87,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     async getValueSuggestions(context: EditorSuggestContext): Promise<IValueCompletion[]> {
         const lineNumber = context.start.line;
         const matchField: { attribute?: string, values?: string } = { attribute: undefined, values: "" }
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (!this.inFrontmatter) {
             const lineFields = getLineFields(encodeLink(context.editor.getLine(lineNumber)));
             const position = context.editor.getCursor().ch
@@ -124,11 +125,11 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             }
             if (this.field && [FieldType.Cycle, FieldType.Multi, FieldType.Select].contains(this.field.type)) {
                 const fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
-                return (fieldManager as AbstractListBasedField).getOptionsList().filter(option => this.filterOption(firstValues, lastValue, option))
+
+                return (fieldManager as AbstractListBasedField).getOptionsList(dvApi.page(this.context?.file.path)).filter(option => this.filterOption(firstValues, lastValue, option))
                     .map(_value => Object({ value: _value }))
             } else if (this.field && [FieldType.File, FieldType.MultiFile].includes(this.field.type)) {
                 const fieldManager: FileField = new FieldManager[this.field.type](this.plugin, this.field)
-                const dvApi = this.plugin.app.plugins.plugins.dataview?.api
                 const files = fieldManager.getFiles(this.context?.file);
                 if (lastValue) {
                     return files

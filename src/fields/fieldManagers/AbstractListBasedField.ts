@@ -138,7 +138,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
         }
     }
 
-    public getOptionsList(dvFile?: any): string[] {
+    public getOptionsList(dvFile: any = undefined): string[] {
         let values: string[] = [];
         if (Array.isArray(this.field.options)) {
             values = this.field.options;
@@ -216,7 +216,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
     private createValuesFromDVQueryContainer(parentContainer: HTMLDivElement): HTMLDivElement {
         const valuesFromDVQueryContainer = parentContainer.createDiv({})
         valuesFromDVQueryContainer.createEl("span", { text: "Dataview function", cls: "metadata-menu-field-option" });
-        valuesFromDVQueryContainer.createEl("span", { text: "Dataview query returning a list of string (dv attribute is available)", cls: "metadata-menu-field-option-subtext" });
+        valuesFromDVQueryContainer.createEl("span", { text: "Dataview query returning a list of string (<dv> object is available)", cls: "metadata-menu-field-option-subtext" });
         const valuesFromDVQuery = new TextAreaComponent(valuesFromDVQueryContainer);
         valuesFromDVQuery.inputEl.cols = 65;
         valuesFromDVQuery.inputEl.rows = 8;
