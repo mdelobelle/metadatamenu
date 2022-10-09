@@ -118,10 +118,15 @@ export default class ValueSuggestModal extends SuggestModal<string>{
     }
 
     getSuggestions(query: string): string[] {
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        let dvFile: any;
+        if (dvApi) dvFile = dvApi.page(this.file.path)
         const fieldManager = new FieldManager[this.field.type](this.plugin, this.field) as AbstractListBasedField
-        const values = fieldManager.getOptionsList().filter(o => o.toLowerCase().includes(query.toLowerCase()))
+        const values = fieldManager.getOptionsList(dvFile).filter(o => o.toLowerCase().includes(query.toLowerCase()))
         if (this.addButton) {
-            values.some(p => p === query) ? this.addButton.buttonEl.hide() : this.addButton.buttonEl.show();
+            values.some(p => p === query) && this.field.options.sourceType !== selectValuesSource.Type.ValuesFromDVQuery ?
+                this.addButton.buttonEl.hide() :
+                this.addButton.buttonEl.show();
         };
         return values
     }

@@ -32,7 +32,7 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
     getItems(): TFile[] {
         try {
             const fileManager = new FieldManager[this.field.type](this.plugin, this.field);
-            return fileManager.getFiles();
+            return fileManager.getFiles(this.file);
         } catch (error) {
             this.close();
             throw (error);

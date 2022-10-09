@@ -38,7 +38,9 @@ export class FileTaskManager extends Component {
     public async executeNext() {
         const [firstTaskInQueueId, firstTaskInQueue] = [...this.queue][0] || [undefined, undefined]
         if (firstTaskInQueue && !this.plugin.app.metadataCache.inProgressTaskCount) {
+            firstTaskInQueue.status = "ongoing"
             await firstTaskInQueue.fn()
+            firstTaskInQueue.status = "done"
             this.queue.delete(firstTaskInQueueId)
             //console.log("done: ", firstTaskInQueueId)
             //console.log("remaining", [...this.queue].length)

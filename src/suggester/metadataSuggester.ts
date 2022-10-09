@@ -128,14 +128,27 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                     .map(_value => Object({ value: _value }))
             } else if (this.field && [FieldType.File, FieldType.MultiFile].includes(this.field.type)) {
                 const fieldManager: FileField = new FieldManager[this.field.type](this.plugin, this.field)
-                const files = fieldManager.getFiles();
+                const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+                const files = fieldManager.getFiles(this.context?.file);
                 if (lastValue) {
                     return files
                         .filter(f => f.basename.includes(lastValue))
-                        .map(f => Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename) }));
+                        .map(f => {
+                            let alias: string | undefined = undefined;
+                            if (dvApi && this.field?.options.customRendering) {
+                                alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(f.path))
+                            }
+                            return Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, alias) })
+                        });
                 } else {
                     return files
-                        .map(f => Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename) }));
+                        .map(f => {
+                            let alias: string | undefined = undefined;
+                            if (dvApi && this.field?.options.customRendering) {
+                                alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(f.path))
+                            }
+                            return Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, alias) })
+                        });
                 }
             } else {
                 return []
@@ -145,11 +158,19 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     };
 
     renderSuggestion(suggestion: IValueCompletion, el: HTMLElement): void {
-        const rawValue = suggestion.value.replace(/^\[\[/, "").replace(/\]\]$/, "")
+        const [rawValue, alias] = suggestion.value.replace(/^\[\[/, "").replace(/\]\]$/, "").split("|")
         const targetFile = this.plugin.app.metadataCache.getFirstLinkpathDest(rawValue, this.context!.file.path)
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi && this.field && this.field.options.customRendering && targetFile) {
-            el.setText(new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(targetFile.path)))
+            if (alias) {
+                const suggestionContainer = el.createDiv({ cls: "metadata-menu-suggester-item-with-alias" });
+                const label = suggestionContainer.createDiv({ cls: "metadata-menu-suggester-item-with-alias-label" })
+                label.setText(alias)
+                const filePath = suggestionContainer.createDiv({ cls: "metadata-menu-suggester-item-with-alias-filepath" })
+                filePath.setText(rawValue)
+            } else {
+                el.setText(new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(targetFile.path)))
+            }
         } else {
             el.setText(rawValue)
         }

@@ -16,11 +16,11 @@ export default class FileField extends FieldManager {
         super(plugin, field, FieldType.File)
     }
 
-    public getFiles = (): TFile[] => {
+    public getFiles = (currentFile?: TFile): TFile[] => {
         //@ts-ignore
         const getResults = (api: DataviewPlugin["api"]) => {
             try {
-                return (new Function("dv", `return ${this.field.options.dvQueryString}`))(api)
+                return (new Function("dv", "current", `return ${this.field.options.dvQueryString}`))(api, api.page(currentFile?.path))
             } catch (error) {
                 new Notice(`Wrong query for field <${this.field.name}>\ncheck your settings`, 3000)
             }

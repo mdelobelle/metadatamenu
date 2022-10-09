@@ -45,7 +45,7 @@ This order is used to display the values in the dropdown lists and is the order 
 
 #### `Dataview function`
 
-Dataview query returning a list of string (`dv` attribute is available)
+Dataview query returning a list of string. The dataview api can be accessed with the `dv` variable, and the current page (dv.page object) is available with the `current` variable
 
 example: 
 `dv.pages('#student').map(p => p.name)`
@@ -77,7 +77,7 @@ If `min` (float) is defined, you won't be able to set or change the value of the
 If `max` (float) is defined, you won't be able to set or change the value of the field with a value greater than `max` (an error will be displayed)
 
 ### `File`, `MultiFile` options
-`Dataview query` accepts a call to the api function dv.pages that will return pages from your vault according to this function. 
+`Dataview query` accepts a call to the api function dv.pages that will return pages from your vault according to this function. Dataview api can be accessed with the `dv` variable, and the current page (dv.page object) is available with the `current` variable
 
 you’ll have to use dv.pages function explained here : https://blacksmithgu.github.io/obsidian-dataview/api/code-reference/#dvpagessource
 

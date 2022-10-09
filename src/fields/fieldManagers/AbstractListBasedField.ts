@@ -138,7 +138,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
         }
     }
 
-    public getOptionsList(): string[] {
+    public getOptionsList(dvFile?: any): string[] {
         let values: string[] = [];
         if (Array.isArray(this.field.options)) {
             values = this.field.options;
@@ -157,7 +157,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
                     {
                         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
                         if (dvApi) {
-                            values = new Function("dv", `return ${this.field.options.valuesFromDVQuery}`)(dvApi)
+                            values = new Function("dv", "current", `return ${this.field.options.valuesFromDVQuery}`)(dvApi, dvFile)
                         } else {
                             values = []
                         }
