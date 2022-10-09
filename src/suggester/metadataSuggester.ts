@@ -8,13 +8,13 @@ import {
     MarkdownView,
     TFile,
     parseYaml,
-    Notice
+    Notice,
 } from "obsidian";
-import { FileClass } from "src/fileClass/fileClass";
 import { FieldManager, FieldType } from "src/types/fieldTypes";
 import { genericFieldRegex, getLineFields, encodeLink } from "../utils/parser";
 import FileField from "src/fields/fieldManagers/FileField";
-import FileClassQuery from "src/fileClass/FileClassQuery";
+import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
+import Field from "src/fields/Field";
 
 interface IValueCompletion {
     value: string;
@@ -22,13 +22,11 @@ interface IValueCompletion {
 
 export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     private plugin: MetadataMenu;
-    private fileClass: FileClass;
-    private fileClassForFields: boolean;
     private inFrontmatter: boolean = false;
     private inFullLine: boolean = false;
     private inSentence: boolean = false;
     private didSelect: boolean = false;
-    private fileClassFields: string[];
+    private field?: Field;
 
     constructor(plugin: MetadataMenu) {
         super(plugin.app);
@@ -77,42 +75,6 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 !!lastValue && encodeLink(option).includes(lastValue))
     }
 
-    private getOptionsFromFileClassFields(
-        fieldNames: string[],
-        fieldName: string,
-        firstValues: string[] | undefined,
-        lastValue: string | undefined,
-        context: EditorSuggestContext
-    ): IValueCompletion[] {
-        if (fieldNames.includes(fieldName)) {
-            const field = this.fileClass.attributes
-                .find(attr => attr.name == fieldName)!.getField()
-            if ([FieldType.Cycle, FieldType.Multi, FieldType.Select].contains(field.type)) {
-                const filteredOptions = Array.isArray(field.options) ?
-                    field.options.filter(option => this.filterOption(firstValues, lastValue, option)) :
-                    Object.keys(field.options)
-                        .map(k => field.options[k])
-                        .filter(option => this.filterOption(firstValues, lastValue, option))
-                return filteredOptions.map(option => Object({ value: option }));
-            } else if ([FieldType.File, FieldType.MultiFile].includes(field.type)) {
-                const fieldManager: FileField = new FieldManager[field.type](this.plugin, field)
-                const files = fieldManager.getFiles();
-                if (lastValue) {
-                    return files
-                        .filter(f => f.basename.includes(lastValue))
-                        .map(f => Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename) }));
-                } else {
-                    return files
-                        .map(f => Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename) }));
-                }
-            } else {
-                return []
-            }
-        } else {
-            return []
-        }
-    }
-
 
     async getSuggestions(context: EditorSuggestContext): Promise<IValueCompletion[]> {
         const suggestions = await this.getValueSuggestions(context);
@@ -125,6 +87,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     async getValueSuggestions(context: EditorSuggestContext): Promise<IValueCompletion[]> {
         const lineNumber = context.start.line;
         const matchField: { attribute?: string, values?: string } = { attribute: undefined, values: "" }
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (!this.inFrontmatter) {
             const lineFields = getLineFields(encodeLink(context.editor.getLine(lineNumber)));
             const position = context.editor.getCursor().ch
@@ -146,12 +109,13 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
 
         if (matchField.attribute) {
             const fieldName = matchField.attribute;
+            this.field = this.plugin.fieldIndex.filesFields.get(context.file.path)?.find(f => f.name === fieldName);
             const valuesList = matchField.values?.replace(/^\[|^\s\[|^\(|^\s\(/, '')
                 .replace(/\]$|\)$/, '')
                 .split(",").map(o => encodeLink(o.trim()))
             const lastValue = valuesList?.last()
             const firstValues = valuesList?.slice(0, -1)
-            //tags specific cas
+            //tags specific case
             if (fieldName === "tags" && this.inFrontmatter) {
                 //@ts-ignore
                 return Object.keys(this.plugin.app.metadataCache.getTags())
@@ -159,77 +123,58 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                     .sort()
                     .map(tag => Object({ value: tag.replace(/^#/, "") }))
             }
-            //test if note matches a fileclass query
-            const fileClassQueries = this.plugin.settings.fileClassQueries.map(fcq => fcq)
-            while (!this.fileClassForFields && fileClassQueries.length > 0) {
-                const fileClassQuery = new FileClassQuery();
-                Object.assign(fileClassQuery, fileClassQueries.pop() as FileClassQuery)
-                if (fileClassQuery.matchFile(context.file)) {
-                    this.fileClassForFields = true;
-                    try {
-                        this.fileClass = FileClass.createFileClass(this.plugin, fileClassQuery.fileClassName)
-                        this.fileClassFields = this.fileClass.attributes.map(attr => attr.name)
-                    } catch (error) {
+            if (this.field && [FieldType.Cycle, FieldType.Multi, FieldType.Select].contains(this.field.type)) {
+                const fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
 
-                    }
+                return (fieldManager as AbstractListBasedField).getOptionsList(dvApi.page(this.context?.file.path)).filter(option => this.filterOption(firstValues, lastValue, option))
+                    .map(_value => Object({ value: _value }))
+            } else if (this.field && [FieldType.File, FieldType.MultiFile].includes(this.field.type)) {
+                const fieldManager: FileField = new FieldManager[this.field.type](this.plugin, this.field)
+                const files = fieldManager.getFiles(this.context?.file);
+                if (lastValue) {
+                    return files
+                        .filter(f => f.basename.includes(lastValue))
+                        .map(f => {
+                            let alias: string | undefined = undefined;
+                            if (dvApi && this.field?.options.customRendering) {
+                                alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(f.path))
+                            }
+                            return Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, alias) })
+                        });
+                } else {
+                    return files
+                        .map(f => {
+                            let alias: string | undefined = undefined;
+                            if (dvApi && this.field?.options.customRendering) {
+                                alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(f.path))
+                            }
+                            return Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, alias) })
+                        });
                 }
-            }
-            //if this note has a fileClass, check if field options are defined in the FileClass
-            const cache = this.plugin.app.metadataCache.getCache(context.file.path);
-            if (cache?.frontmatter) {
-                const { position, ...attributes } = cache.frontmatter;
-                const fileClassAlias = this.plugin.settings.fileClassAlias;
-                if (Object.keys(attributes).contains(fileClassAlias)) {
-                    const fileClassValue = attributes[fileClassAlias];
-                    try {
-                        const fileClass = FileClass.createFileClass(this.plugin, fileClassValue);
-                        this.fileClass = fileClass;
-                        this.fileClassForFields = true;
-                        this.fileClassFields = this.fileClass.attributes.map(a => a.name)
-                    } catch (error) {
-
-                    };
-                }
-            }
-            if (this.fileClassForFields) {
-                return this.getOptionsFromFileClassFields(this.fileClassFields, fieldName, firstValues, lastValue, context)
             } else {
-                //else check if there are global preset voptiosalues
-                const presetField = this.plugin.settings.presetFields.find(field => field.name == fieldName);
-                if (presetField) {
-                    if ([FieldType.Cycle, FieldType.Multi, FieldType.Select].contains(presetField.type)) {
-                        if (presetField.valuesListNotePath) {
-                            return this.plugin.fieldIndex.valuesListNotePathValues.get(presetField.valuesListNotePath)!
-                                .filter(option => this.filterOption(firstValues, lastValue, option))
-                                .map(_value => Object({ value: _value }))
-                        };
-                        const values = Object.entries(presetField.options).map(option => option[1])
-                            .filter(option => this.filterOption(firstValues, lastValue, option))
-                        return values
-                            .map(_value => Object({ value: _value }))
-
-                    } else if ([FieldType.File, FieldType.MultiFile].includes(presetField.type)) {
-                        const fieldManager: FileField = new FieldManager[presetField.type](this.plugin, presetField)
-                        const files = fieldManager.getFiles();
-                        if (lastValue) {
-                            return files
-                                .filter(f => f.basename.includes(lastValue))
-                                .map(f => Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename) }));
-                        } else {
-                            return files
-                                .map(f => Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename) }));
-                        }
-                    } else {
-                        return []
-                    }
-                };
-            };
+                return []
+            }
         };
         return [];
     };
 
     renderSuggestion(suggestion: IValueCompletion, el: HTMLElement): void {
-        el.setText(suggestion.value);
+        const [rawValue, alias] = suggestion.value.replace(/^\[\[/, "").replace(/\]\]$/, "").split("|")
+        const targetFile = this.plugin.app.metadataCache.getFirstLinkpathDest(rawValue, this.context!.file.path)
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        if (dvApi && this.field && this.field.options.customRendering && targetFile) {
+            if (alias) {
+                const suggestionContainer = el.createDiv({ cls: "metadata-menu-suggester-item-with-alias" });
+                const label = suggestionContainer.createDiv({ cls: "metadata-menu-suggester-item-with-alias-label" })
+                label.setText(alias)
+                const filePath = suggestionContainer.createDiv({ cls: "metadata-menu-suggester-item-with-alias-filepath" })
+                filePath.setText(rawValue)
+            } else {
+                el.setText(new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(targetFile.path)))
+            }
+        } else {
+            el.setText(rawValue)
+        }
     };
 
     selectSuggestion(suggestion: IValueCompletion, event: KeyboardEvent | MouseEvent): void {

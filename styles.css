@@ -242,6 +242,9 @@ button.metadata-menu-field-add-frontmatter-btn {
 .metadata-menu-setting-item-info-type.date {
   background-color: #483699; }
 
+.metadata-menu-setting-item-info-type.lookup {
+  background-color: #689d6a; }
+
 .metadata-menu-setting-section-header {
   margin-bottom: 0; }
 
@@ -365,6 +368,27 @@ button.metadata-menu-field-add-frontmatter-btn {
 
 .metadata-menu-value-suggester-input-container {
   display: flex; }
+
+.metadata-menu-value-suggester-notice-container {
+  display: flex;
+  background-color: var(--color-accent);
+  color: var(--text-on-accent); }
+
+.metadata-menu-value-suggester-notice-label {
+  margin: 0 1em;
+  padding-top: 0.3em; }
+
+.metadata-menu-value-suggester-notice-spacer {
+  width: 100%; }
+
+.metadata-menu-suggester-item-with-alias {
+  display: flex; }
+
+.metadata-menu-suggester-item-with-alias-filepath {
+  font-size: x-small;
+  margin-left: 1em;
+  padding-top: 0.4em;
+  color: var(--color-base-60); }
 
 /* ---------------------------- */
 /*   Flatpick style             */

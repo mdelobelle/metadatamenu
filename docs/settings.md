@@ -24,6 +24,14 @@ If you want a field to be globally managed throughout your whole vault you can `
 
 ### `Select`, `Multi`, `Cycle` options
 
+#### `Select the source of values for this field`
+
+You have to choose the source of values for your select field between 4 sources:
+
+- `Values defined in this setting` : enter the [`Preset Options`](#preset-options) one by one, sort them
+- `Values from a note` : enter the [`Path of the note containing the values`](#path-of-the-note-containing-the-values)
+- `Values returned from a dataview query` : create a [`dataview function`](#dataview-function) to return a list of values
+
 #### `Path of the note containing the values`
 You can define the list of values in a note. This note must contain a value per line. You have to type the full path to the note in the `Path of the note containing the values` field (don't forget the .md extension)
 
@@ -34,6 +42,13 @@ You can rearrange the order of the options.
 This order is used to display the values in the dropdown lists and is the order used to cycle through values.
 
 > If both `Path of the note containing the values` and `preset options`, the first one will have the priority.
+
+#### `Dataview function`
+
+Dataview query returning a list of string. The dataview api can be accessed with the `dv` variable, and the current page (dv.page object) is available with the `current` variable
+
+example: 
+`dv.pages('#student').map(p => p.name)`
 
 ### `Input` options
 
@@ -62,7 +77,7 @@ If `min` (float) is defined, you won't be able to set or change the value of the
 If `max` (float) is defined, you won't be able to set or change the value of the field with a value greater than `max` (an error will be displayed)
 
 ### `File`, `MultiFile` options
-`Dataview query` accepts a call to the api function dv.pages that will return pages from your vault according to this function. 
+`Dataview query` accepts a call to the api function dv.pages that will return pages from your vault according to this function. Dataview api can be accessed with the `dv` variable, and the current page (dv.page object) is available with the `current` variable
 
 you’ll have to use dv.pages function explained here : https://blacksmithgu.github.io/obsidian-dataview/api/code-reference/#dvpagessource
 
@@ -79,6 +94,10 @@ dv.pages(…).where(…).limit(...)
 see documentation here https://blacksmithgu.github.io/obsidian-dataview/api/data-array/#raw-interface
 
 A good source of help to build dataview queries is the obsidian discord server > plugin-advanced > dataview : the community is really helpful there.
+
+`Alias` accepts a javascript instruction returning a string using dataview `page` attribute
+
+example: `"🚀" + (page.surname || page.file.name)`
 
 ### `Date` options
 

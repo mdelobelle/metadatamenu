@@ -22,8 +22,8 @@ theme:
 nav:
   - Overview: index.md
   - General Concepts: general.md
-  - Controls: controls.md
   - Settings: settings.md
+  - Controls: controls.md
   - FileClasses: fileclasses.md
   - API: api.md
 

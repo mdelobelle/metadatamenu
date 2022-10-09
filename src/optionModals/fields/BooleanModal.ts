@@ -45,9 +45,11 @@ export default class BooleanModal extends Modal {
         saveButton.onClick(async () => {
             const value = this.value.toString()
             if (this.lineNumber == -1) {
-                await replaceValues(this.plugin, this.file, this.field.name, value);
+                await this.plugin.fileTaskManager
+                    .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, value) });
             } else {
-                await insertValues(this.plugin, this.file, this.field.name, value, this.lineNumber, this.inFrontmatter, this.after);
+                await this.plugin.fileTaskManager
+                    .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, value, this.lineNumber, this.inFrontmatter, this.after) });
             };
             this.close();
         });

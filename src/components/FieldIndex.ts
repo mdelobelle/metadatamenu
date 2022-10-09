@@ -1,10 +1,10 @@
 import { Component, TFile } from "obsidian"
 import MetadataMenu from "main"
-import Field from "./Field";
+import Field from "../fields/Field";
 import { FileClass } from "src/fileClass/fileClass";
 import FileClassQuery from "src/fileClass/FileClassQuery";
 import FieldSetting from "src/settings/FieldSetting";
-import { updateLookups, resolveLookups } from "./fieldManagers/LookupField";
+import { updateLookups, resolveLookups } from "../fields/fieldManagers/LookupField";
 
 export default class FieldIndex extends Component {
 
@@ -131,13 +131,26 @@ export default class FieldIndex extends Component {
     }
 
     async getValuesListNotePathValues(): Promise<void> {
+        this.fileClassesName.forEach((fileClass) => {
+            fileClass.attributes.forEach(async attr => {
+                if (typeof attr.options === "object" && !!(attr.options as Record<string, any>)["valuesListNotePath"]) {
+                    this.valuesListNotePathValues.set(
+                        (attr.options as Record<string, any>).valuesListNotePath,
+                        await FieldSetting.getValuesListFromNote(
+                            this.plugin,
+                            (attr.options as Record<string, any>).valuesListNotePath
+                        )
+                    )
+                }
+            })
+        })
         this.plugin.settings.presetFields.forEach(async setting => {
-            if (setting.valuesListNotePath) {
+            if (setting.options.valuesListNotePath) {
                 this.valuesListNotePathValues.set(
-                    setting.valuesListNotePath,
+                    setting.options.valuesListNotePath,
                     await FieldSetting.getValuesListFromNote(
                         this.plugin,
-                        setting.valuesListNotePath
+                        setting.options.valuesListNotePath
                     )
                 )
             }

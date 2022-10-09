@@ -27,7 +27,7 @@ export default class InputModal extends Modal {
             while (!next.done) {
                 if (next.value.groups) {
                     const value = next.value.groups.field
-                    const [name, optionsString] = value.split(/:(.*)/s).map(v => v.trim())
+                    const [name, optionsString] = value.split(/:(.*)/s).map((v: string) => v.trim())
                     this.templateValues[name] = "";
                     if (optionsString) {
                         const options = JSON.parse(optionsString);
@@ -95,9 +95,11 @@ export default class InputModal extends Modal {
         saveBtn.onclick = async () => {
             let inputValue = this.renderedValue.getValue();
             if (this.lineNumber == -1) {
-                await replaceValues(this.plugin, this.file, this.field.name, inputValue);
+                await this.plugin.fileTaskManager
+                    .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, inputValue) });
             } else {
-                await insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
+                await this.plugin.fileTaskManager
+                    .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after) });
             };
             this.close();
         }
@@ -118,9 +120,11 @@ export default class InputModal extends Modal {
             e.preventDefault();
             let inputValue = inputEl.getValue();
             if (this.lineNumber == -1) {
-                await replaceValues(this.plugin, this.file, this.field.name, inputValue);
+                await this.plugin.fileTaskManager
+                    .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, inputValue) });
             } else {
-                await insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after);
+                await this.plugin.fileTaskManager
+                    .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after) });
             };
             this.close();
         };

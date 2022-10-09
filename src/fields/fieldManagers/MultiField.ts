@@ -9,7 +9,6 @@ import AbstractListBasedField from "./AbstractListBasedField";
 export default class MultiField extends AbstractListBasedField {
 
     valuesPromptComponents: Array<TextComponent> = [];
-    presetValuesFields: HTMLDivElement;
 
     constructor(plugin: MetadataMenu, field: Field) {
         super(plugin, field, FieldType.Multi)
@@ -73,18 +72,17 @@ export default class MultiField extends AbstractListBasedField {
         selectContainer.appendChild(select)
         const nullOption = new Option("--select--", undefined);
         select.add(nullOption);
-        Object.keys(this.field.options)
-            .filter(o => !currentValues.contains(this.field.options[o]))
-            .forEach(o => {
-                const option = new Option(this.field.options[o], o);
-                if (p[this.field.name] === this.field.options[o]) {
-                    option.selected = true;
-                }
-                select.add(option);
-            })
-        select.onchange = () => {
-            const newValues = [...currentValues, this.field.options[select.value]].join(", ");
-            MultiField.replaceValues(this.plugin, p.file.path, this.field.name, newValues)
+        const values = this.getOptionsList();
+        values.filter(v => !currentValues.contains(v)).forEach(v => {
+            const value = new Option(v, v);
+            if (p[this.field.name] === value) {
+                value.selected = true;
+            }
+            select.add(value);
+        })
+        select.onchange = async () => {
+            const newValues = [...currentValues, select.value].join(", ");
+            MultiField.replaceValues(this.plugin, p.file.path, this.field.name, newValues);
             singleSpacer.hide();
             doubleSpacer.show();
             addBtn.hide();
@@ -129,7 +127,7 @@ export default class MultiField extends AbstractListBasedField {
             valueRemoveBtn.addClass("metadata-menu-dv-field-button");
             valueRemoveBtn.addClass("multi");
             valueRemoveBtn.hide();
-            valueRemoveBtn.onclick = () => {
+            valueRemoveBtn.onclick = async () => {
                 const remainingValues = currentValues.filter(cV => cV !== v).join(", ")
                 MultiField.replaceValues(this.plugin, p.file.path, this.field.name, remainingValues);
             }

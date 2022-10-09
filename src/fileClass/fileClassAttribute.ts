@@ -7,7 +7,7 @@ class FileClassAttribute {
         public origin: string,
         public name: string,
         public type: FieldType = FieldType.Input,
-        public options: string[] | Record<string, string> = []
+        public options: string[] | Record<string, any> = []
     ) { }
 
     public getField() {
@@ -19,7 +19,7 @@ class FileClassAttribute {
         } else {
             options = this.options
         }
-        return new Field(this.name, options, this.name, undefined, this.type);
+        return new Field(this.name, options, this.name, this.type);
     }
 }
 

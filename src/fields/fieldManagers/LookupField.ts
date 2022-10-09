@@ -22,12 +22,14 @@ export default class LookupField extends FieldManager {
 
     }
 
-    createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
+    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): Promise<void> {
         //no field modal, we include the field directly
         if (lineNumber == -1) {
-            replaceValues(this.plugin, file, this.field.name, "");
+            await this.plugin.fileTaskManager
+                .pushTask(() => { replaceValues(this.plugin, file, this.field.name, "") });
         } else {
-            insertValues(this.plugin, file, this.field.name, "", lineNumber, inFrontmatter, after);
+            await this.plugin.fileTaskManager
+                .pushTask(() => { insertValues(this.plugin, file, this.field.name, "", lineNumber, inFrontmatter, after) });
         };
     }
 
@@ -177,7 +179,13 @@ export default class LookupField extends FieldManager {
     }
 
     getOptionsStr(): string {
-        return this.field.options.outputType
+        const shortDescription = Lookup.ShortDescription[this.field.options.outputType as Lookup.Type]
+        let complement: string = ""
+        if (this.field.options.outputType === Lookup.Type.BuiltinSummarizing) {
+            complement = ` ${this.field.options.builtinSummarizingFunction}` +
+                `${this.field.options.builtinSummarizingFunction !== Lookup.BuiltinSummarizing.CountAll ? " " + this.field.options.summarizedFieldName : ""}`
+        }
+        return shortDescription + complement
     }
 
     validateOptions(): boolean {
@@ -256,7 +264,9 @@ export async function updateLookups(plugin: MetadataMenu, force_update: boolean 
             //check if value has changed in order not to create an infinite loop
             const currentValue = f.fileLookupFieldLastValue.get(id)
             if (force_update || (!currentValue && newValue !== "") || currentValue !== newValue) {
-                await replaceValues(plugin, tFile, fieldName, newValue);
+                const previousValuesCount = plugin.fieldIndex.previousFileLookupFilesValues.get(tFile.path + "__related__" + fieldName) || 0
+                await plugin.fileTaskManager.pushTask(() => replaceValues(plugin, tFile, fieldName, newValue, previousValuesCount));
+                //await replaceValues(plugin, tFile, fieldName, newValue);
                 f.fileLookupFieldLastValue.set(id, newValue)
             } else if (source !== "full Index") {
                 plugin.fieldIndex.fileChanged = false
@@ -269,14 +279,20 @@ export async function updateLookups(plugin: MetadataMenu, force_update: boolean 
 
 export function resolveLookups(plugin: MetadataMenu, source: string = ""): void {
     const f = plugin.fieldIndex;
-    Array.from(f.filesFields).filter((value: [string, Field[]]) => {
+    Array.from(f.filesFields).forEach((value: [string, Field[]]) => {
         const [filePath, fields] = value;
         const dvPage = f.dv.api.page(filePath);
         if (dvPage) {
             fields.filter(field => field.type === FieldType.Lookup && Object.keys(dvPage).includes(field.name)).forEach(lookupField => {
-
                 const queryRelatedDVFiles = (new Function("dv", `return ${lookupField.options.dvQueryString}`))(f.dv.api).values as Array<any>
-                const fileRelatedDVFiles = queryRelatedDVFiles.filter(f => f[lookupField.options.targetFieldName]?.path === filePath)
+                const fileRelatedDVFiles = queryRelatedDVFiles.filter(dvFile => {
+                    const targetValue = dvFile[lookupField.options.targetFieldName];
+                    if (Array.isArray(targetValue)) {
+                        return targetValue.filter(v => f.dv.api.value.isLink(v)).map(v => v.path).includes(filePath)
+                    } else {
+                        return targetValue?.path === filePath
+                    }
+                })
                 const existingFileLookupFields = f.fileLookupFiles.get(`${filePath}__related__${lookupField.name}`)
                 f.fileLookupFiles.set(`${filePath}__related__${lookupField.name}`, fileRelatedDVFiles)
                 f.previousFileLookupFilesValues.set(`${filePath}__related__${lookupField.name}`, (existingFileLookupFields || fileRelatedDVFiles).length)

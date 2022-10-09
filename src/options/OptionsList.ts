@@ -85,6 +85,15 @@ export default class OptionsList {
 		if (field) {
 			const fieldManager = new FieldManager[field.type](this.plugin, field);
 			(fieldManager as F).createAndOpenFieldModal(this.file, field.name, this.attributes[field.name])
+		} else {
+			const defaultField = new Field(fieldName)
+			defaultField.type = FieldType.Input
+			if (fieldName === this.plugin.settings.fileClassAlias) {
+				this.buildFileClassFieldOptions(defaultField, this.attributes[fieldName])
+			} else if (this.location === "ManageAtCursorCommand") {
+				const fieldManager = new Managers.Input(this.plugin, defaultField) as F
+				(fieldManager as F).createAndOpenFieldModal(this.file, fieldName, this.attributes[fieldName])
+			}
 		}
 	}
 
@@ -157,7 +166,7 @@ export default class OptionsList {
 					this.buildFileClassFieldOptions(defaultField, value)
 				} else {
 					const fieldManager = new Managers.Input(this.plugin, defaultField)
-					fieldManager.addFieldOption(key, value, this.file, this.location)
+					fieldManager.addFieldOption(key, value || "", this.file, this.location)
 				}
 			}
 

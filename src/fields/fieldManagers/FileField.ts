@@ -16,11 +16,11 @@ export default class FileField extends FieldManager {
         super(plugin, field, FieldType.File)
     }
 
-    public getFiles = (): TFile[] => {
+    public getFiles = (currentFile?: TFile): TFile[] => {
         //@ts-ignore
         const getResults = (api: DataviewPlugin["api"]) => {
             try {
-                return (new Function("dv", `return ${this.field.options.dvQueryString}`))(api)
+                return (new Function("dv", "current", `return ${this.field.options.dvQueryString}`))(api, api.page(currentFile?.path))
             } catch (error) {
                 new Notice(`Wrong query for field <${this.field.name}>\ncheck your settings`, 3000)
             }
@@ -120,6 +120,25 @@ export default class FileField extends FieldManager {
         this.dvQueryString.onChange(value => {
             this.field.options.dvQueryString = value;
             FieldSettingsModal.removeValidationError(this.dvQueryString);
+        })
+
+
+        const customeRenderingContainer = parentContainer.createDiv();
+        customeRenderingContainer.createEl("span", { text: "Alias", cls: 'metadata-menu-field-option' });
+        customeRenderingContainer.createEl("span", { text: "Personalise the rendering of your links' aliases with a function returning a string (<page> object is available)", cls: 'metadata-menu-field-option-subtext' });
+        customeRenderingContainer.createEl("code", {
+            text: `function(page) { return <function using "page">; }`
+        })
+        const customRendering = new TextAreaComponent(customeRenderingContainer);
+        customRendering.inputEl.cols = 50;
+        customRendering.inputEl.rows = 4;
+        customRendering.setValue(this.field.options.customRendering || "");
+        customRendering.setPlaceholder("Javascript string, " +
+            "the \"page\" (dataview page type) variable is available\n" +
+            "example 1: page.file.name\nexample 2: `${page.file.name} of gender ${page.gender}`")
+        customRendering.onChange(value => {
+            this.field.options.customRendering = value;
+            FieldSettingsModal.removeValidationError(customRendering);
         })
     }
 

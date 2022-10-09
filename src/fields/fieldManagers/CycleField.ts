@@ -10,42 +10,37 @@ import AbstractListBasedField from "./AbstractListBasedField";
 export default class CycleField extends AbstractListBasedField {
 
     valuesPromptComponents: Array<TextComponent> = [];
-    presetValuesFields: HTMLDivElement;
 
     constructor(plugin: MetadataMenu, field: Field) {
         super(plugin, field, FieldType.Cycle)
     }
 
     public nextOption(value: string): string {
-        const options = this.field.options;
-        const keys = Object.keys(options);
-        const keyForValue = keys.find(key => options[key] === value);
         let nextOption: string;
-        if (keyForValue) {
-            const nextKey = keys[(keys.indexOf(keyForValue) + 1) % keys.length];
-            nextOption = options[nextKey];
+        const values = this.getOptionsList();
+        if (values.indexOf(value) === -1) {
+            nextOption = values[0] || ""
         } else {
-            nextOption = options[Object.keys(options)[0]];
-        };
+            nextOption = values[(values.indexOf(value) + 1) % values.length]
+        }
         return nextOption
     }
 
     public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
-        const options = this.field.options;
-
         if (CycleField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`${name} : ${value} ▷ ${this.nextOption(value)}`);
                 item.setIcon(FieldIcon[FieldType.Cycle]);
-                item.onClick(() => replaceValues(this.plugin, file, name, this.nextOption(value)));
+                item.onClick(async () => await this.plugin.fileTaskManager
+                    .pushTask(() => { replaceValues(this.plugin, file, name, this.nextOption(value).toString()) }));
                 item.setSection("metadata-menu.fields");
             });
         } else if (CycleField.isSuggest(location)) {
             location.options.push({
                 id: `${name}_${value}_${this.nextOption(value)}`,
                 actionLabel: `<span><b>${name}</b> : ${value} ▷ ${this.nextOption(value)}</span>`,
-                action: () =>
-                    replaceValues(this.plugin, file, name, this.nextOption(value)),
+                action: async () => await this.plugin.fileTaskManager
+                    .pushTask(() => { replaceValues(this.plugin, file, name, this.nextOption(value).toString()) }),
                 icon: FieldIcon[FieldType.Cycle]
             })
         };
@@ -61,19 +56,9 @@ export default class CycleField extends AbstractListBasedField {
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
-        attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
+        attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, any> }
     ): void {
-        const options = this.field.options;
-        const keys = Object.keys(options);
-        const keyForValue = keys.find(key => options[key] === p[this.field.name]);
-        let nextOption: string;
-        if (keyForValue) {
-            const nextKey = keys[(keys.indexOf(keyForValue) + 1) % keys.length];
-            nextOption = options[nextKey];
-        } else {
-            nextOption = options[Object.keys(options)[0]];
-        };
-
+        const nextOption = this.nextOption(p[this.field.name])
         const fieldValue = dv.el('span', p[this.field.name], attrs);
         /* end spacer */
         const spacer = document.createElement("div");

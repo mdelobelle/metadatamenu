@@ -2,75 +2,71 @@
   "presetFields": [
     {
       "name": "Status",
-      "options": {},
-      "id": "6",
-      "valuesListNotePath": "⚙️/🗂 lists/Status.md",
-      "type": "Select"
-    },
-    {
-      "name": "Code",
-      "options": {},
-      "id": "8",
-      "valuesListNotePath": "⚙️/🗂 lists/Coding.md",
-      "type": "Select"
-    },
-    {
-      "name": "1o1 meeting",
       "options": {
-        "template": "meeting with {{name}} about {{topic}} of duration {{duration:[\"30min\", \"1h\", \"2h\"]}}"
+        "1": "open",
+        "2": "ongoing",
+        "3": "done"
       },
-      "id": "9",
-      "valuesListNotePath": "",
-      "type": "Input"
+      "id": "4",
+      "valuesListNotePath": "⚙️/lists/Status.md",
+      "type": "Select"
     },
     {
-      "name": "next session",
+      "name": "day",
       "options": {
         "dateFormat": "YYYY-MM-DD",
-        "defaultInsertAsLink": "false",
-        "nextShiftIntervalField": "next interval"
+        "defaultInsertAsLink": "false"
       },
-      "id": "10",
+      "id": "5",
       "valuesListNotePath": "",
       "type": "Date"
     },
     {
-      "name": "next interval",
+      "name": "Projects",
       "options": {
-        "1": "1 day",
-        "2": "2 days",
-        "3": "5 days",
-        "4": "1 week",
-        "5": "2 weeks"
+        "dvQueryString": "dv.pages('\"🚀\"')"
       },
-      "id": "11",
+      "id": "6",
       "valuesListNotePath": "",
-      "type": "Cycle"
+      "type": "MultiFile"
+    },
+    {
+      "name": "students",
+      "options": {
+        "outputType": "CustomBulletList",
+        "builtinSummarizingFunction": "Count",
+        "customListFunction": "page.file.name + \" - \" + page.age",
+        "customSummarizingFunction": "return pages.length",
+        "dvQueryString": "dv.pages('#student')",
+        "targetFieldName": "school"
+      },
+      "id": "7",
+      "valuesListNotePath": "",
+      "type": "Lookup"
     }
   ],
   "fileClassQueries": [
     {
-      "name": "dailyLog",
-      "query": "dv.pages('\"📆/📝\"')",
+      "name": "daily notes",
       "id": "1",
-      "fileClassName": "DailyLog"
+      "query": "dv.pages('\"📆/📅\"')",
+      "fileClassName": "Daily"
     },
     {
-      "name": "dailyNote",
-      "query": "dv.pages('\"📆/📅\"')",
+      "name": "DailyLog",
       "id": "2",
-      "fileClassName": "Daily"
+      "query": "dv.pages('\"📆/📝\"')",
+      "fileClassName": "DailyLog"
     }
   ],
   "displayFieldsInContextMenu": true,
   "globallyIgnoredFields": [
     ""
   ],
-  "classFilesPath": "⚙️/fileClass/",
+  "classFilesPath": "⚙️/fileClasses/",
   "isAutosuggestEnabled": true,
-  "fileClassAlias": "category",
+  "fileClassAlias": "fileClass",
   "settingsVersion": 2,
   "globalFileClass": "",
-  "firstDayOfWeek": 1,
-  "getFromInlineField": false
+  "firstDayOfWeek": 1
 }

@@ -48,7 +48,6 @@ export class FieldInfo {
                 this.isValid = fieldManager.validateValue(value)
                 this.type = field.type;
                 this.options = field.options;
-                this.valuesListNotePath = field.valuesListNotePath;
                 this.sourceType = "settings";
             }
         }

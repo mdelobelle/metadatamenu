@@ -1,15 +1,15 @@
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager, SettingLocation } from "../FieldManager";
-import { TextComponent, ButtonComponent, setIcon } from "obsidian";
+import { TextComponent, ButtonComponent, setIcon, DropdownComponent, TextAreaComponent } from "obsidian";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import MetadataMenu from "main";
 import { FileSuggest } from "src/suggester/FileSuggester";
+import * as selectValuesSource from "src/types/selectValuesSourceTypes"
 
 export default abstract class AbstractListBasedField extends FieldManager {
 
     abstract valuesPromptComponents: Array<TextComponent>;
-    abstract presetValuesFields: HTMLDivElement;
 
     constructor(plugin: MetadataMenu, field: Field, type: FieldType) {
         super(plugin, field, type)
@@ -17,40 +17,55 @@ export default abstract class AbstractListBasedField extends FieldManager {
 
     //Settings
     private setValueListText(header: HTMLDivElement): void {
-        header.setText(`Preset options: ${Object.values(this.field.options).join(', ')}`);
+        header.setText(`Preset options: ${Object.values(this.field.options.valuesList).join(', ')}`);
     };
 
-    private createListNoteContainer(parentNode: HTMLDivElement, plugin: MetadataMenu): void {
-        parentNode.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
-        const listNoteContainerLabel = parentNode.createDiv({ cls: "metadata-menu-setting-fileClass-search" });
+    private createListNotePathContainer(parentNode: HTMLDivElement, plugin: MetadataMenu): HTMLDivElement {
+        const valuesListNotePathContainer = parentNode.createDiv({});
+        const listNoteContainerLabel = valuesListNotePathContainer.createDiv({ cls: "metadata-menu-setting-fileClass-search" });
         listNoteContainerLabel.setText(`Path of the note containing the values:`);
 
-        const input = new TextComponent(listNoteContainerLabel);
+        const input = new TextComponent(valuesListNotePathContainer);
 
         new FileSuggest(
             input.inputEl,
             plugin,
             "/"
         )
-        const listNotePath = this.field.valuesListNotePath;
-        input.setValue(listNotePath);
+        const listNotePath = this.field.options.valuesListNotePath;
+        input.setValue(listNotePath || "");
         input.setPlaceholder("Path/of/the/note.md");
-        input.onChange(value => this.field.valuesListNotePath = value);
+        input.onChange(value => this.field.options.valuesListNotePath = value);
+        return valuesListNotePathContainer;
     }
 
     private removePresetValue(key: string): void {
         let newValues: Record<string, string> = {};
-        for (let _key in this.field.options) {
+        for (let _key in this.field.options.valuesList) {
             if (key !== _key) {
-                newValues[_key] = this.field.options[_key];
+                newValues[_key] = this.field.options.valuesList[_key];
             };
         };
-        this.field.options = newValues;
+        this.field.options.valuesList = newValues;
     };
 
+    private createValuesListContainer(parentContainer: HTMLDivElement): HTMLDivElement {
+        const presetValuesFields = parentContainer.createDiv()
+        const valuesList = presetValuesFields.createDiv();
+        const valuesListHeader = valuesList.createDiv({ cls: "metadata-menu-field-option" });
+        valuesListHeader.createEl("h2");
+        valuesListHeader.setText(`Preset options: ${Object.values(this.field.options.valuesList).join(', ')}`);
+        const valuesListBody = valuesList.createDiv();
+        Object.keys(this.field.options.valuesList).forEach(key => {
+            this.valuesPromptComponents.push(this.createValueContainer(valuesListBody, valuesListHeader, key));
+        });
+        this.createAddButton(valuesList, valuesListBody, valuesListHeader)
+        return presetValuesFields;
+    }
+
     private createValueContainer(parentNode: HTMLDivElement, header: HTMLDivElement, key: string): TextComponent {
-        const options = this.field.options;
-        const presetValue = options[key];
+        const values = this.field.options.valuesList || {};
+        const presetValue = values[key];
         const valueContainer = parentNode.createDiv({
             cls: 'metadata-menu-prompt-container',
         });
@@ -58,7 +73,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
         this.valuesPromptComponents.push(input)
         input.setValue(presetValue);
         input.onChange(value => {
-            this.field.options[key] = value;
+            this.field.options.valuesList[key] = value;
             this.setValueListText(header);
             FieldSettingsModal.removeValidationError(input);
         });
@@ -75,17 +90,17 @@ export default abstract class AbstractListBasedField extends FieldManager {
             const valueUpgradeButton = new ButtonComponent(valueContainer);
             setIcon(valueUpgradeButton.buttonEl, "up-chevron-glyph");
             valueUpgradeButton.onClick((evt: MouseEvent) => {
-                const thisValue = options[key];
+                const thisValue = values[key];
                 const inputIndex = this.valuesPromptComponents.indexOf(input)
                 const upperComponent = inputIndex !== -1 ? this.valuesPromptComponents[inputIndex - 1] : this.valuesPromptComponents.last();
                 if (upperComponent) {
                     const upperValue = upperComponent.inputEl.value;
-                    const upperKey = Object.keys(options).filter(k => options[k] == upperValue)[0];
+                    const upperKey = Object.keys(values).filter(k => values[k] == upperValue)[0];
                     if (upperKey) {
                         upperComponent.setValue(thisValue);
-                        options[upperKey] = thisValue;
+                        values[upperKey] = thisValue;
                         input.setValue(upperValue);
-                        options[key] = upperValue;
+                        values[key] = upperValue;
                     };
                 };
             });
@@ -94,15 +109,15 @@ export default abstract class AbstractListBasedField extends FieldManager {
     };
 
     public validateValue(value: string): boolean {
-        if (this.field.options && Object.values(this.field.options).length > 0) {
+        if (this.field.options.valuesList && Object.values(this.field.options.valuesList).length > 0) {
             if (value) {
                 return Object.values(this.field.options).includes(value.trim())
             } else {
                 return true;
             }
 
-        } else if (this.field.valuesListNotePath) {
-            const listNoteValues = this.plugin.fieldIndex.valuesListNotePathValues.get(this.field.valuesListNotePath)
+        } else if (this.field.options.valuesListNotePath) {
+            const listNoteValues = this.plugin.fieldIndex.valuesListNotePathValues.get(this.field.options.valuesListNotePath)
             return listNoteValues !== undefined ? listNoteValues.contains(value.trim()) : false
         } else {
             return false
@@ -110,9 +125,50 @@ export default abstract class AbstractListBasedField extends FieldManager {
     }
 
     public getOptionsStr(): string {
-        if (this.field.valuesListNotePath) return this.field.valuesListNotePath
-        else if (Object.values(this.field.options).length) return Object.values(this.field.options).join(", ")
-        else return ""
+        switch (this.field.options.sourceType) {
+            case selectValuesSource.Type.ValuesList:
+                return Object.values(this.field.options.valuesList).join(", ");
+            case selectValuesSource.Type.ValuesListNotePath:
+                return this.field.options.valuesListNotePath
+            case selectValuesSource.Type.ValuesFromDVQuery:
+                return this.field.options.valuesFromDVQuery
+            default:
+                return ""
+
+        }
+    }
+
+    public getOptionsList(dvFile: any = undefined): string[] {
+        let values: string[] = [];
+        if (Array.isArray(this.field.options)) {
+            values = this.field.options;
+        } else if (!this.field.options.sourceType) {
+            values = Object.values(this.field.options);
+        } else {
+            switch (this.field.options.sourceType) {
+                case selectValuesSource.Type.ValuesList:
+                    values = Object.values(this.field.options.valuesList);
+                    break;
+                case selectValuesSource.Type.ValuesListNotePath:
+                    values = this.plugin.fieldIndex.valuesListNotePathValues
+                        .get(this.field.options.valuesListNotePath) || [];
+                    break;
+                case selectValuesSource.Type.ValuesFromDVQuery:
+                    {
+                        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+                        if (dvApi) {
+                            values = new Function("dv", "current", `return ${this.field.options.valuesFromDVQuery}`)(dvApi, dvFile)
+                        } else {
+                            values = []
+                        }
+                    }
+                    break;
+                default:
+                    values = [];
+                    break;
+            }
+        }
+        return values;
     }
 
     public validateOptions(): boolean {
@@ -143,25 +199,87 @@ export default abstract class AbstractListBasedField extends FieldManager {
         addValue.textContent = 'Add';
         addValue.onClickEvent(async (evt: MouseEvent) => {
             evt.preventDefault;
-            const newKey = this.field.insertNewValue("")
+
+            let newKeyNumber = 1;
+            Object.keys(this.field.options.valuesList).forEach(key => {
+                if (parseInt(key) && parseInt(key) >= newKeyNumber) {
+                    newKeyNumber = parseInt(key) + 1;
+                };
+            });
+            const newKey = newKeyNumber.toString();
+            this.field.options.valuesList[newKey] = "";
             this.createValueContainer(valuesListBody, valuesListHeader, newKey)
         });
         valuesList.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
     }
 
+    private createValuesFromDVQueryContainer(parentContainer: HTMLDivElement): HTMLDivElement {
+        const valuesFromDVQueryContainer = parentContainer.createDiv({})
+        valuesFromDVQueryContainer.createEl("span", { text: "Dataview function", cls: "metadata-menu-field-option" });
+        valuesFromDVQueryContainer.createEl("span", { text: "Dataview query returning a list of string (<dv> object is available)", cls: "metadata-menu-field-option-subtext" });
+        const valuesFromDVQuery = new TextAreaComponent(valuesFromDVQueryContainer);
+        valuesFromDVQuery.inputEl.cols = 65;
+        valuesFromDVQuery.inputEl.rows = 8;
+        valuesFromDVQuery.setPlaceholder("ex: dv.pages('#student').map(p => p.name)")
+        valuesFromDVQuery.setValue(this.field.options.valuesFromDVQuery || "");
+        valuesFromDVQuery.onChange((value) => {
+            this.field.options.valuesFromDVQuery = value
+        })
+        return valuesFromDVQueryContainer;
+    }
+
+    private displaySelectedTypeContainer(optionContainers: Record<keyof typeof selectValuesSource.Type, HTMLDivElement>, value: keyof typeof selectValuesSource.Type) {
+        Object.keys(optionContainers).forEach((key: keyof typeof selectValuesSource.Type) => {
+            if (key === value) {
+                optionContainers[key].show()
+            } else {
+                optionContainers[key].hide()
+            }
+        })
+    }
+
     public createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
-        if (location === SettingLocation.PluginSettings) this.createListNoteContainer(parentContainer, plugin);
-        this.presetValuesFields = parentContainer.createDiv()
-        this.presetValuesFields.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
-        const valuesList = this.presetValuesFields.createDiv();
-        const valuesListHeader = valuesList.createDiv();
-        valuesListHeader.createEl("h2");
-        valuesListHeader.setText(`Preset options: ${Object.values(this.field.options).join(', ')}`);
-        const valuesListBody = valuesList.createDiv();
-        Object.keys(this.field.options).forEach(key => {
-            this.valuesPromptComponents.push(this.createValueContainer(valuesListBody, valuesListHeader, key));
-        });
-        this.createAddButton(valuesList, valuesListBody, valuesListHeader)
+        //structure:
+        //selecteur de type avec defautl sur valuesList
+        //valuesContainer qui display le bon input en fonction de la valeur de valuesTypeSelect
+        const sourceTypeContainer = parentContainer.createDiv();
+        sourceTypeContainer.createDiv({ text: "Select the source of values for this field", cls: "metadata-menu-field-option" })
+        const sourceType = new DropdownComponent(sourceTypeContainer);
+        //manage new field and fileClass legacy field
+        if (!this.field.options.sourceType) {
+            //this is a new field or fileClass legacy field
+            if (typeof this.field.options === "object" && Object.keys(this.field.options).every(key => !isNaN(parseInt(key)))) {
+                //this is a fileClass legacy field
+                const valuesList: Record<string, string> = {}
+                Object.keys(this.field.options).forEach((key: string) => valuesList[key] = this.field.options[key]);
+                this.field.options = {}
+                this.field.options.valuesList = valuesList;
+            } else {
+                this.field.options = {}
+            }
+            this.field.options.sourceType = selectValuesSource.Type.ValuesList;
+            this.field.options.valuesListNotePath = "";
+            this.field.options.valuesFromDVQuery = "";
+        }
+        Object.keys(selectValuesSource.Type).forEach((option: keyof typeof selectValuesSource.Type) => sourceType.addOption(option, selectValuesSource.typeDisplay[option]))
+        sourceType.setValue(this.field.options.sourceType || selectValuesSource.Type.ValuesList)
+
+        const valuesListNotePathContainer = this.createListNotePathContainer(parentContainer, plugin);
+        const presetValuesFieldsContainer = this.createValuesListContainer(parentContainer);
+        const valuesFromDVQueryContainer = this.createValuesFromDVQueryContainer(parentContainer);
+
+        const valuesContainers: Record<keyof typeof selectValuesSource.Type, HTMLDivElement> = {
+            "ValuesList": presetValuesFieldsContainer,
+            "ValuesListNotePath": valuesListNotePathContainer,
+            "ValuesFromDVQuery": valuesFromDVQueryContainer
+        }
+
+        sourceType.onChange((value: keyof typeof selectValuesSource.Type) => {
+            this.field.options.sourceType = value;
+            this.displaySelectedTypeContainer(valuesContainers, value)
+        })
+
+        this.displaySelectedTypeContainer(valuesContainers, this.field.options.sourceType)
     }
 
     public createDvField(
