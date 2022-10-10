@@ -52,7 +52,7 @@ Options can be an array of options, or an object <key, value>
 > NB 2: "input" type attributes dont need a setting, leaving the name of the attribute only will categorize this attribute automatically as an "input" type.
 
 
-A field settings is written in JSON and must be written as a value of and "inline (dataview) field"
+A field settings is written in JSON (using double-quote only `"` )and must be written as a value of and "inline (dataview) field"
 
 ### example
 
