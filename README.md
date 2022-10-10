@@ -9,24 +9,25 @@ It also enables frontmatter of inline-field autocompletion with suggested values
 
 For complete documentation : https://mdelobelle.github.io/metadatamenu
 
-demo 1: basic features, settings and field types
-https://youtu.be/7bvIAkJf0OE
+[demo 1](https://youtu.be/7bvIAkJf0OE) : basic features, settings and field types
 
-demo 2: autocompletion and "in sentence" fields commands
-https://youtu.be/gU-StGyDciY 
+[demo 2](https://youtu.be/gU-StGyDciY ): autocompletion and "in sentence" fields commands
 
-demo 3: File type fields
-https://youtu.be/sYudigxPEnY
+[demo 3](https://youtu.be/sYudigxPEnY): File type fields
 
-demo 4: Date type fields
-https://youtu.be/PrbYaVh7N7g
+[demo 4](https://youtu.be/PrbYaVh7N7g): Date type fields
 
-demo 5: Templates for Input type fields:
-https://youtu.be/Mq2tbA0RVM8
+[demo 5](https://youtu.be/Mq2tbA0RVM8): Templates for Input type fields:
 
-demo 6: FileClass
-https://youtu.be/QxXSuh7HUZY
+[demo 6](https://youtu.be/QxXSuh7HUZY): FileClass
 
+[demo 7](https://youtu.be/6dEk9no269g): Time shifting for spaced repetition or date postponing
+
+[demo 8](https://youtu.be/ad0nJf8TZP8): Lookup fields
+
+[demo 9](https://youtu.be/zUcZWG7nWF4): Lookup fields as bullet list
+
+[demo 10](https://youtu.be/vc55ivQuHuY): Better Select and File fields
 
 # General concepts
 
@@ -44,6 +45,7 @@ Available types are:
 - `File`: a field that will `Accept a link to a file from your vault`
 - `MultiFile`: a field that will `Accept multiple links`
 - `Date`: a field that will `Accept a date`
+- `Lookup`: a field that will `Accept a lookup query`
 
 ## Field settings
 By default each field is an `Input`

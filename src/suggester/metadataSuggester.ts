@@ -55,7 +55,9 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         };
         const frontmatter = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter;
         const fullLine = editor.getLine(editor.getCursor().line)
-        this.inFrontmatter = !!frontmatter && frontmatter.position.start.line < cursor.line && cursor.line < frontmatter.position.end.line
+        this.inFrontmatter = !!frontmatter &&
+            frontmatter.position.start.line < cursor.line &&
+            cursor.line < frontmatter.position.end.line
         if (this.inFrontmatter) {
             const regex = new RegExp(`^${genericFieldRegex}:(?<values>.*)`, "u");
             if (!regex.test(fullLine)) return null;
@@ -75,6 +77,14 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 !!lastValue && encodeLink(option).includes(lastValue))
     }
 
+    private getAlias(tFile: TFile): string | undefined {
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        let alias: string | undefined = undefined;
+        if (dvApi && this.field?.options.customRendering) {
+            alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(tFile.path))
+        }
+        return alias
+    }
 
     async getSuggestions(context: EditorSuggestContext): Promise<IValueCompletion[]> {
         const suggestions = await this.getValueSuggestions(context);
@@ -126,20 +136,18 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             if (this.field && [FieldType.Cycle, FieldType.Multi, FieldType.Select].contains(this.field.type)) {
                 const fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
 
-                return (fieldManager as AbstractListBasedField).getOptionsList(dvApi.page(this.context?.file.path)).filter(option => this.filterOption(firstValues, lastValue, option))
+                return (fieldManager as AbstractListBasedField)
+                    .getOptionsList(dvApi.page(this.context?.file.path))
+                    .filter(option => this.filterOption(firstValues, lastValue, option))
                     .map(_value => Object({ value: _value }))
             } else if (this.field && [FieldType.File, FieldType.MultiFile].includes(this.field.type)) {
                 const fieldManager: FileField = new FieldManager[this.field.type](this.plugin, this.field)
                 const files = fieldManager.getFiles(this.context?.file);
                 if (lastValue) {
                     return files
-                        .filter(f => f.basename.includes(lastValue))
+                        .filter(f => f.basename.toLowerCase().includes(lastValue) || this.getAlias(f)?.toLowerCase().includes(lastValue))
                         .map(f => {
-                            let alias: string | undefined = undefined;
-                            if (dvApi && this.field?.options.customRendering) {
-                                alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(f.path))
-                            }
-                            return Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, alias) })
+                            return Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, this.getAlias(f)) })
                         });
                 } else {
                     return files

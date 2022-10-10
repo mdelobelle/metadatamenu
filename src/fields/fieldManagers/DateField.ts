@@ -36,7 +36,7 @@ export default class DateField extends FieldManager {
             if (this.field.options.dateShiftInterval || this.field.options.nextShiftIntervalField && dvApi) {
                 const p = dvApi.page(file.path)
                 const fieldManager: DateField = new FM[this.field.type](this.plugin, this.field);
-                const [currentShift, nextIntervalField, nextShift]: [string | undefined, Field | undefined, string | undefined] = fieldManager.shiftDuration(file);
+                const [currentShift]: [string | undefined, Field | undefined, string | undefined] = fieldManager.shiftDuration(file);
                 location.addItem((item) => {
                     item.setTitle(`Shift <${name}> ${currentShift} ahead`);
                     item.setIcon("skip-forward");
@@ -54,7 +54,7 @@ export default class DateField extends FieldManager {
             if (this.field.options.dateShiftInterval || this.field.options.nextShiftIntervalField && dvApi) {
                 const p = dvApi.page(file.path)
                 const fieldManager: DateField = new FM[this.field.type](this.plugin, this.field);
-                const [currentShift, nextIntervalField, nextShift]: [string | undefined, Field | undefined, string | undefined] = fieldManager.shiftDuration(file);
+                const [currentShift]: [string | undefined, Field | undefined, string | undefined] = fieldManager.shiftDuration(file);
                 location.options.push({
                     id: `update_${name}`,
                     actionLabel: `<span>Shift <b>${name}</b> ${currentShift} ahead</span>`,
@@ -147,7 +147,11 @@ export default class DateField extends FieldManager {
         const [currentShift, nextIntervalField, nextShift]: [string | undefined, Field | undefined, string | undefined] = fieldManager.shiftDuration(file);
         const dvDate = p[this.field.name]
         //dataview is converting dates to links or datetimes, let's normalize
-        const currentDateValue = dv.value.isLink(dvDate) ? dvDate.path.split("/").last() : dv.value.isDate(dvDate) ? moment(dvDate.toJSDate()).format(dateFormat) : dvDate
+        const currentDateValue = dv.value.isLink(dvDate) ?
+            dvDate.path.split("/").last() :
+            dv.value.isDate(dvDate) ?
+                moment(dvDate.toJSDate()).format(dateFormat) :
+                dvDate
         const currentDvDate = dv.date(moment(currentDateValue, dateFormat).toISOString());
         const newDate = currentDvDate.plus(dv.duration(currentShift || "1 day"));
         const newValue = moment(newDate.toString()).format(dateFormat)
@@ -156,7 +160,9 @@ export default class DateField extends FieldManager {
                 .pushTask(() => { replaceValues(this.plugin, file.path, nextIntervalField.name, nextShift) });
         }
         const linkFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath || "" + newValue.format(dateFormat), file.path)
-        const formattedValue = DateField.stringToBoolean(defaultInsertAsLink) ? `[[${linkPath || ""}${newValue}${linkFile ? "|" + linkFile.basename : ""}]]` : newValue
+        const formattedValue = DateField.stringToBoolean(defaultInsertAsLink) ?
+            `[[${linkPath || ""}${newValue}${linkFile ? "|" + linkFile.basename : ""}]]` :
+            newValue
         await this.plugin.fileTaskManager
             .pushTask(() => { replaceValues(this.plugin, file.path, this.field.name, formattedValue) });
 
@@ -238,12 +244,22 @@ export default class DateField extends FieldManager {
     }
 
     public validateValue(value: string): boolean {
-        if (typeof (value) == 'string') {
-            return moment(value.replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last(), this.field.options.dateFormat).isValid()
+        if (!value) {
+            return true
         } else {
-            return moment((value as { path: string }).path.replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last(), this.field.options.dateFormat).isValid()
+            if (typeof (value) == 'string') {
+                return moment(
+                    value.replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last(),
+                    this.field.options.dateFormat
+                ).isValid()
+            } else {
+                return moment(
+                    (value as { path: string })
+                        .path.replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last(),
+                    this.field.options.dateFormat
+                ).isValid()
+            }
         }
-
     }
 
     public shiftDuration(file: TFile): [string | undefined, Field | undefined, string | undefined] {
