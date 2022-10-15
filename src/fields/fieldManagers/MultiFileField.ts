@@ -152,6 +152,25 @@ export default class MultiFileField extends FieldManager {
             this.field.options.customRendering = value;
             FieldSettingsModal.removeValidationError(customRendering);
         })
+
+        const customSortingContainer = parentContainer.createDiv();
+        customSortingContainer.createEl("span", { text: "Sorting order", cls: 'metadata-menu-field-option' });
+        customSortingContainer.createEl("span", { text: "Personalise the sorting order of your links with a instruction taking 2 files (a, b) and returning -1, 0 or 1", cls: 'metadata-menu-field-option-subtext' });
+        customSortingContainer.createEl("code", {
+            text: `(a: TFile, b: TFile): number`
+        })
+        const customSorting = new TextAreaComponent(customSortingContainer);
+        customSorting.inputEl.cols = 50;
+        customSorting.inputEl.rows = 4;
+        customSorting.setValue(this.field.options.customSorting || "");
+        customSorting.setPlaceholder("Javascript instruction, " +
+            "(a: TFile, b: TFile): number\n" +
+            "example 1 (alphabetical order): a.basename < b.basename ? 1 : -1 \n" +
+            "example 2 (creation time newer to older): b.stat.ctime - b.stat.ctime")
+        customSorting.onChange(value => {
+            this.field.options.customSorting = value;
+            FieldSettingsModal.removeValidationError(customSorting);
+        })
     }
 
     public createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {

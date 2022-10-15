@@ -99,6 +99,12 @@ A good source of help to build dataview queries is the obsidian discord server >
 
 example: `"🚀" + (page.surname || page.file.name)`
 
+`Sorting order`accepts a javascript instruction returning a number using two files `a` and `b`
+
+example 1: `a.basename < b.basename ? 1 : -1`
+
+example 2: `b.stat.ctime - b.stat.ctime`
+
 ### `Date` options
 
 #### `Date Format`
