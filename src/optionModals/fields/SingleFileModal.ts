@@ -30,9 +30,10 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
     }
 
     getItems(): TFile[] {
+        const sortingMethod = new Function("a", "b", `return ${this.field.options.customSorting}`) || function (a: TFile, b: TFile) { return a.basename < b.basename ? -1 : 1 }
         try {
             const fileManager = new FieldManager[this.field.type](this.plugin, this.field);
-            return fileManager.getFiles(this.file);
+            return fileManager.getFiles(this.file).sort(sortingMethod);
         } catch (error) {
             this.close();
             throw (error);

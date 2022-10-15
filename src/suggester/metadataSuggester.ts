@@ -141,8 +141,9 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                     .filter(option => this.filterOption(firstValues, lastValue, option))
                     .map(_value => Object({ value: _value }))
             } else if (this.field && [FieldType.File, FieldType.MultiFile].includes(this.field.type)) {
+                const sortingMethod = new Function("a", "b", `return ${this.field.options.customSorting}`) || function (a: TFile, b: TFile) { return a.basename < b.basename ? -1 : 1 }
                 const fieldManager: FileField = new FieldManager[this.field.type](this.plugin, this.field)
-                const files = fieldManager.getFiles(this.context?.file);
+                const files = fieldManager.getFiles(this.context?.file).sort(sortingMethod as (a: TFile, b: TFile) => number);
                 if (lastValue) {
                     return files
                         .filter(f => f.basename.toLowerCase().includes(lastValue) || this.getAlias(f)?.toLowerCase().includes(lastValue))
