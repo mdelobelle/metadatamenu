@@ -26,21 +26,40 @@ export default class CycleField extends AbstractListBasedField {
         return nextOption
     }
 
+    private getRawOptionFromDuration(duration: any): string | undefined {
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        let matchedValue: string | undefined = undefined;
+        if (dvApi && dvApi.value.isDuration(duration)) {
+            Object.keys(this.field.options).forEach(k => {
+                const dvOption = dvApi.duration(this.field.options[k]);
+                if (Object.keys(duration.values).every(j =>
+                    (!duration.values[j] && !dvOption.values[j]) || (duration.values[j] === dvOption.values[j])
+                )) {
+                    matchedValue = this.field.options[k]
+                }
+            })
+        }
+        return matchedValue
+    }
+
     public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+        // dataview is converting strings to duration, let's find back the raw string option from duration if needed
+        let matchedValue = this.getRawOptionFromDuration(value) || value;
+
         if (CycleField.isMenu(location)) {
             location.addItem((item) => {
-                item.setTitle(`${name} : ${value} ▷ ${this.nextOption(value)}`);
+                item.setTitle(`${name} : ${matchedValue} ▷ ${this.nextOption(matchedValue)}`);
                 item.setIcon(FieldIcon[FieldType.Cycle]);
                 item.onClick(async () => await this.plugin.fileTaskManager
-                    .pushTask(() => { replaceValues(this.plugin, file, name, this.nextOption(value).toString()) }));
+                    .pushTask(() => { replaceValues(this.plugin, file, name, this.nextOption(matchedValue).toString()) }));
                 item.setSection("metadata-menu.fields");
             });
         } else if (CycleField.isSuggest(location)) {
             location.options.push({
-                id: `${name}_${value}_${this.nextOption(value)}`,
-                actionLabel: `<span><b>${name}</b> : ${value} ▷ ${this.nextOption(value)}</span>`,
+                id: `${name}_${matchedValue}_${this.nextOption(matchedValue)}`,
+                actionLabel: `<span><b>${name}</b> : ${matchedValue} ▷ ${this.nextOption(matchedValue)}</span>`,
                 action: async () => await this.plugin.fileTaskManager
-                    .pushTask(() => { replaceValues(this.plugin, file, name, this.nextOption(value).toString()) }),
+                    .pushTask(() => { replaceValues(this.plugin, file, name, this.nextOption(matchedValue).toString()) }),
                 icon: FieldIcon[FieldType.Cycle]
             })
         };

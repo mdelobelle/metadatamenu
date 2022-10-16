@@ -266,16 +266,14 @@ export default class DateField extends FieldManager {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
             const interval = this.field.options.dateShiftInterval
-
             const cycleIntervalField = this.field.options.nextShiftIntervalField
             let fileClass: FileClass | undefined;
             const frontmatter = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter
             if (frontmatter) {
                 const fileClassName = frontmatter[this.plugin.settings.fileClassAlias]
-                let fileClass: FileClass | undefined
                 try {
                     fileClass = fileClassName ? FileClass.createFileClass(this.plugin, fileClassName) : undefined
-                } catch {
+                } catch (error) {
                     fileClass = undefined
                 }
             }
@@ -285,7 +283,6 @@ export default class DateField extends FieldManager {
                 const cycleManager: CycleField = new FM[cycle.type](this.plugin, cycle)
                 const options = Object.entries(cycleManager.field.options);
                 const currentValue = dvApi.page(file.path)[cycle.name]
-
                 if (currentValue) {
                     //current value is not null
                     const currentValueString = options
