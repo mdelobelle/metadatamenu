@@ -122,7 +122,9 @@ export async function replaceValues(
             }
         }
     });
+    //console.log("started writing...", input)
     await plugin.app.vault.modify(file, newContent.filter((line, i) => !skippedLines.includes(i)).join('\n'));
+    //console.log("finished writing...", input)
     const editor = plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor
     if (editor) {
         const lineNumber = editor.getCursor().line

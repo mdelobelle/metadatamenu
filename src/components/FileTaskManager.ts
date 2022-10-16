@@ -16,6 +16,7 @@ export class Task {
 export class FileTaskManager extends Component {
 
     public queue: Map<string, Task>;
+    public busy: boolean = false;
 
     constructor(private plugin: MetadataMenu, public cacheVersion: string, public onChange: () => void) {
         super();
@@ -24,20 +25,23 @@ export class FileTaskManager extends Component {
 
     async onload(): Promise<void> {
         this.plugin.registerEvent(this.plugin.app.metadataCache.on('resolved', async () => {
-            //console.log("obsidian resolved")
+            //console.log("obsidian resolved");
+            this.busy = false;
             await this.executeNext();
         }))
     }
 
+
     public async pushTask(fn: () => any) {
         const task = new Task(fn);
         this.queue.set(task.id, task);
-        await this.executeNext();
+        if (!this.busy) await this.executeNext();
     }
 
     public async executeNext() {
         const [firstTaskInQueueId, firstTaskInQueue] = [...this.queue][0] || [undefined, undefined]
         if (firstTaskInQueue && !this.plugin.app.metadataCache.inProgressTaskCount) {
+            this.busy = true;
             firstTaskInQueue.status = "ongoing"
             await firstTaskInQueue.fn()
             firstTaskInQueue.status = "done"
