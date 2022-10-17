@@ -10,7 +10,7 @@ import { FileClass } from "src/fileClass/fileClass";
 import CycleField from "./CycleField";
 import { FieldManager as FM } from "src/types/fieldTypes";
 import { replaceValues } from "src/commands/replaceValues";
-import { Link } from "src/types/dataviewTypes";
+import { compareDuration } from "src/utils/dataviewUtils";
 
 export default class DateField extends FieldManager {
 
@@ -287,7 +287,7 @@ export default class DateField extends FieldManager {
                     //current value is not null
                     const currentValueString = options
                         .filter(o => dvApi.duration(o) !== null)
-                        .find(o => dvApi.duration(o).equals(currentValue))
+                        .find(o => compareDuration(dvApi.duration(o), currentValue))
                     if (currentValueString) {
                         //current value has a match in cycle options
                         const nextValue = cycleManager.nextOption(currentValueString)

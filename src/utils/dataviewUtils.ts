@@ -11,3 +11,9 @@ export function genuineKeys(dvFile: any): string[] {
     })
     return genuineKeys
 }
+
+export function compareDuration(dvDurA: any, dvDurB: any): boolean {
+    const normalizedA = dvDurA.shiftTo("years", "months", "weeks", "days", "hours", "minutes", "seconds", "milliseconds").normalize()
+    const normalizedB = dvDurB.shiftTo("years", "months", "weeks", "days", "hours", "minutes", "seconds", "milliseconds").normalize()
+    return normalizedA.equals(normalizedB)
+}
