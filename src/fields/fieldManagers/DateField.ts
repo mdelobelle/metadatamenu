@@ -281,21 +281,21 @@ export default class DateField extends FieldManager {
             if (cycle) {
                 //cycle field exists
                 const cycleManager: CycleField = new FM[cycle.type](this.plugin, cycle)
-                const options = Object.entries(cycleManager.field.options);
+                const options = cycleManager.getOptionsList(file);
                 const currentValue = dvApi.page(file.path)[cycle.name]
                 if (currentValue) {
                     //current value is not null
                     const currentValueString = options
-                        .filter(o => dvApi.duration(o[1]) !== null)
-                        .find(o => dvApi.duration(o[1]).equals(currentValue))
+                        .filter(o => dvApi.duration(o) !== null)
+                        .find(o => dvApi.duration(o).equals(currentValue))
                     if (currentValueString) {
                         //current value has a match in cycle options
-                        const nextValue = cycleManager.nextOption(currentValueString[1])
-                        return [currentValueString[1], cycle, nextValue]
+                        const nextValue = cycleManager.nextOption(currentValueString)
+                        return [currentValueString, cycle, nextValue]
                     }
                 }
                 //current value is not found or : fall back on first value
-                return [options[0][1], cycle, options[1][1] || options[0][1]]
+                return [options[0], cycle, options[1] || options[0]]
             } else if (interval && dvApi.duration(interval)) {
                 //no cycle field: fall back on interval if exists
                 return [interval, undefined, undefined]
