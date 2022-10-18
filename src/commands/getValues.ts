@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { TFile } from "obsidian"
+import { TFile } from "obsidian";
 import { inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
 
 export async function getValues(plugin: MetadataMenu, fileOrfilePath: TFile | string, attribute: string): Promise<string[]> {
