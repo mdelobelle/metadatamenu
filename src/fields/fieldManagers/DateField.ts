@@ -1,5 +1,6 @@
 import MetadataMenu from "main";
-import { Menu, moment, setIcon, TextComponent, TFile, ToggleComponent } from "obsidian";
+import moment from "moment";
+import { Menu, setIcon, TextComponent, TFile, ToggleComponent } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import DateModal from "src/optionModals/fields/DateModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";

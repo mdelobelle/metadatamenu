@@ -1,4 +1,5 @@
-import { PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal, DropdownComponent, moment, setIcon } from "obsidian";
+import { PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal, DropdownComponent, setIcon } from "obsidian";
+import moment from "moment";
 import MetadataMenu from "main";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import Field from "src/fields/Field";

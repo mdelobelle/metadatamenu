@@ -3,7 +3,7 @@ import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
 import { FieldManager as FM } from "src/fields/FieldManager";
-import { moment } from "obsidian";
+import moment from "moment";
 import flatpickr from "flatpickr";
 import MetadataMenu from "main";
 import { FieldIcon, FieldType, FieldManager } from "src/types/fieldTypes";
