@@ -12,6 +12,7 @@
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
+    "esModuleInterop": true,
 	"strictNullChecks": true,
     "lib": [
       "DOM",
