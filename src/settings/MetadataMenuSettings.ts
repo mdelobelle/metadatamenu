@@ -12,6 +12,9 @@ export interface MetadataMenuSettings {
 	settingsVersion?: number;
 	globalFileClass?: string;
 	firstDayOfWeek: number;
+	enableTabHeader: boolean;
+	enableEditor: boolean;
+	enableBacklinks: boolean;
 }
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
@@ -24,5 +27,8 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	fileClassAlias: "fileClass",
 	settingsVersion: undefined,
 	globalFileClass: undefined,
-	firstDayOfWeek: 1
+	firstDayOfWeek: 1,
+	enableTabHeader: true,
+	enableEditor: true,
+	enableBacklinks: true
 };

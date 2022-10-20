@@ -390,6 +390,14 @@ button.metadata-menu-field-add-frontmatter-btn {
   padding-top: 0.4em;
   color: var(--color-base-60); }
 
+.fileclass-icon {
+  color: var(--link-color);
+  margin-left: 0.2em;
+  cursor: context-menu; }
+
+.fileclass-icon svg {
+  vertical-align: calc(var(--font-text-size) * -0.15); }
+
 /* ---------------------------- */
 /*   Flatpick style             */
 /* ---------------------------- */
