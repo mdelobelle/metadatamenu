@@ -20,7 +20,7 @@ import {
 	updateElLinks,
 	updateVisibleLinks,
 	clearExtraAttributes,
-	updateDivFileClassName,
+	updateDivExtraAttributes,
 } from "src/options/linkAttributes"
 import { Prec } from "@codemirror/state";
 import { buildCMViewPlugin } from "src/options/livePreview";
@@ -84,7 +84,7 @@ export default class MetadataMenu extends Plugin {
 			plugin.observers.forEach(([observer, type, own_class]: [any, any, any]) => {
 				const leaves = plugin.app.workspace.getLeavesOfType(type);
 				leaves.forEach((leaf: any) => {
-					plugin.updateContainer(leaf.view.containerEl, plugin, own_class);
+					plugin.updateContainer(leaf.view.containerEl, plugin, own_class, type);
 				})
 			});
 		}
@@ -256,6 +256,10 @@ export default class MetadataMenu extends Plugin {
 		this.settings.fileClassQueries = this.initialFileClassQueries;
 		await this.saveData(this.settings);
 		await this.fieldIndex.fullIndex("setting", true);
+		this.disconnectObservers();
+		this.initModalObservers(this, document);
+		this.initViewObservers(this);
+		updateVisibleLinks(this.app, this);
 	};
 
 	initViewObservers(plugin: MetadataMenu) {
@@ -268,7 +272,7 @@ export default class MetadataMenu extends Plugin {
 		// Register new observers
 		plugin.registerViewType('backlink', plugin, ".tree-item-inner", true);
 		plugin.registerViewType('outgoing-link', plugin, ".tree-item-inner", true);
-		plugin.registerViewType('search', plugin, ".tree-item-inner");
+		plugin.registerViewType('search', plugin, ".tree-item-inner", true);
 		plugin.registerViewType('BC-matrix', plugin, '.BC-Link');
 		plugin.registerViewType('BC-ducks', plugin, '.internal-link');
 		plugin.registerViewType('BC-tree', plugin, 'a.internal-link');
@@ -304,7 +308,7 @@ export default class MetadataMenu extends Plugin {
 							if (n.className.includes('suggestion-container')) {
 								selector = ".suggestion-title, .suggestion-note";
 							}
-							plugin.updateContainer(n as HTMLElement, plugin, selector);
+							plugin.updateContainer(n as HTMLElement, plugin, selector, null);
 							plugin._watchContainer(null, n as HTMLElement, plugin, selector);
 						}
 					});
@@ -330,7 +334,7 @@ export default class MetadataMenu extends Plugin {
 		else if (leaves.length < 1) return;
 		else {
 			const container = leaves[0].view.containerEl;
-			this.updateContainer(container, plugin, selector);
+			this.updateContainer(container, plugin, selector, viewTypeName);
 			if (updateDynamic) {
 				plugin._watchContainerDynamic(viewTypeName, container, plugin, selector)
 			}
@@ -340,12 +344,11 @@ export default class MetadataMenu extends Plugin {
 		}
 	}
 
-	updateContainer(container: HTMLElement, plugin: MetadataMenu, selector: string) {
-		if (!plugin.settings.enableBacklinks) return;
+	updateContainer(container: HTMLElement, plugin: MetadataMenu, selector: string, viewTypeName: string | null) {
 		const nodes = container.findAll(selector);
 		for (let i = 0; i < nodes.length; ++i) {
 			const el = nodes[i] as HTMLElement;
-			updateDivFileClassName(plugin.app, plugin, el, "");
+			updateDivExtraAttributes(plugin.app, plugin, el, viewTypeName, "");
 		}
 	}
 
@@ -359,7 +362,7 @@ export default class MetadataMenu extends Plugin {
 
 	_watchContainer(viewType: string | null, container: HTMLElement, plugin: MetadataMenu, selector: string) {
 		let observer = new MutationObserver((records, _) => {
-			plugin.updateContainer(container, plugin, selector);
+			plugin.updateContainer(container, plugin, selector, viewType);
 		});
 		observer.observe(container, { subtree: true, childList: true, attributes: false });
 		if (viewType) {
@@ -367,7 +370,7 @@ export default class MetadataMenu extends Plugin {
 		}
 	}
 
-	_watchContainerDynamic(viewType: string, container: HTMLElement, plugin: MetadataMenu, selector: string, own_class = 'tree-item-inner', parent_class = 'tree-item') {
+	_watchContainerDynamic(viewType: string, container: HTMLElement, plugin: MetadataMenu, selector: string, ownClass = 'tree-item-inner', parent_class = 'tree-item') {
 		// Used for efficient updating of the backlinks panel
 		// Only loops through newly added DOM nodes instead of changing all of them
 		let observer = new MutationObserver((records, _) => {
@@ -377,10 +380,10 @@ export default class MetadataMenu extends Plugin {
 						if ('className' in n) {
 							// @ts-ignore
 							if (n.className.includes && typeof n.className.includes === 'function' && n.className.includes(parent_class)) {
-								const fileDivs = (n as HTMLElement).getElementsByClassName(own_class);
+								const fileDivs = (n as HTMLElement).getElementsByClassName(ownClass);
 								for (let i = 0; i < fileDivs.length; ++i) {
 									const link = fileDivs[i] as HTMLElement;
-									updateDivFileClassName(plugin.app, plugin, link, "");
+									updateDivExtraAttributes(plugin.app, plugin, link, viewType, "");
 								}
 							}
 						}
@@ -392,8 +395,7 @@ export default class MetadataMenu extends Plugin {
 		plugin.observers.push([observer, viewType, selector]);
 	}
 
-	onunload() {
-		console.log('Metadata Menu unloaded');
+	disconnectObservers() {
 		this.observers.forEach(([observer, type, own_class]) => {
 			observer.disconnect();
 			const leaves = this.app.workspace.getLeavesOfType(type);
@@ -404,5 +406,10 @@ export default class MetadataMenu extends Plugin {
 		for (const observer of this.modalObservers) {
 			observer.disconnect();
 		}
+	}
+
+	onunload() {
+		this.disconnectObservers();
+		console.log('Metadata Menu unloaded');
 	};
 }

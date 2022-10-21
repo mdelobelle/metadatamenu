@@ -252,6 +252,91 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		/* 
 		--------------------------------------------------
+		Managing extra button display options
+		--------------------------------------------------
+		*/
+		const metadataMenuBtnSettings = classFilesSettingsContainer.createEl("div")
+		metadataMenuBtnSettings.createEl('h4', { text: 'Show extra button to access metadata menu form:', cls: "metadata-menu-setting-section-header" })
+
+
+		new Setting(metadataMenuBtnSettings)
+			.setName("Reading mode links")
+			.setDesc("Display an extra button to access metadata menu form after a link in reading mode")
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.enableLinks);
+				cb.onChange(value => {
+					this.plugin.settings.enableLinks = value;
+					this.plugin.saveSettings();
+				})
+			})
+
+		new Setting(metadataMenuBtnSettings)
+			.setName("Live preview mode")
+			.setDesc("Display an extra button to access metadata menu form after a link in live preview")
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.enableEditor);
+				cb.onChange(value => {
+					this.plugin.settings.enableEditor = value;
+					this.plugin.saveSettings();
+				})
+			})
+
+		new Setting(metadataMenuBtnSettings)
+			.setName("Tab header")
+			.setDesc("Display an extra button to access metadata menu form in the tab header")
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.enableTabHeader);
+				cb.onChange(value => {
+					this.plugin.settings.enableTabHeader = value;
+					this.plugin.saveSettings();
+				})
+			})
+
+		new Setting(metadataMenuBtnSettings)
+			.setName("Backlinks")
+			.setDesc("Display an extra button to access metadata menu form in the backlinks panel")
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.enableBacklinks);
+				cb.onChange(value => {
+					this.plugin.settings.enableBacklinks = value;
+					this.plugin.saveSettings();
+				})
+			})
+
+		new Setting(metadataMenuBtnSettings)
+			.setName("Search")
+			.setDesc("Display an extra button to access metadata menu form in the search panel")
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.enableSearch);
+				cb.onChange(value => {
+					this.plugin.settings.enableSearch = value;
+					this.plugin.saveSettings();
+				})
+			})
+
+		new Setting(metadataMenuBtnSettings)
+			.setName("File explorer")
+			.setDesc("Display an extra button to access metadata menu form in the file explorer")
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.enableFileExplorer);
+				cb.onChange(value => {
+					this.plugin.settings.enableFileExplorer = value;
+					this.plugin.saveSettings();
+				})
+			})
+
+		new Setting(metadataMenuBtnSettings)
+			.setName("Starred")
+			.setDesc("Display an extra button to access metadata menu form in the starred panel")
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.enableStarred);
+				cb.onChange(value => {
+					this.plugin.settings.enableStarred = value;
+					this.plugin.saveSettings();
+				})
+			})
+		/* 
+		--------------------------------------------------
 		Managing predefined fileClass for query's matching files 
 		--------------------------------------------------
 		*/

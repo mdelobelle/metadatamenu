@@ -30,8 +30,9 @@ export function buildCMViewPlugin(app: App, _settings: MetadataMenuSettings) {
                 if (fileClass instanceof TFile && fileClass.extension === "md") {
                     const icon = app.metadataCache.getFileCache(fileClass)?.frontmatter?.["icon"]
                     setIcon(metadataMenuBtn, icon || "link")
-                    metadataMenuBtn.onclick = () => {
+                    metadataMenuBtn.onclick = (event) => {
                         alert("coucou")
+                        event.stopPropagation()
                     }
                 }
             }

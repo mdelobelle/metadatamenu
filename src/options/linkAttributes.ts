@@ -19,7 +19,34 @@ export function fetchFileClassName(app: App, settings: MetadataMenuSettings, des
     return cache?.frontmatter?.[settings.fileClassAlias]
 }
 
-function setLinkFileClassName(plugin: MetadataMenu, link: HTMLElement, fileClassName?: string) {
+function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, viewTypeName: string | null, fileClassName?: string) {
+    console.log(viewTypeName);
+    switch (viewTypeName) {
+        case "a.internal-link":
+            if (!plugin.settings.enableLinks) return;
+            break;
+        case "tabHeader":
+            if (!plugin.settings.enableTabHeader) return;
+            break;
+        case "starred":
+            if (!plugin.settings.enableStarred) return;
+            break;
+        case "file-explorer":
+            if (!plugin.settings.enableFileExplorer) return;
+            break;
+        case "backlink":
+            if (!plugin.settings.enableBacklinks) return;
+            break;
+        case "search":
+            if (!plugin.settings.enableSearch) return;
+            break;
+        case "a.internal-link":
+            if (!plugin.settings.enableLinks) return;
+            break;
+        default:
+            return;
+
+    }
     // @ts-ignore
     for (const a of link.attributes) {
         if (a.name.includes("fileclass-name") && (a.name !== fileClassName)) {
@@ -41,8 +68,9 @@ function setLinkFileClassName(plugin: MetadataMenu, link: HTMLElement, fileClass
                 if (metadataMenuBtn) {
                     setIcon(metadataMenuBtn, icon || "link")
                     link.parentElement?.insertBefore(metadataMenuBtn, link.nextSibling)
-                    metadataMenuBtn.onclick = () => {
-                        alert("coucou")
+                    metadataMenuBtn.onclick = (event) => {
+                        alert("coucou");
+                        event.stopPropagation();
                     }
                 }
             }
@@ -50,23 +78,24 @@ function setLinkFileClassName(plugin: MetadataMenu, link: HTMLElement, fileClass
     }
 }
 
-function updateLinkFileClassName(app: App, plugin: MetadataMenu, link: HTMLElement, destName: string) {
+function updateLinkMetadataMenuFormButton(app: App, plugin: MetadataMenu, link: HTMLElement, viewTypeName: string | null, destName: string) {
     const linkHref = link.getAttribute('href')?.split('#')[0];
     const dest = linkHref && app.metadataCache.getFirstLinkpathDest(linkHref, destName);
 
     if (dest) {
         const fileClassName = fetchFileClassName(app, plugin.settings, dest, false);
-        setLinkFileClassName(plugin, link, fileClassName);
+        setLinkMetadataFormButton(plugin, link, viewTypeName, fileClassName);
     }
 }
 
-export function updateDivFileClassName(app: App, plugin: MetadataMenu, link: HTMLElement, destName: string, _linkName?: string) {
+export function updateDivExtraAttributes(app: App, plugin: MetadataMenu, link: HTMLElement, viewTypeName: string | null, destName: string, _linkName?: string) {
+    //if (!plugin.settings.enableBacklinks) return;
     const linkName = _linkName || link.textContent
     const dest = linkName && app.metadataCache.getFirstLinkpathDest(getLinkpath(linkName), destName)
 
     if (dest) {
         const new_props = fetchFileClassName(app, plugin.settings, dest, true);
-        setLinkFileClassName(plugin, link, new_props);
+        setLinkMetadataFormButton(plugin, link, viewTypeName, new_props);
     }
 }
 
@@ -75,7 +104,7 @@ export function updateElLinks(app: App, plugin: MetadataMenu, el: HTMLElement, c
     const links = el.querySelectorAll('a.internal-link');
     const destName = ctx.sourcePath.replace(/(.*).md/, "$1");
     links.forEach((link: HTMLElement) => {
-        updateLinkFileClassName(app, plugin, link, destName);
+        updateLinkMetadataMenuFormButton(app, plugin, link, 'a.internal-link', destName);
     });
 }
 
@@ -90,21 +119,21 @@ export function updateVisibleLinks(app: App, plugin: MetadataMenu) {
             const tabHeader: HTMLElement = leaf.tabHeaderInnerTitleEl;
             if (settings.enableTabHeader) {
                 // Supercharge tab headers
-                updateDivFileClassName(app, plugin, tabHeader, "");
+                updateDivExtraAttributes(app, plugin, tabHeader, 'tabHeader', "");
             }
             else {
                 clearExtraAttributes(tabHeader);
             }
 
 
-            if (cachedFile?.links) {
+            if (cachedFile?.links && settings.enableLinks) {
                 cachedFile.links.forEach((link: LinkCache) => {
                     const fileName = file.path.replace(/(.*).md/, "$1")
                     const dest = app.metadataCache.getFirstLinkpathDest(link.link, fileName)
                     if (dest) {
                         const new_props = fetchFileClassName(app, settings, dest, false)
                         const internalLinks = leaf.view.containerEl.querySelectorAll(`a.internal-link[href="${link.link}"]`)
-                        internalLinks.forEach((internalLink: HTMLElement) => setLinkFileClassName(plugin, internalLink, new_props))
+                        internalLinks.forEach((internalLink: HTMLElement) => setLinkMetadataFormButton(plugin, internalLink, `a.internal-link`, new_props))
                     }
                 })
             }
