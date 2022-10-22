@@ -1,23 +1,26 @@
 import { App, editorViewField, MarkdownView, setIcon, TFile } from "obsidian";
-import { MetadataMenuSettings } from "../settings/MetadataMenuSettings";
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { RangeSetBuilder } from "@codemirror/state";
 import { syntaxTree } from "@codemirror/language";
 import { tokenClassNodeProp } from "@codemirror/language";
-import { fetchFileClassName } from "./linkAttributes";
+import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
+import OptionsList from "./OptionsList";
+import MetadataMenu from "main";
 
-export function buildCMViewPlugin(app: App, _settings: MetadataMenuSettings) {
+export function buildCMViewPlugin(plugin: MetadataMenu) {
     // Implements the live preview supercharging
     // Code structure based on https://github.com/nothingislost/obsidian-cm6-attributes/blob/743d71b0aa616407149a0b6ea5ffea28e2154158/src/main.ts
     // Code help credits to @NothingIsLost! They have been a great help getting this to work properly.
     class HeaderWidget extends WidgetType {
         fileClassName?: string
         after: boolean
+        destName: string
 
-        constructor(fileClassName: string | undefined, after: boolean) {
+        constructor(fileClassName: string | undefined, after: boolean, destName: string) {
             super();
             this.fileClassName = fileClassName
             this.after = after
+            this.destName = destName
         }
 
         toDOM() {
@@ -26,12 +29,17 @@ export function buildCMViewPlugin(app: App, _settings: MetadataMenuSettings) {
             if (this.fileClassName) {
                 metadataMenuBtn.setAttr("fileclass-name", this.fileClassName);
                 metadataMenuBtn.addClass('fileclass-icon');
-                const fileClass = app.vault.getAbstractFileByPath(`${_settings.classFilesPath}${this.fileClassName}.md`)
+                const fileClass = plugin.app.vault.getAbstractFileByPath(`${settings.classFilesPath}${this.fileClassName}.md`)
                 if (fileClass instanceof TFile && fileClass.extension === "md") {
-                    const icon = app.metadataCache.getFileCache(fileClass)?.frontmatter?.["icon"]
-                    setIcon(metadataMenuBtn, icon || "link")
+                    const icon = plugin.app.metadataCache.getFileCache(fileClass)?.frontmatter?.["icon"]
+                    setIcon(metadataMenuBtn, icon || settings.buttonIcon)
                     metadataMenuBtn.onclick = (event) => {
-                        alert("coucou")
+                        const file = plugin.app.vault.getAbstractFileByPath(`${this.destName}.md`)
+                        if (file instanceof TFile && file.extension === "md") {
+                            const fieldCommandSuggestModal = new FieldCommandSuggestModal(plugin.app)
+                            const optionsList = new OptionsList(plugin, file, fieldCommandSuggestModal);
+                            optionsList.createExtraOptionList();
+                        }
                         event.stopPropagation()
                     }
                 }
@@ -46,7 +54,7 @@ export function buildCMViewPlugin(app: App, _settings: MetadataMenuSettings) {
         }
     }
 
-    const settings = _settings;
+    const settings = plugin.settings;
     const viewPlugin = ViewPlugin.fromClass(
         class {
             decorations: DecorationSet;
@@ -113,15 +121,15 @@ export function buildCMViewPlugin(app: App, _settings: MetadataMenuSettings) {
                                 if (isLink && !isAlias && !isPipe || isMDUrl) {
                                     let linkText = view.state.doc.sliceString(node.from, node.to);
                                     linkText = linkText.split("#")[0];
-                                    let file = app.metadataCache.getFirstLinkpathDest(linkText, mdView.file.basename);
+                                    let file = plugin.app.metadataCache.getFirstLinkpathDest(linkText, mdView.file.basename);
                                     if (isMDUrl && !file) {
                                         try {
-                                            file = app.vault.getAbstractFileByPath(decodeURIComponent(linkText)) as TFile;
+                                            file = plugin.app.vault.getAbstractFileByPath(decodeURIComponent(linkText)) as TFile;
                                         }
                                         catch (e) { }
                                     }
                                     if (file) {
-                                        let fileClassName = fetchFileClassName(app, settings, file, true);
+                                        const fileClassName = plugin.fieldIndex.filesFileClassName.get(file.path)
                                         if (fileClassName) {
                                             const attributes = { "fileclass-name": fileClassName }
                                             let deco = Decoration.mark({
@@ -134,7 +142,7 @@ export function buildCMViewPlugin(app: App, _settings: MetadataMenuSettings) {
                                             });
                                             */
                                             iconDecoAfter = Decoration.widget({
-                                                widget: new HeaderWidget(fileClassName, true),
+                                                widget: new HeaderWidget(fileClassName, true, file.path.replace(/(.*).md/, "$1")),
                                             });
 
                                             if (isMDUrl && mdAliasFrom && mdAliasTo) {

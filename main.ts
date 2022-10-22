@@ -24,6 +24,7 @@ import {
 } from "src/options/linkAttributes"
 import { Prec } from "@codemirror/state";
 import { buildCMViewPlugin } from "src/options/livePreview";
+import { getEventListeners } from 'events';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -90,7 +91,7 @@ export default class MetadataMenu extends Plugin {
 		}
 
 		// Live preview
-		const ext = Prec.lowest(buildCMViewPlugin(this.app, this.settings));
+		const ext = Prec.lowest(buildCMViewPlugin(this));
 		this.registerEditorExtension(ext);
 
 		this.observers = [];
@@ -170,7 +171,7 @@ export default class MetadataMenu extends Plugin {
 		})
 	}
 
-	private addFieldCommand() {
+	private addFieldOptionsCommand() {
 		this.addCommand({
 			id: "field_options",
 			name: "field options",
@@ -237,7 +238,7 @@ export default class MetadataMenu extends Plugin {
 					this.addFileClassAttributeOptions();
 					this.addInsertFileClassAttribute();
 				} else {
-					this.addFieldCommand();
+					this.addFieldOptionsCommand();
 					this.addInsertFieldAtPositionCommand();
 					this.addManageFieldAtCursorCommand()
 				}
@@ -262,7 +263,7 @@ export default class MetadataMenu extends Plugin {
 		updateVisibleLinks(this.app, this);
 	};
 
-	initViewObservers(plugin: MetadataMenu) {
+	private initViewObservers(plugin: MetadataMenu) {
 		// Reset observers
 		plugin.observers.forEach(([observer, type]) => {
 			observer.disconnect();
@@ -287,7 +288,7 @@ export default class MetadataMenu extends Plugin {
 		}
 	}
 
-	initModalObservers(plugin: MetadataMenu, doc: Document) {
+	private initModalObservers(plugin: MetadataMenu, doc: Document) {
 		const config = {
 			subtree: false,
 			childList: true,
@@ -318,7 +319,7 @@ export default class MetadataMenu extends Plugin {
 		this.modalObservers.last()?.observe(doc.body, config);
 	}
 
-	registerViewType(viewTypeName: string, plugin: MetadataMenu, selector: string, updateDynamic = false) {
+	private registerViewType(viewTypeName: string, plugin: MetadataMenu, selector: string, updateDynamic = false) {
 		const leaves = this.app.workspace.getLeavesOfType(viewTypeName);
 		if (leaves.length > 1) {
 			for (let i = 0; i < leaves.length; i++) {
@@ -344,7 +345,7 @@ export default class MetadataMenu extends Plugin {
 		}
 	}
 
-	updateContainer(container: HTMLElement, plugin: MetadataMenu, selector: string, viewTypeName: string | null) {
+	private updateContainer(container: HTMLElement, plugin: MetadataMenu, selector: string, viewTypeName: string | null) {
 		const nodes = container.findAll(selector);
 		for (let i = 0; i < nodes.length; ++i) {
 			const el = nodes[i] as HTMLElement;
@@ -352,7 +353,7 @@ export default class MetadataMenu extends Plugin {
 		}
 	}
 
-	removeFromContainer(container: HTMLElement, selector: string) {
+	private removeFromContainer(container: HTMLElement, selector: string) {
 		const nodes = container.findAll(selector);
 		for (let i = 0; i < nodes.length; ++i) {
 			const el = nodes[i] as HTMLElement;
@@ -360,7 +361,7 @@ export default class MetadataMenu extends Plugin {
 		}
 	}
 
-	_watchContainer(viewType: string | null, container: HTMLElement, plugin: MetadataMenu, selector: string) {
+	private _watchContainer(viewType: string | null, container: HTMLElement, plugin: MetadataMenu, selector: string) {
 		let observer = new MutationObserver((records, _) => {
 			plugin.updateContainer(container, plugin, selector, viewType);
 		});
@@ -370,7 +371,7 @@ export default class MetadataMenu extends Plugin {
 		}
 	}
 
-	_watchContainerDynamic(viewType: string, container: HTMLElement, plugin: MetadataMenu, selector: string, ownClass = 'tree-item-inner', parent_class = 'tree-item') {
+	private _watchContainerDynamic(viewType: string, container: HTMLElement, plugin: MetadataMenu, selector: string, ownClass = 'tree-item-inner', parent_class = 'tree-item') {
 		// Used for efficient updating of the backlinks panel
 		// Only loops through newly added DOM nodes instead of changing all of them
 		let observer = new MutationObserver((records, _) => {
@@ -395,7 +396,7 @@ export default class MetadataMenu extends Plugin {
 		plugin.observers.push([observer, viewType, selector]);
 	}
 
-	disconnectObservers() {
+	private disconnectObservers() {
 		this.observers.forEach(([observer, type, own_class]) => {
 			observer.disconnect();
 			const leaves = this.app.workspace.getLeavesOfType(type);

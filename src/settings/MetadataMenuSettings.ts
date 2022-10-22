@@ -18,7 +18,8 @@ export interface MetadataMenuSettings {
 	enableBacklinks: boolean;
 	enableStarred: boolean;
 	enableFileExplorer: boolean;
-	enableSearch: boolean
+	enableSearch: boolean;
+	buttonIcon: string;
 }
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
@@ -38,6 +39,6 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	enableBacklinks: true,
 	enableStarred: true,
 	enableFileExplorer: true,
-	enableSearch: true
-
+	enableSearch: true,
+	buttonIcon: "clipboard-list"
 };

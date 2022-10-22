@@ -1,6 +1,7 @@
 import { App, getLinkpath, LinkCache, MarkdownPostProcessorContext, MarkdownView, TFile, setIcon } from "obsidian"
-import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings"
 import MetadataMenu from "main";
+import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
+import OptionsList from "./OptionsList";
 
 export function clearExtraAttributes(link: HTMLElement) {
     Object.values(link.attributes).forEach(attr => {
@@ -14,38 +15,15 @@ export function clearExtraAttributes(link: HTMLElement) {
     })
 }
 
-export function fetchFileClassName(app: App, settings: MetadataMenuSettings, dest: TFile, addDataHref: boolean): string | undefined {
-    const cache = app.metadataCache.getFileCache(dest)
-    return cache?.frontmatter?.[settings.fileClassAlias]
-}
-
-function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, viewTypeName: string | null, fileClassName?: string) {
-    console.log(viewTypeName);
+function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, destName: string, viewTypeName: string | null, fileClassName?: string) {
     switch (viewTypeName) {
-        case "a.internal-link":
-            if (!plugin.settings.enableLinks) return;
-            break;
-        case "tabHeader":
-            if (!plugin.settings.enableTabHeader) return;
-            break;
-        case "starred":
-            if (!plugin.settings.enableStarred) return;
-            break;
-        case "file-explorer":
-            if (!plugin.settings.enableFileExplorer) return;
-            break;
-        case "backlink":
-            if (!plugin.settings.enableBacklinks) return;
-            break;
-        case "search":
-            if (!plugin.settings.enableSearch) return;
-            break;
-        case "a.internal-link":
-            if (!plugin.settings.enableLinks) return;
-            break;
-        default:
-            return;
-
+        case "a.internal-link": if (!plugin.settings.enableLinks) return; break;
+        case "tabHeader": if (!plugin.settings.enableTabHeader) return; break;
+        case "starred": if (!plugin.settings.enableStarred) return; break;
+        case "file-explorer": if (!plugin.settings.enableFileExplorer) return; break;
+        case "backlink": if (!plugin.settings.enableBacklinks) return; break;
+        case "search": if (!plugin.settings.enableSearch) return; break;
+        default: return;
     }
     // @ts-ignore
     for (const a of link.attributes) {
@@ -66,10 +44,15 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, view
             if (!el?.hasClass("fileclass-icon")) {
                 const metadataMenuBtn = plugin.app.workspace.containerEl.createEl('a', { cls: "fileclass-icon" })
                 if (metadataMenuBtn) {
-                    setIcon(metadataMenuBtn, icon || "link")
+                    setIcon(metadataMenuBtn, icon || plugin.settings.buttonIcon)
                     link.parentElement?.insertBefore(metadataMenuBtn, link.nextSibling)
                     metadataMenuBtn.onclick = (event) => {
-                        alert("coucou");
+                        const file = plugin.app.vault.getAbstractFileByPath(`${destName}.md`)
+                        if (file instanceof TFile && file.extension === "md") {
+                            const fieldCommandSuggestModal = new FieldCommandSuggestModal(plugin.app)
+                            const optionsList = new OptionsList(plugin, file, fieldCommandSuggestModal);
+                            optionsList.createExtraOptionList();
+                        }
                         event.stopPropagation();
                     }
                 }
@@ -83,19 +66,17 @@ function updateLinkMetadataMenuFormButton(app: App, plugin: MetadataMenu, link: 
     const dest = linkHref && app.metadataCache.getFirstLinkpathDest(linkHref, destName);
 
     if (dest) {
-        const fileClassName = fetchFileClassName(app, plugin.settings, dest, false);
-        setLinkMetadataFormButton(plugin, link, viewTypeName, fileClassName);
+        const fileClassName = plugin.fieldIndex.filesFileClassName.get(dest.path)
+        setLinkMetadataFormButton(plugin, link, destName, viewTypeName, fileClassName);
     }
 }
 
-export function updateDivExtraAttributes(app: App, plugin: MetadataMenu, link: HTMLElement, viewTypeName: string | null, destName: string, _linkName?: string) {
-    //if (!plugin.settings.enableBacklinks) return;
+export function updateDivExtraAttributes(app: App, plugin: MetadataMenu, link: HTMLElement, viewTypeName: string | null, sourceName: string, _linkName?: string) {
     const linkName = _linkName || link.textContent
-    const dest = linkName && app.metadataCache.getFirstLinkpathDest(getLinkpath(linkName), destName)
-
+    const dest = linkName && app.metadataCache.getFirstLinkpathDest(getLinkpath(linkName), sourceName)
     if (dest) {
-        const new_props = fetchFileClassName(app, plugin.settings, dest, true);
-        setLinkMetadataFormButton(plugin, link, viewTypeName, new_props);
+        const fileClassName = plugin.fieldIndex.filesFileClassName.get(dest.path)
+        setLinkMetadataFormButton(plugin, link, dest.path.replace(/(.*).md/, "$1"), viewTypeName, fileClassName);
     }
 }
 
@@ -114,12 +95,12 @@ export function updateVisibleLinks(app: App, plugin: MetadataMenu) {
         if (leaf.view instanceof MarkdownView && leaf.view.file) {
             const file: TFile = leaf.view.file;
             const cachedFile = app.metadataCache.getFileCache(file);
-
+            const fileName = file.path.replace(/(.*).md/, "$1")
             //@ts-ignore
             const tabHeader: HTMLElement = leaf.tabHeaderInnerTitleEl;
             if (settings.enableTabHeader) {
                 // Supercharge tab headers
-                updateDivExtraAttributes(app, plugin, tabHeader, 'tabHeader', "");
+                updateDivExtraAttributes(app, plugin, tabHeader, 'tabHeader', fileName);
             }
             else {
                 clearExtraAttributes(tabHeader);
@@ -128,12 +109,11 @@ export function updateVisibleLinks(app: App, plugin: MetadataMenu) {
 
             if (cachedFile?.links && settings.enableLinks) {
                 cachedFile.links.forEach((link: LinkCache) => {
-                    const fileName = file.path.replace(/(.*).md/, "$1")
                     const dest = app.metadataCache.getFirstLinkpathDest(link.link, fileName)
                     if (dest) {
-                        const new_props = fetchFileClassName(app, settings, dest, false)
+                        const fileClassName = plugin.fieldIndex.filesFileClassName.get(dest.path)
                         const internalLinks = leaf.view.containerEl.querySelectorAll(`a.internal-link[href="${link.link}"]`)
-                        internalLinks.forEach((internalLink: HTMLElement) => setLinkMetadataFormButton(plugin, internalLink, `a.internal-link`, new_props))
+                        internalLinks.forEach((internalLink: HTMLElement) => setLinkMetadataFormButton(plugin, internalLink, fileName, `a.internal-link`, fileClassName))
                     }
                 })
             }

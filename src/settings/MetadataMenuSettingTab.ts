@@ -258,6 +258,17 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		const metadataMenuBtnSettings = classFilesSettingsContainer.createEl("div")
 		metadataMenuBtnSettings.createEl('h4', { text: 'Show extra button to access metadata menu form:', cls: "metadata-menu-setting-section-header" })
 
+		new Setting(metadataMenuBtnSettings)
+			.setName("Metadata Menu button icon")
+			.setDesc("name of the default icon when not defined in fileClass")
+			.addText((text) => {
+				text
+					.setValue(this.plugin.settings.buttonIcon)
+					.onChange(async (value) => {
+						this.plugin.settings.buttonIcon = value || "clipboard-list";
+						await this.plugin.saveSettings();
+					});
+			})
 
 		new Setting(metadataMenuBtnSettings)
 			.setName("Reading mode links")
@@ -291,7 +302,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					this.plugin.saveSettings();
 				})
 			})
-
+		/*
 		new Setting(metadataMenuBtnSettings)
 			.setName("Backlinks")
 			.setDesc("Display an extra button to access metadata menu form in the backlinks panel")
@@ -335,6 +346,8 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					this.plugin.saveSettings();
 				})
 			})
+
+		*/
 		/* 
 		--------------------------------------------------
 		Managing predefined fileClass for query's matching files 
