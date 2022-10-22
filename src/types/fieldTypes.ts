@@ -77,3 +77,16 @@ export const FieldIcon: Record<keyof typeof FieldType, string> = {
     "Date": "calendar-with-checkmark",
     "Lookup": "file-search"
 }
+
+export const FieldBackgroundColorClass: Record<keyof typeof FieldType, string> = {
+    "Input": "single",
+    "Select": "select",
+    "Multi": "multi",
+    "Cycle": "cycle",
+    "Boolean": "boolean",
+    "Number": "number",
+    "File": "file",
+    "MultiFile": "file",
+    "Date": "date",
+    "Lookup": "lookup"
+}

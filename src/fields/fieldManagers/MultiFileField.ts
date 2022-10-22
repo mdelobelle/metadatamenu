@@ -200,4 +200,21 @@ export default class MultiFileField extends FieldManager {
         }
         return isValid
     }
+
+    public displayValue(file: TFile, fieldName: string): string | undefined {
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        if (dvApi) {
+            const dvValue = dvApi.page(file.path)[fieldName]
+            const values = Array.isArray(dvValue) ? dvValue : [dvValue]
+            console.log(values)
+            return values.map(value => {
+                if (dvApi.value.isLink(value)) {
+                    return value.display;
+                } else {
+                    return value
+                }
+            }).join(", ")
+        }
+        return ""
+    }
 }

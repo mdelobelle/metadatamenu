@@ -7,6 +7,7 @@ import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
+import { FieldOptions } from "src/components/NoteFields";
 
 export default class NumberField extends FieldManager {
 
@@ -16,7 +17,7 @@ export default class NumberField extends FieldManager {
     private numberMaxValue: TextComponent;
 
     constructor(plugin: MetadataMenu, field: Field) {
-        super(plugin, field, FieldType.Number)
+        super(plugin, field, FieldType.Number);
     }
 
     public getOptionsStr(): string {
@@ -67,9 +68,20 @@ export default class NumberField extends FieldManager {
         )
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         const modal = new NumbertModal(this.plugin, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
+        const { min, max, step } = this.field.options;
+        const fMin = parseFloat(min)
+        const fMax = parseFloat(max)
+        const fStep = parseFloat(step)
+        const fValue = parseFloat(value)
+        const canDecrease = !isNaN(fMin) && fValue - fStep >= fMin;
+        const canIncrease = !isNaN(fMax) && fValue + fStep <= fMax;
+        const decrease = async () => await this.plugin.fileTaskManager
+            .pushTask(() => { replaceValues(this.plugin, file, name, (fValue - fStep).toString()) });
+        const increase = async () => await this.plugin.fileTaskManager
+            .pushTask(() => { replaceValues(this.plugin, file, name, (fValue + fStep).toString()) });
         if (NumberField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
@@ -77,27 +89,20 @@ export default class NumberField extends FieldManager {
                 item.onClick(() => modal.open());
                 item.setSection("metadata-menu.fields");
             })
-            const { min, max, step } = this.field.options
 
-            const fMin = parseFloat(min)
-            const fMax = parseFloat(max)
-            const fStep = parseFloat(step)
-            const fValue = parseFloat(value)
             if (fStep) {
-                if (!isNaN(fMin) && fValue - fStep > fMin)
+                if (canDecrease)
                     location.addItem((item) => {
                         item.setIcon(FieldIcon[FieldType.Number]);
                         item.setTitle(`<${name}> ↘️ ${fValue - fStep}`);
-                        item.onClick(async () => await this.plugin.fileTaskManager
-                            .pushTask(() => { replaceValues(this.plugin, file, name, (fValue - fStep).toString()) }));
+                        item.onClick(increase);
                         item.setSection("metadata-menu.fields");
                     })
-                if (!isNaN(fMax) && fValue + fStep < fMax)
+                if (canIncrease)
                     location.addItem((item) => {
                         item.setIcon(FieldIcon[FieldType.Number]);
                         item.setTitle(`<${name}> ↗️ ${fValue + fStep}`);
-                        item.onClick(async () => await this.plugin.fileTaskManager
-                            .pushTask(() => { replaceValues(this.plugin, file, name, (fValue + fStep).toString()) }));
+                        item.onClick(decrease);
                         item.setSection("metadata-menu.fields");
                     })
             }
@@ -108,6 +113,16 @@ export default class NumberField extends FieldManager {
                 action: () => modal.open(),
                 icon: FieldIcon[FieldType.Number]
             });
+        } else if (NumberField.isFieldOptions(location)) {
+            if (step) {
+                if (canDecrease) {
+                    location.addOption("minus-square", decrease);
+                }
+                if (canIncrease) {
+                    location.addOption("plus-square", increase);
+                }
+            }
+
         };
     };
 

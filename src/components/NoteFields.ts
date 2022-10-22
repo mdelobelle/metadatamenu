@@ -4,11 +4,26 @@ import Field from "src/fields/Field";
 import { FieldManager } from "src/fields/FieldManager";
 import { FileClass } from "src/fileClass/fileClass";
 import ChooseSectionModal from "src/modals/chooseSectionModal"
+import * as FieldType from "src/types/fieldTypes"
+import { FieldManager as FM } from "src/types/fieldTypes";
 
-class FieldsModal extends Modal {
+export class FieldOptions {
+    constructor(public container: HTMLDivElement) {
+
+    }
+
+    public addOption(icon: string, onclick: () => {} | void) {
+        const fieldOption = this.container.createDiv({ cls: "metadata-menu-note-field-item" })
+        setIcon(fieldOption, icon);
+        fieldOption.onclick = onclick;
+    }
+}
+
+export class FieldsModal extends Modal {
 
     private dvApi?: any
     public fields: Field[]
+    public fieldContainers: HTMLDivElement[] = [];
     private fileClass?: FileClass
     constructor(
         public plugin: MetadataMenu,
@@ -28,15 +43,20 @@ class FieldsModal extends Modal {
         this.fields = this.plugin.fieldIndex.filesFields.get(this.file.path) || [];
     }
 
-    buildFieldsList(): void {
-        this.contentEl.replaceChildren();
-        const fieldsContainer = this.contentEl.createDiv({});
-        this.fields.forEach(field => {
-            const value = this.dvApi ? this.dvApi.page(this.file.path)[field.name] : undefined
-            console.log(field.name, value)
-            const fieldContainer = fieldsContainer.createDiv({ cls: "metadata-menu-modal-value", })
-            fieldContainer.createDiv({ text: `${field.name} | ${field.type} | ${value}` })
-            const fieldBtn = fieldContainer.createDiv({})
+    buildFieldContainer(parentContainer: HTMLDivElement, field: Field, value?: string): HTMLDivElement {
+        const fieldManager = new FM[field.type](this.plugin, field)
+        const fieldContainer = parentContainer.createDiv({ cls: "metadata-menu-note-field-container" })
+        fieldContainer.createDiv({ text: `${field.name}`, cls: "metadata-menu-note-field-item" });
+        const fieldTypeContainer = fieldContainer.createDiv({ cls: `metadata-menu-note-field-item` });
+        fieldTypeContainer.createDiv({ text: field.type, cls: `field-type ${FieldType.FieldBackgroundColorClass[field.type]}` })
+        fieldContainer.createDiv({
+            text: `${value ? fieldManager.displayValue(this.file, field.name) : "<empty>"}`,
+            cls: value ? "metadata-menu-note-field-item" : "metadata-menu-note-field-item emptyfield"
+        })
+        const fieldOptions = new FieldOptions(fieldContainer)
+        fieldManager.addFieldOption(field.name, value, this.file, fieldOptions);
+        const fieldBtn = fieldContainer.createDiv({})
+        if (fieldManager.showModalOption || !value) {
             setIcon(fieldBtn, value ? "edit" : "list-plus")
             fieldBtn.onclick = () => {
                 if (!value) {
@@ -45,6 +65,16 @@ class FieldsModal extends Modal {
                     FieldManager.createAndOpenModal(this.plugin, this.file, field.name, field, value)
                 }
             }
+        }
+        return fieldContainer
+    }
+
+    buildFieldsList(): void {
+        this.contentEl.replaceChildren();
+        const fieldsContainer = this.contentEl.createDiv({ cls: "metadata-menu-note-fields-container" });
+        this.fields.forEach(field => {
+            const value = this.dvApi ? this.dvApi.page(this.file.path)[field.name] : undefined
+            this.fieldContainers.push(this.buildFieldContainer(fieldsContainer, field, value))
         })
     }
 }
@@ -61,6 +91,10 @@ export default class NoteFieldsComponent extends Component {
     ) {
         super();
         this.allFieldsModal = new FieldsModal(this.plugin, file)
+        this.allFieldsModal.onClose = () => {
+            this.plugin.removeChild(this)
+            this.unload()
+        }
     }
 
     onload(): void {
@@ -70,6 +104,4 @@ export default class NoteFieldsComponent extends Component {
         }))
         this.allFieldsModal.open()
     }
-
-
 }

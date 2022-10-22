@@ -11,6 +11,7 @@ import CycleField from "./CycleField";
 import { FieldManager as FM } from "src/types/fieldTypes";
 import { replaceValues } from "src/commands/replaceValues";
 import { compareDuration } from "src/utils/dataviewUtils";
+import { FieldOptions } from "src/components/NoteFields";
 
 export default class DateField extends FieldManager {
 
@@ -19,28 +20,32 @@ export default class DateField extends FieldManager {
     private shiftBtn: HTMLButtonElement
 
     constructor(plugin: MetadataMenu, field: Field) {
-        super(plugin, field, FieldType.Date)
+        super(plugin, field, FieldType.Date);
+        this.showModalOption = false;
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         const modal = new DateModal(this.plugin, file, this.field, value);
         modal.titleEl.setText(`Change date for <${name}>`);
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api;
+        const dateIconName = FieldIcon[FieldType.Date];
+        const dateModalAction = () => modal.open();
+        const p = dvApi.page(file.path)
+        const shiftDateAction = () => this.shiftDate(dvApi, p, file);
+        const fieldManager: DateField = new FM[this.field.type](this.plugin, this.field);
+        const [currentShift]: [string | undefined, Field | undefined, string | undefined] = fieldManager.shiftDuration(file);
         if (DateField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
-                item.setIcon(FieldIcon[FieldType.Date]);
-                item.onClick(() => modal.open());
+                item.setIcon(dateIconName);
+                item.onClick(dateModalAction);
                 item.setSection("metadata-menu.fields");
             })
             if (this.field.options.dateShiftInterval || this.field.options.nextShiftIntervalField && dvApi) {
-                const p = dvApi.page(file.path)
-                const fieldManager: DateField = new FM[this.field.type](this.plugin, this.field);
-                const [currentShift]: [string | undefined, Field | undefined, string | undefined] = fieldManager.shiftDuration(file);
                 location.addItem((item) => {
                     item.setTitle(`Shift <${name}> ${currentShift} ahead`);
                     item.setIcon("skip-forward");
-                    item.onClick(() => { this.shiftDate(dvApi, p, file) });
+                    item.onClick(shiftDateAction);
                     item.setSection("metadata-menu.fields");
                 })
             }
@@ -48,20 +53,20 @@ export default class DateField extends FieldManager {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
-                action: () => modal.open(),
-                icon: FieldIcon[FieldType.Date]
+                action: dateModalAction,
+                icon: dateIconName
             })
             if (this.field.options.dateShiftInterval || this.field.options.nextShiftIntervalField && dvApi) {
-                const p = dvApi.page(file.path)
-                const fieldManager: DateField = new FM[this.field.type](this.plugin, this.field);
-                const [currentShift]: [string | undefined, Field | undefined, string | undefined] = fieldManager.shiftDuration(file);
                 location.options.push({
                     id: `update_${name}`,
                     actionLabel: `<span>Shift <b>${name}</b> ${currentShift} ahead</span>`,
-                    action: () => this.shiftDate(dvApi, p, file),
-                    icon: FieldIcon[FieldType.Date]
+                    action: shiftDateAction,
+                    icon: "skip-forward"
                 })
             }
+        } else if (DateField.isFieldOptions(location)) {
+            location.addOption("skip-forward", shiftDateAction);
+            location.addOption(dateIconName, dateModalAction);
         };
     }
 
@@ -241,6 +246,19 @@ export default class DateField extends FieldManager {
 
     public validateOptions(): boolean {
         return true;
+    }
+
+    public displayValue(file: TFile, fieldName: string): string | undefined {
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        if (dvApi) {
+            const value = dvApi.page(file.path)[fieldName]
+            if (dvApi.value.isLink(value)) {
+                return value.display;
+            } else {
+                return value
+            }
+        }
+        return ""
     }
 
     public validateValue(value: string): boolean {

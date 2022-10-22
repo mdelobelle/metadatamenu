@@ -6,6 +6,7 @@ import SelectModal from "src/modals/fields/SelectModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
+import { FieldOptions } from "src/components/NoteFields";
 
 export default class CycleField extends AbstractListBasedField {
 
@@ -13,6 +14,7 @@ export default class CycleField extends AbstractListBasedField {
 
     constructor(plugin: MetadataMenu, field: Field) {
         super(plugin, field, FieldType.Cycle)
+        this.showModalOption = false;
     }
 
     public nextOption(value: string): string {
@@ -42,26 +44,28 @@ export default class CycleField extends AbstractListBasedField {
         return matchedValue
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         // dataview is converting strings to duration, let's find back the raw string option from duration if needed
         let matchedValue = this.getRawOptionFromDuration(value) || value;
-
+        const iconName = FieldIcon[FieldType.Cycle];
+        const action = async () => await this.plugin.fileTaskManager
+            .pushTask(() => { replaceValues(this.plugin, file, name, this.nextOption(matchedValue).toString()) });
         if (CycleField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`${name} : ${matchedValue} ▷ ${this.nextOption(matchedValue)}`);
-                item.setIcon(FieldIcon[FieldType.Cycle]);
-                item.onClick(async () => await this.plugin.fileTaskManager
-                    .pushTask(() => { replaceValues(this.plugin, file, name, this.nextOption(matchedValue).toString()) }));
+                item.setIcon(iconName);
+                item.onClick(action);
                 item.setSection("metadata-menu.fields");
             });
         } else if (CycleField.isSuggest(location)) {
             location.options.push({
                 id: `${name}_${matchedValue}_${this.nextOption(matchedValue)}`,
                 actionLabel: `<span><b>${name}</b> : ${matchedValue} ▷ ${this.nextOption(matchedValue)}</span>`,
-                action: async () => await this.plugin.fileTaskManager
-                    .pushTask(() => { replaceValues(this.plugin, file, name, this.nextOption(matchedValue).toString()) }),
-                icon: FieldIcon[FieldType.Cycle]
+                action: action,
+                icon: iconName
             })
+        } else if (CycleField.isFieldOptions(location)) {
+            location.addOption(iconName, action);
         };
     };
 

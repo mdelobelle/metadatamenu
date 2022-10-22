@@ -3,6 +3,7 @@ import { Menu, TextComponent, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 import { FileClass } from "src/fileClass/fileClass";
 import FCSM from "src/options/FieldCommandSuggestModal";
+import { FieldOptions } from "src/components/NoteFields";
 import InsertFieldSuggestModal from "src/modals/insertFieldSuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldManager as FM, FieldType } from "src/types/fieldTypes";
@@ -15,7 +16,7 @@ export const enum SettingLocation {
 
 export abstract class FieldManager {
 
-    abstract addFieldOption(name: string, value: string, file: TFile, location: Menu | FCSM): void;
+    abstract addFieldOption(name: string, value: string, file: TFile, location: Menu | FCSM | FieldOptions): void;
     abstract validateOptions(): boolean;
     abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
     abstract createDvField(
@@ -29,7 +30,8 @@ export abstract class FieldManager {
         }
     ): void
     abstract getOptionsStr(): string;
-    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void
+    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void;
+    public showModalOption: boolean = true;
 
     constructor(public plugin: MetadataMenu, public field: Field, public type: FieldType) {
         if (field.type !== type) throw Error(`This field is not of type ${type}`)
@@ -78,16 +80,20 @@ export abstract class FieldManager {
         }
     }
 
-    public static isMenu(location: Menu | "InsertFieldCommand" | FCSM): location is Menu {
+    public static isMenu(location: Menu | "InsertFieldCommand" | FCSM | FieldOptions): location is Menu {
         return (location as Menu).addItem !== undefined;
     };
 
-    public static isSuggest(location: Menu | "InsertFieldCommand" | FCSM): location is FCSM {
+    public static isSuggest(location: Menu | "InsertFieldCommand" | FCSM | FieldOptions): location is FCSM {
         return (location as FCSM).getItems !== undefined;
     };
 
-    public static isInsertFieldCommand(location: Menu | "InsertFieldCommand" | FCSM): location is "InsertFieldCommand" {
+    public static isInsertFieldCommand(location: Menu | "InsertFieldCommand" | FCSM | FieldOptions): location is "InsertFieldCommand" {
         return (location as string) === "InsertFieldCommand";
+    }
+
+    public static isFieldOptions(location: Menu | "InsertFieldCommand" | FCSM | FieldOptions): location is FieldOptions {
+        return (location as FieldOptions).addOption !== undefined;
     }
 
     public static createAndOpenModal(
@@ -155,5 +161,13 @@ export abstract class FieldManager {
             throw Error("this value is not a boolean")
         };
         return toBooleanValue;
+    }
+
+    public displayValue(file: TFile, fieldName: string): string | undefined {
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        if (dvApi) {
+            return dvApi.page(file.path)[fieldName] || undefined
+        }
+        return ""
     }
 }

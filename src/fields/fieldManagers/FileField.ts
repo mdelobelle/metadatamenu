@@ -65,6 +65,19 @@ export default class FileField extends FieldManager {
         fieldModal.open();
     }
 
+    public displayValue(file: TFile, fieldName: string): string | undefined {
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        if (dvApi) {
+            const value = dvApi.page(file.path)[fieldName]
+            if (dvApi.value.isLink(value)) {
+                return value.display;
+            } else {
+                return value
+            }
+        }
+        return ""
+    }
+
     public createDvField(
         dv: any,
         p: any,

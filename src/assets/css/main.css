@@ -256,7 +256,8 @@ button.metadata-menu-field-add-frontmatter-btn{
     font-weight: 500;
 }
 
-.metadata-menu-setting-item-info-type{
+.metadata-menu-setting-item-info-type,
+.metadata-menu-note-field-item > .field-type{
     border-radius: 0.8em;
     padding: 0.1em 0.75em 0.25em 0.75em;
     color: white;
@@ -265,39 +266,48 @@ button.metadata-menu-field-add-frontmatter-btn{
     height: 1.6em;
 }
 
-.metadata-menu-setting-item-info-type.cycle{
+.metadata-menu-setting-item-info-type.cycle,
+.metadata-menu-note-field-item > .field-type.cycle{
     background-color: #8ec07c;
 }
 
-.metadata-menu-setting-item-info-type.multi{
+.metadata-menu-setting-item-info-type.multi,
+.metadata-menu-note-field-item > .field-type.multi{
     background-color: #d65d0e;
 }
 
-.metadata-menu-setting-item-info-type.boolean{
+.metadata-menu-setting-item-info-type.boolean,
+.metadata-menu-note-field-item > .field-type.boolean{
     background-color: #076678;
 }
 
-.metadata-menu-setting-item-info-type.single{
+.metadata-menu-setting-item-info-type.single,
+.metadata-menu-note-field-item > .field-type.single{
     background-color: #5e81ac;
 }
 
-.metadata-menu-setting-item-info-type.select{
+.metadata-menu-setting-item-info-type.select,
+.metadata-menu-note-field-item > .field-type.select{
     background-color: #556b77;
 }
 
-.metadata-menu-setting-item-info-type.number{
+.metadata-menu-setting-item-info-type.number,
+.metadata-menu-note-field-item > .field-type.number{
     background-color: #689d6a;
 }
 
-.metadata-menu-setting-item-info-type.file{
+.metadata-menu-setting-item-info-type.file,
+.metadata-menu-note-field-item > .field-type.file{
     background-color: #928374;
 }
 
-.metadata-menu-setting-item-info-type.date{
+.metadata-menu-setting-item-info-type.date,
+.metadata-menu-note-field-item > .field-type.date{
     background-color: #483699;
 }
 
-.metadata-menu-setting-item-info-type.lookup{
+.metadata-menu-setting-item-info-type.lookup,
+.metadata-menu-note-field-item > .field-type.lookup{
     background-color: #689d6a;
 }
 
@@ -499,4 +509,25 @@ button.metadata-menu-field-add-frontmatter-btn{
 
 .fileclass-icon svg{
     vertical-align: calc(var(--font-text-size) * -0.15);
+}
+
+/* Note Fields Component */
+.metadata-menu-note-fields-container {
+    display: table;
+    border-collapse:separate
+}
+
+.metadata-menu-note-field-container {
+    display: table-row;
+    margin-top: 3px;
+}
+
+.metadata-menu-note-field-item{
+    display: table-cell;
+    padding-top: 0.2em;
+    padding-right: 0.5em;
+}
+
+.metadata-menu-note-field-item.emptyfield{
+    color: var(--text-faint)
 }

@@ -2,6 +2,7 @@ import MetadataMenu from "main";
 import { Menu, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
+import { FieldOptions } from "src/components/NoteFields"
 import BooleanModal from "src/modals/fields/BooleanModal";
 import { FieldType, FieldIcon } from "src/types/fieldTypes";
 import Field from "../Field";
@@ -10,27 +11,31 @@ import { FieldManager } from "../FieldManager";
 export default class BooleanField extends FieldManager {
 
     constructor(plugin: MetadataMenu, field: Field) {
-        super(plugin, field, FieldType.Boolean)
+        super(plugin, field, FieldType.Boolean);
+        this.showModalOption = false
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         const bValue = BooleanField.stringToBoolean(value);
+        const iconName = FieldIcon[FieldType.Boolean]
+        const action = async () => await this.plugin.fileTaskManager
+            .pushTask(() => { replaceValues(this.plugin, file, name, (!bValue).toString()) })
         if (BooleanField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`<${name}> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);
-                item.setIcon(FieldIcon[FieldType.Boolean]);
-                item.onClick(async () => await this.plugin.fileTaskManager
-                    .pushTask(() => { replaceValues(this.plugin, file, name, (!bValue).toString()) }));
+                item.setIcon(iconName);
+                item.onClick(action);
                 item.setSection("metadata-menu.fields");
             })
         } else if (BooleanField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span><b>${name}</b> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}</span>`,
-                action: async () => await this.plugin.fileTaskManager
-                    .pushTask(() => { replaceValues(this.plugin, file, name, (!bValue).toString()) }),
-                icon: FieldIcon[FieldType.Boolean]
+                action: action,
+                icon: iconName
             });
+        } else if (BooleanField.isFieldOptions(location)) {
+            location.addOption(bValue ? "x-square" : "check-square", action);
         };
     };
     public getOptionsStr(): string {
