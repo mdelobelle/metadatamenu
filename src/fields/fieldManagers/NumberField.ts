@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { Menu, setIcon, TextComponent, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
-import NumbertModal from "src/optionModals/fields/NumberModal";
+import NumbertModal from "src/modals/fields/NumberModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";

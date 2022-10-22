@@ -24,7 +24,6 @@ import {
 } from "src/options/linkAttributes"
 import { Prec } from "@codemirror/state";
 import { buildCMViewPlugin } from "src/options/livePreview";
-import { getEventListeners } from 'events';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;

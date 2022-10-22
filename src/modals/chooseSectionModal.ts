@@ -1,4 +1,4 @@
-import { Modal, DropdownComponent, TFile, ToggleComponent, ButtonComponent } from "obsidian";
+import { Modal, DropdownComponent, TFile, ButtonComponent } from "obsidian";
 import MetadataMenu from "main";
 import { FileClass } from "src/fileClass/fileClass";
 import { FieldManager as F } from "src/fields/FieldManager";

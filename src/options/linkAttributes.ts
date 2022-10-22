@@ -1,7 +1,6 @@
 import { App, getLinkpath, LinkCache, MarkdownPostProcessorContext, MarkdownView, TFile, setIcon } from "obsidian"
 import MetadataMenu from "main";
-import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
-import OptionsList from "./OptionsList";
+import NoteFieldsComponent from "../components/NoteFields";
 
 export function clearExtraAttributes(link: HTMLElement) {
     Object.values(link.attributes).forEach(attr => {
@@ -49,9 +48,8 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
                     metadataMenuBtn.onclick = (event) => {
                         const file = plugin.app.vault.getAbstractFileByPath(`${destName}.md`)
                         if (file instanceof TFile && file.extension === "md") {
-                            const fieldCommandSuggestModal = new FieldCommandSuggestModal(plugin.app)
-                            const optionsList = new OptionsList(plugin, file, fieldCommandSuggestModal);
-                            optionsList.createExtraOptionList();
+                            const noteFieldsComponent = new NoteFieldsComponent(plugin, "1", () => { }, file)
+                            plugin.addChild(noteFieldsComponent);
                         }
                         event.stopPropagation();
                     }

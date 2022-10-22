@@ -3,9 +3,8 @@ import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetTy
 import { RangeSetBuilder } from "@codemirror/state";
 import { syntaxTree } from "@codemirror/language";
 import { tokenClassNodeProp } from "@codemirror/language";
-import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
-import OptionsList from "./OptionsList";
 import MetadataMenu from "main";
+import NoteFieldsComponent from "src/components/NoteFields";
 
 export function buildCMViewPlugin(plugin: MetadataMenu) {
     // Implements the live preview supercharging
@@ -36,9 +35,8 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
                     metadataMenuBtn.onclick = (event) => {
                         const file = plugin.app.vault.getAbstractFileByPath(`${this.destName}.md`)
                         if (file instanceof TFile && file.extension === "md") {
-                            const fieldCommandSuggestModal = new FieldCommandSuggestModal(plugin.app)
-                            const optionsList = new OptionsList(plugin, file, fieldCommandSuggestModal);
-                            optionsList.createExtraOptionList();
+                            const noteFieldsComponent = new NoteFieldsComponent(plugin, "1", () => { }, file)
+                            plugin.addChild(noteFieldsComponent);
                         }
                         event.stopPropagation()
                     }

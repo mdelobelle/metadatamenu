@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { Menu, Notice, setIcon, TextAreaComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
-import MultiFileModal from "src/optionModals/fields/MultiFileModal";
+import MultiFileModal from "src/modals/fields/MultiFileModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";

@@ -3,7 +3,7 @@ import { getField } from "src/commands/getField";
 import { FileClass } from "src/fileClass/fileClass";
 import { FieldManager } from "src/types/fieldTypes";
 import { FieldManager as F } from "src/fields/FieldManager";
-import chooseSectionModal from "src/optionModals/chooseSectionModal";
+import chooseSectionModal from "src/modals/chooseSectionModal";
 import { Notice, setIcon, TFile } from "obsidian";
 import FileClassQuery from "src/fileClass/FileClassQuery";
 

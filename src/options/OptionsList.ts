@@ -4,10 +4,10 @@ import Field from "src/fields/Field";
 import { FieldManager as F } from "src/fields/FieldManager";
 import Managers from "src/fields/fieldManagers/Managers";
 import { FileClass } from "src/fileClass/fileClass";
-import InputModal from "src/optionModals/fields/InputModal";
+import InputModal from "src/modals/fields/InputModal";
 import { FieldIcon, FieldManager, FieldType } from "src/types/fieldTypes";
 import { genuineKeys } from "src/utils/dataviewUtils";
-import chooseSectionModal from "../optionModals/chooseSectionModal";
+import chooseSectionModal from "../modals/chooseSectionModal";
 import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
 import FileClassOptionsList from "./FileClassOptionsList";
 
