@@ -16,6 +16,7 @@ export default class LookupField extends FieldManager {
 
     constructor(plugin: MetadataMenu, field: Field) {
         super(plugin, field, FieldType.Lookup)
+        this.showModalOption = false
     }
 
     addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
@@ -45,6 +46,10 @@ export default class LookupField extends FieldManager {
                 options_set[1]?.hide()
             }
         })
+    }
+
+    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked = () => { }): void {
+        container.createDiv({ text: this.plugin.fieldIndex.fileLookupFieldLastValue.get(`${file.path}__related__${fieldName}`) })
     }
 
     private displaySelectedOutputWarningContainer(optionWarningContainer: HTMLDivElement, value: keyof typeof Lookup.Type) {

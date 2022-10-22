@@ -44,26 +44,33 @@ export class FieldsModal extends Modal {
         this.fields = this.plugin.fieldIndex.filesFields.get(this.file.path) || [];
     }
 
-    buildFieldContainer(parentContainer: HTMLDivElement, field: Field, value?: string): HTMLDivElement {
+    buildFieldContainer(parentContainer: HTMLDivElement, field: Field, value?: string | null | undefined): HTMLDivElement {
         const fieldManager = new FM[field.type](this.plugin, field)
         const fieldContainer = parentContainer.createDiv({ cls: "metadata-menu-note-field-container" })
         fieldContainer.createDiv({ text: `${field.name}`, cls: "metadata-menu-note-field-item field-name" });
         const fieldTypeContainer = fieldContainer.createDiv({ cls: `metadata-menu-note-field-item` });
         fieldTypeContainer.createDiv({ text: field.type, cls: `field-type ${FieldType.FieldBackgroundColorClass[field.type]}` })
         const fieldValueContainer = fieldContainer.createDiv({
-            cls: value ? "metadata-menu-note-field-item field-value" : "metadata-menu-note-field-item field-value emptyfield"
+            cls: value !== undefined && value !== null ? "metadata-menu-note-field-item field-value" : "metadata-menu-note-field-item field-value emptyfield"
         })
-        value ? fieldManager.displayValue(fieldValueContainer, this.file, field.name, () => { this.close() }) : "<empty>";
+        if (value === null) {
+            fieldValueContainer.setText("<empty>");
+        } else if (value === undefined) {
+            fieldValueContainer.setText("<missing>");
+        } else {
+            fieldManager.displayValue(fieldValueContainer, this.file, field.name, () => { this.close() })
+        }
+        console.log(field.name, value)
         const fieldOptions = new FieldOptions(fieldContainer)
-        fieldManager.addFieldOption(field.name, value, this.file, fieldOptions);
+        if (value !== undefined) fieldManager.addFieldOption(field.name, value, this.file, fieldOptions);
         const fieldBtn = fieldContainer.createDiv({})
-        if (fieldManager.showModalOption || !value) {
-            setIcon(fieldBtn, value ? "edit" : "list-plus")
+        if (fieldManager.showModalOption || value === undefined || value === null) {
+            setIcon(fieldBtn, value !== undefined ? "edit" : "list-plus")
             fieldBtn.onclick = () => {
-                if (!value) {
+                if (value === undefined) {
                     (new ChooseSectionModal(this.plugin, this.file, this.fileClass, field.name)).open();
                 } else {
-                    FieldManager.createAndOpenModal(this.plugin, this.file, field.name, field, value)
+                    FieldManager.createAndOpenModal(this.plugin, this.file, field.name, field, value || "")
                 }
             }
         }

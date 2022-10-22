@@ -427,7 +427,8 @@ button.metadata-menu-field-add-frontmatter-btn {
   padding-right: 0.5em; }
 
 .metadata-menu-note-field-item.field-name {
-  font-weight: bold; }
+  font-weight: bold;
+  white-space: nowrap; }
 
 .metadata-menu-note-field-item.field-value {
   width: 100%; }

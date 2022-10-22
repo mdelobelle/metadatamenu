@@ -255,7 +255,7 @@ export default class DateField extends FieldManager {
             if (dvApi.value.isDate(value)) {
                 container.createDiv({ text: value.display });
             } else if (dvApi.value.isLink(value)) {
-                const link = container.createEl('a', { text: value.path.split("/").last() })
+                const link = container.createEl('a', { text: value.path.split("/").last().replace(/(.*).md/, "$1") })
                 link.onclick = () => {
                     this.plugin.app.workspace.openLinkText(value.path, file.path, true);
                     onClicked()

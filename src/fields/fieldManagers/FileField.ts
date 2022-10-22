@@ -70,7 +70,7 @@ export default class FileField extends FieldManager {
         if (dvApi) {
             const value = dvApi.page(file.path)[fieldName]
             if (dvApi.value.isLink(value)) {
-                const link = container.createEl('a', { text: value.display });
+                const link = container.createEl('a', { text: value.path.split("/").last().replace(/(.*).md/, "$1") });
                 link.onclick = () => {
                     this.plugin.app.workspace.openLinkText(value.path, file.path, true)
                     onClicked();
