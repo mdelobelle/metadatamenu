@@ -95,14 +95,14 @@ export default class NumberField extends FieldManager {
                     location.addItem((item) => {
                         item.setIcon(FieldIcon[FieldType.Number]);
                         item.setTitle(`<${name}> ↘️ ${fValue - fStep}`);
-                        item.onClick(increase);
+                        item.onClick(decrease);
                         item.setSection("metadata-menu.fields");
                     })
                 if (canIncrease)
                     location.addItem((item) => {
                         item.setIcon(FieldIcon[FieldType.Number]);
                         item.setTitle(`<${name}> ↗️ ${fValue + fStep}`);
-                        item.onClick(decrease);
+                        item.onClick(increase);
                         item.setSection("metadata-menu.fields");
                     })
             }

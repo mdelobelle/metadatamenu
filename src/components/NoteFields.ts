@@ -33,9 +33,10 @@ export class FieldsModal extends Modal {
         this.dvApi = plugin.app.plugins.plugins.dataview?.api;
         this.getFields();
         this.fileClass = this.plugin.fieldIndex.filesFileClass.get(this.file.path);
+        this.containerEl.addClass("metadata-menu-note-fields-modal")
     }
     onOpen() {
-        this.titleEl.setText("Fields")
+        this.titleEl.setText(`Fields of ${this.file.basename}.${this.file.extension}`)
         this.buildFieldsList();
     };
 
@@ -46,13 +47,13 @@ export class FieldsModal extends Modal {
     buildFieldContainer(parentContainer: HTMLDivElement, field: Field, value?: string): HTMLDivElement {
         const fieldManager = new FM[field.type](this.plugin, field)
         const fieldContainer = parentContainer.createDiv({ cls: "metadata-menu-note-field-container" })
-        fieldContainer.createDiv({ text: `${field.name}`, cls: "metadata-menu-note-field-item" });
+        fieldContainer.createDiv({ text: `${field.name}`, cls: "metadata-menu-note-field-item field-name" });
         const fieldTypeContainer = fieldContainer.createDiv({ cls: `metadata-menu-note-field-item` });
         fieldTypeContainer.createDiv({ text: field.type, cls: `field-type ${FieldType.FieldBackgroundColorClass[field.type]}` })
-        fieldContainer.createDiv({
-            text: `${value ? fieldManager.displayValue(this.file, field.name) : "<empty>"}`,
-            cls: value ? "metadata-menu-note-field-item" : "metadata-menu-note-field-item emptyfield"
+        const fieldValueContainer = fieldContainer.createDiv({
+            cls: value ? "metadata-menu-note-field-item field-value" : "metadata-menu-note-field-item field-value emptyfield"
         })
+        value ? fieldManager.displayValue(fieldValueContainer, this.file, field.name, () => { this.close() }) : "<empty>";
         const fieldOptions = new FieldOptions(fieldContainer)
         fieldManager.addFieldOption(field.name, value, this.file, fieldOptions);
         const fieldBtn = fieldContainer.createDiv({})

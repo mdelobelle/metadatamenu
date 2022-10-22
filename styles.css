@@ -409,6 +409,10 @@ button.metadata-menu-field-add-frontmatter-btn {
   vertical-align: calc(var(--font-text-size) * -0.15); }
 
 /* Note Fields Component */
+.metadata-menu-note-fields-modal > .modal {
+  width: auto;
+  min-width: var(--dialog-width); }
+
 .metadata-menu-note-fields-container {
   display: table;
   border-collapse: separate; }
@@ -422,7 +426,13 @@ button.metadata-menu-field-add-frontmatter-btn {
   padding-top: 0.2em;
   padding-right: 0.5em; }
 
-.metadata-menu-note-field-item.emptyfield {
+.metadata-menu-note-field-item.field-name {
+  font-weight: bold; }
+
+.metadata-menu-note-field-item.field-value {
+  width: 100%; }
+
+.metadata-menu-note-field-item.field-value.emptyfield {
   color: var(--text-faint); }
 
 /* ---------------------------- */

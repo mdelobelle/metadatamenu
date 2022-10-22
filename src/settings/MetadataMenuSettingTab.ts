@@ -302,7 +302,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					this.plugin.saveSettings();
 				})
 			})
-		/*
+
 		new Setting(metadataMenuBtnSettings)
 			.setName("Backlinks")
 			.setDesc("Display an extra button to access metadata menu form in the backlinks panel")
@@ -347,7 +347,6 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				})
 			})
 
-		*/
 		/* 
 		--------------------------------------------------
 		Managing predefined fileClass for query's matching files 

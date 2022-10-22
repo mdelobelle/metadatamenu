@@ -201,20 +201,23 @@ export default class MultiFileField extends FieldManager {
         return isValid
     }
 
-    public displayValue(file: TFile, fieldName: string): string | undefined {
+    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClick: () => {}): void {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
             const dvValue = dvApi.page(file.path)[fieldName]
             const values = Array.isArray(dvValue) ? dvValue : [dvValue]
-            console.log(values)
-            return values.map(value => {
+            const valuesNodes = values.forEach(value => {
                 if (dvApi.value.isLink(value)) {
-                    return value.display;
+                    const link = container.createEl('a', { text: value.display });
+                    link.onclick = () => {
+                        this.plugin.app.workspace.openLinkText(value.path, file.path, true)
+                        onClick()
+                    }
                 } else {
-                    return value
+                    container.createDiv({ text: value });
                 }
-            }).join(", ")
+            })
         }
-        return ""
+        container.createDiv()
     }
 }

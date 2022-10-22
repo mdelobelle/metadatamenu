@@ -163,11 +163,8 @@ export abstract class FieldManager {
         return toBooleanValue;
     }
 
-    public displayValue(file: TFile, fieldName: string): string | undefined {
+    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked = () => { }): void {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        if (dvApi) {
-            return dvApi.page(file.path)[fieldName] || undefined
-        }
-        return ""
+        container.createDiv({ text: dvApi ? dvApi.page(file.path)[fieldName] || "" : "" })
     }
 }

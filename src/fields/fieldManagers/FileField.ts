@@ -65,17 +65,21 @@ export default class FileField extends FieldManager {
         fieldModal.open();
     }
 
-    public displayValue(file: TFile, fieldName: string): string | undefined {
+    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked: () => {}): void {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
             const value = dvApi.page(file.path)[fieldName]
             if (dvApi.value.isLink(value)) {
-                return value.display;
+                const link = container.createEl('a', { text: value.display });
+                link.onclick = () => {
+                    this.plugin.app.workspace.openLinkText(value.path, file.path, true)
+                    onClicked();
+                }
             } else {
-                return value
+                container.createDiv({ text: value });
             }
         }
-        return ""
+        container.createDiv();
     }
 
     public createDvField(
