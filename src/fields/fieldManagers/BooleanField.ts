@@ -35,7 +35,10 @@ export default class BooleanField extends FieldManager {
                 icon: iconName
             });
         } else if (BooleanField.isFieldOptions(location)) {
-            location.addOption(bValue ? "x-square" : "check-square", action);
+            location.addOption(
+                bValue ? "x-square" : "check-square",
+                action,
+                bValue ? "✅ ▷ ❌" : "❌ ▷ ✅");
         };
     };
     public getOptionsStr(): string {

@@ -165,6 +165,18 @@ export abstract class FieldManager {
 
     public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked = () => { }): void {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        container.createDiv({ text: dvApi ? dvApi.page(file.path)[fieldName] || "" : "" })
+        let valueText: string;
+        if (dvApi) {
+            switch (dvApi.page(file.path)[fieldName]) {
+                case undefined: valueText = ""; break;
+                case null: valueText = ""; break;
+                case false: valueText = "false"; break;
+                case 0: valueText = "0"; break;
+                default: valueText = dvApi.page(file.path)[fieldName];
+            }
+        } else {
+            valueText = "";
+        }
+        container.createDiv({ text: valueText })
     }
 }

@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { Component, Modal, setIcon, TFile } from "obsidian";
+import { ButtonComponent, Component, Modal, setIcon, TFile } from "obsidian";
 import Field from "src/fields/Field";
 import { FieldManager } from "src/fields/FieldManager";
 import { FileClass } from "src/fileClass/fileClass";
@@ -12,10 +12,12 @@ export class FieldOptions {
 
     }
 
-    public addOption(icon: string, onclick: () => {} | void) {
-        const fieldOption = this.container.createDiv({ cls: "metadata-menu-note-field-item" })
-        setIcon(fieldOption, icon);
-        fieldOption.onclick = onclick;
+    public addOption(icon: string, onclick: () => {} | void, tooltip?: string) {
+        const fieldOptionContainer = this.container.createDiv({ cls: "metadata-menu-note-field-item" })
+        const fieldOption = new ButtonComponent(fieldOptionContainer)
+        fieldOption.setIcon(icon)
+        fieldOption.onClick(() => onclick())
+        if (tooltip) fieldOption.setTooltip(tooltip);
     }
 }
 
@@ -60,20 +62,21 @@ export class FieldsModal extends Modal {
         } else {
             fieldManager.displayValue(fieldValueContainer, this.file, field.name, () => { this.close() })
         }
-        console.log(field.name, value)
         const fieldOptions = new FieldOptions(fieldContainer)
         if (value !== undefined) fieldManager.addFieldOption(field.name, value, this.file, fieldOptions);
-        const fieldBtn = fieldContainer.createDiv({})
+
         if (fieldManager.showModalOption || value === undefined || value === null) {
-            setIcon(fieldBtn, value !== undefined ? "edit" : "list-plus")
-            fieldBtn.onclick = () => {
+            const fieldBtnContainer = fieldContainer.createDiv({ cls: "metadata-menu-note-field-item" })
+            const fieldBtn = new ButtonComponent(fieldBtnContainer)
+            fieldBtn.setIcon(value !== undefined ? "edit" : "list-plus")
+            fieldBtn.onClick(() => {
                 if (value === undefined) {
                     (new ChooseSectionModal(this.plugin, this.file, this.fileClass, field.name)).open();
                 } else {
                     FieldManager.createAndOpenModal(this.plugin, this.file, field.name, field, value || "")
                 }
-            }
-        }
+            })
+        };
         return fieldContainer
     }
 

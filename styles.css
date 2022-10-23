@@ -436,6 +436,11 @@ button.metadata-menu-field-add-frontmatter-btn {
 .metadata-menu-note-field-item.field-value.emptyfield {
   color: var(--text-faint); }
 
+.metadata-menu-note-field-item button {
+  padding: 0;
+  height: auto;
+  box-shadow: none; }
+
 /* ---------------------------- */
 /*   Flatpick style             */
 /* ---------------------------- */
