@@ -10,6 +10,7 @@ export default class FieldIndex extends Component {
 
     public fileClassesFields: Map<string, Field[]>;
     public fieldsFromGlobalFileClass: Field[];
+    public filesFieldsFromTags: Map<string, Field[]>;
     public filesFieldsFromFileClassQueries: Map<string, Field[]>;
     public filesFieldsFromInnerFileClasses: Map<string, Field[]>;
     public filesFields: Map<string, Field[]>;
@@ -18,6 +19,7 @@ export default class FieldIndex extends Component {
     public fileClassesName: Map<string, FileClass>;
     public valuesListNotePathValues: Map<string, string[]>;
     public filesFileClassName: Map<string, string | undefined>;
+    public tagsMatchingFileClasses: Map<string, FileClass>;
     public fileLookupFiles: Map<string, any[]>;
     public previousFileLookupFilesValues: Map<string, number>;
     public fileLookupFieldLastValue: Map<string, string>;
@@ -95,16 +97,18 @@ export default class FieldIndex extends Component {
     }
 
     private flushCache() {
+        this.filesFields = new Map();
         this.fileClassesFields = new Map();
         this.fieldsFromGlobalFileClass = [];
+        this.filesFieldsFromTags = new Map();
         this.filesFieldsFromFileClassQueries = new Map();
         this.filesFieldsFromInnerFileClasses = new Map();
-        this.filesFields = new Map();
         this.filesFileClass = new Map();
         this.fileClassesPath = new Map();
         this.fileClassesName = new Map();
         this.filesFileClassName = new Map();
         this.valuesListNotePathValues = new Map();
+        this.tagsMatchingFileClasses = new Map();
     }
 
     async fullIndex(event: string, force_update_lookups = false): Promise<void> {
@@ -113,6 +117,7 @@ export default class FieldIndex extends Component {
         this.flushCache();
         this.getGlobalFileClass();
         this.getFileClasses();
+        this.resolveFileClassMatchingTags();
         this.resolveFileClassQueries();
         this.getFilesFieldsFromFileClass();
         this.getFilesFields();
@@ -185,6 +190,10 @@ export default class FieldIndex extends Component {
                         )
                         this.fileClassesPath.set(f.path, fileClass)
                         this.fileClassesName.set(fileClass.name, fileClass)
+                        const cache = this.plugin.app.metadataCache.getFileCache(f);
+                        if (cache?.frontmatter?.matchWithTag) {
+                            this.tagsMatchingFileClasses.set(f.basename, fileClass)
+                        }
                     } catch {
 
                     }
@@ -193,6 +202,45 @@ export default class FieldIndex extends Component {
         }
 
     }
+
+    resolveFileClassMatchingTags(): void {
+        if (![...this.tagsMatchingFileClasses].length) return
+        this.plugin.app.vault.getMarkdownFiles()
+            .filter(f => !this.plugin.settings.classFilesPath
+                || !f.path.includes(this.plugin.settings.classFilesPath)
+            )
+            .forEach(f => {
+                const tags = []
+                const cache = this.plugin.app.metadataCache.getCache(f.path);
+                if (cache?.frontmatter?.tags) {
+                    Array.isArray(cache.frontmatter.tags) ? tags.push(...cache.frontmatter.tags) : tags.push(...cache.frontmatter.tags.split(','))
+                }
+                if (cache?.tags) {
+                    tags.push(...cache.tags.map(t => t.tag.replace(/\#(.*)/, "$1")))
+                }
+                tags.forEach(tag => {
+                    const fileClass = this.tagsMatchingFileClasses.get(tag);
+                    if (fileClass) {
+                        this.filesFileClass.set(f.path, fileClass);
+                        this.filesFileClassName.set(f.path, fileClass.name)
+                        const fileFileClassesFieldsFromTag = this.fileClassesFields.get(fileClass.name)
+                        const currentFields = this.filesFieldsFromTags.get(f.path)
+
+                        if (fileFileClassesFieldsFromTag) {
+                            const newFields = [...fileFileClassesFieldsFromTag]
+                            const filteredCurrentFields = currentFields?.filter(field => !newFields.map(f => f.name).includes(field.name)) || []
+                            newFields.push(...filteredCurrentFields)
+                            this.filesFieldsFromTags.set(f.path, newFields)
+                        }
+                    }
+
+                });
+                [...this.tagsMatchingFileClasses].forEach(([tag, fileClass]) => {
+
+                })
+            })
+    }
+
     resolveFileClassQueries(): void {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         this.plugin.settings.fileClassQueries.forEach(sfcq => {
@@ -244,15 +292,20 @@ export default class FieldIndex extends Component {
                     this.filesFields.set(f.path, fileFieldsFromInnerFileClasses);
                     return
                 } else {
-                    const fileClassFromQuery = this.filesFieldsFromFileClassQueries.get(f.path);
-                    if (fileClassFromQuery) {
-                        this.filesFields.set(f.path, fileClassFromQuery)
-                    } else if (this.fieldsFromGlobalFileClass.length) {
-                        this.filesFields.set(f.path, this.fieldsFromGlobalFileClass)
-                        this.filesFileClassName.set(f.path, this.plugin.settings.globalFileClass)
+                    const fileFieldsFromQuery = this.filesFieldsFromFileClassQueries.get(f.path);
+                    if (fileFieldsFromQuery) {
+                        this.filesFields.set(f.path, fileFieldsFromQuery)
                     } else {
-                        this.filesFields.set(f.path, this.plugin.settings.presetFields)
-                        this.filesFileClassName.set(f.path, undefined)
+                        const fileFieldsFromTag = this.filesFieldsFromTags.get(f.path);
+                        if (fileFieldsFromTag) {
+                            this.filesFields.set(f.path, fileFieldsFromTag)
+                        } else if (this.fieldsFromGlobalFileClass.length) {
+                            this.filesFields.set(f.path, this.fieldsFromGlobalFileClass)
+                            this.filesFileClassName.set(f.path, this.plugin.settings.globalFileClass)
+                        } else {
+                            this.filesFields.set(f.path, this.plugin.settings.presetFields)
+                            this.filesFileClassName.set(f.path, undefined)
+                        }
                     }
                 }
             })

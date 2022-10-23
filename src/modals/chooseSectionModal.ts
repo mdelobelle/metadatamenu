@@ -50,7 +50,6 @@ export default class chooseSectionModal extends Modal {
         });
         selectEl.selectEl.focus();
         selectEl.onChange(() => {
-            console.log(this);
             const valueArray = selectEl.getValue().match(/(\w+)_(\d+)/);
             const position = valueArray && valueArray.length > 0 ? valueArray[1] : 0;
             const lineNumber = Number(valueArray && valueArray.length > 1 ? valueArray[2] : 0);

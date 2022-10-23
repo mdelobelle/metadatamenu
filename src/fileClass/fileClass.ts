@@ -11,6 +11,7 @@ interface FileClass {
     errors: string[];
     parent?: FileClass;
     excludes?: Array<FileClassAttribute>;
+    matchWithTag?: boolean
 }
 
 class FileClassManager {

@@ -206,9 +206,9 @@ export default class MultiFileField extends FieldManager {
         if (dvApi) {
             const dvValue = dvApi.page(file.path)[fieldName]
             const values = Array.isArray(dvValue) ? dvValue : [dvValue]
-            const valuesNodes = values.forEach(value => {
+            values.forEach(value => {
                 if (dvApi.value.isLink(value)) {
-                    const link = container.createEl('a', { text: value.display });
+                    const link = container.createEl('a', { text: value.path.split("/").last().replace(/(.*).md/, "$1") });
                     link.onclick = () => {
                         this.plugin.app.workspace.openLinkText(value.path, file.path, true)
                         onClick()
