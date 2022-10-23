@@ -1,4 +1,5 @@
 import { FieldType } from "../types/fieldTypes"
+import { FileClass } from "src/fileClass/fileClass";
 
 class Field {
 
@@ -6,7 +7,8 @@ class Field {
         public name: string = "",
         public options: Record<string, any> = {},
         public id: string = "",
-        public type: FieldType = FieldType.Input
+        public type: FieldType = FieldType.Input,
+        public fileClass?: FileClass
     ) { };
 
     static copyProperty(target: Field, source: Field) {

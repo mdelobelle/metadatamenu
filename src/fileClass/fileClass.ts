@@ -110,7 +110,7 @@ class FileClass {
                             try {
                                 const { type, options } = JSON.parse(item);
                                 const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
-                                const attr = new FileClassAttribute(this.name, key, fieldType, options)
+                                const attr = new FileClassAttribute(this.name, key, fieldType, options, this)
                                 //deduplicate fields
                                 attributes.push(attr)
                             } catch (e) {
@@ -134,7 +134,8 @@ class FileClass {
     }
 
     public async updateAttribute(newType: keyof typeof FieldType, newName: string, newOptions?: string[] | Record<string, string>, attr?: FileClassAttribute): Promise<void> {
-        const file = this.getClassFile();
+        const fileClass = attr ? attr.fileClass : this
+        const file = fileClass.getClassFile();
         let result = await this.plugin.app.vault.read(file)
         if (attr) {
             let newContent: string[] = [];
