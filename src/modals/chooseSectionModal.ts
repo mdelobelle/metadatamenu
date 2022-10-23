@@ -50,11 +50,14 @@ export default class chooseSectionModal extends Modal {
         });
         selectEl.selectEl.focus();
         selectEl.onChange(() => {
+            console.log(this);
             const valueArray = selectEl.getValue().match(/(\w+)_(\d+)/);
             const position = valueArray && valueArray.length > 0 ? valueArray[1] : 0;
             const lineNumber = Number(valueArray && valueArray.length > 1 ? valueArray[2] : 0);
             const inFrontmatter = position == "frontmatter" ? true : false;
             const after = position == "top" ? false : true;
+            //get fileClass from index in case it has changed
+            const fileClass = this.fileClass ? this.plugin.fieldIndex.fileClassesName.get(this.fileClass.name) : undefined
             F.openFieldModal(
                 this.plugin,
                 this.file,
@@ -63,7 +66,7 @@ export default class chooseSectionModal extends Modal {
                 lineNumber,
                 inFrontmatter,
                 after,
-                this.fileClass)
+                fileClass)
             this.close();
         });
 

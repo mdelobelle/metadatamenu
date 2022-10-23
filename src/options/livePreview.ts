@@ -31,7 +31,6 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
                 const fileClass = plugin.fieldIndex.fileClassesName.get(this.fileClassName)
                 if (fileClass) {
                     const icon = fileClass.getIcon();
-                    console.log(icon)
                     setIcon(metadataMenuBtn, icon || settings.buttonIcon)
                     metadataMenuBtn.onclick = (event) => {
                         const file = plugin.app.vault.getAbstractFileByPath(`${this.destName}.md`)
