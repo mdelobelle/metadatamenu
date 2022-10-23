@@ -76,8 +76,14 @@ class FileClass {
         }
     }
 
-    public getParentClass(): FileClass | undefined {
-        return
+    public getInheritanceList(): FileClass[] {
+        const file = this.getClassFile();
+        const parent = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.extends
+        if (parent) {
+            const parentFileClass = FileClass.createFileClass(this.plugin, parent);
+            return [...parentFileClass.getInheritanceList(), this]
+        }
+        return [this]
     }
 
     public getAttributes(excludeParents: boolean = false): void {

@@ -32,12 +32,12 @@ export default class CycleField extends AbstractListBasedField {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         let matchedValue: string | undefined = undefined;
         if (dvApi && dvApi.value.isDuration(duration)) {
-            Object.keys(this.field.options).forEach(k => {
-                const dvOption = dvApi.duration(this.field.options[k]);
+            this.getOptionsList().forEach(option => {
+                const dvOption = dvApi.duration(option);
                 if (Object.keys(duration.values).every(j =>
                     (!duration.values[j] && !dvOption.values[j]) || (duration.values[j] === dvOption.values[j])
                 )) {
-                    matchedValue = this.field.options[k]
+                    matchedValue = option
                 }
             })
         }

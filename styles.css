@@ -219,6 +219,9 @@ button.metadata-menu-field-add-frontmatter-btn {
   margin-right: 0.5em;
   height: 1.6em; }
 
+.metadata-menu-note-field-item > .field-type {
+  font-size: x-small; }
+
 .metadata-menu-setting-item-info-type.cycle,
 .metadata-menu-note-field-item > .field-type.cycle {
   background-color: #8ec07c; }
@@ -424,7 +427,9 @@ button.metadata-menu-field-add-frontmatter-btn {
 .metadata-menu-note-field-item {
   display: table-cell;
   padding-top: 0.2em;
-  padding-right: 0.5em; }
+  padding-right: 0.5em;
+  float: none;
+  vertical-align: middle; }
 
 .metadata-menu-note-field-item.field-name {
   font-weight: bold;
@@ -436,10 +441,28 @@ button.metadata-menu-field-add-frontmatter-btn {
 .metadata-menu-note-field-item.field-value.emptyfield {
   color: var(--text-faint); }
 
-.metadata-menu-note-field-item button {
+.metadata-menu-note-field-item button,
+.metadata-menu-note-fields-fileClass-manager-container button {
   padding: 0;
   height: auto;
   box-shadow: none; }
+
+.metadata-menu-note-field-item.field-setting {
+  padding-right: 0; }
+
+.metadata-menu-note-field-item.field-setting > button > svg,
+.metadata-menu-note-fields-fileClass-manager-container > button > svg {
+  color: var(--text-faint);
+  height: 1em; }
+
+.metadata-menu-note-fields-inheritance-manager-container {
+  display: flex; }
+
+.metadata-menu-note-fields-fileClass-manager-container {
+  display: flex; }
+
+.metadata-menu-note-fields-fileClass-manager-separator {
+  margin: 0 0.5em; }
 
 /* ---------------------------- */
 /*   Flatpick style             */
