@@ -86,6 +86,21 @@ class FileClass {
         return [this]
     }
 
+    getIcon(): string | undefined {
+        const parents = this.getInheritanceList();
+        parents.reverse()
+        let icon: string | undefined;
+        parents.some((fileClass, i) => {
+            const file = fileClass.getClassFile();
+            const _icon = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.icon
+            if (_icon) {
+                icon = _icon
+                return true;
+            };
+        })
+        return icon
+    }
+
     public getAttributes(excludeParents: boolean = false): void {
         try {
             const file = this.getClassFile();

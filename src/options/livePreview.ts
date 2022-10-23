@@ -28,9 +28,10 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
             if (this.fileClassName) {
                 metadataMenuBtn.setAttr("fileclass-name", this.fileClassName);
                 metadataMenuBtn.addClass('fileclass-icon');
-                const fileClass = plugin.app.vault.getAbstractFileByPath(`${settings.classFilesPath}${this.fileClassName}.md`)
-                if (fileClass instanceof TFile && fileClass.extension === "md") {
-                    const icon = plugin.app.metadataCache.getFileCache(fileClass)?.frontmatter?.["icon"]
+                const fileClass = plugin.fieldIndex.fileClassesName.get(this.fileClassName)
+                if (fileClass) {
+                    const icon = fileClass.getIcon();
+                    console.log(icon)
                     setIcon(metadataMenuBtn, icon || settings.buttonIcon)
                     metadataMenuBtn.onclick = (event) => {
                         const file = plugin.app.vault.getAbstractFileByPath(`${this.destName}.md`)

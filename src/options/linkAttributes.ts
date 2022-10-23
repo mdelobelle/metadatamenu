@@ -35,9 +35,9 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
         }
     }
     if (fileClassName) {
-        const fileClass = plugin.app.vault.getAbstractFileByPath(`${plugin.settings.classFilesPath}${fileClassName}.md`)
-        if (fileClass instanceof TFile && fileClass.extension === "md") {
-            const icon = plugin.app.metadataCache.getFileCache(fileClass)?.frontmatter?.["icon"]
+        const fileClass = plugin.fieldIndex.fileClassesName.get(fileClassName)
+        if (fileClass) {
+            const icon = fileClass.getIcon()
             link.setAttribute("fileclass-name", fileClassName)
             const el = link.nextElementSibling
             if (!el?.hasClass("fileclass-icon")) {
@@ -59,13 +59,13 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
     }
 }
 
-function updateLinkMetadataMenuFormButton(app: App, plugin: MetadataMenu, link: HTMLElement, viewTypeName: string | null, destName: string) {
+function updateLinkMetadataMenuFormButton(app: App, plugin: MetadataMenu, link: HTMLElement, viewTypeName: string | null, source: string) {
     const linkHref = link.getAttribute('href')?.split('#')[0];
-    const dest = linkHref && app.metadataCache.getFirstLinkpathDest(linkHref, destName);
+    const dest = linkHref && app.metadataCache.getFirstLinkpathDest(linkHref, source);
 
     if (dest) {
         const fileClassName = plugin.fieldIndex.filesFileClassName.get(dest.path)
-        setLinkMetadataFormButton(plugin, link, destName, viewTypeName, fileClassName);
+        setLinkMetadataFormButton(plugin, link, dest.path.replace(/(.*).md/, "$1"), viewTypeName, fileClassName);
     }
 }
 
@@ -81,9 +81,9 @@ export function updateDivExtraAttributes(app: App, plugin: MetadataMenu, link: H
 
 export function updateElLinks(app: App, plugin: MetadataMenu, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
     const links = el.querySelectorAll('a.internal-link');
-    const destName = ctx.sourcePath.replace(/(.*).md/, "$1");
+    const source = ctx.sourcePath.replace(/(.*).md/, "$1");
     links.forEach((link: HTMLElement) => {
-        updateLinkMetadataMenuFormButton(app, plugin, link, 'a.internal-link', destName);
+        updateLinkMetadataMenuFormButton(app, plugin, link, 'a.internal-link', source)
     });
 }
 
