@@ -9,9 +9,7 @@ import * as FieldType from "src/types/fieldTypes"
 import { FieldManager as FM } from "src/types/fieldTypes";
 
 export class FieldOptions {
-    constructor(public container: HTMLDivElement) {
-
-    }
+    constructor(public container: HTMLDivElement) { }
 
     public addOption(icon: string, onclick: () => {} | void, tooltip?: string) {
         const fieldOptionContainer = this.container.createDiv({ cls: "metadata-menu-note-field-item" })
@@ -93,23 +91,29 @@ export class FieldsModal extends Modal {
     }
 
     buildFileClassManager(container: HTMLDivElement): void {
-        const inheritanceList = this.fileClass?.getInheritanceList();
-        if (inheritanceList) {
-            inheritanceList.forEach((fileClass, i) => {
-                const fileClassOptionsContainer = container.createDiv({ cls: "metadata-menu-note-fields-fileClass-manager-container" })
-                fileClassOptionsContainer.createDiv({ text: fileClass.name })
-                const fileClassAddAttributeBtn = new ButtonComponent(fileClassOptionsContainer)
-                fileClassAddAttributeBtn.setIcon("plus-circle")
-                fileClassAddAttributeBtn.setTooltip(`Add field definition in ${fileClass.name}`)
-                fileClassAddAttributeBtn.onClick(() => {
-                    const fileClassAttributeModal = new FileClassAttributeModal(this.plugin, fileClass)
-                    fileClassAttributeModal.open()
+        try {
+            console.log(FileClass.getFileClassesInheritanceForFileFields(this.plugin, this.file))
+            const inheritanceList = this.fileClass?.getInheritanceList();
+            if (inheritanceList) {
+                inheritanceList.forEach((fileClass, i) => {
+                    const fileClassOptionsContainer = container.createDiv({ cls: "metadata-menu-note-fields-fileClass-manager-container" })
+                    fileClassOptionsContainer.createDiv({ text: fileClass.name })
+                    const fileClassAddAttributeBtn = new ButtonComponent(fileClassOptionsContainer)
+                    fileClassAddAttributeBtn.setIcon("plus-circle")
+                    fileClassAddAttributeBtn.setTooltip(`Add field definition in ${fileClass.name}`)
+                    fileClassAddAttributeBtn.onClick(() => {
+                        const fileClassAttributeModal = new FileClassAttributeModal(this.plugin, fileClass)
+                        fileClassAttributeModal.open()
+                    })
+                    if (i < inheritanceList.length - 1) {
+                        container.createDiv({ text: ">", cls: "metadata-menu-note-fields-fileClass-manager-separator" })
+                    }
                 })
-                if (i < inheritanceList.length - 1) {
-                    container.createDiv({ text: ">", cls: "metadata-menu-note-fields-fileClass-manager-separator" })
-                }
-            })
+            }
+        } catch {
+
         }
+
     }
 
     buildFieldsContainer(): void {

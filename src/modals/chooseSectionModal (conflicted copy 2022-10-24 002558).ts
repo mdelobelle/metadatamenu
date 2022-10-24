@@ -1,4 +1,4 @@
-import { Modal, DropdownComponent, TFile, ToggleComponent, ButtonComponent } from "obsidian";
+import { Modal, DropdownComponent, TFile, ButtonComponent } from "obsidian";
 import MetadataMenu from "main";
 import { FileClass } from "src/fileClass/fileClass";
 import { FieldManager as F } from "src/fields/FieldManager";
@@ -55,6 +55,8 @@ export default class chooseSectionModal extends Modal {
             const lineNumber = Number(valueArray && valueArray.length > 1 ? valueArray[2] : 0);
             const inFrontmatter = position == "frontmatter" ? true : false;
             const after = position == "top" ? false : true;
+            //get fileClass from index in case it has changed
+            const fileClass = this.fileClass ? this.plugin.fieldIndex.fileClassesName.get(this.fileClass.name) : undefined
             F.openFieldModal(
                 this.plugin,
                 this.file,
@@ -63,7 +65,7 @@ export default class chooseSectionModal extends Modal {
                 lineNumber,
                 inFrontmatter,
                 after,
-                this.fileClass)
+                fileClass)
             this.close();
         });
 
