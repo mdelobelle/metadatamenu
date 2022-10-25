@@ -1,7 +1,6 @@
 import MetadataMenu from "main";
 import { Menu, TextComponent, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
-import { FileClass } from "src/fileClass/fileClass";
 import FCSM from "src/options/FieldCommandSuggestModal";
 import { FieldOptions } from "src/components/NoteFields";
 import InsertFieldSuggestModal from "src/modals/insertFieldSuggestModal";
@@ -123,24 +122,13 @@ export abstract class FieldManager {
         lineNumber: number,
         inFrontmatter: boolean,
         after: boolean,
-        fileClass?: FileClass
     ) {
         if (!fieldName) {
-            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, inFrontmatter, after, fileClass);
+            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, inFrontmatter, after);
             modal.open();
         } else {
-            if (fileClass) {
-                const fileClassAttributesWithName = fileClass.attributes.filter(attr => attr.name == fieldName);
-                let field: Field | undefined
-                if (fileClassAttributesWithName.length > 0) {
-                    const fileClassAttribute = fileClassAttributesWithName[0];
-                    field = fileClassAttribute.getField();
-                }
-                this.createAndOpenModal(plugin, file, fieldName, field, value, lineNumber, inFrontmatter, after);
-            } else {
-                const field = plugin.settings.presetFields.filter(_field => _field.name == fieldName)[0];
-                this.createAndOpenModal(plugin, file, fieldName, field, value, lineNumber, inFrontmatter, after);
-            };
+            const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
+            if (field) this.createAndOpenModal(plugin, file, fieldName, field, value, lineNumber, inFrontmatter, after);
         }
     }
 

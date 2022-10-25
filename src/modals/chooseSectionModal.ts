@@ -1,6 +1,5 @@
-import { Modal, DropdownComponent, TFile, ToggleComponent, ButtonComponent } from "obsidian";
+import { Modal, DropdownComponent, TFile, ButtonComponent } from "obsidian";
 import MetadataMenu from "main";
-import { FileClass } from "src/fileClass/fileClass";
 import { FieldManager as F } from "src/fields/FieldManager";
 
 export default class chooseSectionModal extends Modal {
@@ -8,7 +7,6 @@ export default class chooseSectionModal extends Modal {
     constructor(
         private plugin: MetadataMenu,
         private file: TFile,
-        private fileClass?: FileClass,
         private fieldName?: string
     ) {
         super(plugin.app);
@@ -62,8 +60,7 @@ export default class chooseSectionModal extends Modal {
                 "",
                 lineNumber,
                 inFrontmatter,
-                after,
-                this.fileClass)
+                after)
             this.close();
         });
 
@@ -81,8 +78,7 @@ export default class chooseSectionModal extends Modal {
                     "",
                     lineNumber,
                     true,
-                    false,
-                    this.fileClass)
+                    false)
                 this.close();
             })
         }

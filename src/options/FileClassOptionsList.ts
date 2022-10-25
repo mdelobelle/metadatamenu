@@ -50,12 +50,12 @@ export default class FileClassOptionsList {
             const modal = new FileClassAttributeModal(this.plugin, this.fileClass!, attr)
             if (isMenu(this.location)) {
                 this.location.addItem((item) => {
-                    item.setTitle(`${attr.name}`)
+                    item.setTitle(`${this.fileClass!.name} - ${attr.name}`)
                     item.setIcon("wrench")
                     item.onClick(() => {
                         modal.open()
                     })
-                    item.setSection("metadata-menu-fileclass.fileclass-fields")
+                    item.setSection(`metadata-menu-fileclass.${this.fileClass!.name}.fileclass-fields`)
                 })
             } else if (isSuggest(this.location)) {
                 this.location.options.push({
@@ -68,13 +68,13 @@ export default class FileClassOptionsList {
         });
         if (isMenu(this.location) && this.fileClass) {
             this.location.addItem((item) => {
-                item.setTitle("Add new fileClass attribute")
+                item.setTitle("Add new field")
                 item.setIcon("plus-circle")
                 item.onClick(() => {
                     const modal = new FileClassAttributeModal(this.plugin, this.fileClass!);
                     modal.open();
                 })
-                item.setSection("metadata-menu-fileclass")
+                item.setSection(`metadata-menu-fileclass.${this.fileClass!.name}.fileclass-fields`)
             })
         } else if (isSuggest(this.location) && this.fileClass) {
             const modal = new FileClassAttributeModal(this.plugin, this.fileClass);

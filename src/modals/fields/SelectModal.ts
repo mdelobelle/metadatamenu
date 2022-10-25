@@ -61,7 +61,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
 
     async addNewValueToSettings(): Promise<void> {
         const newValue = this.inputEl.value;
-        const fileClassName = this.plugin.fieldIndex.filesFileClassName.get(this.file.path)
+        const fileClassName = this.plugin.fieldIndex.filesFields.get(this.file.path)?.find(field => field.name === this.field.name)?.fileClass?.name
         if (fileClassName) {
             const fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
             const fileClassAttribute = fileClass?.attributes.find(attr => attr.name === this.field.name)

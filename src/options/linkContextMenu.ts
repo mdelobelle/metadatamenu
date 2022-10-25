@@ -18,8 +18,11 @@ export default class linkContextMenu {
 				menu.setSectionSubmenu("metadata-menu.current_field", { title: "Current Field", icon: "pencil" })
 				//@ts-ignore
 				menu.setSectionSubmenu("metadata-menu.fields", { title: "Manage Fields", icon: "pencil" })
-				//@ts-ignore
-				menu.setSectionSubmenu("metadata-menu-fileclass.fileclass-fields", { title: "Manage Fileclass Fields", icon: "wrench" })
+				const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(file.path) || [];
+				fileClasses.forEach(fileClass => {
+					//@ts-ignore
+					menu.setSectionSubmenu(`metadata-menu-fileclass.${fileClass.name}.fileclass-fields`, { title: `Manage ${fileClass.name} Fields`, icon: "wrench" })
+				})
 			}
 			if (this.plugin.settings.displayFieldsInContextMenu) {
 				//If fileClass
@@ -41,9 +44,6 @@ export default class linkContextMenu {
 					})
 				})
 			}
-
-
-
 		};
 	}
 

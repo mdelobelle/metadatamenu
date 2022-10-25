@@ -188,17 +188,8 @@ export default class MultiFileField extends FieldManager {
     }
 
     public validateValue(value: string | { path: string } | { path: string }[]): boolean {
-        let isValid: boolean = true
-        if (Array.isArray(value)) {
-            value.forEach((link: { path: string }) => {
-                const basename = link.path.trim().replace(/^\[\[/g, "").replace(/\]\]$/g, "");
-                if (!this.getFiles().map(f => f.basename).find(item => item === basename)) isValid = isValid && false
-            })
-        } else {
-            const basename = (value as { path: string }).path.trim().replace(/^\[\[/g, "").replace(/\]\]$/g, "");
-            if (!this.getFiles().map(f => f.basename).find(item => item === basename)) isValid = isValid && false
-        }
-        return isValid
+        //todo : manage both raw links and dv Link objects
+        return true
     }
 
     public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClick: () => {}): void {

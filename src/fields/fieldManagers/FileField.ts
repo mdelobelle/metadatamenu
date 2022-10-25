@@ -192,8 +192,8 @@ export default class FileField extends FieldManager {
         return true;
     }
 
-    public validateValue(value: string): boolean {
-        const basename = value.trim().replace(/^\[\[/g, "").replace(/\]\]$/g, "");
-        return !!this.getFiles().map(f => f.basename).find(item => item === basename);
+    public validateValue(value: any): boolean {
+        //todo : manage both raw links and dv Link objects
+        return true
     }
 }

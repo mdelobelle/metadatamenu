@@ -541,8 +541,14 @@ button.metadata-menu-field-add-frontmatter-btn{
 .metadata-menu-note-field-item.field-name{
     font-weight: bold;
     white-space: nowrap;
+    background-color: none;
+    color:var(--text-normal);
 }
 
+.metadata-menu-note-field-item.field-name.active{
+    color: var(--text-on-accent);
+    background-color: var(--color-accent);
+}
 
 .metadata-menu-note-field-item.field-value{
     width: 100%;
@@ -578,4 +584,15 @@ button.metadata-menu-field-add-frontmatter-btn{
 
 .metadata-menu-note-fields-fileClass-manager-separator{
     margin: 0 0.5em;
+}
+
+
+.metadata-menu-note-fields-fileClass-manager-name{
+    color: var(--text-normal);
+    background-color: none;
+}
+
+.metadata-menu-note-fields-fileClass-manager-name.active{
+    color: var(--text-on-accent);
+    background-color: var(--color-accent);
 }

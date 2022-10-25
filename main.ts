@@ -127,9 +127,11 @@ export default class MetadataMenu extends Plugin {
 				if (checking) {
 					return !!(view?.file) && `${view.file.parent.path}/` == this.settings.classFilesPath
 				}
-				const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.app)
-				const optionsList = new FileClassOptionsList(this, view!.file, fieldCommandSuggestModal);
-				optionsList.createExtraOptionList();
+				if (!!(view?.file) && `${view.file.parent.path}/` == this.settings.classFilesPath) {
+					const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.app)
+					const optionsList = new FileClassOptionsList(this, view!.file, fieldCommandSuggestModal);
+					optionsList.createExtraOptionList();
+				}
 			},
 		});
 	}

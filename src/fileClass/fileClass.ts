@@ -171,7 +171,6 @@ class FileClass {
             for (const [fileClassName, fileClassAttributes] of ancestorsAttributes) {
                 this.attributes.push(...fileClassAttributes.filter(attr => !this.attributes.map(_attr => _attr.name).includes(attr.name)))
             }
-            console.log(this.name, this.attributes)
         } catch (error) {
             throw (error);
         }

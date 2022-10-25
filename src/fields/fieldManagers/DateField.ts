@@ -5,8 +5,6 @@ import DateModal from "src/modals/fields/DateModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager, SettingLocation } from "../FieldManager";
-import { getField } from "src/commands/getField";
-import { FileClass } from "src/fileClass/fileClass";
 import CycleField from "./CycleField";
 import { FieldManager as FM } from "src/types/fieldTypes";
 import { replaceValues } from "src/commands/replaceValues";
@@ -291,17 +289,7 @@ export default class DateField extends FieldManager {
         if (dvApi) {
             const interval = this.field.options.dateShiftInterval
             const cycleIntervalField = this.field.options.nextShiftIntervalField
-            let fileClass: FileClass | undefined;
-            const frontmatter = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter
-            if (frontmatter) {
-                const fileClassName = frontmatter[this.plugin.settings.fileClassAlias]
-                try {
-                    fileClass = fileClassName ? FileClass.createFileClass(this.plugin, fileClassName) : undefined
-                } catch (error) {
-                    fileClass = undefined
-                }
-            }
-            const cycle = getField(this.plugin, cycleIntervalField, fileClass)
+            const cycle = this.plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === cycleIntervalField)
             if (cycle) {
                 //cycle field exists
                 const cycleManager: CycleField = new FM[cycle.type](this.plugin, cycle)

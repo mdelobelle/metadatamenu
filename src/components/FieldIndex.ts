@@ -14,8 +14,8 @@ export default class FieldIndex extends Component {
     public filesFieldsFromFileClassQueries: Map<string, Field[]>;
     public filesFieldsFromInnerFileClasses: Map<string, Field[]>;
     public filesFields: Map<string, Field[]>;
-    public filesFileClass: Map<string, FileClass>;
-    public filesFileClassName: Map<string, string | undefined>;
+    public filesFileClasses: Map<string, FileClass[]>;
+    public filesFileClassesNames: Map<string, string[] | undefined>;
     public fileClassesAncestors: Map<string, string[]>
     public fileClassesPath: Map<string, FileClass>;
     public fileClassesName: Map<string, FileClass>;
@@ -104,13 +104,13 @@ export default class FieldIndex extends Component {
         this.filesFieldsFromTags = new Map();
         this.filesFieldsFromFileClassQueries = new Map();
         this.filesFieldsFromInnerFileClasses = new Map();
-        this.filesFileClass = new Map();
-        this.filesFileClassName = new Map();
         this.fileClassesPath = new Map();
         this.fileClassesName = new Map();
         this.fileClassesAncestors = new Map();
         this.valuesListNotePathValues = new Map();
         this.tagsMatchingFileClasses = new Map();
+        this.filesFileClasses = new Map();
+        this.filesFileClassesNames = new Map();
     }
 
     async fullIndex(event: string, force_update_lookups = false): Promise<void> {
@@ -231,7 +231,6 @@ export default class FieldIndex extends Component {
                     } catch { }
                 })
         }
-
     }
 
     resolveFileClassMatchingTags(): void {
@@ -252,8 +251,8 @@ export default class FieldIndex extends Component {
                 tags.forEach(tag => {
                     const fileClass = this.tagsMatchingFileClasses.get(tag);
                     if (fileClass) {
-                        this.filesFileClass.set(f.path, fileClass);
-                        this.filesFileClassName.set(f.path, fileClass.name)
+                        this.filesFileClasses.set(f.path, [...(this.filesFileClasses.get(f.path) || []), fileClass])
+                        this.filesFileClassesNames.set(f.path, [...(this.filesFileClassesNames.get(f.path) || []), fileClass.name])
 
                         const fileFileClassesFieldsFromTag = this.fileClassesFields.get(fileClass.name)
                         const currentFields = this.filesFieldsFromTags.get(f.path)
@@ -280,8 +279,9 @@ export default class FieldIndex extends Component {
             fcq.getResults(dvApi).forEach((result: any) => {
                 const fileClass = this.fileClassesName.get(fcq.fileClassName)
                 if (fileClass) {
-                    this.filesFileClass.set(result.file.path, fileClass);
-                    this.filesFileClassName.set(result.file.path, fcq.fileClassName)
+                    const f = result.file
+                    this.filesFileClasses.set(f.path, [...(this.filesFileClasses.get(f.path) || []), fileClass])
+                    this.filesFileClassesNames.set(f.path, [...(this.filesFileClassesNames.get(f.path) || []), fileClass.name])
                 }
                 const fileFileClassesFieldsFromQuery = this.fileClassesFields.get(fcq.fileClassName)
                 if (fileFileClassesFieldsFromQuery) this.filesFieldsFromFileClassQueries.set(result.file.path, fileFileClassesFieldsFromQuery)
@@ -299,8 +299,8 @@ export default class FieldIndex extends Component {
                 if (fileFileClassName) {
                     const fileClass = this.fileClassesName.get(fileFileClassName)
                     if (fileClass) {
-                        this.filesFileClass.set(f.path, fileClass);
-                        this.filesFileClassName.set(f.path, fileFileClassName)
+                        this.filesFileClasses.set(f.path, [...(this.filesFileClasses.get(f.path) || []), fileClass])
+                        this.filesFileClassesNames.set(f.path, [...(this.filesFileClassesNames.get(f.path) || []), fileClass.name])
                     }
                     const fileClassesFieldsFromFile = this.fileClassesFields.get(fileFileClassName)
                     if (fileClassesFieldsFromFile) {
@@ -340,10 +340,10 @@ export default class FieldIndex extends Component {
                             this.filesFields.set(f.path, fileFieldsFromTag)
                         } else if (this.fieldsFromGlobalFileClass.length) {
                             this.filesFields.set(f.path, this.fieldsFromGlobalFileClass)
-                            this.filesFileClassName.set(f.path, this.plugin.settings.globalFileClass)
+                            this.filesFileClasses.set(f.path, [this.fileClassesName.get(this.plugin.settings.globalFileClass!)!])
+                            this.filesFileClassesNames.set(f.path, [this.plugin.settings.globalFileClass!])
                         } else {
                             this.filesFields.set(f.path, this.plugin.settings.presetFields)
-                            this.filesFileClassName.set(f.path, undefined)
                         }
                     }
                 }

@@ -64,7 +64,7 @@ function updateLinkMetadataMenuFormButton(app: App, plugin: MetadataMenu, link: 
     const dest = linkHref && app.metadataCache.getFirstLinkpathDest(linkHref, source);
 
     if (dest) {
-        const fileClassName = plugin.fieldIndex.filesFileClassName.get(dest.path)
+        const fileClassName = plugin.fieldIndex.filesFileClassesNames.get(dest.path)?.last()
         setLinkMetadataFormButton(plugin, link, dest.path.replace(/(.*).md/, "$1"), viewTypeName, fileClassName);
     }
 }
@@ -73,7 +73,7 @@ export function updateDivExtraAttributes(app: App, plugin: MetadataMenu, link: H
     const linkName = _linkName || link.textContent
     const dest = linkName && app.metadataCache.getFirstLinkpathDest(getLinkpath(linkName), sourceName)
     if (dest) {
-        const fileClassName = plugin.fieldIndex.filesFileClassName.get(dest.path)
+        const fileClassName = plugin.fieldIndex.filesFileClassesNames.get(dest.path)?.last()
         setLinkMetadataFormButton(plugin, link, dest.path.replace(/(.*).md/, "$1"), viewTypeName, fileClassName);
     }
 }
@@ -109,7 +109,8 @@ export function updateVisibleLinks(app: App, plugin: MetadataMenu) {
                 cachedFile.links.forEach((link: LinkCache) => {
                     const dest = app.metadataCache.getFirstLinkpathDest(link.link, fileName)
                     if (dest) {
-                        const fileClassName = plugin.fieldIndex.filesFileClassName.get(dest.path)
+                        const fileClassName = plugin.fieldIndex.filesFileClassesNames.get(dest.path)?.last()
+
                         const internalLinks = leaf.view.containerEl.querySelectorAll(`a.internal-link[href="${link.link}"]`)
                         internalLinks.forEach((internalLink: HTMLElement) => setLinkMetadataFormButton(plugin, internalLink, fileName, `a.internal-link`, fileClassName))
                     }
