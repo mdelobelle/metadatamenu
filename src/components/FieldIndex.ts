@@ -295,22 +295,26 @@ export default class FieldIndex extends Component {
                 || !f.path.includes(this.plugin.settings.classFilesPath)
             )
             .forEach(f => {
-                const fileFileClassName = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.[this.plugin.settings.fileClassAlias]
-                if (fileFileClassName) {
-                    const fileClass = this.fileClassesName.get(fileFileClassName)
-                    if (fileClass) {
-                        this.filesFileClasses.set(f.path, [...(this.filesFileClasses.get(f.path) || []), fileClass])
-                        this.filesFileClassesNames.set(f.path, [...(this.filesFileClassesNames.get(f.path) || []), fileClass.name])
-                    }
-                    const fileClassesFieldsFromFile = this.fileClassesFields.get(fileFileClassName)
-                    if (fileClassesFieldsFromFile) {
-                        this.filesFieldsFromInnerFileClasses.set(f.path, fileClassesFieldsFromFile);
-                        return
-                    }
-                    this.filesFieldsFromInnerFileClasses.set(f.path, []);
-                    return
-                }
-                this.filesFieldsFromInnerFileClasses.set(f.path, []);
+                const fileFileClassesNames = [];
+                const fileClassesCache = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.[this.plugin.settings.fileClassAlias]
+                if (fileClassesCache) {
+                    Array.isArray(fileClassesCache) ? fileFileClassesNames.push(...fileClassesCache) : fileFileClassesNames.push(...fileClassesCache.split(','))
+                    fileFileClassesNames.forEach(fileFileClassName => {
+                        const fileClass = this.fileClassesName.get(fileFileClassName)
+                        if (fileClass) {
+                            this.filesFileClasses.set(f.path, [...(this.filesFileClasses.get(f.path) || []), fileClass])
+                            this.filesFileClassesNames.set(f.path, [...(this.filesFileClassesNames.get(f.path) || []), fileClass.name])
+                            const fileClassesFieldsFromFile = this.fileClassesFields.get(fileFileClassName)
+                            const currentFields = this.filesFieldsFromInnerFileClasses.get(f.path)
+                            if (fileClassesFieldsFromFile) {
+                                const newFields = [...fileClassesFieldsFromFile]
+                                const filteredCurrentFields = currentFields?.filter(field => !newFields.map(f => f.name).includes(field.name)) || []
+                                newFields.push(...filteredCurrentFields)
+                                this.filesFieldsFromInnerFileClasses.set(f.path, newFields)
+                            } else { this.filesFieldsFromInnerFileClasses.set(f.path, []); }
+                        } else { this.filesFieldsFromInnerFileClasses.set(f.path, []); }
+                    })
+                } else { this.filesFieldsFromInnerFileClasses.set(f.path, []); }
             })
     }
 
@@ -329,7 +333,6 @@ export default class FieldIndex extends Component {
                 const fileFieldsFromInnerFileClasses = this.filesFieldsFromInnerFileClasses.get(f.path)
                 if (fileFieldsFromInnerFileClasses?.length) {
                     this.filesFields.set(f.path, fileFieldsFromInnerFileClasses);
-                    return
                 } else {
                     const fileFieldsFromQuery = this.filesFieldsFromFileClassQueries.get(f.path);
                     if (fileFieldsFromQuery) {

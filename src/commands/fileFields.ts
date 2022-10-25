@@ -27,10 +27,10 @@ export class FieldInfo {
         if (field) {
             const fieldManager = new FieldManager[field.type](plugin, field);
             this.isValid = fieldManager.validateValue(value)
-            this.fileClass = field.fileClass?.name;
+            this.fileClass = field.fileClassName;
             this.type = field.type;
             this.options = field.options;
-            this.sourceType = field.fileClass ? "fileClass" : "settings"
+            this.sourceType = field.fileClassName ? "fileClass" : "settings"
         }
     }
 }

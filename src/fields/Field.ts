@@ -8,7 +8,7 @@ class Field {
         public options: Record<string, any> = {},
         public id: string = "",
         public type: FieldType = FieldType.Input,
-        public fileClass?: FileClass
+        public fileClassName?: string
     ) { };
 
     static copyProperty(target: Field, source: Field) {

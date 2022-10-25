@@ -9,7 +9,7 @@ class FileClassAttribute {
         public name: string,
         public type: FieldType = FieldType.Input,
         public options: string[] | Record<string, any> = [],
-        public fileClass: FileClass
+        public fileClassName: string
     ) { }
 
     public getField() {
@@ -21,7 +21,7 @@ class FileClassAttribute {
         } else {
             options = this.options
         }
-        return new Field(this.name, options, this.name, this.type, this.fileClass);
+        return new Field(this.name, options, this.name, this.type, this.fileClassName);
     }
 }
 

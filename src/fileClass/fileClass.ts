@@ -119,7 +119,7 @@ class FileClass {
                         try {
                             const { type, options } = JSON.parse(item);
                             const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
-                            const attr = new FileClassAttribute(this.name, key, fieldType, options, fileClass)
+                            const attr = new FileClassAttribute(this.name, key, fieldType, options, fileClass.name)
                             attributes.push(attr)
                         } catch (e) {
                             //do nothing
@@ -135,7 +135,6 @@ class FileClass {
         } else {
             return attributes
         }
-
     }
 
     static getExcludedFieldsFromFrontmatter(excludedFields: string[] | string | undefined): string[] {
@@ -161,7 +160,7 @@ class FileClass {
                 ancestors?.forEach(ancestorName => {
                     const ancestorFile = this.plugin.app.vault.getAbstractFileByPath(`${this.plugin.settings.classFilesPath}${ancestorName}.md`)
                     const ancestor = new FileClass(this.plugin, ancestorName);
-                    ancestorsAttributes.set(ancestor.name, FileClass.getFileClassAttributes(this.plugin, ancestor, excludedFields))
+                    ancestorsAttributes.set(ancestorName, FileClass.getFileClassAttributes(this.plugin, ancestor, excludedFields))
                     if (ancestorFile instanceof TFile && ancestorFile.extension === "md") {
                         const _excludedFields = this.plugin.app.metadataCache.getFileCache(ancestorFile)?.frontmatter?.excludes
                         excludedFields = FileClass.getExcludedFieldsFromFrontmatter(_excludedFields);
@@ -178,7 +177,7 @@ class FileClass {
     }
 
     public async updateAttribute(newType: keyof typeof FieldType, newName: string, newOptions?: string[] | Record<string, string>, attr?: FileClassAttribute): Promise<void> {
-        const fileClass = attr ? attr.fileClass : this
+        const fileClass = attr ? this.plugin.fieldIndex.fileClassesName.get(attr.fileClassName)! : this
         const file = fileClass.getClassFile();
         let result = await this.plugin.app.vault.read(file)
         if (attr) {
@@ -219,28 +218,6 @@ class FileClass {
         const fileClass = new FileClass(plugin, name);
         fileClass.getAttributes()
         return fileClass
-    }
-
-    static getFileClassesInheritanceForFileFields(plugin: MetadataMenu, file: TFile): Record<string, FileClass[]> {
-        const fileClassesInheritanceForFields: Record<string, FileClass[]> = {};
-        const fileFields = plugin.fieldIndex.filesFields.get(file.path)
-        const fileClassesNames: string[] = []
-        if (fileFields) {
-            fileFields.forEach(fields => {
-                const fileClass = fields.fileClass
-                if (fileClass && !fileClassesNames.includes(fileClass.name)) {
-                    fileClassesNames.push(fileClass.name)
-                    const inheritanceList = fileClass.getInheritanceList();
-                    //remove ancestors from fileClassesInheritanceForFields to keep the youngest fileClass
-                    inheritanceList.forEach(_fileClass => {
-                        delete (fileClassesInheritanceForFields[_fileClass.name])
-                    })
-                    //then add this one
-                    fileClassesInheritanceForFields[fileClass.name] = inheritanceList;
-                }
-            })
-        }
-        return fileClassesInheritanceForFields
     }
 }
 

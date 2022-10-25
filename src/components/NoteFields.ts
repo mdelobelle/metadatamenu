@@ -50,7 +50,7 @@ export class FieldsModal extends Modal {
         const fieldManager = new FM[field.type](this.plugin, field)
         const fieldContainer = parentContainer.createDiv({ cls: "metadata-menu-note-field-container" })
         const fieldNameContainer = fieldContainer.createDiv({ text: `${field.name}`, cls: "metadata-menu-note-field-item field-name" });
-        const fileClass = field.fileClass
+        const fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
         if (fileClass) {
             fieldNameContainer.addClass(`fileClassField__${fileClass.name}`)
         }
@@ -59,9 +59,10 @@ export class FieldsModal extends Modal {
         fieldSettingBtn.setIcon("gear")
         fieldSettingBtn.setTooltip("manage")
         fieldSettingBtn.onClick(() => {
-            const fileClassAttribute = field.fileClass?.attributes.find(attr => attr.name === field.name)
-            if (fileClassAttribute && field.fileClass) {
-                const fileClassAttributeModal = new FileClassAttributeModal(this.plugin, field.fileClass, fileClassAttribute)
+            const _fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
+            const fileClassAttribute = _fileClass?.attributes.find(attr => attr.name === field.name)
+            if (fileClassAttribute && _fileClass) {
+                const fileClassAttributeModal = new FileClassAttributeModal(this.plugin, _fileClass, fileClassAttribute)
                 fileClassAttributeModal.open();
             }
         })
@@ -99,8 +100,9 @@ export class FieldsModal extends Modal {
         const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || [];
         fileClasses.forEach(fileClass => {
             const fileClassManagerContainer = container.createDiv({ cls: "metadata-menu-note-fields-inheritance-manager-container" })
-            const ancestors = this.plugin.fieldIndex.fileClassesAncestors.get(fileClass.name) || [];
-            ancestors.reverse().push(fileClass.name);
+            const _ancestors = this.plugin.fieldIndex.fileClassesAncestors.get(fileClass.name) || [];
+            const ancestors = [..._ancestors].reverse();
+            ancestors.push(fileClass.name);
             ancestors.forEach((fileClassName, i) => {
                 const _fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
                 if (_fileClass) {
@@ -158,7 +160,7 @@ export class FieldsModal extends Modal {
 
 export default class NoteFieldsComponent extends Component {
 
-    private allFieldsModal: FieldsModal;
+    private fieldsModal: FieldsModal;
 
     constructor(
         public plugin: MetadataMenu,
@@ -167,8 +169,8 @@ export default class NoteFieldsComponent extends Component {
         public file: TFile
     ) {
         super();
-        this.allFieldsModal = new FieldsModal(this.plugin, file)
-        this.allFieldsModal.onClose = () => {
+        this.fieldsModal = new FieldsModal(this.plugin, file)
+        this.fieldsModal.onClose = () => {
             this.plugin.removeChild(this)
             this.unload()
         }
@@ -176,9 +178,9 @@ export default class NoteFieldsComponent extends Component {
 
     onload(): void {
         this.plugin.registerEvent(this.plugin.app.metadataCache.on('dataview:metadata-change', () => {
-            this.allFieldsModal.getFields();
-            this.allFieldsModal.buildFieldsContainer();
+            this.fieldsModal.getFields();
+            this.fieldsModal.buildFieldsContainer();
         }))
-        this.allFieldsModal.open()
+        this.fieldsModal.open()
     }
 }
