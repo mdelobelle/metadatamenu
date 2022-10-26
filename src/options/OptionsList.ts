@@ -3,6 +3,7 @@ import { MarkdownView, Menu, TFile } from "obsidian";
 import Field from "src/fields/Field";
 import { FieldManager as F } from "src/fields/FieldManager";
 import Managers from "src/fields/fieldManagers/Managers";
+import { AddFileClassToFileModal } from "src/fileClass/fileClass";
 import InputModal from "src/modals/fields/InputModal";
 import { FieldIcon, FieldManager, FieldType } from "src/types/fieldTypes";
 import { genuineKeys } from "src/utils/dataviewUtils";
@@ -116,6 +117,7 @@ export default class OptionsList {
 					icon: "wrench"
 				})
 			})
+			this.addFileClassToFileOption();
 			if (openAfterCreate) location.open();
 		} else if (isMenu(location)) {
 			this.buildFieldOptions();
@@ -127,6 +129,7 @@ export default class OptionsList {
 				const fileClassOptionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), location)
 				fileClassOptionsList.createExtraOptionList(false);
 			})
+			this.addFileClassToFileOption();
 		}
 	}
 
@@ -250,5 +253,25 @@ export default class OptionsList {
 				})
 			};
 		}
+	}
+
+	private addFileClassToFileOption(): void {
+		const modal = new AddFileClassToFileModal(this.plugin, this.file)
+		const action = () => modal.open();
+		if (isMenu(this.location)) {
+			this.location.addItem((item) => {
+				item.setIcon("plus-square");
+				item.setTitle(`Add ${this.plugin.settings.fileClassAlias} to ${this.file.basename}`);
+				item.onClick(action);
+				item.setSection("metadata-menu-fileclass");
+			});
+		} else if (isSuggest(this.location)) {
+			this.location.options.push({
+				id: "add_fileclass_to_file",
+				actionLabel: `Add ${this.plugin.settings.fileClassAlias} to ${this.file.basename}`,
+				action: action,
+				icon: "plus-square"
+			})
+		};
 	}
 };

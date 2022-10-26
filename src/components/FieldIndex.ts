@@ -296,9 +296,11 @@ export default class FieldIndex extends Component {
             )
             .forEach(f => {
                 const fileFileClassesNames = [];
-                const fileClassesCache = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.[this.plugin.settings.fileClassAlias]
+                const fileClassesCache: string[] | string = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.[this.plugin.settings.fileClassAlias]
                 if (fileClassesCache) {
-                    Array.isArray(fileClassesCache) ? fileFileClassesNames.push(...fileClassesCache) : fileFileClassesNames.push(...fileClassesCache.split(','))
+                    Array.isArray(fileClassesCache) ?
+                        fileFileClassesNames.push(...fileClassesCache) :
+                        fileFileClassesNames.push(...fileClassesCache.split(',').map(fcn => fcn.trim()))
                     fileFileClassesNames.forEach(fileFileClassName => {
                         const fileClass = this.fileClassesName.get(fileFileClassName)
                         if (fileClass) {

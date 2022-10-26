@@ -151,6 +151,10 @@ button.metadata-menu-field-add-frontmatter-btn{
     margin-bottom: 1em;
 }
 
+.metadata-menu-value-grid-footer > button {
+    margin-right: 0.3em;
+}
+
 .metadata-menu-textarea-buttons {
     flex: 1 1 auto;
     text-align: right;

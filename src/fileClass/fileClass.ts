@@ -1,9 +1,12 @@
 import { FileClassAttribute } from "./fileClassAttribute";
 import MetadataMenu from "main";
-import { TFile } from "obsidian";
+import { DropdownComponent, Modal, SuggestModal, TFile } from "obsidian";
 import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 import { capitalize } from "src/utils/textUtils";
 import { genuineKeys } from "src/utils/dataviewUtils";
+import { replaceValues } from "src/commands/replaceValues";
+import { insertValues } from "src/commands/insertValues";
+import { insertFrontmatterWithFields } from "src/commands/insertFrontmatterWithFields";
 
 interface FileClass {
     attributes: Array<FileClassAttribute>;
@@ -12,6 +15,79 @@ interface FileClass {
     parent?: FileClass;
     excludes?: Array<FileClassAttribute>;
     matchWithTag?: boolean
+}
+
+export class AddFileClassToFileModal extends SuggestModal<string> {
+
+    constructor(
+        private plugin: MetadataMenu,
+        private file: TFile
+    ) {
+        super(plugin.app)
+    }
+
+    /*
+    onOpen(): void {
+        const noneValue = "------"
+        const fileClassSelectContainer = this.contentEl.createDiv({ cls: "" });
+        const fileClassSelect = new DropdownComponent(fileClassSelectContainer);
+        fileClassSelect.addOption(noneValue, `Select a fileClass to add to ${this.file.basename}`);
+        [...this.plugin.fieldIndex.fileClassesName.keys()].forEach(fileClassName => {
+            if (!this.plugin.fieldIndex.filesFileClasses
+                .get(this.file.path)?.map(fileClass => fileClass.name)
+                .includes(fileClassName)) {
+                fileClassSelect.addOption(fileClassName, fileClassName)
+            }
+        })
+        fileClassSelect.onChange(async value => {
+            if (value !== noneValue) {
+                await this.insertFileClassToFile(value);
+                this.close()
+            }
+        })
+    }
+    */
+
+    getSuggestions(query: string): string[] | Promise<string[]> {
+        return [...this.plugin.fieldIndex.fileClassesName.keys()]
+            .filter(fileClassName => !this.plugin.fieldIndex.filesFileClasses
+                .get(this.file.path)?.map(fileClass => fileClass.name)
+                .includes(fileClassName)
+            )
+            .filter(fileClassName => fileClassName.toLocaleLowerCase().contains(query.toLowerCase()));
+    }
+
+    renderSuggestion(value: string, el: HTMLElement) {
+        el.setText(value);
+    }
+
+    onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
+        this.insertFileClassToFile(item)
+    }
+
+    async insertFileClassToFile(value: string) {
+        const fileClassAlias = this.plugin.settings.fileClassAlias
+        const currentFileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path)
+        if (currentFileClasses) {
+            replaceValues(this.plugin, this.file, fileClassAlias, [...currentFileClasses.map(fc => fc.name), value].join(", "))
+        } else {
+            const frontmatter = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatter
+            if (frontmatter) {
+                if (Object.keys(frontmatter).includes(fileClassAlias)) {
+                    //fileClass field is empty, has an empty array of is badly formatted: override it
+                    await replaceValues(this.plugin, this.file, fileClassAlias, value)
+                } else {
+                    //frontmatter exists but doesn't contain fileClass: add it
+                    const lineNumber = frontmatter.position.end.line - 1
+                    await insertValues(this.plugin, this.file, fileClassAlias, value, lineNumber, true)
+                }
+            } else {
+                const fields: Record<string, string> = {}
+                fields[fileClassAlias] = value
+                await insertFrontmatterWithFields(this.plugin, this.file, fields)
+            }
+        }
+    }
 }
 
 class FileClassManager {
