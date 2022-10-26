@@ -63,8 +63,8 @@ export default class DateField extends FieldManager {
                 })
             }
         } else if (DateField.isFieldOptions(location)) {
-            location.addOption("skip-forward", shiftDateAction);
-            location.addOption(dateIconName, dateModalAction);
+            location.addOption("skip-forward", shiftDateAction, `Shift ${name} ahead by ${currentShift}`);
+            location.addOption(dateIconName, dateModalAction, `Set ${name}'s date`);
         };
     }
 

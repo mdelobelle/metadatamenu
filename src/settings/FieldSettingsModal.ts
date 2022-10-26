@@ -41,6 +41,7 @@ export default class FieldSettingsModal extends Modal {
     };
 
     async onOpen(): Promise<void> {
+        this.containerEl.addClass("metadata-menu-field-setting-modal")
         if (this.field.name == "") {
             this.titleEl.setText(`Add a field and define options`);
         } else {

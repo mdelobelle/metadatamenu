@@ -36,6 +36,8 @@ export default class InputField extends FieldManager {
                 action: action,
                 icon: iconName
             });
+        } else if (InputField.isFieldOptions(location)) {
+            location.addOption(FieldIcon[FieldType.Input], action, `Update ${name}'s value`);
         }
     };
 

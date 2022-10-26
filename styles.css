@@ -1,6 +1,10 @@
 /* ---------------------------- */
 /*   Main Metadata Menu style   */
 /* ---------------------------- */
+/* Metadata Menu Field Setting Modal */
+.metadata-menu-field-setting-modal > .modal {
+  overflow: auto; }
+
 /* Metadata Menu Prompt */
 .metadata-menu-prompt-div {
   display: flex; }
@@ -9,11 +13,15 @@
   width: 100%; }
 
 .metadata-menu-prompt-container {
-  margin-top: 10px; }
+  margin-top: 10px;
+  display: flex; }
 
 .metadata-menu-prompt-container > input {
   margin-right: 10px;
   margin-bottom: 8px; }
+
+.metadata-menu-prompt-container > button {
+  margin-right: 10px; }
 
 .metadata-menu-prompt-input {
   flex-grow: 1;
@@ -30,16 +38,16 @@
   text-align: right; }
 
 .metadata-menu-modal-value-with-btn > input.is-invalid {
-  color: red; }
+  color: var(--red); }
 
 .metadata-menu-modal-value-with-btn-error-field {
   margin-top: -2em;
   height: 2em;
-  color: red; }
+  color: var(--red); }
 
 .metadata-menu-modal-value-error-field {
   height: 2em;
-  color: red;
+  color: var(--red);
   margin-left: 1em; }
 
 .metadata-menu-toggler {
@@ -100,7 +108,7 @@ button.metadata-menu-field-add-frontmatter-btn {
   width: 100%; }
 
 .yaml-metadata-menu-red {
-  color: #C7254E; }
+  color: var(--color-blue); }
 
 .metadata-menu-value-selector-toggler {
   display: inline-block;
@@ -175,10 +183,10 @@ button.metadata-menu-field-add-frontmatter-btn {
   width: 100%; }
 
 .metadata-menu-prompt-form .invalid-feedback {
-  color: red; }
+  color: var(--red); }
 
 .metadata-menu-prompt-form input.is-invalid {
-  color: red; }
+  color: var(--red); }
 
 .metadata-menu-toggle {
   display: flex;
@@ -224,39 +232,39 @@ button.metadata-menu-field-add-frontmatter-btn {
 
 .metadata-menu-setting-item-info-type.cycle,
 .metadata-menu-note-field-item > .field-type.cycle {
-  background-color: #8ec07c; }
+  background-color: var(--blue); }
 
 .metadata-menu-setting-item-info-type.multi,
 .metadata-menu-note-field-item > .field-type.multi {
-  background-color: #d65d0e; }
+  background-color: var(--green); }
 
 .metadata-menu-setting-item-info-type.boolean,
 .metadata-menu-note-field-item > .field-type.boolean {
-  background-color: #076678; }
+  background-color: var(--yellow); }
 
 .metadata-menu-setting-item-info-type.single,
 .metadata-menu-note-field-item > .field-type.single {
-  background-color: #5e81ac; }
+  background-color: var(--green); }
 
 .metadata-menu-setting-item-info-type.select,
 .metadata-menu-note-field-item > .field-type.select {
-  background-color: #556b77; }
+  background-color: var(--orange); }
 
 .metadata-menu-setting-item-info-type.number,
 .metadata-menu-note-field-item > .field-type.number {
-  background-color: #689d6a; }
+  background-color: var(--purple); }
 
 .metadata-menu-setting-item-info-type.file,
 .metadata-menu-note-field-item > .field-type.file {
-  background-color: #928374; }
+  background-color: var(--cyan); }
 
 .metadata-menu-setting-item-info-type.date,
 .metadata-menu-note-field-item > .field-type.date {
-  background-color: #483699; }
+  background-color: var(--pink); }
 
 .metadata-menu-setting-item-info-type.lookup,
 .metadata-menu-note-field-item > .field-type.lookup {
-  background-color: #689d6a; }
+  background-color: var(--red); }
 
 .metadata-menu-setting-section-header {
   margin-bottom: 0; }
@@ -451,9 +459,10 @@ button.metadata-menu-field-add-frontmatter-btn {
 
 .metadata-menu-note-field-item button,
 .metadata-menu-note-fields-fileClass-manager-container button {
-  padding: 0 0 0.4em 0;
+  padding: 0 0 0.4em 0.4em;
   height: auto;
-  box-shadow: none; }
+  box-shadow: none;
+  background-color: var(--background-primary); }
 
 .metadata-menu-note-field-item.field-setting {
   padding-right: 0; }

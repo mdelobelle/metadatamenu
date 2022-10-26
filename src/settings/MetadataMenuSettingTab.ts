@@ -185,7 +185,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		classFilesSettingsHeaderTextContainer.createEl('div', {
 			cls: "setting-item-description metadata-menu-setting-section-desc",
 			text: "Manage fileClass folder and alias. " +
-				"When a note has a fielClass defined, fileClass field properties will override global preset fields settings for the same field name"
+				"When a note has a fileClass defined, fileClass field properties will override global preset fields settings for the same field name"
 		});
 
 		const classFilesSettingsContainerShowButtonContainer = classFilesSettingsHeaderContainer.createEl("div", { cls: "setting-item-control" });

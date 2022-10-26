@@ -322,8 +322,8 @@ export default class FieldIndex extends Component {
         /*
         Priority order:
         1. Inner fileClass
-        2. fileClassQuery match
-        3. Tag match
+        2. Tag match
+        3. fileClassQuery match
         4. Global fileClass
         5. settings preset fields
         */
@@ -331,24 +331,21 @@ export default class FieldIndex extends Component {
             .filter(f => !this.plugin.settings.classFilesPath || !f.path.includes(this.plugin.settings.classFilesPath))
             .forEach(f => {
                 const fileFieldsFromInnerFileClasses = this.filesFieldsFromInnerFileClasses.get(f.path)
-                if (fileFieldsFromInnerFileClasses?.length) {
-                    this.filesFields.set(f.path, fileFieldsFromInnerFileClasses);
+                const fileFieldsFromQuery = this.filesFieldsFromFileClassQueries.get(f.path);
+                const fileFieldsFromTag = this.filesFieldsFromTags.get(f.path);
+                if (fileFieldsFromInnerFileClasses?.length ||
+                    fileFieldsFromQuery?.length ||
+                    fileFieldsFromTag?.length) {
+                    const filesFields: Field[] = fileFieldsFromInnerFileClasses || [];
+                    filesFields.push(...(fileFieldsFromTag || []).filter(field => !filesFields.map(f => f.name).includes(field.name)))
+                    filesFields.push(...(fileFieldsFromQuery || []).filter(field => !filesFields.map(f => f.name).includes(field.name)))
+                    this.filesFields.set(f.path, filesFields);
+                } else if (this.fieldsFromGlobalFileClass.length) {
+                    this.filesFields.set(f.path, this.fieldsFromGlobalFileClass)
+                    this.filesFileClasses.set(f.path, [this.fileClassesName.get(this.plugin.settings.globalFileClass!)!])
+                    this.filesFileClassesNames.set(f.path, [this.plugin.settings.globalFileClass!])
                 } else {
-                    const fileFieldsFromQuery = this.filesFieldsFromFileClassQueries.get(f.path);
-                    if (fileFieldsFromQuery) {
-                        this.filesFields.set(f.path, fileFieldsFromQuery)
-                    } else {
-                        const fileFieldsFromTag = this.filesFieldsFromTags.get(f.path);
-                        if (fileFieldsFromTag) {
-                            this.filesFields.set(f.path, fileFieldsFromTag)
-                        } else if (this.fieldsFromGlobalFileClass.length) {
-                            this.filesFields.set(f.path, this.fieldsFromGlobalFileClass)
-                            this.filesFileClasses.set(f.path, [this.fileClassesName.get(this.plugin.settings.globalFileClass!)!])
-                            this.filesFileClassesNames.set(f.path, [this.plugin.settings.globalFileClass!])
-                        } else {
-                            this.filesFields.set(f.path, this.plugin.settings.presetFields)
-                        }
-                    }
+                    this.filesFields.set(f.path, this.plugin.settings.presetFields)
                 }
             })
     }

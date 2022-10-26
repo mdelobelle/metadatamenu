@@ -5,6 +5,7 @@ import MultiSelectModal from "src/modals/fields/MultiSelectModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
+import { FieldOptions } from "src/components/NoteFields";
 
 export default class MultiField extends AbstractListBasedField {
 
@@ -14,23 +15,26 @@ export default class MultiField extends AbstractListBasedField {
         super(plugin, field, FieldType.Multi)
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         const modal = new MultiSelectModal(this.plugin, file, this.field, value);
         modal.titleEl.setText("Select values");
+        const action = () => modal.open()
         if (MultiField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
                 item.setIcon(FieldIcon[FieldType.Multi]);
-                item.onClick(() => modal.open());
+                item.onClick(action);
                 item.setSection("metadata-menu.fields");
             });
         } else if (MultiField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
-                action: () => modal.open(),
+                action: action,
                 icon: FieldIcon[FieldType.Multi]
             });
+        } else if (MultiField.isFieldOptions(location)) {
+            location.addOption(FieldIcon[FieldType.Multi], action, `Update ${name}'s value`);
         };
     };
 

@@ -11,7 +11,7 @@ export const Key: Record<keyof typeof Type, string> = {
 }
 
 export const typeDisplay: Record<keyof typeof Type, string> = {
-    "ValuesList": "Values defined in this settings",
+    "ValuesList": "Values defined in these settings",
     "ValuesListNotePath": "Values from a note",
     "ValuesFromDVQuery": "Values returned from a dataview query"
 }

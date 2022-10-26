@@ -11,7 +11,7 @@ export class FieldOptions {
     constructor(public container: HTMLDivElement) { }
 
     public addOption(icon: string, onclick: () => {} | void, tooltip?: string) {
-        const fieldOptionContainer = this.container.createDiv({ cls: "metadata-menu-note-field-item" })
+        const fieldOptionContainer = this.container.createDiv({ cls: "metadata-menu-note-field-item field-option" })
         const fieldOption = new ButtonComponent(fieldOptionContainer)
         fieldOption.setIcon(icon)
         fieldOption.onClick(() => onclick())
@@ -24,6 +24,7 @@ export class FieldsModal extends Modal {
     private dvApi?: any
     public fields: Field[]
     public fieldContainers: HTMLDivElement[] = [];
+    private maxOptions: number = 0;
     constructor(
         public plugin: MetadataMenu,
         private file: TFile
@@ -57,7 +58,7 @@ export class FieldsModal extends Modal {
         const fieldSettingContainer = fieldContainer.createDiv({ cls: "metadata-menu-note-field-item field-setting" });
         const fieldSettingBtn = new ButtonComponent(fieldSettingContainer);
         fieldSettingBtn.setIcon("gear")
-        fieldSettingBtn.setTooltip("manage")
+        fieldSettingBtn.setTooltip("settings")
         fieldSettingBtn.onClick(() => {
             const _fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
             const fileClassAttribute = _fileClass?.attributes.find(attr => attr.name === field.name)
@@ -79,20 +80,21 @@ export class FieldsModal extends Modal {
             fieldManager.displayValue(fieldValueContainer, this.file, field.name, () => { this.close() })
         }
         const fieldOptions = new FieldOptions(fieldContainer)
-        if (value !== undefined) fieldManager.addFieldOption(field.name, value, this.file, fieldOptions);
-
-        if (fieldManager.showModalOption || value === undefined || value === null) {
-            const fieldBtnContainer = fieldContainer.createDiv({ cls: "metadata-menu-note-field-item" })
+        if (value !== undefined) {
+            fieldManager.addFieldOption(field.name, value, this.file, fieldOptions);
+        } else {
+            const fieldBtnContainer = fieldContainer.createDiv({ cls: "metadata-menu-note-field-item field-option" })
             const fieldBtn = new ButtonComponent(fieldBtnContainer)
-            fieldBtn.setIcon(value !== undefined ? "edit" : "list-plus")
+            fieldBtn.setIcon("list-plus")
+            fieldBtn.setTooltip("Add field at section")
             fieldBtn.onClick(() => {
-                if (value === undefined) {
-                    (new ChooseSectionModal(this.plugin, this.file, field.name)).open();
-                } else {
-                    FieldManager.createAndOpenModal(this.plugin, this.file, field.name, field, value || "")
-                }
+                (new ChooseSectionModal(this.plugin, this.file, field.name)).open();
             })
         };
+
+        const optionsCount = fieldContainer.querySelectorAll(".field-option").length
+        if (this.maxOptions < optionsCount) this.maxOptions = optionsCount
+
         return fieldContainer
     }
 
@@ -144,6 +146,23 @@ export class FieldsModal extends Modal {
         })
     }
 
+    formatOptionsColumns(fieldsContainer: HTMLDivElement): void {
+        //create empty cells for field with less options so that options are right aligned in the table
+        const fieldContainers = fieldsContainer.querySelectorAll('.metadata-menu-note-field-container')
+        fieldContainers.forEach(field => {
+            const options = field.querySelectorAll('.field-option')
+            if (options.length < this.maxOptions) {
+                const parent = options[0].parentElement;
+                if (parent) {
+                    for (let i = 0; i < this.maxOptions - options.length; i++) {
+                        const emptyCell = parent.createDiv({ cls: "metadata-menu-note-field-item field-option" })
+                        options[0].parentElement?.insertBefore(emptyCell, options[0])
+                    }
+                }
+            }
+        })
+    }
+
     buildFieldsContainer(): void {
         this.contentEl.replaceChildren();
         this.contentEl.createEl('hr')
@@ -152,6 +171,7 @@ export class FieldsModal extends Modal {
             const value = this.dvApi ? this.dvApi.page(this.file.path)[field.name] : undefined
             this.fieldContainers.push(this.buildFieldContainer(fieldsContainer, field, value))
         })
+        this.formatOptionsColumns(fieldsContainer);
         this.contentEl.createEl('hr')
         const fileClassManagersContainer = this.contentEl.createDiv({ cls: "metadata-menu-note-fields-container" })
         this.buildFileClassManager(fileClassManagersContainer)

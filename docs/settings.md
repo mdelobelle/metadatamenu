@@ -28,7 +28,7 @@ If you want a field to be globally managed throughout your whole vault you can `
 
 You have to choose the source of values for your select field between 4 sources:
 
-- `Values defined in this setting` : enter the [`Preset Options`](#preset-options) one by one, sort them
+- `Values defined in these setting` : enter the [`Preset Options`](#preset-options) one by one, sort them
 - `Values from a note` : enter the [`Path of the note containing the values`](#path-of-the-note-containing-the-values)
 - `Values returned from a dataview query` : create a [`dataview function`](#dataview-function) to return a list of values
 

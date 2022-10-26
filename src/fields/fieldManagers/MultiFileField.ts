@@ -6,6 +6,7 @@ import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager, SettingLocation } from "../FieldManager";
+import { FieldOptions } from "src/components/NoteFields";
 
 export default class MultiFileField extends FieldManager {
 
@@ -52,22 +53,25 @@ export default class MultiFileField extends FieldManager {
         }
     }
 
-    public addFieldOption(name: string, value: any, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: any, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         const modal = new MultiFileModal(this.plugin, file, this.field, value)
+        const action = () => modal.open()
         if (MultiFileField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update ${name}`);
                 item.setIcon(FieldIcon[FieldType.File]);
-                item.onClick(() => modal.open());
+                item.onClick(action);
                 item.setSection("metadata-menu.fields");
             });
         } else if (MultiFileField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
-                action: () => modal.open(),
+                action: action,
                 icon: FieldIcon[FieldType.File]
             });
+        } else if (MultiFileField.isFieldOptions(location)) {
+            location.addOption(FieldIcon[FieldType.File], action, `Update ${name}'s value`);
         };
     }
 

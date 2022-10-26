@@ -78,6 +78,7 @@ export default class NumberField extends FieldManager {
         const fValue = parseFloat(value)
         const canDecrease = !isNaN(fMin) && fValue - fStep >= fMin;
         const canIncrease = !isNaN(fMax) && fValue + fStep <= fMax;
+        const action = () => modal.open()
         const decrease = async () => await this.plugin.fileTaskManager
             .pushTask(() => { replaceValues(this.plugin, file, name, (fValue - fStep).toString()) });
         const increase = async () => await this.plugin.fileTaskManager
@@ -86,21 +87,21 @@ export default class NumberField extends FieldManager {
             location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
                 item.setIcon(FieldIcon[FieldType.Number]);
-                item.onClick(() => modal.open());
+                item.onClick(action);
                 item.setSection("metadata-menu.fields");
             })
 
             if (fStep) {
                 if (canDecrease)
                     location.addItem((item) => {
-                        item.setIcon(FieldIcon[FieldType.Number]);
+                        item.setIcon("minus-square");
                         item.setTitle(`<${name}> ↘️ ${fValue - fStep}`);
                         item.onClick(decrease);
                         item.setSection("metadata-menu.fields");
                     })
                 if (canIncrease)
                     location.addItem((item) => {
-                        item.setIcon(FieldIcon[FieldType.Number]);
+                        item.setIcon("plus-square");
                         item.setTitle(`<${name}> ↗️ ${fValue + fStep}`);
                         item.onClick(increase);
                         item.setSection("metadata-menu.fields");
@@ -110,19 +111,19 @@ export default class NumberField extends FieldManager {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
-                action: () => modal.open(),
+                action: action,
                 icon: FieldIcon[FieldType.Number]
             });
         } else if (NumberField.isFieldOptions(location)) {
             if (step) {
                 if (canDecrease) {
-                    location.addOption("minus-square", decrease);
+                    location.addOption("minus-square", decrease, `Decrease ${name} by ${step}`);
                 }
                 if (canIncrease) {
-                    location.addOption("plus-square", increase);
+                    location.addOption("plus-square", increase, `Increase ${name} by ${step}`);
                 }
             }
-
+            location.addOption(FieldIcon[FieldType.Number], action, `Update ${name}'s value`)
         };
     };
 
