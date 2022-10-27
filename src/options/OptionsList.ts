@@ -1,9 +1,10 @@
 import MetadataMenu from "main";
-import { MarkdownView, Menu, TFile } from "obsidian";
+import { MarkdownView, Menu, Notice, TFile } from "obsidian";
 import Field from "src/fields/Field";
 import { FieldManager as F } from "src/fields/FieldManager";
 import Managers from "src/fields/fieldManagers/Managers";
 import { AddFileClassToFileModal } from "src/fileClass/fileClass";
+import AddNewFileClassModal from "src/modals/addNewFileClassModal";
 import InputModal from "src/modals/fields/InputModal";
 import { FieldIcon, FieldManager, FieldType } from "src/types/fieldTypes";
 import { genuineKeys } from "src/utils/dataviewUtils";
@@ -118,6 +119,7 @@ export default class OptionsList {
 				})
 			})
 			this.addFileClassToFileOption();
+			this.addNewFileClassOption();
 			if (openAfterCreate) location.open();
 		} else if (isMenu(location)) {
 			this.buildFieldOptions();
@@ -130,6 +132,7 @@ export default class OptionsList {
 				fileClassOptionsList.createExtraOptionList(false);
 			})
 			this.addFileClassToFileOption();
+			this.addNewFileClassOption();
 		}
 	}
 
@@ -204,7 +207,7 @@ export default class OptionsList {
 					item.setIcon("pin");
 					item.setTitle("Add field in frontmatter");
 					item.onClick(async (evt: MouseEvent) => {
-						F.openFieldModal(this.plugin, this.file, undefined, "", lineNumber + 1, true, false)
+						F.openFieldModal(this.plugin, this.file, undefined, "", lineNumber + 1, true, false, false, false)
 					});
 					item.setSection("metadata-menu");
 				});
@@ -213,7 +216,7 @@ export default class OptionsList {
 					id: "add_field_in_frontmatter",
 					actionLabel: "Add a field in frontmatter...",
 					action: () => F.openFieldModal(
-						this.plugin, this.file, undefined, "", lineNumber + 1, true, false),
+						this.plugin, this.file, undefined, "", lineNumber + 1, true, false, false, false),
 					icon: "pin"
 				})
 			}
@@ -236,19 +239,19 @@ export default class OptionsList {
 					item.setTitle("Add field at cursor");
 					item.onClick((evt: MouseEvent) => {
 						F.openFieldModal(
-							this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false)
+							this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false, false, false)
 					});
 					item.setSection("metadata-menu");
 				});
 			} else if (isInsertFieldCommand(this.location)) {
 				F.openFieldModal(
-					this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false);
+					this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false, false, false);
 			} else if (isSuggest(this.location)) {
 				this.location.options.push({
 					id: "add_field_at_cursor",
 					actionLabel: "Add field at cursor...",
 					action: () => F.openFieldModal(
-						this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false),
+						this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false, false, false),
 					icon: "pin"
 				})
 			};
@@ -273,5 +276,27 @@ export default class OptionsList {
 				icon: "plus-square"
 			})
 		};
+	}
+
+	private addNewFileClassOption(): void {
+		const modal = new AddNewFileClassModal(this.plugin);
+		const action = () => modal.open();
+		if (this.plugin.settings.classFilesPath) {
+			if (isMenu(this.location)) {
+				this.location.addItem((item) => {
+					item.setIcon("file-plus-2");
+					item.setTitle(`Add a new ${this.plugin.settings.fileClassAlias}`)
+					item.onClick(action);
+					item.setSection("metadata-menu-fileclass");
+				})
+			} else if (isSuggest(this.location)) {
+				this.location.options.push({
+					id: "add_new_fileclass",
+					actionLabel: `Add a new ${this.plugin.settings.fileClassAlias}`,
+					action: action,
+					icon: "file-plus-2"
+				})
+			}
+		}
 	}
 };

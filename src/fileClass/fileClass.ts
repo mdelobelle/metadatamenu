@@ -1,6 +1,6 @@
 import { FileClassAttribute } from "./fileClassAttribute";
 import MetadataMenu from "main";
-import { DropdownComponent, Modal, SuggestModal, TFile } from "obsidian";
+import { SuggestModal, TFile } from "obsidian";
 import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 import { capitalize } from "src/utils/textUtils";
 import { genuineKeys } from "src/utils/dataviewUtils";
@@ -14,7 +14,6 @@ interface FileClass {
     errors: string[];
     parent?: FileClass;
     excludes?: Array<FileClassAttribute>;
-    matchWithTag?: boolean
 }
 
 export class AddFileClassToFileModal extends SuggestModal<string> {
@@ -116,6 +115,16 @@ class FileClass {
     constructor(public plugin: MetadataMenu, public name: string) {
         this.objects = new FileClassManager(this);
         this.attributes = [];
+    }
+
+    public isMappedWithTag(): boolean {
+        try {
+            const fileClassFile = this.getClassFile();
+            const mapWithTag = this.plugin.app.metadataCache.getFileCache(fileClassFile)?.frontmatter?.mapWithTag;
+            return !!mapWithTag;
+        } catch (error) {
+            return false
+        }
     }
 
     public getClassFile(): TFile {

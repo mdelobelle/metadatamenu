@@ -225,7 +225,7 @@ export default class FieldIndex extends Component {
                         this.fileClassesPath.set(f.path, fileClass)
                         this.fileClassesName.set(fileClass.name, fileClass)
                         const cache = this.plugin.app.metadataCache.getFileCache(f);
-                        if (cache?.frontmatter?.matchWithTag) {
+                        if (cache?.frontmatter?.mapWithTag) {
                             this.tagsMatchingFileClasses.set(f.basename, fileClass)
                         }
                     } catch { }
