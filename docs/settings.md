@@ -220,6 +220,19 @@ You can define fileClasses to be applicable to every file matching a dataview qu
 
 If a File matches several queries, the last matching fileClass (starting from the top) will be applicable to this file.
 
+### Show extra button to access metadata menu form
+
+When a note has one or more fileClass (or [supercharged tags](fileClasses#mapwithtag-field--supercharged-tag)) you can display a button next to the note's : 
+- links in reading mode
+- links in live preview
+- file in file explorer
+- reference in star panel
+- reference in search panel
+- reference in backlinks panel
+- tab header
+
+each option has its own toggler
+
 ## Migrate
 Historically most of this plugin's features were available in `Supercharged links` plugin.
 
