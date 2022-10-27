@@ -17,7 +17,9 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
         initialValueObject: any,
         private lineNumber: number = -1,
         private inFrontmatter: boolean = false,
-        private after: boolean = false
+        private after: boolean = false,
+        private asList: boolean = false,
+        private asComment: boolean = false
     ) {
         super(plugin.app);
         const dvApi = this.plugin.app.plugins.plugins["dataview"]?.api
@@ -114,7 +116,9 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
                         result.join(", "),
                         this.lineNumber,
                         this.inFrontmatter,
-                        this.after
+                        this.after,
+                        this.asList,
+                        this.asComment
                     )
                 });
         };

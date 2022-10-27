@@ -29,7 +29,7 @@ export abstract class FieldManager {
         }
     ): void
     abstract getOptionsStr(): string;
-    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void;
+    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): void;
     public showModalOption: boolean = true;
 
     constructor(public plugin: MetadataMenu, public field: Field, public type: FieldType) {
@@ -103,14 +103,16 @@ export abstract class FieldManager {
         value?: string,
         lineNumber?: number,
         inFrontmatter?: boolean,
-        after?: boolean
+        after?: boolean,
+        asList?: boolean,
+        asComment?: boolean
     ): void {
         if (field) {
             const fieldManager = new FM[field.type](plugin, field);
-            fieldManager.createAndOpenFieldModal(file, fieldName, value, lineNumber, inFrontmatter, after);
+            fieldManager.createAndOpenFieldModal(file, fieldName, value, lineNumber, inFrontmatter, after, asList, asComment);
         } else {
             const fieldManager = FieldManager.createDefault(plugin, fieldName!);
-            fieldManager.createAndOpenFieldModal(file, fieldName!, value, lineNumber, inFrontmatter, after);
+            fieldManager.createAndOpenFieldModal(file, fieldName!, value, lineNumber, inFrontmatter, after, asList, asComment);
         }
     }
 
@@ -122,13 +124,15 @@ export abstract class FieldManager {
         lineNumber: number,
         inFrontmatter: boolean,
         after: boolean,
+        asList: boolean,
+        asComment: boolean
     ) {
         if (!fieldName) {
             const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, inFrontmatter, after);
             modal.open();
         } else {
             const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
-            if (field) this.createAndOpenModal(plugin, file, fieldName, field, value, lineNumber, inFrontmatter, after);
+            if (field) this.createAndOpenModal(plugin, file, fieldName, field, value, lineNumber, inFrontmatter, after, asList, asComment);
         }
     }
 

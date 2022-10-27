@@ -26,28 +26,6 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
         super(plugin.app)
     }
 
-    /*
-    onOpen(): void {
-        const noneValue = "------"
-        const fileClassSelectContainer = this.contentEl.createDiv({ cls: "" });
-        const fileClassSelect = new DropdownComponent(fileClassSelectContainer);
-        fileClassSelect.addOption(noneValue, `Select a fileClass to add to ${this.file.basename}`);
-        [...this.plugin.fieldIndex.fileClassesName.keys()].forEach(fileClassName => {
-            if (!this.plugin.fieldIndex.filesFileClasses
-                .get(this.file.path)?.map(fileClass => fileClass.name)
-                .includes(fileClassName)) {
-                fileClassSelect.addOption(fileClassName, fileClassName)
-            }
-        })
-        fileClassSelect.onChange(async value => {
-            if (value !== noneValue) {
-                await this.insertFileClassToFile(value);
-                this.close()
-            }
-        })
-    }
-    */
-
     getSuggestions(query: string): string[] | Promise<string[]> {
         return [...this.plugin.fieldIndex.fileClassesName.keys()]
             .filter(fileClassName => !this.plugin.fieldIndex.filesFileClasses

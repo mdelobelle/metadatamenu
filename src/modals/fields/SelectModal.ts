@@ -18,7 +18,9 @@ export default class ValueSuggestModal extends SuggestModal<string>{
         private field: Field,
         private lineNumber: number = -1,
         private inFrontmatter: boolean = false,
-        private after: boolean = false
+        private after: boolean = false,
+        private asList: boolean = false,
+        private asComment: boolean = false
     ) {
         super(plugin.app);
     };
@@ -61,7 +63,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
 
     async addNewValueToSettings(): Promise<void> {
         const newValue = this.inputEl.value;
-        const fileClassName = this.plugin.fieldIndex.filesFields.get(this.file.path)?.find(field => field.name === this.field.name)?.fileClass?.name
+        const fileClassName = this.plugin.fieldIndex.filesFields.get(this.file.path)?.find(field => field.name === this.field.name)?.fileClassName
         if (fileClassName) {
             const fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
             const fileClassAttribute = fileClass?.attributes.find(attr => attr.name === this.field.name)
@@ -113,7 +115,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
                 .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, "") });
         } else {
             await this.plugin.fileTaskManager
-                .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after) });
+                .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
         };
     }
 
@@ -142,7 +144,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
                 .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, item.toString()) });
         } else {
             await this.plugin.fileTaskManager
-                .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, item.toString(), this.lineNumber, this.inFrontmatter, this.after) });
+                .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, item.toString(), this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
         };
     }
 

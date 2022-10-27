@@ -30,7 +30,9 @@ export default class DateModal extends Modal {
         private initialValue: string,
         private lineNumber: number = -1,
         private inFrontmatter: boolean = false,
-        private after: boolean = false
+        private after: boolean = false,
+        private asList: boolean = false,
+        private asComment: boolean = false
     ) {
         super(plugin.app);
         this.initialValue = initialValue ? initialValue.toString().replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last() || "" : "";
@@ -80,7 +82,7 @@ export default class DateModal extends Modal {
                         .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, formattedValue) });
                 } else {
                     await this.plugin.fileTaskManager
-                        .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, formattedValue, this.lineNumber, this.inFrontmatter, this.after) });
+                        .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, formattedValue, this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
                 };
                 if (this.nextIntervalField && this.pushNextInterval && this.nextShift) {
                     await this.plugin.fileTaskManager
@@ -93,7 +95,7 @@ export default class DateModal extends Modal {
                         .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, "") });
                 } else {
                     await this.plugin.fileTaskManager
-                        .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after) });
+                        .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
                 };
                 this.close()
             } else {

@@ -489,6 +489,12 @@ button.metadata-menu-field-add-frontmatter-btn{
 
 .metadata-menu-value-suggester-input-container{
     display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--background-secondary-alt);
+}
+
+.metadata-menu-value-suggester-input-container > input.prompt-input{
+    border: none;
 }
 
 
@@ -612,4 +618,18 @@ button.metadata-menu-field-add-frontmatter-btn{
 .metadata-menu-note-fields-fileClass-manager-name.active{
     padding-bottom: 0em;
     border-bottom: 0.4em var(--color-accent) solid;
+}
+
+.metadata-menu-choose-section-modal-item{
+    padding: 0;
+}
+
+.metadata-menu-choose-section-modal-line{
+    display: flex;
+}
+
+.metadata-menu-choose-section-modal-line .lineNumber{
+    font-size: small;
+    color: var(--text-faint);
+    margin-right: 1em;
 }

@@ -23,14 +23,14 @@ export default class LookupField extends FieldManager {
 
     }
 
-    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): Promise<void> {
+    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
         //no field modal, we include the field directly
         if (lineNumber == -1) {
             await this.plugin.fileTaskManager
                 .pushTask(() => { replaceValues(this.plugin, file, this.field.name, "") });
         } else {
             await this.plugin.fileTaskManager
-                .pushTask(() => { insertValues(this.plugin, file, this.field.name, "", lineNumber, inFrontmatter, after) });
+                .pushTask(() => { insertValues(this.plugin, file, this.field.name, "", lineNumber, inFrontmatter, after, asList, asComment) });
         };
     }
 
