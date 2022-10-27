@@ -178,3 +178,15 @@ lecture:: {"type": "Select", "options": {"0": "Mecanics", "1": "Optics", "2": "E
 ```
 
 notes with `fileClass: physics` will inherit `teacher` and `type` from `course` fileClass but not `grade`
+
+### `mapWithTag` field : Supercharged Tag
+
+when this is set to `true` all notes including a tag with the same name will benefit from the fields' definitions of this fileclass
+
+you can also map a fileclass with his tag from the context menu of the fileclass
+
+### `icon`field
+
+you can customize the icon of the metadata button that gives access to a modal containing all available fields for a note bound with this fileclass
+
+the icon names are available from https://lucide.dev

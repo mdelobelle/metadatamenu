@@ -13,7 +13,9 @@ export default class BooleanModal extends Modal {
         private value: boolean,
         private lineNumber: number = -1,
         private inFrontmatter: boolean = false,
-        private after: boolean = false
+        private after: boolean = false,
+        private asList: boolean = false,
+        private asComment: boolean = false
     ) {
         super(plugin.app);
         this.plugin = plugin;
@@ -22,6 +24,8 @@ export default class BooleanModal extends Modal {
         this.lineNumber = lineNumber;
         this.inFrontmatter = inFrontmatter;
         this.after = after;
+        this.asList = asList;
+        this.asComment = asComment;
         this.field = field
     };
 
@@ -49,7 +53,7 @@ export default class BooleanModal extends Modal {
                     .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, value) });
             } else {
                 await this.plugin.fileTaskManager
-                    .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, value, this.lineNumber, this.inFrontmatter, this.after) });
+                    .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, value, this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
             };
             this.close();
         });

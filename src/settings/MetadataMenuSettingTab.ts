@@ -185,7 +185,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		classFilesSettingsHeaderTextContainer.createEl('div', {
 			cls: "setting-item-description metadata-menu-setting-section-desc",
 			text: "Manage fileClass folder and alias. " +
-				"When a note has a fielClass defined, fileClass field properties will override global preset fields settings for the same field name"
+				"When a note has a fileClass defined, fileClass field properties will override global preset fields settings for the same field name"
 		});
 
 		const classFilesSettingsContainerShowButtonContainer = classFilesSettingsHeaderContainer.createEl("div", { cls: "setting-item-control" });
@@ -248,6 +248,103 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					});
 				// @ts-ignore
 				cfs.containerEl.addClass("metadata-menu-setting-fileClass-search")
+			})
+
+		/* 
+		--------------------------------------------------
+		Managing extra button display options
+		--------------------------------------------------
+		*/
+		const metadataMenuBtnSettings = classFilesSettingsContainer.createEl("div")
+		metadataMenuBtnSettings.createEl('h4', { text: 'Show extra button to access metadata menu form:', cls: "metadata-menu-setting-section-header" })
+
+		new Setting(metadataMenuBtnSettings)
+			.setName("Metadata Menu button icon")
+			.setDesc("name of the default icon when not defined in fileClass")
+			.addText((text) => {
+				text
+					.setValue(this.plugin.settings.buttonIcon)
+					.onChange(async (value) => {
+						this.plugin.settings.buttonIcon = value || "clipboard-list";
+						await this.plugin.saveSettings();
+					});
+			})
+
+		new Setting(metadataMenuBtnSettings)
+			.setName("Reading mode links")
+			.setDesc("Display an extra button to access metadata menu form after a link in reading mode")
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.enableLinks);
+				cb.onChange(value => {
+					this.plugin.settings.enableLinks = value;
+					this.plugin.saveSettings();
+				})
+			})
+
+		new Setting(metadataMenuBtnSettings)
+			.setName("Live preview mode")
+			.setDesc("Display an extra button to access metadata menu form after a link in live preview")
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.enableEditor);
+				cb.onChange(value => {
+					this.plugin.settings.enableEditor = value;
+					this.plugin.saveSettings();
+				})
+			})
+
+		new Setting(metadataMenuBtnSettings)
+			.setName("Tab header")
+			.setDesc("Display an extra button to access metadata menu form in the tab header")
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.enableTabHeader);
+				cb.onChange(value => {
+					this.plugin.settings.enableTabHeader = value;
+					this.plugin.saveSettings();
+				})
+			})
+
+		new Setting(metadataMenuBtnSettings)
+			.setName("Backlinks")
+			.setDesc("Display an extra button to access metadata menu form in the backlinks panel")
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.enableBacklinks);
+				cb.onChange(value => {
+					this.plugin.settings.enableBacklinks = value;
+					this.plugin.saveSettings();
+				})
+			})
+
+		new Setting(metadataMenuBtnSettings)
+			.setName("Search")
+			.setDesc("Display an extra button to access metadata menu form in the search panel")
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.enableSearch);
+				cb.onChange(value => {
+					this.plugin.settings.enableSearch = value;
+					this.plugin.saveSettings();
+				})
+			})
+
+		new Setting(metadataMenuBtnSettings)
+			.setName("File explorer")
+			.setDesc("Display an extra button to access metadata menu form in the file explorer")
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.enableFileExplorer);
+				cb.onChange(value => {
+					this.plugin.settings.enableFileExplorer = value;
+					this.plugin.saveSettings();
+				})
+			})
+
+		new Setting(metadataMenuBtnSettings)
+			.setName("Starred")
+			.setDesc("Display an extra button to access metadata menu form in the starred panel")
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.enableStarred);
+				cb.onChange(value => {
+					this.plugin.settings.enableStarred = value;
+					this.plugin.saveSettings();
+				})
 			})
 
 		/* 

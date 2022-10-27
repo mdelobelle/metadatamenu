@@ -1,57 +1,32 @@
 import MetadataMenu from "main";
-import { getField } from "src/commands/getField";
-import { FileClass } from "src/fileClass/fileClass";
 import { FieldManager } from "src/types/fieldTypes";
 import { FieldManager as F } from "src/fields/FieldManager";
-import chooseSectionModal from "src/optionModals/chooseSectionModal";
-import { Notice, setIcon, TFile } from "obsidian";
-import FileClassQuery from "src/fileClass/FileClassQuery";
-
-
-function getQueryFileClassForFields(plugin: MetadataMenu, file: TFile): FileClass | undefined {
-    let fileClassForFields = false;
-    let fileClass: FileClass | undefined;
-    const fileClassQueries = plugin.settings.fileClassQueries.map(fcq => fcq)
-    while (!fileClassForFields && fileClassQueries.length > 0) {
-        const fileClassQuery = new FileClassQuery();
-        Object.assign(fileClassQuery, fileClassQueries.pop() as FileClassQuery)
-        if (fileClassQuery.matchFile(file)) {
-            fileClassForFields = true;
-            try {
-                fileClass = FileClass.createFileClass(plugin, fileClassQuery.fileClassName)
-            } catch (error) {
-                fileClass = undefined
-            }
-
-        }
-    }
-    return fileClass
-}
+import chooseSectionModal from "src/modals/chooseSectionModal";
+import { setIcon, TFile } from "obsidian";
 
 function buildAndOpenModal(
     plugin: MetadataMenu,
     file: TFile,
     fieldName: string,
-    fileClass?: FileClass,
     attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
 ): void {
     if (attrs?.options?.inFrontmatter && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
         const lineNumber = plugin.app.metadataCache.getCache(file.path)!.frontmatter!.position.end.line - 1
-        F.openFieldModal(plugin, file, fieldName, "", lineNumber, true, false, fileClass)
+        F.openFieldModal(plugin, file, fieldName, "", lineNumber, true, false)
     } else {
-        new chooseSectionModal(plugin, file, fileClass, fieldName).open();
+        new chooseSectionModal(plugin, file, fieldName).open();
     }
 }
 
-function createDvField(plugin: MetadataMenu,
+function createDvField(
+    plugin: MetadataMenu,
     dv: any,
     p: any,
     fieldContainer: HTMLElement,
     fieldName: string,
-    fileClass?: FileClass,
     attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
 ): void {
-    const field = getField(plugin, fieldName, fileClass);
+    const field = plugin.fieldIndex.filesFields.get(p.file.path)?.find(field => field.name === fieldName)
     if (field?.type) {
         const fieldManager = new FieldManager[field.type](plugin, field);
         fieldManager.createDvField(dv, p, fieldContainer, attrs);
@@ -88,66 +63,24 @@ export function fieldModifier(
 
                 const file = plugin.app.vault.getAbstractFileByPath(p.file.path)
                 if (file instanceof TFile && file.extension == "md") {
-                    const fileClassAlias = plugin.settings.fileClassAlias;
-                    const queryFileClass = getQueryFileClassForFields(plugin, file)
-                    if (p[fileClassAlias]) {
-                        const fileClassName = p[fileClassAlias] as string
-                        try {
-                            const fileClass = FileClass.createFileClass(plugin, fileClassName);
-                            buildAndOpenModal(plugin, file, fieldName, fileClass, attrs)
-                        } catch (error) {
-
-                        }
-                    } else if (queryFileClass) {
-                        buildAndOpenModal(plugin, file, fieldName, queryFileClass, attrs)
-                    } else if (plugin.settings.globalFileClass) {
-                        const fileClassName = plugin.settings.globalFileClass
-                        try {
-                            const fileClass = FileClass.createFileClass(plugin, fileClassName);
-                            buildAndOpenModal(plugin, file, fieldName, fileClass, attrs)
-                        } catch (error) {
-
-                        }
-                    } else if (plugin.settings.presetFields.filter(attr => attr.name == fieldName)) {
-                        const field = getField(plugin, fieldName);
-                        if (field?.type) {
-                            buildAndOpenModal(plugin, file, fieldName, undefined, attrs)
-                        } else {
-                            new chooseSectionModal(plugin, file, undefined).open();
-                        }
+                    const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
+                    if (field) {
+                        buildAndOpenModal(plugin, file, fieldName, attrs)
                     } else {
                         new chooseSectionModal(plugin, file, undefined).open();
                     }
                 } else {
                     throw Error("path doesn't correspond to a proper file");
                 }
-
             }
             fieldContainer.appendChild(addFieldBtn);
         }
     } else {
-        const fileClassAlias = plugin.settings.fileClassAlias;
         const file = plugin.app.vault.getAbstractFileByPath(p.file.path)
         if (file instanceof TFile && file.extension == "md") {
-            const queryFileClass = getQueryFileClassForFields(plugin, file)
-            if (p[fileClassAlias]) {
-                const fileClassName = p[fileClassAlias] || plugin.settings.globalFileClass // inner fileClass has the priority over global fileClass
-                try {
-                    const fileClass = FileClass.createFileClass(plugin, fileClassName);
-                    createDvField(plugin, dv, p, fieldContainer, fieldName, fileClass, attrs)
-                } catch (error) {
-
-                }
-            } else if (queryFileClass) {
-                createDvField(plugin, dv, p, fieldContainer, fieldName, queryFileClass, attrs)
-            } else if (plugin.settings.globalFileClass) {
-                const fileClassName = plugin.settings.globalFileClass // inner fileClass has the priority over global fileClass
-                try {
-                    const fileClass = FileClass.createFileClass(plugin, fileClassName);
-                    createDvField(plugin, dv, p, fieldContainer, fieldName, fileClass, attrs)
-                } catch (error) { }
-            } else if (plugin.settings.presetFields.filter(attr => attr.name == fieldName)) {
-                createDvField(plugin, dv, p, fieldContainer, fieldName, undefined, attrs)
+            const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
+            if (field) {
+                createDvField(plugin, dv, p, fieldContainer, fieldName, attrs)
             } else {
                 const fieldManager = F.createDefault(plugin, fieldName);
                 fieldManager.createDvField(dv, p, fieldContainer, attrs);

@@ -2,11 +2,12 @@ import MetadataMenu from "main";
 import { Menu, setIcon, TextComponent, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
-import NumbertModal from "src/optionModals/fields/NumberModal";
+import NumbertModal from "src/modals/fields/NumberModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
+import { FieldOptions } from "src/components/NoteFields";
 
 export default class NumberField extends FieldManager {
 
@@ -16,7 +17,7 @@ export default class NumberField extends FieldManager {
     private numberMaxValue: TextComponent;
 
     constructor(plugin: MetadataMenu, field: Field) {
-        super(plugin, field, FieldType.Number)
+        super(plugin, field, FieldType.Number);
     }
 
     public getOptionsStr(): string {
@@ -67,37 +68,42 @@ export default class NumberField extends FieldManager {
         )
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         const modal = new NumbertModal(this.plugin, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
+        const { min, max, step } = this.field.options;
+        const fMin = parseFloat(min)
+        const fMax = parseFloat(max)
+        const fStep = parseFloat(step)
+        const fValue = parseFloat(value)
+        const canDecrease = !isNaN(fMin) && fValue - fStep >= fMin;
+        const canIncrease = !isNaN(fMax) && fValue + fStep <= fMax;
+        const action = () => modal.open()
+        const decrease = async () => await this.plugin.fileTaskManager
+            .pushTask(() => { replaceValues(this.plugin, file, name, (fValue - fStep).toString()) });
+        const increase = async () => await this.plugin.fileTaskManager
+            .pushTask(() => { replaceValues(this.plugin, file, name, (fValue + fStep).toString()) });
         if (NumberField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
                 item.setIcon(FieldIcon[FieldType.Number]);
-                item.onClick(() => modal.open());
+                item.onClick(action);
                 item.setSection("metadata-menu.fields");
             })
-            const { min, max, step } = this.field.options
 
-            const fMin = parseFloat(min)
-            const fMax = parseFloat(max)
-            const fStep = parseFloat(step)
-            const fValue = parseFloat(value)
             if (fStep) {
-                if (!isNaN(fMin) && fValue - fStep > fMin)
+                if (canDecrease)
                     location.addItem((item) => {
-                        item.setIcon(FieldIcon[FieldType.Number]);
+                        item.setIcon("minus-square");
                         item.setTitle(`<${name}> ↘️ ${fValue - fStep}`);
-                        item.onClick(async () => await this.plugin.fileTaskManager
-                            .pushTask(() => { replaceValues(this.plugin, file, name, (fValue - fStep).toString()) }));
+                        item.onClick(decrease);
                         item.setSection("metadata-menu.fields");
                     })
-                if (!isNaN(fMax) && fValue + fStep < fMax)
+                if (canIncrease)
                     location.addItem((item) => {
-                        item.setIcon(FieldIcon[FieldType.Number]);
+                        item.setIcon("plus-square");
                         item.setTitle(`<${name}> ↗️ ${fValue + fStep}`);
-                        item.onClick(async () => await this.plugin.fileTaskManager
-                            .pushTask(() => { replaceValues(this.plugin, file, name, (fValue + fStep).toString()) }));
+                        item.onClick(increase);
                         item.setSection("metadata-menu.fields");
                     })
             }
@@ -105,9 +111,19 @@ export default class NumberField extends FieldManager {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
-                action: () => modal.open(),
+                action: action,
                 icon: FieldIcon[FieldType.Number]
             });
+        } else if (NumberField.isFieldOptions(location)) {
+            if (step) {
+                if (canDecrease) {
+                    location.addOption("minus-square", decrease, `Decrease ${name} by ${step}`);
+                }
+                if (canIncrease) {
+                    location.addOption("plus-square", increase, `Increase ${name} by ${step}`);
+                }
+            }
+            location.addOption(FieldIcon[FieldType.Number], action, `Update ${name}'s value`)
         };
     };
 
@@ -172,8 +188,8 @@ export default class NumberField extends FieldManager {
         return !error
     }
 
-    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
-        const fieldModal = new NumbertModal(this.plugin, file, this.field, value || "", lineNumber, inFrontmatter, after);
+    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): void {
+        const fieldModal = new NumbertModal(this.plugin, file, this.field, value || "", lineNumber, inFrontmatter, after, asList, asComment);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

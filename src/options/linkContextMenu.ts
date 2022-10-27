@@ -14,12 +14,21 @@ export default class linkContextMenu {
 	private buildOptions(file: TFile | TAbstractFile | null, menu: Menu, includedFields?: string[]): void {
 		if (file instanceof TFile && file.extension === 'md') {
 			if (!Platform.isMobile && requireApiVersion("0.16.0")) {
-				//@ts-ignore
-				menu.setSectionSubmenu("metadata-menu.current_field", { title: "Current Field", icon: "pencil" })
-				//@ts-ignore
-				menu.setSectionSubmenu("metadata-menu.fields", { title: "Manage Fields", icon: "pencil" })
-				//@ts-ignore
-				menu.setSectionSubmenu("metadata-menu-fileclass.fileclass-fields", { title: "Manage Fileclass Fields", icon: "wrench" })
+				if (file.parent.path + "/" == this.plugin.settings.classFilesPath) {
+					//@ts-ignore
+					menu.setSectionSubmenu(`metadata-menu-fileclass.${file.basename}.fileclass-fields`, { title: "Manage fields", icon: "wrench" });
+				} else {
+					//@ts-ignore
+					menu.setSectionSubmenu("metadata-menu.current_field", { title: "Current field", icon: "pencil" })
+					//@ts-ignore
+					menu.setSectionSubmenu("metadata-menu.fields", { title: "Manage fields", icon: "pencil" })
+					const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(file.path) || [];
+					fileClasses.forEach(fileClass => {
+						//@ts-ignore
+						menu.setSectionSubmenu(`metadata-menu-fileclass.${fileClass.name}.fileclass-fields`, { title: `Manage ${fileClass.name} fields`, icon: "wrench" })
+					})
+
+				}
 			}
 			if (this.plugin.settings.displayFieldsInContextMenu) {
 				//If fileClass
@@ -41,9 +50,6 @@ export default class linkContextMenu {
 					})
 				})
 			}
-
-
-
 		};
 	}
 

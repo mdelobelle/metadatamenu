@@ -94,13 +94,13 @@ class FileClassAttributeModal extends Modal {
     private createSaveBtn(container: HTMLDivElement): void {
         const saveButton = new ButtonComponent(container);
         saveButton.setIcon("checkmark");
-        saveButton.onClick(() => {
+        saveButton.onClick(async () => {
             let error = !this.validateFields();
             if (error) {
                 new Notice("Fix errors before saving.");
                 return;
             };
-            this.fileClass.updateAttribute(this.field.type, this.field.name, this.field.options, this.attr);
+            await this.fileClass.updateAttribute(this.field.type, this.field.name, this.field.options, this.attr);
             this.close();
         })
     }

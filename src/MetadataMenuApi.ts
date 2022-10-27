@@ -9,7 +9,7 @@ import { fileFields, FieldInfo } from "./commands/fileFields";
 export interface IMetadataMenuApi {
     getValues: (fileOrFilePath: TFile | string, attribute: string) => Promise<string[]>;
     replaceValues: (fileOrFilePath: TFile | string, attribute: string, input: string) => Promise<void>;
-    insertValues: (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean) => Promise<void>
+    insertValues: (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean) => Promise<void>
     fileFields: (fileOrFilePath: TFile | string) => Promise<Record<string, FieldInfo>>;
     fieldModifier: (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => HTMLElement;
 }
@@ -36,8 +36,8 @@ export class MetadataMenuApi {
         return async (fileOrFilePath: TFile | string, attribute: string, input: string) => await this.plugin.fileTaskManager.pushTask(() => { replaceValues(this.plugin, fileOrFilePath, attribute, input) })
     }
 
-    private insertValues(): (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean) => Promise<void> {
-        return async (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean) => await this.plugin.fileTaskManager.pushTask(() => { insertValues(this.plugin, fileOrFilePath, fieldName, value, lineNumber, inFrontmatter, after) })
+    private insertValues(): (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean) => Promise<void> {
+        return async (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean) => await this.plugin.fileTaskManager.pushTask(() => { insertValues(this.plugin, fileOrFilePath, fieldName, value, lineNumber, inFrontmatter, after, asList, asComment) })
     }
 
     private fieldModifier(): (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => HTMLElement {

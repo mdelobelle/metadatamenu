@@ -1,5 +1,8 @@
 import MetadataMenu from "main";
 import { Menu, TFile } from "obsidian";
+import { insertFrontmatterWithFields } from "src/commands/insertFrontmatterWithFields";
+import { insertValues } from "src/commands/insertValues";
+import { replaceValues } from "src/commands/replaceValues";
 import { FileClass } from "src/fileClass/fileClass";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
 import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
@@ -32,16 +35,51 @@ export default class FileClassOptionsList {
     };
 
     public createExtraOptionList(openAfterCreate: boolean = true): void {
+        const mapWithTagAction = async () => {
+            const frontmatter = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatter
+            if (frontmatter) {
+                if (Object.keys(frontmatter).includes("mapWithTag")) {
+                    //fileClass field is empty, has an empty array of is badly formatted: override it
+                    await replaceValues(this.plugin, this.file, "mapWithTag", "true")
+                } else {
+                    //frontmatter exists but doesn't contain fileClass: add it
+                    const lineNumber = frontmatter.position.end.line - 1
+                    await insertValues(this.plugin, this.file, "mapWithTag", "true", lineNumber, true)
+                }
+            } else {
+                const fields: Record<string, string> = { "mapWithTag": "true" }
+                await insertFrontmatterWithFields(this.plugin, this.file, fields)
+            }
+        }
         if (isMenu(this.location)) { this.location.addSeparator(); };
         if (isInsertFieldCommand(this.location) && this.fileClass) {
             const modal = new FileClassAttributeModal(this.plugin, this.fileClass);
             modal.open();
         } else if (isSuggest(this.location)) {
             this.buildFieldOptions();
-
+            if (this.fileClass && !this.fileClass.isMappedWithTag()) {
+                const fileClass = this.fileClass
+                this.location.options.push({
+                    id: "map_fileClass_with_tag",
+                    actionLabel: `<span>Map <b>${this.fileClass.name}</b> with tag of same name</span>`,
+                    action: mapWithTagAction,
+                    icon: "hash"
+                });
+            }
             if (openAfterCreate) this.location.open();
-        } else {
+        } else if (isMenu(this.location)) {
+            if (this.fileClass && !this.fileClass.isMappedWithTag()) {
+                const fileClass = this.fileClass
+                this.location.addItem((item) => {
+                    item.setTitle(`Map ${this.fileClass?.name} with tag`);
+                    item.setIcon("hash");
+                    item.onClick(mapWithTagAction);
+                    item.setSection(`metadata-menu-fileclass.${this.fileClass!.name}.fileclass-fields`);
+                })
+            }
             this.buildFieldOptions();
+        } else {
+            this.buildFieldOptions
         }
     }
 
@@ -50,12 +88,12 @@ export default class FileClassOptionsList {
             const modal = new FileClassAttributeModal(this.plugin, this.fileClass!, attr)
             if (isMenu(this.location)) {
                 this.location.addItem((item) => {
-                    item.setTitle(`${attr.name}`)
+                    item.setTitle(`${this.fileClass!.name} - ${attr.name}`)
                     item.setIcon("wrench")
                     item.onClick(() => {
                         modal.open()
                     })
-                    item.setSection("metadata-menu-fileclass.fileclass-fields")
+                    item.setSection(`metadata-menu-fileclass.${this.fileClass!.name}.fileclass-fields`)
                 })
             } else if (isSuggest(this.location)) {
                 this.location.options.push({
@@ -66,24 +104,22 @@ export default class FileClassOptionsList {
                 });
             }
         });
+        const modal = new FileClassAttributeModal(this.plugin, this.fileClass!);
+        const action = () => modal.open();
         if (isMenu(this.location) && this.fileClass) {
             this.location.addItem((item) => {
-                item.setTitle("Add new fileClass attribute")
+                item.setTitle("Add new field")
                 item.setIcon("plus-circle")
-                item.onClick(() => {
-                    const modal = new FileClassAttributeModal(this.plugin, this.fileClass!);
-                    modal.open();
-                })
-                item.setSection("metadata-menu-fileclass")
+                item.onClick(action)
+                item.setSection(`metadata-menu-fileclass.${this.fileClass!.name}.fileclass-fields`)
             })
         } else if (isSuggest(this.location) && this.fileClass) {
-            const modal = new FileClassAttributeModal(this.plugin, this.fileClass);
             this.location.options.push({
                 id: "add_fileClass_attribute",
                 actionLabel: `<span>Insert an attribute for <b>${this.fileClass.name}</b> fileClass</span>`,
-                action: () => { modal.open() },
+                action: action,
                 icon: "plus-circle"
-            })
+            });
         }
     }
 

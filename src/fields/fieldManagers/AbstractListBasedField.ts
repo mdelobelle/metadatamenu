@@ -109,19 +109,8 @@ export default abstract class AbstractListBasedField extends FieldManager {
     };
 
     public validateValue(value: string): boolean {
-        if (this.field.options.valuesList && Object.values(this.field.options.valuesList).length > 0) {
-            if (value) {
-                return Object.values(this.field.options).includes(value.trim())
-            } else {
-                return true;
-            }
-
-        } else if (this.field.options.valuesListNotePath) {
-            const listNoteValues = this.plugin.fieldIndex.valuesListNotePathValues.get(this.field.options.valuesListNotePath)
-            return listNoteValues !== undefined ? listNoteValues.contains(value.trim()) : false
-        } else {
-            return false
-        }
+        //todo : manage both raw links and dv Link objects
+        return true
     }
 
     public getOptionsStr(): string {

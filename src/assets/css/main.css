@@ -1,3 +1,8 @@
+/* Metadata Menu Field Setting Modal */
+.metadata-menu-field-setting-modal > .modal {
+    overflow: auto;
+}
+
 /* Metadata Menu Prompt */
 .metadata-menu-prompt-div {
     display: flex;
@@ -7,11 +12,16 @@
 }
 .metadata-menu-prompt-container {
     margin-top: 10px;
+    display: flex;
 }
 
 .metadata-menu-prompt-container > input{
     margin-right: 10px;
     margin-bottom: 8px
+}
+
+.metadata-menu-prompt-container > button {
+    margin-right: 10px;
 }
 
 .metadata-menu-prompt-input {
@@ -32,18 +42,18 @@
 }
 
 .metadata-menu-modal-value-with-btn > input.is-invalid {
-    color: red;
+    color: var(--red);
 }
 
 .metadata-menu-modal-value-with-btn-error-field{
     margin-top: -2em;
     height: 2em;
-    color: red;
+    color: var(--red);
 }
 
 .metadata-menu-modal-value-error-field{
     height: 2em;
-    color: red;
+    color: var(--red);
     margin-left: 1em;
 }
 
@@ -105,7 +115,6 @@ button.metadata-menu-field-add-frontmatter-btn{
 
 .metadata-menu-toggler-with-label{
     display: flex;
-    margin-left: 1em;
     margin-top: 0.5em;
 }
 
@@ -120,7 +129,7 @@ button.metadata-menu-field-add-frontmatter-btn{
 
 
 .yaml-metadata-menu-red {
-    color: #C7254E
+    color: var(--color-blue);
 }
 
 .metadata-menu-value-selector-toggler {
@@ -139,6 +148,10 @@ button.metadata-menu-field-add-frontmatter-btn{
     
     padding-top: 10px;
     margin-bottom: 1em;
+}
+
+.metadata-menu-value-grid-footer > button {
+    margin-right: 0.3em;
 }
 
 .metadata-menu-textarea-buttons {
@@ -212,11 +225,11 @@ button.metadata-menu-field-add-frontmatter-btn{
 }
 
 .metadata-menu-prompt-form .invalid-feedback{
-    color: red;
+    color: var(--red);
 }
 
 .metadata-menu-prompt-form input.is-invalid{
-    color: red
+    color: var(--red);
 }
 
 .metadata-menu-toggle {
@@ -256,7 +269,8 @@ button.metadata-menu-field-add-frontmatter-btn{
     font-weight: 500;
 }
 
-.metadata-menu-setting-item-info-type{
+.metadata-menu-setting-item-info-type,
+.metadata-menu-note-field-item > .field-type{
     border-radius: 0.8em;
     padding: 0.1em 0.75em 0.25em 0.75em;
     color: white;
@@ -265,40 +279,52 @@ button.metadata-menu-field-add-frontmatter-btn{
     height: 1.6em;
 }
 
-.metadata-menu-setting-item-info-type.cycle{
-    background-color: #8ec07c;
+.metadata-menu-note-field-item > .field-type{
+    font-size: x-small;
+}
+.metadata-menu-setting-item-info-type.cycle,
+.metadata-menu-note-field-item > .field-type.cycle{
+    background-color: var(--blue);
 }
 
-.metadata-menu-setting-item-info-type.multi{
-    background-color: #d65d0e;
+.metadata-menu-setting-item-info-type.multi,
+.metadata-menu-note-field-item > .field-type.multi{
+    background-color: var(--green);
 }
 
-.metadata-menu-setting-item-info-type.boolean{
-    background-color: #076678;
+.metadata-menu-setting-item-info-type.boolean,
+.metadata-menu-note-field-item > .field-type.boolean{
+    background-color: var(--yellow);
 }
 
-.metadata-menu-setting-item-info-type.single{
-    background-color: #5e81ac;
+.metadata-menu-setting-item-info-type.single,
+.metadata-menu-note-field-item > .field-type.single{
+    background-color: var(--green);
 }
 
-.metadata-menu-setting-item-info-type.select{
-    background-color: #556b77;
+.metadata-menu-setting-item-info-type.select,
+.metadata-menu-note-field-item > .field-type.select{
+    background-color: var(--orange);
 }
 
-.metadata-menu-setting-item-info-type.number{
-    background-color: #689d6a;
+.metadata-menu-setting-item-info-type.number,
+.metadata-menu-note-field-item > .field-type.number{
+    background-color: var(--purple);
 }
 
-.metadata-menu-setting-item-info-type.file{
-    background-color: #928374;
+.metadata-menu-setting-item-info-type.file,
+.metadata-menu-note-field-item > .field-type.file{
+    background-color: var(--cyan);
 }
 
-.metadata-menu-setting-item-info-type.date{
-    background-color: #483699;
+.metadata-menu-setting-item-info-type.date,
+.metadata-menu-note-field-item > .field-type.date{
+    background-color: var(--pink);
 }
 
-.metadata-menu-setting-item-info-type.lookup{
-    background-color: #689d6a;
+.metadata-menu-setting-item-info-type.lookup,
+.metadata-menu-note-field-item > .field-type.lookup{
+    background-color: var(--red);
 }
 
 .metadata-menu-setting-section-header{
@@ -462,6 +488,12 @@ button.metadata-menu-field-add-frontmatter-btn{
 
 .metadata-menu-value-suggester-input-container{
     display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--background-secondary-alt);
+}
+
+.metadata-menu-value-suggester-input-container > input.prompt-input{
+    border: none;
 }
 
 
@@ -489,4 +521,114 @@ button.metadata-menu-field-add-frontmatter-btn{
     margin-left: 1em;
     padding-top: 0.4em;
     color: var(--color-base-60);
+}
+
+.fileclass-icon{
+    color: var(--link-color);
+    margin-left: 0.2em;
+    cursor:context-menu;
+}
+
+.fileclass-icon svg{
+    vertical-align: calc(var(--font-text-size) * -0.15);
+}
+
+/* Note Fields Component */
+.metadata-menu-note-fields-modal > .modal {
+    width: auto;
+    min-width: var(--dialog-width);
+}
+
+.metadata-menu-note-fields-container {
+    display: table;
+    border-collapse:separate
+}
+
+.metadata-menu-note-field-container {
+    display: table-row;
+    margin-top: 3px;
+}
+
+.metadata-menu-note-field-item{
+    display: table-cell;
+    padding-top: 0.2em;
+    padding-right: 0.5em;
+    float: none;
+    vertical-align: middle;
+}
+
+.metadata-menu-note-field-item.field-name{
+    font-weight: bold;
+    white-space: nowrap;
+    background-color: none;
+    color:var(--text-normal);
+    padding-left: 0.6em;
+    border: none;
+}
+
+.metadata-menu-note-field-item.field-name.active{
+    padding-left: 0.2em;
+    border-left: 0.4em var(--color-accent) solid;
+}
+
+.metadata-menu-note-field-item.field-value{
+    width: 100%;
+}
+
+.metadata-menu-note-field-item.field-value.emptyfield{
+    color: var(--text-faint)
+}
+
+
+.metadata-menu-note-field-item button, 
+.metadata-menu-note-fields-fileClass-manager-container button{
+    padding: 0 0 0.4em 0.4em;
+    height: auto;
+    box-shadow: none;
+    background-color: var(--background-primary);
+}
+.metadata-menu-note-field-item.field-setting{
+    padding-right: 0;
+}
+.metadata-menu-note-field-item.field-setting > button > svg,
+.metadata-menu-note-fields-fileClass-manager-container > button > svg{
+    color: var(--text-faint);
+    height: 1em;
+}
+
+.metadata-menu-note-fields-inheritance-manager-container{
+    display: flex;
+}
+
+.metadata-menu-note-fields-fileClass-manager-container{
+    display: flex;
+}
+
+.metadata-menu-note-fields-fileClass-manager-separator{
+    margin: 0 0.5em;
+}
+
+
+.metadata-menu-note-fields-fileClass-manager-name{
+    padding-bottom: 0.4em;
+    border:none
+}
+
+.metadata-menu-note-fields-fileClass-manager-name.active{
+    padding-bottom: 0em;
+    border-bottom: 0.4em var(--color-accent) solid;
+}
+
+.metadata-menu-choose-section-modal-item{
+    padding: 0;
+}
+
+.metadata-menu-choose-section-modal-line{
+    display: flex;
+}
+
+.metadata-menu-choose-section-modal-line .lineNumber{
+    font-size: small;
+    color: var(--text-faint);
+    margin-right: 1em;
 }

@@ -15,7 +15,9 @@ export default class InputModal extends Modal {
         private value: string,
         private lineNumber: number = -1,
         private inFrontmatter: boolean = false,
-        private after: boolean = false
+        private after: boolean = false,
+        private asList: boolean = false,
+        private asComment: boolean = false
     ) { super(plugin.app); };
 
     onOpen() {
@@ -99,7 +101,7 @@ export default class InputModal extends Modal {
                     .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, inputValue) });
             } else {
                 await this.plugin.fileTaskManager
-                    .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after) });
+                    .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
             };
             this.close();
         }
@@ -124,7 +126,7 @@ export default class InputModal extends Modal {
                     .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, inputValue) });
             } else {
                 await this.plugin.fileTaskManager
-                    .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after) });
+                    .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
             };
             this.close();
         };

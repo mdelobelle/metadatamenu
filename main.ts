@@ -1,4 +1,4 @@
-import { FileView, MarkdownView, Notice, Plugin, TFile, View } from 'obsidian';
+import { FileView, MarkdownView, Notice, Plugin, TFile, View, debounce } from 'obsidian';
 import Field from 'src/fields/Field';
 import FieldIndex from 'src/components/FieldIndex';
 import { FileClass } from 'src/fileClass/fileClass';
@@ -16,6 +16,14 @@ import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import { frontMatterLineField, getLineFields } from 'src/utils/parser';
 import { FileTaskManager } from 'src/components/FileTaskManager';
+import {
+	updateElLinks,
+	updateVisibleLinks,
+	clearExtraAttributes,
+	updateDivExtraAttributes,
+} from "src/options/linkAttributes"
+import { Prec } from "@codemirror/state";
+import { buildCMViewPlugin } from "src/options/livePreview";
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -24,7 +32,9 @@ export default class MetadataMenu extends Plugin {
 	public initialFileClassQueries: Array<FileClassQuery> = [];
 	public settingTab: MetadataMenuSettingTab;
 	public fieldIndex: FieldIndex;
-	public fileTaskManager: FileTaskManager
+	public fileTaskManager: FileTaskManager;
+	private observers: [MutationObserver, string, string][];
+	private modalObservers: MutationObserver[] = [];
 
 	async onload(): Promise<void> {
 		console.log('Metadata Menu loaded');
@@ -63,6 +73,48 @@ export default class MetadataMenu extends Plugin {
 		this.addCommands(this.app.workspace.getActiveViewOfType(MarkdownView))
 
 		new linkContextMenu(this);
+
+		this.registerMarkdownPostProcessor((el, ctx) => {
+			updateElLinks(this.app, this, el, ctx)
+		});
+
+		const plugin = this;
+		const updateLinks = function (_file: TFile) {
+			updateVisibleLinks(plugin.app, plugin);
+			plugin.observers.forEach(([observer, type, own_class]: [any, any, any]) => {
+				const leaves = plugin.app.workspace.getLeavesOfType(type);
+				leaves.forEach((leaf: any) => {
+					plugin.updateContainer(leaf.view.containerEl, plugin, own_class, type);
+				})
+			});
+		}
+
+		// Live preview
+		const ext = Prec.lowest(buildCMViewPlugin(this));
+		this.registerEditorExtension(ext);
+
+		this.observers = [];
+
+		this.app.workspace.onLayoutReady(() => {
+			this.initViewObservers(this);
+			this.initModalObservers(this, document);
+			updateVisibleLinks(this.app, this);
+		});
+
+		// Initialization
+		this.registerEvent(this.app.workspace.on("window-open", (window, win) => this.initModalObservers(this, window.getContainer()!.doc)));
+
+		// Update when
+		// Debounced to prevent lag when writing
+		// @ts-ignore
+		this.registerEvent(this.app.metadataCache.on('changed', debounce(updateLinks, 500, true)));
+
+		// Update when layout changes
+		// @ts-ignore
+		this.registerEvent(this.app.workspace.on("layout-change", debounce(updateLinks, 10, true)));
+		// Update plugin views when layout changes
+		// TODO: This is an expensive operation that seems like it is called fairly frequently. Maybe we can do this more efficiently?
+		this.registerEvent(this.app.workspace.on("layout-change", () => this.initViewObservers(this)));
 	};
 
 	private addFileClassAttributeOptions() {
@@ -75,9 +127,11 @@ export default class MetadataMenu extends Plugin {
 				if (checking) {
 					return !!(view?.file) && `${view.file.parent.path}/` == this.settings.classFilesPath
 				}
-				const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.app)
-				const optionsList = new FileClassOptionsList(this, view!.file, fieldCommandSuggestModal);
-				optionsList.createExtraOptionList();
+				if (!!(view?.file) && `${view.file.parent.path}/` == this.settings.classFilesPath) {
+					const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.app)
+					const optionsList = new FileClassOptionsList(this, view!.file, fieldCommandSuggestModal);
+					optionsList.createExtraOptionList();
+				}
 			},
 		});
 	}
@@ -118,7 +172,7 @@ export default class MetadataMenu extends Plugin {
 		})
 	}
 
-	private addFieldCommand() {
+	private addFieldOptionsCommand() {
 		this.addCommand({
 			id: "field_options",
 			name: "field options",
@@ -185,7 +239,7 @@ export default class MetadataMenu extends Plugin {
 					this.addFileClassAttributeOptions();
 					this.addInsertFileClassAttribute();
 				} else {
-					this.addFieldCommand();
+					this.addFieldOptionsCommand();
 					this.addInsertFieldAtPositionCommand();
 					this.addManageFieldAtCursorCommand()
 				}
@@ -204,9 +258,160 @@ export default class MetadataMenu extends Plugin {
 		this.settings.fileClassQueries = this.initialFileClassQueries;
 		await this.saveData(this.settings);
 		await this.fieldIndex.fullIndex("setting", true);
+		this.disconnectObservers();
+		this.initModalObservers(this, document);
+		this.initViewObservers(this);
+		updateVisibleLinks(this.app, this);
 	};
 
+	private initViewObservers(plugin: MetadataMenu) {
+		// Reset observers
+		plugin.observers.forEach(([observer, type]) => {
+			observer.disconnect();
+		});
+		plugin.observers = [];
+
+		// Register new observers
+		plugin.registerViewType('backlink', plugin, ".tree-item-inner", true);
+		plugin.registerViewType('outgoing-link', plugin, ".tree-item-inner", true);
+		plugin.registerViewType('search', plugin, ".tree-item-inner", true);
+		plugin.registerViewType('BC-matrix', plugin, '.BC-Link');
+		plugin.registerViewType('BC-ducks', plugin, '.internal-link');
+		plugin.registerViewType('BC-tree', plugin, 'a.internal-link');
+		plugin.registerViewType('graph-analysis', plugin, '.internal-link');
+		plugin.registerViewType('starred', plugin, '.nav-file-title-content', true);
+		plugin.registerViewType('file-explorer', plugin, '.nav-file-title-content', true);
+		plugin.registerViewType('recent-files', plugin, '.nav-file-title-content', true);
+		// If backlinks in editor is on
+		// @ts-ignore
+		if (plugin.app?.internalPlugins?.plugins?.backlink?.instance?.options?.backlinkInDocument) {
+			plugin.registerViewType('markdown', plugin, '.tree-item-inner', true);
+		}
+	}
+
+	private initModalObservers(plugin: MetadataMenu, doc: Document) {
+		const config = {
+			subtree: false,
+			childList: true,
+			attributes: false
+		};
+
+		this.modalObservers.push(new MutationObserver(records => {
+			records.forEach((mutation) => {
+				if (mutation.type === 'childList') {
+					mutation.addedNodes.forEach(n => {
+						if ('className' in n &&
+							// @ts-ignore
+							(n.className.includes('modal-container') && plugin.settings.enableQuickSwitcher
+								// @ts-ignore
+								|| n.className.includes('suggestion-container') && plugin.settings.enableSuggestor)) {
+							let selector = ".suggestion-title, .suggestion-note, .another-quick-switcher__item__title, .omnisearch-result__title";
+							// @ts-ignore
+							if (n.className.includes('suggestion-container')) {
+								selector = ".suggestion-title, .suggestion-note";
+							}
+							plugin.updateContainer(n as HTMLElement, plugin, selector, null);
+							plugin._watchContainer(null, n as HTMLElement, plugin, selector);
+						}
+					});
+				}
+			});
+		}));
+		this.modalObservers.last()?.observe(doc.body, config);
+	}
+
+	private registerViewType(viewTypeName: string, plugin: MetadataMenu, selector: string, updateDynamic = false) {
+		const leaves = this.app.workspace.getLeavesOfType(viewTypeName);
+		if (leaves.length > 1) {
+			for (let i = 0; i < leaves.length; i++) {
+				const container = leaves[i].view.containerEl;
+				if (updateDynamic) {
+					plugin._watchContainerDynamic(viewTypeName + i, container, plugin, selector)
+				}
+				else {
+					plugin._watchContainer(viewTypeName + i, container, plugin, selector);
+				}
+			}
+		}
+		else if (leaves.length < 1) return;
+		else {
+			const container = leaves[0].view.containerEl;
+			this.updateContainer(container, plugin, selector, viewTypeName);
+			if (updateDynamic) {
+				plugin._watchContainerDynamic(viewTypeName, container, plugin, selector)
+			}
+			else {
+				plugin._watchContainer(viewTypeName, container, plugin, selector);
+			}
+		}
+	}
+
+	private updateContainer(container: HTMLElement, plugin: MetadataMenu, selector: string, viewTypeName: string | null) {
+		const nodes = container.findAll(selector);
+		for (let i = 0; i < nodes.length; ++i) {
+			const el = nodes[i] as HTMLElement;
+			updateDivExtraAttributes(plugin.app, plugin, el, viewTypeName, "");
+		}
+	}
+
+	private removeFromContainer(container: HTMLElement, selector: string) {
+		const nodes = container.findAll(selector);
+		for (let i = 0; i < nodes.length; ++i) {
+			const el = nodes[i] as HTMLElement;
+			clearExtraAttributes(el);
+		}
+	}
+
+	private _watchContainer(viewType: string | null, container: HTMLElement, plugin: MetadataMenu, selector: string) {
+		let observer = new MutationObserver((records, _) => {
+			plugin.updateContainer(container, plugin, selector, viewType);
+		});
+		observer.observe(container, { subtree: true, childList: true, attributes: false });
+		if (viewType) {
+			plugin.observers.push([observer, viewType, selector]);
+		}
+	}
+
+	private _watchContainerDynamic(viewType: string, container: HTMLElement, plugin: MetadataMenu, selector: string, ownClass = 'tree-item-inner', parent_class = 'tree-item') {
+		// Used for efficient updating of the backlinks panel
+		// Only loops through newly added DOM nodes instead of changing all of them
+		let observer = new MutationObserver((records, _) => {
+			records.forEach((mutation) => {
+				if (mutation.type === 'childList') {
+					mutation.addedNodes.forEach((n) => {
+						if ('className' in n) {
+							// @ts-ignore
+							if (n.className.includes && typeof n.className.includes === 'function' && n.className.includes(parent_class)) {
+								const fileDivs = (n as HTMLElement).getElementsByClassName(ownClass);
+								for (let i = 0; i < fileDivs.length; ++i) {
+									const link = fileDivs[i] as HTMLElement;
+									updateDivExtraAttributes(plugin.app, plugin, link, viewType, "");
+								}
+							}
+						}
+					});
+				}
+			});
+		});
+		observer.observe(container, { subtree: true, childList: true, attributes: false });
+		plugin.observers.push([observer, viewType, selector]);
+	}
+
+	private disconnectObservers() {
+		this.observers.forEach(([observer, type, own_class]) => {
+			observer.disconnect();
+			const leaves = this.app.workspace.getLeavesOfType(type);
+			leaves.forEach(leaf => {
+				this.removeFromContainer(leaf.view.containerEl, own_class);
+			})
+		});
+		for (const observer of this.modalObservers) {
+			observer.disconnect();
+		}
+	}
+
 	onunload() {
+		this.disconnectObservers();
 		console.log('Metadata Menu unloaded');
 	};
 }

@@ -1,10 +1,11 @@
 import MetadataMenu from "main";
 import { Menu, setIcon, TextAreaComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
-import InputModal from "src/optionModals/fields/InputModal";
+import InputModal from "src/modals/fields/InputModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
+import { FieldOptions } from "src/components/NoteFields";
 
 export default class InputField extends FieldManager {
 
@@ -16,24 +17,28 @@ export default class InputField extends FieldManager {
         return this.field.options.template
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         const modal = new InputModal(this.plugin, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
+        const iconName = FieldIcon[FieldType.Input];
+        const action = () => modal.open();
         if (InputField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
-                item.setIcon(FieldIcon[FieldType.Input]);
-                item.onClick(() => modal.open());
+                item.setIcon(iconName);
+                item.onClick(action);
                 item.setSection("metadata-menu.fields");
             })
         } else if (InputField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
-                action: () => modal.open(),
-                icon: FieldIcon[FieldType.Input]
+                action: action,
+                icon: iconName
             });
-        };
+        } else if (InputField.isFieldOptions(location)) {
+            location.addOption(FieldIcon[FieldType.Input], action, `Update ${name}'s value`);
+        }
     };
 
     public createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu): void {
@@ -54,8 +59,8 @@ export default class InputField extends FieldManager {
         return true
     }
 
-    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
-        const fieldModal = new InputModal(this.plugin, file, this.field, value || "", lineNumber, inFrontmatter, after);
+    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): void {
+        const fieldModal = new InputModal(this.plugin, file, this.field, value || "", lineNumber, inFrontmatter, after, asList, asComment);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

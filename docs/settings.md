@@ -28,7 +28,7 @@ If you want a field to be globally managed throughout your whole vault you can `
 
 You have to choose the source of values for your select field between 4 sources:
 
-- `Values defined in this setting` : enter the [`Preset Options`](#preset-options) one by one, sort them
+- `Values defined in these setting` : enter the [`Preset Options`](#preset-options) one by one, sort them
 - `Values from a note` : enter the [`Path of the note containing the values`](#path-of-the-note-containing-the-values)
 - `Values returned from a dataview query` : create a [`dataview function`](#dataview-function) to return a list of values
 
@@ -219,6 +219,19 @@ If global fileClass is null or unproperly configured, the preset fields defined 
 You can define fileClasses to be applicable to every file matching a dataview query. (same syntax as for `File` type fields)
 
 If a File matches several queries, the last matching fileClass (starting from the top) will be applicable to this file.
+
+### Show extra button to access metadata menu form
+
+When a note has one or more fileClass (or [supercharged tags](fileClasses#mapwithtag-field--supercharged-tag)) you can display a button next to the note's : 
+- links in reading mode
+- links in live preview
+- file in file explorer
+- reference in star panel
+- reference in search panel
+- reference in backlinks panel
+- tab header
+
+each option has its own toggler
 
 ## Migrate
 Historically most of this plugin's features were available in `Supercharged links` plugin.

@@ -1,10 +1,11 @@
 import MetadataMenu from "main";
 import { Menu, setIcon, TextComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
-import SelectModal from "src/optionModals/fields/SelectModal";
+import SelectModal from "src/modals/fields/SelectModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
+import { FieldOptions } from "src/components/NoteFields";
 
 export default class SelectField extends AbstractListBasedField {
 
@@ -14,28 +15,31 @@ export default class SelectField extends AbstractListBasedField {
         super(plugin, field, FieldType.Select)
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         const modal = new SelectModal(this.plugin, file, value, this.field);
         modal.titleEl.setText("Select value");
+        const action = () => modal.open()
         if (SelectField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update ${name}`);
                 item.setIcon(FieldIcon[FieldType.Select]);
-                item.onClick(() => modal.open());
+                item.onClick(action);
                 item.setSection("metadata-menu.fields");
             });
         } else if (SelectField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
-                action: () => modal.open(),
+                action: action,
                 icon: FieldIcon[FieldType.Select]
             });
+        } else if (SelectField.isFieldOptions(location)) {
+            location.addOption(FieldIcon[FieldType.Multi], action, `Update ${name}'s value`);
         };
     };
 
-    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
-        const fieldModal = new SelectModal(this.plugin, file, value || "", this.field, lineNumber, inFrontmatter, after);
+    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): void {
+        const fieldModal = new SelectModal(this.plugin, file, value || "", this.field, lineNumber, inFrontmatter, after, asList, asComment);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }

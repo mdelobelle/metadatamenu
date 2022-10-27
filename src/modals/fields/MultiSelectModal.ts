@@ -22,7 +22,9 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         initialOptions: string,
         private lineNumber: number = -1,
         private inFrontmatter: boolean = false,
-        private after: boolean = false
+        private after: boolean = false,
+        private asList: boolean = false,
+        private asComment: boolean = false
     ) {
         super(plugin.app);
         if (initialOptions) {
@@ -126,7 +128,7 @@ export default class MultiSuggestModal extends SuggestModal<string> {
 
     async addNewValueToSettings(): Promise<void> {
         const newValue = this.inputEl.value;
-        const fileClassName = this.plugin.fieldIndex.filesFileClassName.get(this.file.path)
+        const fileClassName = this.plugin.fieldIndex.filesFields.get(this.file.path)?.find(field => field.name === this.field.name)?.fileClassName
         if (fileClassName) {
             const fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
             const fileClassAttribute = fileClass?.attributes.find(attr => attr.name === this.field.name)
@@ -180,7 +182,7 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         } else {
             const renderedValues = !this.inFrontmatter ? options.join(", ") : options.length > 1 ? `[${options.join(", ")}]` : `${options[0]}`
             await this.plugin.fileTaskManager
-                .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, renderedValues, this.lineNumber, this.inFrontmatter, this.after) });
+                .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, renderedValues, this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
         };
         this.close();
     }
@@ -191,7 +193,7 @@ export default class MultiSuggestModal extends SuggestModal<string> {
                 .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, "") });
         } else {
             await this.plugin.fileTaskManager
-                .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after) });
+                .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
         };
     }
 

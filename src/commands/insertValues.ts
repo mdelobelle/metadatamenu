@@ -1,5 +1,6 @@
 import MetadataMenu from "main";
 import { MarkdownView, TFile } from "obsidian";
+import { insertFrontmatterWithFields } from "./insertFrontmatterWithFields";
 
 export async function insertValues(
     plugin: MetadataMenu,
@@ -8,7 +9,9 @@ export async function insertValues(
     value: string,
     lineNumber?: number,
     inFrontmatter?: boolean,
-    after: boolean = true
+    after: boolean = true,
+    asList: boolean = false,
+    asComment: boolean = false
 ): Promise<void> {
     let file: TFile;
     if (fileOrFilePath instanceof TFile) {
@@ -21,23 +24,31 @@ export async function insertValues(
             throw Error("path doesn't correspond to a proper file");
         }
     }
-    const result = await plugin.app.vault.read(file)
-    let newContent: string[] = [];
+    if (inFrontmatter && lineNumber == -2) {
+        const fields: Record<string, string> = {}
+        fields[fieldName] = value
+        await insertFrontmatterWithFields(plugin, file, fields);
+    } else {
+        const result = await plugin.app.vault.read(file)
+        let newContent: string[] = [];
 
-    result.split("\n").forEach((line, _lineNumber) => {
-        if (_lineNumber == lineNumber) {
-            if (after) newContent.push(line);
-            newContent.push(`${fieldName}${inFrontmatter ? ":" : "::"} ${value}`);
-            if (!after) newContent.push(line);
-        } else {
-            newContent.push(line);
+        result.split("\n").forEach((line, _lineNumber) => {
+            if (_lineNumber == lineNumber) {
+                if (after) newContent.push(line);
+                const newLine = `${!inFrontmatter && asComment ? ">" : ""}${!inFrontmatter && asList ? "- " : ""}${fieldName}${inFrontmatter ? ":" : "::"} ${value}`;
+                newContent.push(newLine);
+                if (!after) newContent.push(line);
+            } else {
+                newContent.push(line);
+            }
+        });
+
+        await plugin.app.vault.modify(file, newContent.join('\n'));
+        const editor = plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor
+        if (editor) {
+            const lineNumber = editor.getCursor().line
+            editor.setCursor({ line: editor.getCursor().line, ch: editor.getLine(lineNumber).length })
         }
-    });
-
-    await plugin.app.vault.modify(file, newContent.join('\n'));
-    const editor = plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor
-    if (editor) {
-        const lineNumber = editor.getCursor().line
-        editor.setCursor({ line: editor.getCursor().line, ch: editor.getLine(lineNumber).length })
     }
+
 }

@@ -1,11 +1,12 @@
 import MetadataMenu from "main";
 import { Menu, Notice, setIcon, TextAreaComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
-import SingleFileModal from "src/optionModals/fields/SingleFileModal";
+import SingleFileModal from "src/modals/fields/SingleFileModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager, SettingLocation } from "../FieldManager";
+import { FieldOptions } from "src/components/NoteFields";
 
 export default class FileField extends FieldManager {
 
@@ -39,30 +40,50 @@ export default class FileField extends FieldManager {
         }
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         const modal = new SingleFileModal(this.plugin, file, this.field, value)
         modal.titleEl.setText("Select value");
+        const action = () => modal.open()
         if (FileField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update ${name}`);
                 item.setIcon(FieldIcon[FieldType.File]);
-                item.onClick(() => modal.open());
+                item.onClick(action);
                 item.setSection("metadata-menu.fields");
             });
         } else if (FileField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
-                action: () => modal.open(),
+                action: action,
                 icon: FieldIcon[FieldType.File]
             });
+        } else if (FileField.isFieldOptions(location)) {
+            location.addOption(FieldIcon[FieldType.File], action, `Update ${name}'s value`);
         };
     }
 
-    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void {
-        const fieldModal = new SingleFileModal(this.plugin, file, this.field, value, lineNumber, inFrontmatter, after);
+    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): void {
+        const fieldModal = new SingleFileModal(this.plugin, file, this.field, value, lineNumber, inFrontmatter, after, asList, asComment);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
+    }
+
+    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked: () => {}): void {
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        if (dvApi) {
+            const value = dvApi.page(file.path)[fieldName]
+            if (dvApi.value.isLink(value)) {
+                const link = container.createEl('a', { text: value.path.split("/").last().replace(/(.*).md/, "$1") });
+                link.onclick = () => {
+                    this.plugin.app.workspace.openLinkText(value.path, file.path, true)
+                    onClicked();
+                }
+            } else {
+                container.createDiv({ text: value });
+            }
+        }
+        container.createDiv();
     }
 
     public createDvField(
@@ -175,8 +196,8 @@ export default class FileField extends FieldManager {
         return true;
     }
 
-    public validateValue(value: string): boolean {
-        const basename = value.trim().replace(/^\[\[/g, "").replace(/\]\]$/g, "");
-        return !!this.getFiles().map(f => f.basename).find(item => item === basename);
+    public validateValue(value: any): boolean {
+        //todo : manage both raw links and dv Link objects
+        return true
     }
 }

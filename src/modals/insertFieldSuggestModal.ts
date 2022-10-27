@@ -1,7 +1,5 @@
 import MetadataMenu from "main";
 import { FuzzyMatch, FuzzySuggestModal, setIcon, TFile } from "obsidian";
-import Field from "src/fields/Field";
-import { FileClass } from "src/fileClass/fileClass";
 import { FieldIcon, FieldManager, FieldType, FieldTypeTagClass } from "src/types/fieldTypes";
 import addNewFieldModal from "./addNewFieldModal";
 
@@ -20,21 +18,15 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
         private lineNumber: number,
         private inFrontmatter: boolean,
         private after: boolean,
-        private fileClass?: FileClass
     ) { super(plugin.app); };
 
     getItems(): Option[] {
-        if (this.fileClass) {
-            return [{ actionLabel: '++New++' }]
-                .concat(this.fileClass.attributes.map(attr => {
-                    return { actionLabel: attr.name, type: attr.type }
-                }));
-        } else {
-            return [{ actionLabel: '++New++' }]
-                .concat(this.plugin.settings.presetFields.map(setting => {
-                    return { actionLabel: setting.name, type: setting.type }
-                }));
-        };
+        return [{ actionLabel: '++New++' }]
+            .concat(this.plugin.fieldIndex.filesFields
+                .get(this.file.path)?.map(field => {
+                    return { actionLabel: field.name, type: field.type }
+                }) || []
+            );
     }
 
     getItemText(item: Option): string {
@@ -59,25 +51,12 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
             const newFieldModal = new addNewFieldModal(this.plugin, this.lineNumber, this.file, this.inFrontmatter, this.after);
             newFieldModal.open();
             this.close();
-        } else if (this.fileClass) {
-            const fileClassAttributesWithName = this.fileClass.attributes.filter(attr => attr.name == item.actionLabel);
-            let field: Field | undefined
-            let type: FieldType | undefined
-            if (fileClassAttributesWithName.length > 0) {
-                const fileClassAttribute = fileClassAttributesWithName[0];
-                field = fileClassAttribute.getField();
-                type = fileClassAttribute.type
-            }
+        } else {
+            const field = this.plugin.fieldIndex.filesFields.get(this.file.path)?.find(field => field.name === item.actionLabel)
             if (field) {
                 const fieldManager = new FieldManager[field.type](this.plugin, field);
-                fieldManager.createAndOpenFieldModal(this.file, item.actionLabel, "", this.lineNumber, this.inFrontmatter, this.after);
+                fieldManager.createAndOpenFieldModal(this.file, item.actionLabel, "", this.lineNumber, this.inFrontmatter, this.after, false, false);
             }
-            this.close()
-        } else {
-            const field = this.plugin.settings.presetFields.filter(_field => _field.name == item.actionLabel)[0];
-            const fieldManager = new FieldManager[field.type](this.plugin, field);
-            fieldManager.createAndOpenFieldModal(this.file, item.actionLabel, "", this.lineNumber, this.inFrontmatter, this.after);
-            this.close();
-        };
+        }
     }
 }

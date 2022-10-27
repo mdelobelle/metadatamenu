@@ -1,9 +1,9 @@
 import MetadataMenu from "main";
 import { Menu, TextComponent, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
-import { FileClass } from "src/fileClass/fileClass";
 import FCSM from "src/options/FieldCommandSuggestModal";
-import InsertFieldSuggestModal from "src/optionModals/insertFieldSuggestModal";
+import { FieldOptions } from "src/components/NoteFields";
+import InsertFieldSuggestModal from "src/modals/insertFieldSuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldManager as FM, FieldType } from "src/types/fieldTypes";
 import Field from "./Field";
@@ -15,7 +15,7 @@ export const enum SettingLocation {
 
 export abstract class FieldManager {
 
-    abstract addFieldOption(name: string, value: string, file: TFile, location: Menu | FCSM): void;
+    abstract addFieldOption(name: string, value: string, file: TFile, location: Menu | FCSM | FieldOptions): void;
     abstract validateOptions(): boolean;
     abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
     abstract createDvField(
@@ -29,7 +29,8 @@ export abstract class FieldManager {
         }
     ): void
     abstract getOptionsStr(): string;
-    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): void
+    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): void;
+    public showModalOption: boolean = true;
 
     constructor(public plugin: MetadataMenu, public field: Field, public type: FieldType) {
         if (field.type !== type) throw Error(`This field is not of type ${type}`)
@@ -78,16 +79,20 @@ export abstract class FieldManager {
         }
     }
 
-    public static isMenu(location: Menu | "InsertFieldCommand" | FCSM): location is Menu {
+    public static isMenu(location: Menu | "InsertFieldCommand" | FCSM | FieldOptions): location is Menu {
         return (location as Menu).addItem !== undefined;
     };
 
-    public static isSuggest(location: Menu | "InsertFieldCommand" | FCSM): location is FCSM {
+    public static isSuggest(location: Menu | "InsertFieldCommand" | FCSM | FieldOptions): location is FCSM {
         return (location as FCSM).getItems !== undefined;
     };
 
-    public static isInsertFieldCommand(location: Menu | "InsertFieldCommand" | FCSM): location is "InsertFieldCommand" {
+    public static isInsertFieldCommand(location: Menu | "InsertFieldCommand" | FCSM | FieldOptions): location is "InsertFieldCommand" {
         return (location as string) === "InsertFieldCommand";
+    }
+
+    public static isFieldOptions(location: Menu | "InsertFieldCommand" | FCSM | FieldOptions): location is FieldOptions {
+        return (location as FieldOptions).addOption !== undefined;
     }
 
     public static createAndOpenModal(
@@ -98,14 +103,16 @@ export abstract class FieldManager {
         value?: string,
         lineNumber?: number,
         inFrontmatter?: boolean,
-        after?: boolean
+        after?: boolean,
+        asList?: boolean,
+        asComment?: boolean
     ): void {
         if (field) {
             const fieldManager = new FM[field.type](plugin, field);
-            fieldManager.createAndOpenFieldModal(file, fieldName, value, lineNumber, inFrontmatter, after);
+            fieldManager.createAndOpenFieldModal(file, fieldName, value, lineNumber, inFrontmatter, after, asList, asComment);
         } else {
             const fieldManager = FieldManager.createDefault(plugin, fieldName!);
-            fieldManager.createAndOpenFieldModal(file, fieldName!, value, lineNumber, inFrontmatter, after);
+            fieldManager.createAndOpenFieldModal(file, fieldName!, value, lineNumber, inFrontmatter, after, asList, asComment);
         }
     }
 
@@ -117,24 +124,15 @@ export abstract class FieldManager {
         lineNumber: number,
         inFrontmatter: boolean,
         after: boolean,
-        fileClass?: FileClass
+        asList: boolean,
+        asComment: boolean
     ) {
         if (!fieldName) {
-            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, inFrontmatter, after, fileClass);
+            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, inFrontmatter, after);
             modal.open();
         } else {
-            if (fileClass) {
-                const fileClassAttributesWithName = fileClass.attributes.filter(attr => attr.name == fieldName);
-                let field: Field | undefined
-                if (fileClassAttributesWithName.length > 0) {
-                    const fileClassAttribute = fileClassAttributesWithName[0];
-                    field = fileClassAttribute.getField();
-                }
-                this.createAndOpenModal(plugin, file, fieldName, field, value, lineNumber, inFrontmatter, after);
-            } else {
-                const field = plugin.settings.presetFields.filter(_field => _field.name == fieldName)[0];
-                this.createAndOpenModal(plugin, file, fieldName, field, value, lineNumber, inFrontmatter, after);
-            };
+            const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
+            if (field) this.createAndOpenModal(plugin, file, fieldName, field, value, lineNumber, inFrontmatter, after, asList, asComment);
         }
     }
 
@@ -155,5 +153,22 @@ export abstract class FieldManager {
             throw Error("this value is not a boolean")
         };
         return toBooleanValue;
+    }
+
+    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked = () => { }): void {
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        let valueText: string;
+        if (dvApi) {
+            switch (dvApi.page(file.path)[fieldName]) {
+                case undefined: valueText = ""; break;
+                case null: valueText = ""; break;
+                case false: valueText = "false"; break;
+                case 0: valueText = "0"; break;
+                default: valueText = dvApi.page(file.path)[fieldName];
+            }
+        } else {
+            valueText = "";
+        }
+        container.createDiv({ text: valueText })
     }
 }

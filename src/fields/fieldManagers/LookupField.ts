@@ -16,20 +16,21 @@ export default class LookupField extends FieldManager {
 
     constructor(plugin: MetadataMenu, field: Field) {
         super(plugin, field, FieldType.Lookup)
+        this.showModalOption = false
     }
 
     addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
 
     }
 
-    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean): Promise<void> {
+    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
         //no field modal, we include the field directly
         if (lineNumber == -1) {
             await this.plugin.fileTaskManager
                 .pushTask(() => { replaceValues(this.plugin, file, this.field.name, "") });
         } else {
             await this.plugin.fileTaskManager
-                .pushTask(() => { insertValues(this.plugin, file, this.field.name, "", lineNumber, inFrontmatter, after) });
+                .pushTask(() => { insertValues(this.plugin, file, this.field.name, "", lineNumber, inFrontmatter, after, asList, asComment) });
         };
     }
 
@@ -45,6 +46,10 @@ export default class LookupField extends FieldManager {
                 options_set[1]?.hide()
             }
         })
+    }
+
+    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked = () => { }): void {
+        container.createDiv({ text: this.plugin.fieldIndex.fileLookupFieldLastValue.get(`${file.path}__related__${fieldName}`) })
     }
 
     private displaySelectedOutputWarningContainer(optionWarningContainer: HTMLDivElement, value: keyof typeof Lookup.Type) {

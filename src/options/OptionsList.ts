@@ -1,13 +1,14 @@
 import MetadataMenu from "main";
-import { MarkdownView, Menu, TFile } from "obsidian";
+import { MarkdownView, Menu, Notice, TFile } from "obsidian";
 import Field from "src/fields/Field";
 import { FieldManager as F } from "src/fields/FieldManager";
 import Managers from "src/fields/fieldManagers/Managers";
-import { FileClass } from "src/fileClass/fileClass";
-import InputModal from "src/optionModals/fields/InputModal";
+import { AddFileClassToFileModal } from "src/fileClass/fileClass";
+import AddNewFileClassModal from "src/modals/addNewFileClassModal";
+import InputModal from "src/modals/fields/InputModal";
 import { FieldIcon, FieldManager, FieldType } from "src/types/fieldTypes";
 import { genuineKeys } from "src/utils/dataviewUtils";
-import chooseSectionModal from "../optionModals/chooseSectionModal";
+import chooseSectionModal from "../modals/chooseSectionModal";
 import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
 import FileClassOptionsList from "./FileClassOptionsList";
 
@@ -27,7 +28,6 @@ export default class OptionsList {
 
 	// adds options to context menu or to a dropdown modal trigger with "Field: Options" command in command pallette
 	path: string;
-	fileClass: FileClass | undefined;
 	attributes: Record<string, string>;
 	fieldsFromIndex: Record<string, Field> = {};
 
@@ -41,16 +41,15 @@ export default class OptionsList {
 		this.location = location;
 		this.attributes = {};
 		this.includedFields = includedFields ? [this.plugin.settings.fileClassAlias, ...includedFields] : [this.plugin.settings.fileClassAlias];
-		this.fileClass = this.plugin.fieldIndex.filesFileClass.get(this.file.path)
 		this.getFieldsFromIndex();
 		this.getFieldsValues();
 	};
 
 	private getFieldsValues(): void {
-		const dataview = this.plugin.app.plugins.plugins["dataview"]
+		const dvApi = this.plugin.app.plugins.plugins["dataview"]?.api
 		//@ts-ignore
-		if (dataview) {
-			const dvFile = dataview.api.page(this.file.path)
+		if (dvApi) {
+			const dvFile = dvApi.page(this.file.path)
 			try {
 				genuineKeys(dvFile).forEach(key => this.addAttribute(key, dvFile[key]))
 			} catch (error) {
@@ -98,35 +97,42 @@ export default class OptionsList {
 	}
 
 	public createExtraOptionList(openAfterCreate: boolean = true): void {
-		if (isMenu(this.location)) { this.location.addSeparator(); };
-		if (isInsertFieldCommand(this.location)) {
+		const location = this.location
+		if (isMenu(location)) { location.addSeparator(); };
+		if (isInsertFieldCommand(location)) {
 			this.addFieldAtCurrentPositionOption();
-		} else if (isSuggest(this.location)) {
+		} else if (isSuggest(location)) {
 			this.buildFieldOptions();
 			this.addFieldAtCurrentPositionOption();
 			this.addSectionSelectModalOption();
 			this.addFieldAtTheEndOfFrontmatterOption();
-			if (this.fileClass) {
+			const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || []
+			fileClasses.forEach(fileClass => {
 				const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.plugin.app)
-				const optionsList = new FileClassOptionsList(this.plugin, this.fileClass.getClassFile(), fieldCommandSuggestModal);
+				const optionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), fieldCommandSuggestModal);
 				optionsList.createExtraOptionList(false);
-				this.location.options.push({
+				location.options.push({
 					id: "manage_fileClass_attributes",
-					actionLabel: `<span>Manage <b>${this.fileClass.name}</b> fileClass fields</span>`,
+					actionLabel: `<span>Manage <b>${fileClass.name}</b> fileClass fields</span>`,
 					action: () => { fieldCommandSuggestModal.open() },
 					icon: "wrench"
 				})
-			}
-			if (openAfterCreate) this.location.open();
-		} else if (isMenu(this.location)) {
+			})
+			this.addFileClassToFileOption();
+			this.addNewFileClassOption();
+			if (openAfterCreate) location.open();
+		} else if (isMenu(location)) {
 			this.buildFieldOptions();
 			this.addSectionSelectModalOption();
 			this.addFieldAtCurrentPositionOption();
 			this.addFieldAtTheEndOfFrontmatterOption();
-			if (this.fileClass) {
-				const fileClassOptionsList = new FileClassOptionsList(this.plugin, this.fileClass.getClassFile(), this.location)
+			const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || []
+			fileClasses.forEach(fileClass => {
+				const fileClassOptionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), location)
 				fileClassOptionsList.createExtraOptionList(false);
-			}
+			})
+			this.addFileClassToFileOption();
+			this.addNewFileClassOption();
 		}
 	}
 
@@ -153,7 +159,6 @@ export default class OptionsList {
 	private buildFieldOptions(): void {
 		Object.keys(this.attributes).forEach((key: string) => {
 			const value = this.attributes[key];
-			//const field = getField(this.plugin, key, this.fileClass);
 			const field = this.fieldsFromIndex[key]
 
 			if (field) {
@@ -174,7 +179,7 @@ export default class OptionsList {
 	}
 
 	private addSectionSelectModalOption(): void {
-		const modal = new chooseSectionModal(this.plugin, this.file, this.fileClass);
+		const modal = new chooseSectionModal(this.plugin, this.file);
 		if (isMenu(this.location)) {
 			this.location.addItem((item) => {
 				item.setIcon("enter");
@@ -202,7 +207,7 @@ export default class OptionsList {
 					item.setIcon("pin");
 					item.setTitle("Add field in frontmatter");
 					item.onClick(async (evt: MouseEvent) => {
-						F.openFieldModal(this.plugin, this.file, undefined, "", lineNumber + 1, true, false)
+						F.openFieldModal(this.plugin, this.file, undefined, "", lineNumber + 1, true, false, false, false)
 					});
 					item.setSection("metadata-menu");
 				});
@@ -211,7 +216,7 @@ export default class OptionsList {
 					id: "add_field_in_frontmatter",
 					actionLabel: "Add a field in frontmatter...",
 					action: () => F.openFieldModal(
-						this.plugin, this.file, undefined, "", lineNumber + 1, true, false, this.fileClass),
+						this.plugin, this.file, undefined, "", lineNumber + 1, true, false, false, false),
 					icon: "pin"
 				})
 			}
@@ -234,22 +239,64 @@ export default class OptionsList {
 					item.setTitle("Add field at cursor");
 					item.onClick((evt: MouseEvent) => {
 						F.openFieldModal(
-							this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false, this.fileClass)
+							this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false, false, false)
 					});
 					item.setSection("metadata-menu");
 				});
 			} else if (isInsertFieldCommand(this.location)) {
 				F.openFieldModal(
-					this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false, this.fileClass);
+					this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false, false, false);
 			} else if (isSuggest(this.location)) {
 				this.location.options.push({
 					id: "add_field_at_cursor",
 					actionLabel: "Add field at cursor...",
 					action: () => F.openFieldModal(
-						this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false, this.fileClass),
+						this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false, false, false),
 					icon: "pin"
 				})
 			};
+		}
+	}
+
+	private addFileClassToFileOption(): void {
+		const modal = new AddFileClassToFileModal(this.plugin, this.file)
+		const action = () => modal.open();
+		if (isMenu(this.location)) {
+			this.location.addItem((item) => {
+				item.setIcon("plus-square");
+				item.setTitle(`Add ${this.plugin.settings.fileClassAlias} to ${this.file.basename}`);
+				item.onClick(action);
+				item.setSection("metadata-menu-fileclass");
+			});
+		} else if (isSuggest(this.location)) {
+			this.location.options.push({
+				id: "add_fileclass_to_file",
+				actionLabel: `Add ${this.plugin.settings.fileClassAlias} to ${this.file.basename}`,
+				action: action,
+				icon: "plus-square"
+			})
+		};
+	}
+
+	private addNewFileClassOption(): void {
+		const modal = new AddNewFileClassModal(this.plugin);
+		const action = () => modal.open();
+		if (this.plugin.settings.classFilesPath) {
+			if (isMenu(this.location)) {
+				this.location.addItem((item) => {
+					item.setIcon("file-plus-2");
+					item.setTitle(`Add a new ${this.plugin.settings.fileClassAlias}`)
+					item.onClick(action);
+					item.setSection("metadata-menu-fileclass");
+				})
+			} else if (isSuggest(this.location)) {
+				this.location.options.push({
+					id: "add_new_fileclass",
+					actionLabel: `Add a new ${this.plugin.settings.fileClassAlias}`,
+					action: action,
+					icon: "file-plus-2"
+				})
+			}
 		}
 	}
 };

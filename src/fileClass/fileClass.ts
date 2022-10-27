@@ -1,9 +1,12 @@
 import { FileClassAttribute } from "./fileClassAttribute";
 import MetadataMenu from "main";
-import { TFile } from "obsidian";
+import { SuggestModal, TFile } from "obsidian";
 import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 import { capitalize } from "src/utils/textUtils";
 import { genuineKeys } from "src/utils/dataviewUtils";
+import { replaceValues } from "src/commands/replaceValues";
+import { insertValues } from "src/commands/insertValues";
+import { insertFrontmatterWithFields } from "src/commands/insertFrontmatterWithFields";
 
 interface FileClass {
     attributes: Array<FileClassAttribute>;
@@ -11,6 +14,57 @@ interface FileClass {
     errors: string[];
     parent?: FileClass;
     excludes?: Array<FileClassAttribute>;
+}
+
+export class AddFileClassToFileModal extends SuggestModal<string> {
+
+    constructor(
+        private plugin: MetadataMenu,
+        private file: TFile
+    ) {
+        super(plugin.app)
+    }
+
+    getSuggestions(query: string): string[] | Promise<string[]> {
+        return [...this.plugin.fieldIndex.fileClassesName.keys()]
+            .filter(fileClassName => !this.plugin.fieldIndex.filesFileClasses
+                .get(this.file.path)?.map(fileClass => fileClass.name)
+                .includes(fileClassName)
+            )
+            .filter(fileClassName => fileClassName.toLocaleLowerCase().contains(query.toLowerCase()));
+    }
+
+    renderSuggestion(value: string, el: HTMLElement) {
+        el.setText(value);
+    }
+
+    onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
+        this.insertFileClassToFile(item)
+    }
+
+    async insertFileClassToFile(value: string) {
+        const fileClassAlias = this.plugin.settings.fileClassAlias
+        const currentFileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path)
+        if (currentFileClasses) {
+            replaceValues(this.plugin, this.file, fileClassAlias, [...currentFileClasses.map(fc => fc.name), value].join(", "))
+        } else {
+            const frontmatter = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatter
+            if (frontmatter) {
+                if (Object.keys(frontmatter).includes(fileClassAlias)) {
+                    //fileClass field is empty, has an empty array of is badly formatted: override it
+                    await replaceValues(this.plugin, this.file, fileClassAlias, value)
+                } else {
+                    //frontmatter exists but doesn't contain fileClass: add it
+                    const lineNumber = frontmatter.position.end.line - 1
+                    await insertValues(this.plugin, this.file, fileClassAlias, value, lineNumber, true)
+                }
+            } else {
+                const fields: Record<string, string> = {}
+                fields[fileClassAlias] = value
+                await insertFrontmatterWithFields(this.plugin, this.file, fields)
+            }
+        }
+    }
 }
 
 class FileClassManager {
@@ -63,6 +117,16 @@ class FileClass {
         this.attributes = [];
     }
 
+    public isMappedWithTag(): boolean {
+        try {
+            const fileClassFile = this.getClassFile();
+            const mapWithTag = this.plugin.app.metadataCache.getFileCache(fileClassFile)?.frontmatter?.mapWithTag;
+            return !!mapWithTag;
+        } catch (error) {
+            return false
+        }
+    }
+
     public getClassFile(): TFile {
         const filesClassPath = this.plugin.settings.classFilesPath;
         const file = this.plugin.app.vault.getAbstractFileByPath(`${filesClassPath}${this.name}.md`);
@@ -76,65 +140,108 @@ class FileClass {
         }
     }
 
-    public getParentClass(): FileClass | undefined {
-        return
+    public getInheritanceList(): FileClass[] {
+        const file = this.getClassFile();
+        const parent = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.extends
+        if (false && parent) {
+            const parentFileClass = FileClass.createFileClass(this.plugin, parent);
+            return [...parentFileClass.getInheritanceList(), this]
+        }
+        return [this]
+    }
+
+    getIcon(): string | undefined {
+        const parents = this.getInheritanceList();
+        parents.reverse()
+        let icon: string | undefined;
+        parents.some((fileClass, i) => {
+            const file = fileClass.getClassFile();
+            const _icon = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.icon
+            if (_icon) {
+                icon = _icon
+                return true;
+            };
+        })
+        return icon
+    }
+
+    static getFileClassAttributes(plugin: MetadataMenu, fileClass: FileClass, excludes?: string[]): FileClassAttribute[] {
+
+        const file = fileClass.getClassFile();
+        let attributes: Array<FileClassAttribute> = [];
+        const dvApi = plugin.app.plugins.plugins["dataview"]?.api
+        //@ts-ignore
+        if (dvApi) {
+            const dvFile = dvApi.page(file.path)
+            try {
+                genuineKeys(dvFile).forEach(key => {
+                    if (key !== "file" && !Object.keys(dvFile.file.frontmatter || {}).includes(key)) {
+                        const item = typeof dvFile[key] !== "string"
+                            ? JSON.stringify(dvFile[key])
+                            : dvFile[key];
+                        try {
+                            const { type, options } = JSON.parse(item);
+                            const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
+                            const attr = new FileClassAttribute(this.name, key, fieldType, options, fileClass.name)
+                            attributes.push(attr)
+                        } catch (e) {
+                            //do nothing
+                        }
+                    }
+                })
+            } catch (error) {
+                throw (error);
+            }
+        }
+        if (excludes) {
+            return attributes.filter(attr => !excludes.includes(attr.name))
+        } else {
+            return attributes
+        }
+    }
+
+    static getExcludedFieldsFromFrontmatter(excludedFields: string[] | string | undefined): string[] {
+        if (Array.isArray(excludedFields)) {
+            return excludedFields;
+        } else if (excludedFields) {
+            return excludedFields.split(",")
+        } else {
+            return []
+        }
     }
 
     public getAttributes(excludeParents: boolean = false): void {
         try {
             const file = this.getClassFile();
-            let parentAttributes: Array<FileClassAttribute> = [];
-            let errors: string[] = [];
-            const parent = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.extends
-            const excludedFields = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.excludes
-            if (parent && !excludeParents) {
-                try {
-                    const parentFileClass = FileClass.createFileClass(this.plugin, parent);
-                    parentFileClass.getAttributes();
-                    parentAttributes = Array.isArray(excludedFields) ? [...parentFileClass.attributes.filter(attr => !excludedFields.includes(attr.name))] : [...parentFileClass.attributes]
-                } catch (error) {
-                    errors.push(error)
-                }
+            const ancestors = this.plugin.fieldIndex.fileClassesAncestors.get(this.name);
+            const _excludedFields = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.excludes
+            let excludedFields = FileClass.getExcludedFieldsFromFrontmatter(_excludedFields);
+
+            const ancestorsAttributes: Map<string, FileClassAttribute[]> = new Map();
+            ancestorsAttributes.set(this.name, FileClass.getFileClassAttributes(this.plugin, this, excludedFields))
+            if (!excludeParents) {
+                ancestors?.forEach(ancestorName => {
+                    const ancestorFile = this.plugin.app.vault.getAbstractFileByPath(`${this.plugin.settings.classFilesPath}${ancestorName}.md`)
+                    const ancestor = new FileClass(this.plugin, ancestorName);
+                    ancestorsAttributes.set(ancestorName, FileClass.getFileClassAttributes(this.plugin, ancestor, excludedFields))
+                    if (ancestorFile instanceof TFile && ancestorFile.extension === "md") {
+                        const _excludedFields = this.plugin.app.metadataCache.getFileCache(ancestorFile)?.frontmatter?.excludes
+                        excludedFields = FileClass.getExcludedFieldsFromFrontmatter(_excludedFields);
+                    }
+                })
             }
-            let attributes: Array<FileClassAttribute> = [];
-            const dataview = this.plugin.app.plugins.plugins["dataview"]
-            //@ts-ignore
-            if (dataview) {
-                const dvFile = dataview.api.page(file.path)
-                try {
-                    genuineKeys(dvFile).forEach(key => {
-                        if (key !== "file") {
-                            const item = typeof dvFile[key] !== "string"
-                                ? JSON.stringify(dvFile[key])
-                                : dvFile[key];
-                            try {
-                                const { type, options } = JSON.parse(item);
-                                const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
-                                const attr = new FileClassAttribute(this.name, key, fieldType, options)
-                                //deduplicate fields
-                                attributes.push(attr)
-                            } catch (e) {
-                                //do nothing
-                            }
-                        }
-                    })
-                } catch (error) {
-                    throw (error);
-                }
+            for (const [fileClassName, fileClassAttributes] of ancestorsAttributes) {
+                this.attributes.push(...fileClassAttributes.filter(attr => !this.attributes.map(_attr => _attr.name).includes(attr.name)))
             }
-            this.attributes = parentAttributes
-                .filter(attr => !attributes
-                    .map(_attr => _attr.name)
-                    .includes(attr.name)
-                ).concat(attributes.filter(p => !Object.keys(this.plugin.app.metadataCache.getFileCache(file)?.frontmatter || {}).includes(p.name)));
-            this.errors = errors;
         } catch (error) {
             throw (error);
         }
+
     }
 
     public async updateAttribute(newType: keyof typeof FieldType, newName: string, newOptions?: string[] | Record<string, string>, attr?: FileClassAttribute): Promise<void> {
-        const file = this.getClassFile();
+        const fileClass = attr ? this.plugin.fieldIndex.fileClassesName.get(attr.fileClassName)! : this
+        const file = fileClass.getClassFile();
         let result = await this.plugin.app.vault.read(file)
         if (attr) {
             let newContent: string[] = [];
@@ -172,7 +279,7 @@ class FileClass {
 
     static createFileClass(plugin: MetadataMenu, name: string, excludeParent: boolean = false): FileClass {
         const fileClass = new FileClass(plugin, name);
-        fileClass.getAttributes(excludeParent)
+        fileClass.getAttributes()
         return fileClass
     }
 }
