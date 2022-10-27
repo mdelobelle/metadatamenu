@@ -38,16 +38,16 @@
   text-align: right; }
 
 .metadata-menu-modal-value-with-btn > input.is-invalid {
-  color: var(--red); }
+  color: var(--color-red); }
 
 .metadata-menu-modal-value-with-btn-error-field {
   margin-top: -2em;
   height: 2em;
-  color: var(--red); }
+  color: var(--color-red); }
 
 .metadata-menu-modal-value-error-field {
   height: 2em;
-  color: var(--red);
+  color: var(--color-red);
   margin-left: 1em; }
 
 .metadata-menu-toggler {
@@ -185,10 +185,10 @@ button.metadata-menu-field-add-frontmatter-btn {
   width: 100%; }
 
 .metadata-menu-prompt-form .invalid-feedback {
-  color: var(--red); }
+  color: var(--color-red); }
 
 .metadata-menu-prompt-form input.is-invalid {
-  color: var(--red); }
+  color: var(--color-red); }
 
 .metadata-menu-toggle {
   display: flex;
@@ -234,39 +234,39 @@ button.metadata-menu-field-add-frontmatter-btn {
 
 .metadata-menu-setting-item-info-type.cycle,
 .metadata-menu-note-field-item > .field-type.cycle {
-  background-color: var(--blue); }
+  background-color: var(--color-blue); }
 
 .metadata-menu-setting-item-info-type.multi,
 .metadata-menu-note-field-item > .field-type.multi {
-  background-color: var(--green); }
+  background-color: var(--color-green); }
 
 .metadata-menu-setting-item-info-type.boolean,
 .metadata-menu-note-field-item > .field-type.boolean {
-  background-color: var(--yellow); }
+  background-color: var(--color-yellow); }
 
 .metadata-menu-setting-item-info-type.single,
 .metadata-menu-note-field-item > .field-type.single {
-  background-color: var(--green); }
+  background-color: var(--color-green); }
 
 .metadata-menu-setting-item-info-type.select,
 .metadata-menu-note-field-item > .field-type.select {
-  background-color: var(--orange); }
+  background-color: var(--color-orange); }
 
 .metadata-menu-setting-item-info-type.number,
 .metadata-menu-note-field-item > .field-type.number {
-  background-color: var(--purple); }
+  background-color: var(--color-purple); }
 
 .metadata-menu-setting-item-info-type.file,
 .metadata-menu-note-field-item > .field-type.file {
-  background-color: var(--cyan); }
+  background-color: var(--color-blue); }
 
 .metadata-menu-setting-item-info-type.date,
 .metadata-menu-note-field-item > .field-type.date {
-  background-color: var(--pink); }
+  background-color: var(--color-pink); }
 
 .metadata-menu-setting-item-info-type.lookup,
 .metadata-menu-note-field-item > .field-type.lookup {
-  background-color: var(--red); }
+  background-color: var(--color-red); }
 
 .metadata-menu-setting-section-header {
   margin-bottom: 0; }
@@ -340,7 +340,7 @@ button.metadata-menu-field-add-frontmatter-btn {
   margin-right: 0.375em; }
 
 .metadata-menu-dv-input.is-invalid {
-  color: red; }
+  color: var(--color-red); }
 
 .metadata-menu-dv-multi-values-container {
   display: flex;
