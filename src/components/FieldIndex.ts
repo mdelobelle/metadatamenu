@@ -166,13 +166,19 @@ export default class FieldIndex extends Component {
     }
 
     getFileClassesAncestors(): void {
-        if (this.plugin.settings.classFilesPath) {
+        const classFilesPath = this.plugin.settings.classFilesPath
+        if (classFilesPath) {
             this.plugin.app.vault.getMarkdownFiles()
-                .filter(f => f.path.includes(this.plugin.settings.classFilesPath!))
+                .filter(f => f.path.includes(classFilesPath))
                 .forEach(f => {
                     const parent = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.extends
                     if (parent) {
-                        this.fileClassesAncestors.set(f.basename, [parent])
+                        const parentFile = this.plugin.app.vault.getAbstractFileByPath(`${classFilesPath}${parent}.md`)
+                        if (parentFile) {
+                            this.fileClassesAncestors.set(f.basename, [parent])
+                        } else {
+                            this.fileClassesAncestors.set(f.basename, [])
+                        }
                     } else {
                         this.fileClassesAncestors.set(f.basename, [])
                     }
