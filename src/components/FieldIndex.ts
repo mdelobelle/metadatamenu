@@ -44,6 +44,7 @@ export default class FieldIndex extends Component {
     async onload(): Promise<void> {
 
         this.loadTime = Date.now()
+        await this.fullIndex("onload");
 
         if (this.dv?.api.index.initialized) {
             this.dv = this.plugin.app.plugins.plugins.dataview;
