@@ -115,7 +115,7 @@ export default class FieldIndex extends Component {
     }
 
     async fullIndex(event: string, force_update_lookups = false): Promise<void> {
-        //console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
+        console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
         const start = Date.now()
         this.flushCache();
         this.getFileClassesAncestors();
@@ -128,8 +128,9 @@ export default class FieldIndex extends Component {
         await this.getValuesListNotePathValues();
         this.resolveLookups();
         await this.updateLookups(force_update_lookups, "full Index");
-        //console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
+        console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     }
+
 
     resolveLookups(): void {
         resolveLookups(this.plugin);
@@ -242,6 +243,31 @@ export default class FieldIndex extends Component {
 
     resolveFileClassMatchingTags(): void {
         if (![...this.tagsMatchingFileClasses].length) return
+        //Alternative way
+        const mappedTags = [...this.tagsMatchingFileClasses.keys()]
+        const filesWithMappedTagQuery = mappedTags.map(t => `#${t}`).join(" or ")
+        this.dv.api.pages(filesWithMappedTagQuery).forEach((dvFile: any) => {
+            dvFile.file.tags.forEach((_tag: string) => {
+                const tag = _tag.replace(/^\#/, "")
+                const fileClass = this.tagsMatchingFileClasses.get(tag);
+                const filePath = dvFile.file.path;
+                if (fileClass) {
+                    this.filesFileClasses.set(filePath, [...(this.filesFileClasses.get(filePath) || []), fileClass])
+                    this.filesFileClassesNames.set(dvFile.file.path, [...(this.filesFileClassesNames.get(filePath) || []), fileClass.name])
+
+                    const fileFileClassesFieldsFromTag = this.fileClassesFields.get(fileClass.name)
+                    const currentFields = this.filesFieldsFromTags.get(filePath)
+
+                    if (fileFileClassesFieldsFromTag) {
+                        const newFields = [...fileFileClassesFieldsFromTag]
+                        const filteredCurrentFields = currentFields?.filter(field => !newFields.map(f => f.name).includes(field.name)) || []
+                        newFields.push(...filteredCurrentFields)
+                        this.filesFieldsFromTags.set(filePath, newFields)
+                    }
+                }
+            })
+        })
+        /* old way
         this.plugin.app.vault.getMarkdownFiles()
             .filter(f => !this.plugin.settings.classFilesPath
                 || !f.path.includes(this.plugin.settings.classFilesPath)
@@ -277,6 +303,7 @@ export default class FieldIndex extends Component {
 
                 })
             })
+        */
     }
 
     resolveFileClassQueries(): void {
