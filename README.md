@@ -29,6 +29,8 @@ For complete documentation : https://mdelobelle.github.io/metadatamenu
 
 [demo 10](https://youtu.be/vc55ivQuHuY): Better Select and File fields
 
+[demo 11](https://youtu.be/I73uW8fqOZ8): Supercharged Tags, multi fileClasses and metadata button
+
 # General concepts
 
 Metadata Menu can manage any metadata field located in frontmatter (YAML syntax) or in the body of the note with the syntax `field::` (dataview style)
