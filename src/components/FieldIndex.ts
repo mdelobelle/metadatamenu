@@ -43,17 +43,17 @@ export default class FieldIndex extends Component {
 
     async onload(): Promise<void> {
 
-        this.loadTime = Date.now()
-        await this.fullIndex("onload");
+        this.loadTime = Date.now();
+        await (async () => { })(); //only way to have metadata button to show up at reload !?!
 
         if (this.dv?.api.index.initialized) {
             this.dv = this.plugin.app.plugins.plugins.dataview;
             this.lastRevision = this.dv.api.index.revision;
             this.dvReady = true;
-            await this.fullIndex("dv is running");
+            await this.fullIndex("dv is running", true);
         }
 
-        this.plugin.registerEvent(
+        this.registerEvent(
             this.plugin.app.metadataCache.on("dataview:index-ready", async () => {
                 this.dv = this.plugin.app.plugins.plugins.dataview;
                 this.dvReady = true;
@@ -62,7 +62,7 @@ export default class FieldIndex extends Component {
             })
         )
 
-        this.plugin.registerEvent(
+        this.registerEvent(
             this.plugin.app.metadataCache.on('resolved', async () => {
                 //console.log("obsidian resolved")
                 if (this.plugin.app.metadataCache.inProgressTaskCount === 0) {
@@ -73,7 +73,7 @@ export default class FieldIndex extends Component {
             })
         )
 
-        this.plugin.registerEvent(
+        this.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
                 //console.log("some file changed", this.fileChanged);
                 if (op === "update"
@@ -96,7 +96,9 @@ export default class FieldIndex extends Component {
                 }
             })
         )
+        //this.plugin.app.workspace.trigger("metadata-menu:indexed")
     }
+
 
     private flushCache() {
         this.filesFields = new Map();

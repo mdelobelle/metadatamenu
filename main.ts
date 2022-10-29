@@ -36,6 +36,7 @@ export default class MetadataMenu extends Plugin {
 	private observers: [MutationObserver, string, string][];
 	private modalObservers: MutationObserver[] = [];
 
+
 	async onload(): Promise<void> {
 		console.log('Metadata Menu loaded');
 		await this.loadSettings();
@@ -115,6 +116,7 @@ export default class MetadataMenu extends Plugin {
 		// Update plugin views when layout changes
 		// TODO: This is an expensive operation that seems like it is called fairly frequently. Maybe we can do this more efficiently?
 		this.registerEvent(this.app.workspace.on("layout-change", () => this.initViewObservers(this)));
+		this.registerEvent(this.app.workspace.on("metadata-menu:indexed", () => this.reloadObservers()));
 	};
 
 	private addFileClassAttributeOptions() {
@@ -252,16 +254,12 @@ export default class MetadataMenu extends Plugin {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	};
 
-
 	async saveSettings() {
 		this.settings.presetFields = this.initialProperties;
 		this.settings.fileClassQueries = this.initialFileClassQueries;
 		await this.saveData(this.settings);
 		await this.fieldIndex.fullIndex("setting", true);
-		this.disconnectObservers();
-		this.initModalObservers(this, document);
-		this.initViewObservers(this);
-		updateVisibleLinks(this.app, this);
+		this.reloadObservers();
 	};
 
 	private initViewObservers(plugin: MetadataMenu) {
@@ -395,6 +393,13 @@ export default class MetadataMenu extends Plugin {
 		});
 		observer.observe(container, { subtree: true, childList: true, attributes: false });
 		plugin.observers.push([observer, viewType, selector]);
+	}
+
+	reloadObservers() {
+		this.disconnectObservers();
+		this.initModalObservers(this, document);
+		this.initViewObservers(this);
+		updateVisibleLinks(this.app, this);
 	}
 
 	private disconnectObservers() {

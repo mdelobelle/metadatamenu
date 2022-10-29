@@ -73,7 +73,7 @@ export class FieldsModal extends Modal {
             cls: value !== undefined && value !== null ? "metadata-menu-note-field-item field-value" : "metadata-menu-note-field-item field-value emptyfield"
         })
         if (value === null) {
-            fieldValueContainer.setText("<empty>");
+            fieldValueContainer.setText(field.type === FieldType.FieldType.Lookup ? "---auto---" : "<empty>");
         } else if (value === undefined) {
             fieldValueContainer.setText("<missing>");
         } else {
@@ -152,7 +152,7 @@ export class FieldsModal extends Modal {
         fieldContainers.forEach(field => {
             const options = field.querySelectorAll('.field-option')
             if (options.length < this.maxOptions) {
-                const parent = options[0].parentElement;
+                const parent = options[0]?.parentElement;
                 if (parent) {
                     for (let i = 0; i < this.maxOptions - options.length; i++) {
                         const emptyCell = parent.createDiv({ cls: "metadata-menu-note-field-item field-option" })

@@ -270,7 +270,7 @@ export async function updateLookups(plugin: MetadataMenu, force_update: boolean 
             const currentValue = f.fileLookupFieldLastValue.get(id)
             if (force_update || (!currentValue && newValue !== "") || currentValue !== newValue) {
                 const previousValuesCount = plugin.fieldIndex.previousFileLookupFilesValues.get(tFile.path + "__related__" + fieldName) || 0
-                await plugin.fileTaskManager.pushTask(() => replaceValues(plugin, tFile, fieldName, newValue, previousValuesCount));
+                if (currentValue) { console.log("writing"); await plugin.fileTaskManager.pushTask(() => replaceValues(plugin, tFile, fieldName, newValue, previousValuesCount)); }
                 //await replaceValues(plugin, tFile, fieldName, newValue);
                 f.fileLookupFieldLastValue.set(id, newValue)
             } else if (source !== "full Index") {
