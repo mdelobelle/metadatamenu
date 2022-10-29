@@ -9,6 +9,7 @@ import { FieldManager } from "../FieldManager";
 import * as Lookup from "src/types/lookupTypes";
 import { replaceValues } from "src/commands/replaceValues";
 import { insertValues } from "src/commands/insertValues";
+import { fileFields } from "src/commands/fileFields";
 
 export default class LookupField extends FieldManager {
 
@@ -49,7 +50,8 @@ export default class LookupField extends FieldManager {
     }
 
     public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked = () => { }): void {
-        container.createDiv({ text: this.plugin.fieldIndex.fileLookupFieldLastValue.get(`${file.path}__related__${fieldName}`) })
+        const fileClassName = this.plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName)?.fileClassName || "presetField"
+        container.createDiv({ text: this.plugin.fieldIndex.fileLookupFieldLastValue.get(`${file.path}__related__${fileClassName}___${fieldName}`) })
     }
 
     private displaySelectedOutputWarningContainer(optionWarningContainer: HTMLDivElement, value: keyof typeof Lookup.Type) {
@@ -199,11 +201,13 @@ export default class LookupField extends FieldManager {
 }
 
 export async function updateLookups(plugin: MetadataMenu, force_update: boolean = false, source: string = ""): Promise<void> {
+    const start = Date.now()
     //console.log("start update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
     const f = plugin.fieldIndex;
     let renderingErrors: string[] = []
     for (let id of f.fileLookupFiles.keys()) {
-        const [filePath, fieldName] = id.split("__related__")
+        const matchRegex = /(?<filePath>.*)__related__(?<fileClassName>.*)___(?<fieldName>.*)/
+        const { filePath, fileClassName, fieldName } = id.match(matchRegex)?.groups || {}
         const tFile = plugin.app.vault.getAbstractFileByPath(filePath) as TFile
         if (tFile) {
             let newValue = "";
@@ -269,8 +273,8 @@ export async function updateLookups(plugin: MetadataMenu, force_update: boolean 
             //check if value has changed in order not to create an infinite loop
             const currentValue = f.fileLookupFieldLastValue.get(id)
             if (force_update || (!currentValue && newValue !== "") || currentValue !== newValue) {
-                const previousValuesCount = plugin.fieldIndex.previousFileLookupFilesValues.get(tFile.path + "__related__" + fieldName) || 0
-                if (currentValue) { console.log("writing"); await plugin.fileTaskManager.pushTask(() => replaceValues(plugin, tFile, fieldName, newValue, previousValuesCount)); }
+                const previousValuesCount = plugin.fieldIndex.previousFileLookupFilesValues.get(tFile.path + "__related__" + fileClassName + "___" + fieldName) || 0
+                if (f.firstIndexindDone) await plugin.fileTaskManager.pushTask(() => replaceValues(plugin, tFile, fieldName, newValue, previousValuesCount));
                 //await replaceValues(plugin, tFile, fieldName, newValue);
                 f.fileLookupFieldLastValue.set(id, newValue)
             } else if (source !== "full Index") {
@@ -279,48 +283,53 @@ export async function updateLookups(plugin: MetadataMenu, force_update: boolean 
         }
     }
     if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`)
-    //console.log("finished update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
+    //console.log("finished update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision, `${(Date.now() - start)}ms`)
 }
 
 export function resolveLookups(plugin: MetadataMenu, source: string = ""): void {
     const f = plugin.fieldIndex;
-    Array.from(f.filesFields).forEach((value: [string, Field[]]) => {
-        const [filePath, fields] = value;
-        const dvPage = f.dv.api.page(filePath);
-        if (dvPage) {
-            fields.filter(field => field.type === FieldType.Lookup && Object.keys(dvPage).includes(field.name)).forEach(lookupField => {
-                const queryRelatedDVFiles = (new Function("dv", `return ${lookupField.options.dvQueryString}`))(f.dv.api).values as Array<any>
-                const fileRelatedDVFiles = queryRelatedDVFiles.filter(dvFile => {
-                    const targetValue = dvFile[lookupField.options.targetFieldName];
-                    if (Array.isArray(targetValue)) {
-                        return targetValue.filter(v => f.dv.api.value.isLink(v)).map(v => v.path).includes(filePath)
-                    } else {
-                        return targetValue?.path === filePath
-                    }
-                })
-                const existingFileLookupFields = f.fileLookupFiles.get(`${filePath}__related__${lookupField.name}`)
-                f.fileLookupFiles.set(`${filePath}__related__${lookupField.name}`, fileRelatedDVFiles)
-                f.previousFileLookupFilesValues.set(`${filePath}__related__${lookupField.name}`, (existingFileLookupFields || fileRelatedDVFiles).length)
-                fileRelatedDVFiles.forEach(dvFile => {
-                    const parents = f.fileLookupParents.get(dvFile.file.path) || []
-                    if (!parents.includes(filePath)) parents.push(filePath)
-                    f.fileLookupParents.set(dvFile.file.path, parents)
-                })
+    //first resolve all existing lookup queries from their definitions in fileClasses and settings O(n)
+    const lookupQueryResults: Map<string, any[]> = new Map();
+    [...f.lookupQueries].forEach(([lookupName, field]) => {
+        const queryRelatedDVFiles = (new Function("dv", `return ${field.options.dvQueryString}`))(f.dv.api).values as Array<any>;
+        lookupQueryResults.set(lookupName, queryRelatedDVFiles);
+    });
+    //then assign results to all files having implemented a lookupfield
+    [...f.filesFields].forEach(([filePath, fields]) => {
+        fields.filter(field => field.type === FieldType.Lookup).forEach(lookupField => {
+            //for all lookup fields in files that have lookupfields:
+            //1. get the query results
+            const queryRelatedDVFiles = lookupQueryResults.get(`${lookupField.fileClassName || "presetField"}___${lookupField.name}`) || [];
+            //2. filter those results by their targetField content including this file //
+            const fileRelatedDVFiles = queryRelatedDVFiles.filter(dvFile => {
+                const targetValue = dvFile[lookupField.options.targetFieldName];
+                if (Array.isArray(targetValue)) {
+                    return targetValue.filter(v => f.dv.api.value.isLink(v)).map(v => v.path).includes(filePath)
+                } else {
+                    return targetValue?.path === filePath
+                }
             })
-        }
+            //3. assign those results to fileLookupFiles
+            const relatedFieldName = `${filePath}__related__${lookupField.fileClassName || "presetField"}___${lookupField.name}`
+            const existingFileLookupFields = f.fileLookupFiles.get(relatedFieldName)
+            f.fileLookupFiles.set(relatedFieldName, fileRelatedDVFiles)
+            //4. reset Previous results count to current value
+            f.previousFileLookupFilesValues.set(relatedFieldName, (existingFileLookupFields || fileRelatedDVFiles).length)
+        })
     })
     for (let id of f.fileLookupFiles.keys()) {
-        const [filePath, fieldName] = id.split("__related__")
+        const matchRegex = /(?<filePath>.*)__related__(?<fileClassName>.*)___(?<fieldName>.*)/
+        const { filePath, fileClassName, fieldName } = id.match(matchRegex)?.groups || {}
+        const existingLookFieldWithNameAndFileClassName = f.filesFields
+            .get(filePath)?.find(field =>
+                (field.name === fieldName) &&
+                (
+                    (field.fileClassName === undefined && fileClassName === "presetField") ||
+                    (field.fileClassName === fileClassName)
+                )
+            )
         const dvPage = f.dv.api.page(filePath);
-        if (dvPage === undefined) {
-            for (const file in f.fileLookupParents.keys()) {
-                const newParents = f.fileLookupParents.get(file)?.remove(filePath) || []
-                f.fileLookupParents.set(file, newParents);
-            }
-            f.fileLookupFiles.delete(id);
-            f.fileLookupFieldLastValue.delete(id);
-            f.previousFileLookupFilesValues.delete(id)
-        } else if (dvPage[fieldName] === undefined) {
+        if (dvPage === undefined || dvPage[fieldName] === undefined || !existingLookFieldWithNameAndFileClassName) {
             f.fileLookupFiles.delete(id);
             f.fileLookupFieldLastValue.delete(id);
             f.previousFileLookupFilesValues.delete(id)

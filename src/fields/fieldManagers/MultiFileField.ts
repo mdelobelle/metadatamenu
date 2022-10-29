@@ -201,7 +201,7 @@ export default class MultiFileField extends FieldManager {
         if (dvApi) {
             const dvValue = dvApi.page(file.path)[fieldName]
             const values = Array.isArray(dvValue) ? dvValue : [dvValue]
-            values.forEach(value => {
+            values.forEach((value, i) => {
                 if (dvApi.value.isLink(value)) {
                     const link = container.createEl('a', { text: value.path.split("/").last().replace(/(.*).md/, "$1") });
                     link.onclick = () => {
@@ -210,6 +210,9 @@ export default class MultiFileField extends FieldManager {
                     }
                 } else {
                     container.createDiv({ text: value });
+                }
+                if (i < values.length - 1) {
+                    container.createEl('span', { text: " | " })
                 }
             })
         }
