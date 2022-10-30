@@ -1,5 +1,6 @@
 import MetadataMenu from "main";
 import { ButtonComponent, DropdownComponent, ExtraButtonComponent, Modal, Setting, TextAreaComponent, TextComponent } from "obsidian";
+import { FileClass } from "src/fileClass/fileClass";
 import FileClassQuery from "src/fileClass/FileClassQuery";
 import FileClassQuerySetting from "./FileClassQuerySetting";
 
@@ -70,11 +71,15 @@ export default class FileClassQuerySettingsModal extends Modal {
         const FileClassSelectorContainerLabel = parentNode.createDiv();
         FileClassSelectorContainerLabel.setText(`Fileclass:`);
         const select = new DropdownComponent(parentNode);
-        const fileClasses = this.plugin.app.vault.getFiles().filter(f => this.plugin.settings.classFilesPath && f.path.startsWith(this.plugin.settings.classFilesPath))
+        const classFilesPath = this.plugin.settings.classFilesPath
+        const fileClasses = this.plugin.app.vault.getFiles().filter(f => classFilesPath && f.path.startsWith(classFilesPath));
         select.addOption("--Select a fileClass--", "--Select a fileClass--")
-        fileClasses.forEach(fileClass => select.addOption(fileClass.basename, fileClass.basename))
+        fileClasses.forEach(fileClass => {
+            const fileClassName = FileClass.getFileClassNameFromPath(this.plugin, fileClass.path);
+            if (fileClassName) select.addOption(fileClassName, fileClassName);
+        })
         if (this.fileClassQuery.fileClassName) {
-            select.setValue(this.fileClassQuery.fileClassName)
+            select.setValue(this.fileClassQuery.fileClassName);
         }
         select.onChange(value => {
             if (value != "--Select a fileClass--") {

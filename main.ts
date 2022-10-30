@@ -35,13 +35,15 @@ export default class MetadataMenu extends Plugin {
 	public fileTaskManager: FileTaskManager;
 	private observers: [MutationObserver, string, string][];
 	private modalObservers: MutationObserver[] = [];
+	private classFilesPath: string | null;
+
 
 	async onload(): Promise<void> {
 		console.log('Metadata Menu loaded');
 		await this.loadSettings();
 		if (this.settings.settingsVersion === undefined) await SettingsMigration.migrateSettingsV1toV2(this)
 		if (this.settings.settingsVersion === 2) await SettingsMigration.migrateSettingsV2toV3(this)
-
+		this.classFilesPath = this.settings.classFilesPath
 
 		this.fieldIndex = this.addChild(new FieldIndex(this, "1", () => { }))
 		this.fileTaskManager = this.addChild(new FileTaskManager(this, "1", () => { }))
@@ -115,7 +117,14 @@ export default class MetadataMenu extends Plugin {
 		// Update plugin views when layout changes
 		// TODO: This is an expensive operation that seems like it is called fairly frequently. Maybe we can do this more efficiently?
 		this.registerEvent(this.app.workspace.on("layout-change", () => this.initViewObservers(this)));
+		this.registerEvent(this.app.workspace.on("metadata-menu:indexed", () => this.reloadObservers()));
 	};
+
+	/*
+	----------
+	Commands
+	----------
+	*/
 
 	private addFileClassAttributeOptions() {
 		this.addCommand({
@@ -125,9 +134,9 @@ export default class MetadataMenu extends Plugin {
 			checkCallback: (checking: boolean) => {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
 				if (checking) {
-					return !!(view?.file) && `${view.file.parent.path}/` == this.settings.classFilesPath
+					return !!(this.classFilesPath && !!(view?.file) && view.file.path.startsWith(this.classFilesPath))
 				}
-				if (!!(view?.file) && `${view.file.parent.path}/` == this.settings.classFilesPath) {
+				if (!!(this.classFilesPath && !!(view?.file) && view.file.path.startsWith(this.classFilesPath))) {
 					const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.app)
 					const optionsList = new FileClassOptionsList(this, view!.file, fieldCommandSuggestModal);
 					optionsList.createExtraOptionList();
@@ -144,11 +153,14 @@ export default class MetadataMenu extends Plugin {
 			checkCallback: (checking: boolean) => {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
 				if (checking) {
-					return !!(view?.file) && `${view.file.parent.path}/` == this.settings.classFilesPath
+					return !!(this.classFilesPath && !!(view?.file) && view.file.path.startsWith(this.classFilesPath))
 				}
 				try {
-					const fileClassAttributeModal = new FileClassAttributeModal(this, FileClass.createFileClass(this, view!.file.basename))
-					fileClassAttributeModal.open()
+					const fileClassName = FileClass.getFileClassNameFromPath(this, view!.file.path)
+					if (fileClassName) {
+						const fileClassAttributeModal = new FileClassAttributeModal(this, FileClass.createFileClass(this, fileClassName))
+						fileClassAttributeModal.open()
+					}
 				} catch (error) {
 					new Notice("This is not a valid fileClass")
 				}
@@ -164,7 +176,7 @@ export default class MetadataMenu extends Plugin {
 			checkCallback: (checking: boolean) => {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
 				if (checking) {
-					return !!(view?.file && view.file.parent.path + "/" !== this.settings.classFilesPath)
+					return !!(view?.file && (!this.classFilesPath || !view.file.path.startsWith(this.classFilesPath)))
 				}
 				const optionsList = new OptionsList(this, view!.file, "InsertFieldCommand");
 				optionsList.createExtraOptionList();
@@ -180,7 +192,7 @@ export default class MetadataMenu extends Plugin {
 			checkCallback: (checking: boolean) => {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
 				if (checking) {
-					return !!(view?.file && view.file.parent.path + "/" !== this.settings.classFilesPath)
+					return !!(view?.file && (!this.classFilesPath || !view.file.path.startsWith(this.classFilesPath)))
 				}
 				const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.app)
 				const optionsList = new OptionsList(this, view!.file, fieldCommandSuggestModal);
@@ -198,7 +210,7 @@ export default class MetadataMenu extends Plugin {
 				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 				const editor = view?.editor;
 				if (checking) {
-					const inFile = !!(view?.file && view.file.parent.path + "/" !== this.settings.classFilesPath)
+					const inFile = !!(view?.file && (!this.classFilesPath || !view.file.path.startsWith(this.classFilesPath)))
 					return inFile && editor !== undefined
 				}
 				const optionsList = new OptionsList(this, view!.file, "ManageAtCursorCommand")
@@ -235,7 +247,7 @@ export default class MetadataMenu extends Plugin {
 		if (view && view instanceof FileView) {
 			const file = this.app.vault.getAbstractFileByPath(view.file.path)
 			if (file instanceof TFile && file.extension === 'md') {
-				if (file.parent.path + "/" == this.settings.classFilesPath) {
+				if (this.classFilesPath && file.path.startsWith(this.classFilesPath)) {
 					this.addFileClassAttributeOptions();
 					this.addInsertFileClassAttribute();
 				} else {
@@ -248,21 +260,29 @@ export default class MetadataMenu extends Plugin {
 		this.addUpdateLookups()
 	}
 
+	/*
+	------------
+	Settings
+	------------
+	*/
+
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	};
-
 
 	async saveSettings() {
 		this.settings.presetFields = this.initialProperties;
 		this.settings.fileClassQueries = this.initialFileClassQueries;
 		await this.saveData(this.settings);
-		await this.fieldIndex.fullIndex("setting", true);
-		this.disconnectObservers();
-		this.initModalObservers(this, document);
-		this.initViewObservers(this);
-		updateVisibleLinks(this.app, this);
+		await this.fieldIndex.fullIndex("setting", true, false);
+		this.reloadObservers();
 	};
+
+	/*
+	---------------------
+	Metadata Menu buttons
+	---------------------
+	*/
 
 	private initViewObservers(plugin: MetadataMenu) {
 		// Reset observers
@@ -397,6 +417,13 @@ export default class MetadataMenu extends Plugin {
 		plugin.observers.push([observer, viewType, selector]);
 	}
 
+	reloadObservers() {
+		this.disconnectObservers();
+		this.initModalObservers(this, document);
+		this.initViewObservers(this);
+		updateVisibleLinks(this.app, this);
+	}
+
 	private disconnectObservers() {
 		this.observers.forEach(([observer, type, own_class]) => {
 			observer.disconnect();
@@ -409,6 +436,12 @@ export default class MetadataMenu extends Plugin {
 			observer.disconnect();
 		}
 	}
+
+	/*
+	------------
+	Unload
+	------------
+	*/
 
 	onunload() {
 		this.disconnectObservers();

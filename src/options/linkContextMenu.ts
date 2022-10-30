@@ -4,6 +4,7 @@ import OptionsList from "src/options/OptionsList";
 import FileClassOptionsList from "./FileClassOptionsList";
 import { frontMatterLineField, getLineFields } from "src/utils/parser";
 import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
+import { FileClass } from "src/fileClass/fileClass";
 
 export default class linkContextMenu {
 
@@ -12,11 +13,13 @@ export default class linkContextMenu {
 	};
 
 	private buildOptions(file: TFile | TAbstractFile | null, menu: Menu, includedFields?: string[]): void {
+		const classFilesPath = this.plugin.settings.classFilesPath
 		if (file instanceof TFile && file.extension === 'md') {
 			if (!Platform.isMobile && requireApiVersion("0.16.0")) {
-				if (file.parent.path + "/" == this.plugin.settings.classFilesPath) {
+				if (classFilesPath && file.path.startsWith(classFilesPath)) {
+					const fileClassName = FileClass.getFileClassNameFromPath(this.plugin, file.path)
 					//@ts-ignore
-					menu.setSectionSubmenu(`metadata-menu-fileclass.${file.basename}.fileclass-fields`, { title: "Manage fields", icon: "wrench" });
+					menu.setSectionSubmenu(`metadata-menu-fileclass.${fileClassName}.fileclass-fields`, { title: "Manage fields", icon: "wrench" });
 				} else {
 					//@ts-ignore
 					menu.setSectionSubmenu("metadata-menu.current_field", { title: "Current field", icon: "pencil" })
@@ -27,12 +30,11 @@ export default class linkContextMenu {
 						//@ts-ignore
 						menu.setSectionSubmenu(`metadata-menu-fileclass.${fileClass.name}.fileclass-fields`, { title: `Manage ${fileClass.name} fields`, icon: "wrench" })
 					})
-
 				}
 			}
 			if (this.plugin.settings.displayFieldsInContextMenu) {
 				//If fileClass
-				if (file.parent.path + "/" == this.plugin.settings.classFilesPath) {
+				if (classFilesPath && file.path.startsWith(classFilesPath)) {
 					const fileClassOptionsList = new FileClassOptionsList(this.plugin, file, menu)
 					fileClassOptionsList.createExtraOptionList();
 				} else {

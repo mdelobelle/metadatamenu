@@ -164,7 +164,7 @@ export default class DateModal extends Modal {
             locale: {
                 firstDayOfWeek: this.plugin.settings.firstDayOfWeek
             },
-            defaultDate: "2022-09-22"
+            defaultDate: moment(Date.now()).format("YYYY-MM-DD")
         });
         datePicker.config.onChange.push((value) => {
             const newDate = moment(value.toString()).format(this.format);

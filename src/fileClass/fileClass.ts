@@ -45,7 +45,8 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
     async insertFileClassToFile(value: string) {
         const fileClassAlias = this.plugin.settings.fileClassAlias
         const currentFileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path)
-        if (currentFileClasses) {
+        const frontmatterFileClasses = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatter?.[fileClassAlias];
+        if (currentFileClasses && frontmatterFileClasses) {
             replaceValues(this.plugin, this.file, fileClassAlias, [...currentFileClasses.map(fc => fc.name), value].join(", "))
         } else {
             const frontmatter = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatter
@@ -83,7 +84,7 @@ class FileClassManager {
     }
 
     public get(name: string) {
-        const filesWithName = this.all().filter(file => file.basename == name);
+        const filesWithName = this.all().filter(file => file.path.replace(/md$/, "").endsWith(name));
         if (filesWithName.length > 1) {
             const error = new Error("More than one value found");
             throw error;
@@ -281,6 +282,11 @@ class FileClass {
         const fileClass = new FileClass(plugin, name);
         fileClass.getAttributes()
         return fileClass
+    }
+
+    static getFileClassNameFromPath(plugin: MetadataMenu, path: string): string | undefined {
+        const fileClassNameRegex = new RegExp(`${plugin.settings.classFilesPath}(?<fileClassName>.*).md`);
+        return path.match(fileClassNameRegex)?.groups?.fileClassName
     }
 }
 

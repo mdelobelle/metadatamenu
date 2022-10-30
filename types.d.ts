@@ -41,6 +41,6 @@ declare module "obsidian" {
     }
     interface Workspace {
         /** Sent to rendered dataview components to tell them to possibly refresh */
-        on(name: "metadata-menu:filetasks-completed", callback: () => void, ctx?: any): EventRef;
+        on(name: "metadata-menu:indexed", callback: () => void, ctx?: any): EventRef;
     }
 }

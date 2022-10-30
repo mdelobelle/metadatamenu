@@ -579,14 +579,29 @@ button.metadata-menu-field-add-frontmatter-btn{
     color: var(--text-faint)
 }
 
+.metadata-menu-note-field-insert-all-fields{
+    margin-top: 0.4em;
+    padding-left: 0.6em;
+    display: flex;
+}
 
 .metadata-menu-note-field-item button, 
-.metadata-menu-note-fields-fileClass-manager-container button{
+.metadata-menu-note-fields-fileClass-manager-container button,
+.metadata-menu-note-field-insert-all-fields button{
     padding: 0 0 0.4em 0.4em;
     height: auto;
     box-shadow: none;
     background-color: var(--background-primary);
 }
+.metadata-menu-note-field-insert-all-fields{
+    align-items: center;
+}
+
+
+.metadata-menu-note-field-insert-all-fields button{
+    margin-left: 0.4em;
+}
+
 .metadata-menu-note-field-item.field-setting{
     padding-right: 0;
 }

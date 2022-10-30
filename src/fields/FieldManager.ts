@@ -145,12 +145,10 @@ export abstract class FieldManager {
         let toBooleanValue: boolean = false;
         if (isBoolean(value)) {
             toBooleanValue = value;
-        } else if (/true/i.test(value)) {
+        } else if (/true/i.test(value) || /1/.test(value)) {
             toBooleanValue = true;
-        } else if (/false/i.test(value)) {
+        } else if (/false/i.test(value) || /0/.test(value)) {
             toBooleanValue = false;
-        } else {
-            throw Error("this value is not a boolean")
         };
         return toBooleanValue;
     }

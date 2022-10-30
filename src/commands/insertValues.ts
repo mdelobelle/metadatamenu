@@ -24,16 +24,17 @@ export async function insertValues(
             throw Error("path doesn't correspond to a proper file");
         }
     }
-    if (inFrontmatter && lineNumber == -2) {
-        const fields: Record<string, string> = {}
-        fields[fieldName] = value
+    const frontmatter = plugin.app.metadataCache.getFileCache(file)?.frontmatter
+    if (inFrontmatter && lineNumber == -2 && !frontmatter) {
+        const fields: Record<string, string> = { fieldName: value }
         await insertFrontmatterWithFields(plugin, file, fields);
     } else {
         const result = await plugin.app.vault.read(file)
         let newContent: string[] = [];
-
+        const targetLineNumber = inFrontmatter && lineNumber == -2 && frontmatter ?
+            frontmatter.position.end.line : lineNumber
         result.split("\n").forEach((line, _lineNumber) => {
-            if (_lineNumber == lineNumber) {
+            if (_lineNumber == targetLineNumber) {
                 if (after) newContent.push(line);
                 const newLine = `${!inFrontmatter && asComment ? ">" : ""}${!inFrontmatter && asList ? "- " : ""}${fieldName}${inFrontmatter ? ":" : "::"} ${value}`;
                 newContent.push(newLine);

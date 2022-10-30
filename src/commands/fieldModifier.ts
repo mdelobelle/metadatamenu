@@ -12,9 +12,29 @@ function buildAndOpenModal(
 ): void {
     if (attrs?.options?.inFrontmatter && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
         const lineNumber = plugin.app.metadataCache.getCache(file.path)!.frontmatter!.position.end.line - 1
-        F.openFieldModal(plugin, file, fieldName, "", lineNumber, true, false)
+        F.openFieldModal(plugin, file, fieldName, "", lineNumber, true, false, false, false)
     } else {
-        new chooseSectionModal(plugin, file, fieldName).open();
+        new chooseSectionModal(
+            plugin,
+            file,
+            (
+                lineNumber: number,
+                inFrontmatter: boolean,
+                after: boolean,
+                asList: boolean,
+                asComment: boolean
+            ) => F.openFieldModal(
+                plugin,
+                file,
+                fieldName,
+                "",
+                lineNumber,
+                inFrontmatter,
+                after,
+                asList,
+                asComment
+            )
+        ).open();
     }
 }
 
@@ -67,7 +87,27 @@ export function fieldModifier(
                     if (field) {
                         buildAndOpenModal(plugin, file, fieldName, attrs)
                     } else {
-                        new chooseSectionModal(plugin, file, undefined).open();
+                        new chooseSectionModal(
+                            plugin,
+                            file,
+                            (
+                                lineNumber: number,
+                                inFrontmatter: boolean,
+                                after: boolean,
+                                asList: boolean,
+                                asComment: boolean
+                            ) => F.openFieldModal(
+                                plugin,
+                                file,
+                                undefined,
+                                "",
+                                lineNumber,
+                                inFrontmatter,
+                                after,
+                                asList,
+                                asComment
+                            ),
+                        ).open();
                     }
                 } else {
                     throw Error("path doesn't correspond to a proper file");
