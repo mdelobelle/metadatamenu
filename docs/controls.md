@@ -93,6 +93,16 @@ these options are accessible from:
 4. Select the field
 5. Select/input the value for this field (if the field has preset values, you will be prompted to choose one)
 
+### Add a new field at cursor
+
+In live preview, you can add a field at cursor without having to choose the section
+
+### Insert all missing fields
+
+When fileClasses or Supercharged Tags are defined for a note, you can bulk insert all fields defined in those fileClasses that aren't yet included in the note
+
+You can also insert missing fields on a fileClass per fileClass mode : this option is also available in fileClass sub-menu, or next to fileClasses in the Metadata Menu modal (see [Metadata Menu button](#metadata-menu-button--metadata-menu-modal))
+
 ## Control field from dataview tables with dataviewjs
 
 using `fieldModifier` function included in metadata-menu API (see # Api), you can build modifiable fields within dataview table
@@ -215,3 +225,17 @@ Click the "⏭" button to shift the date in the future according to the interval
 Lookup fields automatically update themselves. Even if you shouldn't modify a lookup field , if that happens the lookup field won't be automatically updated until one of its related notes is updated.
 
 If you want to force-update this lookup field you can use the command palette command `Metadata Menu: Update lookup fields`
+
+## Metadata Menu button & Metadata Menu modal
+
+if one or more fileClass / Supercharged tag is defined for a note, you can display a button next to the note reference everywhere in your vault.
+When clicking this button, a modal will display all fields defined for those fileClasses and their values.
+
+From there you can
+- update a field
+- insert a field
+- change the setting of the field in its fileClass
+- see which field corresponds to which fileClass and the opposite
+- bulk insert missing fields (for all fileClasses, or or one fileClass in particular)
+
+The icon of the button can be customized in the fileClass with the higher priority (see [icon](fileclasses#iconfield) )

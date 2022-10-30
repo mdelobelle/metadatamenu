@@ -7,6 +7,8 @@ import * as FieldType from "src/types/fieldTypes"
 import { FieldManager as FM } from "src/types/fieldTypes";
 import { FieldManager as F, FieldManager } from "src/fields/FieldManager";
 import { insertMissingFields } from "src/commands/insertMissingFields";
+import { FileClass } from "src/fileClass/fileClass";
+import { genuineKeys } from "src/utils/dataviewUtils";
 
 export class FieldOptions {
 
@@ -62,7 +64,7 @@ export class FieldsModal extends Modal {
         const fieldSettingContainer = fieldContainer.createDiv({ cls: "metadata-menu-note-field-item field-setting" });
         const fieldSettingBtn = new ButtonComponent(fieldSettingContainer);
         fieldSettingBtn.setIcon("gear")
-        fieldSettingBtn.setTooltip("settings")
+        fieldSettingBtn.setTooltip(`${field.fileClassName ? field.fileClassName + " > " : "Preset Field "} > ${field.name} settings`)
         fieldSettingBtn.onClick(() => {
             const _fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
             const fileClassAttribute = _fileClass?.attributes.find(attr => attr.name === field.name)
@@ -123,6 +125,52 @@ export class FieldsModal extends Modal {
         return fieldContainer
     }
 
+    openInsertMissingFieldsForFileClassModal(fileClass: FileClass): void {
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        if (dvApi) {
+            const dvFile = dvApi.page(this.file.path);
+            if (dvFile) {
+                const modal = new ChooseSectionModal(
+                    this.plugin,
+                    this.file,
+                    (
+                        lineNumber: number,
+                        inFrontmatter: boolean,
+                        after: boolean,
+                        asList: boolean,
+                        asComment: boolean
+                    ) => insertMissingFields(
+                        this.plugin,
+                        dvFile,
+                        lineNumber,
+                        inFrontmatter,
+                        after,
+                        asList,
+                        asComment,
+                        fileClass.name
+                    )
+                );
+                modal.open()
+            }
+        }
+    }
+
+    missingFieldsForFileClass(fileClass: FileClass): boolean {
+        const currentFieldsNames: string[] = []
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        if (dvApi) {
+            const dvFile = dvApi.page(this.file.path);
+            if (dvFile) {
+                currentFieldsNames.push(...genuineKeys(dvFile))
+            }
+        };
+
+        const missingFields = fileClass && this.file ?
+            !this.plugin.fieldIndex.fileClassesFields.get(fileClass.name)?.map(f => f.name).every(fieldName => currentFieldsNames.includes(fieldName)) :
+            false
+        return missingFields
+    }
+
     buildFileClassManager(container: HTMLDivElement): void {
         const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || [];
         fileClasses.forEach(fileClass => {
@@ -136,6 +184,16 @@ export class FieldsModal extends Modal {
                     const fileClassOptionsContainer = fileClassManagerContainer.createDiv({ cls: "metadata-menu-note-fields-fileClass-manager-container" })
                     const fileClassNameContainer = fileClassOptionsContainer.createDiv({ cls: "metadata-menu-note-fields-fileClass-manager-name", text: _fileClass.name })
                     fileClassNameContainer.setAttr("id", `fileClass__${_fileClass.name.replace("/", "___")}`)
+
+                    if (this.missingFieldsForFileClass(_fileClass)) {
+                        const fileClassInsertMissingFieldsBtn = new ButtonComponent(fileClassOptionsContainer)
+                        fileClassInsertMissingFieldsBtn.setIcon("battery-full")
+                        fileClassInsertMissingFieldsBtn.setTooltip(`Insert missing fields for ${_fileClass.name}`)
+                        fileClassInsertMissingFieldsBtn.onClick(() => {
+                            this.openInsertMissingFieldsForFileClassModal(_fileClass)
+                        })
+                    }
+
                     const fileClassAddAttributeBtn = new ButtonComponent(fileClassOptionsContainer)
                     fileClassAddAttributeBtn.setIcon("plus-circle")
                     fileClassAddAttributeBtn.setTooltip(`Add field definition in ${_fileClass.name}`)

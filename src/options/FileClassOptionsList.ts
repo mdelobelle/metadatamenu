@@ -90,7 +90,6 @@ export default class FileClassOptionsList {
                     }
                 }
             };
-
         }
 
         const missingFields = fileClass && this.fromFile ?

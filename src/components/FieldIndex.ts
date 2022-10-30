@@ -253,7 +253,9 @@ export default class FieldIndex extends Component {
                             if (cache?.frontmatter?.mapWithTag) {
                                 this.tagsMatchingFileClasses.set(fileClassName, fileClass)
                             }
-                        } catch (error) { console.log(error) }
+                        } catch (error) {
+                            //console.log(error) 
+                        }
                     }
                 })
         }

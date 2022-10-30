@@ -16,16 +16,13 @@ the name of the file will be the name of the class
 the lines of the file will be the fields managed for this class
 
 1. Define the folder where you want to store your class files (see settings above)
-2. Create a note in this folder, let's say `music.md`, containing lines with the name of fields that you want to manage for this class
+2. Create a note in this folder, let's say `music.md`, containing lines with the name of fields, their type and options (see [settings](#field-settings-syntax)) that you want to manage for this class
 ```md
 music.md
 =========
-genre
-difficulty
-masterization
-artist
-tone
-tab available
+genre:: {"type": "Input", "options": {"0": "rock", "1": "pop"}}
+difficulty::{"type": "Number" ....
+...
 ```
 3. In a regular note, let's say `Black Dog.md`, insert a frontmatter field named `fileClass`
 4. The value of `fileClass` has to be the name of the file Class where you have the fields that you want to manage for this note. e.g in our case
@@ -36,7 +33,9 @@ fileClass: music
 ```
 5. when right-clicking on a link to `Black Dog.md`, the fields in the context menu will be filter to show only the ones that are also included in `music.md`.
 
->Since there are no particular options set for each field in the `music.md` note, every field will be considered as an `Input` type.
+### Nested fileClasses
+
+You can sort your fileClasses in sub-folders. Then if you want to use them in a note, just type their sub-path `fileClass: <sub-folder>/<sub-sub-folder>/<fileClass name>`
 
 ## field settings syntax
 
@@ -184,6 +183,8 @@ notes with `fileClass: physics` will inherit `teacher` and `type` from `course` 
 when this is set to `true` all notes including a tag with the same name will benefit from the fields' definitions of this fileclass
 
 you can also map a fileclass with his tag from the context menu of the fileclass
+
+This works with nested tags as well
 
 ### `icon`field
 

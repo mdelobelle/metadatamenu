@@ -157,7 +157,6 @@ export default class MetadataMenu extends Plugin {
 				}
 				try {
 					const fileClassName = FileClass.getFileClassNameFromPath(this, view!.file.path)
-					console.log(fileClassName)
 					if (fileClassName) {
 						const fileClassAttributeModal = new FileClassAttributeModal(this, FileClass.createFileClass(this, fileClassName))
 						fileClassAttributeModal.open()
