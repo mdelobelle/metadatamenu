@@ -1,5 +1,6 @@
 import MetadataMenu from "main";
 import { MarkdownView, Menu, Notice, TFile } from "obsidian";
+import { insertMissingFields } from "src/commands/insertMissingFields";
 import Field from "src/fields/Field";
 import { FieldManager as F } from "src/fields/FieldManager";
 import Managers from "src/fields/fieldManagers/Managers";
@@ -97,6 +98,7 @@ export default class OptionsList {
 	}
 
 	public createExtraOptionList(openAfterCreate: boolean = true): void {
+		const dvApi = this.plugin.app.plugins.plugins.dataview?.api
 		const location = this.location
 		if (isMenu(location)) { location.addSeparator(); };
 		if (isInsertFieldCommand(location)) {
@@ -106,6 +108,12 @@ export default class OptionsList {
 			this.addFieldAtCurrentPositionOption();
 			this.addSectionSelectModalOption();
 			this.addFieldAtTheEndOfFrontmatterOption();
+			if (dvApi) {
+				const currentFieldsNames = genuineKeys(dvApi.page(this.file.path))
+				if (![...this.plugin.fieldIndex.filesFields.get(this.file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
+					this.addAllMissingFieldsAtSection();
+				}
+			}
 			const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || []
 			fileClasses.forEach(fileClass => {
 				const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.plugin.app)
@@ -126,6 +134,12 @@ export default class OptionsList {
 			this.addSectionSelectModalOption();
 			this.addFieldAtCurrentPositionOption();
 			this.addFieldAtTheEndOfFrontmatterOption();
+			if (dvApi) {
+				const currentFieldsNames = genuineKeys(dvApi.page(this.file.path))
+				if (![...this.plugin.fieldIndex.filesFields.get(this.file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
+					this.addAllMissingFieldsAtSection();
+				}
+			}
 			const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || []
 			fileClasses.forEach(fileClass => {
 				const fileClassOptionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), location)
@@ -179,7 +193,27 @@ export default class OptionsList {
 	}
 
 	private addSectionSelectModalOption(): void {
-		const modal = new chooseSectionModal(this.plugin, this.file);
+		const modal = new chooseSectionModal(
+			this.plugin,
+			this.file,
+			(
+				lineNumber: number,
+				inFrontmatter: boolean,
+				after: boolean,
+				asList: boolean,
+				asComment: boolean
+			) => F.openFieldModal(
+				this.plugin,
+				this.file,
+				undefined,
+				"",
+				lineNumber,
+				inFrontmatter,
+				after,
+				asList,
+				asComment
+			)
+		);
 		if (isMenu(this.location)) {
 			this.location.addItem((item) => {
 				item.setIcon("enter");
@@ -197,6 +231,49 @@ export default class OptionsList {
 				icon: "enter"
 			})
 		};
+	};
+
+	private addAllMissingFieldsAtSection(): void {
+		const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+		if (dvApi) {
+			const dvFile = dvApi.page(this.file.path);
+			const modal = new chooseSectionModal(
+				this.plugin,
+				this.file,
+				(
+					lineNumber: number,
+					inFrontmatter: boolean,
+					after: boolean,
+					asList: boolean,
+					asComment: boolean
+				) => insertMissingFields(
+					this.plugin,
+					dvFile,
+					lineNumber,
+					inFrontmatter,
+					after,
+					asList,
+					asComment
+				)
+			);
+			if (isMenu(this.location)) {
+				this.location.addItem((item) => {
+					item.setIcon("list-plus");
+					item.setTitle("Add missing fields at section...");
+					item.onClick((evt: MouseEvent) => {
+						modal.open();
+					});
+					item.setSection("metadata-menu");
+				});
+			} else if (isSuggest(this.location)) {
+				this.location.options.push({
+					id: "add_missing_fields_at_section",
+					actionLabel: "Add missing fields at section...",
+					action: () => modal.open(),
+					icon: "list-plus"
+				})
+			};
+		}
 	};
 
 	private addFieldAtTheEndOfFrontmatterOption(): void {

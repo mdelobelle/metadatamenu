@@ -23,7 +23,6 @@ function isSuggest(location: Menu | "InsertFieldCommand" | FieldCommandSuggestMo
 export default class FileClassOptionsList {
 
     // adds options to context menu or to a dropdown modal trigger with "Field: Options" command in command pallette
-    private path: string;
     private fileClass: FileClass | undefined;
 
     constructor(

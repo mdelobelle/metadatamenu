@@ -11,27 +11,30 @@ export default class FileClassAttributeSelectModal extends Modal {
 
     async onOpen() {
         this.titleEl.setText(`Select the field to update`);
-        const fileClass = FileClass.createFileClass(this.plugin, this.file.basename, true) // limit fields manage to current fileClass
-        this.titleEl.setText(`Select the field to update in ${fileClass.name}`);
-        const selectContainer = this.contentEl.createDiv();
-        const select = new DropdownComponent(selectContainer);
-        select.addOption("select an attribute", "--select an attribute--");
-        fileClass.attributes.forEach(attr => {
-            select.addOption(attr.name, attr.name);
-        })
+        const fileClassName = FileClass.getFileClassNameFromPath(this.plugin, this.file.path);
+        if (fileClassName) {
+            const fileClass = FileClass.createFileClass(this.plugin, fileClassName, true) // limit fields manage to current fileClass
+            this.titleEl.setText(`Select the field to update in ${fileClass.name}`);
+            const selectContainer = this.contentEl.createDiv();
+            const select = new DropdownComponent(selectContainer);
+            select.addOption("select an attribute", "--select an attribute--");
+            fileClass.attributes.forEach(attr => {
+                select.addOption(attr.name, attr.name);
+            })
 
-        select.addOption("++newAttr++", "++Add a new attribute++");
-        select.selectEl.focus();
-        select.onChange((attrName) => {
-            if (attrName == "++newAttr") {
-                const modal = new FileClassAttributeModal(this.plugin, fileClass);
-                modal.open();
-                this.close();
-            } else {
-                const modal = new FileClassAttributeModal(this.plugin, fileClass, fileClass.attributes.filter(attr => attr.name == attrName)[0]);
-                modal.open();
-                this.close();
-            }
-        })
+            select.addOption("++newAttr++", "++Add a new attribute++");
+            select.selectEl.focus();
+            select.onChange((attrName) => {
+                if (attrName == "++newAttr") {
+                    const modal = new FileClassAttributeModal(this.plugin, fileClass);
+                    modal.open();
+                    this.close();
+                } else {
+                    const modal = new FileClassAttributeModal(this.plugin, fileClass, fileClass.attributes.filter(attr => attr.name == attrName)[0]);
+                    modal.open();
+                    this.close();
+                }
+            })
+        }
     }
 }

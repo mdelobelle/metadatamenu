@@ -1,13 +1,15 @@
 import MetadataMenu from "main";
-import { ButtonComponent, Component, Modal, setIcon, TFile } from "obsidian";
+import { ButtonComponent, Component, Modal, TFile } from "obsidian";
 import Field from "src/fields/Field";
-import { FieldManager } from "src/fields/FieldManager";
 import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
 import ChooseSectionModal from "src/modals/chooseSectionModal"
 import * as FieldType from "src/types/fieldTypes"
 import { FieldManager as FM } from "src/types/fieldTypes";
+import { FieldManager as F, FieldManager } from "src/fields/FieldManager";
+import { insertMissingFields } from "src/commands/insertMissingFields";
 
 export class FieldOptions {
+
     constructor(public container: HTMLDivElement) { }
 
     public addOption(icon: string, onclick: () => {} | void, tooltip?: string) {
@@ -25,6 +27,8 @@ export class FieldsModal extends Modal {
     public fields: Field[]
     public fieldContainers: HTMLDivElement[] = [];
     private maxOptions: number = 0;
+    private missingFields: boolean = false;
+
     constructor(
         public plugin: MetadataMenu,
         private file: TFile
@@ -53,7 +57,7 @@ export class FieldsModal extends Modal {
         const fieldNameContainer = fieldContainer.createDiv({ text: `${field.name}`, cls: "metadata-menu-note-field-item field-name" });
         const fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
         if (fileClass) {
-            fieldNameContainer.addClass(`fileClassField__${fileClass.name}`)
+            fieldNameContainer.addClass(`fileClassField__${fileClass.name.replace("/", "___")}`)
         }
         const fieldSettingContainer = fieldContainer.createDiv({ cls: "metadata-menu-note-field-item field-setting" });
         const fieldSettingBtn = new ButtonComponent(fieldSettingContainer);
@@ -75,6 +79,7 @@ export class FieldsModal extends Modal {
         if (value === null) {
             fieldValueContainer.setText(field.type === FieldType.FieldType.Lookup ? "---auto---" : "<empty>");
         } else if (value === undefined) {
+            this.missingFields = true
             fieldValueContainer.setText("<missing>");
         } else {
             fieldManager.displayValue(fieldValueContainer, this.file, field.name, () => { this.close() })
@@ -88,7 +93,27 @@ export class FieldsModal extends Modal {
             fieldBtn.setIcon("list-plus")
             fieldBtn.setTooltip("Add field at section")
             fieldBtn.onClick(() => {
-                (new ChooseSectionModal(this.plugin, this.file, field.name)).open();
+                new ChooseSectionModal(
+                    this.plugin,
+                    this.file,
+                    (
+                        lineNumber: number,
+                        inFrontmatter: boolean,
+                        after: boolean,
+                        asList: boolean,
+                        asComment: boolean
+                    ) => FieldManager.openFieldModal(
+                        this.plugin,
+                        this.file,
+                        field.name,
+                        "",
+                        lineNumber,
+                        inFrontmatter,
+                        after,
+                        asList,
+                        asComment
+                    )
+                ).open();
             })
         };
 
@@ -110,7 +135,7 @@ export class FieldsModal extends Modal {
                 if (_fileClass) {
                     const fileClassOptionsContainer = fileClassManagerContainer.createDiv({ cls: "metadata-menu-note-fields-fileClass-manager-container" })
                     const fileClassNameContainer = fileClassOptionsContainer.createDiv({ cls: "metadata-menu-note-fields-fileClass-manager-name", text: _fileClass.name })
-                    fileClassNameContainer.setAttr("id", `fileClass__${_fileClass.name}`)
+                    fileClassNameContainer.setAttr("id", `fileClass__${_fileClass.name.replace("/", "___")}`)
                     const fileClassAddAttributeBtn = new ButtonComponent(fileClassOptionsContainer)
                     fileClassAddAttributeBtn.setIcon("plus-circle")
                     fileClassAddAttributeBtn.setTooltip(`Add field definition in ${_fileClass.name}`)
@@ -122,7 +147,7 @@ export class FieldsModal extends Modal {
                         fileClassManagerContainer.createDiv({ text: ">", cls: "metadata-menu-note-fields-fileClass-manager-separator" })
                     }
 
-                    const fileClassFielsContainers = this.containerEl.querySelectorAll(`[class*="fileClassField__${fileClassName}"]`)
+                    const fileClassFielsContainers = this.containerEl.querySelectorAll(`[class*="fileClassField__${fileClassName.replace("/", "___")}"]`)
                     fileClassFielsContainers.forEach(fieldNameContainer => {
                         (fieldNameContainer as HTMLDivElement).onmouseover = () => {
                             fileClassNameContainer?.addClass("active")
@@ -133,12 +158,12 @@ export class FieldsModal extends Modal {
                     })
                     fileClassNameContainer.onmouseover = () => {
                         this.containerEl
-                            .querySelectorAll(`.metadata-menu-note-field-item.field-name.fileClassField__${fileClassName}`)
+                            .querySelectorAll(`.metadata-menu-note-field-item.field-name.fileClassField__${fileClassName.replace("/", "___")}`)
                             .forEach(cont => { cont.addClass("active") })
                     }
                     fileClassNameContainer.onmouseout = () => {
                         this.containerEl
-                            .querySelectorAll(`.metadata-menu-note-field-item.field-name.fileClassField__${fileClassName}`)
+                            .querySelectorAll(`.metadata-menu-note-field-item.field-name.fileClassField__${fileClassName.replace("/", "___")}`)
                             .forEach(cont => { cont.removeClass("active") })
                     }
                 }
@@ -164,6 +189,7 @@ export class FieldsModal extends Modal {
     }
 
     buildFieldsContainer(): void {
+        this.missingFields = false
         this.contentEl.replaceChildren();
         this.contentEl.createEl('hr')
         const fieldsContainer = this.contentEl.createDiv({ cls: "metadata-menu-note-fields-container" });
@@ -172,6 +198,36 @@ export class FieldsModal extends Modal {
             this.fieldContainers.push(this.buildFieldContainer(fieldsContainer, field, value))
         })
         this.formatOptionsColumns(fieldsContainer);
+        if (this.missingFields) {
+            const insertMissingFieldsContainer = this.contentEl.createDiv({ cls: "metadata-menu-note-fields-container metadata-menu-note-field-insert-all-fields" });
+            insertMissingFieldsContainer.createDiv({ text: "Insert missing fields" });
+            const insertMissingFieldsBtn = new ButtonComponent(insertMissingFieldsContainer)
+            insertMissingFieldsBtn.setIcon("list-plus")
+            insertMissingFieldsBtn.onClick(() => {
+                const dvFile = this.dvApi?.page(this.file.path)
+                if (dvFile) {
+                    new ChooseSectionModal(
+                        this.plugin,
+                        this.file,
+                        (
+                            lineNumber: number,
+                            inFrontmatter: boolean,
+                            after: boolean,
+                            asList: boolean,
+                            asComment: boolean
+                        ) => insertMissingFields(
+                            this.plugin,
+                            dvFile,
+                            lineNumber,
+                            inFrontmatter,
+                            after,
+                            asList,
+                            asComment
+                        )
+                    ).open();
+                }
+            })
+        }
         this.contentEl.createEl('hr')
         const fileClassManagersContainer = this.contentEl.createDiv({ cls: "metadata-menu-note-fields-container" })
         this.buildFileClassManager(fileClassManagersContainer)
