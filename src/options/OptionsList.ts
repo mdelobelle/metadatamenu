@@ -117,7 +117,7 @@ export default class OptionsList {
 			const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || []
 			fileClasses.forEach(fileClass => {
 				const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.plugin.app)
-				const optionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), fieldCommandSuggestModal);
+				const optionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), fieldCommandSuggestModal, this.file);
 				optionsList.createExtraOptionList(false);
 				location.options.push({
 					id: "manage_fileClass_attributes",
@@ -142,7 +142,7 @@ export default class OptionsList {
 			}
 			const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || []
 			fileClasses.forEach(fileClass => {
-				const fileClassOptionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), location)
+				const fileClassOptionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), location, this.file)
 				fileClassOptionsList.createExtraOptionList(false);
 			})
 			this.addFileClassToFileOption();
@@ -258,7 +258,7 @@ export default class OptionsList {
 			);
 			if (isMenu(this.location)) {
 				this.location.addItem((item) => {
-					item.setIcon("list-plus");
+					item.setIcon("battery-full");
 					item.setTitle("Add missing fields at section...");
 					item.onClick((evt: MouseEvent) => {
 						modal.open();
@@ -270,7 +270,7 @@ export default class OptionsList {
 					id: "add_missing_fields_at_section",
 					actionLabel: "Add missing fields at section...",
 					action: () => modal.open(),
-					icon: "list-plus"
+					icon: "battery-full"
 				})
 			};
 		}

@@ -202,7 +202,7 @@ export class FieldsModal extends Modal {
             const insertMissingFieldsContainer = this.contentEl.createDiv({ cls: "metadata-menu-note-fields-container metadata-menu-note-field-insert-all-fields" });
             insertMissingFieldsContainer.createDiv({ text: "Insert missing fields" });
             const insertMissingFieldsBtn = new ButtonComponent(insertMissingFieldsContainer)
-            insertMissingFieldsBtn.setIcon("list-plus")
+            insertMissingFieldsBtn.setIcon("battery-full")
             insertMissingFieldsBtn.onClick(() => {
                 const dvFile = this.dvApi?.page(this.file.path)
                 if (dvFile) {
