@@ -4,8 +4,10 @@ import Field from "../fields/Field";
 import { FileClass } from "src/fileClass/fileClass";
 import FileClassQuery from "src/fileClass/FileClassQuery";
 import FieldSetting from "src/settings/FieldSetting";
-import { updateLookups, resolveLookups } from "../fields/fieldManagers/LookupField";
+import { resolveLookups } from "src/commands/resolveLookups";
+import { updateLookups } from "src/commands/updateLookups";
 import { FieldType } from "src/types/fieldTypes";
+import { Status } from "src/types/lookupTypes";
 
 export default class FieldIndex extends Component {
 
@@ -15,6 +17,7 @@ export default class FieldIndex extends Component {
     public filesFieldsFromFileClassQueries: Map<string, Field[]>;
     public filesFieldsFromInnerFileClasses: Map<string, Field[]>;
     public filesFields: Map<string, Field[]>;
+    public filesFieldsExists: Map<string, Field[]>;
     public filesFileClasses: Map<string, FileClass[]>;
     public filesFileClassesNames: Map<string, string[] | undefined>;
     public fileClassesAncestors: Map<string, string[]>
@@ -23,6 +26,7 @@ export default class FieldIndex extends Component {
     public valuesListNotePathValues: Map<string, string[]>;
     public tagsMatchingFileClasses: Map<string, FileClass>;
     public fileLookupFiles: Map<string, any[]>;
+    public fileLookupFilesStatus: Map<string, Status>;
     public previousFileLookupFilesValues: Map<string, number>;
     public fileLookupFieldLastValue: Map<string, string>;
     public lookupQueries: Map<string, Field>;
@@ -39,6 +43,7 @@ export default class FieldIndex extends Component {
         this.flushCache();
         this.fileLookupFiles = new Map();
         this.fileLookupFieldLastValue = new Map();
+        this.fileLookupFilesStatus = new Map();
         this.previousFileLookupFilesValues = new Map();
         this.dv = this.plugin.app.plugins.plugins.dataview;
         this.classFilesPath = plugin.settings.classFilesPath;
@@ -106,6 +111,7 @@ export default class FieldIndex extends Component {
 
     private flushCache() {
         this.filesFields = new Map();
+        this.filesFieldsExists = new Map();
         this.fileClassesFields = new Map();
         this.fieldsFromGlobalFileClass = [];
         this.filesFieldsFromTags = new Map();
@@ -121,9 +127,9 @@ export default class FieldIndex extends Component {
         this.lookupQueries = new Map();
     }
 
-    async fullIndex(event: string, force_update_lookups = false, without_lookups = false): Promise<void> {
-        //console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
-        const start = Date.now()
+    async fullIndex(event: string, force_update_all_lookups = false, without_lookups = false): Promise<void> {
+        console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
+        let start = Date.now(), time = Date.now()
         this.flushCache();
         this.getFileClassesAncestors();
         this.getGlobalFileClass();
@@ -133,11 +139,12 @@ export default class FieldIndex extends Component {
         this.resolveFileClassQueries();
         this.getFilesFieldsFromFileClass();
         this.getFilesFields();
+        this.getFilesFieldsExists();
         await this.getValuesListNotePathValues();
         this.resolveLookups(without_lookups);
-        await this.updateLookups(force_update_lookups, "full Index", without_lookups);
+        await this.updateLookups(force_update_all_lookups, "full Index", without_lookups);
         this.firstIndexindDone = true;
-        //console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
+        console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     }
 
 
@@ -145,8 +152,8 @@ export default class FieldIndex extends Component {
         if (!without_lookups) resolveLookups(this.plugin);
     }
 
-    async updateLookups(force_update: boolean = false, source: string = "", without_lookups: boolean): Promise<void> {
-        if (!without_lookups) await updateLookups(this.plugin, force_update, source);
+    async updateLookups(force_update_all: boolean = false, source: string = "", without_lookups: boolean): Promise<void> {
+        if (!without_lookups) await updateLookups(this.plugin, force_update_all, source);
     }
 
     async getValuesListNotePathValues(): Promise<void> {
@@ -206,6 +213,7 @@ export default class FieldIndex extends Component {
             }
         })
     }
+
 
     getAncestorsRecursively(fileClassName: string) {
         const ancestors = this.fileClassesAncestors.get(fileClassName)
@@ -375,8 +383,25 @@ export default class FieldIndex extends Component {
                     this.filesFileClasses.set(f.path, [this.fileClassesName.get(this.plugin.settings.globalFileClass!)!])
                     this.filesFileClassesNames.set(f.path, [this.plugin.settings.globalFileClass!])
                 } else {
-                    this.filesFields.set(f.path, this.plugin.settings.presetFields)
+                    const fields = this.plugin.settings.presetFields.map(prop => {
+                        const property = new Field();
+                        return Object.assign(property, prop);
+                    });
+                    this.filesFields.set(f.path, fields)
                 }
             })
+    }
+
+    getFilesFieldsExists(): void {
+        [...this.filesFields].forEach(([filePath, fields]) => {
+            const dvFile = this.dv.api.page(filePath)
+            const existingFields: Field[] = []
+            fields.forEach(field => {
+                if (dvFile[field.name] !== undefined) { existingFields.push(field) }
+            })
+            if (existingFields.length) {
+                this.filesFieldsExists.set(filePath, existingFields)
+            }
+        })
     }
 }

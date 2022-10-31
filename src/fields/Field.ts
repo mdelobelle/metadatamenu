@@ -1,5 +1,4 @@
 import { FieldType } from "../types/fieldTypes"
-import { FileClass } from "src/fileClass/fileClass";
 
 class Field {
 

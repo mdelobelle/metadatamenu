@@ -6,7 +6,7 @@ import Field from "src/fields/Field";
 import NumberField from "src/fields/fieldManagers/NumberField";
 import { FieldManager } from "src/types/fieldTypes";
 
-export default class NumbertModal extends Modal {
+export default class NumberModal extends Modal {
 
     private fieldManager: NumberField;
 

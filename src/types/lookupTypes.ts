@@ -110,3 +110,8 @@ export const bulletListLookupTypes = [
     Type.LinksBulletList,
     Type.CustomBulletList
 ]
+
+export enum Status {
+    "changed" = "changed",
+    "upToDate" = "upToDate"
+}
