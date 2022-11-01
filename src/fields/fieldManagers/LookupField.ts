@@ -24,9 +24,18 @@ export default class LookupField extends FieldManager {
 
     addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         if (!this.field.options.autoUpdate && this.field.options.autoUpdate !== undefined) {
-            const status = this.plugin.fieldIndex.fileLookupFieldsStatus.get(`${file.path}__${this.field.name}`) || Status.changed
+            const f = this.plugin.fieldIndex;
+            const id = `${file.path}__${this.field.name}`;
+            let status: Status;
+            status = f.fileLookupFieldsStatus.get(id) || Status.changed
+            //fileLookupFieldLastOutputType is updated after fileClass change cache resolution so won't be triggered properly. 
+            //we anticipate this change so that the update button appears
+            if (
+                f.fileLookupFieldLastOutputType.get(`${file.path}__related__${this.field.fileClassName}___${this.field.name}`) !==
+                this.field.options.outputType
+            ) status = Status.changed
             const icon = status === Status.changed ? "refresh-ccw" : "file-check"
-            const action = () => { updateLookups(this.plugin, false, "single_command", { file: file, fieldName: this.field.name }) }
+            const action = () => { updateLookups(this.plugin, "single_command", { file: file, fieldName: this.field.name }) }
             if (LookupField.isMenu(location) && status === Status.changed) {
                 location.addItem((item) => {
                     item.setTitle(`Update <${name}>`);

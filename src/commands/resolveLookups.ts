@@ -52,6 +52,7 @@ export function resolveLookups(plugin: MetadataMenu, source: string = ""): void 
         if (dvPage === undefined || dvPage[fieldName] === undefined || !existingLookFieldWithNameAndFileClassName) {
             f.fileLookupFiles.delete(id);
             f.fileLookupFieldLastValue.delete(id);
+            f.fileLookupFieldLastOutputType.delete(id);
             f.previousFileLookupFilesValues.delete(id);
             f.fileLookupFieldsStatus.delete(`${filePath}__${fieldName}`)
         }

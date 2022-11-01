@@ -2,11 +2,24 @@ import MetadataMenu from "main";
 import { Notice, TFile } from "obsidian";
 import { FieldManager } from "src/fields/FieldManager";
 import * as Lookup from "src/types/lookupTypes";
+import { getValues } from "./getValues";
 import { replaceValues } from "./replaceValues";
+
+function arraysAsStringAreEqual(a: string, b: string) {
+    const aAsArray = a.split(",").map(v => v.trim())
+    const bAsArray = b.split(",").map(v => v.trim())
+    return aAsArray.every(item => bAsArray.includes(item)) && bAsArray.every(item => aAsArray.includes(item))
+}
+
+async function parseFieldValues(plugin: MetadataMenu, file: TFile, fieldName: string) {
+    const rawValue = (await getValues(plugin, file, fieldName))?.[0]
+    const regex = new RegExp(`<div hidden id=\"${fieldName}_values\">(?<values>.*)</div>`)
+    const fR = rawValue.match(regex)
+    return fR?.groups?.values || rawValue
+}
 
 export async function updateLookups(
     plugin: MetadataMenu,
-    force_update_all: boolean = false,
     source: string = "",
     forceUpdateOne?: { file: TFile, fieldName: string }
 ): Promise<void> {
@@ -18,13 +31,16 @@ export async function updateLookups(
         const matchRegex = /(?<filePath>.*)__related__(?<fileClassName>.*)___(?<fieldName>.*)/
         const { filePath, fileClassName, fieldName } = id.match(matchRegex)?.groups || {}
         const tFile = plugin.app.vault.getAbstractFileByPath(filePath) as TFile
-        if (tFile) {
+        const dvApi = plugin.app.plugins.plugins.dataview?.api
+        const dvFile = dvApi && dvApi.page(tFile.path)
+        if (tFile && dvFile) {
             let newValue = "";
             const pages = f.fileLookupFiles.get(id)
             const field = f.filesFields.get(filePath)?.find(field => field.name == fieldName)
-
             if (field) {
-                switch (field.options.outputType) {
+                const outputType = field.options.outputType
+                if (!f.fileLookupFieldLastOutputType.get(id)) f.fileLookupFieldLastOutputType.set(id, outputType)
+                switch (outputType) {
                     case Lookup.Type.LinksList:
                     case Lookup.Type.LinksBulletList:
                         {
@@ -82,7 +98,7 @@ export async function updateLookups(
                         break
                 }
                 //check if value has changed in order not to create an infinite loop
-                const currentValue = f.fileLookupFieldLastValue.get(id)
+                const currentValue = f.fileLookupFieldLastValue.get(id) || await parseFieldValues(plugin, tFile, field.name) || ""
                 const shouldCheckForUpdate =
                     field.options.autoUpdate ||
                     field.options.autoUpdate === undefined || //field is autoUpdated OR
@@ -90,16 +106,21 @@ export async function updateLookups(
                         forceUpdateOne?.file.path === tFile.path &&
                         forceUpdateOne?.fieldName === field.name
                     )
-                const valueHasChanged = (!currentValue && newValue !== "") || currentValue !== newValue
-                if (force_update_all || (shouldCheckForUpdate && valueHasChanged)) {
-                    const previousValuesCount = plugin.fieldIndex.previousFileLookupFilesValues.get(tFile.path + "__related__" + fileClassName + "___" + fieldName) || 0
-                    if (f.firstIndexingDone) await plugin.fileTaskManager.pushTask(() => replaceValues(plugin, tFile, fieldName, newValue, previousValuesCount));
+                const valueHasChanged = (!currentValue && newValue !== "") || !arraysAsStringAreEqual(currentValue, newValue)
+                const formatHasChanged = outputType !== f.fileLookupFieldLastOutputType.get(id)
+
+                if (shouldCheckForUpdate) {
                     f.fileLookupFieldLastValue.set(id, newValue);
+                    f.fileLookupFieldLastOutputType.set(id, outputType);
+                }// make sure that this is set at first indexing}
+                if (shouldCheckForUpdate && (valueHasChanged || formatHasChanged)) {
+                    const previousValuesCount = plugin.fieldIndex.previousFileLookupFilesValues.get(id) || 0
+                    await plugin.fileTaskManager.pushTask(() => replaceValues(plugin, tFile, fieldName, newValue, previousValuesCount));
                     f.fileLookupFieldsStatus.set(`${filePath}__${fieldName}`, Lookup.Status.upToDate)
                 } else if (source !== "full Index") { // this case is for fileClass changes, no need for rewrite other lookups after cache update
                     plugin.fieldIndex.fileChanged = false
                 }
-                if (!valueHasChanged) {
+                if (!valueHasChanged && !formatHasChanged) {
                     f.fileLookupFieldsStatus.set(`${filePath}__${fieldName}`, Lookup.Status.upToDate)
                 }
             }

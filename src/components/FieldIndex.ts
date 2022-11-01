@@ -9,7 +9,7 @@ import { updateLookups } from "src/commands/updateLookups";
 import { updateFormulas, cleanRemovedFormulasFromIndex } from "src/commands/updateFormulas";
 
 import { FieldType } from "src/types/fieldTypes";
-import { Status as LookupStatus } from "src/types/lookupTypes";
+import { Status as LookupStatus, Type as LookupType } from "src/types/lookupTypes";
 
 export default class FieldIndex extends Component {
 
@@ -31,6 +31,7 @@ export default class FieldIndex extends Component {
     public fileLookupFieldsStatus: Map<string, LookupStatus>;
     public previousFileLookupFilesValues: Map<string, number>;
     public fileLookupFieldLastValue: Map<string, string>;
+    public fileLookupFieldLastOutputType: Map<string, keyof typeof LookupType>;
     public fileFormulaFieldLastValue: Map<string, string>;
     public lookupQueries: Map<string, Field>;
     public dv: any;
@@ -48,6 +49,7 @@ export default class FieldIndex extends Component {
         this.fileLookupFieldLastValue = new Map();
         this.fileLookupFieldsStatus = new Map();
         this.previousFileLookupFilesValues = new Map();
+        this.fileLookupFieldLastOutputType = new Map();
         this.fileFormulaFieldLastValue = new Map();
         this.dv = this.plugin.app.plugins.plugins.dataview;
         this.classFilesPath = plugin.settings.classFilesPath;
@@ -62,14 +64,14 @@ export default class FieldIndex extends Component {
             this.dv = this.plugin.app.plugins.plugins.dataview;
             this.lastRevision = this.dv.api.index.revision;
             this.dvReady = true;
-            await this.fullIndex("dv is running", true);
+            await this.fullIndex("dv is running", false);
         }
 
         this.registerEvent(
             this.plugin.app.metadataCache.on("dataview:index-ready", async () => {
                 this.dv = this.plugin.app.plugins.plugins.dataview;
                 this.dvReady = true;
-                await this.fullIndex("dv index", true);
+                await this.fullIndex("dv index", false);
                 this.lastRevision = this.dv.api.index.revision;
             })
         )
@@ -107,7 +109,7 @@ export default class FieldIndex extends Component {
                         await this.updateFormulas();
                         this.resolveLookups(false);
                         const fileClassName = FileClass.getFileClassNameFromPath(this.plugin, file.path)
-                        await this.updateLookups(false, fileClassName, false);
+                        await this.updateLookups(fileClassName, false);
                     }
                     this.lastRevision = this.dv.api.index.revision
                 }
@@ -136,7 +138,7 @@ export default class FieldIndex extends Component {
     }
 
     async fullIndex(event: string, force_update_all = false, without_lookups = false): Promise<void> {
-        //console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
+        console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
         let start = Date.now(), time = Date.now()
         this.flushCache();
         this.getFileClassesAncestors();
@@ -150,18 +152,18 @@ export default class FieldIndex extends Component {
         this.getFilesFieldsExists();
         await this.getValuesListNotePathValues();
         this.resolveLookups(without_lookups);
-        await this.updateLookups(force_update_all, "full Index", without_lookups);
-        if (force_update_all || !this.firstIndexingDone) await this.updateFormulas();
+        await this.updateLookups("full Index", without_lookups);
+        if (force_update_all || !this.firstIndexingDone) await this.updateFormulas(); //calculate formulas at start of with force update
         this.firstIndexingDone = true;
-        //console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
+        console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     }
 
     resolveLookups(without_lookups: boolean): void {
         if (!without_lookups) resolveLookups(this.plugin);
     }
 
-    async updateLookups(force_update_all: boolean = false, source: string = "", without_lookups: boolean): Promise<void> {
-        if (!without_lookups) await updateLookups(this.plugin, force_update_all, source);
+    async updateLookups(source: string = "", without_lookups: boolean): Promise<void> {
+        if (!without_lookups) await updateLookups(this.plugin, source);
     }
 
     async updateFormulas(): Promise<void> {
