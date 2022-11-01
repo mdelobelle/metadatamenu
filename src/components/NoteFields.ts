@@ -142,7 +142,7 @@ export class FieldsModal extends Modal {
                         asComment: boolean
                     ) => insertMissingFields(
                         this.plugin,
-                        dvFile,
+                        dvFile.file.path,
                         lineNumber,
                         inFrontmatter,
                         after,
@@ -276,7 +276,7 @@ export class FieldsModal extends Modal {
                             asComment: boolean
                         ) => insertMissingFields(
                             this.plugin,
-                            dvFile,
+                            dvFile.file.path,
                             lineNumber,
                             inFrontmatter,
                             after,

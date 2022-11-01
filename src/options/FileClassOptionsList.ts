@@ -76,7 +76,7 @@ export default class FileClassOptionsList {
                             asComment: boolean
                         ) => insertMissingFields(
                             this.plugin,
-                            dvFile,
+                            dvFile.file.path,
                             lineNumber,
                             inFrontmatter,
                             after,
