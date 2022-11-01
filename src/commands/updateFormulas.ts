@@ -30,22 +30,25 @@ export function cleanRemovedFormulasFromIndex(
 export async function updateFormulas(
     plugin: MetadataMenu
 ): Promise<void> {
+
     const start = Date.now()
-    //console.log("start update formulas [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
+    //console.log("start update formulas", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
     const f = plugin.fieldIndex;
     let renderingErrors: string[] = [];
     //1. flatten all file__formulaField in a Map
     const fileFormulasFields: Map<string, Field> = new Map();
     [...f.filesFieldsExists].forEach(([filePath, fields]) => {
         fields.filter(field => field.type === FieldType.Formula).forEach(field => {
-            fileFormulasFields.set(filePath, field)
+            fileFormulasFields.set(`${filePath}__calculated__${field.fileClassName || "presetField"}___${field.name}`, field)
         })
     });
     //2. calculate formula and update file if value has changed
-    [...fileFormulasFields].forEach(async ([filePath, field]) => {
-        const id = `${filePath}__calculated__${field.fileClassName || "presetField"}___${field.name}`;
+    [...fileFormulasFields].forEach(async ([id, field]) => {
+        const matchRegex = /(?<filePath>.*)__calculated__(?<fileClassName>.*)___(?<fieldName>.*)/
+        const { filePath, fileClassName, fieldName } = id.match(matchRegex)?.groups || {}
         const dvFile = f.dv.api.page(filePath)
         const currentdvValue = dvFile && dvFile[field.name]
+
         const currentValue = currentdvValue ? currentdvValue.toString() : ""
         f.fileFormulaFieldLastValue.set(id, currentValue);
         try {
@@ -59,7 +62,7 @@ export async function updateFormulas(
         }
     })
     if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`);
-    //console.log("finished update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision, `${(Date.now() - start)}ms`)
+    //console.log("finished update formulas", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     //3 remove non existing formula fields from index, since those indexes aren't flushed each time
     cleanRemovedFormulasFromIndex(plugin);
 }

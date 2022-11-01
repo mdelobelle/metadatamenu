@@ -13,7 +13,6 @@ export async function insertMissingFields(
     asComment: boolean = false,
     fileClassName?: string
 ): Promise<void> {
-    console.log("here")
     let file: TFile;
     if (fileOrFilePath instanceof TFile) {
         file = fileOrFilePath;
