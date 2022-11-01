@@ -4,8 +4,12 @@ import Field from "../fields/Field";
 import { FileClass } from "src/fileClass/fileClass";
 import FileClassQuery from "src/fileClass/FileClassQuery";
 import FieldSetting from "src/settings/FieldSetting";
-import { updateLookups, resolveLookups } from "../fields/fieldManagers/LookupField";
+import { resolveLookups } from "src/commands/resolveLookups";
+import { updateLookups } from "src/commands/updateLookups";
+import { updateFormulas, cleanRemovedFormulasFromIndex } from "src/commands/updateFormulas";
+
 import { FieldType } from "src/types/fieldTypes";
+import { Status as LookupStatus, Type as LookupType } from "src/types/lookupTypes";
 
 export default class FieldIndex extends Component {
 
@@ -15,6 +19,7 @@ export default class FieldIndex extends Component {
     public filesFieldsFromFileClassQueries: Map<string, Field[]>;
     public filesFieldsFromInnerFileClasses: Map<string, Field[]>;
     public filesFields: Map<string, Field[]>;
+    public filesFieldsExists: Map<string, Field[]>;
     public filesFileClasses: Map<string, FileClass[]>;
     public filesFileClassesNames: Map<string, string[] | undefined>;
     public fileClassesAncestors: Map<string, string[]>
@@ -23,15 +28,18 @@ export default class FieldIndex extends Component {
     public valuesListNotePathValues: Map<string, string[]>;
     public tagsMatchingFileClasses: Map<string, FileClass>;
     public fileLookupFiles: Map<string, any[]>;
+    public fileLookupFieldsStatus: Map<string, LookupStatus>;
     public previousFileLookupFilesValues: Map<string, number>;
     public fileLookupFieldLastValue: Map<string, string>;
+    public fileLookupFieldLastOutputType: Map<string, keyof typeof LookupType>;
+    public fileFormulaFieldLastValue: Map<string, string>;
     public lookupQueries: Map<string, Field>;
     public dv: any;
     public lastRevision: 0;
     public fileChanged: boolean = false;
     public dvReady: boolean = false;
     public loadTime: number;
-    public firstIndexindDone: boolean = false;
+    public firstIndexingDone: boolean = false;
     private classFilesPath: string | null;
 
     constructor(private plugin: MetadataMenu, public cacheVersion: string, public onChange: () => void) {
@@ -39,7 +47,10 @@ export default class FieldIndex extends Component {
         this.flushCache();
         this.fileLookupFiles = new Map();
         this.fileLookupFieldLastValue = new Map();
+        this.fileLookupFieldsStatus = new Map();
         this.previousFileLookupFilesValues = new Map();
+        this.fileLookupFieldLastOutputType = new Map();
+        this.fileFormulaFieldLastValue = new Map();
         this.dv = this.plugin.app.plugins.plugins.dataview;
         this.classFilesPath = plugin.settings.classFilesPath;
     }
@@ -53,14 +64,14 @@ export default class FieldIndex extends Component {
             this.dv = this.plugin.app.plugins.plugins.dataview;
             this.lastRevision = this.dv.api.index.revision;
             this.dvReady = true;
-            await this.fullIndex("dv is running", true);
+            await this.fullIndex("dv is running", false);
         }
 
         this.registerEvent(
             this.plugin.app.metadataCache.on("dataview:index-ready", async () => {
                 this.dv = this.plugin.app.plugins.plugins.dataview;
                 this.dvReady = true;
-                await this.fullIndex("dv index", true);
+                await this.fullIndex("dv index", false);
                 this.lastRevision = this.dv.api.index.revision;
             })
         )
@@ -89,12 +100,16 @@ export default class FieldIndex extends Component {
                     && this.fileChanged
                     && this.dvReady
                 ) {
+                    //maybe fullIndex didn't catch new files that have to be updated: let's rebuild getFileFieldsExist for this file
+                    cleanRemovedFormulasFromIndex(this.plugin);
+                    this.getFilesFieldsExists(file);
                     if (this.classFilesPath && file.path.startsWith(this.classFilesPath)) {
                         this.fullIndex("fileClass changed")
                     } else {
+                        await this.updateFormulas();
                         this.resolveLookups(false);
                         const fileClassName = FileClass.getFileClassNameFromPath(this.plugin, file.path)
-                        await this.updateLookups(false, fileClassName, false);
+                        await this.updateLookups(fileClassName, false);
                     }
                     this.lastRevision = this.dv.api.index.revision
                 }
@@ -106,6 +121,7 @@ export default class FieldIndex extends Component {
 
     private flushCache() {
         this.filesFields = new Map();
+        this.filesFieldsExists = new Map();
         this.fileClassesFields = new Map();
         this.fieldsFromGlobalFileClass = [];
         this.filesFieldsFromTags = new Map();
@@ -121,9 +137,9 @@ export default class FieldIndex extends Component {
         this.lookupQueries = new Map();
     }
 
-    async fullIndex(event: string, force_update_lookups = false, without_lookups = false): Promise<void> {
+    async fullIndex(event: string, force_update_all = false, without_lookups = false): Promise<void> {
         //console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
-        const start = Date.now()
+        let start = Date.now(), time = Date.now()
         this.flushCache();
         this.getFileClassesAncestors();
         this.getGlobalFileClass();
@@ -133,20 +149,25 @@ export default class FieldIndex extends Component {
         this.resolveFileClassQueries();
         this.getFilesFieldsFromFileClass();
         this.getFilesFields();
+        this.getFilesFieldsExists();
         await this.getValuesListNotePathValues();
         this.resolveLookups(without_lookups);
-        await this.updateLookups(force_update_lookups, "full Index", without_lookups);
-        this.firstIndexindDone = true;
+        await this.updateLookups("full Index", without_lookups);
+        if (force_update_all || !this.firstIndexingDone) await this.updateFormulas(); //calculate formulas at start of with force update
+        this.firstIndexingDone = true;
         //console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     }
-
 
     resolveLookups(without_lookups: boolean): void {
         if (!without_lookups) resolveLookups(this.plugin);
     }
 
-    async updateLookups(force_update: boolean = false, source: string = "", without_lookups: boolean): Promise<void> {
-        if (!without_lookups) await updateLookups(this.plugin, force_update, source);
+    async updateLookups(source: string = "", without_lookups: boolean): Promise<void> {
+        if (!without_lookups) await updateLookups(this.plugin, source);
+    }
+
+    async updateFormulas(): Promise<void> {
+        await updateFormulas(this.plugin);
     }
 
     async getValuesListNotePathValues(): Promise<void> {
@@ -206,6 +227,7 @@ export default class FieldIndex extends Component {
             }
         })
     }
+
 
     getAncestorsRecursively(fileClassName: string) {
         const ancestors = this.fileClassesAncestors.get(fileClassName)
@@ -375,8 +397,33 @@ export default class FieldIndex extends Component {
                     this.filesFileClasses.set(f.path, [this.fileClassesName.get(this.plugin.settings.globalFileClass!)!])
                     this.filesFileClassesNames.set(f.path, [this.plugin.settings.globalFileClass!])
                 } else {
-                    this.filesFields.set(f.path, this.plugin.settings.presetFields)
+                    const fields = this.plugin.settings.presetFields.map(prop => {
+                        const property = new Field();
+                        return Object.assign(property, prop);
+                    });
+                    this.filesFields.set(f.path, fields)
                 }
             })
+    }
+
+    getFilesFieldsExists(file?: TFile): void {
+        let fileFields: Array<[string, Field[]]>
+        if (file) {
+            fileFields = [[file.path, this.filesFields.get(file.path) || []]]
+        } else {
+            fileFields = [...this.filesFields]
+        }
+        fileFields.forEach(([filePath, fields]) => {
+            const dvFile = this.dv.api.page(filePath)
+            const existingFields: Field[] = []
+            fields.forEach(field => {
+                if (dvFile && dvFile[field.name] !== undefined) { existingFields.push(field) }
+            })
+            if (existingFields.length) {
+                this.filesFieldsExists.set(filePath, existingFields)
+            } else {
+                this.filesFieldsExists.delete(filePath)
+            }
+        })
     }
 }

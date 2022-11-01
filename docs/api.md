@@ -75,3 +75,19 @@ Takes a TFile or e filePath and returns all the fields in the document, both fro
     }
 }
 ```
+
+### insertMissingFields
+`insertMissingFields: (fileOrFilePath: string | TFile, lineNumber: number, inFrontmatter: boolean, after: boolean, asList: boolean, asComment: boolean, fileClassName?: string)`
+
+Takes:
+- a TFile or its path, 
+- a line number, 
+- asks wether insertion is in frontmatter (default : false),
+- asks wether insertion is in after the line (default : false),
+- asks wether insertion is as list (prepends `- `) (default : false),
+- asks wether insertion is as comment (prepends `>`)  (default : false),
+- asks wether insertion should only deal with one single fileClass' fields (default: all)
+
+Inserts all missings fields of all (or one specified) fileClass fields at the line, with the format
+
+This is an asynchronous function, so you should await it.

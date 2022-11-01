@@ -36,3 +36,5 @@ It also enables frontmatter of inline-field autocompletion with suggested values
 [demo 10](https://youtu.be/vc55ivQuHuY): Better Select and File fields
 
 [demo 11](https://youtu.be/I73uW8fqOZ8): Supercharged Tags, multi fileClasses and metadata button
+
+[demo 12]()

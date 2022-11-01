@@ -24,6 +24,9 @@ import {
 } from "src/options/linkAttributes"
 import { Prec } from "@codemirror/state";
 import { buildCMViewPlugin } from "src/options/livePreview";
+import { genuineKeys } from 'src/utils/dataviewUtils';
+import chooseSectionModal from 'src/modals/chooseSectionModal';
+import { insertMissingFields } from 'src/commands/insertMissingFields';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -231,11 +234,52 @@ export default class MetadataMenu extends Plugin {
 		})
 	}
 
+	private insertMissingFields() {
+		this.addCommand({
+			id: "insert_missing_fields",
+			name: "Insert missing fields",
+			icon: "battery-full",
+			checkCallback: (checking: boolean) => {
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (checking) {
+					const inFile = !!(view?.file && (!this.classFilesPath || !view.file.path.startsWith(this.classFilesPath)))
+					return inFile
+				}
+				const dvApi = this.app.plugins.plugins.dataview?.api;
+				const file = view?.file
+				if (dvApi && file) {
+					const currentFieldsNames = genuineKeys(dvApi.page(file.path))
+					if (![...this.fieldIndex.filesFields.get(file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
+						new chooseSectionModal(
+							this,
+							file,
+							(
+								lineNumber: number,
+								inFrontmatter: boolean,
+								after: boolean,
+								asList: boolean,
+								asComment: boolean
+							) => insertMissingFields(
+								this,
+								file.path,
+								lineNumber,
+								inFrontmatter,
+								after,
+								asList,
+								asComment
+							)
+						).open();
+					}
+				}
+			}
+		})
+	}
+
 	private addUpdateLookups() {
 		this.addCommand({
-			id: "update_lookups",
-			name: "Update lookup fields",
-			icon: "file-search",
+			id: "update_formulas",
+			name: "Update formulas fields",
+			icon: "function-square",
 			checkCallback: (checking: boolean) => {
 				if (checking) return true;
 				this.fieldIndex.fullIndex("command", true);
@@ -253,7 +297,8 @@ export default class MetadataMenu extends Plugin {
 				} else {
 					this.addFieldOptionsCommand();
 					this.addInsertFieldAtPositionCommand();
-					this.addManageFieldAtCursorCommand()
+					this.addManageFieldAtCursorCommand();
+					this.insertMissingFields();
 				}
 			}
 		}

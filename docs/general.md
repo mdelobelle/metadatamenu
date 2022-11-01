@@ -16,6 +16,7 @@ Available types are:
 - `MultiFile`: a field that will `Accept multiple links`
 - `Date`: a field that will `Accept a date`
 - `Lookup`: a field that will `Accept a lookup query`
+- `Formula`: a field that will `Make Calculation based on note's fields`
 
 ## Field settings
 By default each field is an `Input`

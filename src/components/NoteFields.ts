@@ -14,10 +14,11 @@ export class FieldOptions {
 
     constructor(public container: HTMLDivElement) { }
 
-    public addOption(icon: string, onclick: () => {} | void, tooltip?: string) {
+    public addOption(icon: string, onclick: () => {} | void, tooltip?: string, className?: string) {
         const fieldOptionContainer = this.container.createDiv({ cls: "metadata-menu-note-field-item field-option" })
         const fieldOption = new ButtonComponent(fieldOptionContainer)
         fieldOption.setIcon(icon)
+        if (className) fieldOption.buttonEl.addClass(className);
         fieldOption.onClick(() => onclick())
         if (tooltip) fieldOption.setTooltip(tooltip);
     }
@@ -64,7 +65,7 @@ export class FieldsModal extends Modal {
         const fieldSettingContainer = fieldContainer.createDiv({ cls: "metadata-menu-note-field-item field-setting" });
         const fieldSettingBtn = new ButtonComponent(fieldSettingContainer);
         fieldSettingBtn.setIcon("gear")
-        fieldSettingBtn.setTooltip(`${field.fileClassName ? field.fileClassName + " > " : "Preset Field "} > ${field.name} settings`)
+        fieldSettingBtn.setTooltip(`${field.fileClassName ? field.fileClassName + " > " : "Preset Field > "} ${field.name} settings`)
         fieldSettingBtn.onClick(() => {
             const _fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
             const fileClassAttribute = _fileClass?.attributes.find(attr => attr.name === field.name)
@@ -141,7 +142,7 @@ export class FieldsModal extends Modal {
                         asComment: boolean
                     ) => insertMissingFields(
                         this.plugin,
-                        dvFile,
+                        dvFile.file.path,
                         lineNumber,
                         inFrontmatter,
                         after,
@@ -275,7 +276,7 @@ export class FieldsModal extends Modal {
                             asComment: boolean
                         ) => insertMissingFields(
                             this.plugin,
-                            dvFile,
+                            dvFile.file.path,
                             lineNumber,
                             inFrontmatter,
                             after,

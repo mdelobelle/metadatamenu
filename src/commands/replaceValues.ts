@@ -102,12 +102,17 @@ export async function replaceValues(
                 const { inList, inQuote, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = fR.groups
                 const inputArray = input ? input.replace(/(\,\s+)/g, ',').split(',').sort() : [];
                 let newValue: string;
+                let hiddenValue = "";
+
                 if (field?.type === FieldType.Lookup && Lookup.bulletListLookupTypes.includes(field?.options.outputType as Lookup.Type)) {
                     newValue = inputArray.length == 1 ? "\n- " + inputArray[0] : `${inputArray.length > 0 ? "\n" : ""}${inputArray.map(item => "- " + item).join('\n')}`;
+                    // hide the values next to the field so that they are readable by getValues. 
+                    // we need getValues instead of dv.page to have the rawValue because dv is transforming data, making comparison impossible
+                    hiddenValue = `<div hidden id="${field.name}_values">${input}</div>`
                 } else {
                     newValue = inputArray.length == 1 ? inputArray[0] : `${inputArray.join(', ')}`;
                 }
-                return `${inQuote || ""}${inList || ""}${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer}${newValue}`;
+                return `${inQuote || ""}${inList || ""}${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer}${hiddenValue + newValue}`;
             } else {
                 const newFields: FieldReplace[] = [];
                 const inSentenceRegexBrackets = new RegExp(`\\[${inlineFieldRegex(attribute)}(?<values>[^\\]]+)?\\]`, "gu");

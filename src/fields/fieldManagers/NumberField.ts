@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { Menu, setIcon, TextComponent, TFile } from "obsidian";
 import { replaceValues } from "src/commands/replaceValues";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
-import NumbertModal from "src/modals/fields/NumberModal";
+import NumberModal from "src/modals/fields/NumberModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
@@ -69,7 +69,7 @@ export default class NumberField extends FieldManager {
     }
 
     public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
-        const modal = new NumbertModal(this.plugin, file, this.field, value);
+        const modal = new NumberModal(this.plugin, file, this.field, value);
         modal.titleEl.setText(`Change Value for <${name}>`);
         const { min, max, step } = this.field.options;
         const fMin = parseFloat(min)
@@ -189,7 +189,7 @@ export default class NumberField extends FieldManager {
     }
 
     public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): void {
-        const fieldModal = new NumbertModal(this.plugin, file, this.field, value || "", lineNumber, inFrontmatter, after, asList, asComment);
+        const fieldModal = new NumberModal(this.plugin, file, this.field, value || "", lineNumber, inFrontmatter, after, asList, asComment);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

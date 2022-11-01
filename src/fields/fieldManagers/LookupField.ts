@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { TFile, Menu, TextAreaComponent, TextComponent, DropdownComponent, Notice } from "obsidian";
+import { TFile, Menu, TextAreaComponent, TextComponent, DropdownComponent, ToggleComponent } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldType } from "src/types/fieldTypes";
@@ -9,7 +9,9 @@ import { FieldManager } from "../FieldManager";
 import * as Lookup from "src/types/lookupTypes";
 import { replaceValues } from "src/commands/replaceValues";
 import { insertValues } from "src/commands/insertValues";
-import { fileFields } from "src/commands/fileFields";
+import { Status } from "src/types/lookupTypes";
+import { FieldOptions } from "src/components/NoteFields";
+import { updateLookups } from "src/commands/updateLookups";
 
 export default class LookupField extends FieldManager {
 
@@ -20,8 +22,43 @@ export default class LookupField extends FieldManager {
         this.showModalOption = false
     }
 
-    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal): void {
+    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+        if (!this.field.options.autoUpdate && this.field.options.autoUpdate !== undefined) {
+            const f = this.plugin.fieldIndex;
+            const id = `${file.path}__${this.field.name}`;
+            let status: Status;
+            status = f.fileLookupFieldsStatus.get(id) || Status.changed
+            //fileLookupFieldLastOutputType is updated after fileClass change cache resolution so won't be triggered properly. 
+            //we anticipate this change so that the update button appears
+            if (
+                f.fileLookupFieldLastOutputType.get(`${file.path}__related__${this.field.fileClassName}___${this.field.name}`) !==
+                this.field.options.outputType
+            ) status = Status.changed
+            const icon = status === Status.changed ? "refresh-ccw" : "file-check"
+            const action = () => { updateLookups(this.plugin, "single_command", { file: file, fieldName: this.field.name }) }
+            if (LookupField.isMenu(location) && status === Status.changed) {
+                location.addItem((item) => {
+                    item.setTitle(`Update <${name}>`);
+                    item.setIcon(icon);
+                    item.onClick(action);
+                    item.setSection("metadata-menu.fields");
+                })
+            } else if (LookupField.isSuggest(location) && status === Status.changed) {
+                location.options.push({
+                    id: `update_${name}`,
+                    actionLabel: `<span>Update <b>${name}</b></span>`,
+                    action: action,
+                    icon: icon
+                });
 
+            } else if (LookupField.isFieldOptions(location) && status === Status.changed) {
+                location.addOption(icon, action, `Update ${name}'s value`);
+            } else if (LookupField.isFieldOptions(location) && status === Status.upToDate) {
+                location.addOption(icon, () => { }, `${name} is up to date`);
+            }
+        } else if (LookupField.isFieldOptions(location)) {
+            location.addOption("server-cog", () => { }, `${name} is auto-updated`, "disabled");
+        }
     }
 
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
@@ -60,6 +97,18 @@ export default class LookupField extends FieldManager {
     }
 
     private createLookupContainer(parentContainer: HTMLDivElement): void {
+
+        const autoUpdateContainer = parentContainer.createDiv();
+        autoUpdateContainer.createEl("span", { text: "Auto update this field ", cls: 'metadata-menu-field-option' });
+        autoUpdateContainer.createEl("span", { text: "This could lead to latencies depending on the queries", cls: 'metadata-menu-field-option-subtext warning' });
+        const autoUpdate = new ToggleComponent(autoUpdateContainer);
+        if (this.field.options.autoUpdate === undefined) this.field.options.autoUpdate = true
+        autoUpdate.setValue(this.field.options.autoUpdate);
+        autoUpdate.onChange(value => {
+            this.field.options.autoUpdate = value
+        })
+
+
 
         const dvQueryStringContainer = parentContainer.createDiv();
         dvQueryStringContainer.createEl("span", { text: "Pages to look for in your vault (DataviewJS Query)", cls: 'metadata-menu-field-option' });
@@ -197,142 +246,5 @@ export default class LookupField extends FieldManager {
 
     validateOptions(): boolean {
         return true
-    }
-}
-
-export async function updateLookups(plugin: MetadataMenu, force_update: boolean = false, source: string = ""): Promise<void> {
-    const start = Date.now()
-    //console.log("start update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
-    const f = plugin.fieldIndex;
-    let renderingErrors: string[] = []
-    for (let id of f.fileLookupFiles.keys()) {
-        const matchRegex = /(?<filePath>.*)__related__(?<fileClassName>.*)___(?<fieldName>.*)/
-        const { filePath, fileClassName, fieldName } = id.match(matchRegex)?.groups || {}
-        const tFile = plugin.app.vault.getAbstractFileByPath(filePath) as TFile
-        if (tFile) {
-            let newValue = "";
-            const pages = f.fileLookupFiles.get(id)
-            const field = f.filesFields.get(filePath)?.find(field => field.name == fieldName)
-            switch (field?.options.outputType) {
-                case Lookup.Type.LinksList:
-                case Lookup.Type.LinksBulletList:
-                    {
-                        const newValuesArray = pages?.map((dvFile: any) => {
-                            return FieldManager.buildMarkDownLink(plugin, tFile, dvFile.file.path);
-                        });
-                        newValue = (newValuesArray || []).join(", ");
-                    }
-                    break
-                case Lookup.Type.CustomList:
-                case Lookup.Type.CustomBulletList:
-                    {
-                        const renderingFunction = new Function("page", `return ${field.options.customListFunction}`)
-                        const newValuesArray = pages?.map((dvFile: any) => {
-                            try {
-                                return renderingFunction(dvFile)
-                            } catch {
-                                if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
-                                return ""
-                            }
-                        })
-                        newValue = (newValuesArray || []).join(", ");
-                    }
-                    break
-                case Lookup.Type.CustomSummarizing:
-                    {
-                        const customSummarizingFunction = field.options.customSummarizingFunction
-
-                        const summarizingFunction = new Function("pages",
-                            customSummarizingFunction
-                                .replace(/\{\{summarizedFieldName\}\}/g, field.options.summarizedFieldName))
-                        try {
-                            newValue = summarizingFunction(pages).toString();
-                        } catch {
-                            if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
-                            newValue = ""
-                        }
-                    }
-                    break
-                case Lookup.Type.BuiltinSummarizing:
-                    {
-                        const builtinFunction = field.options.builtinSummarizingFunction as keyof typeof Lookup.BuiltinSummarizing
-                        const summarizingFunction = new Function("pages",
-                            Lookup.BuiltinSummarizingFunction[builtinFunction]
-                                .replace(/\{\{summarizedFieldName\}\}/g, field.options.summarizedFieldName))
-                        try {
-                            newValue = summarizingFunction(pages).toString();
-                        } catch {
-                            if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
-                            newValue = ""
-                        }
-                    }
-                    break
-                default:
-                    break
-            }
-            //check if value has changed in order not to create an infinite loop
-            const currentValue = f.fileLookupFieldLastValue.get(id)
-            if (force_update || (!currentValue && newValue !== "") || currentValue !== newValue) {
-                const previousValuesCount = plugin.fieldIndex.previousFileLookupFilesValues.get(tFile.path + "__related__" + fileClassName + "___" + fieldName) || 0
-                if (f.firstIndexindDone) await plugin.fileTaskManager.pushTask(() => replaceValues(plugin, tFile, fieldName, newValue, previousValuesCount));
-                //await replaceValues(plugin, tFile, fieldName, newValue);
-                f.fileLookupFieldLastValue.set(id, newValue)
-            } else if (source !== "full Index") {
-                plugin.fieldIndex.fileChanged = false
-            }
-        }
-    }
-    if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`)
-    //console.log("finished update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision, `${(Date.now() - start)}ms`)
-}
-
-export function resolveLookups(plugin: MetadataMenu, source: string = ""): void {
-    const f = plugin.fieldIndex;
-    //first resolve all existing lookup queries from their definitions in fileClasses and settings O(n)
-    const lookupQueryResults: Map<string, any[]> = new Map();
-    [...f.lookupQueries].forEach(([lookupName, field]) => {
-        const queryRelatedDVFiles = (new Function("dv", `return ${field.options.dvQueryString}`))(f.dv.api).values as Array<any>;
-        lookupQueryResults.set(lookupName, queryRelatedDVFiles);
-    });
-    //then assign results to all files having implemented a lookupfield
-    [...f.filesFields].forEach(([filePath, fields]) => {
-        fields.filter(field => field.type === FieldType.Lookup).forEach(lookupField => {
-            //for all lookup fields in files that have lookupfields:
-            //1. get the query results
-            const queryRelatedDVFiles = lookupQueryResults.get(`${lookupField.fileClassName || "presetField"}___${lookupField.name}`) || [];
-            //2. filter those results by their targetField content including this file //
-            const fileRelatedDVFiles = queryRelatedDVFiles.filter(dvFile => {
-                const targetValue = dvFile[lookupField.options.targetFieldName];
-                if (Array.isArray(targetValue)) {
-                    return targetValue.filter(v => f.dv.api.value.isLink(v)).map(v => v.path).includes(filePath)
-                } else {
-                    return targetValue?.path === filePath
-                }
-            })
-            //3. assign those results to fileLookupFiles
-            const relatedFieldName = `${filePath}__related__${lookupField.fileClassName || "presetField"}___${lookupField.name}`
-            const existingFileLookupFields = f.fileLookupFiles.get(relatedFieldName)
-            f.fileLookupFiles.set(relatedFieldName, fileRelatedDVFiles)
-            //4. reset Previous results count to current value
-            f.previousFileLookupFilesValues.set(relatedFieldName, (existingFileLookupFields || fileRelatedDVFiles).length)
-        })
-    })
-    for (let id of f.fileLookupFiles.keys()) {
-        const matchRegex = /(?<filePath>.*)__related__(?<fileClassName>.*)___(?<fieldName>.*)/
-        const { filePath, fileClassName, fieldName } = id.match(matchRegex)?.groups || {}
-        const existingLookFieldWithNameAndFileClassName = f.filesFields
-            .get(filePath)?.find(field =>
-                (field.name === fieldName) &&
-                (
-                    (field.fileClassName === undefined && fileClassName === "presetField") ||
-                    (field.fileClassName === fileClassName)
-                )
-            )
-        const dvPage = f.dv.api.page(filePath);
-        if (dvPage === undefined || dvPage[fieldName] === undefined || !existingLookFieldWithNameAndFileClassName) {
-            f.fileLookupFiles.delete(id);
-            f.fileLookupFieldLastValue.delete(id);
-            f.previousFileLookupFilesValues.delete(id)
-        }
     }
 }
