@@ -93,14 +93,14 @@ export async function updateLookups(
                 const valueHasChanged = (!currentValue && newValue !== "") || currentValue !== newValue
                 if (force_update_all || (shouldCheckForUpdate && valueHasChanged)) {
                     const previousValuesCount = plugin.fieldIndex.previousFileLookupFilesValues.get(tFile.path + "__related__" + fileClassName + "___" + fieldName) || 0
-                    if (f.firstIndexindDone) await plugin.fileTaskManager.pushTask(() => replaceValues(plugin, tFile, fieldName, newValue, previousValuesCount));
+                    if (f.firstIndexingDone) await plugin.fileTaskManager.pushTask(() => replaceValues(plugin, tFile, fieldName, newValue, previousValuesCount));
                     f.fileLookupFieldLastValue.set(id, newValue);
-                    f.fileLookupFilesStatus.set(`${filePath}__${fieldName}`, Lookup.Status.upToDate)
+                    f.fileLookupFieldsStatus.set(`${filePath}__${fieldName}`, Lookup.Status.upToDate)
                 } else if (source !== "full Index") { // this case is for fileClass changes, no need for rewrite other lookups after cache update
                     plugin.fieldIndex.fileChanged = false
                 }
                 if (!valueHasChanged) {
-                    f.fileLookupFilesStatus.set(`${filePath}__${fieldName}`, Lookup.Status.upToDate)
+                    f.fileLookupFieldsStatus.set(`${filePath}__${fieldName}`, Lookup.Status.upToDate)
                 }
             }
         }

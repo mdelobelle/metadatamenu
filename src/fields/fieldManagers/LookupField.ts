@@ -24,7 +24,7 @@ export default class LookupField extends FieldManager {
 
     addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         if (!this.field.options.autoUpdate && this.field.options.autoUpdate !== undefined) {
-            const status = this.plugin.fieldIndex.fileLookupFilesStatus.get(`${file.path}__${this.field.name}`) || Status.changed
+            const status = this.plugin.fieldIndex.fileLookupFieldsStatus.get(`${file.path}__${this.field.name}`) || Status.changed
             const icon = status === Status.changed ? "refresh-ccw" : "file-check"
             const action = () => { updateLookups(this.plugin, false, "single_command", { file: file, fieldName: this.field.name }) }
             if (LookupField.isMenu(location) && status === Status.changed) {

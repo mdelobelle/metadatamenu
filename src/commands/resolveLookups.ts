@@ -31,9 +31,9 @@ export function resolveLookups(plugin: MetadataMenu, source: string = ""): void 
             const existingFileLookupFields = f.fileLookupFiles.get(relatedFieldName)
             f.fileLookupFiles.set(relatedFieldName, fileRelatedDVFiles)
             //4. reset Previous results count to current value
-            if (!(f.fileLookupFilesStatus.get(`${filePath}__${lookupField.name}`) === Status.changed)) f.previousFileLookupFilesValues.set(relatedFieldName, (existingFileLookupFields || fileRelatedDVFiles).length)
+            if (!(f.fileLookupFieldsStatus.get(`${filePath}__${lookupField.name}`) === Status.changed)) f.previousFileLookupFilesValues.set(relatedFieldName, (existingFileLookupFields || fileRelatedDVFiles).length)
             //5. change the status of this lookup field
-            f.fileLookupFilesStatus.set(`${filePath}__${lookupField.name}`, Status.changed)
+            f.fileLookupFieldsStatus.set(`${filePath}__${lookupField.name}`, Status.changed)
         })
     })
     //remove non existing lookup fields from index, since those indexes aren't flushed each time
@@ -53,7 +53,7 @@ export function resolveLookups(plugin: MetadataMenu, source: string = ""): void 
             f.fileLookupFiles.delete(id);
             f.fileLookupFieldLastValue.delete(id);
             f.previousFileLookupFilesValues.delete(id);
-            f.fileLookupFilesStatus.delete(`${filePath}__${fieldName}`)
+            f.fileLookupFieldsStatus.delete(`${filePath}__${fieldName}`)
         }
     }
 }

@@ -6,8 +6,10 @@ import FileClassQuery from "src/fileClass/FileClassQuery";
 import FieldSetting from "src/settings/FieldSetting";
 import { resolveLookups } from "src/commands/resolveLookups";
 import { updateLookups } from "src/commands/updateLookups";
+import { updateFormulas, cleanRemovedFormulasFromIndex } from "src/commands/updateFormulas";
+
 import { FieldType } from "src/types/fieldTypes";
-import { Status } from "src/types/lookupTypes";
+import { Status as LookupStatus } from "src/types/lookupTypes";
 
 export default class FieldIndex extends Component {
 
@@ -26,16 +28,17 @@ export default class FieldIndex extends Component {
     public valuesListNotePathValues: Map<string, string[]>;
     public tagsMatchingFileClasses: Map<string, FileClass>;
     public fileLookupFiles: Map<string, any[]>;
-    public fileLookupFilesStatus: Map<string, Status>;
+    public fileLookupFieldsStatus: Map<string, LookupStatus>;
     public previousFileLookupFilesValues: Map<string, number>;
     public fileLookupFieldLastValue: Map<string, string>;
+    public fileFormulaFieldLastValue: Map<string, string>;
     public lookupQueries: Map<string, Field>;
     public dv: any;
     public lastRevision: 0;
     public fileChanged: boolean = false;
     public dvReady: boolean = false;
     public loadTime: number;
-    public firstIndexindDone: boolean = false;
+    public firstIndexingDone: boolean = false;
     private classFilesPath: string | null;
 
     constructor(private plugin: MetadataMenu, public cacheVersion: string, public onChange: () => void) {
@@ -43,8 +46,9 @@ export default class FieldIndex extends Component {
         this.flushCache();
         this.fileLookupFiles = new Map();
         this.fileLookupFieldLastValue = new Map();
-        this.fileLookupFilesStatus = new Map();
+        this.fileLookupFieldsStatus = new Map();
         this.previousFileLookupFilesValues = new Map();
+        this.fileFormulaFieldLastValue = new Map();
         this.dv = this.plugin.app.plugins.plugins.dataview;
         this.classFilesPath = plugin.settings.classFilesPath;
     }
@@ -94,9 +98,13 @@ export default class FieldIndex extends Component {
                     && this.fileChanged
                     && this.dvReady
                 ) {
+                    //maybe fullIndex didn't catch new files that have to be updated: let's rebuild getFileFieldsExist for this file
+                    cleanRemovedFormulasFromIndex(this.plugin);
+                    this.getFilesFieldsExists(file);
                     if (this.classFilesPath && file.path.startsWith(this.classFilesPath)) {
                         this.fullIndex("fileClass changed")
                     } else {
+                        await this.updateFormulas();
                         this.resolveLookups(false);
                         const fileClassName = FileClass.getFileClassNameFromPath(this.plugin, file.path)
                         await this.updateLookups(false, fileClassName, false);
@@ -127,8 +135,8 @@ export default class FieldIndex extends Component {
         this.lookupQueries = new Map();
     }
 
-    async fullIndex(event: string, force_update_all_lookups = false, without_lookups = false): Promise<void> {
-        console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
+    async fullIndex(event: string, force_update_all = false, without_lookups = false): Promise<void> {
+        //console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
         let start = Date.now(), time = Date.now()
         this.flushCache();
         this.getFileClassesAncestors();
@@ -142,11 +150,11 @@ export default class FieldIndex extends Component {
         this.getFilesFieldsExists();
         await this.getValuesListNotePathValues();
         this.resolveLookups(without_lookups);
-        await this.updateLookups(force_update_all_lookups, "full Index", without_lookups);
-        this.firstIndexindDone = true;
-        console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
+        await this.updateLookups(force_update_all, "full Index", without_lookups);
+        if (force_update_all || !this.firstIndexingDone) await this.updateFormulas();
+        this.firstIndexingDone = true;
+        //console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     }
-
 
     resolveLookups(without_lookups: boolean): void {
         if (!without_lookups) resolveLookups(this.plugin);
@@ -154,6 +162,10 @@ export default class FieldIndex extends Component {
 
     async updateLookups(force_update_all: boolean = false, source: string = "", without_lookups: boolean): Promise<void> {
         if (!without_lookups) await updateLookups(this.plugin, force_update_all, source);
+    }
+
+    async updateFormulas(): Promise<void> {
+        await updateFormulas(this.plugin);
     }
 
     async getValuesListNotePathValues(): Promise<void> {
@@ -392,15 +404,23 @@ export default class FieldIndex extends Component {
             })
     }
 
-    getFilesFieldsExists(): void {
-        [...this.filesFields].forEach(([filePath, fields]) => {
+    getFilesFieldsExists(file?: TFile): void {
+        let fileFields: Array<[string, Field[]]>
+        if (file) {
+            fileFields = [[file.path, this.filesFields.get(file.path) || []]]
+        } else {
+            fileFields = [...this.filesFields]
+        }
+        fileFields.forEach(([filePath, fields]) => {
             const dvFile = this.dv.api.page(filePath)
             const existingFields: Field[] = []
             fields.forEach(field => {
-                if (dvFile[field.name] !== undefined) { existingFields.push(field) }
+                if (dvFile && dvFile[field.name] !== undefined) { existingFields.push(field) }
             })
             if (existingFields.length) {
                 this.filesFieldsExists.set(filePath, existingFields)
+            } else {
+                this.filesFieldsExists.delete(filePath)
             }
         })
     }
