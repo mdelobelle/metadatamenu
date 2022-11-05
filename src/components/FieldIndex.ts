@@ -236,6 +236,7 @@ export default class FieldIndex extends Component {
             const lastAncestorParent = this.fileClassesAncestors.get(lastAncestor!)?.[0];
             if (lastAncestorParent && lastAncestorParent !== fileClassName) {
                 this.fileClassesAncestors.set(fileClassName, [...ancestors, lastAncestorParent]);
+                this.getAncestorsRecursively(fileClassName);
             }
         }
     }
