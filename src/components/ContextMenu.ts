@@ -1,16 +1,52 @@
 import MetadataMenu from "main";
-import { Menu, Platform, requireApiVersion, TAbstractFile, TFile } from "obsidian";
+import { Component, Menu, Platform, requireApiVersion, TAbstractFile, TFile } from "obsidian";
 import OptionsList from "src/options/OptionsList";
-import FileClassOptionsList from "./FileClassOptionsList";
+import FileClassOptionsList from "../options/FileClassOptionsList";
 import { frontMatterLineField, getLineFields } from "src/utils/parser";
-import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
+import FieldCommandSuggestModal from "../options/FieldCommandSuggestModal";
 import { FileClass } from "src/fileClass/fileClass";
 
-export default class linkContextMenu {
+export default class ContextMenu extends Component {
 
 	constructor(private plugin: MetadataMenu) {
-		this.createContextMenu();
+		super()
 	};
+
+	onload(): void {
+		this.plugin.registerEvent(
+			this.plugin.app.workspace.on('file-menu', (menu, abstractFile, source) => {
+				const file = this.plugin.app.vault.getAbstractFileByPath(abstractFile.path);
+				this.buildOptions(file, menu);
+			})
+		);
+
+		this.plugin.registerEvent(
+			this.plugin.app.workspace.on('editor-menu', (menu, editor, view) => {
+				const file = this.plugin.app.workspace.getActiveFile();
+				const includedFields: string[] = [];
+				const frontmatter = this.plugin.app.metadataCache.getFileCache(view.file)?.frontmatter;
+				if (frontmatter
+					&& editor.getCursor().line > frontmatter.position.start.line
+					&& editor.getCursor().line < frontmatter.position.end.line
+				) {
+					const attribute = frontMatterLineField(editor.getLine(editor.getCursor().line))
+					if (attribute) includedFields.push(attribute);
+				} else {
+					getLineFields(editor.getLine(editor.getCursor().line)).forEach(field => {
+						if (editor.getCursor().ch <= field.index + field.length && editor.getCursor().ch >= field.index) {
+							includedFields.push(field.attribute);
+						}
+					})
+				}
+				if (includedFields.length) {
+					this.buildOptions(file, menu, includedFields);
+				} else {
+					this.buildOptions(file, menu);
+				}
+
+			})
+		)
+	}
 
 	private buildOptions(file: TFile | TAbstractFile | null, menu: Menu, includedFields?: string[]): void {
 		const classFilesPath = this.plugin.settings.classFilesPath
@@ -54,40 +90,4 @@ export default class linkContextMenu {
 			}
 		};
 	}
-
-	private createContextMenu(): void {
-		this.plugin.registerEvent(
-			this.plugin.app.workspace.on('file-menu', (menu, abstractFile, source) => {
-				const file = this.plugin.app.vault.getAbstractFileByPath(abstractFile.path);
-				this.buildOptions(file, menu);
-			})
-		);
-
-		this.plugin.registerEvent(
-			this.plugin.app.workspace.on('editor-menu', (menu, editor, view) => {
-				const file = this.plugin.app.workspace.getActiveFile();
-				const includedFields: string[] = [];
-				const frontmatter = this.plugin.app.metadataCache.getFileCache(view.file)?.frontmatter;
-				if (frontmatter
-					&& editor.getCursor().line > frontmatter.position.start.line
-					&& editor.getCursor().line < frontmatter.position.end.line
-				) {
-					const attribute = frontMatterLineField(editor.getLine(editor.getCursor().line))
-					if (attribute) includedFields.push(attribute);
-				} else {
-					getLineFields(editor.getLine(editor.getCursor().line)).forEach(field => {
-						if (editor.getCursor().ch <= field.index + field.length && editor.getCursor().ch >= field.index) {
-							includedFields.push(field.attribute);
-						}
-					})
-				}
-				if (includedFields.length) {
-					this.buildOptions(file, menu, includedFields);
-				} else {
-					this.buildOptions(file, menu);
-				}
-
-			})
-		)
-	};
 };

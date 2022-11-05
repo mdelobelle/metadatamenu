@@ -53,60 +53,36 @@ export default class SelectField extends AbstractListBasedField {
         const valueContainer = document.createElement("div");;
         const valueLabel = dv.el("span", p[this.field.name] || "");
         valueContainer.appendChild(valueLabel);
+        /* end spacer */
+        const spacer = document.createElement("div");
+        spacer.setAttr("class", "metadata-menu-dv-field-spacer");
+        /* button to display modal */
         const dropDownButton = document.createElement("button");
         setIcon(dropDownButton, "down-chevron-glyph");
         dropDownButton.addClass("metadata-menu-dv-field-button");
         valueContainer.appendChild(dropDownButton);
-
-
-        const selectContainer = document.createElement("div");
-        const select = document.createElement("select");
-        select.setAttr("class", "metadata-menu-dv-select");
-        selectContainer.appendChild(select);
-        const dismissBtn = document.createElement("button");
-        setIcon(dismissBtn, "cross");
-        dismissBtn.addClass("metadata-menu-dv-field-button");
-        selectContainer.appendChild(dismissBtn);
-        const nullOption = new Option("--select--", undefined);
-        select.add(nullOption);
-
-        const values = this.getOptionsList();
-        values.forEach(v => {
-            const value = new Option(v, v)
-            if (p[this.field.name] === v ||
-                p[this.field.name] &&
-                Object.keys(p[this.field.name]).includes("path") &&
-                `[[${p[this.field.name].path.replace(".md", "")}]]` === v
-            ) {
-                value.selected = true;
-            }
-            select.add(value);
-            select.onchange = async () => {
-                let newValue = "";
-                if (select.value !== undefined) {
-                    newValue = select.value;
-                }
-                fieldContainer.removeChild(selectContainer)
-                fieldContainer.appendChild(valueContainer)
-                SelectField.replaceValues(this.plugin, p.file.path, this.field.name, newValue);
-            }
-        })
-
-        dropDownButton.onclick = () => {
-            fieldContainer.removeChild(valueContainer);
-            fieldContainer.appendChild(selectContainer);
-        }
-
-        dismissBtn.onclick = () => {
-            fieldContainer.removeChild(selectContainer);
-            fieldContainer.appendChild(valueContainer)
-        }
-
-        /* initial state */
-        if (!attrs?.options?.alwaysOn) {
-            fieldContainer.appendChild(valueContainer);
+        const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
+        let fieldModal: SelectModal;
+        if (file instanceof TFile && file.extension == "md") {
+            fieldModal = new SelectModal(this.plugin, file, p[this.field.name], this.field)
         } else {
-            fieldContainer.appendChild(selectContainer);
+            throw Error("path doesn't correspond to a proper file");
         }
+
+        dropDownButton.onclick = () => fieldModal.open()
+        if (!attrs?.options?.alwaysOn) {
+            dropDownButton.hide();
+            spacer.show();
+            fieldContainer.onmouseover = () => {
+                dropDownButton.show();
+                spacer.hide();
+            }
+            fieldContainer.onmouseout = () => {
+                dropDownButton.hide();
+                spacer.show();
+            }
+        }
+        fieldContainer.appendChild(valueContainer);
+        fieldContainer.appendChild(spacer);
     }
 }

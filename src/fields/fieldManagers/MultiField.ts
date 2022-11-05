@@ -50,12 +50,7 @@ export default class MultiField extends AbstractListBasedField {
         fieldContainer: HTMLElement,
         attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
     ): void {
-        /* 
-        this control displays by default the list of value
-        when mouseover: we display a "+" button at the beggining of the field to add a new value and a "x" button after the value hovered to remove it from list
-        when the "x" button is clicked, we remove the list from value
-        when the "+" button is clicked, we display a select dropdown filtered with remaining options. when one option is selected we add it to the list and remove the control
-        */
+
         let valueHovered = false;
         let currentValues: string[] = [];
         if (p[this.field.name]) {
@@ -69,52 +64,13 @@ export default class MultiField extends AbstractListBasedField {
             }
         }
 
-        /* select container */
-        const selectContainer = document.createElement("div");
-        const select = document.createElement("select");
-        select.setAttr("class", "metadata-menu-dv-select");
-        selectContainer.appendChild(select)
-        const nullOption = new Option("--select--", undefined);
-        select.add(nullOption);
-        const values = this.getOptionsList();
-        values.filter(v => !currentValues.contains(v)).forEach(v => {
-            const value = new Option(v, v);
-            if (p[this.field.name] === value) {
-                value.selected = true;
-            }
-            select.add(value);
-        })
-        select.onchange = async () => {
-            const newValues = [...currentValues, select.value].join(", ");
-            MultiField.replaceValues(this.plugin, p.file.path, this.field.name, newValues);
-            singleSpacer.hide();
-            doubleSpacer.show();
-            addBtn.hide();
-            fieldContainer.appendChild(valuesContainer);
-            fieldContainer.appendChild(singleSpacer);
-            fieldContainer.appendChild(doubleSpacer);
-            fieldContainer.removeChild(selectContainer);
+        const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
+        let fieldModal: MultiSelectModal;
+        if (file instanceof TFile && file.extension == "md") {
+            fieldModal = new MultiSelectModal(this.plugin, file, this.field, p[this.field.name])
+        } else {
+            throw Error("path doesn't correspond to a proper file");
         }
-
-        select.onkeydown = (e) => {
-            if (e.key === 'Escape') {
-                fieldContainer.appendChild(valuesContainer);
-                fieldContainer.appendChild(singleSpacer);
-                fieldContainer.appendChild(doubleSpacer);
-                fieldContainer.removeChild(selectContainer);
-            }
-        }
-        const closeSelect = document.createElement("button");
-        setIcon(closeSelect, "cross");
-        closeSelect.addClass("metadata-menu-dv-field-button");
-        closeSelect.addClass("multi");
-        closeSelect.onclick = () => {
-            fieldContainer.appendChild(valuesContainer);
-            fieldContainer.appendChild(singleSpacer);
-            fieldContainer.appendChild(doubleSpacer);
-            fieldContainer.removeChild(selectContainer);
-        };
-        selectContainer.appendChild(closeSelect);
 
         /* current values container */
         const valuesContainer = document.createElement("div");
@@ -162,16 +118,11 @@ export default class MultiField extends AbstractListBasedField {
 
         /* button to display input */
         const addBtn = document.createElement("button");
-        setIcon(addBtn, "bullet-list");
+        setIcon(addBtn, "list-plus");
         addBtn.setAttr('class', "metadata-menu-dv-field-button");
 
         valuesContainer.appendChild(addBtn);
-        addBtn.onclick = () => {
-            fieldContainer.removeChild(valuesContainer);
-            fieldContainer.removeChild(singleSpacer);
-            fieldContainer.removeChild(doubleSpacer);
-            fieldContainer.appendChild(selectContainer);
-        }
+        addBtn.onclick = () => fieldModal.open();
 
         /* end spacer */
         const singleSpacer = document.createElement("div");
