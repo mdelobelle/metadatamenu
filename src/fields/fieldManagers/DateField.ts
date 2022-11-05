@@ -103,7 +103,7 @@ export default class DateField extends FieldManager {
         const dateLinkPathInput = new TextComponent(dateLinkPathContainer)
         dateLinkPathInput.setValue(this.field.options.linkPath)
         dateLinkPathInput.onChange((value: string) => {
-            this.field.options.linkPath = value.endsWith("/") ? value : value + "/";
+			this.field.options.linkPath = value + ((!value.endsWith("/") && !!value.length) ? "/" : "");
         });
 
         // shift interval (should be a number or a luxon humanized duration (requires dataview) -> to include in validation)
