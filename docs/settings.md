@@ -222,7 +222,7 @@ If a File matches several queries, the last matching fileClass (starting from th
 
 ### Show extra button to access metadata menu form
 
-When a note has one or more fileClass (or [supercharged tags](fileClasses#mapwithtag-field--supercharged-tag)) you can display a button next to the note's : 
+When a note has one or more fileClass (or [supercharged tags](/fileClasses/#mapwithtag-field--supercharged-tag)) you can display a button next to the note's : 
 - links in reading mode
 - links in live preview
 - file in file explorer

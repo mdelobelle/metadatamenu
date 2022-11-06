@@ -238,4 +238,4 @@ From there you can
 - see which field corresponds to which fileClass and the opposite
 - bulk insert missing fields (for all fileClasses, or or one fileClass in particular)
 
-The icon of the button can be customized in the fileClass with the higher priority (see [icon](fileclasses#iconfield) )
+The icon of the button can be customized in the fileClass with the higher priority (see [icon](/fileclasses/#iconfield) )
