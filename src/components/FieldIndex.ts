@@ -138,7 +138,7 @@ export default class FieldIndex extends Component {
     }
 
     async fullIndex(event: string, force_update_all = false, without_lookups = false): Promise<void> {
-        //console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
+        console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
         let start = Date.now(), time = Date.now()
         this.flushCache();
         this.getFileClassesAncestors();
@@ -155,7 +155,7 @@ export default class FieldIndex extends Component {
         await this.updateLookups("full Index", without_lookups);
         if (force_update_all || !this.firstIndexingDone) await this.updateFormulas(); //calculate formulas at start of with force update
         this.firstIndexingDone = true;
-        //console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
+        console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     }
 
     resolveLookups(without_lookups: boolean): void {
@@ -274,7 +274,13 @@ export default class FieldIndex extends Component {
                             this.fileClassesName.set(fileClass.name, fileClass)
                             const cache = this.plugin.app.metadataCache.getFileCache(f);
                             if (cache?.frontmatter?.mapWithTag) {
-                                this.tagsMatchingFileClasses.set(fileClassName, fileClass)
+                                if (cache?.frontmatter?.tagNames) {
+                                    const _tagNames = cache?.frontmatter?.tagNames as string | string[];
+                                    const tagNames = Array.isArray(_tagNames) ? [..._tagNames] : _tagNames.split(",").map(t => t.trim())
+                                    tagNames.forEach(tag => this.tagsMatchingFileClasses.set(tag, fileClass))
+                                } else {
+                                    this.tagsMatchingFileClasses.set(fileClassName, fileClass)
+                                }
                             }
                         } catch (error) {
                             //console.log(error) 
