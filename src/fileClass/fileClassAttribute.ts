@@ -1,6 +1,5 @@
-import Field from "src/fields/Field";
+import Field, { FieldCommand } from "src/fields/Field";
 import { FieldType } from "src/types/fieldTypes";
-import { FileClass } from "./fileClass";
 
 class FileClassAttribute {
 
@@ -9,7 +8,8 @@ class FileClassAttribute {
         public name: string,
         public type: FieldType = FieldType.Input,
         public options: string[] | Record<string, any> = [],
-        public fileClassName: string
+        public fileClassName: string,
+        public command: FieldCommand
     ) { }
 
     public getField() {
@@ -21,7 +21,7 @@ class FileClassAttribute {
         } else {
             options = this.options
         }
-        return new Field(this.name, options, this.name, this.type, this.fileClassName);
+        return new Field(this.name, options, this.name, this.type, this.fileClassName, this.command);
     }
 }
 

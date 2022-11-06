@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
-import { ButtonComponent, DropdownComponent, ExtraButtonComponent, Modal, Notice, Setting, TextComponent, TextAreaComponent } from "obsidian";
-import Field from "src/fields/Field";
+import { ButtonComponent, DropdownComponent, ExtraButtonComponent, Modal, Notice, Setting, TextComponent, TextAreaComponent, ToggleComponent, setIcon } from "obsidian";
+import Field, { FieldCommand } from "src/fields/Field";
 import FieldSetting from "src/settings/FieldSetting";
 import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
 import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip } from "src/types/fieldTypes";
@@ -13,6 +13,9 @@ export default class FieldSettingsModal extends Modal {
     private new: boolean = true;
     private fieldOptionsContainer: HTMLDivElement;
     private fieldManager: F;
+    private command: FieldCommand;
+    private addCommand: boolean;
+    private iconName: TextComponent;
 
     constructor(
         private plugin: MetadataMenu,
@@ -38,6 +41,13 @@ export default class FieldSettingsModal extends Modal {
             this.initialField.id = newId.toString();
         };
         this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field);
+        this.addCommand = this.field.command !== undefined;
+        this.command = this.field.command || {
+            id: this.field ? `insert__${this.field.fileClassName || "presetField"}__${this.field.name}` : "",
+            icon: "list-plus",
+            label: this.field ? `Insert ${this.field.name} field` : "",
+            hotkey: undefined
+        }
     };
 
     async onOpen(): Promise<void> {
@@ -68,6 +78,8 @@ export default class FieldSettingsModal extends Modal {
         input.setPlaceholder("Name of the field");
         input.onChange(value => {
             this.field.name = value;
+            this.command.id = `insert__${this.field.fileClassName || "presetField"}__${value}`
+            this.command.label = `Insert ${value} field`
             this.titleEl.setText(`Manage predefined options for ${this.field.name}`);
             FieldSettingsModal.removeValidationError(input);
         });
@@ -102,16 +114,55 @@ export default class FieldSettingsModal extends Modal {
         })
     }
 
+    private createCommandContainer(parentNode: HTMLDivElement): void {
+
+        const commandContainer = parentNode.createDiv();
+        //label
+        commandContainer.createDiv({ text: "set a command for this field?", cls: "metadata-menu-field-option" });
+
+        //add command
+        const addCommandToggler = new ToggleComponent(parentNode);
+        addCommandToggler.setValue(this.addCommand);
+
+        // options
+        const fieldOptionsContainer = parentNode.createDiv({})
+        this.addCommand ? fieldOptionsContainer.show() : fieldOptionsContainer.hide();
+
+        // icon
+        fieldOptionsContainer.createDiv({ text: "Icon name (for mobile toolbar) : from lucide.dev" })
+        const iconContainer = fieldOptionsContainer.createDiv({ cls: "metadata-menu-field-option" })
+        this.iconName = new TextComponent(iconContainer)
+        const iconPreview = iconContainer.createDiv({})
+        this.iconName.setValue(this.command.icon)
+        setIcon(iconPreview, this.command.icon)
+        this.iconName.onChange(value => {
+            this.command.icon = value;
+            setIcon(iconPreview, value)
+        })
+
+        addCommandToggler.onChange(value => {
+            this.addCommand = value
+            this.addCommand ? fieldOptionsContainer.show() : fieldOptionsContainer.hide();
+        });
+    }
+
     private async createForm(): Promise<void> {
         const div = this.contentEl.createDiv({ cls: "metadata-menu-prompt-div" });
         const mainDiv = div.createDiv({ cls: "metadata-menu-prompt-form" });
 
-        /* Sections */
+        /* Name */
         const nameContainer = mainDiv.createDiv();
         this.namePromptComponent = this.createnameInputContainer(nameContainer);
         mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
 
+        /* Command */
+        const commandContainer = mainDiv.createDiv();
+        mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
+
+        /* Type */
         const typeSelectContainer = mainDiv.createDiv()
+
+        /* Options */
         this.fieldOptionsContainer = mainDiv.createDiv()
 
         /* footer buttons*/
@@ -121,6 +172,7 @@ export default class FieldSettingsModal extends Modal {
         footerButtons.addExtraButton((b) => this.createCancelButton(b));
 
         /* init state */
+        this.createCommandContainer(commandContainer);
         this.createTypeSelectorContainer(typeSelectContainer)
         this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.PluginSettings)
     };
@@ -142,6 +194,11 @@ export default class FieldSettingsModal extends Modal {
                 new Notice("Fix errors before saving.");
                 return;
             };
+            if (this.addCommand) {
+                this.field.command = this.command
+            } else {
+                delete this.field.command
+            }
             this.saved = true;
             const currentExistingField = this.plugin.initialProperties.filter(p => p.id == this.field.id)[0];
             if (currentExistingField) {

@@ -7,6 +7,7 @@ import { genuineKeys } from "src/utils/dataviewUtils";
 import { replaceValues } from "src/commands/replaceValues";
 import { insertValues } from "src/commands/insertValues";
 import { insertFrontmatterWithFields } from "src/commands/insertFrontmatterWithFields";
+import { FieldCommand } from "src/fields/Field";
 
 interface FileClass {
     attributes: Array<FileClassAttribute>;
@@ -181,9 +182,9 @@ class FileClass {
                             ? JSON.stringify(dvFile[key])
                             : dvFile[key];
                         try {
-                            const { type, options } = JSON.parse(item);
+                            const { type, options, command } = JSON.parse(item);
                             const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
-                            const attr = new FileClassAttribute(this.name, key, fieldType, options, fileClass.name)
+                            const attr = new FileClassAttribute(this.name, key, fieldType, options, fileClass.name, command)
                             attributes.push(attr)
                         } catch (e) {
                             //do nothing
@@ -240,7 +241,7 @@ class FileClass {
 
     }
 
-    public async updateAttribute(newType: keyof typeof FieldType, newName: string, newOptions?: string[] | Record<string, string>, attr?: FileClassAttribute): Promise<void> {
+    public async updateAttribute(newType: keyof typeof FieldType, newName: string, newOptions?: string[] | Record<string, string>, attr?: FileClassAttribute, newCommand?: FieldCommand): Promise<void> {
         const fileClass = attr ? this.plugin.fieldIndex.fileClassesName.get(attr.fileClassName)! : this
         const file = fileClass.getClassFile();
         let result = await this.plugin.app.vault.read(file)
@@ -251,6 +252,7 @@ class FileClass {
                     let settings: Record<string, any> = {};
                     settings["type"] = newType;
                     if (newOptions) settings["options"] = newOptions;
+                    if (newCommand) settings["command"] = newCommand;
                     newContent.push(`${newName}:: ${JSON.stringify(settings)}`);
                 } else {
                     newContent.push(line);
@@ -261,6 +263,7 @@ class FileClass {
             let settings: Record<string, any> = {};
             settings["type"] = newType;
             if (newOptions) settings["options"] = newOptions;
+            if (newCommand) settings["command"] = newCommand;
             result += (`\n${newName}:: ${JSON.stringify(settings)}`);
             await this.plugin.app.vault.modify(file, result);
         }

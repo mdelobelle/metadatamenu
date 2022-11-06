@@ -1,7 +1,10 @@
 import { MarkdownView, Plugin } from 'obsidian';
-import Field from 'src/fields/Field';
-import FieldIndex from 'src/components/FieldIndex';
+import { addCommands } from 'src/commands/paletteCommands';
+import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
+import FieldIndex from 'src/components/FieldIndex';
+import FileTaskManager from 'src/components/FileTaskManager';
+import Field from 'src/fields/Field';
 import FileClassQuery from 'src/fileClass/FileClassQuery';
 import type { IMetadataMenuApi } from 'src/MetadataMenuApi';
 import { MetadataMenuApi } from 'src/MetadataMenuApi';
@@ -9,9 +12,6 @@ import { DEFAULT_SETTINGS, MetadataMenuSettings } from "src/settings/MetadataMen
 import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
-import { FileTaskManager } from 'src/components/FileTaskManager';
-import { addCommands } from 'src/commands/paletteCommands';
-import ContextMenu from 'src/components/ContextMenu';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -62,6 +62,11 @@ export default class MetadataMenu extends Plugin {
 			this.app.workspace.on('active-leaf-change', (leaf) => {
 				const view = leaf?.view
 				addCommands(this, view);
+			})
+		)
+		this.registerEvent(
+			this.app.workspace.on('metadata-menu:indexed', () => {
+				addCommands(this, undefined);
 			})
 		)
 

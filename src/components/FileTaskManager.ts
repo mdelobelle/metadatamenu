@@ -13,7 +13,7 @@ export class Task {
     }
 }
 
-export class FileTaskManager extends Component {
+export default class FileTaskManager extends Component {
 
     public queue: Map<string, Task>;
     public busy: boolean = false;

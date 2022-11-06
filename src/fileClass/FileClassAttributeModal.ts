@@ -1,9 +1,9 @@
-import { DropdownComponent, Modal, TextComponent, ButtonComponent, ExtraButtonComponent, Notice } from "obsidian";
+import { DropdownComponent, Modal, TextComponent, ButtonComponent, ExtraButtonComponent, Notice, ToggleComponent, setIcon } from "obsidian";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
 import { FieldTypeTooltip, FieldType, FieldTypeLabelMapping, FieldManager } from "src/types/fieldTypes";
 import { FileClass } from "src/fileClass/fileClass";
 import MetadataMenu from "main";
-import Field from "src/fields/Field";
+import Field, { FieldCommand } from "src/fields/Field";
 import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
 
 class FileClassAttributeModal extends Modal {
@@ -12,10 +12,14 @@ class FileClassAttributeModal extends Modal {
     private nameInput: TextComponent;
     private attrName: HTMLElement;
     private typeSelectContainer: HTMLDivElement;
+    private commandContainer: HTMLDivElement;
     private initialField: Field;
     private field: Field;
     private fieldManager: F;
     private fieldOptionsContainer: HTMLDivElement;
+    private command: FieldCommand;
+    private addCommand: boolean;
+    private iconName: TextComponent;
 
 
     constructor(private plugin: MetadataMenu, private fileClass: FileClass, private attr?: FileClassAttribute) {
@@ -29,8 +33,16 @@ class FileClassAttributeModal extends Modal {
         }
         this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field);
         this.nameInputContainer = this.contentEl.createDiv();
+        this.commandContainer = this.contentEl.createDiv();
         this.typeSelectContainer = this.contentEl.createDiv({ cls: 'metadata-menu-value-selector-container' });
-        this.fieldOptionsContainer = this.contentEl.createDiv()
+        this.fieldOptionsContainer = this.contentEl.createDiv();
+        this.addCommand = this.field.command !== undefined;
+        this.command = this.field.command || {
+            id: this.field ? `insert__${this.field.fileClassName || "presetField"}__${this.field.name}` : "",
+            icon: "list-plus",
+            label: this.field ? `Insert ${this.field.name} field` : "",
+            hotkey: undefined
+        }
     }
 
     buildNameInputContainer(): void {
@@ -40,6 +52,37 @@ class FileClassAttributeModal extends Modal {
         this.nameInput.inputEl.focus();
         this.nameInput.onChange(value => { this.field.name = value; this.attrName.setText(`<${value}>`) });
         this.typeSelectContainer.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
+    }
+
+    buildCommandContainer(): void {
+        const commandContainer = this.commandContainer.createDiv();
+        //label
+        commandContainer.createDiv({ text: "set a command for this field?", cls: "metadata-menu-field-option" });
+
+        //add command
+        const addCommandToggler = new ToggleComponent(this.commandContainer);
+        addCommandToggler.setValue(this.addCommand);
+
+        // options
+        const fieldOptionsContainer = this.commandContainer.createDiv({})
+        this.addCommand ? fieldOptionsContainer.show() : fieldOptionsContainer.hide();
+
+        // icon
+        fieldOptionsContainer.createDiv({ text: "Icon name (for mobile toolbar) : from lucide.dev" })
+        const iconContainer = fieldOptionsContainer.createDiv({ cls: "metadata-menu-field-option" })
+        this.iconName = new TextComponent(iconContainer)
+        const iconPreview = iconContainer.createDiv({})
+        this.iconName.setValue(this.command?.icon || "list-plus")
+        setIcon(iconPreview, this.iconName.getValue())
+        this.iconName.onChange(value => {
+            this.command.icon = value;
+            setIcon(iconPreview, value)
+        })
+
+        addCommandToggler.onChange(value => {
+            this.addCommand = value
+            this.addCommand ? fieldOptionsContainer.show() : fieldOptionsContainer.hide();
+        });
     }
 
     buildTypeSelectContainer(): void {
@@ -100,7 +143,12 @@ class FileClassAttributeModal extends Modal {
                 new Notice("Fix errors before saving.");
                 return;
             };
-            await this.fileClass.updateAttribute(this.field.type, this.field.name, this.field.options, this.attr);
+            if (this.addCommand) {
+                this.field.command = this.command
+            } else {
+                delete this.field.command
+            }
+            await this.fileClass.updateAttribute(this.field.type, this.field.name, this.field.options, this.attr, this.command);
             this.close();
         })
     }
@@ -137,9 +185,10 @@ class FileClassAttributeModal extends Modal {
         //title
         this.titleEl.setText(this.attr ? `Manage ${this.attr.name}` : `Create a new attribute for ${this.fileClass.name}`);
 
-        this.buildNameInputContainer()
-        this.buildTypeSelectContainer()
-        this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.FileClassAttributeSettings)
+        this.buildNameInputContainer();
+        this.buildCommandContainer();
+        this.buildTypeSelectContainer();
+        this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.FileClassAttributeSettings);
 
         // footer buttons
         const footer = this.contentEl.createDiv({ cls: "metadata-menu-value-grid-footer" });

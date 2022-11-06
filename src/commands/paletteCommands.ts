@@ -1,5 +1,7 @@
 import MetadataMenu from "main";
 import { FileView, MarkdownView, Notice, TFile, View } from "obsidian";
+import NoteFieldsComponent from "src/components/NoteFields";
+import Field from "src/fields/Field";
 import { FileClass } from "src/fileClass/fileClass";
 import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
 import chooseSectionModal from "src/modals/chooseSectionModal";
@@ -9,19 +11,21 @@ import OptionsList from "src/options/OptionsList";
 import { genuineKeys } from "src/utils/dataviewUtils";
 import { frontMatterLineField, getLineFields } from "src/utils/parser";
 import { insertMissingFields } from "./insertMissingFields";
+import { FieldManager as F } from "src/fields/FieldManager";
 
 function addFileClassAttributeOptions(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
     plugin.addCommand({
         id: "fileClassAttr_options",
-        name: "fileClass attributes options",
+        name: "All fileClass attributes options",
         icon: "gear",
         checkCallback: (checking: boolean) => {
             const view = plugin.app.workspace.getActiveViewOfType(MarkdownView)
+            const inFileClass = !!(classFilesPath && !!(view?.file) && view.file.path.startsWith(classFilesPath))
             if (checking) {
-                return !!(classFilesPath && !!(view?.file) && view.file.path.startsWith(classFilesPath))
+                return inFileClass
             }
-            if (!!(classFilesPath && !!(view?.file) && view.file.path.startsWith(classFilesPath))) {
+            if (inFileClass) {
                 const fieldCommandSuggestModal = new FieldCommandSuggestModal(plugin.app)
                 const optionsList = new FileClassOptionsList(plugin, view!.file, fieldCommandSuggestModal);
                 optionsList.createExtraOptionList();
@@ -38,17 +42,20 @@ function addInsertFileClassAttribute(plugin: MetadataMenu) {
         icon: "list-plus",
         checkCallback: (checking: boolean) => {
             const view = plugin.app.workspace.getActiveViewOfType(MarkdownView)
+            const inFileClass = !!(classFilesPath && !!(view?.file) && view.file.path.startsWith(classFilesPath))
             if (checking) {
-                return !!(classFilesPath && !!(view?.file) && view.file.path.startsWith(classFilesPath))
+                return inFileClass
             }
-            try {
-                const fileClassName = FileClass.getFileClassNameFromPath(plugin, view!.file.path)
-                if (fileClassName) {
-                    const fileClassAttributeModal = new FileClassAttributeModal(plugin, FileClass.createFileClass(plugin, fileClassName))
-                    fileClassAttributeModal.open()
+            if (inFileClass) {
+                try {
+                    const fileClassName = FileClass.getFileClassNameFromPath(plugin, view!.file.path)
+                    if (fileClassName) {
+                        const fileClassAttributeModal = new FileClassAttributeModal(plugin, FileClass.createFileClass(plugin, fileClassName))
+                        fileClassAttributeModal.open()
+                    }
+                } catch (error) {
+                    new Notice("plugin is not a valid fileClass")
                 }
-            } catch (error) {
-                new Notice("plugin is not a valid fileClass")
             }
         },
     });
@@ -58,15 +65,18 @@ function addInsertFieldAtPositionCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
     plugin.addCommand({
         id: "insert_field_at_cursor",
-        name: "insert field at cursor",
+        name: "Choose a field to insert at cursor",
         icon: "list-plus",
         checkCallback: (checking: boolean) => {
             const view = plugin.app.workspace.getActiveViewOfType(MarkdownView)
+            const inFile = !!(view?.file && (!classFilesPath || !view.file.path.startsWith(classFilesPath)))
             if (checking) {
-                return !!(view?.file && (!classFilesPath || !view.file.path.startsWith(classFilesPath)))
+                return inFile
             }
-            const optionsList = new OptionsList(plugin, view!.file, "InsertFieldCommand");
-            optionsList.createExtraOptionList();
+            if (inFile) {
+                const optionsList = new OptionsList(plugin, view!.file, "InsertFieldCommand");
+                optionsList.createExtraOptionList();
+            }
         }
     })
 }
@@ -75,16 +85,19 @@ function addFieldOptionsCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
     plugin.addCommand({
         id: "field_options",
-        name: "field options",
+        name: "Fields options",
         icon: "gear",
         checkCallback: (checking: boolean) => {
             const view = plugin.app.workspace.getActiveViewOfType(MarkdownView)
+            const inFile = !!(view?.file && (!classFilesPath || !view.file.path.startsWith(classFilesPath)))
             if (checking) {
-                return !!(view?.file && (!classFilesPath || !view.file.path.startsWith(classFilesPath)))
+                return inFile;
             }
-            const fieldCommandSuggestModal = new FieldCommandSuggestModal(plugin.app)
-            const optionsList = new OptionsList(plugin, view!.file, fieldCommandSuggestModal);
-            optionsList.createExtraOptionList();
+            if (inFile) {
+                const fieldCommandSuggestModal = new FieldCommandSuggestModal(plugin.app)
+                const optionsList = new OptionsList(plugin, view!.file, fieldCommandSuggestModal);
+                optionsList.createExtraOptionList();
+            }
         },
     });
 }
@@ -98,25 +111,26 @@ function addManageFieldAtCursorCommand(plugin: MetadataMenu) {
         checkCallback: (checking: boolean) => {
             const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
             const editor = view?.editor;
+            const inFile = !!(view?.file && (!classFilesPath || !view.file.path.startsWith(classFilesPath)))
             if (checking) {
-                const inFile = !!(view?.file && (!classFilesPath || !view.file.path.startsWith(classFilesPath)))
                 return inFile && editor !== undefined
             }
-            const optionsList = new OptionsList(plugin, view!.file, "ManageAtCursorCommand")
-            const frontmatter = plugin.app.metadataCache.getFileCache(view!.file)?.frontmatter;
-            if (frontmatter && editor
-                && editor.getCursor().line > frontmatter.position.start.line
-                && editor.getCursor().line < frontmatter.position.end.line) {
-                const attribute = frontMatterLineField(editor.getLine(editor.getCursor().line))
-                if (attribute) optionsList.createAndOpenFieldModal(attribute)
-            } else if (editor) {
-                const { attribute, values } = getLineFields(editor.getLine(editor.getCursor().line)).find(field =>
-                    editor.getCursor().ch <= field.index + field.length
-                    && editor.getCursor().ch >= field.index) || {};
-                if (attribute) optionsList.createAndOpenFieldModal(attribute)
+            if (inFile && editor !== undefined) {
+                const optionsList = new OptionsList(plugin, view!.file, "ManageAtCursorCommand")
+                const frontmatter = plugin.app.metadataCache.getFileCache(view!.file)?.frontmatter;
+                if (frontmatter && editor
+                    && editor.getCursor().line > frontmatter.position.start.line
+                    && editor.getCursor().line < frontmatter.position.end.line) {
+                    const attribute = frontMatterLineField(editor.getLine(editor.getCursor().line))
+                    if (attribute) optionsList.createAndOpenFieldModal(attribute)
+                } else if (editor) {
+                    const { attribute, values } = getLineFields(editor.getLine(editor.getCursor().line)).find(field =>
+                        editor.getCursor().ch <= field.index + field.length
+                        && editor.getCursor().ch >= field.index) || {};
+                    if (attribute) optionsList.createAndOpenFieldModal(attribute)
+                }
             }
         }
-
     })
 }
 
@@ -124,17 +138,17 @@ function insertMissingFieldsCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
     plugin.addCommand({
         id: "insert_missing_fields",
-        name: "Insert missing fields",
+        name: "Bulk insert missing fields",
         icon: "battery-full",
         checkCallback: (checking: boolean) => {
             const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
+            const inFile = !!(view?.file && (!classFilesPath || !view.file.path.startsWith(classFilesPath)))
             if (checking) {
-                const inFile = !!(view?.file && (!classFilesPath || !view.file.path.startsWith(classFilesPath)))
                 return inFile
             }
             const dvApi = plugin.app.plugins.plugins.dataview?.api;
-            const file = view?.file
-            if (dvApi && file) {
+            if (dvApi && inFile) {
+                const file = view.file;
                 const currentFieldsNames = genuineKeys(dvApi.page(file.path))
                 if (![...plugin.fieldIndex.filesFields.get(file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
                     new chooseSectionModal(
@@ -174,6 +188,87 @@ function addUpdateLookups(plugin: MetadataMenu) {
     })
 }
 
+function addOpenFieldsModalCommand(plugin: MetadataMenu) {
+    const classFilesPath = plugin.settings.classFilesPath
+    plugin.addCommand({
+        id: "open_fields_modal",
+        name: "Open this note's fields modal",
+        icon: "clipboard-list",
+        checkCallback: (checking: boolean) => {
+            const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
+            const inFile = !!(view?.file && (!classFilesPath || !view.file.path.startsWith(classFilesPath)))
+            if (checking) {
+                return inFile
+            }
+            if (inFile) {
+                const file = view.file;
+                if (inFile && file instanceof TFile && file.extension === "md") {
+                    const noteFieldsComponent = new NoteFieldsComponent(plugin, "1", () => { }, file)
+                    plugin.addChild(noteFieldsComponent);
+                }
+            }
+        }
+    })
+}
+
+function addInsertFieldCommand(plugin: MetadataMenu): void {
+    const classFilesPath = plugin.settings.classFilesPath;
+    const fields: Field[] = [];
+    plugin.settings.presetFields.forEach(f => { if (f.command) fields.push(f) });
+    [...plugin.fieldIndex.fileClassesFields].forEach(([fileClassName, _fields]) => {
+        _fields.forEach(field => { if (field.command) { fields.push(field) } })
+    });
+    fields.forEach(field => {
+        if (field.command) {
+            const command = field.command
+            plugin.addCommand({
+                id: command.id,
+                name: command.label,
+                icon: command.icon,
+                checkCallback: (checking: boolean) => {
+                    const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
+                    const inFile = !!(view?.file && (!classFilesPath || !view.file.path.startsWith(classFilesPath)))
+                    const fR = command.id.match(/insert__(?<fileClassName>.*)__(?<fieldName>.*)/)
+                    if (checking) {
+                        const fileClasses = view?.file ? plugin.fieldIndex.filesFileClasses.get(view?.file.path) : undefined
+                        return view?.file &&
+                            (
+                                fileClasses && fileClasses.some(fileClass => fileClass.name === fR?.groups?.fileClassName) ||
+                                !fileClasses && fR?.groups?.fileClassName === "presetField"
+                            )
+                    }
+                    if (fR?.groups && view?.file) {
+                        const fieldName = fR.groups.fieldName
+                        new chooseSectionModal(
+                            plugin,
+                            view.file,
+                            (
+                                lineNumber: number,
+                                inFrontmatter: boolean,
+                                after: boolean,
+                                asList: boolean,
+                                asComment: boolean
+                            ) => F.openFieldModal(
+                                plugin,
+                                view.file,
+                                fieldName,
+                                "",
+                                lineNumber,
+                                inFrontmatter,
+                                after,
+                                asList,
+                                asComment
+                            )
+                        ).open();
+                    }
+
+                }
+            })
+
+        }
+    })
+}
+
 export function addCommands(plugin: MetadataMenu, view: View | undefined | null) {
     const classFilesPath = plugin.settings.classFilesPath
     if (view && view instanceof FileView) {
@@ -187,19 +282,10 @@ export function addCommands(plugin: MetadataMenu, view: View | undefined | null)
                 addInsertFieldAtPositionCommand(plugin);
                 addManageFieldAtCursorCommand(plugin);
                 insertMissingFieldsCommand(plugin);
+                addOpenFieldsModalCommand(plugin)
+                addInsertFieldCommand(plugin)
             }
         }
     }
     addUpdateLookups(plugin)
 }
-
-/*
-
-function addFieldsModalCommand(): void{
-    const file = plugin.app.vault.getAbstractFileByPath(`${plugin.destName}.md`)
-                        if (file instanceof TFile && file.extension === "md") {
-                            const noteFieldsComponent = new NoteFieldsComponent(plugin, "1", () => { }, file)
-                            plugin.addChild(noteFieldsComponent);
-                        }
-}
-*/

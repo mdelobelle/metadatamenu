@@ -1,5 +1,12 @@
 import { FieldType } from "../types/fieldTypes"
 
+export interface FieldCommand {
+    id: string,
+    label: string,
+    icon: string,
+    hotkey?: string
+}
+
 class Field {
 
     constructor(
@@ -7,7 +14,8 @@ class Field {
         public options: Record<string, any> = {},
         public id: string = "",
         public type: FieldType = FieldType.Input,
-        public fileClassName?: string
+        public fileClassName?: string,
+        public command?: FieldCommand
     ) { };
 
     static copyProperty(target: Field, source: Field) {
@@ -22,6 +30,7 @@ class Field {
                 delete target.options[k];
             };
         });
+        target.command = source.command
     };
 
     public static createDefault(name: string): Field {

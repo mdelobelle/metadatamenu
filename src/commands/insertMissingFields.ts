@@ -33,6 +33,7 @@ export async function insertMissingFields(
         const filteredClassFields = fileClassName ? plugin.fieldIndex.fileClassesFields.get(fileClassName)?.filter(field => field.fileClassName === fileClassName) || undefined : undefined
         fields?.filter(field => !currentFieldsNames.includes(field.name))
             .filter(field => filteredClassFields ? filteredClassFields.map(f => f.name).includes(field.name) : true)
+            .reverse()
             .forEach(async field => {
                 await tm.pushTask(() => { insertValues(plugin, file.path, field.name, "", lineNumber, inFrontmatter, after, asList, asComment) })
             })
