@@ -60,7 +60,7 @@ export class FieldsModal extends Modal {
         const fieldNameContainer = fieldContainer.createDiv({ text: `${field.name}`, cls: "metadata-menu-note-field-item field-name" });
         const fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
         if (fileClass) {
-            fieldNameContainer.addClass(`fileClassField__${fileClass.name.replace("/", "___")}`)
+            fieldNameContainer.addClass(`fileClassField__${fileClass.name.replace("/", "___").replace(" ", "_")}`)
         }
         const fieldSettingContainer = fieldContainer.createDiv({ cls: "metadata-menu-note-field-item field-setting" });
         const fieldSettingBtn = new ButtonComponent(fieldSettingContainer);
@@ -184,7 +184,7 @@ export class FieldsModal extends Modal {
                 if (_fileClass) {
                     const fileClassOptionsContainer = fileClassManagerContainer.createDiv({ cls: "metadata-menu-note-fields-fileClass-manager-container" })
                     const fileClassNameContainer = fileClassOptionsContainer.createDiv({ cls: "metadata-menu-note-fields-fileClass-manager-name", text: _fileClass.name })
-                    fileClassNameContainer.setAttr("id", `fileClass__${_fileClass.name.replace("/", "___")}`)
+                    fileClassNameContainer.setAttr("id", `fileClass__${_fileClass.name.replace("/", "___").replace(" ", "_")}`)
 
                     if (this.missingFieldsForFileClass(_fileClass)) {
                         const fileClassInsertMissingFieldsBtn = new ButtonComponent(fileClassOptionsContainer)
@@ -206,7 +206,7 @@ export class FieldsModal extends Modal {
                         fileClassManagerContainer.createDiv({ text: ">", cls: "metadata-menu-note-fields-fileClass-manager-separator" })
                     }
 
-                    const fileClassFielsContainers = this.containerEl.querySelectorAll(`[class*="fileClassField__${fileClassName.replace("/", "___")}"]`)
+                    const fileClassFielsContainers = this.containerEl.querySelectorAll(`[class*="fileClassField__${fileClassName.replace("/", "___").replace(" ", "_")}"]`)
                     fileClassFielsContainers.forEach(fieldNameContainer => {
                         (fieldNameContainer as HTMLDivElement).onmouseover = () => {
                             fileClassNameContainer?.addClass("active")
@@ -217,12 +217,12 @@ export class FieldsModal extends Modal {
                     })
                     fileClassNameContainer.onmouseover = () => {
                         this.containerEl
-                            .querySelectorAll(`.metadata-menu-note-field-item.field-name.fileClassField__${fileClassName.replace("/", "___")}`)
+                            .querySelectorAll(`.metadata-menu-note-field-item.field-name.fileClassField__${fileClassName.replace("/", "___").replace(" ", "_")}`)
                             .forEach(cont => { cont.addClass("active") })
                     }
                     fileClassNameContainer.onmouseout = () => {
                         this.containerEl
-                            .querySelectorAll(`.metadata-menu-note-field-item.field-name.fileClassField__${fileClassName.replace("/", "___")}`)
+                            .querySelectorAll(`.metadata-menu-note-field-item.field-name.fileClassField__${fileClassName.replace("/", "___").replace(" ", "_")}`)
                             .forEach(cont => { cont.removeClass("active") })
                     }
                 }
