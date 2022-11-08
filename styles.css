@@ -762,6 +762,49 @@ span.flatpickr-weekday {
       color: var(--text-faint);
       margin-right: 1em; }
 
+.metadata-menu.modal-container.narrow .modal {
+  width: initial; }
+
+.metadata-menu.modal-container .field-container {
+  display: flex;
+  align-items: center; }
+  .metadata-menu.modal-container .field-container input {
+    margin-right: 1em; }
+  .metadata-menu.modal-container .field-container .spacer {
+    width: 100%; }
+  .metadata-menu.modal-container .field-container .is-invalid {
+    color: var(--color-red); }
+  .metadata-menu.modal-container .field-container button {
+    margin: 12px 12px 12px 0; }
+    .metadata-menu.modal-container .field-container button :disabled {
+      opacity: 50%; }
+    .metadata-menu.modal-container .field-container button .danger {
+      background-color: var(--color-purple);
+      color: var(--color-base-00); }
+
+.metadata-menu.modal-container .field-error {
+  margin-top: -2em;
+  height: 2em;
+  color: var(--color-red); }
+
+.metadata-menu.modal-container .footer-actions {
+  display: flex; }
+  .metadata-menu.modal-container .footer-actions .spacer {
+    width: 100%; }
+  .metadata-menu.modal-container .footer-actions .info {
+    white-space: nowrap;
+    margin: 30px 12px 12px 0;
+    font-size: x-small;
+    font-style: italic;
+    color: var(--color-accent); }
+  .metadata-menu.modal-container .footer-actions button {
+    margin: 12px 12px 12px 0; }
+    .metadata-menu.modal-container .footer-actions button :disabled {
+      opacity: 50%; }
+    .metadata-menu.modal-container .footer-actions button .danger {
+      background-color: var(--color-purple);
+      color: var(--color-base-00); }
+
 .value-add-notice {
   display: flex;
   background-color: var(--color-accent);
