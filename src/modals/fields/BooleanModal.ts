@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { Modal, ToggleComponent, TFile, ButtonComponent } from "obsidian";
+import { Modal, TFile, ButtonComponent } from "obsidian";
 import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
@@ -30,21 +30,40 @@ export default class BooleanModal extends Modal {
     };
 
     onOpen() {
-        const inputDiv = this.contentEl.createDiv({
-            cls: "metadata-menu-toggler"
-        });
-        this.buildToggleEl(inputDiv);
+        this.containerEl.addClass("metadata-menu")
+        this.containerEl.addClass("narrow")
+        this.buildToggleEl();
     };
 
-    private buildToggleEl(inputDiv: HTMLDivElement): void {
-        const toggleEl = new ToggleComponent(inputDiv);
-        const footer = this.contentEl.createDiv({ cls: "metadata-menu-value-grid-footer" });
-        const saveButton = new ButtonComponent(footer);
-        toggleEl.setValue(this.value);
-        toggleEl.onChange(value => {
-            this.value = value;
-            saveButton.buttonEl.focus();
+
+    private buildToggleEl(): void {
+        const choicesContainer = this.contentEl.createDiv({ cls: "value-container" })
+        choicesContainer.createDiv({ cls: "spacer" });
+        const trueButton = new ButtonComponent(choicesContainer);
+        trueButton.setButtonText("True")
+        choicesContainer.createDiv({ cls: "spacer" });
+        const falseButton = new ButtonComponent(choicesContainer);
+        falseButton.setButtonText("False")
+        choicesContainer.createDiv({ cls: "spacer" });
+        if (this.value) {
+            trueButton.setCta();
+            falseButton.removeCta();
+        } else {
+            falseButton.setCta();
+            trueButton.removeCta();
+        }
+        falseButton.onClick(() => {
+            this.value = false;
+            falseButton.setCta();
+            trueButton.removeCta();
         })
+        trueButton.onClick(() => {
+            this.value = true;
+            trueButton.setCta();
+            falseButton.removeCta();
+        })
+        const saveButton = new ButtonComponent(choicesContainer);
+
         saveButton.setIcon("checkmark");
         saveButton.onClick(async () => {
             const value = this.value.toString()

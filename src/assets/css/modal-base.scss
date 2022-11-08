@@ -1,0 +1,69 @@
+@mixin action-button {
+    button {
+        margin: 12px 12px 12px 0;
+
+        :disabled {
+            opacity: 50%;
+        }
+
+        .danger {
+            background-color: var(--color-purple);
+            color: var(--color-base-00);
+        }
+    }
+}
+
+.metadata-menu.modal-container {
+
+    &.narrow {
+
+        .modal{
+            width: initial;
+        }
+
+    }
+
+    .field-container{
+        display: flex;
+        align-items: center;
+
+        input {
+            margin-right: 1em;
+        }
+
+        .spacer {
+            width: 100%;
+        }
+
+        .is-invalid {
+            color: var(--color-red);
+        }
+
+        @include action-button();
+    }
+
+    .field-error{
+        margin-top: -2em;
+        height: 2em;
+        color: var(--color-red);
+    }
+
+    .footer-actions {
+        display: flex;
+
+        .spacer {
+            width: 100%;
+        }
+
+        .info {
+            white-space: nowrap;
+            margin: 30px 12px 12px 0;
+            font-size: x-small;
+            font-style: italic;
+            color: var(--color-accent);
+        }
+
+        @include action-button();
+
+    }
+}

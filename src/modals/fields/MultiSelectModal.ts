@@ -1,4 +1,4 @@
-import { TFile, ButtonComponent, SuggestModal, setIcon, Notice, parseLinktext } from "obsidian";
+import { TFile, ButtonComponent, SuggestModal, setIcon } from "obsidian";
 import Field from "src/fields/Field";
 import { replaceValues } from "src/commands/replaceValues";
 import { insertValues } from "src/commands/insertValues";
@@ -6,7 +6,6 @@ import MetadataMenu from "main";
 import { FieldManager } from "src/types/fieldTypes";
 import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
 import * as selectValuesSource from "src/types/selectValuesSourceTypes"
-import { relativeTimeRounding } from "moment";
 import FileField from "src/fields/fieldManagers/FileField";
 
 export default class MultiSuggestModal extends SuggestModal<string> {
@@ -49,6 +48,7 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         } else {
             this.selectedOptions = [];
         }
+        this.containerEl.addClass("metadata-menu");
     };
 
     async onOpen() {
@@ -61,20 +61,20 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         }
 
 
-        const updateSettingsInfoContainer = this.containerEl.createDiv({ cls: "metadata-menu-value-suggester-notice-container" })
-        const notice = updateSettingsInfoContainer.createDiv({ cls: "metadata-menu-value-suggester-notice-label" });
-        updateSettingsInfoContainer.createDiv({ cls: "metadata-menu-value-suggester-notice-spacer" });
+        const updateSettingsInfoContainer = this.containerEl.createDiv({ cls: "value-add-notice" })
+        const notice = updateSettingsInfoContainer.createDiv({ cls: "label" });
+        updateSettingsInfoContainer.createDiv({ cls: "spacer" });
         updateSettingsInfoContainer.hide();
         this.containerEl.find(".prompt").prepend(updateSettingsInfoContainer);
 
-        const inputContainer = this.containerEl.createDiv({ cls: "metadata-menu-value-suggester-input-container" })
+        const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
         inputContainer.appendChild(this.inputEl)
         this.containerEl.find(".prompt").prepend(inputContainer)
 
 
-        const buttonContainer = this.containerEl.createDiv({ cls: "metadata-menu-value-suggester-actions" })
-        buttonContainer.createDiv({ cls: "metadata-menu-value-suggester-actions-spacer" })
-        const infoContainer = buttonContainer.createDiv({ cls: "metadata-menu-value-suggester-info" })
+        const buttonContainer = this.containerEl.createDiv({ cls: "footer-actions" })
+        buttonContainer.createDiv({ cls: "spacer" })
+        const infoContainer = buttonContainer.createDiv({ cls: "info" })
         infoContainer.setText("Alt+Enter to save")
         // addButton
         this.addButton = new ButtonComponent(inputContainer)
@@ -85,13 +85,11 @@ export default class MultiSuggestModal extends SuggestModal<string> {
             this.addButton.buttonEl.hide();
             updateSettingsInfoContainer.show();
         })
-        this.addButton.buttonEl.addClass("metadata-menu-value-suggester-button")
         this.addButton.setCta();
         this.addButton.setTooltip("Add this value to this field settings")
         this.addButton.buttonEl.hide();
         //reload button
         this.reloadButton = new ButtonComponent(updateSettingsInfoContainer)
-        this.reloadButton.buttonEl.addClass("metadata-menu-value-suggester-button")
         this.reloadButton.setIcon("refresh-cw")
         this.reloadButton.setCta()
         this.reloadButton.onClick(async () => {
@@ -108,12 +106,10 @@ export default class MultiSuggestModal extends SuggestModal<string> {
             await this.replaceValues();
             this.close()
         })
-        confirmButton.buttonEl.addClass("metadata-menu-value-suggester-button")
         //cancel button
         const cancelButton = new ButtonComponent(buttonContainer)
         cancelButton.setIcon("cross")
         cancelButton.onClick(() => { this.close(); })
-        cancelButton.buttonEl.addClass("metadata-menu-value-suggester-button")
         //clear value button
         const clearButton = new ButtonComponent(buttonContainer)
         clearButton.setIcon("trash")
@@ -121,7 +117,6 @@ export default class MultiSuggestModal extends SuggestModal<string> {
             await this.clearValues();
             this.close();
         })
-        clearButton.buttonEl.addClass("metadata-menu-value-suggester-button")
         clearButton.buttonEl.addClass("danger")
         this.modalEl.appendChild(buttonContainer)
     }
@@ -204,14 +199,14 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         const values: string[] = chooser.values
         suggestions.forEach((s, i) => {
             if (this.selectedOptions.includes(values[i].toString())) {
-                s.addClass("metadata-menu-value-selected")
-                if (s.querySelectorAll(".metadata-menu-command-suggest-icon").length == 0) {
-                    const iconContainer = s.createDiv({ cls: "metadata-menu-command-suggest-icon" })
+                s.addClass("value-checked")
+                if (s.querySelectorAll(".icon-container").length == 0) {
+                    const iconContainer = s.createDiv({ cls: "icon-container" })
                     setIcon(iconContainer, "check-circle")
                 }
             } else {
-                s.removeClass("metadata-menu-value-selected")
-                s.querySelectorAll(".metadata-menu-command-suggest-icon").forEach(icon => icon.remove())
+                s.removeClass("value-checked")
+                s.querySelectorAll(".icon-container").forEach(icon => icon.remove())
             }
         })
     }
@@ -232,12 +227,12 @@ export default class MultiSuggestModal extends SuggestModal<string> {
 
     renderSuggestion(value: string, el: HTMLElement) {
         el.setText(value)
-        el.addClass("metadata-menu-value-suggester-value-container")
-        const spacer = this.containerEl.createDiv({ cls: "metadata-menu-value-suggester-value-container-spacer" })
+        el.addClass("value-container")
+        const spacer = this.containerEl.createDiv({ cls: "spacer" })
         el.appendChild(spacer)
         if (this.selectedOptions.includes(value.toString())) {
-            el.addClass("metadata-menu-value-selected")
-            const iconContainer = el.createDiv({ cls: "metadata-menu-command-suggest-icon" })
+            el.addClass("value-checked")
+            const iconContainer = el.createDiv({ cls: "icon-container" })
             setIcon(iconContainer, "check-circle")
         }
         this.inputEl.focus()

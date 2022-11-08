@@ -19,11 +19,13 @@ export default class chooseSectionModal extends SuggestModal<Line> {
     ) {
         super(plugin.app);
         this.onSelect = onSelect
+        this.containerEl.addClass("metadata-menu")
+        this.resultContainerEl.addClass("sections")
     };
 
     onOpen(): void {
         super.onOpen();
-        const inputContainer = this.containerEl.createDiv({ cls: "metadata-menu-value-suggester-input-container" })
+        const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
         inputContainer.appendChild(this.inputEl)
         this.containerEl.find(".prompt").prepend(inputContainer)
         // insertAsListItem
@@ -39,7 +41,6 @@ export default class chooseSectionModal extends SuggestModal<Line> {
             }
         })
         addAsListItemBtn.setDisabled(this.addAtEndOfFrontMatter)
-        addAsListItemBtn.buttonEl.addClass("metadata-menu-value-suggester-button")
         addAsListItemBtn.setTooltip("Add this field as a list item")
 
         // insertAsCommentItem
@@ -56,7 +57,6 @@ export default class chooseSectionModal extends SuggestModal<Line> {
             }
         })
         addAsCommentItemBtn.setDisabled(this.addAtEndOfFrontMatter)
-        addAsCommentItemBtn.buttonEl.addClass("metadata-menu-value-suggester-button")
         addAsCommentItemBtn.setTooltip("Add this field as a comment item")
 
 
@@ -68,7 +68,6 @@ export default class chooseSectionModal extends SuggestModal<Line> {
             this.onSelect(-2, true, false, false, false)
             this.close();
         })
-        addAtEndOfFrontMatterBtn.buttonEl.addClass("metadata-menu-value-suggester-button")
         addAtEndOfFrontMatterBtn.setTooltip("Add this field at the end of the frontmatter")
     }
 
@@ -83,7 +82,7 @@ export default class chooseSectionModal extends SuggestModal<Line> {
                 if (lineContent.toLowerCase().includes(query.toLowerCase())) {
                     suggestions.push({
                         lineNumber: i,
-                        lineText: lineContent.substring(0, 37) + (lineContent.length < 37 ? "" : "...")
+                        lineText: lineContent.substring(0, 57) + (lineContent.length < 57 ? "" : "...")
                     })
                 }
             })
@@ -92,8 +91,8 @@ export default class chooseSectionModal extends SuggestModal<Line> {
     }
 
     renderSuggestion(value: Line, el: HTMLElement) {
-        el.addClass("metadata-menu-choose-section-modal-item")
-        const container = el.createDiv({ cls: "metadata-menu-choose-section-modal-line" });
+        el.addClass("item")
+        const container = el.createDiv({ cls: "line" });
         container.createDiv({ text: `${value.lineNumber + 1}`, cls: "lineNumber" });
         container.createDiv({ text: value.lineText, cls: "lineText" });
     }

@@ -1,0 +1,18 @@
+@import "modal-base";
+
+.sections {
+
+    .item{
+        padding: 0;
+
+        .line {
+            display: flex;
+
+            .lineNumber {
+                font-size: small;
+                color: var(--text-faint);
+                margin-right: 1em;
+            }
+        }
+    }
+}
