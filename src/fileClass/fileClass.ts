@@ -32,7 +32,8 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
                 .get(this.file.path)?.map(fileClass => fileClass.name)
                 .includes(fileClassName)
             )
-            .filter(fileClassName => fileClassName.toLocaleLowerCase().contains(query.toLowerCase()));
+            .filter(fileClassName => fileClassName.toLocaleLowerCase().contains(query.toLowerCase()))
+            .sort();
     }
 
     renderSuggestion(value: string, el: HTMLElement) {

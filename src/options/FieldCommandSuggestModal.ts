@@ -1,4 +1,4 @@
-import { FuzzyMatch, FuzzySuggestModal, setIcon } from "obsidian";
+import { App, FuzzyMatch, FuzzySuggestModal, setIcon } from "obsidian";
 
 interface Option {
     id: string,
@@ -9,6 +9,11 @@ interface Option {
 
 export default class FieldCommandSuggestModal extends FuzzySuggestModal<Option> {
     public options: Option[] = []
+
+    constructor(app: App) {
+        super(app);
+        this.containerEl.addClass("metadata-menu");
+    }
 
     getItems(): Option[] {
         return this.options
@@ -23,10 +28,10 @@ export default class FieldCommandSuggestModal extends FuzzySuggestModal<Option> 
     }
 
     renderSuggestion(item: FuzzyMatch<Option>, el: HTMLElement): void {
-        el.addClass("metadata-menu-command-suggest-item")
-        const iconContainer = el.createDiv({ cls: "metadata-menu-command-suggest-icon" })
+        el.addClass("value-container");
+        const iconContainer = el.createDiv({ cls: "icon-container" })
         item.item.icon ? setIcon(iconContainer, item.item.icon) : setIcon(iconContainer, "pencil")
-        const actionLabel = el.createDiv({ cls: "metadata-menu-command-suggest-action-label" })
+        const actionLabel = el.createDiv()
         actionLabel.innerHTML = item.item.actionLabel
     }
 };

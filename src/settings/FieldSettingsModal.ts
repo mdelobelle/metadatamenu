@@ -57,7 +57,30 @@ export default class FieldSettingsModal extends Modal {
         } else {
             this.titleEl.setText(`Manage settings options for ${this.field.name}`);
         };
-        await this.createForm();
+
+        /* Name */
+        this.createnameInputContainer();
+        this.contentEl.createEl("hr");
+
+        /* Command */
+        this.createCommandContainer();
+
+        /* Type */
+        const typeSelectContainer = this.contentEl.createDiv({ cls: "field-container" });
+        this.contentEl.createEl("hr");
+
+        /* Options */
+        this.fieldOptionsContainer = this.contentEl.createDiv();
+
+        /* footer buttons*/
+        const footer = this.contentEl.createDiv({ cls: "footer-actions" });
+        footer.createDiv({ cls: "spacer" })
+        this.createSaveButton(footer);
+        this.createCancelButton(footer);
+
+        /* init state */
+        this.createTypeSelectorContainer(typeSelectContainer)
+        this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.PluginSettings)
     };
 
     onClose(): void {
@@ -149,33 +172,6 @@ export default class FieldSettingsModal extends Modal {
             this.addCommand ? iconContainer.show() : iconContainer.hide();
         });
     }
-
-    private async createForm(): Promise<void> {
-
-        /* Name */
-        this.createnameInputContainer();
-        this.contentEl.createEl("hr");
-
-        /* Command */
-        this.createCommandContainer();
-
-        /* Type */
-        const typeSelectContainer = this.contentEl.createDiv({ cls: "field-container" });
-
-        this.contentEl.createEl("hr");
-        /* Options */
-        this.fieldOptionsContainer = this.contentEl.createDiv();
-
-        /* footer buttons*/
-        const footer = this.contentEl.createDiv({ cls: "footer-actions" });
-        footer.createDiv({ cls: "spacer" })
-        this.createSaveButton(footer);
-        this.createCancelButton(footer);
-
-        /* init state */
-        this.createTypeSelectorContainer(typeSelectContainer)
-        this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.PluginSettings)
-    };
 
     private validateFields(): boolean {
         return this.fieldManager.validateName(
