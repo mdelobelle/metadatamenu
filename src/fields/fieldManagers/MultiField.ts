@@ -48,7 +48,7 @@ export default class MultiField extends AbstractListBasedField {
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
-        attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
+        attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
     ): void {
 
         let valueHovered = false;
@@ -73,30 +73,19 @@ export default class MultiField extends AbstractListBasedField {
         }
 
         /* current values container */
-        const valuesContainer = document.createElement("div");
-        valuesContainer.addClass("metadata-menu-dv-multi-values-container");
+        const valuesContainer = fieldContainer.createDiv({ cls: "values-container" })
 
         /* current values */
         currentValues.forEach(v => {
-            const valueContainer = document.createElement("div");
-            valueContainer.addClass("metadata-menu-dv-multi-values-container");
-
-
-            const valueRemoveBtn = document.createElement("button");
+            const valueContainer = valuesContainer.createDiv({ cls: "item-container" });
+            const valueRemoveBtn = valueContainer.createEl("button");
+            const valueLabel = valueContainer.createDiv({ cls: "label", text: v })
             setIcon(valueRemoveBtn, "cross")
-            valueRemoveBtn.addClass("metadata-menu-dv-field-button");
-            valueRemoveBtn.addClass("multi");
             valueRemoveBtn.hide();
             valueRemoveBtn.onclick = async () => {
                 const remainingValues = currentValues.filter(cV => cV !== v).join(", ")
                 MultiField.replaceValues(this.plugin, p.file.path, this.field.name, remainingValues);
             }
-            valueContainer.appendChild(valueRemoveBtn);
-
-            const valueLabel = document.createElement("div");
-            valueLabel.setText(v);
-            valueLabel.addClass("metadata-menu-dv-multi-value-label");
-            valueContainer.appendChild(valueLabel);
 
             valueContainer.onmouseover = () => {
                 valueHovered = true;
@@ -113,22 +102,17 @@ export default class MultiField extends AbstractListBasedField {
                 valueLabel.removeClass("hovered");
             }
 
-            valuesContainer.appendChild(valueContainer);
         })
 
         /* button to display input */
-        const addBtn = document.createElement("button");
+        const addBtn = valuesContainer.createEl("button");
         setIcon(addBtn, "list-plus");
-        addBtn.setAttr('class', "metadata-menu-dv-field-button");
 
-        valuesContainer.appendChild(addBtn);
         addBtn.onclick = () => fieldModal.open();
 
         /* end spacer */
-        const singleSpacer = document.createElement("div");
-        singleSpacer.setAttr("class", "metadata-menu-dv-field-spacer")
-        const doubleSpacer = document.createElement("div");
-        doubleSpacer.setAttr("class", "metadata-menu-dv-field-double-spacer")
+        const singleSpacer = valuesContainer.createDiv({ cls: "spacer-1" });
+        const doubleSpacer = valuesContainer.createDiv({ cls: "spacer-2" });
 
         if (!attrs?.options?.alwaysOn) {
             addBtn.hide();
@@ -154,8 +138,5 @@ export default class MultiField extends AbstractListBasedField {
             doubleSpacer.hide();
             addBtn.show();
         }
-        fieldContainer.appendChild(valuesContainer);
-        fieldContainer.appendChild(singleSpacer);
-        fieldContainer.appendChild(doubleSpacer);
     }
 }

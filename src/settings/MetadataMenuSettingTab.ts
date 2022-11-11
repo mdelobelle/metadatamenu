@@ -34,7 +34,7 @@ class SettingsMigrationConfirmModal extends Modal {
 				let settings = this.plugin.app.plugins.plugins["supercharged-links-obsidian"].settings;
 				//deep copying presetFields in initialProperty
 				this.plugin.initialProperties = [];
-				settings.presetFields.forEach((prop: Field) => {
+				settings.presetFields?.forEach((prop: Field) => {
 					const field = new Field();
 					Object.assign(field, prop);
 					this.plugin.initialProperties.push(field);

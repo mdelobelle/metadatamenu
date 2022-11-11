@@ -48,19 +48,15 @@ export default class SelectField extends AbstractListBasedField {
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
-        attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
+        attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
     ): void {
-        const valueContainer = document.createElement("div");;
-        const valueLabel = dv.el("span", p[this.field.name] || "");
-        valueContainer.appendChild(valueLabel);
+        attrs.cls = "value-container"
+        fieldContainer.appendChild(dv.el('span', p[this.field.name] || "", attrs))
         /* end spacer */
-        const spacer = document.createElement("div");
-        spacer.setAttr("class", "metadata-menu-dv-field-spacer");
+        const spacer = fieldContainer.createEl("div", { cls: "spacer-1" })
         /* button to display modal */
-        const dropDownButton = document.createElement("button");
+        const dropDownButton = fieldContainer.createEl("button");
         setIcon(dropDownButton, "down-chevron-glyph");
-        dropDownButton.addClass("metadata-menu-dv-field-button");
-        valueContainer.appendChild(dropDownButton);
         const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
         let fieldModal: SelectModal;
         if (file instanceof TFile && file.extension == "md") {
@@ -82,7 +78,5 @@ export default class SelectField extends AbstractListBasedField {
                 spacer.show();
             }
         }
-        fieldContainer.appendChild(valueContainer);
-        fieldContainer.appendChild(spacer);
     }
 }

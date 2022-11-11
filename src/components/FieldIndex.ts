@@ -277,8 +277,12 @@ export default class FieldIndex extends Component {
                                 if (cache?.frontmatter?.tagNames) {
                                     const _tagNames = cache?.frontmatter?.tagNames as string | string[];
                                     const tagNames = Array.isArray(_tagNames) ? [..._tagNames] : _tagNames.split(",").map(t => t.trim())
-                                    tagNames.forEach(tag => this.tagsMatchingFileClasses.set(tag, fileClass))
-                                } else {
+                                    tagNames.forEach(tag => {
+                                        if (!tag.includes(" ")) {
+                                            this.tagsMatchingFileClasses.set(tag, fileClass)
+                                        }
+                                    })
+                                } else if (!fileClassName.includes(" ")) {
                                     this.tagsMatchingFileClasses.set(fileClassName, fileClass)
                                 }
                             }

@@ -41,22 +41,24 @@ export default class DateModal extends Modal {
         this.dvApi = this.plugin.app.plugins.plugins["dataview"]?.api
         if (this.dvApi) this.dateManager = new FieldManager[this.field.type](this.plugin, this.field);
         this.value = this.initialValue;
+        this.containerEl.addClass("metadata-menu")
+
     };
 
     onOpen() {
-        const fieldContainer = this.contentEl.createDiv({ cls: "metadata-menu-modal-value" });
+        const fieldContainer = this.contentEl.createDiv({ cls: "field-container" });
         this.buildFields(fieldContainer);
+        this.errorField = this.contentEl.createEl("div", { cls: "field-error" });
+        this.errorField.hide();
+
     };
 
-    private buildFields(parentContainer: HTMLDivElement) {
+    private buildFields(dateFieldsContainer: HTMLDivElement) {
 
-        const dateFieldsContainer = parentContainer.createEl("div", { cls: "metadata-menu-modal-fields-container" });
         this.buildInputEl(dateFieldsContainer);
-        this.errorField = dateFieldsContainer.createEl("div", { cls: "metadata-menu-modal-value-error-field" });
-        this.errorField.hide();
-        this.buildInsertAsLinkToggler(dateFieldsContainer);
-        const saveBtnContainer = dateFieldsContainer.createEl("div", { cls: "metadata-menu-value-grid-footer" });
-        const saveBtn = new ButtonComponent(saveBtnContainer)
+        this.buildInsertAsLinkButton(dateFieldsContainer);
+        dateFieldsContainer.createDiv({ cls: "spacer" })
+        const saveBtn = new ButtonComponent(dateFieldsContainer)
         saveBtn.setIcon("checkmark")
 
         saveBtn.onClick(async (e: Event) => {
@@ -107,17 +109,21 @@ export default class DateModal extends Modal {
         });
     }
 
-    private buildInsertAsLinkToggler(container: HTMLDivElement) {
-        const togglerContainer = container.createDiv({ cls: "metadata-menu-toggler-with-label" })
-        const togglerContainerLabel = togglerContainer.createDiv({
-            cls: "metadata-menu-toggler-label"
-        });
-        togglerContainerLabel.setText("Insert as link");
-        const toggleEl = new ToggleComponent(togglerContainer);
-        toggleEl.setValue(FM.stringToBoolean(this.field.options.defaultInsertAsLink || "false"))
-        toggleEl.onChange((value) => {
-            this.insertAsLink = value
-        });
+    private buildInsertAsLinkButton(container: HTMLDivElement) {
+        const insertAsLinkBtn = new ButtonComponent(container);
+        const setLinkBtnIcon = () => {
+            insertAsLinkBtn.setIcon(this.insertAsLink ? "link" : "unlink");
+            insertAsLinkBtn.setTooltip(this.insertAsLink ?
+                "Click to insert date as text" :
+                "Click to insert date as link"
+            )
+        }
+        setLinkBtnIcon();
+        insertAsLinkBtn.onClick(() => {
+            this.insertAsLink = !this.insertAsLink;
+            setLinkBtnIcon();
+        })
+
     }
 
     private toggleButton(button: ButtonComponent, value: string): void {
@@ -134,15 +140,13 @@ export default class DateModal extends Modal {
 
         if (this.dateManager) [this.currentShift, this.nextIntervalField, this.nextShift] = this.dateManager.shiftDuration(this.file);
 
-        const inputContainer = container.createDiv({ cls: "metadata-menu-dateinput-with-picker" })
-        this.inputEl = new TextComponent(inputContainer);
+        this.inputEl = new TextComponent(container);
         this.inputEl.inputEl.focus();
 
         this.inputEl.setPlaceholder(
             this.initialValue ?
                 moment(this.initialValue, this.field.options.dateFormat).format(this.field.options.dateFormat)
                 : "");
-        this.inputEl.inputEl.addClass("metadata-menu-prompt-input");
         this.inputEl.onChange(value => {
             this.inputEl.inputEl.removeClass("is-invalid")
             this.errorField.hide();
@@ -150,16 +154,14 @@ export default class DateModal extends Modal {
             this.value = value
             this.toggleButton(shiftFromTodayBtn, value)
         });
-        const calendarDisplayBtn = new ButtonComponent(inputContainer)
-        calendarDisplayBtn.buttonEl.addClass("metadata-menu-modal-inline-btn")
+        const calendarDisplayBtn = new ButtonComponent(container)
         calendarDisplayBtn.setIcon(FieldIcon[FieldType.Date])
         calendarDisplayBtn.setTooltip("open date picker")
-        const shiftFromTodayBtn = new ButtonComponent(inputContainer)
-        shiftFromTodayBtn.buttonEl.addClass("metadata-menu-modal-inline-btn")
+        const shiftFromTodayBtn = new ButtonComponent(container)
         shiftFromTodayBtn.setIcon("skip-forward")
         shiftFromTodayBtn.setTooltip(`Shift ${this.field.name} ${this.currentShift || "1 day"} ahead`)
 
-        const datePickerContainer = container.createDiv({ cls: "metadata-menu-picker-container" });
+        const datePickerContainer = container.createDiv();
         const datePicker = flatpickr(datePickerContainer, {
             locale: {
                 firstDayOfWeek: this.plugin.settings.firstDayOfWeek

@@ -127,20 +127,26 @@ export default class NumberField extends FieldManager {
         };
     };
 
-    private createNumberContainer(parentContainer: HTMLDivElement): void {
-        const numberStepValueContainer = parentContainer.createDiv();
-        numberStepValueContainer.createEl("span", { text: "Step (optional)", cls: 'metadata-menu-field-option' })
+    private createNumberContainer(container: HTMLDivElement): void {
+        const numberStepValueContainer = container.createDiv({ cls: "field-container" });
+        numberStepValueContainer.createEl("span", { text: "Step (optional)", cls: 'label' })
+        numberStepValueContainer.createDiv({ cls: "spacer" });
         this.numberStepValue = new TextComponent(numberStepValueContainer)
+        this.numberStepValue.inputEl.addClass("with-label")
         this.numberStepValue.setValue(this.field.options.step || "")
 
-        const numberMinValueContainer = parentContainer.createDiv();
-        numberMinValueContainer.createEl("span", { text: "Min value (optional)", cls: 'metadata-menu-field-option' })
+        const numberMinValueContainer = container.createDiv({ cls: "field-container" });
+        numberMinValueContainer.createEl("span", { text: "Min value (optional)", cls: 'label' })
         this.numberMinValue = new TextComponent(numberMinValueContainer)
+        this.numberMinValue.inputEl.addClass("full-width");
+        this.numberMinValue.inputEl.addClass("with-label")
         this.numberMinValue.setValue(this.field.options.min || "")
 
-        const numberMaxValueContainer = parentContainer.createDiv();
-        numberMaxValueContainer.createEl("span", { text: "Max value (optional)", cls: 'metadata-menu-field-option' })
+        const numberMaxValueContainer = container.createDiv({ cls: "field-container" });
+        numberMaxValueContainer.createEl("span", { text: "Max value (optional)", cls: 'label' })
         this.numberMaxValue = new TextComponent(numberMaxValueContainer)
+        this.numberMaxValue.inputEl.addClass("full-width");
+        this.numberMaxValue.inputEl.addClass("with-label")
         this.numberMaxValue.setValue(this.field.options.max || "")
         this.numberStepValue.onChange(value => {
             this.field.options.step = value;
@@ -156,31 +162,30 @@ export default class NumberField extends FieldManager {
         })
     }
 
-    public createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu): void {
-        this.numberValidatorField = parentContainer.createDiv({ cls: "metadata-menu-number-options" })
-        this.createNumberContainer(this.numberValidatorField)
-        this.numberValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
+    public createSettingContainer(container: HTMLDivElement, plugin: MetadataMenu): void {
+
+        this.createNumberContainer(container)
     }
 
     public validateOptions(): boolean {
         let error = false
         if (this.field.options.step && isNaN(parseFloat(this.field.options.step))) {
             FieldSettingsModal.setValidationError(
-                this.numberStepValue, this.numberStepValue.inputEl,
+                this.numberStepValue,
                 "Values must be numeric."
             );
             error = true;
         }
         if (this.field.options.min && isNaN(parseFloat(this.field.options.min))) {
             FieldSettingsModal.setValidationError(
-                this.numberMinValue, this.numberMinValue.inputEl,
+                this.numberMinValue,
                 "Values must be numeric."
             );
             error = true;
         }
         if (this.field.options.max && isNaN(parseFloat(this.field.options.max))) {
             FieldSettingsModal.setValidationError(
-                this.numberMaxValue, this.numberMaxValue.inputEl,
+                this.numberMaxValue,
                 "Values must be numeric."
             );
             error = true;
@@ -211,35 +216,28 @@ export default class NumberField extends FieldManager {
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
-        attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
+        attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
     ): void {
-
-        const fieldValue = dv.el('span', p[this.field.name], attrs)
-        const inputContainer = document.createElement("div");
-        const input = document.createElement("input");
-        input.setAttr("class", "metadata-menu-dv-input");
-        inputContainer.appendChild(input);
+        attrs.cls = "value-container"
+        const fieldValue = (dv.el('span', p[this.field.name], attrs) as HTMLDivElement);
+        fieldContainer.appendChild(fieldValue)
+        const inputContainer = fieldContainer.createDiv({});
+        const input = inputContainer.createEl("input");
         input.value = p[this.field.name];
         /* end spacer */
-        const tripleSpacer = document.createElement("div");
-        tripleSpacer.setAttr("class", "metadata-menu-dv-field-triple-spacer");
+        const tripleSpacer = fieldContainer.createDiv({ cls: "spacer-3" });
 
         /* button to display input */
-        const editButton = document.createElement("button");
+        const editButton = fieldContainer.createEl("button");
         setIcon(editButton, FieldIcon[FieldType.Number]);
-        editButton.setAttr('class', "metadata-menu-dv-field-button");
-
 
         /* button to display input */
-        const decrementButton = document.createElement("button");
+        const decrementButton = fieldContainer.createEl("button");
         setIcon(decrementButton, "left-arrow");
-        decrementButton.setAttr('class', "metadata-menu-dv-field-button");
-
 
         /* button to display input */
-        const incrementButton = document.createElement("button");
-        setIcon(incrementButton, "right-arrow")
-        incrementButton.setAttr('class', "metadata-menu-dv-field-button");
+        const incrementButton = fieldContainer.createEl("button");
+        setIcon(incrementButton, "right-arrow");
 
         if (!attrs?.options?.alwaysOn) {
             editButton.hide();
@@ -261,9 +259,8 @@ export default class NumberField extends FieldManager {
             }
         }
 
-        const validateIcon = document.createElement("a")
+        const validateIcon = fieldContainer.createEl("button")
         setIcon(validateIcon, "checkmark")
-        validateIcon.setAttr("class", "metadata-menu-dv-field-button")
         validateIcon.onclick = async () => {
             if (this.validateValue(input.value)) {
                 const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
@@ -276,13 +273,12 @@ export default class NumberField extends FieldManager {
             }
         }
         inputContainer?.appendChild(validateIcon)
-        const cancelIcon = document.createElement("a")
-        cancelIcon.setAttr("class", "metadata-menu-dv-field-button")
+        const cancelIcon = fieldContainer.createEl("button")
         setIcon(cancelIcon, "cross");
         cancelIcon.onclick = (e) => {
             fieldContainer.removeChild(inputContainer);
-            fieldContainer.appendChild(decrementButton);
             fieldContainer.appendChild(fieldValue);
+            fieldContainer.appendChild(decrementButton);
             fieldContainer.appendChild(editButton);
             fieldContainer.appendChild(incrementButton);
             fieldContainer.appendChild(tripleSpacer);
@@ -314,8 +310,8 @@ export default class NumberField extends FieldManager {
             }
             if (e.key === 'Escape') {
                 fieldContainer.removeChild(inputContainer);
-                fieldContainer.appendChild(decrementButton);
                 fieldContainer.appendChild(fieldValue);
+                fieldContainer.appendChild(decrementButton);
                 fieldContainer.appendChild(editButton);
                 fieldContainer.appendChild(incrementButton);
                 fieldContainer.appendChild(tripleSpacer);
@@ -363,8 +359,9 @@ export default class NumberField extends FieldManager {
         }
 
         /* initial state */
-        fieldContainer.appendChild(decrementButton);
+        fieldContainer.removeChild(inputContainer);
         fieldContainer.appendChild(fieldValue);
+        fieldContainer.appendChild(decrementButton);
         fieldContainer.appendChild(editButton);
         fieldContainer.appendChild(incrementButton);
         fieldContainer.appendChild(tripleSpacer);

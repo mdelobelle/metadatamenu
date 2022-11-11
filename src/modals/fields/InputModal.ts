@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { DropdownComponent, Modal, setIcon, TextAreaComponent, TextComponent, TFile } from "obsidian";
+import { ButtonComponent, DropdownComponent, Modal, setIcon, TextAreaComponent, TextComponent, TFile } from "obsidian";
 import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
 import Field from "src/fields/Field";
@@ -21,7 +21,6 @@ export default class InputModal extends Modal {
     ) { super(plugin.app); };
 
     onOpen() {
-        const inputDiv = this.contentEl.createDiv();
         if (this.field.options.template) {
             const templateFieldRegex = new RegExp(`\\{\\{(?<field>[^\\}]+?)\\}\\}`, "gu");
             const tF = this.field.options.template.matchAll(templateFieldRegex)
@@ -33,18 +32,20 @@ export default class InputModal extends Modal {
                     this.templateValues[name] = "";
                     if (optionsString) {
                         const options = JSON.parse(optionsString);
-                        this.buildTemplateSelectItem(inputDiv, name, options);
+                        this.buildTemplateSelectItem(this.contentEl.createDiv({ cls: "field-container" }), name, options);
                     } else {
-                        this.buildTemplateInputItem(inputDiv, name);
+                        this.buildTemplateInputItem(this.contentEl.createDiv({ cls: "field-container" }), name);
                     }
                 }
                 next = tF.next()
             }
-            this.buildResultPreview(inputDiv);
-            this.buildSaveBtn(inputDiv);
+            this.contentEl.createDiv({ text: "Result preview" });
+            this.buildResultPreview(this.contentEl.createDiv({ cls: "field-container" }));
+            this.buildSaveBtn(this.contentEl.createDiv({ cls: "footer-actions" }));
         } else {
-            this.buildInputEl(inputDiv);
+            this.buildInputEl(this.contentEl.createDiv({ cls: "field-container" }));
         }
+        this.containerEl.addClass("metadata-menu")
     };
 
     private renderValue() {
@@ -57,20 +58,22 @@ export default class InputModal extends Modal {
         this.renderedValue.setValue(renderedString)
     }
 
-    private buildTemplateInputItem(inputDiv: HTMLDivElement, name: string) {
-        inputDiv.createDiv({ text: name, cls: "metadata-menu-input-label" });
-        const inputEl = new TextComponent(inputDiv);
-        inputEl.setPlaceholder(`Enter a value for ${name}`);
-        inputEl.inputEl.addClass("metadata-menu-prompt-input");
-        inputEl.onChange(value => {
+    private buildTemplateInputItem(fieldContainer: HTMLDivElement, name: string) {
+        fieldContainer.createDiv({ cls: "label", text: name });
+        const input = new TextComponent(fieldContainer);
+        input.inputEl.addClass("with-label");
+        input.inputEl.addClass("full-width");
+        input.setPlaceholder(`Enter a value for ${name}`);
+        input.onChange(value => {
             this.templateValues[name] = value;
             this.renderValue();
         });
     }
 
-    private buildTemplateSelectItem(inputDiv: HTMLDivElement, name: string, options: string[]) {
-        inputDiv.createDiv({ text: name, cls: "metadata-menu-input-label" });
-        const selectEl = new DropdownComponent(inputDiv);
+    private buildTemplateSelectItem(fieldContainer: HTMLDivElement, name: string, options: string[]) {
+        fieldContainer.createDiv({ text: name, cls: "label" });
+        fieldContainer.createDiv({ cls: "spacer" })
+        const selectEl = new DropdownComponent(fieldContainer);
         selectEl.addOption("", "--select--")
         options.forEach(o => selectEl.addOption(o, o));
         selectEl.onChange(value => {
@@ -79,22 +82,18 @@ export default class InputModal extends Modal {
         })
     }
 
-    private buildResultPreview(inputDiv: HTMLDivElement) {
-        inputDiv.createEl("hr")
-        inputDiv.createDiv({ text: "Result preview", cls: "metadata-menu-input-label" });
-        const renderedValueContainer = inputDiv.createDiv();
-        this.renderedValue = new TextAreaComponent(renderedValueContainer)
-        this.renderedValue.inputEl.addClass("metadata-menu-prompt-input");
+    private buildResultPreview(fieldContainer: HTMLDivElement) {
+        this.renderedValue = new TextAreaComponent(fieldContainer)
+        this.renderedValue.inputEl.addClass("full-width")
         this.renderedValue.inputEl.rows = 3;
         this.renderedValue.setValue(this.value);
     }
 
-    private buildSaveBtn(inputDiv: HTMLDivElement) {
-        inputDiv.createEl("hr")
-        const saveBtnContainer = inputDiv.createDiv({ cls: "metadata-menu-textarea-buttons" })
-        const saveBtn = saveBtnContainer.createEl("button")
-        setIcon(saveBtn, "checkmark");
-        saveBtn.onclick = async () => {
+    private buildSaveBtn(fieldContainer: HTMLDivElement) {
+        fieldContainer.createDiv({ cls: "spacer" })
+        const saveBtn = new ButtonComponent(fieldContainer);
+        saveBtn.setIcon("checkmark");
+        saveBtn.onClick(async () => {
             let inputValue = this.renderedValue.getValue();
             if (this.lineNumber == -1) {
                 await this.plugin.fileTaskManager
@@ -104,22 +103,17 @@ export default class InputModal extends Modal {
                     .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
             };
             this.close();
-        }
+        })
     }
 
-    private buildInputEl(inputDiv: HTMLDivElement): void {
-        const form = inputDiv.createEl("form");
-        form.type = "submit";
-
-        const inputEl = new TextComponent(form);
+    private buildInputEl(container: HTMLDivElement): void {
+        const inputEl = new TextComponent(container);
         inputEl.inputEl.focus();
-
+        inputEl.inputEl.addClass("full-width");
         inputEl.setValue(`${this.value}`);
-
-        inputEl.inputEl.addClass("metadata-menu-prompt-input");
-
-        form.onsubmit = async (e: Event) => {
-            e.preventDefault();
+        const saveBtn = new ButtonComponent(container);
+        saveBtn.setIcon("checkmark");
+        saveBtn.onClick(async () => {
             let inputValue = inputEl.getValue();
             if (this.lineNumber == -1) {
                 await this.plugin.fileTaskManager
@@ -129,6 +123,6 @@ export default class InputModal extends Modal {
                     .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
             };
             this.close();
-        };
+        })
     };
 };

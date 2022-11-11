@@ -27,6 +27,9 @@
 
     @include action-button();
 
+    button:last-child{
+            margin-right: 1em;
+    }
 }
 
 .value-container {

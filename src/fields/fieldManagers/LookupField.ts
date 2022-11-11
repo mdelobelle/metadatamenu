@@ -15,8 +15,6 @@ import { updateLookups } from "src/commands/updateLookups";
 
 export default class LookupField extends FieldManager {
 
-    private lookupValidatorField: HTMLDivElement;
-
     constructor(plugin: MetadataMenu, field: Field) {
         super(plugin, field, FieldType.Lookup)
         this.showModalOption = false
@@ -96,12 +94,15 @@ export default class LookupField extends FieldManager {
             optionWarningContainer.show() : optionWarningContainer.hide();
     }
 
-    private createLookupContainer(parentContainer: HTMLDivElement): void {
+    private createLookupContainer(container: HTMLDivElement): void {
 
-        const autoUpdateContainer = parentContainer.createDiv();
-        autoUpdateContainer.createEl("span", { text: "Auto update this field ", cls: 'metadata-menu-field-option' });
-        autoUpdateContainer.createEl("span", { text: "This could lead to latencies depending on the queries", cls: 'metadata-menu-field-option-subtext warning' });
+        const autoUpdateTopContainer = container.createDiv({ cls: "vstacked" });
+        const autoUpdateContainer = autoUpdateTopContainer.createDiv({ cls: "field-container" })
+        autoUpdateContainer.createEl("span", { text: "Auto update this field ", cls: 'label' });
+        autoUpdateContainer.createDiv({ cls: "spacer" });
         const autoUpdate = new ToggleComponent(autoUpdateContainer);
+        autoUpdateTopContainer.createEl("span", { text: "This could lead to latencies depending on the queries", cls: 'sub-text warning' });
+
         if (this.field.options.autoUpdate === undefined) this.field.options.autoUpdate = true
         autoUpdate.setValue(this.field.options.autoUpdate);
         autoUpdate.onChange(value => {
@@ -110,10 +111,12 @@ export default class LookupField extends FieldManager {
 
 
 
-        const dvQueryStringContainer = parentContainer.createDiv();
-        dvQueryStringContainer.createEl("span", { text: "Pages to look for in your vault (DataviewJS Query)", cls: 'metadata-menu-field-option' });
-        dvQueryStringContainer.createEl("span", { text: "DataviewJS query of the form `dv.pages(...)`", cls: 'metadata-menu-field-option-subtext' });
+        const dvQueryStringTopContainer = container.createDiv({ cls: "vstacked" });
+        dvQueryStringTopContainer.createEl("span", { text: "Pages to look for in your vault (DataviewJS Query)", cls: 'label' });
+        dvQueryStringTopContainer.createEl("span", { text: "DataviewJS query of the form `dv.pages(...)`", cls: 'sub-text' });
+        const dvQueryStringContainer = dvQueryStringTopContainer.createDiv({ cls: "field-container" })
         const dvQueryString = new TextAreaComponent(dvQueryStringContainer);
+        dvQueryString.inputEl.addClass("full-width");
         dvQueryString.inputEl.cols = 50;
         dvQueryString.inputEl.rows = 4;
         dvQueryString.setValue(this.field.options.dvQueryString || "");
@@ -124,10 +127,13 @@ export default class LookupField extends FieldManager {
             FieldSettingsModal.removeValidationError(dvQueryString);
         })
 
-        const targetFieldContainer = parentContainer.createDiv();
-        targetFieldContainer.createEl("span", { text: "Name of the related field", cls: 'metadata-menu-field-option' });
-        targetFieldContainer.createEl("span", { text: "field in the target pages that contains a link to the page where this lookup field is", cls: 'metadata-menu-field-option-subtext' });
+        const targetFieldTopContainer = container.createDiv({ cls: "vstacked" });
+        const targetFieldContainer = targetFieldTopContainer.createDiv({ cls: "field-container" })
+        targetFieldContainer.createEl("span", { text: "Name of the related field", cls: 'label' });
         const targetFieldName = new TextComponent(targetFieldContainer);
+        targetFieldName.inputEl.addClass("full-width")
+        targetFieldName.inputEl.addClass("with-label")
+        targetFieldTopContainer.createEl("span", { text: "field in the target pages that contains a link to the page where this lookup field is", cls: 'sub-text' });
         targetFieldName.setValue(this.field.options.targetFieldName || "");
         targetFieldName.onChange(value => {
             this.field.options.targetFieldName = value;
@@ -135,35 +141,37 @@ export default class LookupField extends FieldManager {
         })
 
         //lookup type selector
-        const outputTypeContainer = parentContainer.createDiv();
+        const outputTypeContainer = container.createDiv({ cls: "field-container" });
         this.field.options.outputType = this.field.options.outputType || Lookup.Type.LinksList
-        outputTypeContainer.createEl("span", { text: "Type of output", cls: 'metadata-menu-field-option' });
+        outputTypeContainer.createEl("span", { text: "Type of output", cls: 'label' });
+        outputTypeContainer.createDiv({ cls: "spacer" })
         const outputTypeList = new DropdownComponent(outputTypeContainer);
         Object.keys(Lookup.Type).forEach((outputType: keyof typeof Lookup.Type) => {
             outputTypeList.addOption(outputType, Lookup.Description[outputType])
         })
         outputTypeList.setValue(this.field.options.outputType)
 
-        const outputWarningContainer = parentContainer.createDiv();
+        const outputWarningContainer = container.createDiv();
         outputWarningContainer.createEl("p", {
             text:
                 "Warning: this may override some lines under your list. " +
                 "There shouldn't be an extra manual item in the list that is automatically " +
                 "rendered by this field: it would be overriden after each field indexing",
-            cls: "metadata-menu-field-option-warning"
+            cls: "field-warning"
         });
 
         //Built in summarizng function options
-        const builtinOptionsContainer = parentContainer.createDiv();
-        const builtinSummarizeFunctionContainer = builtinOptionsContainer.createDiv();
+        const builtinOptionsContainer = container.createDiv();
+        const builtinSummarizeFunctionTopContainer = builtinOptionsContainer.createDiv({ cls: "vstacked" })
+        const builtinSummarizeFunctionContainer = builtinSummarizeFunctionTopContainer.createDiv({ cls: "field-container" });
         this.field.options.builtinSummarizingFunction = this.field.options.builtinSummarizingFunction || Lookup.Default.BuiltinSummarizing
-        builtinSummarizeFunctionContainer.createEl("span", { text: Lookup.OptionLabel.BuiltinSummarizing, cls: "metadata-menu-field-option" });
+        builtinSummarizeFunctionContainer.createEl("span", { text: Lookup.OptionLabel.BuiltinSummarizing, cls: "label" });
+        builtinSummarizeFunctionContainer.createDiv({ cls: "spacer" });
         const builtinSummarizeFunctionList = new DropdownComponent(builtinSummarizeFunctionContainer);
         Object.keys(Lookup.BuiltinSummarizing).forEach((builtinFunction: keyof typeof Lookup.BuiltinSummarizing) => {
             builtinSummarizeFunctionList.addOption(builtinFunction, Lookup.BuiltinSummarizing[builtinFunction])
         })
-
-        const builtinOptionsDescriptionContainer = builtinOptionsContainer.createDiv({ cls: "metadata-menu-field-option-subtext" });
+        const builtinOptionsDescriptionContainer = builtinSummarizeFunctionTopContainer.createDiv({ cls: "sub-text" });
         const builtinFunction = this.field.options.builtinSummarizingFunction as keyof typeof Lookup.BuiltinSummarizing
         builtinOptionsDescriptionContainer.setText(Lookup.BuiltinSummarizingFunctionDescription[builtinFunction].replace("{{summarizedFieldName}}", this.field.options.summarizedFieldName))
 
@@ -173,22 +181,28 @@ export default class LookupField extends FieldManager {
             builtinOptionsDescriptionContainer.setText(Lookup.BuiltinSummarizingFunctionDescription[value].replace("{{summarizedFieldName}}", this.field.options.summarizedFieldName))
         })
 
-        const summarizedFieldNameContainer = builtinOptionsContainer.createDiv();
+        const summarizedFieldNameTopContainer = builtinOptionsContainer.createDiv({ cls: "vstacked" });
         this.field.options.summarizedFieldName = this.field.options.summarizedFieldName
-        summarizedFieldNameContainer.createEl("span", { text: "Summarized field name", cls: "metadata-menu-field-option" });
-        summarizedFieldNameContainer.createEl("span", { text: "Name of the field containing summarized value used for the summarizing function", cls: "metadata-menu-field-option-subtext" });
+        const summarizedFieldNameContainer = summarizedFieldNameTopContainer.createDiv({ cls: "field-container" })
+        summarizedFieldNameContainer.createEl("span", { text: "Summarized field name", cls: "label" });
         const summarizedFieldName = new TextComponent(summarizedFieldNameContainer);
+        summarizedFieldName.inputEl.addClass("full-width");
+        summarizedFieldName.inputEl.addClass("with-label");
+        summarizedFieldNameTopContainer.createEl("span", { text: "Name of the field containing summarized value used for the summarizing function", cls: "sub-text" });
+
         summarizedFieldName.setValue(this.field.options.summarizedFieldName)
         summarizedFieldName.onChange(value => {
             this.field.options.summarizedFieldName = value
         })
 
         // Custom list function options
-        const outputRenderingFunctionContainer = parentContainer.createDiv();
+        const outputRenderingFunctionTopContainer = container.createDiv({ cls: "vstacked" });
         this.field.options.customListFunction = this.field.options.customListFunction || Lookup.Default.CustomList
-        outputRenderingFunctionContainer.createEl("span", { text: Lookup.OptionLabel.CustomList, cls: "metadata-menu-field-option" });
-        outputRenderingFunctionContainer.createEl("code", { text: Lookup.OptionSubLabel.CustomList, cls: "metadata-menu-field-option-subtext" })
+        outputRenderingFunctionTopContainer.createEl("span", { text: Lookup.OptionLabel.CustomList, cls: "label" });
+        outputRenderingFunctionTopContainer.createEl("code", { text: Lookup.OptionSubLabel.CustomList });
+        const outputRenderingFunctionContainer = outputRenderingFunctionTopContainer.createDiv({ cls: "field-container" })
         const outputRenderingFunction = new TextAreaComponent(outputRenderingFunctionContainer);
+        outputRenderingFunction.inputEl.addClass("full-width");
         outputRenderingFunction.setPlaceholder(Lookup.Helper.CustomList)
         outputRenderingFunction.setValue(this.field.options.customListFunction)
         outputRenderingFunction.inputEl.cols = 65;
@@ -198,11 +212,13 @@ export default class LookupField extends FieldManager {
         })
 
 
-        const outputSummarizingFunctionContainer = parentContainer.createDiv();
+        const outputSummarizingFunctionTopContainer = container.createDiv({ cls: "vstacked" });
         this.field.options.customSummarizingFunction = this.field.options.customSummarizingFunction || Lookup.Default.CustomSummarizing
-        outputSummarizingFunctionContainer.createEl("span", { text: Lookup.OptionLabel.CustomSummarizing, cls: "metadata-menu-field-option" });
-        outputSummarizingFunctionContainer.createEl("code", { text: Lookup.OptionSubLabel.CustomSummarizing, cls: "metadata-menu-field-option-subtext" })
+        outputSummarizingFunctionTopContainer.createEl("span", { text: Lookup.OptionLabel.CustomSummarizing, cls: "label" });
+        outputSummarizingFunctionTopContainer.createEl("code", { text: Lookup.OptionSubLabel.CustomSummarizing });
+        const outputSummarizingFunctionContainer = outputSummarizingFunctionTopContainer.createDiv({ cls: "field-container" })
         const outputSummarizingFunction = new TextAreaComponent(outputSummarizingFunctionContainer);
+        outputSummarizingFunction.inputEl.addClass("full-width");
         outputSummarizingFunction.setPlaceholder(Lookup.Helper.CustomSummarizing)
         outputSummarizingFunction.setValue(this.field.options.customSummarizingFunction)
         outputSummarizingFunction.inputEl.cols = 65;
@@ -214,8 +230,8 @@ export default class LookupField extends FieldManager {
         const optionContainers: [Array<keyof typeof Lookup.Type>, HTMLElement | undefined][] = [
             [["LinksList", "LinksBulletList"], undefined],
             [["BuiltinSummarizing"], builtinOptionsContainer],
-            [["CustomList", "CustomBulletList"], outputRenderingFunctionContainer],
-            [["CustomSummarizing"], outputSummarizingFunctionContainer]
+            [["CustomList", "CustomBulletList"], outputRenderingFunctionTopContainer],
+            [["CustomSummarizing"], outputSummarizingFunctionTopContainer]
         ]
 
         this.displaySelectedOutputOptionContainer(optionContainers, outputTypeList.getValue() as keyof typeof Lookup.Type)
@@ -228,10 +244,8 @@ export default class LookupField extends FieldManager {
         })
     }
 
-    public createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
-        this.lookupValidatorField = parentContainer.createDiv({ cls: "metadata-menu-number-options" })
-        this.createLookupContainer(this.lookupValidatorField)
-        this.lookupValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
+    public createSettingContainer(container: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
+        this.createLookupContainer(container)
     }
 
     getOptionsStr(): string {

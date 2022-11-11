@@ -71,7 +71,6 @@ export default class NumberModal extends Modal {
         const fieldContainer = this.contentEl.createEl("div", { cls: "field-container" })
 
         const numberInput = new TextComponent(fieldContainer);
-        numberInput.inputEl.addClass("input")
         numberInput.inputEl.focus();
         numberInput.setValue(`${this.value}`);
 

@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { TFile, Menu, TextAreaComponent, TextComponent, DropdownComponent, ToggleComponent } from "obsidian";
+import { TFile, Menu, TextAreaComponent } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldType, FieldIcon } from "src/types/fieldTypes";
@@ -10,11 +10,8 @@ import { replaceValues } from "src/commands/replaceValues";
 import { insertValues } from "src/commands/insertValues";
 import { Status } from "src/types/lookupTypes";
 import { FieldOptions } from "src/components/NoteFields";
-import { updateFormulas } from "src/commands/updateFormulas";
 
 export default class FormulaField extends FieldManager {
-
-    private formulaValidatorField: HTMLDivElement;
 
     constructor(plugin: MetadataMenu, field: Field) {
         super(plugin, field, FieldType.Formula)
@@ -65,14 +62,16 @@ export default class FormulaField extends FieldManager {
 
     private createFormulaContainer(parentContainer: HTMLDivElement): void {
 
-        const formulaContainer = parentContainer.createDiv();
-        formulaContainer.createEl("span", { text: "javascript formula", cls: 'metadata-menu-field-option' });
-        formulaContainer.createEl("span", { text: "current and pages variables are available`", cls: 'metadata-menu-field-option-subtext' });
+        const formulaTopContainer = parentContainer.createDiv({ cls: "vstacked" });
+        formulaTopContainer.createEl("span", { text: "javascript formula", cls: 'label' });
+        formulaTopContainer.createEl("span", { text: "current and pages variables are available`", cls: 'sub-text' });
+        const formulaContainer = formulaTopContainer.createDiv({ cls: "field-container" });
         const formula = new TextAreaComponent(formulaContainer);
+        formula.inputEl.addClass("full-width");
         formula.inputEl.cols = 50;
         formula.inputEl.rows = 4;
         formula.setValue(this.field.options.formula || "");
-        formula.setPlaceholder("exampe: current.apple + current.bananas - 3")
+        formula.setPlaceholder("exampe: current.apple + current.bananas - 3");
 
         formula.onChange(value => {
             this.field.options.formula = value;
@@ -81,9 +80,7 @@ export default class FormulaField extends FieldManager {
     }
 
     public createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
-        this.formulaValidatorField = parentContainer.createDiv({ cls: "metadata-menu-number-options" })
-        this.createFormulaContainer(this.formulaValidatorField)
-        this.formulaValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
+        this.createFormulaContainer(parentContainer)
     }
 
     getOptionsStr(): string {
