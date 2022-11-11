@@ -9,10 +9,12 @@
 
 @import "./flatpickr.min";
 
+@import "chip";
+@import "dataview-field";
 @import "main";
 @import "modal-base";
+@import "note-fields-modal";
 @import "section-modal";
 @import "select-modal";
-@import "dataview-field";
-@import "chip";
-@import "note-fields-modal";
+@import "settings";
+@import "suggester";

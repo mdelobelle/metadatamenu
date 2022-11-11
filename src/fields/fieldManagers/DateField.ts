@@ -181,19 +181,17 @@ export default class DateField extends FieldManager {
         attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }
     ): void {
         const fieldValue = dv.el('span', p[this.field.name], attrs);
-        const dateBtn = document.createElement("button")
+        const dateBtn = fieldContainer.createEl("button")
         setIcon(dateBtn, FieldIcon[FieldType.Date])
-        dateBtn.addClass("metadata-menu-dv-field-button")
         /* end spacer */
-        const spacer = document.createElement("div")
+        const spacer = fieldContainer.createDiv({ cls: "spacer-1" })
         if (this.field.options.dateShiftInterval || this.field.options.nextShiftIntervalField) {
-            this.shiftBtn = document.createElement("button")
+            this.shiftBtn = fieldContainer.createEl("button")
             setIcon(this.shiftBtn, "skip-forward")
-            this.shiftBtn.addClass("metadata-menu-dv-field-button")
-            spacer.setAttr("class", "metadata-menu-dv-field-double-spacer")
+            spacer.setAttr("class", "spacer-2")
 
         } else {
-            spacer.setAttr("class", "metadata-menu-dv-field-spacer")
+            spacer.setAttr("class", "spacer-1")
         }
 
         const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)

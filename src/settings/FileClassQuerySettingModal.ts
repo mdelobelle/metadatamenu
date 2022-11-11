@@ -33,6 +33,7 @@ export default class FileClassQuerySettingsModal extends Modal {
             this.fileClassQuery.id = newId.toString();
             this.initialFileClassQuery.id = newId.toString();
         };
+        this.containerEl.addClass("metadata-menu");
     };
 
     async onOpen(): Promise<void> {
@@ -53,10 +54,11 @@ export default class FileClassQuerySettingsModal extends Modal {
         };
     };
 
-    private createnameInputContainer(parentNode: HTMLDivElement): TextComponent {
-        const fileClassQueryNameContainerLabel = parentNode.createDiv();
-        fileClassQueryNameContainerLabel.setText(`FileClass Query Name:`);
-        const input = new TextComponent(parentNode);
+    private createnameInputContainer(container: HTMLDivElement): TextComponent {
+        container.createDiv({ cls: 'label', text: `FileClass Query Name:` });
+        const input = new TextComponent(container);
+        input.inputEl.addClass("with-label");
+        input.inputEl.addClass("full-width");
         const name = this.fileClassQuery.name;
         input.setValue(name);
         input.setPlaceholder("Name of this fileClass query");
@@ -67,12 +69,15 @@ export default class FileClassQuerySettingsModal extends Modal {
         return input;
     };
 
-    private createFileClassSelectorContainer(parentNode: HTMLDivElement): void {
-        const FileClassSelectorContainerLabel = parentNode.createDiv();
-        FileClassSelectorContainerLabel.setText(`Fileclass:`);
-        const select = new DropdownComponent(parentNode);
+    private createFileClassSelectorContainer(container: HTMLDivElement): void {
+        container.createDiv({ cls: "label", text: `Fileclass:` });
+        container.createDiv({ cls: 'spacer' });
+        const select = new DropdownComponent(container);
         const classFilesPath = this.plugin.settings.classFilesPath
-        const fileClasses = this.plugin.app.vault.getFiles().filter(f => classFilesPath && f.path.startsWith(classFilesPath));
+        const fileClasses = this.plugin.app.vault
+            .getFiles()
+            .filter(f => classFilesPath && f.path.startsWith(classFilesPath))
+            .reverse();
         select.addOption("--Select a fileClass--", "--Select a fileClass--")
         fileClasses.forEach(fileClass => {
             const fileClassName = FileClass.getFileClassNameFromPath(this.plugin, fileClass.path);
@@ -90,44 +95,46 @@ export default class FileClassQuerySettingsModal extends Modal {
         })
     }
 
-    private createQueryInputContainer(parentNode: HTMLDivElement): void {
-        const queryContainerLabel = parentNode.createDiv();
-        queryContainerLabel.setText("dataviewJS query:")
-        const queryStringInput = new TextAreaComponent(parentNode);
+    private createQueryInputContainer(container: HTMLDivElement): void {
+        container.createDiv({ text: "dataviewJS query:" });
+        const queryStringInputContainer = container.createDiv({ cls: "field-container" })
+        const queryStringInput = new TextAreaComponent(queryStringInputContainer);
+        queryStringInput.inputEl.addClass("full-width");
+        queryStringInput.inputEl.rows = 4
         queryStringInput.setValue(this.fileClassQuery.query);
         queryStringInput.onChange(value => this.fileClassQuery.query = value)
     }
 
     private async createForm(): Promise<void> {
-        const div = this.contentEl.createDiv({ cls: "metadata-menu-prompt-div" });
-        const mainDiv = div.createDiv({ cls: "metadata-menu-prompt-form" });
 
         /* Sections */
-        const nameContainer = mainDiv.createDiv();
+        const nameContainer = this.contentEl.createDiv({ cls: "field-container" });
         this.createnameInputContainer(nameContainer);
-        mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
 
-        const fileClassSelectContainer = mainDiv.createDiv()
+        const fileClassSelectContainer = this.contentEl.createDiv({ cls: "field-container" });
+        this.createFileClassSelectorContainer(fileClassSelectContainer)
+
+        const fileClassQueryContainer = this.contentEl.createDiv({ cls: "vstacked" });
+        this.createQueryInputContainer(fileClassQueryContainer);
 
         /* footer buttons*/
-        const footerEl = this.contentEl.createDiv();
-        const footerButtons = new Setting(footerEl);
-        footerButtons.addButton((b) => this.createSaveButton(b));
-        footerButtons.addExtraButton((b) => this.createCancelButton(b));
+        const footer = this.contentEl.createDiv({ cls: "footer-actions" });
+        footer.createDiv({ cls: "spacer" })
+        this.createSaveButton(footer);
+        this.createCancelButton(footer);
 
         /* init state */
-        this.createFileClassSelectorContainer(fileClassSelectContainer)
-        const fileClassQueryContainer = mainDiv.createDiv();
-        this.createQueryInputContainer(fileClassQueryContainer);
     };
 
-    private createSaveButton(b: ButtonComponent): ButtonComponent {
+    private createSaveButton(container: HTMLDivElement): void {
+        const b = new ButtonComponent(container)
         b.setTooltip("Save");
         b.setIcon("checkmark");
         b.onClick(async () => {
             if (this.fileClassQuery.fileClassName && this.fileClassQuery.name && this.fileClassQuery.query) {
                 this.saved = true;
-                const currentExistingFileClassQuery = this.plugin.initialFileClassQueries.filter(p => p.id == this.fileClassQuery.id)[0];
+                const currentExistingFileClassQuery = this.plugin.initialFileClassQueries
+                    .filter(p => p.id == this.fileClassQuery.id)[0];
                 if (currentExistingFileClassQuery) {
                     FileClassQuery.copyProperty(currentExistingFileClassQuery, this.fileClassQuery);
                 } else {
@@ -140,10 +147,10 @@ export default class FileClassQuerySettingsModal extends Modal {
                 this.close();
             }
         });
-        return b;
     };
 
-    private createCancelButton(b: ExtraButtonComponent): ExtraButtonComponent {
+    private createCancelButton(container: HTMLDivElement): void {
+        const b = new ButtonComponent(container)
         b.setIcon("cross")
             .setTooltip("Cancel")
             .onClick(() => {
@@ -154,6 +161,5 @@ export default class FileClassQuerySettingsModal extends Modal {
                 };
                 this.close();
             });
-        return b;
     };
 };

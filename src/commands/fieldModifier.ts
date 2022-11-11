@@ -77,8 +77,6 @@ export function fieldModifier(
         } else {
             const addFieldBtn = dv.el("button", attrs);
             setIcon(addFieldBtn, "plus-with-circle")
-            addFieldBtn.addClass("metadata-menu-dv-field-button");
-            addFieldBtn.addClass("isolated");
             addFieldBtn.onclick = async () => {
 
                 const file = plugin.app.vault.getAbstractFileByPath(p.file.path)

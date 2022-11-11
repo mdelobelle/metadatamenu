@@ -1,0 +1,13 @@
+.metadata-menu.suggester{
+
+    .item-with-alias{
+        display: flex;
+    }
+
+    .item-with-alias-filepath{
+        font-size: x-small;
+        margin-left: 1em;
+        padding-top: 0.4em;
+        color: var(--color-base-60);
+    }
+}

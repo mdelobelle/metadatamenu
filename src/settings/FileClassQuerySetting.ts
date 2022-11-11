@@ -17,15 +17,16 @@ export default class FileClassQuerySetting extends Setting {
         this.addEditButton();
         this.addDeleteButton();
         this.addMoveUpButton();
+        this.settingEl.addClass("no-border")
     };
 
     public setTextContentWithname(): void {
 
         this.infoEl.textContent = "";
-        this.infoEl.addClass("metadata-menu-setting-item")
+        this.infoEl.addClass("setting-item")
         const fileClassQueryContainer = this.infoEl.createDiv();
 
-        const nameContainer = fileClassQueryContainer.createEl("div", "metadata-menu-setting-item-name")
+        const nameContainer = fileClassQueryContainer.createEl("div", "name")
         nameContainer.innerHTML = `<strong>${this.fileClassQuery.name}</strong>`
 
         const fileClassNameContainer = fileClassQueryContainer.createEl("div")

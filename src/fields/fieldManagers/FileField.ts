@@ -125,7 +125,7 @@ export default class FileField extends FieldManager {
 
     private createFileContainer(container: HTMLDivElement): void {
         const dvQueryStringTopContainer = container.createDiv({ cls: "vstacked" });
-        dvQueryStringTopContainer.createEl("span", { text: "Dataview Query (optional)", cls: 'metadata-menu-field-option' });
+        dvQueryStringTopContainer.createEl("span", { text: "Dataview Query (optional)" });
         const dvQueryStringContainer = dvQueryStringTopContainer.createDiv({ cls: "field-container" });
         this.dvQueryString = new TextAreaComponent(dvQueryStringContainer);
         this.dvQueryString.inputEl.cols = 50;
@@ -159,7 +159,7 @@ export default class FileField extends FieldManager {
         })
 
         const customSortingTopContainer = container.createDiv({ cls: "vstacked" });
-        customSortingTopContainer.createEl("span", { text: "Sorting order", cls: 'metadata-menu-field-option' });
+        customSortingTopContainer.createEl("span", { text: "Sorting order" });
         customSortingTopContainer.createEl("span", { text: "Personalise the sorting order of your links with a instruction taking 2 files (a, b) and returning -1, 0 or 1", cls: 'sub-text' });
         customSortingTopContainer.createEl("code", {
             text: `(a: TFile, b: TFile): number`

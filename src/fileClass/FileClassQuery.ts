@@ -1,5 +1,4 @@
-import MetadataMenu from "main";
-import { TFile } from "obsidian";
+import { Notice, TFile } from "obsidian";
 
 class FileClassQuery {
 
@@ -15,7 +14,8 @@ class FileClassQuery {
         try {
             return (new Function("dv", `return ${this.query}`))(api)
         } catch (error) {
-            throw Error(`Wrong query for field <${this.name}>. Check your settings`)
+            new Notice(`Wrong query for <${this.name}>. Check your settings`);
+            return []
         }
     };
 

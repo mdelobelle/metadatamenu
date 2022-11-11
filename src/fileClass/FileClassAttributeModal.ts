@@ -47,13 +47,13 @@ class FileClassAttributeModal extends Modal {
 
         /* Name */
         this.buildNameInputContainer();
+        this.buildHeader();
         this.contentEl.createEl("hr");
 
         /* Command */
         this.buildCommandContainer();
 
         /* Type */
-        this.buildSelectHeader();
         const typeSelectContainer = this.contentEl.createDiv({ cls: "field-container" });
         this.contentEl.createEl("hr");
 
@@ -124,17 +124,15 @@ class FileClassAttributeModal extends Modal {
         });
     }
 
-    buildSelectHeader(): void {
+    buildHeader(): void {
         //header for select
-        const container = this.containerEl.createDiv({})
+        const container = this.contentEl.createDiv({ cls: "field-container" })
         const typeSelectHeader = container.createDiv();
         const attrLine = typeSelectHeader.createEl("div");
         this.attrName = attrLine.createEl("strong");
         this.attrName.setText(`<${this.field.name}>`);
-        attrLine.append(" fields in files with:");
-        String(`---\n${this.plugin.settings.fileClassAlias}: ${this.fileClass.name}\n...\n---`).split('\n').forEach(line => {
-            typeSelectHeader.createEl("div", "yaml-metadata-menu-red").setText(line);
-        })
+        attrLine.append(` available in files with ${this.plugin.settings.fileClassAlias} = ${this.field.fileClassName}`);
+
     }
 
     buildTypeSelectContainer(container: HTMLDivElement): void {

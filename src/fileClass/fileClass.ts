@@ -143,27 +143,19 @@ class FileClass {
         }
     }
 
-    public getInheritanceList(): FileClass[] {
-        const file = this.getClassFile();
-        const parent = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.extends
-        if (false && parent) {
-            const parentFileClass = FileClass.createFileClass(this.plugin, parent);
-            return [...parentFileClass.getInheritanceList(), this]
-        }
-        return [this]
-    }
-
     getIcon(): string | undefined {
-        const parents = this.getInheritanceList();
-        parents.reverse()
+        const parents = [this.name, ...this.plugin.fieldIndex.fileClassesAncestors.get(this.name) || []]
         let icon: string | undefined;
-        parents.some((fileClass, i) => {
-            const file = fileClass.getClassFile();
-            const _icon = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.icon
-            if (_icon) {
-                icon = _icon
-                return true;
-            };
+        parents.some((fileClassName, i) => {
+            const fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
+            if (fileClass) {
+                const file = fileClass.getClassFile();
+                const _icon = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.icon
+                if (_icon) {
+                    icon = _icon
+                    return true;
+                };
+            }
         })
         return icon
     }
