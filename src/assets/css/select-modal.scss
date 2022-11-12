@@ -1,0 +1,71 @@
+.value-add-notice {
+    display: flex;
+    background-color: var(--color-accent);
+    color: var(--text-on-accent);
+
+    .label {
+        margin: 0 1em;
+        padding-top: 0.3em;
+    }
+
+    .spacer {
+        width: 100%;
+    }
+
+    @include action-button;
+}
+
+
+.suggester-input{
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--background-secondary-alt);
+
+    .prompt-input{
+        border: none;
+    }
+
+    @include action-button();
+
+    button:last-child{
+            margin-right: 1em;
+    }
+}
+
+.value-container {
+
+    display: flex;
+    white-space: nowrap;
+
+    .spacer{
+        width: 100%;
+    }
+
+    .is-selected{
+        background-color: var(--interactive-accent);
+    }
+
+    .icon-container{
+        margin: 0em 0.7em 0em 0em;
+        display: block;
+
+        svg {
+            vertical-align: text-bottom;
+        }
+    }
+
+    &.value-checked{
+        background-color: var(--interactive-accent);
+    }
+
+    .item-with-add-on {
+        display: flex;
+
+        .add-on {
+            font-size: x-small;
+            margin-left: 1em;
+            padding-top: 0.4em;
+            color: var(--color-base-60);
+        }
+    }
+}

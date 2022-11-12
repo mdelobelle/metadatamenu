@@ -1,0 +1,52 @@
+.metadata-menu .chip {
+    border-radius: 0.8em;
+    padding: 0.1em 0.75em 0.25em 0.75em;
+    color: white;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    height: 1.6em;
+
+    &.field-type{
+        font-size: x-small;
+    }
+
+    &.cycle{
+        background-color: var(--color-blue);
+    }
+
+    &.multi{
+        background-color: var(--color-green);
+    }
+
+    &.boolean{
+        background-color: var(--color-yellow);
+    }
+    &.single{
+        background-color: var(--color-green);
+    }
+
+    &.select{
+        background-color: var(--color-orange);
+    }
+
+    &.number{
+        background-color: var(--color-purple);
+    }
+
+    &.file{
+        background-color: var(--color-blue);
+    }
+
+    &.date{
+        background-color: var(--color-pink);
+    }
+
+    &.lookup{
+        background-color: var(--color-red);
+    }
+
+    &.formula{
+        background-color: var(--color-red);
+    }
+    
+}

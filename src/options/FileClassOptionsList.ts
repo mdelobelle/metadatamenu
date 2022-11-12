@@ -4,6 +4,7 @@ import { insertFrontmatterWithFields } from "src/commands/insertFrontmatterWithF
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
+import { FileClassComponent } from "src/components/fileClassTable";
 import { FieldManager } from "src/fields/FieldManager";
 import { FileClass } from "src/fileClass/fileClass";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
@@ -55,6 +56,10 @@ export default class FileClassOptionsList {
                 await insertFrontmatterWithFields(this.plugin, this.file, fields)
             }
         }
+        const openFileClassTableViewAction = () => {
+            const fileClassComponent = new FileClassComponent(this.plugin, fileClass)
+            this.plugin.addChild(fileClassComponent);
+        }
         if (isMenu(this.location)) { this.location.addSeparator(); };
         const fileClass = this.fileClass
         const currentFieldsNames: string[] = []
@@ -99,7 +104,14 @@ export default class FileClassOptionsList {
             const modal = new FileClassAttributeModal(this.plugin, fileClass);
             modal.open();
         } else if (isSuggest(this.location)) {
-            this.buildFieldOptions();
+            if (fileClass) {
+                this.location.options.push({
+                    id: `display_table_view_for_${fileClass.name.replace("/", "_")}`,
+                    actionLabel: `Display ${fileClass.name} table view`,
+                    action: openFileClassTableViewAction,
+                    icon: "file-spreadsheet"
+                })
+            }
             if (fileClass && !fileClass.isMappedWithTag()) {
                 this.location.options.push({
                     id: "map_fileClass_with_tag",
@@ -116,8 +128,19 @@ export default class FileClassOptionsList {
                     icon: "battery-full"
                 });
             }
+            this.buildFieldOptions();
+
+
             if (openAfterCreate) this.location.open();
         } else if (isMenu(this.location)) {
+            if (fileClass) {
+                this.location.addItem((item) => {
+                    item.setTitle(`Display ${fileClass.name} table view`);
+                    item.onClick(openFileClassTableViewAction);
+                    item.setIcon("file-spreadsheet");
+                    item.setSection(`metadata-menu-fileclass.${fileClass.name}.fileclass-fields`);
+                })
+            }
             if (fileClass && !fileClass.isMappedWithTag()) {
                 this.location.addItem((item) => {
                     item.setTitle(`Map ${fileClass.name} with tag`);

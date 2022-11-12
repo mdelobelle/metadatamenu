@@ -19,17 +19,18 @@ export default class FieldSetting extends Setting {
         this.setTextContentWithname();
         this.addEditButton();
         this.addDeleteButton();
+        this.settingEl.addClass("no-border")
     };
 
     public setTextContentWithname(): void {
 
         const manager = new FieldManager[this.field.type](this.plugin, this.field) as F;
         this.infoEl.textContent = "";
-        this.infoEl.addClass("metadata-menu-setting-item")
-        this.fieldNameContainer = this.infoEl.createEl("div", "metadata-menu-setting-item-name")
+        this.infoEl.addClass("setting-item")
+        this.fieldNameContainer = this.infoEl.createEl("div", "name")
         this.fieldNameContainer.setText(this.field.name)
         this.typeContainer = this.infoEl.createEl("div")
-        this.typeContainer.setAttr("class", `metadata-menu-setting-item-info-type ${FieldTypeTagClass[this.field.type]}`)
+        this.typeContainer.setAttr("class", `chip ${FieldTypeTagClass[this.field.type]}`)
         this.typeContainer.setText(this.field.type)
         this.fieldOptionsContainer = this.infoEl.createEl("div")
         this.fieldOptionsContainer.setText(`${manager.getOptionsStr()}`)

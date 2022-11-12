@@ -7,6 +7,7 @@ import { genuineKeys } from "src/utils/dataviewUtils";
 import { replaceValues } from "src/commands/replaceValues";
 import { insertValues } from "src/commands/insertValues";
 import { insertFrontmatterWithFields } from "src/commands/insertFrontmatterWithFields";
+import { FieldCommand } from "src/fields/Field";
 
 interface FileClass {
     attributes: Array<FileClassAttribute>;
@@ -31,7 +32,8 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
                 .get(this.file.path)?.map(fileClass => fileClass.name)
                 .includes(fileClassName)
             )
-            .filter(fileClassName => fileClassName.toLocaleLowerCase().contains(query.toLowerCase()));
+            .filter(fileClassName => fileClassName.toLocaleLowerCase().contains(query.toLowerCase()))
+            .sort();
     }
 
     renderSuggestion(value: string, el: HTMLElement) {
@@ -141,27 +143,19 @@ class FileClass {
         }
     }
 
-    public getInheritanceList(): FileClass[] {
-        const file = this.getClassFile();
-        const parent = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.extends
-        if (false && parent) {
-            const parentFileClass = FileClass.createFileClass(this.plugin, parent);
-            return [...parentFileClass.getInheritanceList(), this]
-        }
-        return [this]
-    }
-
     getIcon(): string | undefined {
-        const parents = this.getInheritanceList();
-        parents.reverse()
+        const parents = [this.name, ...this.plugin.fieldIndex.fileClassesAncestors.get(this.name) || []]
         let icon: string | undefined;
-        parents.some((fileClass, i) => {
-            const file = fileClass.getClassFile();
-            const _icon = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.icon
-            if (_icon) {
-                icon = _icon
-                return true;
-            };
+        parents.some((fileClassName, i) => {
+            const fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
+            if (fileClass) {
+                const file = fileClass.getClassFile();
+                const _icon = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.icon
+                if (_icon) {
+                    icon = _icon
+                    return true;
+                };
+            }
         })
         return icon
     }
@@ -181,9 +175,9 @@ class FileClass {
                             ? JSON.stringify(dvFile[key])
                             : dvFile[key];
                         try {
-                            const { type, options } = JSON.parse(item);
+                            const { type, options, command } = JSON.parse(item);
                             const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
-                            const attr = new FileClassAttribute(this.name, key, fieldType, options, fileClass.name)
+                            const attr = new FileClassAttribute(this.name, key, fieldType, options, fileClass.name, command)
                             attributes.push(attr)
                         } catch (e) {
                             //do nothing
@@ -240,7 +234,7 @@ class FileClass {
 
     }
 
-    public async updateAttribute(newType: keyof typeof FieldType, newName: string, newOptions?: string[] | Record<string, string>, attr?: FileClassAttribute): Promise<void> {
+    public async updateAttribute(newType: keyof typeof FieldType, newName: string, newOptions?: string[] | Record<string, string>, attr?: FileClassAttribute, newCommand?: FieldCommand): Promise<void> {
         const fileClass = attr ? this.plugin.fieldIndex.fileClassesName.get(attr.fileClassName)! : this
         const file = fileClass.getClassFile();
         let result = await this.plugin.app.vault.read(file)
@@ -251,6 +245,7 @@ class FileClass {
                     let settings: Record<string, any> = {};
                     settings["type"] = newType;
                     if (newOptions) settings["options"] = newOptions;
+                    if (newCommand) settings["command"] = newCommand;
                     newContent.push(`${newName}:: ${JSON.stringify(settings)}`);
                 } else {
                     newContent.push(line);
@@ -261,6 +256,7 @@ class FileClass {
             let settings: Record<string, any> = {};
             settings["type"] = newType;
             if (newOptions) settings["options"] = newOptions;
+            if (newCommand) settings["command"] = newCommand;
             result += (`\n${newName}:: ${JSON.stringify(settings)}`);
             await this.plugin.app.vault.modify(file, result);
         }

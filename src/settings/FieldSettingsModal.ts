@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
-import { ButtonComponent, DropdownComponent, ExtraButtonComponent, Modal, Notice, Setting, TextComponent, TextAreaComponent } from "obsidian";
-import Field from "src/fields/Field";
+import { ButtonComponent, DropdownComponent, Modal, Notice, TextComponent, TextAreaComponent, ToggleComponent, setIcon } from "obsidian";
+import Field, { FieldCommand } from "src/fields/Field";
 import FieldSetting from "src/settings/FieldSetting";
 import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
 import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip } from "src/types/fieldTypes";
@@ -13,6 +13,9 @@ export default class FieldSettingsModal extends Modal {
     private new: boolean = true;
     private fieldOptionsContainer: HTMLDivElement;
     private fieldManager: F;
+    private command: FieldCommand;
+    private addCommand: boolean;
+    private iconName: TextComponent;
 
     constructor(
         private plugin: MetadataMenu,
@@ -38,16 +41,46 @@ export default class FieldSettingsModal extends Modal {
             this.initialField.id = newId.toString();
         };
         this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field);
+        this.addCommand = this.field.command !== undefined;
+        this.command = this.field.command || {
+            id: this.field ? `insert__${this.field.fileClassName || "presetField"}__${this.field.name}` : "",
+            icon: "list-plus",
+            label: this.field ? `Insert ${this.field.name} field` : "",
+            hotkey: undefined
+        }
     };
 
     async onOpen(): Promise<void> {
-        this.containerEl.addClass("metadata-menu-field-setting-modal")
+        this.containerEl.addClass("metadata-menu")
         if (this.field.name == "") {
             this.titleEl.setText(`Add a field and define options`);
         } else {
             this.titleEl.setText(`Manage settings options for ${this.field.name}`);
         };
-        await this.createForm();
+
+        /* Name */
+        this.createnameInputContainer();
+        this.contentEl.createEl("hr");
+
+        /* Command */
+        this.createCommandContainer();
+
+        /* Type */
+        const typeSelectContainer = this.contentEl.createDiv({ cls: "field-container" });
+        this.contentEl.createEl("hr");
+
+        /* Options */
+        this.fieldOptionsContainer = this.contentEl.createDiv();
+
+        /* footer buttons*/
+        const footer = this.contentEl.createDiv({ cls: "footer-actions" });
+        footer.createDiv({ cls: "spacer" })
+        this.createSaveButton(footer);
+        this.createCancelButton(footer);
+
+        /* init state */
+        this.createTypeSelectorContainer(typeSelectContainer)
+        this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.PluginSettings)
     };
 
     onClose(): void {
@@ -59,24 +92,29 @@ export default class FieldSettingsModal extends Modal {
         };
     };
 
-    private createnameInputContainer(parentNode: HTMLDivElement): TextComponent {
-        const fieldNameContainerLabel = parentNode.createDiv();
-        fieldNameContainerLabel.setText(`Field Name:`);
-        const input = new TextComponent(parentNode);
+    private createnameInputContainer(): void {
+        const container = this.contentEl.createDiv({ cls: "field-container" })
+        container.createDiv({ cls: "label", text: "Field Name: " });
+        const input = new TextComponent(container);
+        input.inputEl.addClass("with-label");
+        input.inputEl.addClass("full-width");
         const name = this.field.name;
         input.setValue(name);
         input.setPlaceholder("Name of the field");
         input.onChange(value => {
             this.field.name = value;
+            this.command.id = `insert__${this.field.fileClassName || "presetField"}__${value}`
+            this.command.label = `Insert ${value} field`
             this.titleEl.setText(`Manage predefined options for ${this.field.name}`);
             FieldSettingsModal.removeValidationError(input);
         });
-        return input;
+        this.namePromptComponent = input;
     };
 
     private createTypeSelectorContainer(parentNode: HTMLDivElement): void {
-        const typeSelectorContainerLabel = parentNode.createDiv();
+        const typeSelectorContainerLabel = parentNode.createDiv({ cls: "label" });
         typeSelectorContainerLabel.setText(`Field type:`);
+        parentNode.createDiv({ cls: "spacer" })
         const select = new DropdownComponent(parentNode);
         Object.keys(FieldTypeLabelMapping).forEach((f: keyof typeof FieldType) => select.addOption(f, FieldTypeTooltip[f]))
         if (this.field.type) {
@@ -102,38 +140,49 @@ export default class FieldSettingsModal extends Modal {
         })
     }
 
-    private async createForm(): Promise<void> {
-        const div = this.contentEl.createDiv({ cls: "metadata-menu-prompt-div" });
-        const mainDiv = div.createDiv({ cls: "metadata-menu-prompt-form" });
+    private createCommandContainer(): void {
 
-        /* Sections */
-        const nameContainer = mainDiv.createDiv();
-        this.namePromptComponent = this.createnameInputContainer(nameContainer);
-        mainDiv.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
+        const commandContainer = this.contentEl.createDiv({ cls: "field-container" })
+        //label
+        commandContainer.createDiv({ text: "set a command for this field?", cls: "label" });
+        commandContainer.createDiv({ cls: "spacer" });
+        //add command
+        const addCommandToggler = new ToggleComponent(commandContainer);
+        addCommandToggler.setValue(this.addCommand);
 
-        const typeSelectContainer = mainDiv.createDiv()
-        this.fieldOptionsContainer = mainDiv.createDiv()
+        // options
+        const iconContainer = this.contentEl.createDiv({ cls: "field-container" })
+        this.addCommand ? iconContainer.show() : iconContainer.hide();
 
-        /* footer buttons*/
-        const footerEl = this.contentEl.createDiv();
-        const footerButtons = new Setting(footerEl);
-        footerButtons.addButton((b) => this.createSaveButton(b));
-        footerButtons.addExtraButton((b) => this.createCancelButton(b));
+        // icon
+        iconContainer.createDiv({ text: "Icon name", cls: "label" })
+        this.iconName = new TextComponent(iconContainer)
+        this.iconName.inputEl.addClass("full-width");
+        this.iconName.inputEl.addClass("with-label");
+        const iconPreview = iconContainer.createDiv({ cls: "icon-preview" })
+        this.iconName.setValue(this.command.icon)
+        setIcon(iconPreview, this.command.icon)
+        this.iconName.onChange(value => {
+            this.command.icon = value;
+            setIcon(iconPreview, value)
+        })
 
-        /* init state */
-        this.createTypeSelectorContainer(typeSelectContainer)
-        this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.PluginSettings)
-    };
+        addCommandToggler.onChange(value => {
+            this.addCommand = value
+            this.addCommand ? iconContainer.show() : iconContainer.hide();
+        });
+    }
 
     private validateFields(): boolean {
         return this.fieldManager.validateName(
             this.namePromptComponent,
-            this.namePromptComponent.inputEl
+            this.contentEl
         ) &&
             this.fieldManager.validateOptions();
     }
 
-    private createSaveButton(b: ButtonComponent): ButtonComponent {
+    private createSaveButton(container: HTMLDivElement): void {
+        const b = new ButtonComponent(container)
         b.setTooltip("Save");
         b.setIcon("checkmark");
         b.onClick(async () => {
@@ -142,6 +191,11 @@ export default class FieldSettingsModal extends Modal {
                 new Notice("Fix errors before saving.");
                 return;
             };
+            if (this.addCommand) {
+                this.field.command = this.command
+            } else {
+                delete this.field.command
+            }
             this.saved = true;
             const currentExistingField = this.plugin.initialProperties.filter(p => p.id == this.field.id)[0];
             if (currentExistingField) {
@@ -155,10 +209,10 @@ export default class FieldSettingsModal extends Modal {
             this.plugin.saveSettings();
             this.close();
         });
-        return b;
     };
 
-    private createCancelButton(b: ExtraButtonComponent): ExtraButtonComponent {
+    private createCancelButton(container: HTMLDivElement): void {
+        const b = new ButtonComponent(container);
         b.setIcon("cross")
             .setTooltip("Cancel")
             .onClick(() => {
@@ -169,32 +223,26 @@ export default class FieldSettingsModal extends Modal {
                 };
                 this.close();
             });
-        return b;
     };
 
     /* utils functions */
 
-    public static setValidationError(textInput: TextComponent, insertAfter: Element, message?: string) {
+    public static setValidationError(textInput: TextComponent, message?: string) {
         textInput.inputEl.addClass("is-invalid");
-        if (message && textInput.inputEl.parentElement?.lastElementChild) {
-
-            let mDiv = textInput.inputEl.parentElement.querySelector(
-                ".invalid-feedback"
-            ) as HTMLDivElement;
-
-            if (!mDiv) {
-                mDiv = createDiv({ cls: "invalid-feedback" });
-            }
+        const fieldContainer = textInput.inputEl.parentElement;
+        const fieldsContainer = fieldContainer?.parentElement;
+        if (message && fieldsContainer) {
+            let mDiv = fieldsContainer.querySelector(".field-error") as HTMLDivElement;
+            if (!mDiv) mDiv = createDiv({ cls: "field-error" });
             mDiv.innerText = message;
-            mDiv.insertAfter(insertAfter);
+            fieldsContainer.insertBefore(mDiv, fieldContainer);
         }
     }
     public static removeValidationError(textInput: TextComponent | TextAreaComponent) {
-        if (textInput.inputEl.hasClass("is-invalid") && textInput.inputEl.parentElement?.lastElementChild) {
-            textInput.inputEl.removeClass("is-invalid")
-            textInput.inputEl.parentElement.removeChild(
-                textInput.inputEl.parentElement.lastElementChild
-            );
-        };
+        if (textInput.inputEl.hasClass("is-invalid")) textInput.inputEl.removeClass("is-invalid");
+        const fieldContainer = textInput.inputEl.parentElement;
+        const fieldsContainer = fieldContainer?.parentElement;
+        const fieldError = fieldsContainer?.querySelector(".field-error")
+        if (fieldError) fieldsContainer!.removeChild(fieldError)
     };
 };

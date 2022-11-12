@@ -28,6 +28,7 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
             if (this.fileClassName) {
                 metadataMenuBtn.setAttr("fileclass-name", this.fileClassName);
                 metadataMenuBtn.addClass('fileclass-icon');
+                metadataMenuBtn.addClass('metadata-menu');
                 const fileClass = plugin.fieldIndex.fileClassesName.get(this.fileClassName)
                 if (fileClass) {
                     const icon = fileClass.getIcon();

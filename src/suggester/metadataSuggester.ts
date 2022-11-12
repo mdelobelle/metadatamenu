@@ -168,15 +168,16 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     };
 
     renderSuggestion(suggestion: IValueCompletion, el: HTMLElement): void {
+        el.addClass("metadata-menu")
+        el.addClass("suggester")
         const [rawValue, alias] = suggestion.value.replace(/^\[\[/, "").replace(/\]\]$/, "").split("|")
         const targetFile = this.plugin.app.metadataCache.getFirstLinkpathDest(rawValue, this.context!.file.path)
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi && this.field && this.field.options.customRendering && targetFile) {
             if (alias) {
-                const suggestionContainer = el.createDiv({ cls: "metadata-menu-suggester-item-with-alias" });
-                const label = suggestionContainer.createDiv({ cls: "metadata-menu-suggester-item-with-alias-label" })
-                label.setText(alias)
-                const filePath = suggestionContainer.createDiv({ cls: "metadata-menu-suggester-item-with-alias-filepath" })
+                const suggestionContainer = el.createDiv({ cls: "item-with-alias" });
+                suggestionContainer.createDiv({ text: alias })
+                const filePath = suggestionContainer.createDiv({ cls: "item-with-alias-filepath" })
                 filePath.setText(rawValue)
             } else {
                 el.setText(new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(targetFile.path)))

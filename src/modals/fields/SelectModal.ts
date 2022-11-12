@@ -23,22 +23,22 @@ export default class ValueSuggestModal extends SuggestModal<string>{
         private asComment: boolean = false
     ) {
         super(plugin.app);
+        this.containerEl.addClass("metadata-menu");
     };
 
     async onOpen(): Promise<void> {
         super.onOpen()
-        const inputContainer = this.containerEl.createDiv({ cls: "metadata-menu-value-suggester-input-container" })
+        const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
         inputContainer.appendChild(this.inputEl)
         this.containerEl.find(".prompt").prepend(inputContainer)
-        const buttonContainer = this.containerEl.createDiv({ cls: "metadata-menu-value-suggester-actions" })
-        buttonContainer.createDiv({ cls: "metadata-menu-value-suggester-actions-spacer" })
-        const infoContainer = buttonContainer.createDiv({ cls: "metadata-menu-value-suggester-info" })
+        const buttonContainer = this.containerEl.createDiv({ cls: "footer-actions" })
+        buttonContainer.createDiv({ cls: "spacer" })
+        const infoContainer = buttonContainer.createDiv({ cls: "info" })
         infoContainer.setText("Shift+Enter to save")
         // addButton
         this.addButton = new ButtonComponent(inputContainer)
         this.addButton.setIcon("plus")
         this.addButton.onClick(() => this.addNewValueToSettings())
-        this.addButton.buttonEl.addClass("metadata-menu-value-suggester-button")
         this.addButton.setCta();
         this.addButton.setTooltip("Add this value to this field settings")
         this.addButton.buttonEl.hide();
@@ -46,7 +46,6 @@ export default class ValueSuggestModal extends SuggestModal<string>{
         const cancelButton = new ButtonComponent(buttonContainer)
         cancelButton.setIcon("cross")
         cancelButton.onClick(() => this.close())
-        cancelButton.buttonEl.addClass("metadata-menu-value-suggester-button")
         cancelButton.setTooltip("Cancel")
         //clear value button
         const clearButton = new ButtonComponent(buttonContainer)
@@ -55,7 +54,6 @@ export default class ValueSuggestModal extends SuggestModal<string>{
             await this.clearValues();
             this.close();
         })
-        clearButton.buttonEl.addClass("metadata-menu-value-suggester-button")
         clearButton.buttonEl.addClass("danger")
         clearButton.setTooltip("Clear the field value")
         this.modalEl.appendChild(buttonContainer);
@@ -74,7 +72,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
                     await fileClass.updateAttribute(fileClassAttribute.type, fileClassAttribute.name, newOptions, fileClassAttribute);
                 } else if (fileClassAttribute.options.sourceType === selectValuesSource.Type.ValuesList) {
                     newOptions = fileClassAttribute.options.valuesList as Record<string, string>;
-                    newOptions[`${Object.keys(fileClassAttribute.options.valuesList).length}`] = newValue
+                    newOptions[`${Object.keys(fileClassAttribute.options.valuesList).length + 1}`] = newValue
                     await fileClass.updateAttribute(fileClassAttribute.type, fileClassAttribute.name, newOptions, fileClassAttribute);
                 } else if (fileClassAttribute.options.sourceType === selectValuesSource.Type.ValuesListNotePath) {
                     const valuesFile = this.plugin.app.vault.getAbstractFileByPath(fileClassAttribute.options.valuesListNotePath);
@@ -135,7 +133,8 @@ export default class ValueSuggestModal extends SuggestModal<string>{
 
     renderSuggestion(value: string, el: HTMLElement) {
         el.setText(value)
-        if (value === this.value) el.addClass("metadata-menu-value-selected")
+        el.addClass("value-container");
+        if (value === this.value) el.addClass("value-checked")
     }
 
     private async saveItem(item: string): Promise<void> {

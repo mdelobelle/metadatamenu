@@ -32,6 +32,7 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
                 }
             })
         }
+        this.containerEl.addClass("metadata-menu")
     }
 
     onOpen() {
@@ -42,9 +43,9 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
                 this.close()
             }
         }
-        const buttonContainer = this.containerEl.createDiv({ cls: "metadata-menu-value-suggester-actions" })
-        buttonContainer.createDiv({ cls: "metadata-menu-value-suggester-actions-spacer" })
-        const infoContainer = buttonContainer.createDiv({ cls: "metadata-menu-value-suggester-info" })
+        const buttonContainer = this.containerEl.createDiv({ cls: "footer-actions" })
+        buttonContainer.createDiv({ cls: "spacer" })
+        const infoContainer = buttonContainer.createDiv({ cls: "info" })
         infoContainer.setText("Alt+Enter to save")
         //confirm button
         const confirmButton = new ButtonComponent(buttonContainer)
@@ -53,12 +54,10 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
             await this.replaceValues();
             this.close()
         })
-        confirmButton.buttonEl.addClass("metadata-menu-value-suggester-button")
         //cancel button
         const cancelButton = new ButtonComponent(buttonContainer)
         cancelButton.setIcon("cross")
         cancelButton.onClick(() => { this.close(); })
-        cancelButton.buttonEl.addClass("metadata-menu-value-suggester-button")
         //clear value button
         const clearButton = new ButtonComponent(buttonContainer)
         clearButton.setIcon("trash")
@@ -66,7 +65,6 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
             await this.clearValues();
             this.close();
         })
-        clearButton.buttonEl.addClass("metadata-menu-value-suggester-button")
         clearButton.buttonEl.addClass("danger")
 
         this.modalEl.appendChild(buttonContainer)
@@ -139,21 +137,22 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
     renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi && this.field.options.customRendering) {
-            const suggestionContainer = el.createDiv({ cls: "metadata-menu-suggester-item-with-alias" });
-            const label = suggestionContainer.createDiv({ cls: "metadata-menu-suggester-item-with-alias-label" })
-            label.setText(new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(value.item.path)))
-            const filePath = suggestionContainer.createDiv({ cls: "metadata-menu-suggester-item-with-alias-filepath" })
+            const suggestionContainer = el.createDiv({ cls: "item-with-add-on" });
+            suggestionContainer.createDiv({
+                text: new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(value.item.path))
+            })
+            const filePath = suggestionContainer.createDiv({ cls: "add-on" })
             filePath.setText(value.item.path)
         } else {
             el.setText(value.item.basename)
         }
-        el.addClass("metadata-menu-value-suggester-value-container")
-        const spacer = this.containerEl.createDiv({ cls: "metadata-menu-value-suggester-value-container-spacer" })
+        el.addClass("value-container")
+        const spacer = this.containerEl.createDiv({ cls: "spacer" })
         el.appendChild(spacer)
 
         if (this.selectedFiles.some(file => file.path === value.item.path)) {
-            el.addClass("metadata-menu-value-selected")
-            const iconContainer = el.createDiv({ cls: "metadata-menu-command-suggest-icon" })
+            el.addClass("value-checked")
+            const iconContainer = el.createDiv({ cls: "icon-container" })
             setIcon(iconContainer, "check-circle")
         }
     }
@@ -166,17 +165,16 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
 
         suggestions.forEach((s, i) => {
             if (this.selectedFiles.some(file => file.path === values[i].item.path)) {
-                s.addClass("metadata-menu-value-selected")
-                if (s.querySelectorAll(".metadata-menu-command-suggest-icon").length == 0) {
-                    const iconContainer = s.createDiv({ cls: "metadata-menu-command-suggest-icon" })
+                s.addClass("value-checked")
+                if (s.querySelectorAll(".icon-container").length == 0) {
+                    const iconContainer = s.createDiv({ cls: "icon-container" })
                     setIcon(iconContainer, "check-circle")
                 }
             } else {
-                s.removeClass("metadata-menu-value-selected")
-                s.querySelectorAll(".metadata-menu-command-suggest-icon").forEach(icon => icon.remove())
+                s.removeClass("value-checked")
+                s.querySelectorAll(".icon-container").forEach(icon => icon.remove())
             }
         })
-
     }
 
     selectSuggestion(value: FuzzyMatch<TFile>, evt: MouseEvent | KeyboardEvent): void {

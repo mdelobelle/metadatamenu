@@ -96,42 +96,35 @@ export default class CycleField extends AbstractListBasedField {
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
-        attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, any> }
+        attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, any> } = {}
     ): void {
+        attrs.cls = "value-container"
+        fieldContainer.appendChild(dv.el('span', p[this.field.name], attrs))
         const nextOption = this.nextOption(p[this.field.name])
-        const fieldValue = dv.el('span', p[this.field.name], attrs);
-        /* end spacer */
-        const spacer = document.createElement("div");
-        spacer.setAttr("class", "metadata-menu-dv-field-spacer");
+        const spacer = fieldContainer.createEl("div", { cls: "spacer" })
         /* button to display input */
-        const button = document.createElement("button");
-        setIcon(button, FieldIcon[FieldType.Cycle])
-        button.setAttr('class', "metadata-menu-dv-field-button");
+        const cycleBtn = fieldContainer.createEl("button")
+        setIcon(cycleBtn, FieldIcon[FieldType.Cycle])
         if (!attrs?.options?.alwaysOn) {
-            button.hide();
+            cycleBtn.hide();
             spacer.show();
             fieldContainer.onmouseover = () => {
-                button.show();
+                cycleBtn.show();
                 spacer.hide();
             }
             fieldContainer.onmouseout = () => {
-                button.hide();
+                cycleBtn.hide();
                 spacer.show();
             }
         }
-
 
         /* button on click : go to next version*/
-        button.onclick = (e) => {
+        cycleBtn.onclick = (e) => {
             CycleField.replaceValues(this.plugin, p.file.path, this.field.name, nextOption);
             if (!attrs?.options?.alwaysOn) {
-                button.hide();
+                cycleBtn.hide();
                 spacer.show();
             }
         }
-
-        fieldContainer.appendChild(button);
-        fieldContainer.appendChild(fieldValue);
-        fieldContainer.appendChild(spacer);
     }
 }

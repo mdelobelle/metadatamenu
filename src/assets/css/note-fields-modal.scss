@@ -1,0 +1,125 @@
+.metadata-menu.modal-container.note-fields-modal{
+
+    button {
+        padding: 0 0 0.4em 0.4em;
+        height: auto;
+        box-shadow: none;
+        background-color: var(--background-primary);
+
+        &.disabled{
+            color: var(--text-faint)
+        }
+
+        &:disabled {
+            color: var(--text-faint)
+        }
+    }
+
+    .modal{
+        width: auto;
+        min-width: var(--dialog-width);
+    }
+
+    .note-fields-container{
+        display: table;
+        border-collapse:separate;
+
+        .field-container {
+            display: table-row;
+            margin-top: 3px;
+
+            .field-item{
+                display: table-cell;
+                padding-top: 0.2em;
+                padding-right: 0.5em;
+                float: none;
+                vertical-align: middle;
+
+                &.field-name{
+                    font-weight: bold;
+                    white-space: nowrap;
+                    background-color: none;
+                    color:var(--text-normal);
+                    padding-left: 0.6em;
+                    border: none;
+
+                    &.active{
+                        padding-left: 0.2em;
+                        border-left: 0.4em var(--color-accent) solid;
+                    }
+                }
+
+                &.field-setting{
+                    padding-right: 0;
+
+                    button {
+
+                        svg{
+                            color: var(--text-faint);
+                            height: 1em;
+                        }
+                    }
+                }
+
+                &.field-value{
+                    width: 100%;
+
+                    &.emptyfield{
+                        color: var(--text-faint);
+                    }
+                }
+
+                &.field-options {
+                    display: flex;
+                    margin-top: 3px;
+                    justify-content: center;
+                }
+            }
+        }
+    }
+
+    .insert-all-fields {
+        margin-top: 0.4em;
+        padding-left: 0.6em;
+        display: flex;
+
+        button{
+            padding: 0 0 0.4em 0.4em;
+            height: auto;
+            box-shadow: none;
+            background-color: var(--background-primary);
+            margin-left: 0.4em;
+        }
+    }
+
+    .fields-inheritance-manager-container{
+        display: flex;
+
+        .fileclass-manager-container{
+            display: flex;
+    
+            .name{
+                padding-bottom: 0.4em;
+                border:none;
+                
+                &.active{
+                    padding-bottom: 0em;
+                    border-bottom: 0.4em var(--color-accent) solid;
+                }
+            }
+
+            button{
+
+                svg{
+                    color: var(--text-faint);
+                    height: 1em;
+                }
+            }
+        }
+
+        .separator{
+            margin: 0 0.5em;
+        }
+    }
+
+}

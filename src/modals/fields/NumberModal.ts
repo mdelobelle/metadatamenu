@@ -23,100 +23,96 @@ export default class NumberModal extends Modal {
     ) {
         super(plugin.app);
         this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
+        this.containerEl.addClass("metadata-menu")
     };
 
     onOpen() {
-        const inputDiv = this.contentEl.createDiv();
-        this.buildInputEl(inputDiv);
+        this.buildInputEl();
     };
 
-    private decrement(inputEl: TextComponent): void {
+    private decrement(numberInput: TextComponent): void {
         const { step } = this.field.options;
         const fStep = parseFloat(step);
         if (!isNaN(fStep)) {
-            inputEl.setValue((parseFloat(inputEl.getValue()) - fStep).toString());
+            numberInput.setValue((parseFloat(numberInput.getValue()) - fStep).toString());
         } else {
-            inputEl.setValue((parseFloat(inputEl.getValue()) - 1).toString());
+            numberInput.setValue((parseFloat(numberInput.getValue()) - 1).toString());
         }
     }
 
-    private increment(inputEl: TextComponent): void {
+    private increment(numberInput: TextComponent): void {
         const { step } = this.field.options
         const fStep = parseFloat(step)
         if (!isNaN(fStep)) {
-            inputEl.setValue((parseFloat(inputEl.getValue()) + fStep).toString());
+            numberInput.setValue((parseFloat(numberInput.getValue()) + fStep).toString());
         } else {
-            inputEl.setValue((parseFloat(inputEl.getValue()) + 1).toString());
+            numberInput.setValue((parseFloat(numberInput.getValue()) + 1).toString());
         }
     }
 
-    private toggleButtonsState(minusBtn: ButtonComponent, plusBtn: ButtonComponent, inputEl: TextComponent): void {
-        minusBtn.setDisabled(!this.fieldManager.canDecrement(inputEl.getValue()));
-        plusBtn.setDisabled(!this.fieldManager.canIncrement(inputEl.getValue()));
-        if (this.fieldManager.canDecrement(inputEl.getValue())) {
+    private toggleButtonsState(minusBtn: ButtonComponent, plusBtn: ButtonComponent, numberInput: TextComponent): void {
+        minusBtn.setDisabled(!this.fieldManager.canDecrement(numberInput.getValue()));
+        plusBtn.setDisabled(!this.fieldManager.canIncrement(numberInput.getValue()));
+        if (this.fieldManager.canDecrement(numberInput.getValue())) {
             minusBtn.setCta();
         } else {
             minusBtn.removeCta();
         }
-        if (this.fieldManager.canIncrement(inputEl.getValue())) {
+        if (this.fieldManager.canIncrement(numberInput.getValue())) {
             plusBtn.setCta();
         } else {
             plusBtn.removeCta();
         }
     }
 
-    private buildInputEl(inputDiv: HTMLDivElement): void {
+    private buildInputEl(): void {
         const { step } = this.field.options
 
-        const form = inputDiv.createEl("form");
-        form.type = "submit";
+        const fieldContainer = this.contentEl.createEl("div", { cls: "field-container" })
 
-        const fieldContainer = form.createEl("div", { cls: "metadata-menu-modal-value-with-btn" })
-
-        const inputEl = new TextComponent(fieldContainer);
-        inputEl.inputEl.focus();
-        inputEl.setValue(`${this.value}`);
+        const numberInput = new TextComponent(fieldContainer);
+        numberInput.inputEl.focus();
+        numberInput.setValue(`${this.value}`);
 
         const minusBtn = new ButtonComponent(fieldContainer);
         minusBtn.setButtonText(`- ${!!step ? step : 1}`);
-        minusBtn.setDisabled(!this.fieldManager.canDecrement(inputEl.getValue()));
+        minusBtn.setDisabled(!this.fieldManager.canDecrement(numberInput.getValue()));
 
         const plusBtn = new ButtonComponent(fieldContainer);
         plusBtn.setButtonText(`+ ${!!step ? step : 1}`);
-        plusBtn.setDisabled(!this.fieldManager.canIncrement(inputEl.getValue()));
+        plusBtn.setDisabled(!this.fieldManager.canIncrement(numberInput.getValue()));
 
-        const errorField = form.createEl("div", { cls: "metadata-menu-modal-value-with-btn-error-field" })
-        errorField.hide()
+        fieldContainer.createDiv({ cls: "spacer" })
 
-        const footer = form.createEl("div", { cls: "metadata-menu-value-grid-footer" })
-
-        const validateBtn = new ButtonComponent(footer);
+        const validateBtn = new ButtonComponent(fieldContainer);
         validateBtn.setIcon("checkmark");
 
-        const cancelBtn = new ButtonComponent(footer);
+        const cancelBtn = new ButtonComponent(fieldContainer);
         cancelBtn.setIcon("cross");
 
+        const errorField = this.contentEl.createEl("div", { cls: "field-error" })
+        errorField.hide()
 
-        this.toggleButtonsState(minusBtn, plusBtn, inputEl);
+        this.toggleButtonsState(minusBtn, plusBtn, numberInput);
 
         //event handlers
-        inputEl.onChange(() => {
-            inputEl.inputEl.removeClass("is-invalid")
+        numberInput.onChange(() => {
+            numberInput.inputEl.removeClass("is-invalid")
             errorField.hide();
             errorField.setText("");
-            this.toggleButtonsState(minusBtn, plusBtn, inputEl)
+            this.toggleButtonsState(minusBtn, plusBtn, numberInput)
         })
 
         plusBtn.onClick((e) => {
             e.preventDefault();
-            this.increment(inputEl);
-            this.toggleButtonsState(minusBtn, plusBtn, inputEl);
+            this.increment(numberInput);
+            this.toggleButtonsState(minusBtn, plusBtn, numberInput);
         })
 
         minusBtn.onClick((e) => {
             e.preventDefault();
-            this.decrement(inputEl);
-            this.toggleButtonsState(minusBtn, plusBtn, inputEl);
+            this.decrement(numberInput);
+            this.toggleButtonsState(minusBtn, plusBtn, numberInput);
         })
 
         cancelBtn.onClick((e) => {
@@ -124,14 +120,13 @@ export default class NumberModal extends Modal {
             this.close()
         })
 
-        form.onsubmit = async (e: Event) => {
-            e.preventDefault();
-            let inputValue = inputEl.getValue();
+        validateBtn.onClick(async () => {
+            let inputValue = numberInput.getValue();
             if (!this.fieldManager.validateValue(inputValue)) {
                 const { min, max } = this.field.options
                 errorField.show();
                 errorField.setText(`value must be numeric${min ? " and >= " + min : ""} ${max ? " and <= " + max : ""}`)
-                inputEl.inputEl.setAttr("class", "is-invalid")
+                numberInput.inputEl.setAttr("class", "is-invalid")
                 return
             }
             if (this.lineNumber == -1) {
@@ -142,6 +137,6 @@ export default class NumberModal extends Modal {
                     .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
             };
             this.close();
-        };
+        })
     };
 };

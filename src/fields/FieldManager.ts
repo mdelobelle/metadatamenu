@@ -49,18 +49,18 @@ export abstract class FieldManager {
         return ""
     }
 
-    public validateName(textInput: TextComponent, insertAfter: Element): boolean {
+    public validateName(textInput: TextComponent, contentEl: Element): boolean {
         let error = false;
         if (/^[#>-]/.test(this.field.name)) {
             FieldSettingsModal.setValidationError(
-                textInput, insertAfter,
+                textInput,
                 "Field name cannot start with #, >, -"
             );
             error = true;
         };
         if (this.field.name == "") {
             FieldSettingsModal.setValidationError(
-                textInput, insertAfter,
+                textInput,
                 "Field name can not be Empty"
             );
             error = true;

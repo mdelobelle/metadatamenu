@@ -236,6 +236,7 @@ export default class FieldIndex extends Component {
             const lastAncestorParent = this.fileClassesAncestors.get(lastAncestor!)?.[0];
             if (lastAncestorParent && lastAncestorParent !== fileClassName) {
                 this.fileClassesAncestors.set(fileClassName, [...ancestors, lastAncestorParent]);
+                this.getAncestorsRecursively(fileClassName);
             }
         }
     }
@@ -272,8 +273,18 @@ export default class FieldIndex extends Component {
                             this.fileClassesPath.set(f.path, fileClass)
                             this.fileClassesName.set(fileClass.name, fileClass)
                             const cache = this.plugin.app.metadataCache.getFileCache(f);
-                            if (cache?.frontmatter?.mapWithTag && !fileClassName.includes(" ")) {
-                                this.tagsMatchingFileClasses.set(fileClassName, fileClass)
+                            if (cache?.frontmatter?.mapWithTag) {
+                                if (cache?.frontmatter?.tagNames) {
+                                    const _tagNames = cache?.frontmatter?.tagNames as string | string[];
+                                    const tagNames = Array.isArray(_tagNames) ? [..._tagNames] : _tagNames.split(",").map(t => t.trim())
+                                    tagNames.forEach(tag => {
+                                        if (!tag.includes(" ")) {
+                                            this.tagsMatchingFileClasses.set(tag, fileClass)
+                                        }
+                                    })
+                                } else if (!fileClassName.includes(" ")) {
+                                    this.tagsMatchingFileClasses.set(fileClassName, fileClass)
+                                }
                             }
                         } catch (error) {
                             //console.log(error) 

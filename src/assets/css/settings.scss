@@ -1,0 +1,58 @@
+.metadata-menu.settings {
+
+    .setting-divider{
+        padding: 0.75em 0;
+        border-bottom: 1px solid var(--background-modifier-border);
+    }
+
+    .header-container{
+        display: flex;
+
+        .text-container{
+            width: 100%;
+
+            .section-header{
+                margin-bottom: 0;
+            }
+
+            .setting-item-description{
+                margin-bottom: 1.33em;
+            }
+        }
+    }
+
+    .setting-item{
+
+        &.vstacked{
+            display: grid;
+            margin: 1em 0;
+        }
+
+        .full-width{
+            textarea, input, .search-input-container{
+                width: 100%
+            }
+        }
+
+        &.no-border{
+            border: none;
+        }
+
+        .name{
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        &.narrow-title {
+            
+            .setting-item-info{
+                flex: 2;
+            }
+
+            .setting-item-control{
+                flex:2
+            }
+        }
+    }
+
+}

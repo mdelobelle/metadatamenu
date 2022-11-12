@@ -18,7 +18,10 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
         private lineNumber: number,
         private inFrontmatter: boolean,
         private after: boolean,
-    ) { super(plugin.app); };
+    ) {
+        super(plugin.app);
+        this.containerEl.addClass("metadata-menu")
+    };
 
     getItems(): Option[] {
         return [{ actionLabel: '++New++' }]
@@ -34,16 +37,12 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
     }
 
     renderSuggestion(item: FuzzyMatch<Option>, el: HTMLElement): void {
-        el.addClass("metadata-menu-command-suggest-item")
-        const iconContainer = el.createDiv({ cls: "metadata-menu-command-suggest-icon" })
+        el.addClass("value-container")
+        const iconContainer = el.createDiv({ cls: "icon-container" })
         item.item.type ? setIcon(iconContainer, FieldIcon[item.item.type]) : setIcon(iconContainer, "plus-with-circle")
-        el.createDiv({ text: item.item.actionLabel, cls: "metadata-menu-command-suggest-action-label" })
-        el.createDiv({ cls: "metadata-menu-command-suggest-spacer" })
-        if (item.item.type) {
-            const typeContainer = el.createEl("div")
-            typeContainer.setAttr("class", `metadata-menu-setting-item-info-type ${FieldTypeTagClass[item.item.type]}`)
-            typeContainer.setText(item.item.type)
-        }
+        el.createDiv({ text: item.item.actionLabel })
+        el.createDiv({ cls: "spacer" })
+        if (item.item.type) el.createDiv({ cls: `chip ${FieldTypeTagClass[item.item.type]}`, text: item.item.type })
     }
 
     onChooseItem(item: Option, evt: MouseEvent | KeyboardEvent): void {

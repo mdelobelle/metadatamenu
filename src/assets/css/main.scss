@@ -1,0 +1,12 @@
+.metadata-menu{
+    
+    &.fileclass-icon {
+        color: var(--link-color);
+        margin-left: 0.2em;
+        cursor:context-menu;
+        
+        svg{
+            vertical-align: calc(var(--font-text-size) * -0.15);
+        }
+    }
+}

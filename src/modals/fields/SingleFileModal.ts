@@ -29,6 +29,7 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
                 if (file instanceof TFile) this.selectedFile = file
             }
         }
+        this.containerEl.addClass("metadata-menu");
     }
 
     getItems(): TFile[] {
@@ -49,20 +50,21 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
     renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi && this.field.options.customRendering) {
-            const suggestionContainer = el.createDiv({ cls: "metadata-menu-suggester-item-with-alias" });
-            const label = suggestionContainer.createDiv({ cls: "metadata-menu-suggester-item-with-alias-label" })
-            label.setText(new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(value.item.path)))
-            const filePath = suggestionContainer.createDiv({ cls: "metadata-menu-suggester-item-with-alias-filepath" })
+            const suggestionContainer = el.createDiv({ cls: "item-with-add-on" });
+            suggestionContainer.createDiv({
+                text: new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(value.item.path))
+            })
+            const filePath = suggestionContainer.createDiv({ cls: "add-on" })
             filePath.setText(value.item.path)
         } else {
             el.setText(value.item.basename)
         }
-        el.addClass("metadata-menu-value-suggester-value-container")
-        const spacer = this.containerEl.createDiv({ cls: "metadata-menu-value-suggester-value-container-spacer" })
+        el.addClass("value-container")
+        const spacer = this.containerEl.createDiv({ cls: "spacer" })
         el.appendChild(spacer)
         if (this.selectedFile?.path === value.item.path) {
-            el.addClass("metadata-menu-value-selected")
-            const iconContainer = el.createDiv({ cls: "metadata-menu-command-suggest-icon" })
+            el.addClass("value-checked")
+            const iconContainer = el.createDiv({ cls: "icon-container" })
             setIcon(iconContainer, "check-circle")
         }
         this.inputEl.focus()

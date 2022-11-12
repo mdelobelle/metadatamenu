@@ -1,4 +1,4 @@
-import { Modal, TextComponent, ButtonComponent, ExtraButtonComponent, TFile } from "obsidian";
+import { Modal, TextComponent, ButtonComponent, TFile } from "obsidian";
 import MetadataMenu from "main";
 import { insertValues } from "src/commands/insertValues";
 
@@ -10,37 +10,38 @@ export default class addNewFieldModal extends Modal {
         private file: TFile,
         private inFrontmatter: boolean,
         private after: boolean
-    ) { super(plugin.app) }
+    ) {
+        super(plugin.app);
+        this.containerEl.addClass("metadata-menu")
+    }
 
     onOpen() {
         this.titleEl.setText("Insert new field");
-        const addNewFieldContainer = this.contentEl.createDiv();
-        const nameInputContainer = addNewFieldContainer.createDiv({ cls: "metadata-menu-prompt-container" });
-        nameInputContainer.setText("Field Name: ");
-        const nameInputEl = new TextComponent(nameInputContainer);
-        nameInputEl.inputEl.addClass("metadata-menu-prompt-input")
-        nameInputEl.setPlaceholder("Field name");
-        const valueInputContainer = addNewFieldContainer.createDiv({ cls: "metadata-menu-prompt-container" });
-        valueInputContainer.setText("Field value: ");
-        const valueInputEl = new TextComponent(valueInputContainer);
-        valueInputEl.inputEl.addClass("metadata-menu-prompt-input")
-        valueInputEl.setPlaceholder("Field value");
+        const nameContainer = this.contentEl.createDiv({ cls: "field-container" });
+        nameContainer.createDiv({ text: "Field name: ", cls: "label" });
+        const nameInput = new TextComponent(nameContainer);
+        nameInput.inputEl.addClass("with-label");
+        nameInput.inputEl.addClass("full-width");
+        const valueContainer = this.contentEl.createDiv({ cls: "field-container" });
+        valueContainer.createDiv({ text: "Field value: ", cls: "label" });
+        const valueInput = new TextComponent(valueContainer);
+        valueInput.inputEl.addClass("with-label");
+        valueInput.inputEl.addClass("full-width");
         const footerButtons = this.contentEl.createDiv({
-            cls: 'metadata-menu-textarea-buttons'
+            cls: 'footer-actions'
         });
+        footerButtons.createDiv({ cls: "spacer" });
         const saveButton = new ButtonComponent(footerButtons);
         saveButton.setIcon("checkmark");
         saveButton.onClick(async () => {
             await this.plugin.fileTaskManager
-                .pushTask(() => { insertValues(this.plugin, this.file, nameInputEl.getValue(), valueInputEl.getValue(), this.lineNumber, this.inFrontmatter, this.after) });
+                .pushTask(() => { insertValues(this.plugin, this.file, nameInput.getValue(), valueInput.getValue(), this.lineNumber, this.inFrontmatter, this.after) });
             this.close()
         });
-        const cancelButton = new ExtraButtonComponent(footerButtons);
+        const cancelButton = new ButtonComponent(footerButtons);
         cancelButton.setIcon("cross");
         cancelButton.onClick(() => {
             this.close();
         });
-
-
     };
 };

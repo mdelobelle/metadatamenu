@@ -1,7 +1,7 @@
 /* ---------------------------- */
 /*   Main Metadata Menu style   */
 /* ---------------------------- */
-@import "./main";
+//@import "./main";
 
 /* ---------------------------- */
 /*   Flatpick style             */
@@ -9,3 +9,12 @@
 
 @import "./flatpickr.min";
 
+@import "chip";
+@import "dataview-field";
+@import "main";
+@import "modal-base";
+@import "note-fields-modal";
+@import "section-modal";
+@import "select-modal";
+@import "settings";
+@import "suggester";

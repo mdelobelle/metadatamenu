@@ -41,7 +41,7 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
             link.setAttribute("fileclass-name", fileClassName)
             const el = link.nextElementSibling
             if (!el?.hasClass("fileclass-icon")) {
-                const metadataMenuBtn = plugin.app.workspace.containerEl.createEl('a', { cls: "fileclass-icon" })
+                const metadataMenuBtn = plugin.app.workspace.containerEl.createEl('a', { cls: "metadata-menu fileclass-icon" })
                 if (metadataMenuBtn) {
                     setIcon(metadataMenuBtn, icon || plugin.settings.buttonIcon)
                     link.parentElement?.insertBefore(metadataMenuBtn, link.nextSibling)

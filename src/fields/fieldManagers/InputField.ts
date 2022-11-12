@@ -41,16 +41,16 @@ export default class InputField extends FieldManager {
         }
     };
 
-    public createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu): void {
-        const templateContainer = parentContainer.createDiv();
-        templateContainer.createEl("span", { text: "Template", cls: 'metadata-menu-field-option' })
+    public createSettingContainer(container: HTMLDivElement, plugin: MetadataMenu): void {
+        container.createEl("span", { text: "Template", cls: 'label' })
+        const templateContainer = container.createDiv({ cls: "field-container" });
         const templateValue = new TextAreaComponent(templateContainer)
         templateValue.inputEl.cols = 50;
         templateValue.inputEl.rows = 4;
+        templateValue.inputEl.addClass("full-width")
         templateValue.setValue(this.field.options.template || "")
         templateValue.onChange((value: string) => {
             this.field.options.template = value;
-
         })
     }
 
@@ -69,86 +69,79 @@ export default class InputField extends FieldManager {
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
-        attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
+        attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
     ): void {
-        const fieldValue = dv.el('span', p[this.field.name], attrs)
-        const inputContainer = document.createElement("div")
-        const input = document.createElement("input")
-        input.setAttr("class", "metadata-menu-dv-input")
-        inputContainer.appendChild(input)
-        input.value = p[this.field.name]
+        attrs.cls = "value-container"
+        const fieldValue = (dv.el('span', p[this.field.name], attrs) as HTMLDivElement);
+        fieldContainer.appendChild(fieldValue);
+        const inputContainer = fieldContainer.createDiv({});
+        inputContainer.hide();
+        const input = inputContainer.createEl("input");
+        input.value = p[this.field.name];
         /* end spacer */
-        const spacer = document.createElement("div")
-        spacer.setAttr("class", "metadata-menu-dv-field-spacer")
+        const spacer = fieldContainer.createDiv({ cls: "spacer-1" });
+        if (attrs.options?.alwaysOn) spacer.hide();
         /* button to display input */
-        const button = document.createElement("button")
-        setIcon(button, FieldIcon[FieldType.Input])
-        button.setAttr('class', "metadata-menu-dv-field-button")
+        const editBtn = fieldContainer.createEl("button");
+        setIcon(editBtn, FieldIcon[FieldType.Input]);
         if (!attrs?.options?.alwaysOn) {
-            button.hide()
-            spacer.show()
+            editBtn.hide();
+            spacer.show();
             fieldContainer.onmouseover = () => {
-                button.show()
-                spacer.hide()
+                if (!inputContainer.isShown()) {
+                    editBtn.show();
+                    spacer.hide();
+                }
             }
             fieldContainer.onmouseout = () => {
-                button.hide()
-                spacer.show()
+                editBtn.hide();
+                if (!attrs.options?.alwaysOn) spacer.show();
             }
         }
 
-        const validateIcon = document.createElement("button")
-        setIcon(validateIcon, "checkmark")
-        validateIcon.setAttr("class", "metadata-menu-dv-field-button")
+        const validateIcon = inputContainer.createEl("button");
+        setIcon(validateIcon, "checkmark");
         validateIcon.onclick = (e) => {
             InputField.replaceValues(this.plugin, p.file.path, this.field.name, input.value);
-            fieldContainer.removeChild(inputContainer)
+            inputContainer.hide()
         }
-        inputContainer?.appendChild(validateIcon)
-        const cancelIcon = document.createElement("button")
-        cancelIcon.setAttr("class", "metadata-menu-dv-field-button")
+        const cancelIcon = inputContainer.createEl("button");
         setIcon(cancelIcon, "cross");
         cancelIcon.onclick = (e) => {
-            fieldContainer.removeChild(inputContainer)
-            fieldContainer.appendChild(button)
-            fieldContainer.appendChild(fieldValue)
-            fieldContainer.appendChild(spacer)
+            inputContainer.hide();
+            fieldValue.show();
+            editBtn.show();
+            if (!attrs.options?.alwaysOn) spacer.show();
         }
-        inputContainer.appendChild(cancelIcon)
         input.focus()
 
         input.onkeydown = (e) => {
             if (e.key === "Enter") {
                 InputField.replaceValues(this.plugin, p.file.path, this.field.name, input.value);
-                fieldContainer.removeChild(inputContainer)
+                inputContainer.hide();
             }
             if (e.key === 'Escape') {
-                fieldContainer.removeChild(inputContainer)
-                fieldContainer.appendChild(button)
-                fieldContainer.appendChild(fieldValue)
-                fieldContainer.appendChild(spacer)
+                inputContainer.hide();
+                fieldValue.show();
+                editBtn.show();
+                if (!attrs.options?.alwaysOn) spacer.show();
             }
         }
         /* button on click : remove button and field and display input field*/
-        button.onclick = (e) => {
+        editBtn.onclick = () => {
             if (this.field.options.template) {
-                const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
+                const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path);
                 if (file instanceof TFile && file.extension === 'md') {
                     const inputModal = new InputModal(this.plugin, file, this.field, p[this.field.name]);
                     inputModal.open();
                 }
-
             } else {
-                fieldContainer.removeChild(fieldValue)
-                fieldContainer.removeChild(button)
-                fieldContainer.removeChild(spacer)
-                fieldContainer.appendChild(inputContainer)
+                inputContainer.show();
                 input.focus()
             }
+            fieldValue.hide();
+            editBtn.hide();
+            spacer.hide();
         }
-        /* initial state */
-        fieldContainer.appendChild(button)
-        fieldContainer.appendChild(fieldValue)
-        fieldContainer.appendChild(spacer)
     }
 }

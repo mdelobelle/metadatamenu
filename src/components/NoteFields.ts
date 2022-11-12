@@ -15,7 +15,7 @@ export class FieldOptions {
     constructor(public container: HTMLDivElement) { }
 
     public addOption(icon: string, onclick: () => {} | void, tooltip?: string, className?: string) {
-        const fieldOptionContainer = this.container.createDiv({ cls: "metadata-menu-note-field-item field-option" })
+        const fieldOptionContainer = this.container.createDiv({ cls: "field-item field-option" })
         const fieldOption = new ButtonComponent(fieldOptionContainer)
         fieldOption.setIcon(icon)
         if (className) fieldOption.buttonEl.addClass(className);
@@ -39,7 +39,8 @@ export class FieldsModal extends Modal {
         super(plugin.app);
         this.dvApi = plugin.app.plugins.plugins.dataview?.api;
         this.getFields();
-        this.containerEl.addClass("metadata-menu-note-fields-modal")
+        this.containerEl.addClass("metadata-menu")
+        this.containerEl.addClass("note-fields-modal")
     }
 
     //ok
@@ -56,13 +57,13 @@ export class FieldsModal extends Modal {
     //
     buildFieldContainer(parentContainer: HTMLDivElement, field: Field, value?: string | null | undefined): HTMLDivElement {
         const fieldManager = new FM[field.type](this.plugin, field)
-        const fieldContainer = parentContainer.createDiv({ cls: "metadata-menu-note-field-container" })
-        const fieldNameContainer = fieldContainer.createDiv({ text: `${field.name}`, cls: "metadata-menu-note-field-item field-name" });
+        const fieldContainer = parentContainer.createDiv({ cls: "field-container" })
+        const fieldNameContainer = fieldContainer.createDiv({ text: `${field.name}`, cls: "field-item field-name" });
         const fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
         if (fileClass) {
             fieldNameContainer.addClass(`fileClassField__${fileClass.name.replace("/", "___").replace(" ", "_")}`)
         }
-        const fieldSettingContainer = fieldContainer.createDiv({ cls: "metadata-menu-note-field-item field-setting" });
+        const fieldSettingContainer = fieldContainer.createDiv({ cls: "field-item field-setting" });
         const fieldSettingBtn = new ButtonComponent(fieldSettingContainer);
         fieldSettingBtn.setIcon("gear")
         fieldSettingBtn.setTooltip(`${field.fileClassName ? field.fileClassName + " > " : "Preset Field > "} ${field.name} settings`)
@@ -74,10 +75,10 @@ export class FieldsModal extends Modal {
                 fileClassAttributeModal.open();
             }
         })
-        const fieldTypeContainer = fieldContainer.createDiv({ cls: `metadata-menu-note-field-item field-type-container` });
-        fieldTypeContainer.createDiv({ text: field.type, cls: `field-type ${FieldType.FieldBackgroundColorClass[field.type]}` })
+        const fieldTypeContainer = fieldContainer.createDiv({ cls: `field-item` });
+        fieldTypeContainer.createDiv({ text: field.type, cls: `chip field-type ${FieldType.FieldBackgroundColorClass[field.type]}` })
         const fieldValueContainer = fieldContainer.createDiv({
-            cls: value !== undefined && value !== null ? "metadata-menu-note-field-item field-value" : "metadata-menu-note-field-item field-value emptyfield"
+            cls: value !== undefined && value !== null ? "field-item field-value" : "field-item field-value emptyfield"
         })
         if (value === null) {
             fieldValueContainer.setText(field.type === FieldType.FieldType.Lookup ? "---auto---" : "<empty>");
@@ -91,7 +92,7 @@ export class FieldsModal extends Modal {
         if (value !== undefined) {
             fieldManager.addFieldOption(field.name, value, this.file, fieldOptions);
         } else {
-            const fieldBtnContainer = fieldContainer.createDiv({ cls: "metadata-menu-note-field-item field-option" })
+            const fieldBtnContainer = fieldContainer.createDiv({ cls: "field-item field-option" })
             const fieldBtn = new ButtonComponent(fieldBtnContainer)
             fieldBtn.setIcon("list-plus")
             fieldBtn.setTooltip("Add field at section")
@@ -175,15 +176,15 @@ export class FieldsModal extends Modal {
     buildFileClassManager(container: HTMLDivElement): void {
         const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || [];
         fileClasses.forEach(fileClass => {
-            const fileClassManagerContainer = container.createDiv({ cls: "metadata-menu-note-fields-inheritance-manager-container" })
+            const fileClassManagerContainer = container.createDiv({ cls: "fields-inheritance-manager-container" })
             const _ancestors = this.plugin.fieldIndex.fileClassesAncestors.get(fileClass.name) || [];
             const ancestors = [..._ancestors].reverse();
             ancestors.push(fileClass.name);
             ancestors.forEach((fileClassName, i) => {
                 const _fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
                 if (_fileClass) {
-                    const fileClassOptionsContainer = fileClassManagerContainer.createDiv({ cls: "metadata-menu-note-fields-fileClass-manager-container" })
-                    const fileClassNameContainer = fileClassOptionsContainer.createDiv({ cls: "metadata-menu-note-fields-fileClass-manager-name", text: _fileClass.name })
+                    const fileClassOptionsContainer = fileClassManagerContainer.createDiv({ cls: "fileclass-manager-container" })
+                    const fileClassNameContainer = fileClassOptionsContainer.createDiv({ cls: "name", text: _fileClass.name })
                     fileClassNameContainer.setAttr("id", `fileClass__${_fileClass.name.replace("/", "___").replace(" ", "_")}`)
 
                     if (this.missingFieldsForFileClass(_fileClass)) {
@@ -203,7 +204,7 @@ export class FieldsModal extends Modal {
                         fileClassAttributeModal.open()
                     })
                     if (i < ancestors.length - 1) {
-                        fileClassManagerContainer.createDiv({ text: ">", cls: "metadata-menu-note-fields-fileClass-manager-separator" })
+                        fileClassManagerContainer.createDiv({ text: ">", cls: "separator" })
                     }
 
                     const fileClassFielsContainers = this.containerEl.querySelectorAll(`[class*="fileClassField__${fileClassName.replace("/", "___").replace(" ", "_")}"]`)
@@ -217,12 +218,12 @@ export class FieldsModal extends Modal {
                     })
                     fileClassNameContainer.onmouseover = () => {
                         this.containerEl
-                            .querySelectorAll(`.metadata-menu-note-field-item.field-name.fileClassField__${fileClassName.replace("/", "___").replace(" ", "_")}`)
+                            .querySelectorAll(`.field-item.field-name.fileClassField__${fileClassName.replace("/", "___").replace(" ", "_")}`)
                             .forEach(cont => { cont.addClass("active") })
                     }
                     fileClassNameContainer.onmouseout = () => {
                         this.containerEl
-                            .querySelectorAll(`.metadata-menu-note-field-item.field-name.fileClassField__${fileClassName.replace("/", "___").replace(" ", "_")}`)
+                            .querySelectorAll(`.field-item.field-name.fileClassField__${fileClassName.replace("/", "___").replace(" ", "_")}`)
                             .forEach(cont => { cont.removeClass("active") })
                     }
                 }
@@ -232,14 +233,14 @@ export class FieldsModal extends Modal {
 
     formatOptionsColumns(fieldsContainer: HTMLDivElement): void {
         //create empty cells for field with less options so that options are right aligned in the table
-        const fieldContainers = fieldsContainer.querySelectorAll('.metadata-menu-note-field-container')
+        const fieldContainers = fieldsContainer.querySelectorAll('.field-container')
         fieldContainers.forEach(field => {
             const options = field.querySelectorAll('.field-option')
             if (options.length < this.maxOptions) {
                 const parent = options[0]?.parentElement;
                 if (parent) {
                     for (let i = 0; i < this.maxOptions - options.length; i++) {
-                        const emptyCell = parent.createDiv({ cls: "metadata-menu-note-field-item field-option" })
+                        const emptyCell = parent.createDiv({ cls: "field-item field-option" })
                         options[0].parentElement?.insertBefore(emptyCell, options[0])
                     }
                 }
@@ -251,14 +252,14 @@ export class FieldsModal extends Modal {
         this.missingFields = false
         this.contentEl.replaceChildren();
         this.contentEl.createEl('hr')
-        const fieldsContainer = this.contentEl.createDiv({ cls: "metadata-menu-note-fields-container" });
+        const fieldsContainer = this.contentEl.createDiv({ cls: "note-fields-container" });
         this.fields.forEach(field => {
             const value = this.dvApi ? this.dvApi.page(this.file.path)[field.name] : undefined
             this.fieldContainers.push(this.buildFieldContainer(fieldsContainer, field, value))
         })
         this.formatOptionsColumns(fieldsContainer);
         if (this.missingFields) {
-            const insertMissingFieldsContainer = this.contentEl.createDiv({ cls: "metadata-menu-note-fields-container metadata-menu-note-field-insert-all-fields" });
+            const insertMissingFieldsContainer = this.contentEl.createDiv({ cls: "insert-all-fields" });
             insertMissingFieldsContainer.createDiv({ text: "Insert missing fields" });
             const insertMissingFieldsBtn = new ButtonComponent(insertMissingFieldsContainer)
             insertMissingFieldsBtn.setIcon("battery-full")
@@ -288,7 +289,7 @@ export class FieldsModal extends Modal {
             })
         }
         this.contentEl.createEl('hr')
-        const fileClassManagersContainer = this.contentEl.createDiv({ cls: "metadata-menu-note-fields-container" })
+        const fileClassManagersContainer = this.contentEl.createDiv({ cls: "fields-container" });
         this.buildFileClassManager(fileClassManagersContainer)
     }
 }

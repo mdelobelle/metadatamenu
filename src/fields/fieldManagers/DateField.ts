@@ -74,23 +74,25 @@ export default class DateField extends FieldManager {
         fieldModal.open();
     }
 
-    private createDateContainer(parentContainer: HTMLDivElement): void {
+    private createDateContainer(container: HTMLDivElement): void {
         if (!this.field.options.dateFormat) this.field.options.dateFormat = this.defaultDateFormat
         if (!this.field.options.defaultInsertAsLink) this.field.options.defaultInsertAsLink = "false"
-        const dateFormatContainer = parentContainer.createDiv();
-        dateFormatContainer.createEl("span", { text: "Date format", cls: 'metadata-menu-field-option' })
+        const dateFormatContainer = container.createDiv({ cls: "field-container" });
+        dateFormatContainer.createEl("span", { text: "Date format", cls: 'label' })
+        const dateExample = dateFormatContainer.createEl("span", { cls: 'more-info' })
+        dateFormatContainer.createDiv({ cls: 'spacer' })
         const dateFormatInput = new TextComponent(dateFormatContainer)
         dateFormatInput.setValue(this.field.options.dateFormat)
-        const dateExample = dateFormatContainer.createEl("span", { text: "", cls: 'metadata-menu-field-option' })
-        dateExample.setText(`example: ${moment().format(dateFormatInput.getValue())}`)
+        dateExample.setText(`${moment().format(dateFormatInput.getValue())}`)
         dateFormatInput.onChange((value: string) => {
             this.field.options.dateFormat = value
-            dateExample.setText(`example: ${moment().format(value)}`);
+            dateExample.setText(`${moment().format(value)}`);
         });
 
         // insert as link toggler
-        const defaultInsertAsLinkContainer = parentContainer.createDiv();
-        defaultInsertAsLinkContainer.createEl("span", { text: "Insert as link by default", cls: 'metadata-menu-field-option' });
+        const defaultInsertAsLinkContainer = container.createDiv({ cls: "field-container" });
+        defaultInsertAsLinkContainer.createEl("span", { text: "Insert as link by default", cls: 'label' });
+        defaultInsertAsLinkContainer.createDiv({ cls: "spacer" })
         const defaultInsertAsLink = new ToggleComponent(defaultInsertAsLinkContainer);
         defaultInsertAsLink.setValue(DateField.stringToBoolean(this.field.options.defaultInsertAsLink))
         defaultInsertAsLink.onChange((value: boolean) => {
@@ -98,17 +100,19 @@ export default class DateField extends FieldManager {
         });
 
         //folder path for link
-        const dateLinkPathContainer = parentContainer.createDiv();
-        dateLinkPathContainer.createEl("span", { text: "Link path (optional)", cls: 'metadata-menu-field-option' })
+        const dateLinkPathContainer = container.createDiv({ cls: "field-container" });
+        dateLinkPathContainer.createEl("span", { text: "Link path (optional)", cls: 'label' })
+        dateLinkPathContainer.createDiv({ cls: "spacer" })
         const dateLinkPathInput = new TextComponent(dateLinkPathContainer)
         dateLinkPathInput.setValue(this.field.options.linkPath)
         dateLinkPathInput.onChange((value: string) => {
-            this.field.options.linkPath = value.endsWith("/") ? value : value + "/";
+            this.field.options.linkPath = value + ((!value.endsWith("/") && !!value.length) ? "/" : "");
         });
 
         // shift interval (should be a number or a luxon humanized duration (requires dataview) -> to include in validation)
-        const dateShiftIntervalContainer = parentContainer.createDiv();
-        dateShiftIntervalContainer.createEl("span", { text: "Define a shift interval", cls: 'metadata-menu-field-option' });
+        const dateShiftIntervalContainer = container.createDiv({ cls: "field-container" });
+        dateShiftIntervalContainer.createEl("span", { text: "Define a shift interval", cls: 'label' });
+        dateShiftIntervalContainer.createDiv({ cls: "spacer" })
         const dateShiftInterval = new TextComponent(dateShiftIntervalContainer);
         dateShiftInterval.setPlaceholder("ex: 1 month 2 days")
         dateShiftInterval.setValue(this.field.options.dateShiftInterval)
@@ -121,11 +125,12 @@ export default class DateField extends FieldManager {
         });
 
         // intervals cycle field name
-        const nextShiftIntervalFieldContainer = parentContainer.createDiv();
+        const nextShiftIntervalFieldContainer = container.createDiv({ cls: "field-container" });
         nextShiftIntervalFieldContainer.createEl("span", {
-            text: "Field containing shift intervals (has the priority over the Shift Interval above)",
-            cls: 'metadata-menu-field-option'
+            text: "Field containing shift intervals",
+            cls: 'label'
         });
+        nextShiftIntervalFieldContainer.createDiv({ cls: "spacer" })
         const nextShiftIntervalField = new TextComponent(nextShiftIntervalFieldContainer);
         nextShiftIntervalField.setValue(this.field.options.nextShiftIntervalField)
         nextShiftIntervalField.onChange((value: string) => {
@@ -138,10 +143,8 @@ export default class DateField extends FieldManager {
 
     }
 
-    public createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
-        this.dateValidatorField = parentContainer.createDiv({ cls: "metadata-menu-number-options" });
-        this.createDateContainer(this.dateValidatorField);
-        this.dateValidatorField.createDiv({ cls: 'metadata-menu-separator' }).createEl("hr");
+    public createSettingContainer(container: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
+        this.createDateContainer(container);
     }
 
     public async shiftDate(dv: any, p: any, file: TFile): Promise<void> {
@@ -178,19 +181,17 @@ export default class DateField extends FieldManager {
         attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }
     ): void {
         const fieldValue = dv.el('span', p[this.field.name], attrs);
-        const dateBtn = document.createElement("button")
+        const dateBtn = fieldContainer.createEl("button")
         setIcon(dateBtn, FieldIcon[FieldType.Date])
-        dateBtn.addClass("metadata-menu-dv-field-button")
         /* end spacer */
-        const spacer = document.createElement("div")
+        const spacer = fieldContainer.createDiv({ cls: "spacer-1" })
         if (this.field.options.dateShiftInterval || this.field.options.nextShiftIntervalField) {
-            this.shiftBtn = document.createElement("button")
+            this.shiftBtn = fieldContainer.createEl("button")
             setIcon(this.shiftBtn, "skip-forward")
-            this.shiftBtn.addClass("metadata-menu-dv-field-button")
-            spacer.setAttr("class", "metadata-menu-dv-field-double-spacer")
+            spacer.setAttr("class", "spacer-2")
 
         } else {
-            spacer.setAttr("class", "metadata-menu-dv-field-spacer")
+            spacer.setAttr("class", "spacer-1")
         }
 
         const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
