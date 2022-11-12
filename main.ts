@@ -1,4 +1,4 @@
-import { MarkdownView, Plugin } from 'obsidian';
+import { MarkdownView, Plugin, WorkspaceLeaf } from 'obsidian';
 import { addCommands } from 'src/commands/paletteCommands';
 import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';

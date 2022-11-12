@@ -12,6 +12,7 @@ import { genuineKeys } from "src/utils/dataviewUtils";
 import { frontMatterLineField, getLineFields } from "src/utils/parser";
 import { insertMissingFields } from "./insertMissingFields";
 import { FieldManager as F } from "src/fields/FieldManager";
+import { FileClassComponent } from "src/components/fileClassTable";
 
 function addFileClassAttributeOptions(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
@@ -269,6 +270,23 @@ function addInsertFieldCommand(plugin: MetadataMenu): void {
     })
 }
 
+function addFileClassTableViewCommand(plugin: MetadataMenu) {
+    plugin.addCommand({
+        id: "open_fileclass_view",
+        name: "Open fileClass view",
+        icon: "file-spreadsheet",
+        checkCallback: (checking: boolean) => {
+            if (checking) {
+                return true
+            }
+            const activeFilePath = plugin.app.workspace.getActiveFile()?.path
+            const fileClass = activeFilePath ? plugin.fieldIndex.fileClassesPath.get(activeFilePath) : undefined
+            const fileClassComponent = new FileClassComponent(plugin, fileClass)
+            plugin.addChild(fileClassComponent);
+        }
+    })
+}
+
 export function addCommands(plugin: MetadataMenu, view: View | undefined | null) {
     const classFilesPath = plugin.settings.classFilesPath
     if (view && view instanceof FileView) {
@@ -287,5 +305,6 @@ export function addCommands(plugin: MetadataMenu, view: View | undefined | null)
             }
         }
     }
+    addFileClassTableViewCommand(plugin)
     addUpdateLookups(plugin)
 }

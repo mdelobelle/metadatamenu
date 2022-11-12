@@ -26,7 +26,8 @@ export async function insertValues(
     }
     const frontmatter = plugin.app.metadataCache.getFileCache(file)?.frontmatter
     if (inFrontmatter && lineNumber == -2 && !frontmatter) {
-        const fields: Record<string, string> = { fieldName: value }
+        const fields: Record<string, string> = {}
+        fields[fieldName] = value
         await insertFrontmatterWithFields(plugin, file, fields);
     } else {
         const result = await plugin.app.vault.read(file)
