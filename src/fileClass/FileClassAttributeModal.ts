@@ -189,7 +189,7 @@ class FileClassAttributeModal extends Modal {
             } else {
                 delete this.field.command
             }
-            await this.fileClass.updateAttribute(this.field.type, this.field.name, this.field.options, this.attr, this.command);
+            await this.fileClass.updateAttribute(this.field.type, this.field.name, this.field.options, this.attr, this.field.command);
             this.close();
         })
     }

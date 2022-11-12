@@ -186,6 +186,10 @@ you can also map a fileclass with his tag from the context menu of the fileclass
 
 This works with nested tags as well
 
+### `tagNames`field: aliases for your fileClasses
+
+when not empty (string or array of string), the tags will be mapped with this fileClass
+
 ### `icon`field
 
 you can customize the icon of the metadata button that gives access to a modal containing all available fields for a note bound with this fileclass
