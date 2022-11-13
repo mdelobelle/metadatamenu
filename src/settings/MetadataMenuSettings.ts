@@ -42,5 +42,5 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	enableFileExplorer: true,
 	enableSearch: true,
 	buttonIcon: "clipboard-list",
-	tableViewMaxRecords: 20
+	tableViewMaxRecords: 100
 };

@@ -18,7 +18,7 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         private plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        initialOptions: string,
+        initialOptions: any,
         private lineNumber: number = -1,
         private inFrontmatter: boolean = false,
         private after: boolean = false,
@@ -40,10 +40,14 @@ export default class MultiSuggestModal extends SuggestModal<string> {
                 }
                 this.selectedOptions = initialOptions.map(item => item.toString())
             }
-            else if (initialOptions.toString().startsWith("[[")) {
+            else if (typeof (initialOptions) === "string" && initialOptions.toString().startsWith("[[")) {
                 this.selectedOptions = initialOptions.split(",").map(item => item.trim());
             } else {
-                this.selectedOptions = initialOptions.toString().replace(/^\[(.*)\]$/, "$1").split(",").map(item => item.trim());
+                if (Object.keys(initialOptions).includes("path")) {
+                    this.selectedOptions = [`[[${initialOptions.path.replace(".md", "")}]]`]
+                } else if (typeof (initialOptions) === "string") {
+                    this.selectedOptions = initialOptions.toString().replace(/^\[(.*)\]$/, "$1").split(",").map(item => item.trim());
+                }
             }
         } else {
             this.selectedOptions = [];

@@ -234,7 +234,13 @@ class FileClass {
 
     }
 
-    public async updateAttribute(newType: keyof typeof FieldType, newName: string, newOptions?: string[] | Record<string, string>, attr?: FileClassAttribute, newCommand?: FieldCommand): Promise<void> {
+    public async updateAttribute(
+        newType: keyof typeof FieldType,
+        newName: string,
+        newOptions?: string[] | Record<string, string>,
+        attr?: FileClassAttribute,
+        newCommand?: FieldCommand
+    ): Promise<void> {
         const fileClass = attr ? this.plugin.fieldIndex.fileClassesName.get(attr.fileClassName)! : this
         const file = fileClass.getClassFile();
         let result = await this.plugin.app.vault.read(file)
@@ -251,7 +257,7 @@ class FileClass {
                     newContent.push(line);
                 }
             })
-            this.plugin.app.vault.modify(file, newContent.join('\n'));
+            await this.plugin.app.vault.modify(file, newContent.join('\n'));
         } else {
             let settings: Record<string, any> = {};
             settings["type"] = newType;

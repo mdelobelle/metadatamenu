@@ -1194,3 +1194,6 @@ span.flatpickr-weekday {
     .metadata-menu.fileclass-view .fv-menu .fv-menu-item.active {
       color: var(--text-accent);
       border-bottom: 3px solid var(--text-accent); }
+
+.metadata-menu.fileclass-view .fv-settings .setting-item:first-child {
+  padding-top: 0.75em; }

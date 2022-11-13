@@ -7,7 +7,7 @@ export class FileClassChoiceModal extends SuggestModal<string> {
 
     constructor(
         private plugin: MetadataMenu,
-        private table: FileClassManager,
+        private fileClassManager: FileClassManager,
         private tagsAndFileClasses: string[]
     ) {
         super(plugin.app);
@@ -38,10 +38,10 @@ export class FileClassChoiceModal extends SuggestModal<string> {
         const fileClass = index.fileClassesName.get(item) || index.tagsMatchingFileClasses.get(item)
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (fileClass && dvApi) {
-            this.table.name = item
-            this.table.fileClass = fileClass
-            this.table.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + fileClass.name
-            this.table.openTableView();
+            this.fileClassManager.name = item
+            this.fileClassManager.fileClass = fileClass
+            this.fileClassManager.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + fileClass.name
+            this.fileClassManager.openFileClassView();
         }
         this.close()
     }

@@ -2,6 +2,7 @@ import MetadataMenu from "main";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { FileClassManager } from "src/components/fileClassManager";
 import { FileClass } from "./fileClass";
+import { FileClassFieldsView } from "./fileClassFieldsView";
 
 export const FILECLASS_VIEW_TYPE = "FileClassView"
 
@@ -43,14 +44,14 @@ export class FileClassView extends ItemView {
     private views: HTMLDivElement[] = []
     private settingsView: HTMLDivElement
     private tableView: HTMLDivElement
-    private fieldsView: HTMLDivElement
+    private fieldsView: FileClassFieldsView
 
     constructor(
         public leaf: WorkspaceLeaf,
         private plugin: MetadataMenu,
         private component: FileClassManager,
-        public name?: string,
-        public fileClass?: FileClass
+        public name: string,
+        public fileClass: FileClass
     ) {
         super(leaf)
         this.containerEl.addClass("metadata-menu")
@@ -78,24 +79,24 @@ export class FileClassView extends ItemView {
         this.buildFieldsView();
         this.buildTableView();
         this.buildMenu();
-        this.updateDisplayView("settingsOption");
-        this.settingsView.show();
+        this.updateDisplayView("tableOption");
     }
 
     buildMenu(): void {
         this.menuOptions.push(new MenuOption(this.menu, "settingsOption", "Fileclass Settings", this.settingsView, this))
-        this.menuOptions.push(new MenuOption(this.menu, "fieldsOption", "Fileclass Fields", this.fieldsView, this))
+        this.menuOptions.push(new MenuOption(this.menu, "fieldsOption", "Fileclass Fields", this.fieldsView.container, this))
         this.menuOptions.push(new MenuOption(this.menu, "tableOption", "Tableview", this.tableView, this))
     }
 
     buildSettingsView(): void {
+        //todo create the settings view and manage it!!
         this.settingsView = this.viewContainer.createDiv({ cls: "fv-settings", text: "Settings" });
         this.views.push(this.settingsView);
     }
 
     buildFieldsView(): void {
-        this.fieldsView = this.viewContainer.createDiv({ cls: "fv-settings", text: "Fields" });
-        this.views.push(this.fieldsView);
+        this.fieldsView = new FileClassFieldsView(this.plugin, this.viewContainer, this.fileClass)
+        this.views.push(this.fieldsView.container);
     }
 
     buildTableView(): void {
@@ -109,6 +110,10 @@ export class FileClassView extends ItemView {
 
     getViewType(): string {
         return this.fileClass ? FILECLASS_VIEW_TYPE + "__" + this.fileClass.name : FILECLASS_VIEW_TYPE
+    }
+
+    updateSettingsView(): void {
+        this.fieldsView.buildSettings()
     }
 
     protected async onOpen(): Promise<void> {
@@ -125,8 +130,9 @@ export class FileClassView extends ItemView {
             let dvQuery = "const {fieldModifier: f} = this.app.plugins.plugins[\"metadata-menu\"].api;\n" +
                 "dv.table([\"File\",";
             dvQuery += fields.map(field => `"${field.name}"`).join(",");
-            dvQuery += `], dv.pages()\n`
-            dvQuery += `    .where(p => p.fileClass === '${this.name}' || p.file.etags.values.includes('#${this.name}'))\n`
+            dvQuery += `], dv.pages()\n`;
+            dvQuery += `    .where(p => p.fileClass === '${this.name}' || p.file.etags.values.includes('#${this.name}'))\n`;
+            dvQuery += `    .slice(0, ${this.plugin.settings.tableViewMaxRecords})`;
             dvQuery += "    .map(p => [\n        p.file.link,\n";
             dvQuery += fields.map(field => `        f(dv, p, "${field.name}", {options: {alwaysOn: false, showAddField: true}})`).join(",\n");
             dvQuery += "    \n])\n);"
