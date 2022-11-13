@@ -1,12 +1,13 @@
 import MetadataMenu from "main";
 import { SuggestModal } from "obsidian";
-import { FileClassComponent, FILECLASS_TABLE_VIEW_TYPE } from "../components/fileClassTable";
+import { FileClassManager } from "../components/fileClassManager";
+import { FILECLASS_VIEW_TYPE } from "./fileClassView";
 
 export class FileClassChoiceModal extends SuggestModal<string> {
 
     constructor(
         private plugin: MetadataMenu,
-        private table: FileClassComponent,
+        private table: FileClassManager,
         private tagsAndFileClasses: string[]
     ) {
         super(plugin.app);
@@ -39,7 +40,7 @@ export class FileClassChoiceModal extends SuggestModal<string> {
         if (fileClass && dvApi) {
             this.table.name = item
             this.table.fileClass = fileClass
-            this.table.fileClassTableViewType = FILECLASS_TABLE_VIEW_TYPE + "__" + fileClass.name
+            this.table.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + fileClass.name
             this.table.openTableView();
         }
         this.close()

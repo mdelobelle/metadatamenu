@@ -12,7 +12,7 @@ import { genuineKeys } from "src/utils/dataviewUtils";
 import { frontMatterLineField, getLineFields } from "src/utils/parser";
 import { insertMissingFields } from "./insertMissingFields";
 import { FieldManager as F } from "src/fields/FieldManager";
-import { FileClassComponent } from "src/components/fileClassTable";
+import { FileClassManager } from "src/components/fileClassManager";
 
 function addFileClassAttributeOptions(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
@@ -281,7 +281,7 @@ function addFileClassTableViewCommand(plugin: MetadataMenu) {
             }
             const activeFilePath = plugin.app.workspace.getActiveFile()?.path
             const fileClass = activeFilePath ? plugin.fieldIndex.fileClassesPath.get(activeFilePath) : undefined
-            const fileClassComponent = new FileClassComponent(plugin, fileClass)
+            const fileClassComponent = new FileClassManager(plugin, fileClass)
             plugin.addChild(fileClassComponent);
         }
     })

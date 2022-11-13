@@ -5,6 +5,7 @@ import { syntaxTree } from "@codemirror/language";
 import { tokenClassNodeProp } from "@codemirror/language";
 import MetadataMenu from "main";
 import NoteFieldsComponent from "src/components/NoteFields";
+import { FileClassManager } from "src/components/fileClassManager";
 
 export function buildCMViewPlugin(plugin: MetadataMenu) {
     // Implements the live preview supercharging
@@ -29,8 +30,20 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
                 metadataMenuBtn.setAttr("fileclass-name", this.fileClassName);
                 metadataMenuBtn.addClass('fileclass-icon');
                 metadataMenuBtn.addClass('metadata-menu');
-                const fileClass = plugin.fieldIndex.fileClassesName.get(this.fileClassName)
-                if (fileClass) {
+                let fileClass = plugin.fieldIndex.fileClassesName.get(this.fileClassName)
+                const classFilesPath = plugin.settings.classFilesPath
+                if (classFilesPath && this.destName.includes(classFilesPath)) {
+                    const icon = "file-spreadsheet"
+                    fileClass = plugin.fieldIndex.fileClassesPath.get(this.destName + ".md")
+                    if (fileClass) {
+                        setIcon(metadataMenuBtn, icon || settings.buttonIcon)
+                        metadataMenuBtn.onclick = (event) => {
+                            plugin.addChild(new FileClassManager(plugin, fileClass))
+                            event.stopPropagation()
+                        }
+                    }
+                } else if (fileClass) {
+
                     const icon = fileClass.getIcon();
                     setIcon(metadataMenuBtn, icon || settings.buttonIcon)
                     metadataMenuBtn.onclick = (event) => {

@@ -1,6 +1,7 @@
 import { App, getLinkpath, LinkCache, MarkdownPostProcessorContext, MarkdownView, TFile, setIcon } from "obsidian"
 import MetadataMenu from "main";
 import NoteFieldsComponent from "../components/NoteFields";
+import { FileClassManager } from "src/components/fileClassManager";
 
 export function clearExtraAttributes(link: HTMLElement) {
     Object.values(link.attributes).forEach(attr => {
@@ -34,7 +35,27 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
             }
         }
     }
-    if (fileClassName) {
+    const classFilessPath = plugin.settings.classFilesPath
+    if (classFilessPath && destName.includes(classFilessPath)) {
+        const icon = "file-spreadsheet"
+        const fileClass = plugin.fieldIndex.fileClassesPath.get(destName + ".md")
+        if (fileClass) {
+            link.setAttribute("fileclass-name", fileClass.name)
+            const el = link.nextElementSibling
+            if (!el?.hasClass("fileclass-icon")) {
+                const metadataMenuBtn = plugin.app.workspace.containerEl.createEl('a', { cls: "metadata-menu fileclass-icon" })
+                if (metadataMenuBtn) {
+                    setIcon(metadataMenuBtn, icon)
+                    link.parentElement?.insertBefore(metadataMenuBtn, link.nextSibling)
+                    metadataMenuBtn.onclick = (event) => {
+                        plugin.addChild(new FileClassManager(plugin, fileClass))
+                        event.stopPropagation();
+                    }
+                }
+            }
+        }
+    }
+    else if (fileClassName) {
         const fileClass = plugin.fieldIndex.fileClassesName.get(fileClassName)
         if (fileClass) {
             const icon = fileClass.getIcon()

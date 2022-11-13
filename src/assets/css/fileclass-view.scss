@@ -1,0 +1,21 @@
+.metadata-menu.fileclass-view{
+    
+    .fv-menu{
+        display: flex;
+        
+        .fv-menu-item{
+            display: flex;
+            margin: 0.5em 1em 0.5em 0em;
+            color: var(--text-muted);
+
+            h2 {
+                margin-block-end: 0em;
+            }
+
+            &.active{
+                color: var(--text-accent);
+                border-bottom: 3px solid var(--text-accent);
+            }
+        }
+    }
+}

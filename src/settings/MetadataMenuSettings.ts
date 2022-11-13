@@ -20,6 +20,7 @@ export interface MetadataMenuSettings {
 	enableFileExplorer: boolean;
 	enableSearch: boolean;
 	buttonIcon: string;
+	tableViewMaxRecords: number;
 }
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
@@ -40,5 +41,6 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	enableStarred: true,
 	enableFileExplorer: true,
 	enableSearch: true,
-	buttonIcon: "clipboard-list"
+	buttonIcon: "clipboard-list",
+	tableViewMaxRecords: 20
 };

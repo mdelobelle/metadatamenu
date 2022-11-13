@@ -1182,3 +1182,15 @@ span.flatpickr-weekday {
   margin-left: 1em;
   padding-top: 0.4em;
   color: var(--color-base-60); }
+
+.metadata-menu.fileclass-view .fv-menu {
+  display: flex; }
+  .metadata-menu.fileclass-view .fv-menu .fv-menu-item {
+    display: flex;
+    margin: 0.5em 1em 0.5em 0em;
+    color: var(--text-muted); }
+    .metadata-menu.fileclass-view .fv-menu .fv-menu-item h2 {
+      margin-block-end: 0em; }
+    .metadata-menu.fileclass-view .fv-menu .fv-menu-item.active {
+      color: var(--text-accent);
+      border-bottom: 3px solid var(--text-accent); }

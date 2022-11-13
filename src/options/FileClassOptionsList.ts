@@ -4,8 +4,7 @@ import { insertFrontmatterWithFields } from "src/commands/insertFrontmatterWithF
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { insertValues } from "src/commands/insertValues";
 import { replaceValues } from "src/commands/replaceValues";
-import { FileClassComponent } from "src/components/fileClassTable";
-import { FieldManager } from "src/fields/FieldManager";
+import { FileClassManager } from "src/components/fileClassManager";
 import { FileClass } from "src/fileClass/fileClass";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
 import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
@@ -57,7 +56,7 @@ export default class FileClassOptionsList {
             }
         }
         const openFileClassTableViewAction = () => {
-            const fileClassComponent = new FileClassComponent(this.plugin, fileClass)
+            const fileClassComponent = new FileClassManager(this.plugin, fileClass)
             this.plugin.addChild(fileClassComponent);
         }
         if (isMenu(this.location)) { this.location.addSeparator(); };
