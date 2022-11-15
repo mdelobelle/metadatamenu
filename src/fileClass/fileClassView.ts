@@ -1,8 +1,9 @@
 import MetadataMenu from "main";
-import { ItemView, WorkspaceLeaf } from "obsidian";
+import { FileView, ItemView, WorkspaceLeaf } from "obsidian";
 import { FileClassManager } from "src/components/fileClassManager";
 import { FileClass } from "./fileClass";
 import { FileClassFieldsView } from "./fileClassFieldsView";
+import { FileClassTableView } from "./fileClassTableView";
 
 export const FILECLASS_VIEW_TYPE = "FileClassView"
 
@@ -43,7 +44,7 @@ export class FileClassView extends ItemView {
     private viewContainer: HTMLDivElement
     private views: HTMLDivElement[] = []
     private settingsView: HTMLDivElement
-    private tableView: HTMLDivElement
+    private tableView: FileClassTableView
     private fieldsView: FileClassFieldsView
 
     constructor(
@@ -85,7 +86,7 @@ export class FileClassView extends ItemView {
     buildMenu(): void {
         this.menuOptions.push(new MenuOption(this.menu, "settingsOption", "Fileclass Settings", this.settingsView, this))
         this.menuOptions.push(new MenuOption(this.menu, "fieldsOption", "Fileclass Fields", this.fieldsView.container, this))
-        this.menuOptions.push(new MenuOption(this.menu, "tableOption", "Tableview", this.tableView, this))
+        this.menuOptions.push(new MenuOption(this.menu, "tableOption", "Tableview", this.tableView.container, this))
     }
 
     buildSettingsView(): void {
@@ -100,8 +101,8 @@ export class FileClassView extends ItemView {
     }
 
     buildTableView(): void {
-        this.tableView = this.viewContainer.createDiv({ cls: "fv-table" })
-        this.views.push(this.tableView);
+        this.tableView = new FileClassTableView(this.plugin, this.component, this.viewContainer, this.fileClass)
+        this.views.push(this.tableView.container);
     }
 
     getDisplayText(): string {
@@ -117,26 +118,7 @@ export class FileClassView extends ItemView {
     }
 
     protected async onOpen(): Promise<void> {
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         this.icon = this.fileClass?.getIcon() || "file-spreadsheet"
-        if (dvApi) {
-            dvApi.executeJs(this.buildDvJSQuery(), this.tableView, this, "")
-        }
-    }
-
-    public buildDvJSQuery(): string | undefined {
-        if (this.fileClass) {
-            const fields = this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name) || []
-            let dvQuery = "const {fieldModifier: f} = this.app.plugins.plugins[\"metadata-menu\"].api;\n" +
-                "dv.table([\"File\",";
-            dvQuery += fields.map(field => `"${field.name}"`).join(",");
-            dvQuery += `], dv.pages()\n`;
-            dvQuery += `    .where(p => p.fileClass === '${this.name}' || p.file.etags.values.includes('#${this.name}'))\n`;
-            dvQuery += `    .slice(0, ${this.plugin.settings.tableViewMaxRecords})`;
-            dvQuery += "    .map(p => [\n        p.file.link,\n";
-            dvQuery += fields.map(field => `        f(dv, p, "${field.name}", {options: {alwaysOn: false, showAddField: true}})`).join(",\n");
-            dvQuery += "    \n])\n);"
-            return dvQuery
-        }
+        this.tableView.buildTable();
     }
 }

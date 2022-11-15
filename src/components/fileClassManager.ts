@@ -75,7 +75,6 @@ export class FileClassManager extends Component {
                 type: this.fileClassViewType,
                 active: true
             });
-
             this.plugin.app.workspace.revealLeaf(
                 this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType).last()!
             );

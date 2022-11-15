@@ -25,4 +25,83 @@
             padding-top: 0.75em;
         }
     }
+
+    .fv-table{
+
+        .options{
+
+            .options-container{
+                display: flex;
+                margin: 0.75em 0;
+
+                &.table{
+                    display: table;
+
+                    .row{
+                        display: table-row;
+                        margin: 1em 0em;
+
+                        &.header{
+                            font-weight: 600;
+                        }
+
+                        .cell{
+                            display: table-cell;
+
+                            .cell-items{
+                                display: flex;
+                                align-items: center;
+
+                                button {
+                                    height: 1.5em;
+                                    width: 1.5em;
+                                    padding: 0.3em;
+                                    border-radius: 0.75em;
+                                    margin-right: 0.5em;
+
+                                    &.active{
+                                        background-color: var(--color-accent);
+                                        color: var(--text-on-accent);
+                                    }
+                                }
+
+                                &.range{
+                                    padding: 0 0.75em;
+
+                                    &.active{
+                                        background-color: var(--color-accent);
+                                        color: var(--text-on-accent);    
+                                        border-radius: 0.75em;
+                                    }
+
+                                    &:hover{
+                                        background-color: var(--color-base-35);
+                                        color: var(---text-on-accent);
+                                        border-radius: 0.75em;
+                                    }
+                                }
+
+                                
+                            }
+
+                            input {
+                                margin-right: 0.5em;
+                                margin-top: 0.5em;
+                            }
+                        }
+
+                    }
+                }
+
+                .label{
+                    font-weight: 600;;
+                }
+
+                button {
+                    margin-right: 0.5em;
+                }
+            }
+        }
+
+    }
 }
