@@ -145,11 +145,11 @@ export class FileClassSettingsView {
         this.fileClassOptions = this.fileClass.getFileClassOptions()
         this.container.replaceChildren();
         const limitContainer = this.container.createDiv({ cls: "setting" });
+        const iconContainer = this.container.createDiv({ cls: "setting" });
         const mapWithTagContainer = this.container.createDiv({ cls: "setting" });
         const tagNamesComponent = this.container.createDiv({ cls: "setting" });
-        const iconContainer = this.container.createDiv({ cls: "setting" });
-        const excludesComponent = this.container.createDiv({ cls: "setting" });
         const extendsComponent = this.container.createDiv({ cls: "setting" });
+        const excludesComponent = this.container.createDiv({ cls: "setting" });
         new FileClassSetting(
             limitContainer,
             "Max records per page",
@@ -176,16 +176,16 @@ export class FileClassSettingsView {
             (action: HTMLDivElement) => this.buildTagNamesComponent(action)
         )
         new FileClassSetting(
-            excludesComponent,
-            "Excluded Fields",
-            `Names of fields to exclude from ancestor fileclasses`,
-            (action: HTMLDivElement) => this.buildExcludesComponent(action)
-        )
-        new FileClassSetting(
             extendsComponent,
             "Parent Fileclass",
             "Choose a fileClass to inherit fields from",
             (action: HTMLDivElement) => this.buildExtendComponent(action)
+        )
+        new FileClassSetting(
+            excludesComponent,
+            "Excluded Fields",
+            `Names of fields to exclude from ancestor fileclasses`,
+            (action: HTMLDivElement) => this.buildExcludesComponent(action)
         )
         this.buildSaveBtn();
         this.saveBtn.removeClass("active")
