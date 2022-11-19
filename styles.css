@@ -1195,8 +1195,85 @@ span.flatpickr-weekday {
       color: var(--text-accent);
       border-bottom: 3px solid var(--text-accent); }
 
-.metadata-menu.fileclass-view .fv-settings .setting-item:first-child {
-  padding-top: 0.75em; }
+.metadata-menu.fileclass-view .fv-settings {
+  display: table; }
+  .metadata-menu.fileclass-view .fv-settings .setting {
+    display: table-row; }
+    .metadata-menu.fileclass-view .fv-settings .setting .cell {
+      display: table-cell;
+      margin: 0.3em 0.2em;
+      vertical-align: middle; }
+      .metadata-menu.fileclass-view .fv-settings .setting .cell button {
+        border: none;
+        box-shadow: none;
+        background: none; }
+        .metadata-menu.fileclass-view .fv-settings .setting .cell button:hover {
+          color: var(--text-accent); }
+      .metadata-menu.fileclass-view .fv-settings .setting .cell .tooltip-button {
+        background: none;
+        box-shadow: none;
+        border: none;
+        vertical-align: middle;
+        color: var(--icon-color);
+        padding-right: 1em; }
+      .metadata-menu.fileclass-view .fv-settings .setting .cell .tooltip-text {
+        color: var(--text-muted);
+        font-size: smaller;
+        line-break: strict;
+        line-height: normal; }
+      .metadata-menu.fileclass-view .fv-settings .setting .cell .option {
+        margin-left: 0.75em; }
+        .metadata-menu.fileclass-view .fv-settings .setting .cell .option svg {
+          vertical-align: text-top; }
+      .metadata-menu.fileclass-view .fv-settings .setting .cell .label {
+        margin: 0.2em 1em 0.2em 0;
+        white-space: nowrap; }
+      .metadata-menu.fileclass-view .fv-settings .setting .cell .action {
+        margin: 0.2em 0em 0.2em 0; }
+        .metadata-menu.fileclass-view .fv-settings .setting .cell .action .checkbox-container {
+          vertical-align: top; }
+        .metadata-menu.fileclass-view .fv-settings .setting .cell .action .icon-manager {
+          display: flex;
+          align-items: end; }
+          .metadata-menu.fileclass-view .fv-settings .setting .cell .action .icon-manager input {
+            margin-right: 0.5em; }
+        .metadata-menu.fileclass-view .fv-settings .setting .cell .action .items {
+          display: flex;
+          align-items: center; }
+          .metadata-menu.fileclass-view .fv-settings .setting .cell .action .items .item {
+            white-space: nowrap; }
+            .metadata-menu.fileclass-view .fv-settings .setting .cell .action .items .item.chip {
+              padding-top: 0.3em;
+              margin-left: 0em;
+              margin-right: 0.3em;
+              background-color: var(--tag-background);
+              border: 1px solid var(--tag-border-color);
+              width: fit-content;
+              display: flex;
+              color: var(--text-muted);
+              align-items: center; }
+              .metadata-menu.fileclass-view .fv-settings .setting .cell .action .items .item.chip .item-remove:hover {
+                color: var(--text-accent); }
+            .metadata-menu.fileclass-view .fv-settings .setting .cell .action .items .item p {
+              margin-block-end: 0;
+              margin-block-start: 0; }
+            .metadata-menu.fileclass-view .fv-settings .setting .cell .action .items .item.spacer {
+              width: 100%; }
+            .metadata-menu.fileclass-view .fv-settings .setting .cell .action .items .item.right-align {
+              padding-right: 0; }
+      .metadata-menu.fileclass-view .fv-settings .setting .cell .chip {
+        margin-right: 1em; }
+      .metadata-menu.fileclass-view .fv-settings .setting .cell .description {
+        margin-right: 1em; }
+      .metadata-menu.fileclass-view .fv-settings .setting .cell .title {
+        font-weight: 600;
+        margin-right: 1em; }
+  .metadata-menu.fileclass-view .fv-settings .footer .cell button {
+    margin-top: 1em; }
+    .metadata-menu.fileclass-view .fv-settings .footer .cell button.active {
+      background-color: var(--color-accent);
+      border-bottom: 3px solid var(--text-accent);
+      color: var(--text-on-accent); }
 
 .metadata-menu.fileclass-view .fv-table .options .options-container {
   display: flex;

@@ -27,7 +27,7 @@ export class FileClassTableView {
     ) {
         this.plugin = plugin;
         this.container = this.viewContainer.createDiv({ cls: "fv-table" })
-        this.limit = this.plugin.settings.tableViewMaxRecords
+        this.limit = this.fileClass.getFileClassOptions().limit
         this.createHeader();
     };
 

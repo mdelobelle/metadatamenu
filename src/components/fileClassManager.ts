@@ -82,6 +82,7 @@ export class FileClassManager extends Component {
             this.registerEvent(this.plugin.app.workspace.on("metadata-menu:updated-index", () => {
                 const view = this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType)[0].view as FileClassView
                 if (view) {
+                    view.updateFieldsView();
                     view.updateSettingsView();
                 }
             }));

@@ -8,13 +8,44 @@ import { replaceValues } from "src/commands/replaceValues";
 import { insertValues } from "src/commands/insertValues";
 import { insertFrontmatterWithFields } from "src/commands/insertFrontmatterWithFields";
 import { FieldCommand } from "src/fields/Field";
+import { FieldManager } from "src/fields/FieldManager";
 
-interface FileClass {
+const options: Record<string, { name: string, toValue: (value: any) => string }> = {
+    "limit": { name: "limit", toValue: (value: any) => `${value || ""}` },
+    "mapWithTag": { name: "mapWithTag", toValue: (value: boolean) => value.toString() },
+    "icon": { name: "icon", toValue: (value: any) => `${value || ""}` },
+    "tagNames": { name: "tagNames", toValue: (values: string[]) => values.join(", ") },
+    "excludes": { name: "excludes", toValue: (values: FileClassAttribute[]) => values.map(attr => attr.name).join(", ") },
+    "parent": { name: "extends", toValue: (value: FileClass) => value.name }
+}
+
+export interface FileClassOptions {
+    limit: number,
+    icon: string,
+    parent?: FileClass;
+    excludes?: Array<FileClassAttribute>;
+    tagNames?: string[],
+    mapWithTag: boolean
+}
+
+export class FileClassOptions {
+
+    constructor(
+        public limit: number,
+        public icon: string,
+        public parent?: FileClass,
+        public excludes?: Array<FileClassAttribute>,
+        public tagNames?: string[],
+        public mapWithTag: boolean = false
+    ) {
+
+    }
+}
+
+interface FileClass extends FileClassOptions {
     attributes: Array<FileClassAttribute>;
     objects: FileClassManager;
     errors: string[];
-    parent?: FileClass;
-    excludes?: Array<FileClassAttribute>;
 }
 
 export class AddFileClassToFileModal extends SuggestModal<string> {
@@ -120,6 +151,25 @@ class FileClass {
         this.attributes = [];
     }
 
+    public getFileClassOptions(): FileClassOptions {
+        const {
+            extends: _parent,
+            limit: _limit,
+            excludes: _excludes,
+            mapWithTag: _mapWithTag,
+            tagNames: _tagNames,
+            icon: _icon
+        } = this.plugin.app.metadataCache.getFileCache(this.getClassFile())?.frontmatter as Record<string, any> || {}
+        const parent = this.plugin.fieldIndex.fileClassesName.get(_parent);
+        const excludedNames = FileClass.getExcludedFieldsFromFrontmatter(_excludes);
+        const excludes = this.attributes.filter(attr => excludedNames.includes(attr.name))
+        const limit = typeof (_limit) === 'number' ? _limit : this.plugin.settings.tableViewMaxRecords
+        const mapWithTag = FieldManager.stringToBoolean(_mapWithTag);
+        const tagNames = FileClass.getTagNamesFromFrontMatter(_tagNames);
+        const icon = typeof (_icon) === 'string' ? _icon : this.plugin.settings.buttonIcon
+        return new FileClassOptions(limit, icon, parent, excludes, tagNames, mapWithTag);
+    }
+
     public isMappedWithTag(): boolean {
         try {
             const fileClassFile = this.getClassFile();
@@ -205,6 +255,16 @@ class FileClass {
         }
     }
 
+    static getTagNamesFromFrontMatter(_tagNames: string[] | string | undefined): string[] {
+        if (Array.isArray(_tagNames)) {
+            return _tagNames;
+        } else if (_tagNames) {
+            return _tagNames.split(",")
+        } else {
+            return []
+        }
+    }
+
     public getAttributes(excludeParents: boolean = false): void {
         try {
             const file = this.getClassFile();
@@ -232,6 +292,30 @@ class FileClass {
             throw (error);
         }
 
+    }
+
+    public async updateOptions(newOptions: FileClassOptions): Promise<void> {
+        const frontmatter = this.plugin.app.metadataCache.getFileCache(this.getClassFile())?.frontmatter
+        if (!frontmatter) return
+        const path = this.getClassFile().path
+        Object.keys(options).forEach(async (key: keyof typeof options) => {
+            const { name, toValue } = options[key]
+            if (frontmatter[name] !== undefined) {
+                await this.plugin.fileTaskManager.pushTask(() => replaceValues(
+                    this.plugin,
+                    path,
+                    name,
+                    toValue(newOptions[key as keyof FileClassOptions])
+                ))
+            } else {
+                await this.plugin.fileTaskManager.pushTask(() => insertValues(
+                    this.plugin,
+                    path,
+                    name,
+                    toValue(newOptions[key as keyof FileClassOptions]), -2, true
+                ))
+            }
+        })
     }
 
     public async updateAttribute(

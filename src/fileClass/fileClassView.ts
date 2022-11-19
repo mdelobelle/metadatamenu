@@ -3,6 +3,7 @@ import { FileView, ItemView, WorkspaceLeaf } from "obsidian";
 import { FileClassManager } from "src/components/fileClassManager";
 import { FileClass } from "./fileClass";
 import { FileClassFieldsView } from "./fileClassFieldsView";
+import { FileClassSettingsView } from "./fileClassSettingsView";
 import { FileClassTableView } from "./fileClassTableView";
 
 export const FILECLASS_VIEW_TYPE = "FileClassView"
@@ -43,7 +44,7 @@ export class FileClassView extends ItemView {
     private menuOptions: MenuOption[] = []
     private viewContainer: HTMLDivElement
     private views: HTMLDivElement[] = []
-    private settingsView: HTMLDivElement
+    private settingsView: FileClassSettingsView
     private tableView: FileClassTableView
     private fieldsView: FileClassFieldsView
 
@@ -80,19 +81,19 @@ export class FileClassView extends ItemView {
         this.buildFieldsView();
         this.buildTableView();
         this.buildMenu();
-        this.updateDisplayView("tableOption");
+        this.updateDisplayView("settingsOption");
     }
 
     buildMenu(): void {
-        this.menuOptions.push(new MenuOption(this.menu, "settingsOption", "Fileclass Settings", this.settingsView, this))
+        this.menuOptions.push(new MenuOption(this.menu, "settingsOption", "Fileclass Settings", this.settingsView.container, this))
         this.menuOptions.push(new MenuOption(this.menu, "fieldsOption", "Fileclass Fields", this.fieldsView.container, this))
         this.menuOptions.push(new MenuOption(this.menu, "tableOption", "Tableview", this.tableView.container, this))
     }
 
     buildSettingsView(): void {
         //todo create the settings view and manage it!!
-        this.settingsView = this.viewContainer.createDiv({ cls: "fv-settings", text: "Settings" });
-        this.views.push(this.settingsView);
+        this.settingsView = new FileClassSettingsView(this.plugin, this.viewContainer, this.fileClass)
+        this.views.push(this.settingsView.container);
     }
 
     buildFieldsView(): void {
@@ -113,8 +114,12 @@ export class FileClassView extends ItemView {
         return this.fileClass ? FILECLASS_VIEW_TYPE + "__" + this.fileClass.name : FILECLASS_VIEW_TYPE
     }
 
-    updateSettingsView(): void {
+    updateFieldsView(): void {
         this.fieldsView.buildSettings()
+    }
+
+    updateSettingsView(): void {
+        this.settingsView.buildSettings()
     }
 
     protected async onOpen(): Promise<void> {

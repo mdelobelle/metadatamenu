@@ -1,67 +1,61 @@
 import MetadataMenu from "main";
-import { Setting } from "obsidian";
+import { ButtonComponent, Setting } from "obsidian";
 import { removeFileClassAttributeWithName } from "src/commands/removeFileClassAttribute";
 import { FieldTypeTagClass } from "src/types/fieldTypes";
 import { FileClass } from "./fileClass";
 import { FileClassAttribute } from "./fileClassAttribute";
 import { FileClassAttributeModal } from "./FileClassAttributeModal";
 
-class FileClassFieldSetting extends Setting {
-    private fieldNameContainer: HTMLSpanElement;
-    private typeContainer: HTMLSpanElement;
-    private fieldOptionsContainer: HTMLSpanElement;
+class FileClassFieldSetting {
     private plugin: MetadataMenu;
 
     constructor(
-        private containerEl: HTMLElement,
+        private container: HTMLElement,
         private fileClass: FileClass,
         public fileClassAttribute: FileClassAttribute,
         plugin: MetadataMenu
     ) {
-        super(containerEl);
         this.plugin = plugin;
-        this.setTextContentWithname();
-        this.addEditButton();
-        this.addDeleteButton();
-        this.settingEl.addClass("no-border")
+        this.buildSetting();
     };
 
-    public setTextContentWithname(): void {
+    private buildSetting(): void {
 
-        this.infoEl.textContent = "";
-        this.infoEl.addClass("setting-item")
-        this.fieldNameContainer = this.infoEl.createEl("div", "name")
-        this.fieldNameContainer.setText(this.fileClassAttribute.name)
-        this.typeContainer = this.infoEl.createEl("div")
-        this.typeContainer.setAttr("class", `chip ${FieldTypeTagClass[this.fileClassAttribute.type]}`)
-        this.typeContainer.setText(this.fileClassAttribute.type)
-        this.fieldOptionsContainer = this.infoEl.createEl("div")
-        this.fieldOptionsContainer.setText(`${this.fileClassAttribute.getOptionsString(this.plugin)}`)
+        const fieldNameContainer = this.container.createDiv({ cls: "cell" })
+        fieldNameContainer.createEl("span", { text: this.fileClassAttribute.name, cls: "title" })
+        const typeContainer = this.container.createDiv({ cls: "cell" })
+        const chip = typeContainer.createDiv({ cls: `chip ${FieldTypeTagClass[this.fileClassAttribute.type]}` })
+        chip.setText(this.fileClassAttribute.type)
+        const fieldOptionsContainer = this.container.createDiv({ cls: "cell" })
+        fieldOptionsContainer.createEl("span", { cls: "description", text: `${this.fileClassAttribute.getOptionsString(this.plugin)}` })
+        this.addEditButton(this.container)
+        this.addDeleteButton(this.container);
     };
 
-    private addEditButton(): void {
-        this.addButton((b) => {
-            b.setIcon("pencil")
-                .setTooltip("Edit")
-                .onClick(() => {
-                    let modal = new FileClassAttributeModal(
-                        this.plugin,
-                        this.fileClass,
-                        this.fileClassAttribute
-                    );
-                    modal.open();
-                });
-        });
+    private addEditButton(container: HTMLElement): void {
+        const btn = new ButtonComponent(container);
+        btn.setIcon("pencil")
+        btn.setTooltip("Edit")
+        btn.setClass("cell")
+        btn.onClick(() => {
+            let modal = new FileClassAttributeModal(
+                this.plugin,
+                this.fileClass,
+                this.fileClassAttribute
+            );
+            modal.open();
+        })
     };
 
-    private addDeleteButton(): void {
-        this.addButton((b) => {
-            b.setIcon("trash")
-                .setTooltip("Delete")
-                .onClick(() => {
-                    removeFileClassAttributeWithName(this.plugin, this.fileClass, this.fileClassAttribute.name)
-                });
-        });
+    private addDeleteButton(container: HTMLElement): void {
+        const btn = new ButtonComponent(container);
+        btn.setIcon("trash");
+        btn.setTooltip("Delete");
+        btn.setClass("cell")
+        btn.onClick(() => {
+
+            removeFileClassAttributeWithName(this.plugin, this.fileClass, this.fileClassAttribute.name)
+        })
     };
 }
 
@@ -83,7 +77,8 @@ export class FileClassFieldsView {
         this.container.replaceChildren();
         const attributes = FileClass.getFileClassAttributes(this.plugin, this.fileClass);
         attributes.forEach(attribute => {
-            new FileClassFieldSetting(this.container, this.fileClass, attribute, this.plugin);
+            const settingContainer = this.container.createDiv({ cls: "setting" })
+            new FileClassFieldSetting(settingContainer, this.fileClass, attribute, this.plugin);
         });
     }
 }
