@@ -20,7 +20,11 @@ class FileClassAttributeModal extends Modal {
     private iconName: TextComponent;
 
 
-    constructor(private plugin: MetadataMenu, private fileClass: FileClass, private attr?: FileClassAttribute) {
+    constructor(
+        private plugin: MetadataMenu,
+        private fileClass: FileClass,
+        private attr?: FileClassAttribute
+    ) {
         super(plugin.app);
         this.initialField = new Field();
         if (this.attr) {

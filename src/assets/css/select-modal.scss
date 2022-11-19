@@ -37,6 +37,18 @@
     display: flex;
     white-space: nowrap;
 
+    button{
+        margin: 0 0.3em;
+
+        &.left{
+            margin-left: 0;
+        }
+
+        &.right{
+            margin-right: 0;
+        }
+    }
+
     .spacer{
         width: 100%;
     }

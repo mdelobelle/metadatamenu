@@ -155,6 +155,7 @@ export default class FieldIndex extends Component {
         await this.updateLookups("full Index", without_lookups);
         if (force_update_all || !this.firstIndexingDone) await this.updateFormulas(); //calculate formulas at start of with force update
         this.firstIndexingDone = true;
+        this.plugin.app.workspace.trigger("metadata-menu:updated-index");
         //console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     }
 

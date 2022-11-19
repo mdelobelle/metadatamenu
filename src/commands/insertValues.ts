@@ -33,7 +33,7 @@ export async function insertValues(
         const result = await plugin.app.vault.read(file)
         let newContent: string[] = [];
         const targetLineNumber = inFrontmatter && lineNumber == -2 && frontmatter ?
-            frontmatter.position.end.line : lineNumber
+            frontmatter.position.end.line - 1 : lineNumber
         result.split("\n").forEach((line, _lineNumber) => {
             if (_lineNumber == targetLineNumber) {
                 if (after) newContent.push(line);

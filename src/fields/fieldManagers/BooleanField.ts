@@ -15,11 +15,17 @@ export default class BooleanField extends FieldManager {
         this.showModalOption = false
     }
 
+    public async toggle(name: string, value: string, file: TFile): Promise<void> {
+        const bValue = BooleanField.stringToBoolean(value);
+        await this.plugin.fileTaskManager
+            .pushTask(() => { replaceValues(this.plugin, file, name, (!bValue).toString()) })
+    }
+
     public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         const bValue = BooleanField.stringToBoolean(value);
         const iconName = FieldIcon[FieldType.Boolean]
-        const action = async () => await this.plugin.fileTaskManager
-            .pushTask(() => { replaceValues(this.plugin, file, name, (!bValue).toString()) })
+        const action = async () => await this.toggle(name, value, file)
+
         if (BooleanField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`<${name}> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);

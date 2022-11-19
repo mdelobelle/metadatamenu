@@ -1,5 +1,6 @@
+import MetadataMenu from "main";
 import Field, { FieldCommand } from "src/fields/Field";
-import { FieldType } from "src/types/fieldTypes";
+import { FieldManager, FieldType } from "src/types/fieldTypes";
 
 class FileClassAttribute {
 
@@ -22,6 +23,12 @@ class FileClassAttribute {
             options = this.options
         }
         return new Field(this.name, options, this.name, this.type, this.fileClassName, this.command);
+    }
+
+    public getOptionsString(plugin: MetadataMenu) {
+        const field = this.getField()
+        const manager = new FieldManager[field.type](plugin, field)
+        return manager.getOptionsStr()
     }
 }
 
