@@ -115,6 +115,7 @@ export class FileClassView extends ItemView {
     }
 
     updateFieldsView(): void {
+        this.fileClass.getAttributes()
         this.fieldsView.buildSettings()
     }
 
