@@ -290,6 +290,14 @@ export class FileClassSettingsView {
             })
         }
         parentManagerContainer.createDiv({ cls: "item spacer" })
+        if (parent) {
+            const parentRemoveBtn = parentManagerContainer.createEl('button', { cls: "item" })
+            setIcon(parentRemoveBtn, "trash")
+            parentRemoveBtn.onclick = async () => {
+                delete (this.fileClassOptions.parent);
+                await this.fileClass.updateOptions(this.fileClassOptions)
+            }
+        }
         const parentChangeBtn = parentManagerContainer.createEl('button', { cls: "item right-align" })
         setIcon(parentChangeBtn, "edit")
         parentChangeBtn.onclick = () => {

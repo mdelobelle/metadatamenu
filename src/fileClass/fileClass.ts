@@ -16,7 +16,7 @@ const options: Record<string, { name: string, toValue: (value: any) => string }>
     "icon": { name: "icon", toValue: (value: any) => `${value || ""}` },
     "tagNames": { name: "tagNames", toValue: (values: string[]) => values.join(", ") },
     "excludes": { name: "excludes", toValue: (values: FileClassAttribute[]) => values.map(attr => attr.name).join(", ") },
-    "parent": { name: "extends", toValue: (value: FileClass) => value.name }
+    "parent": { name: "extends", toValue: (value: FileClass) => `${value?.name || ""}` }
 }
 
 export interface FileClassOptions {

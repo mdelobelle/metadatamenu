@@ -41,6 +41,7 @@ export default class BooleanModal extends Modal {
         choicesContainer.createDiv({ cls: "spacer" });
         const trueButton = new ButtonComponent(choicesContainer);
         trueButton.setButtonText("True")
+        trueButton.setClass("left")
         choicesContainer.createDiv({ cls: "spacer" });
         const falseButton = new ButtonComponent(choicesContainer);
         falseButton.setButtonText("False")
@@ -63,7 +64,7 @@ export default class BooleanModal extends Modal {
             falseButton.removeCta();
         })
         const saveButton = new ButtonComponent(choicesContainer);
-
+        saveButton.setClass("right")
         saveButton.setIcon("checkmark");
         saveButton.onClick(async () => {
             const value = this.value.toString()

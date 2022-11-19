@@ -81,13 +81,13 @@ export class FileClassView extends ItemView {
         this.buildFieldsView();
         this.buildTableView();
         this.buildMenu();
-        this.updateDisplayView("settingsOption");
+        this.updateDisplayView("tableOption");
     }
 
     buildMenu(): void {
-        this.menuOptions.push(new MenuOption(this.menu, "settingsOption", "Fileclass Settings", this.settingsView.container, this))
-        this.menuOptions.push(new MenuOption(this.menu, "fieldsOption", "Fileclass Fields", this.fieldsView.container, this))
-        this.menuOptions.push(new MenuOption(this.menu, "tableOption", "Tableview", this.tableView.container, this))
+        this.menuOptions.push(new MenuOption(this.menu, "tableOption", "Table view", this.tableView.container, this))
+        this.menuOptions.push(new MenuOption(this.menu, "fieldsOption", "Fileclass fields", this.fieldsView.container, this))
+        this.menuOptions.push(new MenuOption(this.menu, "settingsOption", "Fileclass settings", this.settingsView.container, this))
     }
 
     buildSettingsView(): void {
