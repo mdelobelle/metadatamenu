@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { ButtonComponent, Setting } from "obsidian";
+import { ButtonComponent, setIcon, Setting } from "obsidian";
 import { removeFileClassAttributeWithName } from "src/commands/removeFileClassAttribute";
 import { FieldTypeTagClass } from "src/types/fieldTypes";
 import { FileClass } from "./fileClass";
@@ -73,6 +73,17 @@ export class FileClassFieldsView {
         this.buildSettings();
     };
 
+    private builAddBtn(): void {
+        const footer = this.container.createDiv({ cls: "footer" });
+        const btnContainer = footer.createDiv({ cls: "cell" })
+        const addBtn = btnContainer.createEl('button');
+        setIcon(addBtn, "list-plus")
+        addBtn.onclick = async () => {
+            const fileClassAttributeModal = new FileClassAttributeModal(this.plugin, FileClass.createFileClass(this.plugin, this.fileClass.name))
+            fileClassAttributeModal.open()
+        }
+    }
+
     buildSettings(): void {
         this.container.replaceChildren();
         const attributes = FileClass.getFileClassAttributes(this.plugin, this.fileClass);
@@ -80,5 +91,6 @@ export class FileClassFieldsView {
             const settingContainer = this.container.createDiv({ cls: "setting" })
             new FileClassFieldSetting(settingContainer, this.fileClass, attribute, this.plugin);
         });
+        this.builAddBtn();
     }
 }
