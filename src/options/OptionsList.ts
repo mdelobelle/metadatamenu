@@ -3,6 +3,8 @@ import { MarkdownView, Menu, Notice, TFile } from "obsidian";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import Field from "src/fields/Field";
 import { FieldManager as F } from "src/fields/FieldManager";
+import BooleanField from "src/fields/fieldManagers/BooleanField";
+import CycleField from "src/fields/fieldManagers/CycleField";
 import Managers from "src/fields/fieldManagers/Managers";
 import { AddFileClassToFileModal } from "src/fileClass/fileClass";
 import AddNewFileClassModal from "src/modals/addNewFileClassModal";
@@ -83,8 +85,19 @@ export default class OptionsList {
 	public createAndOpenFieldModal(fieldName: string): void {
 		const field = this.fieldsFromIndex[fieldName]
 		if (field) {
-			const fieldManager = new FieldManager[field.type](this.plugin, field);
-			(fieldManager as F).createAndOpenFieldModal(this.file, field.name, this.attributes[field.name])
+			const fieldManager = new FieldManager[field.type](this.plugin, field) as F;
+			switch (fieldManager.type) {
+				case FieldType.Boolean:
+					(fieldManager as BooleanField).toggle(field.name, this.attributes[field.name], this.file)
+					break;
+				case FieldType.Cycle:
+					(fieldManager as CycleField).next(field.name, this.attributes[field.name], this.file)
+					break;
+				default:
+					fieldManager.createAndOpenFieldModal(this.file, field.name, this.attributes[field.name])
+					break;
+			}
+
 		} else {
 			const defaultField = new Field(fieldName)
 			defaultField.type = FieldType.Input

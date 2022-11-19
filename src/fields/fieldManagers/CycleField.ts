@@ -61,12 +61,17 @@ export default class CycleField extends AbstractListBasedField {
         container.createDiv({ text: this.getRawOptionFromDuration(valueText) || valueText })
     }
 
+    public async next(name: string, value: string, file: TFile): Promise<void> {
+        let matchedValue = this.getRawOptionFromDuration(value) || value;
+        await this.plugin.fileTaskManager
+            .pushTask(() => { replaceValues(this.plugin, file, name, this.nextOption(matchedValue).toString()) })
+    }
+
     public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         // dataview is converting strings to duration, let's find back the raw string option from duration if needed
         let matchedValue = this.getRawOptionFromDuration(value) || value;
         const iconName = FieldIcon[FieldType.Cycle];
-        const action = async () => await this.plugin.fileTaskManager
-            .pushTask(() => { replaceValues(this.plugin, file, name, this.nextOption(matchedValue).toString()) });
+        const action = async () => this.next(name, value, file);
         if (CycleField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`${name} : ${matchedValue} ▷ ${this.nextOption(matchedValue)}`);
