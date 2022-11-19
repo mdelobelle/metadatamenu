@@ -44,7 +44,7 @@ export class FileClassOptions {
 
 interface FileClass extends FileClassOptions {
     attributes: Array<FileClassAttribute>;
-    objects: FileClassManager;
+    objects: FileClassObjects;
     errors: string[];
 }
 
@@ -101,7 +101,7 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
     }
 }
 
-class FileClassManager {
+class FileClassObjects {
 
     constructor(public instance: FileClass) { }
 
@@ -147,7 +147,7 @@ class FileClassManager {
 
 class FileClass {
     constructor(public plugin: MetadataMenu, public name: string) {
-        this.objects = new FileClassManager(this);
+        this.objects = new FileClassObjects(this);
         this.attributes = [];
     }
 

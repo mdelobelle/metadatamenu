@@ -160,12 +160,13 @@ export class FileClassTableView {
         })
     }
 
+
     public buildTable(): void {
         if (this.tableContainer) this.tableContainer.remove();
         this.tableContainer = this.container.createDiv({ attr: { id: "table-container" } })
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
-            dvApi.executeJs(this.buildDvJSRendering(), this.tableContainer, this.component, this.fileClass.getClassFile().path)
+            dvApi.executeJs(this.buildDvJSRendering(), this.tableContainer, this.plugin, this.fileClass.getClassFile().path)
         }
         // links aren't clickable anymore, rebinding them to click event
         this.container.querySelectorAll("a.internal-link")

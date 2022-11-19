@@ -15,7 +15,7 @@ export function clearExtraAttributes(link: HTMLElement) {
     })
 }
 
-function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, destName: string, viewTypeName: string | null, fileClassName?: string) {
+function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, destPath: string, viewTypeName: string | null, fileClassName?: string) {
     switch (viewTypeName) {
         case "a.internal-link": if (!plugin.settings.enableLinks) return; break;
         case "tabHeader": if (!plugin.settings.enableTabHeader) return; break;
@@ -36,24 +36,24 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
         }
     }
     const classFilessPath = plugin.settings.classFilesPath
-    if (classFilessPath && destName.includes(classFilessPath)) {
+    const fileClass = plugin.fieldIndex.fileClassesPath.get(destPath + ".md")
+    if (classFilessPath && fileClass) {
+
         const icon = "file-spreadsheet"
-        const fileClass = plugin.fieldIndex.fileClassesPath.get(destName + ".md")
-        if (fileClass) {
-            link.setAttribute("fileclass-name", fileClass.name)
-            const el = link.nextElementSibling
-            if (!el?.hasClass("fileclass-icon")) {
-                const metadataMenuBtn = plugin.app.workspace.containerEl.createEl('a', { cls: "metadata-menu fileclass-icon" })
-                if (metadataMenuBtn) {
-                    setIcon(metadataMenuBtn, icon)
-                    link.parentElement?.insertBefore(metadataMenuBtn, link.nextSibling)
-                    metadataMenuBtn.onclick = (event) => {
-                        plugin.addChild(new FileClassManager(plugin, fileClass))
-                        event.stopPropagation();
-                    }
+        link.setAttribute("fileclass-name", fileClass.name)
+        const el = link.nextElementSibling
+        if (!el?.hasClass("fileclass-icon")) {
+            const metadataMenuBtn = plugin.app.workspace.containerEl.createEl('a', { cls: "metadata-menu fileclass-icon" })
+            if (metadataMenuBtn) {
+                setIcon(metadataMenuBtn, icon)
+                link.parentElement?.insertBefore(metadataMenuBtn, link.nextSibling)
+                metadataMenuBtn.onclick = (event) => {
+                    plugin.addChild(new FileClassManager(plugin, fileClass))
+                    event.stopPropagation();
                 }
             }
         }
+
     }
     else if (fileClassName) {
         const fileClass = plugin.fieldIndex.fileClassesName.get(fileClassName)
@@ -67,7 +67,7 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
                     setIcon(metadataMenuBtn, icon || plugin.settings.buttonIcon)
                     link.parentElement?.insertBefore(metadataMenuBtn, link.nextSibling)
                     metadataMenuBtn.onclick = (event) => {
-                        const file = plugin.app.vault.getAbstractFileByPath(`${destName}.md`)
+                        const file = plugin.app.vault.getAbstractFileByPath(`${destPath}.md`)
                         if (file instanceof TFile && file.extension === "md") {
                             const noteFieldsComponent = new NoteFieldsComponent(plugin, "1", () => { }, file)
                             plugin.addChild(noteFieldsComponent);
@@ -133,7 +133,7 @@ export function updateVisibleLinks(app: App, plugin: MetadataMenu) {
                         const fileClassName = plugin.fieldIndex.filesFileClassesNames.get(dest.path)?.last()
 
                         const internalLinks = leaf.view.containerEl.querySelectorAll(`a.internal-link[href="${link.link}"]`)
-                        internalLinks.forEach((internalLink: HTMLElement) => setLinkMetadataFormButton(plugin, internalLink, fileName, `a.internal-link`, fileClassName))
+                        internalLinks.forEach((internalLink: HTMLElement) => setLinkMetadataFormButton(plugin, internalLink, dest.path.replace(/(.*).md/, "$1"), `a.internal-link`, fileClassName))
                     }
                 })
             }

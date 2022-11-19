@@ -67,7 +67,11 @@ export class FileClassManager extends Component {
             this.plugin.app.workspace.detachLeavesOfType(this.fileClassViewType);
 
             this.plugin.registerView(this.fileClassViewType,
-                (leaf: WorkspaceLeaf) => new FileClassView(leaf, this.plugin, this, this.name, fileClass)
+                (leaf: WorkspaceLeaf) => {
+                    const fileClassView = new FileClassView(leaf, this.plugin, this, this.name, fileClass)
+                    this.fileClassView = fileClassView;
+                    return fileClassView
+                }
             )
 
             //@ts-ignore
