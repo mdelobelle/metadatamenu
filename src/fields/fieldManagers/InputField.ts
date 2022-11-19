@@ -14,7 +14,7 @@ export default class InputField extends FieldManager {
     }
 
     public getOptionsStr(): string {
-        return this.field.options.template
+        return this.field.options.template || ""
     }
 
     public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
