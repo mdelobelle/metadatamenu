@@ -296,11 +296,10 @@ class FileClass {
 
     public async updateOptions(newOptions: FileClassOptions): Promise<void> {
         const frontmatter = this.plugin.app.metadataCache.getFileCache(this.getClassFile())?.frontmatter
-        if (!frontmatter) return
         const path = this.getClassFile().path
         Object.keys(options).forEach(async (key: keyof typeof options) => {
             const { name, toValue } = options[key]
-            if (frontmatter[name] !== undefined) {
+            if (frontmatter && frontmatter[name] !== undefined) {
                 await this.plugin.fileTaskManager.pushTask(() => replaceValues(
                     this.plugin,
                     path,
