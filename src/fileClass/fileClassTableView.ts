@@ -204,18 +204,19 @@ export class FileClassTableView {
 
     private buildDvJSQuery(): string {
         let dvQuery = "";
+        const fileClassAlias = this.plugin.settings.fileClassAlias
         const classFilesPath = this.plugin.settings.classFilesPath
         const templatesFolder = this.plugin.app.plugins.plugins["templater-obsidian"]?.settings["templates_folder"];
         dvQuery += `dv.pages()\n`;
-        dvQuery += `    .where(p => \n` +
-            `        (\n` +
-            `            (typeof(p.fileClass) === 'string' && p.fileClass === '${this.fileClass.name}') \n` +
-            `            || (Array.isArray(p.fileClass) && p.fileClass.includes('${this.fileClass.name}')) \n` +
-            `            || p.file.etags.values.includes('#${this.fileClass.name}')\n` +
-            `        )\n` +
-            `${!!classFilesPath ? "        && !p.file.path.includes('" + classFilesPath + "')\n" : ""}` +
-            `${templatesFolder ? "        && !p.file.path.includes('" + templatesFolder + "')\n" : ""}` +
-            `    )\n`;
+        dvQuery += `    .where(p =>
+        (
+            (typeof(p['${fileClassAlias}']) === 'string' && p['${fileClassAlias}'] === '${this.fileClass.name}')
+            || (Array.isArray(p['${fileClassAlias}']) && p['${fileClassAlias}'].includes('${this.fileClass.name}'))
+            || p.file.etags.values.includes('#${this.fileClass.name}')
+        )
+        ${!!classFilesPath ? "        && !p.file.path.includes('" + classFilesPath + "')\n" : ""}
+        ${templatesFolder ? "        && !p.file.path.includes('" + templatesFolder + "')\n" : ""}
+        )`;
         dvQuery += this.buildFilterQuery();
         return dvQuery;
     }
