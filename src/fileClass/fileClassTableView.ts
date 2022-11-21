@@ -203,6 +203,13 @@ export class FileClassTableView {
     }
 
     private buildDvJSQuery(): string {
+        const tagsMappedToFileClass: string[] = []
+        this.plugin.fieldIndex.tagsMatchingFileClasses.forEach((cls, tag) => {
+            if (this.fileClass === cls) {
+                tagsMappedToFileClass.push('#' + tag)
+            }
+        })
+
         let dvQuery = "";
         const fileClassAlias = this.plugin.settings.fileClassAlias
         const classFilesPath = this.plugin.settings.classFilesPath
@@ -212,7 +219,7 @@ export class FileClassTableView {
         (
             (typeof(p['${fileClassAlias}']) === 'string' && p['${fileClassAlias}'] === '${this.fileClass.name}')
             || (Array.isArray(p['${fileClassAlias}']) && p['${fileClassAlias}'].includes('${this.fileClass.name}'))
-            || p.file.etags.values.includes('#${this.fileClass.name}')
+            || p.file.etags.values.some(et => ${JSON.stringify(tagsMappedToFileClass)}.some(t => et.startsWith(t)))
         )
         ${!!classFilesPath ? "        && !p.file.path.includes('" + classFilesPath + "')\n" : ""}
         ${templatesFolder ? "        && !p.file.path.includes('" + templatesFolder + "')\n" : ""}
