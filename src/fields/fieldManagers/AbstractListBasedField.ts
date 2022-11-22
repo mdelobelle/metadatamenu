@@ -15,11 +15,6 @@ export default abstract class AbstractListBasedField extends FieldManager {
         super(plugin, field, type)
     }
 
-    //Settings
-    private setValueListText(header: HTMLDivElement): void {
-        header.setText(`Preset options: ${Object.values(this.field.options.valuesList).join(', ')}`);
-    };
-
     private createListNotePathContainer(container: HTMLDivElement, plugin: MetadataMenu): HTMLDivElement {
         const valuesListNotePathContainer = container.createDiv({ cls: "field-container" });
         valuesListNotePathContainer.createDiv({ text: `Path of the note`, cls: "label" });
@@ -51,17 +46,15 @@ export default abstract class AbstractListBasedField extends FieldManager {
     private createValuesListContainer(parentContainer: HTMLDivElement): HTMLDivElement {
         const presetValuesFields = parentContainer.createDiv()
         const valuesList = presetValuesFields.createDiv();
-        const valuesListHeader = valuesList.createDiv({});
-        valuesListHeader.createEl("span", { text: `Preset options: ${Object.values(this.field.options.valuesList).join(', ')}` });
         const valuesListBody = valuesList.createDiv();
         Object.keys(this.field.options.valuesList).forEach(key => {
-            this.valuesPromptComponents.push(this.createValueContainer(valuesListBody, valuesListHeader, key));
+            this.valuesPromptComponents.push(this.createValueContainer(valuesListBody, key));
         });
-        this.createAddButton(valuesList, valuesListBody, valuesListHeader)
+        this.createAddButton(valuesList, valuesListBody)
         return presetValuesFields;
     }
 
-    private createValueContainer(parentNode: HTMLDivElement, header: HTMLDivElement, key: string): TextComponent {
+    private createValueContainer(parentNode: HTMLDivElement, key: string): TextComponent {
         const values = this.field.options.valuesList || {};
         const presetValue = values[key];
         const valueContainer = parentNode.createDiv({ cls: 'field-container', });
@@ -71,7 +64,6 @@ export default abstract class AbstractListBasedField extends FieldManager {
         input.setValue(presetValue);
         input.onChange(value => {
             this.field.options.valuesList[key] = value;
-            this.setValueListText(header);
             FieldSettingsModal.removeValidationError(input);
         });
         const valueRemoveButton = new ButtonComponent(valueContainer);
@@ -79,7 +71,6 @@ export default abstract class AbstractListBasedField extends FieldManager {
             .onClick((evt: MouseEvent) => {
                 evt.preventDefault;
                 this.removePresetValue(key);
-                this.setValueListText(header);
                 parentNode.removeChild(valueContainer);
                 this.valuesPromptComponents.remove(input);
             });
@@ -178,7 +169,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
         return !error
     }
 
-    private createAddButton(valuesList: HTMLDivElement, valuesListBody: HTMLDivElement, valuesListHeader: HTMLDivElement): void {
+    private createAddButton(valuesList: HTMLDivElement, valuesListBody: HTMLDivElement): void {
         const valuesListFooter = valuesList.createDiv();
         const addValue = valuesListFooter.createEl('button');
         addValue.type = 'button';
@@ -194,7 +185,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
             });
             const newKey = newKeyNumber.toString();
             this.field.options.valuesList[newKey] = "";
-            this.createValueContainer(valuesListBody, valuesListHeader, newKey)
+            this.createValueContainer(valuesListBody, newKey)
         });
         valuesList.createEl("hr");
     }
