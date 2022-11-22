@@ -716,7 +716,8 @@ span.flatpickr-weekday {
   color: white;
   margin-left: 0.5em;
   margin-right: 0.5em;
-  height: 1.6em; }
+  height: 1.6em;
+  white-space: nowrap; }
   .metadata-menu .chip.field-type {
     font-size: x-small; }
   .metadata-menu .chip.cycle {
