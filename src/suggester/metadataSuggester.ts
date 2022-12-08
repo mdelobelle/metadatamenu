@@ -53,6 +53,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         if (!this.plugin.settings.isAutosuggestEnabled) {
             return null;
         };
+        if (file?.extension !== "md") return null
         const frontmatter = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter;
         const fullLine = editor.getLine(editor.getCursor().line)
         this.inFrontmatter = !!frontmatter &&
