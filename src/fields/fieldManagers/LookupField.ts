@@ -103,7 +103,7 @@ export default class LookupField extends FieldManager {
         const autoUpdate = new ToggleComponent(autoUpdateContainer);
         autoUpdateTopContainer.createEl("span", { text: "This could lead to latencies depending on the queries", cls: 'sub-text warning' });
 
-        if (this.field.options.autoUpdate === undefined) this.field.options.autoUpdate = true
+        if (this.field.options.autoUpdate === undefined) this.field.options.autoUpdate = false
         autoUpdate.setValue(this.field.options.autoUpdate);
         autoUpdate.onChange(value => {
             this.field.options.autoUpdate = value

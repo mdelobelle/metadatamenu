@@ -1,8 +1,10 @@
 import MetadataMenu from "main";
-import { Notice } from "obsidian";
+import { Notice, TFile } from "obsidian";
 import Field from "src/fields/Field";
 import { FieldType } from "src/types/fieldTypes";
+import { Status } from "src/types/lookupTypes";
 import { replaceValues } from "./replaceValues";
+import { arraysAsStringAreEqual } from "./updateLookups";
 
 
 export function cleanRemovedFormulasFromIndex(
@@ -28,7 +30,9 @@ export function cleanRemovedFormulasFromIndex(
 }
 
 export async function updateFormulas(
-    plugin: MetadataMenu
+    plugin: MetadataMenu,
+    forceUpdateOne?: { file: TFile, fieldName: string },
+    forceUpdateAll: boolean = false
 ): Promise<void> {
 
     const start = Date.now()
@@ -46,6 +50,10 @@ export async function updateFormulas(
     [...fileFormulasFields].forEach(async ([id, field]) => {
         const matchRegex = /(?<filePath>.*)__calculated__(?<fileClassName>.*)___(?<fieldName>.*)/
         const { filePath, fileClassName, fieldName } = id.match(matchRegex)?.groups || {}
+        const shouldUpdate =
+            forceUpdateAll ||
+            forceUpdateOne?.file.path === filePath && forceUpdateOne?.fieldName === fieldName ||
+            field.options.autoUpdate === true
         const dvFile = f.dv.api.page(filePath)
         const currentdvValue = dvFile && dvFile[field.name]
 
@@ -53,9 +61,18 @@ export async function updateFormulas(
         f.fileFormulaFieldLastValue.set(id, currentValue);
         try {
             const newValue = (new Function("current, dv", `return ${field.options.formula}`))(dvFile, f.dv.api).toString();
-            if ((!currentValue && newValue !== "") || currentValue !== newValue) {
-                await plugin.fileTaskManager.pushTask(() => replaceValues(plugin, filePath, field.name, newValue));
-                f.fileFormulaFieldLastValue.set(id, newValue);
+            const valueHasChanged = (!currentValue && newValue !== "") || !arraysAsStringAreEqual(currentValue, newValue) || currentValue !== newValue
+            if (!valueHasChanged) {
+                f.fileFormulaFieldsStatus.set(`${filePath}__${fieldName}`, Status.upToDate);
+                return;
+            } else {
+                if (!shouldUpdate) {
+                    f.fileFormulaFieldsStatus.set(`${filePath}__${field.name}`, Status.changed)
+                } else {
+                    await plugin.fileTaskManager.pushTask(() => replaceValues(plugin, filePath, field.name, newValue));
+                    f.fileFormulaFieldLastValue.set(id, newValue);
+                    f.fileFormulaFieldsStatus.set(`${filePath}__${field.name}`, Status.upToDate)
+                }
             }
         } catch {
             if (renderingErrors.includes(field.name)) renderingErrors.push(field.name)

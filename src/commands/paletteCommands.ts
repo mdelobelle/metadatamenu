@@ -13,6 +13,9 @@ import { frontMatterLineField, getLineFields } from "src/utils/parser";
 import { insertMissingFields } from "./insertMissingFields";
 import { FieldManager as F } from "src/fields/FieldManager";
 import { FileClassManager } from "src/components/fileClassManager";
+import { FieldType } from "src/types/fieldTypes";
+import { updateLookups } from "./updateLookups";
+import { updateFormulas } from "./updateFormulas";
 
 function addFileClassAttributeOptions(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
@@ -177,18 +180,6 @@ function insertMissingFieldsCommand(plugin: MetadataMenu) {
     })
 }
 
-function addUpdateLookups(plugin: MetadataMenu) {
-    plugin.addCommand({
-        id: "update_formulas",
-        name: "Update formulas fields",
-        icon: "function-square",
-        checkCallback: (checking: boolean) => {
-            if (checking) return true;
-            plugin.fieldIndex.fullIndex("command", true);
-        }
-    })
-}
-
 function addOpenFieldsModalCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
     plugin.addCommand({
@@ -213,7 +204,6 @@ function addOpenFieldsModalCommand(plugin: MetadataMenu) {
 }
 
 function addInsertFieldCommand(plugin: MetadataMenu): void {
-    const classFilesPath = plugin.settings.classFilesPath;
     const fields: Field[] = [];
     plugin.settings.presetFields.forEach(f => { if (f.command) fields.push(f) });
     [...plugin.fieldIndex.fileClassesFields].forEach(([fileClassName, _fields]) => {
@@ -228,7 +218,6 @@ function addInsertFieldCommand(plugin: MetadataMenu): void {
                 icon: command.icon,
                 checkCallback: (checking: boolean) => {
                     const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
-                    const inFile = !!(view?.file && (!classFilesPath || !view.file.path.startsWith(classFilesPath)))
                     const fR = command.id.match(/insert__(?<fileClassName>.*)__(?<fieldName>.*)/)
                     if (checking) {
                         const fileClasses = view?.file ? plugin.fieldIndex.filesFileClasses.get(view?.file.path) : undefined
@@ -265,7 +254,6 @@ function addInsertFieldCommand(plugin: MetadataMenu): void {
 
                 }
             })
-
         }
     })
 }
@@ -287,6 +275,70 @@ function addFileClassTableViewCommand(plugin: MetadataMenu) {
     })
 }
 
+
+function addUpdateLookupsAndFormulas(plugin: MetadataMenu) {
+    plugin.addCommand({
+        id: "update_all_lookups",
+        name: "Update all lookups and formulas",
+        icon: "file-search",
+        checkCallback: (checking: boolean) => {
+            if (checking) return true;
+            plugin.fieldIndex.fullIndex("command", true);
+        }
+    })
+}
+
+function addUpdateFileLookupsCommand(plugin: MetadataMenu) {
+    const classFilesPath = plugin.settings.classFilesPath
+    plugin.addCommand({
+        id: "update_file_lookups",
+        name: "Update active file lookups fields",
+        icon: "file-search",
+        checkCallback: (checking: boolean) => {
+            const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
+            const inFile = !!(view?.file && (!classFilesPath || !view.file.path.startsWith(classFilesPath)))
+            if (checking) {
+                return inFile
+            }
+            if (inFile) {
+                const file = view.file;
+                if (inFile && file instanceof TFile && file.extension === "md") {
+                    const lookupFields = plugin.fieldIndex.filesFields.get(file.path)?.filter(field => field.type === FieldType.Lookup)
+                    lookupFields?.forEach(async (field) => {
+                        await updateLookups(plugin, "single_command", { file: file, fieldName: field.name })
+                    })
+                }
+            }
+        }
+    })
+}
+
+function addUpdateFileFormulasCommand(plugin: MetadataMenu) {
+    const classFilesPath = plugin.settings.classFilesPath
+    plugin.addCommand({
+        id: "update_file_formulas",
+        name: "Update active file formulas fields",
+        icon: "function-square",
+        checkCallback: (checking: boolean) => {
+            const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
+            const inFile = !!(view?.file && (!classFilesPath || !view.file.path.startsWith(classFilesPath)))
+            if (checking) {
+                return inFile
+            }
+            if (inFile) {
+                const file = view.file;
+                if (inFile && file instanceof TFile && file.extension === "md") {
+                    const formulaFields = plugin.fieldIndex.filesFields.get(file.path)?.filter(field => field.type === FieldType.Formula)
+                    formulaFields?.forEach(async (field) => {
+                        await updateFormulas(plugin, { file: file, fieldName: field.name })
+                    })
+                }
+            }
+        }
+    })
+}
+
+
 export function addCommands(plugin: MetadataMenu, view: View | undefined | null) {
     const classFilesPath = plugin.settings.classFilesPath
     if (view && view instanceof FileView) {
@@ -302,9 +354,11 @@ export function addCommands(plugin: MetadataMenu, view: View | undefined | null)
                 insertMissingFieldsCommand(plugin);
                 addOpenFieldsModalCommand(plugin)
                 addInsertFieldCommand(plugin)
+                addUpdateFileLookupsCommand(plugin);
+                addUpdateFileFormulasCommand(plugin)
             }
         }
     }
     addFileClassTableViewCommand(plugin)
-    addUpdateLookups(plugin)
+    addUpdateLookupsAndFormulas(plugin)
 }
