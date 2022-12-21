@@ -880,7 +880,8 @@ span.flatpickr-weekday {
   border-radius: 0.5em; }
 
 .metadata-menu.modal-container .footer-actions {
-  display: flex; }
+  display: flex;
+  padding: var(--size-4-3); }
   .metadata-menu.modal-container .footer-actions .spacer {
     width: 100%; }
   .metadata-menu.modal-container .footer-actions .info {
@@ -1055,7 +1056,8 @@ span.flatpickr-weekday {
   border-radius: 0.5em; }
 
 .metadata-menu.modal-container .footer-actions {
-  display: flex; }
+  display: flex;
+  padding: var(--size-4-3); }
   .metadata-menu.modal-container .footer-actions .spacer {
     width: 100%; }
   .metadata-menu.modal-container .footer-actions .info {
