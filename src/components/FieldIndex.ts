@@ -29,6 +29,7 @@ export default class FieldIndex extends Component {
     public tagsMatchingFileClasses: Map<string, FileClass>;
     public fileLookupFiles: Map<string, any[]>;
     public fileLookupFieldsStatus: Map<string, LookupStatus>;
+    public fileFormulaFieldsStatus: Map<string, LookupStatus>;
     public previousFileLookupFilesValues: Map<string, number>;
     public fileLookupFieldLastValue: Map<string, string>;
     public fileLookupFieldLastOutputType: Map<string, keyof typeof LookupType>;
@@ -48,6 +49,7 @@ export default class FieldIndex extends Component {
         this.fileLookupFiles = new Map();
         this.fileLookupFieldLastValue = new Map();
         this.fileLookupFieldsStatus = new Map();
+        this.fileFormulaFieldsStatus = new Map()
         this.previousFileLookupFilesValues = new Map();
         this.fileLookupFieldLastOutputType = new Map();
         this.fileFormulaFieldLastValue = new Map();
@@ -106,10 +108,10 @@ export default class FieldIndex extends Component {
                     if (this.classFilesPath && file.path.startsWith(this.classFilesPath)) {
                         this.fullIndex("fileClass changed")
                     } else {
-                        await this.updateFormulas();
+                        await this.updateFormulas(false);
                         this.resolveLookups(false);
                         const fileClassName = FileClass.getFileClassNameFromPath(this.plugin, file.path)
-                        await this.updateLookups(fileClassName, false);
+                        await this.updateLookups(fileClassName, false, false);
                     }
                     this.lastRevision = this.dv.api.index.revision
                 }
@@ -152,8 +154,8 @@ export default class FieldIndex extends Component {
         this.getFilesFieldsExists();
         await this.getValuesListNotePathValues();
         this.resolveLookups(without_lookups);
-        await this.updateLookups("full Index", without_lookups);
-        if (force_update_all || !this.firstIndexingDone) await this.updateFormulas(); //calculate formulas at start of with force update
+        await this.updateLookups("full Index", without_lookups, force_update_all);
+        if (force_update_all || !this.firstIndexingDone) await this.updateFormulas(force_update_all); //calculate formulas at start of with force update
         this.firstIndexingDone = true;
         this.plugin.app.workspace.trigger("metadata-menu:updated-index");
         //console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
@@ -163,12 +165,18 @@ export default class FieldIndex extends Component {
         if (!without_lookups) resolveLookups(this.plugin);
     }
 
-    async updateLookups(source: string = "", without_lookups: boolean): Promise<void> {
-        if (!without_lookups) await updateLookups(this.plugin, source);
+    async updateLookups(source: string = "", without_lookups: boolean, force_update_all: boolean): Promise<void> {
+        if (!without_lookups) {
+            if (force_update_all) {
+                await updateLookups(this.plugin, source, undefined, true)
+            } else {
+                await updateLookups(this.plugin, source);
+            }
+        }
     }
 
-    async updateFormulas(): Promise<void> {
-        await updateFormulas(this.plugin);
+    async updateFormulas(force_update_all: boolean): Promise<void> {
+        await updateFormulas(this.plugin, undefined, force_update_all);
     }
 
     async getValuesListNotePathValues(): Promise<void> {

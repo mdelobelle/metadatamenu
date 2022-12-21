@@ -5,7 +5,7 @@ import * as Lookup from "src/types/lookupTypes";
 import { getValues } from "./getValues";
 import { replaceValues } from "./replaceValues";
 
-function arraysAsStringAreEqual(a: string, b: string) {
+export function arraysAsStringAreEqual(a: string, b: string) {
     const aAsArray = a.split(",").map(v => v.trim())
     const bAsArray = b.split(",").map(v => v.trim())
     return aAsArray.every(item => bAsArray.includes(item)) && bAsArray.every(item => aAsArray.includes(item))
@@ -21,7 +21,8 @@ async function parseFieldValues(plugin: MetadataMenu, file: TFile, fieldName: st
 export async function updateLookups(
     plugin: MetadataMenu,
     source: string = "",
-    forceUpdateOne?: { file: TFile, fieldName: string }
+    forceUpdateOne?: { file: TFile, fieldName: string },
+    forceUpdateAll: boolean = false
 ): Promise<void> {
     const start = Date.now()
     //console.log("start update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
@@ -101,7 +102,8 @@ export async function updateLookups(
                 const currentValue = f.fileLookupFieldLastValue.get(id) || await parseFieldValues(plugin, tFile, field.name) || ""
                 const shouldCheckForUpdate =
                     field.options.autoUpdate ||
-                    field.options.autoUpdate === undefined || //field is autoUpdated OR
+                    field.options.autoUpdate === undefined ||
+                    forceUpdateAll ||//field is autoUpdated OR
                     ( //field is not autoupdated and we have to check for request to update this one
                         forceUpdateOne?.file.path === tFile.path &&
                         forceUpdateOne?.fieldName === field.name

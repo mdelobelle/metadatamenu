@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { TFile, Menu, TextAreaComponent } from "obsidian";
+import { TFile, Menu, TextAreaComponent, ToggleComponent } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldType, FieldIcon } from "src/types/fieldTypes";
@@ -10,6 +10,7 @@ import { replaceValues } from "src/commands/replaceValues";
 import { insertValues } from "src/commands/insertValues";
 import { Status } from "src/types/lookupTypes";
 import { FieldOptions } from "src/components/NoteFields";
+import { updateFormulas } from "src/commands/updateFormulas";
 
 export default class FormulaField extends FieldManager {
 
@@ -19,11 +20,16 @@ export default class FormulaField extends FieldManager {
     }
 
     addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
-        const action = () => { };
+        const f = this.plugin.fieldIndex;
+        const id = `${file.path}__${this.field.name}`;
+        let status: Status;
+        status = f.fileFormulaFieldsStatus.get(id) || Status.changed
+        const icon = status === Status.changed ? "refresh-ccw" : "file-check"
+        const action = () => { updateFormulas(this.plugin, { file: file, fieldName: this.field.name }) };
         if (FormulaField.isMenu(location) && status === Status.changed) {
             location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
-                item.setIcon(FieldIcon.Formula);
+                item.setIcon(icon);
                 item.onClick(action);
                 item.setSection("metadata-menu.fields");
             })
@@ -32,11 +38,12 @@ export default class FormulaField extends FieldManager {
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
                 action: action,
-                icon: FieldIcon.Formula
+                icon: icon
             });
-
-        } else if (FormulaField.isFieldOptions(location)) {
-            location.addOption(FieldIcon.Formula, () => { }, `${name} is automatically calculated`, "disabled");
+        } else if (FormulaField.isFieldOptions(location) && status === Status.changed) {
+            location.addOption(icon, action, `Update ${name}'s value`);
+        } else if (FormulaField.isFieldOptions(location) && status === Status.upToDate) {
+            location.addOption(icon, () => { }, `${name} is up to date`);
         }
     }
 
@@ -60,9 +67,21 @@ export default class FormulaField extends FieldManager {
         container.createDiv({ text: this.plugin.fieldIndex.fileFormulaFieldLastValue.get(`${file.path}__calculated__${fileClassName}___${fieldName}`) })
     }
 
-    private createFormulaContainer(parentContainer: HTMLDivElement): void {
+    private createFormulaContainer(container: HTMLDivElement): void {
+        const autoUpdateTopContainer = container.createDiv({ cls: "vstacked" });
+        const autoUpdateContainer = autoUpdateTopContainer.createDiv({ cls: "field-container" })
+        autoUpdateContainer.createEl("span", { text: "Auto update this field ", cls: 'label' });
+        autoUpdateContainer.createDiv({ cls: "spacer" });
+        const autoUpdate = new ToggleComponent(autoUpdateContainer);
+        autoUpdateTopContainer.createEl("span", { text: "This could lead to latencies depending on the queries", cls: 'sub-text warning' });
 
-        const formulaTopContainer = parentContainer.createDiv({ cls: "vstacked" });
+        if (this.field.options.autoUpdate === undefined) this.field.options.autoUpdate = false
+        autoUpdate.setValue(this.field.options.autoUpdate);
+        autoUpdate.onChange(value => {
+            this.field.options.autoUpdate = value
+        })
+
+        const formulaTopContainer = container.createDiv({ cls: "vstacked" });
         formulaTopContainer.createEl("span", { text: "javascript formula", cls: 'label' });
         formulaTopContainer.createEl("span", { text: "current and pages variables are available`", cls: 'sub-text' });
         const formulaContainer = formulaTopContainer.createDiv({ cls: "field-container" });

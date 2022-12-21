@@ -36,7 +36,7 @@ export class MetadataMenuApi {
     }
 
     private replaceValues(): (fileOrFilePath: TFile | string, attribute: string, input: string) => Promise<void> {
-        return async (fileOrFilePath: TFile | string, attribute: string, input: string) => await this.plugin.fileTaskManager.pushTask(() => { replaceValues(this.plugin, fileOrFilePath, attribute, input) })
+        return async (fileOrFilePath: TFile | string, attribute: string, input: string) => await this.plugin.fileTaskManager.pushTask(() => { replaceValues(this.plugin, fileOrFilePath, attribute, `${input}`) })
     }
 
     private insertValues(): (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean) => Promise<void> {
