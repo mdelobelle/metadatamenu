@@ -6,6 +6,7 @@ import { insertValues } from "./commands/insertValues";
 import { fieldModifier } from "./commands/fieldModifier";
 import { fileFields, FieldInfo } from "./commands/fileFields";
 import { insertMissingFields } from "./commands/insertMissingFields";
+import { postValues, FieldsPayload } from "./commands/postValues";
 
 export interface IMetadataMenuApi {
     getValues: (fileOrFilePath: TFile | string, attribute: string) => Promise<string[]>;
@@ -13,7 +14,8 @@ export interface IMetadataMenuApi {
     insertValues: (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean) => Promise<void>
     fileFields: (fileOrFilePath: TFile | string) => Promise<Record<string, FieldInfo>>;
     fieldModifier: (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => HTMLElement;
-    insertMissingFields: (fileOrFilePath: string | TFile, lineNumber: number, inFrontmatter: boolean, after: boolean, asList: boolean, asComment: boolean, fileClassName?: string) => Promise<void>
+    insertMissingFields: (fileOrFilePath: string | TFile, lineNumber: number, inFrontmatter: boolean, after: boolean, asList: boolean, asComment: boolean, fileClassName?: string) => Promise<void>;
+    postValues: (fileOrFilePath: TFile | string, payload: FieldsPayload, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean) => Promise<void>;
 }
 
 export class MetadataMenuApi {
@@ -27,7 +29,8 @@ export class MetadataMenuApi {
             insertValues: this.insertValues(),
             fieldModifier: this.fieldModifier(),
             fileFields: this.fileFields(),
-            insertMissingFields: this.insertMissingFields()
+            insertMissingFields: this.insertMissingFields(),
+            postValues: this.postValues()
         };
     }
 
@@ -53,5 +56,9 @@ export class MetadataMenuApi {
 
     private insertMissingFields(): (fileOrFilePath: string | TFile, lineNumber: number, inFrontmatter: boolean, after: boolean, asList: boolean, asComment: boolean, fileClassName?: string) => Promise<void> {
         return async (fileOrFilePath: string | TFile, lineNumber: number, inFrontmatter: boolean, after: boolean, asList: boolean, asComment: boolean, fileClassName?: string) => insertMissingFields(this.plugin, fileOrFilePath, lineNumber, inFrontmatter, after, asList, asComment, fileClassName)
+    }
+
+    private postValues(): (fileOrFilePath: string | TFile, payload: FieldsPayload, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean) => Promise<void> {
+        return async (fileOrFilePath: string | TFile, payload: FieldsPayload, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean) => postValues(this.plugin, payload, fileOrFilePath, lineNumber, after, asList, asComment)
     }
 }
