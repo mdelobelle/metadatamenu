@@ -3,7 +3,7 @@ import { Notice, TFile } from "obsidian";
 import { FieldManager } from "src/fields/FieldManager";
 import * as Lookup from "src/types/lookupTypes";
 import { getValues } from "./getValues";
-import { replaceValues } from "./replaceValues";
+import { postValues } from "./postValues";
 
 export function arraysAsStringAreEqual(a: string, b: string) {
     const aAsArray = a.split(",").map(v => v.trim())
@@ -117,7 +117,7 @@ export async function updateLookups(
                 }// make sure that this is set at first indexing}
                 if (shouldCheckForUpdate && (valueHasChanged || formatHasChanged)) {
                     const previousValuesCount = plugin.fieldIndex.previousFileLookupFilesValues.get(id) || 0
-                    await plugin.fileTaskManager.pushTask(() => replaceValues(plugin, tFile, fieldName, newValue, previousValuesCount));
+                    await postValues(plugin, [{ name: fieldName, payload: { value: newValue, previousItemsCount: previousValuesCount } }], tFile)
                     f.fileLookupFieldsStatus.set(`${filePath}__${fieldName}`, Lookup.Status.upToDate)
                 } else if (source !== "full Index") { // this case is for fileClass changes, no need for rewrite other lookups after cache update
                     plugin.fieldIndex.fileChanged = false

@@ -1,29 +1,19 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
 import { genuineKeys } from "src/utils/dataviewUtils";
-import { insertValues } from "./insertValues";
+import { getFileFromFileOrPath } from "src/utils/fileUtils";
+import { postValues } from "./postValues";
 
 export async function insertMissingFields(
     plugin: MetadataMenu,
     fileOrFilePath: string | TFile,
     lineNumber: number,
-    inFrontmatter: boolean = false,
     after: boolean = false,
     asList: boolean = false,
     asComment: boolean = false,
     fileClassName?: string
 ): Promise<void> {
-    let file: TFile;
-    if (fileOrFilePath instanceof TFile) {
-        file = fileOrFilePath;
-    } else {
-        const _file = plugin.app.vault.getAbstractFileByPath(fileOrFilePath)
-        if (_file instanceof TFile && _file.extension == "md") {
-            file = _file;
-        } else {
-            throw Error("path doesn't correspond to a proper file");
-        }
-    }
+    const file = getFileFromFileOrPath(plugin, fileOrFilePath)
     const dvApi = plugin.app.plugins.plugins.dataview?.api
     if (dvApi) {
         const f = plugin.fieldIndex;
@@ -35,7 +25,7 @@ export async function insertMissingFields(
             .filter(field => filteredClassFields ? filteredClassFields.map(f => f.name).includes(field.name) : true)
             .reverse()
             .forEach(async field => {
-                await tm.pushTask(() => { insertValues(plugin, file.path, field.name, "", lineNumber, inFrontmatter, after, asList, asComment) })
+                await postValues(plugin, [{ name: field.name, payload: { value: "" } }], file, lineNumber, after, asList, asComment);
             })
     }
 }

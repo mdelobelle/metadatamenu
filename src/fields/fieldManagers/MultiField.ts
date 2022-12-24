@@ -38,8 +38,16 @@ export default class MultiField extends AbstractListBasedField {
         };
     };
 
-    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): void {
-        const fieldModal = new MultiSelectModal(this.plugin, file, this.field, value || "", lineNumber, inFrontmatter, after, asList, asComment);
+    public createAndOpenFieldModal(
+        file: TFile,
+        selectedFieldName: string,
+        value?: string,
+        lineNumber?: number,
+        after?: boolean,
+        asList?: boolean,
+        asComment?: boolean
+    ): void {
+        const fieldModal = new MultiSelectModal(this.plugin, file, this.field, value || "", lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Select options for ${selectedFieldName}`);
         fieldModal.open();
     }

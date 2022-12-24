@@ -1,10 +1,9 @@
 import { TFile, FuzzySuggestModal, FuzzyMatch, setIcon } from "obsidian";
 import Field from "src/fields/Field";
-import { replaceValues } from "src/commands/replaceValues";
-import { insertValues } from "src/commands/insertValues";
 import { FieldManager } from "src/types/fieldTypes";
 import FileField from "src/fields/fieldManagers/FileField";
 import MetadataMenu from "main";
+import { postValues } from "src/commands/postValues";
 
 export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
 
@@ -16,7 +15,6 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
         private field: Field,
         initialValueObject: any,
         private lineNumber: number = -1,
-        private inFrontmatter: boolean = false,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
@@ -70,39 +68,13 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
         this.inputEl.focus()
     }
 
-
     async onChooseItem(item: TFile): Promise<void> {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         let alias: string | undefined = undefined;
         if (dvApi && this.field.options.customRendering) {
             alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(item.path))
         }
-        if (this.lineNumber == -1) {
-            await this.plugin.fileTaskManager
-                .pushTask(() => {
-                    replaceValues(
-                        this.plugin,
-                        this.file,
-                        this.field.name,
-                        FileField.buildMarkDownLink(this.plugin, this.file, item.basename, alias)
-                    )
-                });
-        } else {
-            await this.plugin.fileTaskManager
-                .pushTask(() => {
-                    insertValues(
-                        this.plugin,
-                        this.file,
-                        this.field.name,
-                        FileField.buildMarkDownLink(this.plugin, this.file, item.basename, alias),
-                        this.lineNumber,
-                        this.inFrontmatter,
-                        this.after,
-                        this.asList,
-                        this.asComment
-                    )
-                });
-        };
+        const value = FileField.buildMarkDownLink(this.plugin, this.file, item.basename, alias)
+        await postValues(this.plugin, [{ name: this.field.name, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asComment)
     }
-
 }

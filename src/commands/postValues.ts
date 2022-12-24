@@ -1,18 +1,28 @@
 import MetadataMenu from "main";
 import { FrontMatterCache, MarkdownView, parseYaml, TFile } from "obsidian";
-import { FieldType } from "src/types/fieldTypes";
+import { FieldType, multiTypes } from "src/types/fieldTypes";
 import { getFileFromFileOrPath } from "src/utils/fileUtils";
 import { getListBounds } from "src/utils/list";
 import * as Lookup from "src/types/lookupTypes";
 import { fieldComponents, inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
 import { genuineKeys } from "src/utils/dataviewUtils";
 
+
+/*=========================
+metadataSuggester à simplifier
+==========================*/
+
+
 export type FieldPayload = {
     value: string,
-    previousItemsCount?: number
+    previousItemsCount?: number,
+    addToCurrentValues?: boolean
 }
 
-export type FieldsPayload = Record<string, FieldPayload>
+export type FieldsPayload = Array<{
+    name: string,
+    payload: FieldPayload
+}>
 
 const enum Location {
     'fullLine' = 'fullLine',
@@ -39,29 +49,30 @@ export function renderField(
     location: "yaml" | "inline"
 ): any {
     const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName)
-    const parseWithFile = (_rawValue: string) => {
+    const parseFieldValue = (_rawValue: string) => {
         if (_rawValue.startsWith("[[")) {
             return `${_rawValue}`
+        } else if (_rawValue.startsWith("#")) {
+            return `${_rawValue}`;
         } else {
             return parseYaml(_rawValue);
         };
     }
+    const renderMultiFields = (rawValue: string, itemRendering: (itemValue: string) => any) => {
+        const values = rawValue
+            .replace(/(\,\s+)/g, ',')
+            .split(',')
+            .filter(v => !!v)
+            .map(value => itemRendering(value));
+        return values.length ? values : null
+    }
     switch (location) {
         case "yaml":
             switch (field?.type) {
-                case FieldType.Date: parseWithFile(rawValue);
-                case FieldType.File: parseWithFile(rawValue);
-                case FieldType.Formula: parseWithFile(rawValue);
-                case FieldType.Lookup:
-                    const values = rawValue.replace(/(\,\s+)/g, ',').split(',')
-                    return values.map(value => parseWithFile(value))
-                case FieldType.Multi:
-                    return rawValue.replace(/(\,\s+)/g, ',').split(',');
-                case FieldType.MultiFile:
-                    const files = rawValue.replace(/(\,\s+)/g, ',').split(',');
-                    return files.map(file => `${file}`);
-                case FieldType.Select: parseWithFile(rawValue);
-                default: return parseYaml(rawValue);
+                case FieldType.Lookup: return renderMultiFields(rawValue, (item) => parseFieldValue(item))
+                case FieldType.Multi: return renderMultiFields(rawValue, (item) => parseFieldValue(item))
+                case FieldType.MultiFile: return renderMultiFields(rawValue, (item) => `${item}`)
+                default: return parseFieldValue(rawValue);
             }
         case "inline":
             return rawValue;
@@ -162,7 +173,6 @@ export async function updateFieldInline(
                     }
                 }
             }
-            //// on reprend ici
             const { inList, inQuote, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = fR.groups
             const inputArray = fieldValue ? fieldValue.replace(/(\,\s+)/g, ',').split(',').sort() : [];
             let newValue: string;
@@ -221,10 +231,15 @@ export async function postField(
             await createFieldInline(plugin, file, fieldName, fieldPayload.value, lineNumber, after, asList, asComment);
         }
     } else {
+        const dvApi = plugin.app.plugins.plugins.dataview?.api;
+        const currentValue = dvApi && dvApi.page(file.path)?.[fieldName]
+        const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName)
+        const multi = field && multiTypes.includes(field.type)
+        const newValue = currentValue && fieldPayload.addToCurrentValues && multi ? `${currentValue}, ${fieldPayload.value}` : fieldPayload.value
         if (frontmatter && Object.keys(frontmatter).includes(fieldName)) {
-            await postFieldInYaml(plugin, file, fieldName, fieldPayload.value);
+            await postFieldInYaml(plugin, file, fieldName, newValue);
         } else {
-            await updateFieldInline(plugin, file, fieldName, fieldPayload.value, fieldPayload.previousItemsCount)
+            await updateFieldInline(plugin, file, fieldName, newValue, fieldPayload.previousItemsCount)
         }
     }
 }
@@ -245,9 +260,9 @@ export async function postValues(
     const dvAPi = plugin.app.plugins.plugins.dataview?.api
     const inFrontmatter = !!(lineNumber === -1 || (lineNumber && start && end && lineNumber >= start.line && lineNumber <= end.line))
 
-    Object.keys(payload).forEach(async fieldName => {
-        const create = !genuineKeys(dvAPi.page(file.path)).includes(fieldName)
+    payload.forEach(async field => {
+        const create = !genuineKeys(dvAPi.page(file.path)).includes(field.name)
         await plugin.fileTaskManager
-            .pushTask(() => { postField(create, frontmatter, plugin, file, fieldName, payload[fieldName], inFrontmatter, lineNumber, after, asList, asComment) });
+            .pushTask(() => { postField(create, frontmatter, plugin, file, field.name, field.payload, inFrontmatter, lineNumber, after, asList, asComment) });
     })
 }

@@ -211,7 +211,6 @@ export default class OptionsList {
 			this.file,
 			(
 				lineNumber: number,
-				inFrontmatter: boolean,
 				after: boolean,
 				asList: boolean,
 				asComment: boolean
@@ -221,7 +220,6 @@ export default class OptionsList {
 				undefined,
 				"",
 				lineNumber,
-				inFrontmatter,
 				after,
 				asList,
 				asComment
@@ -255,7 +253,6 @@ export default class OptionsList {
 				this.file,
 				(
 					lineNumber: number,
-					inFrontmatter: boolean,
 					after: boolean,
 					asList: boolean,
 					asComment: boolean
@@ -263,7 +260,6 @@ export default class OptionsList {
 					this.plugin,
 					dvFile.file.path,
 					lineNumber,
-					inFrontmatter,
 					after,
 					asList,
 					asComment
@@ -291,13 +287,12 @@ export default class OptionsList {
 
 	private addFieldAtTheEndOfFrontmatterOption(): void {
 		if (this.plugin.app.metadataCache.getCache(this.file.path)?.frontmatter) {
-			const lineNumber = this.plugin.app.metadataCache.getCache(this.file.path)!.frontmatter!.position.end.line - 1
 			if (isMenu(this.location)) {
 				this.location.addItem((item) => {
 					item.setIcon("pin");
 					item.setTitle("Add field in frontmatter");
 					item.onClick(async (evt: MouseEvent) => {
-						F.openFieldModal(this.plugin, this.file, undefined, "", lineNumber + 1, true, false, false, false)
+						F.openFieldModal(this.plugin, this.file, undefined, "", -1, false, false, false)
 					});
 					item.setSection("metadata-menu");
 				});
@@ -306,7 +301,7 @@ export default class OptionsList {
 					id: "add_field_in_frontmatter",
 					actionLabel: "Add a field in frontmatter...",
 					action: () => F.openFieldModal(
-						this.plugin, this.file, undefined, "", lineNumber + 1, true, false, false, false),
+						this.plugin, this.file, undefined, "", -1, false, false, false),
 					icon: "pin"
 				})
 			}
@@ -315,13 +310,13 @@ export default class OptionsList {
 
 	private addFieldAtCurrentPositionOption(): void {
 		const currentView = this.plugin.app.workspace.getActiveViewOfType(MarkdownView)
-		const lineNumber = currentView?.editor.getCursor().line;
-		if (lineNumber !== undefined && this.file.path == currentView?.file.path) {
-			let inFrontmatter: boolean = false;
+		const currentLineNumber = currentView?.editor.getCursor().line;
+		if (currentLineNumber !== undefined && this.file.path == currentView?.file.path) {
 			const frontmatter = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatter
+			let lineNumber = currentLineNumber
 			if (frontmatter) {
 				const { position: { start, end } } = frontmatter
-				if (lineNumber >= start.line && lineNumber < end.line) inFrontmatter = true
+				if (currentLineNumber >= start.line && currentLineNumber < end.line) lineNumber = -1
 			}
 			if (isMenu(this.location)) {
 				this.location.addItem((item) => {
@@ -329,19 +324,19 @@ export default class OptionsList {
 					item.setTitle("Add field at cursor");
 					item.onClick((evt: MouseEvent) => {
 						F.openFieldModal(
-							this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false, false, false)
+							this.plugin, this.file, undefined, "", lineNumber, false, false, false)
 					});
 					item.setSection("metadata-menu");
 				});
 			} else if (isInsertFieldCommand(this.location)) {
 				F.openFieldModal(
-					this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false, false, false);
+					this.plugin, this.file, undefined, "", lineNumber, false, false, false);
 			} else if (isSuggest(this.location)) {
 				this.location.options.push({
 					id: "add_field_at_cursor",
 					actionLabel: "Add field at cursor...",
 					action: () => F.openFieldModal(
-						this.plugin, this.file, undefined, "", lineNumber, inFrontmatter, false, false, false),
+						this.plugin, this.file, undefined, "", lineNumber, false, false, false),
 					icon: "pin"
 				})
 			};

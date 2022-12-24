@@ -14,7 +14,7 @@ export interface IMetadataMenuApi {
     insertValues: (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean) => Promise<void>
     fileFields: (fileOrFilePath: TFile | string) => Promise<Record<string, FieldInfo>>;
     fieldModifier: (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => HTMLElement;
-    insertMissingFields: (fileOrFilePath: string | TFile, lineNumber: number, inFrontmatter: boolean, after: boolean, asList: boolean, asComment: boolean, fileClassName?: string) => Promise<void>;
+    insertMissingFields: (fileOrFilePath: string | TFile, lineNumber: number, after: boolean, asList: boolean, asComment: boolean, fileClassName?: string) => Promise<void>;
     postValues: (fileOrFilePath: TFile | string, payload: FieldsPayload, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean) => Promise<void>;
 }
 
@@ -39,11 +39,17 @@ export class MetadataMenuApi {
     }
 
     private replaceValues(): (fileOrFilePath: TFile | string, attribute: string, input: string) => Promise<void> {
-        return async (fileOrFilePath: TFile | string, attribute: string, input: string) => await this.plugin.fileTaskManager.pushTask(() => { replaceValues(this.plugin, fileOrFilePath, attribute, `${input}`) })
+        return async (fileOrFilePath: TFile | string, attribute: string, input: string) => await this.plugin.fileTaskManager.pushTask(() => {
+            console.info("replaceValues is deprecated, use postValues instead")
+            replaceValues(this.plugin, fileOrFilePath, attribute, `${input}`)
+        })
     }
 
     private insertValues(): (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean) => Promise<void> {
-        return async (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean) => await this.plugin.fileTaskManager.pushTask(() => { insertValues(this.plugin, fileOrFilePath, fieldName, value, lineNumber, inFrontmatter, after, asList, asComment) })
+        return async (fileOrFilePath: TFile | string, fieldName: string, value: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean) => await this.plugin.fileTaskManager.pushTask(() => {
+            console.info("insertValues is deprecated, use postValues instead")
+            insertValues(this.plugin, fileOrFilePath, fieldName, value, lineNumber, inFrontmatter, after, asList, asComment)
+        })
     }
 
     private fieldModifier(): (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => HTMLElement {
@@ -54,8 +60,8 @@ export class MetadataMenuApi {
         return async (fileOrFilePath: TFile | string) => fileFields(this.plugin, fileOrFilePath)
     }
 
-    private insertMissingFields(): (fileOrFilePath: string | TFile, lineNumber: number, inFrontmatter: boolean, after: boolean, asList: boolean, asComment: boolean, fileClassName?: string) => Promise<void> {
-        return async (fileOrFilePath: string | TFile, lineNumber: number, inFrontmatter: boolean, after: boolean, asList: boolean, asComment: boolean, fileClassName?: string) => insertMissingFields(this.plugin, fileOrFilePath, lineNumber, inFrontmatter, after, asList, asComment, fileClassName)
+    private insertMissingFields(): (fileOrFilePath: string | TFile, lineNumber: number, after: boolean, asList: boolean, asComment: boolean, fileClassName?: string) => Promise<void> {
+        return async (fileOrFilePath: string | TFile, lineNumber: number, after: boolean, asList: boolean, asComment: boolean, fileClassName?: string) => insertMissingFields(this.plugin, fileOrFilePath, lineNumber, after, asList, asComment, fileClassName)
     }
 
     private postValues(): (fileOrFilePath: string | TFile, payload: FieldsPayload, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean) => Promise<void> {

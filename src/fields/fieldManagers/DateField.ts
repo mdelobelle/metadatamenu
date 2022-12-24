@@ -7,9 +7,9 @@ import Field from "../Field";
 import { FieldManager, SettingLocation } from "../FieldManager";
 import CycleField from "./CycleField";
 import { FieldManager as FM } from "src/types/fieldTypes";
-import { replaceValues } from "src/commands/replaceValues";
 import { compareDuration } from "src/utils/dataviewUtils";
 import { FieldOptions } from "src/components/NoteFields";
+import { postValues } from "src/commands/postValues";
 
 export default class DateField extends FieldManager {
 
@@ -68,8 +68,16 @@ export default class DateField extends FieldManager {
         };
     }
 
-    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): void {
-        const fieldModal = new DateModal(this.plugin, file, this.field, value || "", lineNumber, inFrontmatter, after, asList, asComment);
+    public createAndOpenFieldModal(
+        file: TFile,
+        selectedFieldName: string,
+        value?: string,
+        lineNumber?: number,
+        after?: boolean,
+        asList?: boolean,
+        asComment?: boolean
+    ): void {
+        const fieldModal = new DateModal(this.plugin, file, this.field, value || "", lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Enter date for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -162,15 +170,13 @@ export default class DateField extends FieldManager {
         const newDate = currentDvDate.plus(dv.duration(currentShift || "1 day"));
         const newValue = moment(newDate.toString()).format(dateFormat)
         if (nextIntervalField && nextShift) {
-            await this.plugin.fileTaskManager
-                .pushTask(() => { replaceValues(this.plugin, file.path, nextIntervalField.name, nextShift) });
+            await postValues(this.plugin, [{ name: nextIntervalField.name, payload: { value: nextShift } }], file.path)
         }
         const linkFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath || "" + newValue.format(dateFormat), file.path)
         const formattedValue = DateField.stringToBoolean(defaultInsertAsLink) ?
             `[[${linkPath || ""}${newValue}${linkFile ? "|" + linkFile.basename : ""}]]` :
             newValue
-        await this.plugin.fileTaskManager
-            .pushTask(() => { replaceValues(this.plugin, file.path, this.field.name, formattedValue) });
+        await postValues(this.plugin, [{ name: this.field.name, payload: { value: formattedValue } }], file)
 
     }
 

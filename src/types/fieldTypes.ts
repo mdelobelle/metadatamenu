@@ -97,3 +97,8 @@ export const FieldBackgroundColorClass: Record<keyof typeof FieldType, string> =
     "Lookup": "lookup",
     "Formula": "lookup"
 }
+
+export const multiTypes = [
+    FieldType.Multi,
+    FieldType.MultiFile
+]

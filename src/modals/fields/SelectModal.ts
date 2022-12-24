@@ -1,11 +1,10 @@
 import { TFile, SuggestModal, ButtonComponent } from "obsidian";
 import Field from "src/fields/Field";
-import { replaceValues } from "src/commands/replaceValues";
-import { insertValues } from "src/commands/insertValues";
 import MetadataMenu from "main";
 import * as selectValuesSource from "src/types/selectValuesSourceTypes"
 import { FieldManager } from "src/types/fieldTypes";
 import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
+import { postValues } from "src/commands/postValues";
 
 export default class ValueSuggestModal extends SuggestModal<string>{
 
@@ -17,7 +16,6 @@ export default class ValueSuggestModal extends SuggestModal<string>{
         private value: string,
         private field: Field,
         private lineNumber: number = -1,
-        private inFrontmatter: boolean = false,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
@@ -108,13 +106,8 @@ export default class ValueSuggestModal extends SuggestModal<string>{
     }
 
     async clearValues() {
-        if (this.lineNumber == -1) {
-            await this.plugin.fileTaskManager
-                .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, "") });
-        } else {
-            await this.plugin.fileTaskManager
-                .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
-        };
+        await postValues(this.plugin, [{ name: this.field.name, payload: { value: "" } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+
     }
 
     getSuggestions(query: string): string[] {
@@ -138,13 +131,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
     }
 
     private async saveItem(item: string): Promise<void> {
-        if (this.lineNumber == -1) {
-            await this.plugin.fileTaskManager
-                .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, item.toString()) });
-        } else {
-            await this.plugin.fileTaskManager
-                .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, item.toString(), this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
-        };
+        await postValues(this.plugin, [{ name: this.field.name, payload: { value: item.toString() } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
     }
 
     async onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {

@@ -1,7 +1,6 @@
 import MetadataMenu from "main";
 import { Modal, TextComponent, TFile, ButtonComponent } from "obsidian";
-import { insertValues } from "src/commands/insertValues";
-import { replaceValues } from "src/commands/replaceValues";
+import { postValues } from "src/commands/postValues";
 import Field from "src/fields/Field";
 import NumberField from "src/fields/fieldManagers/NumberField";
 import { FieldManager } from "src/types/fieldTypes";
@@ -16,7 +15,6 @@ export default class NumberModal extends Modal {
         private field: Field,
         private value: string,
         private lineNumber: number = -1,
-        private inFrontmatter: boolean = false,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
@@ -129,13 +127,7 @@ export default class NumberModal extends Modal {
                 numberInput.inputEl.setAttr("class", "is-invalid")
                 return
             }
-            if (this.lineNumber == -1) {
-                await this.plugin.fileTaskManager
-                    .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, inputValue) });
-            } else {
-                await this.plugin.fileTaskManager
-                    .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
-            };
+            await postValues(this.plugin, [{ name: this.field.name, payload: { value: inputValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
             this.close();
         })
     };

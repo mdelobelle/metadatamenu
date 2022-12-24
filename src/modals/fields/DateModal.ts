@@ -1,6 +1,4 @@
-import { Modal, TextComponent, TFile, ToggleComponent, ButtonComponent } from "obsidian";
-import { insertValues } from "src/commands/insertValues";
-import { replaceValues } from "src/commands/replaceValues";
+import { Modal, TextComponent, TFile, ButtonComponent } from "obsidian";
 import Field from "src/fields/Field";
 import { FieldManager as FM } from "src/fields/FieldManager";
 import { moment } from "obsidian";
@@ -8,6 +6,7 @@ import flatpickr from "flatpickr";
 import MetadataMenu from "main";
 import { FieldIcon, FieldType, FieldManager } from "src/types/fieldTypes";
 import DateField from "src/fields/fieldManagers/DateField";
+import { postValues } from "src/commands/postValues";
 
 export default class DateModal extends Modal {
 
@@ -29,7 +28,6 @@ export default class DateModal extends Modal {
         private field: Field,
         private initialValue: string,
         private lineNumber: number = -1,
-        private inFrontmatter: boolean = false,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
@@ -79,26 +77,13 @@ export default class DateModal extends Modal {
             if (newValue.isValid()) {
                 const linkPath = this.plugin.app.metadataCache.getFirstLinkpathDest(this.field.options.linkPath || "" + newValue.format(this.format), this.file.path)
                 const formattedValue = this.insertAsLink ? `[[${this.field.options.linkPath || ""}${newValue.format(this.format)}${linkPath ? "|" + linkPath.basename : ""}]]` : newValue.format(this.format)
-                if (this.lineNumber == -1) {
-                    await this.plugin.fileTaskManager
-                        .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, formattedValue) });
-                } else {
-                    await this.plugin.fileTaskManager
-                        .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, formattedValue, this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
-                };
+                await postValues(this.plugin, [{ name: this.field.name, payload: { value: formattedValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
                 if (this.nextIntervalField && this.pushNextInterval && this.nextShift) {
-                    await this.plugin.fileTaskManager
-                        .pushTask(() => { replaceValues(this.plugin, this.file.path, this.nextIntervalField!.name, this.nextShift!) });
+                    await postValues(this.plugin, [{ name: this.nextIntervalField!.name, payload: { value: this.nextShift! } }], this.file.path)
                 }
                 this.close();
             } else if (!this.value) {
-                if (this.lineNumber == -1) {
-                    await this.plugin.fileTaskManager
-                        .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, "") });
-                } else {
-                    await this.plugin.fileTaskManager
-                        .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
-                };
+                await postValues(this.plugin, [{ name: this.field.name, payload: { value: "" } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
                 this.close()
             } else {
                 this.errorField.show();

@@ -1,12 +1,11 @@
 import { TFile, ButtonComponent, SuggestModal, setIcon } from "obsidian";
 import Field from "src/fields/Field";
-import { replaceValues } from "src/commands/replaceValues";
-import { insertValues } from "src/commands/insertValues";
 import MetadataMenu from "main";
 import { FieldManager } from "src/types/fieldTypes";
 import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
 import * as selectValuesSource from "src/types/selectValuesSourceTypes"
 import FileField from "src/fields/fieldManagers/FileField";
+import { postValues } from "src/commands/postValues";
 
 export default class MultiSuggestModal extends SuggestModal<string> {
 
@@ -20,7 +19,6 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         private field: Field,
         initialOptions: any,
         private lineNumber: number = -1,
-        private inFrontmatter: boolean = false,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
@@ -175,25 +173,12 @@ export default class MultiSuggestModal extends SuggestModal<string> {
 
     async replaceValues() {
         const options = this.selectedOptions;
-        if (this.lineNumber == -1) {
-            await this.plugin.fileTaskManager
-                .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, options.join(", ")) });
-        } else {
-            const renderedValues = !this.inFrontmatter ? options.join(", ") : options.length > 1 ? `[${options.join(", ")}]` : `${options[0]}`
-            await this.plugin.fileTaskManager
-                .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, renderedValues, this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
-        };
+        await postValues(this.plugin, [{ name: this.field.name, payload: { value: options.join(", ") } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
         this.close();
     }
 
     async clearValues() {
-        if (this.lineNumber == -1) {
-            await this.plugin.fileTaskManager
-                .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, "") });
-        } else {
-            await this.plugin.fileTaskManager
-                .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, "", this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
-        };
+        await postValues(this.plugin, [{ name: this.field.name, payload: { value: "" } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
     }
 
     renderSelected() {

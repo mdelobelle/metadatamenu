@@ -9,6 +9,7 @@ import { FieldManager as F, FieldManager } from "src/fields/FieldManager";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { FileClass } from "src/fileClass/fileClass";
 import { genuineKeys } from "src/utils/dataviewUtils";
+import { FileClassManager } from "./fileClassManager";
 
 export class FieldOptions {
 
@@ -102,7 +103,6 @@ export class FieldsModal extends Modal {
                     this.file,
                     (
                         lineNumber: number,
-                        inFrontmatter: boolean,
                         after: boolean,
                         asList: boolean,
                         asComment: boolean
@@ -112,7 +112,6 @@ export class FieldsModal extends Modal {
                         field.name,
                         "",
                         lineNumber,
-                        inFrontmatter,
                         after,
                         asList,
                         asComment
@@ -137,7 +136,6 @@ export class FieldsModal extends Modal {
                     this.file,
                     (
                         lineNumber: number,
-                        inFrontmatter: boolean,
                         after: boolean,
                         asList: boolean,
                         asComment: boolean
@@ -145,7 +143,6 @@ export class FieldsModal extends Modal {
                         this.plugin,
                         dvFile.file.path,
                         lineNumber,
-                        inFrontmatter,
                         after,
                         asList,
                         asComment,
@@ -207,8 +204,8 @@ export class FieldsModal extends Modal {
                         fileClassManagerContainer.createDiv({ text: ">", cls: "separator" })
                     }
 
-                    const fileClassFielsContainers = this.containerEl.querySelectorAll(`[class*="fileClassField__${fileClassName.replace("/", "___").replace(" ", "_")}"]`)
-                    fileClassFielsContainers.forEach(fieldNameContainer => {
+                    const fileClassFieldsContainers = this.containerEl.querySelectorAll(`[class*="fileClassField__${fileClassName.replace("/", "___").replace(" ", "_")}"]`)
+                    fileClassFieldsContainers.forEach(fieldNameContainer => {
                         (fieldNameContainer as HTMLDivElement).onmouseover = () => {
                             fileClassNameContainer?.addClass("active")
                         }
@@ -225,6 +222,11 @@ export class FieldsModal extends Modal {
                         this.containerEl
                             .querySelectorAll(`.field-item.field-name.fileClassField__${fileClassName.replace("/", "___").replace(" ", "_")}`)
                             .forEach(cont => { cont.removeClass("active") })
+                    }
+                    fileClassNameContainer.onclick = () => {
+                        const fileClassComponent = new FileClassManager(this.plugin, _fileClass)
+                        this.plugin.addChild(fileClassComponent);
+                        this.close();
                     }
                 }
             })
@@ -271,7 +273,6 @@ export class FieldsModal extends Modal {
                         this.file,
                         (
                             lineNumber: number,
-                            inFrontmatter: boolean,
                             after: boolean,
                             asList: boolean,
                             asComment: boolean
@@ -279,7 +280,6 @@ export class FieldsModal extends Modal {
                             this.plugin,
                             dvFile.file.path,
                             lineNumber,
-                            inFrontmatter,
                             after,
                             asList,
                             asComment

@@ -1,12 +1,12 @@
 import MetadataMenu from "main";
 import { Menu, setIcon, TextComponent, TFile } from "obsidian";
-import { replaceValues } from "src/commands/replaceValues";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import SelectModal from "src/modals/fields/SelectModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
 import { FieldOptions } from "src/components/NoteFields";
+import { postValues } from "src/commands/postValues";
 
 export default class CycleField extends AbstractListBasedField {
 
@@ -63,8 +63,7 @@ export default class CycleField extends AbstractListBasedField {
 
     public async next(name: string, value: string, file: TFile): Promise<void> {
         let matchedValue = this.getRawOptionFromDuration(value) || value;
-        await this.plugin.fileTaskManager
-            .pushTask(() => { replaceValues(this.plugin, file, name, this.nextOption(matchedValue).toString()) })
+        await postValues(this.plugin, [{ name: name, payload: { value: this.nextOption(matchedValue).toString() } }], file)
     }
 
     public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
@@ -91,8 +90,16 @@ export default class CycleField extends AbstractListBasedField {
         };
     };
 
-    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): void {
-        const fieldModal = new SelectModal(this.plugin, file, value || "", this.field, lineNumber, inFrontmatter, after, asList, asComment);
+    public createAndOpenFieldModal(
+        file: TFile,
+        selectedFieldName: string,
+        value?: string,
+        lineNumber?: number,
+        after?: boolean,
+        asList?: boolean,
+        asComment?: boolean
+    ): void {
+        const fieldModal = new SelectModal(this.plugin, file, value || "", this.field, lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }

@@ -2,6 +2,8 @@ import MetadataMenu from "main";
 import { MarkdownView, TFile } from "obsidian";
 import { insertFrontmatterWithFields } from "./insertFrontmatterWithFields";
 
+/* DEPRECATED */
+
 export async function insertValues(
     plugin: MetadataMenu,
     fileOrFilePath: TFile | string,
