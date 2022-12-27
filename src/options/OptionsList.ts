@@ -1,6 +1,8 @@
 import MetadataMenu from "main";
 import { MarkdownView, Menu, Notice, TFile } from "obsidian";
 import { insertMissingFields } from "src/commands/insertMissingFields";
+import { FileClassManager } from "src/components/fileClassManager";
+import NoteFieldsComponent from "src/components/NoteFields";
 import Field from "src/fields/Field";
 import { FieldManager as F } from "src/fields/FieldManager";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
@@ -117,6 +119,7 @@ export default class OptionsList {
 		if (isInsertFieldCommand(location)) {
 			this.addFieldAtCurrentPositionOption();
 		} else if (isSuggest(location)) {
+			this.openNoteFieldModalOption();
 			this.buildFieldOptions();
 			this.addFieldAtCurrentPositionOption();
 			this.addSectionSelectModalOption();
@@ -143,6 +146,7 @@ export default class OptionsList {
 			this.addNewFileClassOption();
 			if (openAfterCreate) location.open();
 		} else if (isMenu(location)) {
+			this.openNoteFieldModalOption();
 			this.buildFieldOptions();
 			this.addSectionSelectModalOption();
 			this.addFieldAtCurrentPositionOption();
@@ -181,6 +185,35 @@ export default class OptionsList {
 				icon: FieldIcon[FieldType.Input]
 			});
 		};
+	}
+
+
+	private openNoteFieldModalOption(): void {
+		const lastFileClassName = this.plugin.fieldIndex.filesFileClassesNames.get(this.file.path)?.last()
+		if (lastFileClassName) {
+			const fileClass = this.plugin.fieldIndex.fileClassesName.get(lastFileClassName)
+			if (fileClass) {
+				const icon = fileClass.getIcon() || "clipboard-list"
+				const noteFieldsComponent = new NoteFieldsComponent(this.plugin, "1", () => { }, this.file)
+				const action = () => this.plugin.addChild(noteFieldsComponent);
+				if (isMenu(this.location)) {
+					this.location.addItem((item) => {
+						item.setTitle(`Open fields modal`);
+						item.setIcon(icon);
+						item.onClick(action);
+						item.setSection("metadata-menu");
+					})
+				} else if (isSuggest(this.location)) {
+					this.location.options.push({
+						id: `open_fields_modal`,
+						actionLabel: `<span>Open fields modal</span>`,
+						action: action,
+						icon: icon
+					});
+				};
+			}
+		}
+
 	}
 
 	private buildFieldOptions(): void {

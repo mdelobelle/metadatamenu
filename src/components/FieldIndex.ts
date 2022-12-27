@@ -10,6 +10,7 @@ import { updateFormulas, cleanRemovedFormulasFromIndex } from "src/commands/upda
 
 import { FieldType } from "src/types/fieldTypes";
 import { Status as LookupStatus, Type as LookupType } from "src/types/lookupTypes";
+import { updateCanvas } from "src/commands/updateCanvas";
 
 export default class FieldIndex extends Component {
 
@@ -30,10 +31,12 @@ export default class FieldIndex extends Component {
     public fileLookupFiles: Map<string, any[]>;
     public fileLookupFieldsStatus: Map<string, LookupStatus>;
     public fileFormulaFieldsStatus: Map<string, LookupStatus>;
+    public fileCanvasFieldsStatus: Map<string, LookupStatus>;
     public previousFileLookupFilesValues: Map<string, number>;
     public fileLookupFieldLastValue: Map<string, string>;
     public fileLookupFieldLastOutputType: Map<string, keyof typeof LookupType>;
     public fileFormulaFieldLastValue: Map<string, string>;
+    public fileCanvasFieldLastValues: Map<string, string[]>
     public lookupQueries: Map<string, Field>;
     public dv: any;
     public lastRevision: 0;
@@ -50,9 +53,11 @@ export default class FieldIndex extends Component {
         this.fileLookupFieldLastValue = new Map();
         this.fileLookupFieldsStatus = new Map();
         this.fileFormulaFieldsStatus = new Map()
+        this.fileCanvasFieldsStatus = new Map()
         this.previousFileLookupFilesValues = new Map();
         this.fileLookupFieldLastOutputType = new Map();
         this.fileFormulaFieldLastValue = new Map();
+        this.fileCanvasFieldLastValues = new Map();
         this.dv = this.plugin.app.plugins.plugins.dataview;
         this.classFilesPath = plugin.settings.classFilesPath;
     }
@@ -90,6 +95,14 @@ export default class FieldIndex extends Component {
         )
 
         this.registerEvent(
+            this.plugin.app.vault.on("modify", async (file) => {
+                if (file instanceof TFile && file.extension === "canvas") {
+                    await updateCanvas(this.plugin, { canvas: file });
+                }
+            })
+        )
+
+        this.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
                 //console.log("some file changed", this.fileChanged);
                 //console.log("new revision", this.dv?.api.index.revision)
@@ -106,7 +119,15 @@ export default class FieldIndex extends Component {
                     cleanRemovedFormulasFromIndex(this.plugin);
                     this.getFilesFieldsExists(file);
                     if (this.classFilesPath && file.path.startsWith(this.classFilesPath)) {
-                        this.fullIndex("fileClass changed")
+                        await this.fullIndex("fileClass changed")
+                        const fileClassName = this.fileClassesPath.get(file.path)?.name
+                        const canvasFields = (fileClassName && this.fileClassesFields.get(fileClassName)?.filter(field => field.type === FieldType.Canvas)) || []
+                        canvasFields.forEach(async field => {
+                            const canvasFile = this.plugin.app.vault.getAbstractFileByPath(field.options.canvasPath)
+                            if (canvasFile instanceof TFile && canvasFile.extension === "canvas") {
+                                await updateCanvas(this.plugin, { canvas: canvasFile })
+                            }
+                        })
                     } else {
                         await this.updateFormulas(false);
                         this.resolveLookups(false);

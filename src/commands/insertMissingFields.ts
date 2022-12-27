@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { TFile } from "obsidian";
 import { genuineKeys } from "src/utils/dataviewUtils";
 import { getFileFromFileOrPath } from "src/utils/fileUtils";
-import { postValues } from "./postValues";
+import { FieldsPayload, postValues } from "./postValues";
 
 export async function insertMissingFields(
     plugin: MetadataMenu,
@@ -21,11 +21,12 @@ export async function insertMissingFields(
         const fields = f.filesFields.get(file.path)
         const currentFieldsNames = genuineKeys(dvApi.page(file.path))
         const filteredClassFields = fileClassName ? plugin.fieldIndex.fileClassesFields.get(fileClassName)?.filter(field => field.fileClassName === fileClassName) || undefined : undefined
+        const fieldsToInsert: FieldsPayload = []
         fields?.filter(field => !currentFieldsNames.includes(field.name))
             .filter(field => filteredClassFields ? filteredClassFields.map(f => f.name).includes(field.name) : true)
-            .reverse()
             .forEach(async field => {
-                await postValues(plugin, [{ name: field.name, payload: { value: "" } }], file, lineNumber, after, asList, asComment);
+                fieldsToInsert.push({ name: field.name, payload: { value: "" } })
             })
+        if (fieldsToInsert.length) await postValues(plugin, fieldsToInsert, file, lineNumber, after, asList, asComment);
     }
 }

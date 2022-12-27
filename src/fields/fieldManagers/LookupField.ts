@@ -71,7 +71,11 @@ export default class LookupField extends FieldManager {
     }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }): void {
-
+        const file = p.file
+        const fieldName = this.field.name
+        const fileClassName = this.plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName)?.fileClassName || "presetField"
+        const fieldValue = dv.el('span', this.plugin.fieldIndex.fileLookupFieldLastValue.get(`${file.path}__related__${fileClassName}___${fieldName}`), attrs);
+        fieldContainer.appendChild(fieldValue);
     }
 
     private displaySelectedOutputOptionContainer(optionContainers: [Array<keyof typeof Lookup.Type>, HTMLElement | undefined][], value: keyof typeof Lookup.Type) {

@@ -59,7 +59,8 @@ export default class FormulaField extends FieldManager {
     }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }): void {
-
+        const fieldValue = dv.el('span', p[this.field.name], attrs);
+        fieldContainer.appendChild(fieldValue);
     }
 
     public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked = () => { }): void {

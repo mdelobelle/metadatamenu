@@ -6,7 +6,7 @@ import { capitalize } from "src/utils/textUtils";
 import { genuineKeys } from "src/utils/dataviewUtils";
 import { FieldCommand } from "src/fields/Field";
 import { FieldManager } from "src/fields/FieldManager";
-import { postValues } from "src/commands/postValues";
+import { FieldsPayload, postValues } from "src/commands/postValues";
 
 const options: Record<string, { name: string, toValue: (value: any) => string }> = {
     "limit": { name: "limit", toValue: (value: any) => `${value || ""}` },
@@ -271,17 +271,23 @@ class FileClass {
         } catch (error) {
             throw (error);
         }
+    }
 
+    public getVersion(): number {
+        const currentVersion = this.plugin.app.metadataCache.getFileCache(this.getClassFile())?.frontmatter?.version
+        return currentVersion && !isNaN(currentVersion) ? currentVersion : 0;
     }
 
     public async updateOptions(newOptions: FileClassOptions): Promise<void> {
-        console.log("options")
         const path = this.getClassFile().path
+        const payload: FieldsPayload = []
         Object.keys(options).forEach(async (key: keyof typeof options) => {
             const { name, toValue } = options[key]
-            console.log(toValue(newOptions[key as keyof FileClassOptions]))
-            await postValues(this.plugin, [{ name: name, payload: { value: toValue(newOptions[key as keyof FileClassOptions]) } }], path)
+            payload.push({ name: name, payload: { value: toValue(newOptions[key as keyof FileClassOptions]) } })
         })
+        //incrementing a version to force obsidian resolve this new file even if it looks like the previous version
+        payload.push({ name: "version", payload: { value: `${this.getVersion() + 1}` } })
+        await postValues(this.plugin, payload, path)
     }
 
     public async updateAttribute(
