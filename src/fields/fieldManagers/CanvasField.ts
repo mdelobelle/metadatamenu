@@ -118,6 +118,7 @@ export default class CanvasField extends FieldManager {
                         colors.push(color)
                     };
                     toggleStandardColorButton(colorContainer, color)
+
                 }
             })
 
@@ -148,8 +149,10 @@ export default class CanvasField extends FieldManager {
                 buildColorsContainer(container, colorList, label);
             })
         }
-        buildColorsContainer(nodeColorsContainer, options.nodeColors || [], "Node matching colors:");
-        buildColorsContainer(edgeColorsContainer, options.edgeColors || [], "Edge matching colors:")
+        options.nodeColors = (options.nodeColors as string[] | undefined) || []
+        options.edgeColors = (options.edgeColors as string[] | undefined) || []
+        buildColorsContainer(nodeColorsContainer, options.nodeColors, "Node matching colors:");
+        buildColorsContainer(edgeColorsContainer, options.edgeColors, "Edge matching colors:")
 
         // edges sides
         const edgeFromSidesContainer = container.createDiv({ cls: "field-container edges" })
@@ -176,8 +179,10 @@ export default class CanvasField extends FieldManager {
             })
 
         }
-        buildEdgeSideContainer(edgeFromSidesContainer, options.edgeFromSides || [], "Edges matchin From side:")
-        buildEdgeSideContainer(edgeToSidesContainer, options.edgeToSides || [], "Edges matchin To side:")
+        options.edgeFromSides = (options.edgeFromSides as string[] | undefined) || []
+        options.edgeToSides = (options.edgeToSides as string[] | undefined) || []
+        buildEdgeSideContainer(edgeFromSidesContainer, options.edgeFromSides, "Edges matchin From side:")
+        buildEdgeSideContainer(edgeToSidesContainer, options.edgeToSides, "Edges matchin To side:")
 
         //labels
         options.edgeLabels = (options.edgeLabels as string[] | undefined) || []

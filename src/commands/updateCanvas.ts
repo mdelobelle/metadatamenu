@@ -5,7 +5,6 @@ import { FieldType } from "src/types/fieldTypes";
 import { FieldsPayload, postValues } from "./postValues";
 import { isFileNode } from "src/types/canvasTypes";
 import { FieldManager } from "src/fields/FieldManager";
-import Field from "src/fields/Field";
 
 export async function updateCanvas(
     plugin: MetadataMenu,
@@ -56,10 +55,13 @@ export async function updateCanvas(
     }
 
     canvases.forEach(async canvas => {
+        const previousFilesPaths = plugin.fieldIndex.canvasLastFiles.get(canvas.path) || []
+        const currentFilesPaths: string[] = []
         const { nodes, edges }: CanvasData = JSON.parse(await plugin.app.vault.read(canvas));
         nodes.forEach(async node => {
             if (isFileNode(node) && dvApi) {
                 const targetFilePath = node.file
+                if (!currentFilesPaths.includes(targetFilePath)) currentFilesPaths.push(targetFilePath)
                 const targetFile = app.vault.getAbstractFileByPath(targetFilePath)
                 if (targetFile && targetFile instanceof TFile) {
                     //get edges that point to this file
@@ -69,7 +71,7 @@ export async function updateCanvas(
                     )
                     const payload: FieldsPayload = []
                     // for each canvas field, if the canvas field match the conditions, then, add the origin file to the target canvas field list of files
-                    canvasFields?.forEach(async field => {
+                    canvasFields?.forEach(field => {
                         const { nodeColors, edgeColors, edgeFromSides, edgeToSides, edgeLabels, filesFromDVQuery, direction } = field.options
                         const matchingFiles: string[] | undefined = filesFromDVQuery ?
                             new Function("dv", "current", `return ${filesFromDVQuery}`)(dvApi, dvApi.page(targetFile.path)) :
@@ -120,10 +122,26 @@ export async function updateCanvas(
                             .map((node: CanvasFileData) => FieldManager.buildMarkDownLink(plugin, targetFile, node.file))
                         payload.push({ name: field.name, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
                     })
-                    console.log(targetFile.name, payload)
                     if (payload.length) await postValues(plugin, payload, targetFile)
                 }
             }
         })
+        //clean removed files by putting their related canvas fields to null since they don't have anymore connections
+        previousFilesPaths.filter(f => !currentFilesPaths.includes(f)).forEach(async filePath => {
+            const targetFile = app.vault.getAbstractFileByPath(filePath)
+            if (targetFile && targetFile instanceof TFile) {
+                const canvasFields = f.filesFields.get(filePath)?.filter(field =>
+                    field.type === FieldType.Canvas
+                    && field.options.canvasPath === canvas.path
+                )
+                const payload: FieldsPayload = []
+                // for each canvas field, if the canvas field match the conditions, then, add the origin file to the target canvas field list of files
+                canvasFields?.forEach(field => { payload.push({ name: field.name, payload: { value: "" } }) })
+                if (payload.length) await postValues(plugin, payload, targetFile)
+            }
+        })
+
+        //
+        plugin.fieldIndex.canvasLastFiles.set(canvas.path, currentFilesPaths)
     })
 }

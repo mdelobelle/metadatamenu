@@ -131,7 +131,6 @@ export async function postFieldsInline(
     asList: boolean = false,
     asComment: boolean = false
 ) {
-    const content = (await plugin.app.vault.read(file)).split('\n');
     //first look for lookup lists
 
     const skippedLines: number[] = []
@@ -151,7 +150,6 @@ export async function postFieldsInline(
             newContent.push(line);
         }
     });
-    console.log(newContent)
 
     const updateContentWithField = (content: string[], fieldName: string, payload: FieldPayload): string[] => {
         return content.map((line, i) => {
@@ -163,8 +161,6 @@ export async function postFieldsInline(
                 //check if this field is a lookup and get list boundaries
                 const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName)
                 if (field?.type === FieldType.Lookup) {
-
-                    //console.log(previousItemsCount)
                     const bounds = getListBounds(plugin, file, i)
                     if (bounds) {
                         const { start, end } = bounds;
@@ -174,12 +170,12 @@ export async function postFieldsInline(
                     }
                 }
                 const { inList, inQuote, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = fR.groups
-                const inputArray = payload.value ? payload.value.replace(/(\,\s+)/g, ',').split(',').sort() : [];
+                const inputArray = payload.value ? payload.value.replace(/(\,\s+)/g, ',').split(',').sort() : [''];
                 let newValue: string;
                 let hiddenValue = "";
 
                 if (field?.type === FieldType.Lookup && Lookup.bulletListLookupTypes.includes(field?.options.outputType as Lookup.Type)) {
-                    newValue = inputArray.length === 1 ? "\n- " + inputArray[0] : `${inputArray.length > 0 ? "\n" : ""}${inputArray.map(item => "- " + item).join('\n')}`;
+                    newValue = inputArray.length === 1 ? "\n- " + inputArray[0] + "\n" : `${inputArray.length > 0 ? "\n" : ""}${inputArray.map(item => "- " + item).join('\n')}\n`;
                     // hide the values next to the field so that they are readable by getValues. 
                     // we need getValues instead of dv.page to have the rawValue because dv is transforming data, making comparison impossible
                     hiddenValue = `<div hidden id="${field.name}_values">${payload.value}</div>`
@@ -258,7 +254,6 @@ export async function postValues(
             }
         }
     })
-    console.log(toYaml, toUpdateInline, toCreateInline)
     if (Object.keys(toYaml).length) await plugin.fileTaskManager
         .pushTask(() => { postFieldsInYaml(plugin, file, toYaml) })
     if (Object.keys(toCreateInline).length || Object.keys(toUpdateInline).length) await plugin.fileTaskManager

@@ -54,15 +54,15 @@ export default class FileTaskManager extends Component {
             await firstTaskInQueue.fn()
             firstTaskInQueue.status = "done"
             this.queue.delete(firstTaskInQueueId)
-            console.log("done: ", firstTaskInQueueId)
-            console.log("remaining", [...this.queue].length)
+            //console.log("done: ", firstTaskInQueueId)
+            //console.log("remaining", [...this.queue].length)
             // in case nothing has changed in frontmatter, processFrontmatter wont trigger metadatacache resolve 
             // and no task will be in progress so we can execute next
             if (!this.plugin.app.metadataCache.inProgressTaskCount) await this.executeNext();
         } else if (this.plugin.app.metadataCache.inProgressTaskCount) {
-            console.log(`wait ... ${this.plugin.app.metadataCache.inProgressTaskCount} tasks in progress`)
+            //console.log(`wait ... ${this.plugin.app.metadataCache.inProgressTaskCount} tasks in progress`)
         } else {
-            console.log("nothing else to do")
+            //console.log("nothing else to do")
         }
     }
 }
