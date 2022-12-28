@@ -17,6 +17,29 @@ export default class CanvasField extends FieldManager {
         super(plugin, field, FieldType.Canvas)
     }
 
+    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClick: () => void): void {
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        if (dvApi) {
+            const dvValue = dvApi.page(file.path)[fieldName]
+            const values = Array.isArray(dvValue) ? dvValue : [dvValue]
+            values.forEach((value, i) => {
+                if (dvApi.value.isLink(value)) {
+                    const link = container.createEl('a', { text: value.path.split("/").last().replace(/(.*).md/, "$1") });
+                    link.onclick = () => {
+                        this.plugin.app.workspace.openLinkText(value.path, file.path, true)
+                        onClick()
+                    }
+                } else {
+                    container.createDiv({ text: value });
+                }
+                if (i < values.length - 1) {
+                    container.createEl('span', { text: " | " })
+                }
+            })
+        }
+        container.createDiv()
+    }
+
     addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         //no field option to add for this field, it is automatically updated
     }
@@ -48,7 +71,10 @@ export default class CanvasField extends FieldManager {
         const canvasPath = options.canvasPath;
         canvasPathInput.setValue(canvasPath || "");
         canvasPathInput.setPlaceholder("Path/of/the/file.canvas");
-        canvasPathInput.onChange(value => options.canvasPath = value);
+        canvasPathInput.onChange(value => {
+            FieldSettingsModal.removeValidationError(canvasPathInput)
+            options.canvasPath = value
+        });
         this.canvasPathInput = canvasPathInput
 
         //direction

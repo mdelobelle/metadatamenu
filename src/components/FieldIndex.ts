@@ -1,4 +1,4 @@
-import { Component, TFile } from "obsidian"
+import { Component, Notice, TFile } from "obsidian"
 import MetadataMenu from "main"
 import Field from "../fields/Field";
 import { FileClass } from "src/fileClass/fileClass";
@@ -96,6 +96,7 @@ export default class FieldIndex extends Component {
 
         this.registerEvent(
             this.plugin.app.vault.on("modify", async (file) => {
+                console.log(`file ${file.path} changed`)
                 if (file instanceof TFile && file.extension === "canvas") {
                     await updateCanvas(this.plugin, { canvas: file });
                 }
@@ -191,8 +192,15 @@ export default class FieldIndex extends Component {
         const canvases = this.plugin.app.vault.getFiles().filter(t => t.extension === "canvas")
         canvases.forEach(async canvas => {
             const currentFilesPaths: string[] = []
-            const { nodes, edges }: CanvasData = JSON.parse(await this.plugin.app.vault.read(canvas));
-            nodes.forEach(async node => {
+            let { nodes, edges }: CanvasData = { nodes: [], edges: [] };
+            try {
+                const canvasContent = JSON.parse(await this.plugin.app.vault.read(canvas)) as CanvasData;
+                nodes = canvasContent.nodes;
+                edges = canvasContent.edges
+            } catch (error) {
+                new Notice(`Couldn't read ${canvas.path}`)
+            }
+            nodes?.forEach(async node => {
                 if (isFileNode(node)) {
                     const targetFilePath = node.file
                     if (!currentFilesPaths.includes(targetFilePath)) currentFilesPaths.push(targetFilePath)

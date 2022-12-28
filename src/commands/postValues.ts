@@ -152,6 +152,7 @@ export async function postFieldsInline(
     });
 
     const updateContentWithField = (content: string[], fieldName: string, payload: FieldPayload): string[] => {
+        console.log(`posting ${fieldName} on ${file.path}`)
         return content.map((line, i) => {
             const encodedInput = encodeLink(payload.value)
             let encodedLine = encodeLink(line)
@@ -170,19 +171,21 @@ export async function postFieldsInline(
                     }
                 }
                 const { inList, inQuote, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = fR.groups
-                const inputArray = payload.value ? payload.value.replace(/(\,\s+)/g, ',').split(',').sort() : [''];
+                const inputArray = payload.value ? payload.value.replace(/(\,\s+)/g, ',').split(',').sort() : [];
                 let newValue: string;
                 let hiddenValue = "";
-
+                let emptyLineAfterList = "";
                 if (field?.type === FieldType.Lookup && Lookup.bulletListLookupTypes.includes(field?.options.outputType as Lookup.Type)) {
-                    newValue = inputArray.length === 1 ? "\n- " + inputArray[0] + "\n" : `${inputArray.length > 0 ? "\n" : ""}${inputArray.map(item => "- " + item).join('\n')}\n`;
+                    //console.log(`next line [${content[i + (payload.previousItemsCount || 0) + 1]}]`)
+                    emptyLineAfterList = content[i + (payload.previousItemsCount || 0) + 1] !== "" ? "\n" : ""
+                    newValue = inputArray.length === 1 ? "\n- " + inputArray[0] : `${inputArray.length > 0 ? "\n" : ""}${inputArray.map(item => "- " + item).join('\n')}`;
                     // hide the values next to the field so that they are readable by getValues. 
                     // we need getValues instead of dv.page to have the rawValue because dv is transforming data, making comparison impossible
                     hiddenValue = `<div hidden id="${field.name}_values">${payload.value}</div>`
                 } else {
                     newValue = inputArray.length == 1 ? inputArray[0] : `${inputArray.join(', ')}`;
                 }
-                return `${inQuote || ""}${inList || ""}${startStyle}${fieldName}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer}${hiddenValue + newValue}`;
+                return `${inQuote || ""}${inList || ""}${startStyle}${fieldName}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer}${hiddenValue + newValue + emptyLineAfterList}`;
             } else {
                 const newFields: FieldReplace[] = [];
                 const inSentenceRegexBrackets = new RegExp(`\\[${inlineFieldRegex(fieldName)}(?<values>[^\\]]+)?\\]`, "gu");

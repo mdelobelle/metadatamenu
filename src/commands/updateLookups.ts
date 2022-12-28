@@ -15,7 +15,7 @@ async function parseFieldValues(plugin: MetadataMenu, file: TFile, fieldName: st
     const rawValue = (await getValues(plugin, file, fieldName))?.[0]
     const regex = new RegExp(`<div hidden id=\"${fieldName}_values\">(?<values>.*)</div>`)
     const fR = rawValue.match(regex)
-    return fR?.groups?.values || rawValue
+    return fR?.groups && 'values' in fR?.groups ? fR.groups.values : rawValue
 }
 
 export async function updateLookups(
@@ -113,7 +113,6 @@ export async function updateLookups(
                     )
                 const valueHasChanged = (!currentValue && newValue !== "") || !arraysAsStringAreEqual(currentValue, newValue)
                 const formatHasChanged = outputType !== f.fileLookupFieldLastOutputType.get(id)
-
                 if (shouldCheckForUpdate) {
                     f.fileLookupFieldLastValue.set(id, newValue);
                     f.fileLookupFieldLastOutputType.set(id, outputType);

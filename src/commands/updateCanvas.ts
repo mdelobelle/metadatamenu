@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { TFile } from "obsidian";
+import { Notice, TFile } from "obsidian";
 import { CanvasData, CanvasEdgeData, CanvasFileData, CanvasLinkData, CanvasNodeData, CanvasTextData } from "obsidian/canvas"
 import { FieldType } from "src/types/fieldTypes";
 import { FieldsPayload, postValues } from "./postValues";
@@ -57,7 +57,15 @@ export async function updateCanvas(
     canvases.forEach(async canvas => {
         const previousFilesPaths = plugin.fieldIndex.canvasLastFiles.get(canvas.path) || []
         const currentFilesPaths: string[] = []
-        const { nodes, edges }: CanvasData = JSON.parse(await plugin.app.vault.read(canvas));
+        let { nodes, edges }: CanvasData = { nodes: [], edges: [] };
+        console.log(await this.plugin.app.vault.read(canvas))
+        try {
+            const canvasContent = JSON.parse(await this.plugin.app.vault.read(canvas)) as CanvasData;
+            nodes = canvasContent.nodes;
+            edges = canvasContent.edges
+        } catch (error) {
+            new Notice(`Couldn't read ${canvas.path}`)
+        }
         nodes.forEach(async node => {
             if (isFileNode(node) && dvApi) {
                 const targetFilePath = node.file
