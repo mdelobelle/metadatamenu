@@ -17,6 +17,7 @@ Available types are:
 - `Date`: a field that will `Accept a date`
 - `Lookup`: a field that will `Accept a lookup query`
 - `Formula`: a field that will `Make Calculation based on note's fields`
+- `Canvas`: a field that will `Update with links in a canvas`
 
 ## Field settings
 By default each field is an `Input`

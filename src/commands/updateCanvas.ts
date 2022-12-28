@@ -81,6 +81,7 @@ export async function updateCanvas(
                     // for each canvas field, if the canvas field match the conditions, then, add the origin file to the target canvas field list of files
                     canvasFields?.forEach(field => {
                         const { nodeColors, edgeColors, edgeFromSides, edgeToSides, edgeLabels, filesFromDVQuery, direction } = field.options
+
                         const matchingFiles: string[] | undefined = filesFromDVQuery ?
                             new Function("dv", "current", `return ${filesFromDVQuery}`)(dvApi, dvApi.page(targetFile.path)) :
                             undefined;
