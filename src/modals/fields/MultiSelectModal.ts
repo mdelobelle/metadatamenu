@@ -130,6 +130,7 @@ export default class MultiSuggestModal extends SuggestModal<string> {
             const fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
             const fileClassAttribute = fileClass?.attributes.find(attr => attr.name === this.field.name)
             if (fileClass && fileClassAttribute) {
+
                 let newOptions: string[] | Record<string, string>;
                 if (Array.isArray(fileClassAttribute.options)) {
                     newOptions = [...fileClassAttribute.options, newValue]
@@ -146,7 +147,7 @@ export default class MultiSuggestModal extends SuggestModal<string> {
                     }
                 } else {
                     newOptions = fileClassAttribute.options;
-                    newOptions[`${Object.keys(fileClassAttribute.options).length}`] = newValue
+                    newOptions[`${Object.keys(fileClassAttribute.options).length + 1}`] = newValue
                     await fileClass.updateAttribute(fileClassAttribute.type, fileClassAttribute.name, newOptions, fileClassAttribute);
                 }
             }

@@ -80,7 +80,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
                     }
                 } else {
                     newOptions = fileClassAttribute.options;
-                    newOptions[`${Object.keys(fileClassAttribute.options).length}`] = newValue
+                    newOptions[`${Object.keys(fileClassAttribute.options).length + 1}`] = newValue
                     await fileClass.updateAttribute(fileClassAttribute.type, fileClassAttribute.name, newOptions, fileClassAttribute);
                 }
             }
