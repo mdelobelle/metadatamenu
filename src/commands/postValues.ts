@@ -152,7 +152,6 @@ export async function postFieldsInline(
     });
 
     const updateContentWithField = (content: string[], fieldName: string, payload: FieldPayload): string[] => {
-        console.log(`posting ${fieldName} on ${file.path}`)
         return content.map((line, i) => {
             const encodedInput = encodeLink(payload.value)
             let encodedLine = encodeLink(line)

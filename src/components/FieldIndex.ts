@@ -96,7 +96,7 @@ export default class FieldIndex extends Component {
 
         this.registerEvent(
             this.plugin.app.vault.on("modify", async (file) => {
-                console.log(`file ${file.path} changed`)
+                //console.log(`file ${file.path} changed`)
                 if (file instanceof TFile && file.extension === "canvas") {
                     await updateCanvas(this.plugin, { canvas: file });
                 }
@@ -198,6 +198,7 @@ export default class FieldIndex extends Component {
                 nodes = canvasContent.nodes;
                 edges = canvasContent.edges
             } catch (error) {
+                console.log(error)
                 new Notice(`Couldn't read ${canvas.path}`)
             }
             nodes?.forEach(async node => {

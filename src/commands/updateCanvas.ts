@@ -58,12 +58,12 @@ export async function updateCanvas(
         const previousFilesPaths = plugin.fieldIndex.canvasLastFiles.get(canvas.path) || []
         const currentFilesPaths: string[] = []
         let { nodes, edges }: CanvasData = { nodes: [], edges: [] };
-        console.log(await this.plugin.app.vault.read(canvas))
         try {
-            const canvasContent = JSON.parse(await this.plugin.app.vault.read(canvas)) as CanvasData;
+            const canvasContent = JSON.parse(await plugin.app.vault.read(canvas)) as CanvasData;
             nodes = canvasContent.nodes;
             edges = canvasContent.edges
         } catch (error) {
+            console.log(error)
             new Notice(`Couldn't read ${canvas.path}`)
         }
         nodes.forEach(async node => {
@@ -85,7 +85,6 @@ export async function updateCanvas(
                             new Function("dv", "current", `return ${filesFromDVQuery}`)(dvApi, dvApi.page(targetFile.path)) :
                             undefined;
                         const matchingEdges = orientedEdges(direction, edges, node)
-                        //if (targetFile.name === "Bertrand.md") console.log(node, matchingEdges, field.name, nodeColors, edgeColors, edgeFromSides, edgeToSides, edgeLabels, filesFromDVQuery, direction)
                         const values = matchingEdges
                             //match edgeLabel
                             .filter(edge =>

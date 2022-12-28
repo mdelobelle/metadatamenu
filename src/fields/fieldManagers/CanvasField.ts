@@ -252,7 +252,6 @@ export default class CanvasField extends FieldManager {
     validateOptions(): boolean {
         let error = false;
         if (!(this.field.options.canvasPath as string)?.endsWith(".canvas")) {
-            console.log(this.field.options.canvasPath)
             error = true;
             FieldSettingsModal.setValidationError(
                 this.canvasPathInput,
