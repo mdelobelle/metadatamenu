@@ -9,7 +9,8 @@ export class FileSuggest extends TextInputSuggest<TFile> {
     constructor(
         public inputEl: HTMLInputElement,
         private plugin: MetadataMenu,
-        public folder: string
+        public folder: string,
+        public extenstion: string = "md"
     ) {
         super(inputEl);
         this.plugin = plugin
@@ -28,7 +29,7 @@ export class FileSuggest extends TextInputSuggest<TFile> {
         all_files.forEach((file: TAbstractFile) => {
             if (
                 file instanceof TFile &&
-                file.extension === "md" &&
+                file.extension === this.extenstion &&
                 file.path.toLowerCase().contains(lower_input_str)
             ) {
                 files.push(file);

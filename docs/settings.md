@@ -191,6 +191,42 @@ Example1: `return pages.length`
 
 Example2: `const i=0.0;const sum = pages.reduce((p, c) => p + c["age"], i); return sum / pages.length`
 
+### `Canvas` options
+A canvas field a a given note is automatically updated with other notes connected to it in a specific canvas.
+
+#### `Path of the canvas`
+The path to canvas where you want to search for matching connexions
+
+#### `Nodes to target from this note`
+The direction of the edge connecting this node with other nodes:
+- `Incoming`: only the nodes with edges pointing to this node will be triggered
+- `Outgoing`: only the nodes to which this node is pointing will be triggered
+- `Both Side`: every nodes connected to this node will be triggered
+
+#### `Node matching colors`
+Only the nodes connected to this node that have a color within the selected values will be triggered.
+You can define custom color values on top of the 6 default colors available in the canvas
+
+#### `Matching files`
+You can define a dvJS query that will return files. Only the nodes connected to this node whom corresponding files belong to the dvJS query result will be triggered
+
+#### `Edge matching color`
+Only the nodes connected to this node with an edge that has a color within the selected values will be triggered.
+You can define custom color values on top of the 6 default colors available in the canvas
+
+#### `Edge matching from side`
+Only the nodes connected to this node with an edge starting from the selected side values will be triggered.
+
+#### `Edge matching to side`
+Only the nodes connected to this node with an edge pointing to the selected side values will be triggered.
+
+#### `Edge matching label`
+Only the nodes connected to this node with an edge that has a label within the values list will be triggered.
+You can remove a label from the list by clicking on the cross in the chip
+
+#### `Add new matching label`
+Add new labels to match with edge labels.
+
 ## Fileclass settings
 If you want the same field to have different behaviours depending on the note they belong to, you can define field settings based on the "class" of the "note".
 This is a particular frontmatter attribute that you will have to give to your note.

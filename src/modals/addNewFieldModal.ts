@@ -1,6 +1,6 @@
 import { Modal, TextComponent, ButtonComponent, TFile } from "obsidian";
 import MetadataMenu from "main";
-import { insertValues } from "src/commands/insertValues";
+import { postValues } from "src/commands/postValues";
 
 export default class addNewFieldModal extends Modal {
 
@@ -8,7 +8,6 @@ export default class addNewFieldModal extends Modal {
         private plugin: MetadataMenu,
         private lineNumber: number,
         private file: TFile,
-        private inFrontmatter: boolean,
         private after: boolean
     ) {
         super(plugin.app);
@@ -34,9 +33,8 @@ export default class addNewFieldModal extends Modal {
         const saveButton = new ButtonComponent(footerButtons);
         saveButton.setIcon("checkmark");
         saveButton.onClick(async () => {
-            await this.plugin.fileTaskManager
-                .pushTask(() => { insertValues(this.plugin, this.file, nameInput.getValue(), valueInput.getValue(), this.lineNumber, this.inFrontmatter, this.after) });
-            this.close()
+            await postValues(this.plugin, [{ name: nameInput.getValue(), payload: { value: valueInput.getValue() } }], this.file, this.lineNumber, this.after);
+            this.close();
         });
         const cancelButton = new ButtonComponent(footerButtons);
         cancelButton.setIcon("cross");

@@ -84,7 +84,7 @@ export class FileClassManager extends Component {
             );
 
             this.registerEvent(this.plugin.app.workspace.on("metadata-menu:updated-index", () => {
-                const view = this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType)[0].view as FileClassView
+                const view = this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType)[0]?.view as FileClassView | undefined
                 if (view) {
                     view.updateFieldsView();
                     view.updateSettingsView();
@@ -98,7 +98,7 @@ export class FileClassManager extends Component {
         const activeFilePath = this.plugin.app.workspace.getActiveFile()?.path
         const tagsAndFileClasses = []
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        if (activeFilePath && dvApi) {
+        if (activeFilePath && activeFilePath.endsWith(".md") && dvApi) {
             tagsAndFileClasses.push(...(dvApi.page(activeFilePath).etags?.filter((tag: string) => [...index.tagsMatchingFileClasses.keys()].includes(tag)) || []))
             tagsAndFileClasses.push(...(index.filesFileClassesNames.get(activeFilePath) || []))
         }

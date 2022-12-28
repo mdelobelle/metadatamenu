@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { Menu, TextComponent, TFile } from "obsidian";
-import { replaceValues } from "src/commands/replaceValues";
+import { postValues } from "src/commands/postValues";
 import FCSM from "src/options/FieldCommandSuggestModal";
 import { FieldOptions } from "src/components/NoteFields";
 import InsertFieldSuggestModal from "src/modals/insertFieldSuggestModal";
@@ -29,7 +29,7 @@ export abstract class FieldManager {
         }
     ): void
     abstract getOptionsStr(): string;
-    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): void;
+    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): void;
     public showModalOption: boolean = true;
 
     constructor(public plugin: MetadataMenu, public field: Field, public type: FieldType) {
@@ -75,7 +75,7 @@ export abstract class FieldManager {
     public static async replaceValues(plugin: MetadataMenu, path: string, fieldName: string, value: string): Promise<void> {
         const file = plugin.app.vault.getAbstractFileByPath(path)
         if (file instanceof TFile && file.extension == "md") {
-            await plugin.fileTaskManager.pushTask(() => { replaceValues(plugin, file, fieldName, value) });
+            await postValues(plugin, [{ name: fieldName, payload: { value: value } }], file)
         }
     }
 
@@ -102,17 +102,16 @@ export abstract class FieldManager {
         field: Field | undefined,
         value?: string,
         lineNumber?: number,
-        inFrontmatter?: boolean,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
         if (field) {
             const fieldManager = new FM[field.type](plugin, field);
-            fieldManager.createAndOpenFieldModal(file, fieldName, value, lineNumber, inFrontmatter, after, asList, asComment);
+            fieldManager.createAndOpenFieldModal(file, fieldName, value, lineNumber, after, asList, asComment);
         } else {
             const fieldManager = FieldManager.createDefault(plugin, fieldName!);
-            fieldManager.createAndOpenFieldModal(file, fieldName!, value, lineNumber, inFrontmatter, after, asList, asComment);
+            fieldManager.createAndOpenFieldModal(file, fieldName!, value, lineNumber, after, asList, asComment);
         }
     }
 
@@ -122,17 +121,16 @@ export abstract class FieldManager {
         fieldName: string | undefined,
         value: string,
         lineNumber: number,
-        inFrontmatter: boolean,
         after: boolean,
         asList: boolean,
         asComment: boolean
     ) {
         if (!fieldName) {
-            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, inFrontmatter, after);
+            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, after);
             modal.open();
         } else {
             const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
-            if (field) this.createAndOpenModal(plugin, file, fieldName, field, value, lineNumber, inFrontmatter, after, asList, asComment);
+            if (field) this.createAndOpenModal(plugin, file, fieldName, field, value, lineNumber, after, asList, asComment);
         }
     }
 

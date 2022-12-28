@@ -146,7 +146,10 @@ export default class ExtraButton extends Component {
         const nodes = container.findAll(selector);
         for (let i = 0; i < nodes.length; ++i) {
             const el = nodes[i] as HTMLElement;
-            updateDivExtraAttributes(this.plugin.app, this.plugin, el, viewTypeName, "");
+            const isCanvasFileLink = el.parentElement?.getAttr("data-path")?.includes(".canvas")
+            if (!isCanvasFileLink) {
+                updateDivExtraAttributes(this.plugin.app, this.plugin, el, viewTypeName, "");
+            }
         }
     }
 

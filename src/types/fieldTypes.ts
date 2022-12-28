@@ -11,7 +11,8 @@ export const enum FieldType {
     "MultiFile" = "MultiFile",
     "Date" = "Date",
     "Lookup" = "Lookup",
-    "Formula" = "Formula"
+    "Formula" = "Formula",
+    "Canvas" = "Canvas"
 }
 
 export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = {
@@ -25,7 +26,8 @@ export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = 
     "MultiFile": FieldType.MultiFile,
     "Date": FieldType.Date,
     "Lookup": FieldType.Lookup,
-    "Formula": FieldType.Formula
+    "Formula": FieldType.Formula,
+    "Canvas": FieldType.Canvas
 };
 
 export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
@@ -39,7 +41,8 @@ export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
     "MultiFile": "file",
     "Date": "date",
     "Lookup": "lookup",
-    "Formula": "formula"
+    "Formula": "formula",
+    "Canvas": "canvas-links"
 }
 
 export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
@@ -53,7 +56,8 @@ export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
     "MultiFile": "Accept multiple links",
     "Date": "Accept a date",
     "Lookup": "Accept a lookup query",
-    "Formula": "Accept a formula"
+    "Formula": "Accept a formula",
+    "Canvas": "Updates with links in canvas"
 }
 
 export const FieldManager: Record<keyof typeof FieldType, any> = {
@@ -67,7 +71,8 @@ export const FieldManager: Record<keyof typeof FieldType, any> = {
     "MultiFile": Managers.MultiFile,
     "Date": Managers.Date,
     "Lookup": Managers.Lookup,
-    "Formula": Managers.Formula
+    "Formula": Managers.Formula,
+    "Canvas": Managers.Canvas
 }
 
 export const FieldIcon: Record<keyof typeof FieldType, string> = {
@@ -81,7 +86,8 @@ export const FieldIcon: Record<keyof typeof FieldType, string> = {
     "MultiFile": "link",
     "Date": "calendar-with-checkmark",
     "Lookup": "file-search",
-    "Formula": "function-square"
+    "Formula": "function-square",
+    "Canvas": "layout-dashboard"
 }
 
 export const FieldBackgroundColorClass: Record<keyof typeof FieldType, string> = {
@@ -95,5 +101,12 @@ export const FieldBackgroundColorClass: Record<keyof typeof FieldType, string> =
     "MultiFile": "file",
     "Date": "date",
     "Lookup": "lookup",
-    "Formula": "lookup"
+    "Formula": "lookup",
+    "Canvas": "file"
 }
+
+export const multiTypes = [
+    FieldType.Multi,
+    FieldType.MultiFile,
+    FieldType.Canvas
+]

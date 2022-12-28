@@ -1,10 +1,9 @@
 import { TFile, FuzzySuggestModal, FuzzyMatch, ButtonComponent, setIcon } from "obsidian";
 import Field from "src/fields/Field";
-import { replaceValues } from "src/commands/replaceValues";
-import { insertValues } from "src/commands/insertValues";
 import { FieldManager } from "src/types/fieldTypes";
 import { FieldManager as FM } from "src/fields/FieldManager";
 import MetadataMenu from "main";
+import { postValues } from "src/commands/postValues";
 
 export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
 
@@ -16,7 +15,6 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
         private field: Field,
         initialValueObject: any,
         private lineNumber: number = -1,
-        private inFrontmatter: boolean = false,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
@@ -94,44 +92,11 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
             }
             return FM.buildMarkDownLink(this.plugin, this.file, file.basename, alias)
         })
-        if (this.lineNumber == -1) {
-            await this.plugin.fileTaskManager
-                .pushTask(() => {
-                    replaceValues(
-                        this.plugin,
-                        this.file,
-                        this.field.name,
-                        result.join(", ")
-                    )
-                });
-        } else {
-            await this.plugin.fileTaskManager
-                .pushTask(() => {
-                    insertValues(
-                        this.plugin,
-                        this.file,
-                        this.field.name,
-                        result.join(", "),
-                        this.lineNumber,
-                        this.inFrontmatter,
-                        this.after,
-                        this.asList,
-                        this.asComment
-                    )
-                });
-        };
+        await postValues(this.plugin, [{ name: this.field.name, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
     }
 
     async clearValues() {
-        await this.plugin.fileTaskManager
-            .pushTask(() => {
-                replaceValues(
-                    this.plugin,
-                    this.file,
-                    this.field.name,
-                    ""
-                )
-            });
+        await postValues(this.plugin, [{ name: this.field.name, payload: { value: "" } }], this.file)
     }
 
     renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {

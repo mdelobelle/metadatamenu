@@ -3,7 +3,7 @@ import { Notice, TFile } from "obsidian";
 import Field from "src/fields/Field";
 import { FieldType } from "src/types/fieldTypes";
 import { Status } from "src/types/lookupTypes";
-import { replaceValues } from "./replaceValues";
+import { postValues } from "./postValues";
 import { arraysAsStringAreEqual } from "./updateLookups";
 
 
@@ -69,7 +69,7 @@ export async function updateFormulas(
                 if (!shouldUpdate) {
                     f.fileFormulaFieldsStatus.set(`${filePath}__${field.name}`, Status.changed)
                 } else {
-                    await plugin.fileTaskManager.pushTask(() => replaceValues(plugin, filePath, field.name, newValue));
+                    await postValues(plugin, [{ name: field.name, payload: { value: newValue } }], filePath)
                     f.fileFormulaFieldLastValue.set(id, newValue);
                     f.fileFormulaFieldsStatus.set(`${filePath}__${field.name}`, Status.upToDate)
                 }

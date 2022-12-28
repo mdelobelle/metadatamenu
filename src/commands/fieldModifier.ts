@@ -10,16 +10,15 @@ function buildAndOpenModal(
     fieldName: string,
     attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
 ): void {
-    if (attrs?.options?.inFrontmatter && plugin.app.metadataCache.getCache(file.path)?.frontmatter) {
-        const lineNumber = plugin.app.metadataCache.getCache(file.path)!.frontmatter!.position.end.line - 1
-        F.openFieldModal(plugin, file, fieldName, "", lineNumber, true, false, false, false)
+    if (attrs?.options?.inFrontmatter) {
+        const lineNumber = - 1
+        F.openFieldModal(plugin, file, fieldName, "", lineNumber, false, false, false)
     } else {
         new chooseSectionModal(
             plugin,
             file,
             (
                 lineNumber: number,
-                inFrontmatter: boolean,
                 after: boolean,
                 asList: boolean,
                 asComment: boolean
@@ -29,7 +28,6 @@ function buildAndOpenModal(
                 fieldName,
                 "",
                 lineNumber,
-                inFrontmatter,
                 after,
                 asList,
                 asComment
@@ -90,7 +88,6 @@ export function fieldModifier(
                             file,
                             (
                                 lineNumber: number,
-                                inFrontmatter: boolean,
                                 after: boolean,
                                 asList: boolean,
                                 asComment: boolean
@@ -100,7 +97,6 @@ export function fieldModifier(
                                 undefined,
                                 "",
                                 lineNumber,
-                                inFrontmatter,
                                 after,
                                 asList,
                                 asComment

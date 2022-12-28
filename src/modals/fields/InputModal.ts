@@ -1,7 +1,6 @@
 import MetadataMenu from "main";
 import { ButtonComponent, DropdownComponent, Modal, setIcon, TextAreaComponent, TextComponent, TFile } from "obsidian";
-import { insertValues } from "src/commands/insertValues";
-import { replaceValues } from "src/commands/replaceValues";
+import { postValues } from "src/commands/postValues";
 import Field from "src/fields/Field";
 
 export default class InputModal extends Modal {
@@ -14,7 +13,6 @@ export default class InputModal extends Modal {
         private field: Field,
         private value: string,
         private lineNumber: number = -1,
-        private inFrontmatter: boolean = false,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
@@ -95,13 +93,7 @@ export default class InputModal extends Modal {
         saveBtn.setIcon("checkmark");
         saveBtn.onClick(async () => {
             let inputValue = this.renderedValue.getValue();
-            if (this.lineNumber == -1) {
-                await this.plugin.fileTaskManager
-                    .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, inputValue) });
-            } else {
-                await this.plugin.fileTaskManager
-                    .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
-            };
+            await postValues(this.plugin, [{ name: this.field.name, payload: { value: inputValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
             this.close();
         })
     }
@@ -115,13 +107,7 @@ export default class InputModal extends Modal {
         saveBtn.setIcon("checkmark");
         saveBtn.onClick(async () => {
             let inputValue = inputEl.getValue();
-            if (this.lineNumber == -1) {
-                await this.plugin.fileTaskManager
-                    .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, inputValue) });
-            } else {
-                await this.plugin.fileTaskManager
-                    .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, inputValue, this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
-            };
+            await postValues(this.plugin, [{ name: this.field.name, payload: { value: inputValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
             this.close();
         })
     };

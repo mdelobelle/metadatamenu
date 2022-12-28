@@ -9,6 +9,7 @@ import Date from './DateField'
 import MultiFile from './MultiFileField'
 import Lookup from './LookupField'
 import Formula from './FormulaField'
+import Canvas from './CanvasField'
 
 const Managers = {
     Input,
@@ -21,7 +22,8 @@ const Managers = {
     Date,
     MultiFile,
     Lookup,
-    Formula
+    Formula,
+    Canvas
 }
 
 export default Managers

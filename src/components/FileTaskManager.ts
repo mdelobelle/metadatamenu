@@ -29,6 +29,14 @@ export default class FileTaskManager extends Component {
             this.busy = false;
             await this.executeNext();
         }))
+        this.plugin.registerEvent(
+            this.plugin.app.vault.on("modify", async (file) => {
+                if (file instanceof TFile && file.extension === "canvas") {
+                    this.busy = false;
+                    await this.executeNext();
+                }
+            })
+        )
     }
 
 
@@ -48,6 +56,9 @@ export default class FileTaskManager extends Component {
             this.queue.delete(firstTaskInQueueId)
             //console.log("done: ", firstTaskInQueueId)
             //console.log("remaining", [...this.queue].length)
+            // in case nothing has changed in frontmatter, processFrontmatter wont trigger metadatacache resolve 
+            // and no task will be in progress so we can execute next
+            if (!this.plugin.app.metadataCache.inProgressTaskCount) await this.executeNext();
         } else if (this.plugin.app.metadataCache.inProgressTaskCount) {
             //console.log(`wait ... ${this.plugin.app.metadataCache.inProgressTaskCount} tasks in progress`)
         } else {

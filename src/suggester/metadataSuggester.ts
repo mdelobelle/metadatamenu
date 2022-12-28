@@ -15,6 +15,7 @@ import { genericFieldRegex, getLineFields, encodeLink } from "../utils/parser";
 import FileField from "src/fields/fieldManagers/FileField";
 import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
 import Field from "src/fields/Field";
+import { postValues } from "src/commands/postValues";
 
 interface IValueCompletion {
     value: string;
@@ -188,60 +189,35 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         }
     };
 
-    selectSuggestion(suggestion: IValueCompletion, event: KeyboardEvent | MouseEvent): void {
+    async selectSuggestion(suggestion: IValueCompletion, event: KeyboardEvent | MouseEvent): Promise<void> {
         const activeView = this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
         if (!activeView) {
             return;
         };
         const editor = activeView.editor;
         const activeLine = editor.getLine(this.context!.start.line);
-
-        if (this.inFrontmatter) {
-            //format list if in frontmatter
+        const file = this.context?.file
+        const position = this.context?.editor.getCursor().ch || 0
+        if (this.inFrontmatter && file) {
             try {
                 let parsedField: Record<string, string | string[] | null> = parseYaml(activeLine)
                 let [attr, pastValues] = Object.entries(parsedField)[0]
-                let newField: string
-                if (!pastValues) {
-                    newField = attr + ": " + suggestion.value;
-                } else if (typeof pastValues == 'string') {
-                    if (!pastValues.contains(",")) {
-                        newField = attr + ": " + suggestion.value;
-                    } else {
-                        newField = attr + ": [" + pastValues.split(",").map(o => o.trim()).slice(0, -1).join(', ') + ", " + suggestion.value + "]";
-                    }
-                } else if (Array.isArray(pastValues)) {
-                    if (activeLine.endsWith(",]") || activeLine.endsWith(", ]")) {
-                        //value can be directly added since parseYaml wont create an empty last item in pastValues
-                        newField = attr + ": [" + [...pastValues, suggestion.value].join(", ") + "]";
-                    } else {
-                        //we have typed something that we ahve to remove to replace with selected value
-                        newField = attr + ": [" + [...pastValues.slice(0, -1), suggestion.value].join(", ") + "]";
-                    }
-
-                } else {
-                    newField = attr + ": [" + [...pastValues].join(", ") + "]";
-                }
-                editor.replaceRange(newField, { line: this.context!.start.line, ch: 0 }, { line: this.context!.start.line, ch: activeLine.length });
-                if (Array.isArray(pastValues) || typeof pastValues === 'string' && pastValues.contains(",")) {
-                    editor.setCursor({ line: this.context!.start.line, ch: newField.length - 1 })
-                } else {
-                    editor.setCursor({ line: this.context!.start.line, ch: newField.length })
-                }
+                await postValues(this.plugin, [{ name: attr, payload: { value: suggestion.value, addToCurrentValues: true } }], file)
             } catch (error) {
                 new Notice("Frontmatter wrongly formatted", 2000)
                 this.close()
                 return
             }
-        } else if (this.inFullLine) {
+        } else if (this.inFullLine && this.field && file) {
+            //replace directly in place to maintain cursor position
             let cleanedLine = activeLine
             while (![',', ':'].contains(cleanedLine.charAt(cleanedLine.length - 1))) {
                 cleanedLine = cleanedLine.slice(0, -1)
             }
             editor.replaceRange(`${cleanedLine}${event.shiftKey ? " " : ""}` + suggestion.value,
                 { line: this.context!.start.line, ch: 0 }, this.context!.end);
-        } else if (this.inSentence) {
-            const position = this.context?.editor.getCursor().ch || 0
+        } else if (this.inSentence && this.field && file) {
+            //replace directly in place to maintain cursor position
             let beforeCursor = activeLine.slice(0, position)
             let afterCursor = activeLine.slice(position)
             let separatorPos = position;

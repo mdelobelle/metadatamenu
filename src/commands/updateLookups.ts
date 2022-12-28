@@ -3,7 +3,7 @@ import { Notice, TFile } from "obsidian";
 import { FieldManager } from "src/fields/FieldManager";
 import * as Lookup from "src/types/lookupTypes";
 import { getValues } from "./getValues";
-import { replaceValues } from "./replaceValues";
+import { FieldsPayload, postValues } from "./postValues";
 
 export function arraysAsStringAreEqual(a: string, b: string) {
     const aAsArray = a.split(",").map(v => v.trim())
@@ -15,7 +15,7 @@ async function parseFieldValues(plugin: MetadataMenu, file: TFile, fieldName: st
     const rawValue = (await getValues(plugin, file, fieldName))?.[0]
     const regex = new RegExp(`<div hidden id=\"${fieldName}_values\">(?<values>.*)</div>`)
     const fR = rawValue.match(regex)
-    return fR?.groups?.values || rawValue
+    return fR?.groups && 'values' in fR?.groups ? fR.groups.values : rawValue
 }
 
 export async function updateLookups(
@@ -28,6 +28,8 @@ export async function updateLookups(
     //console.log("start update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
     const f = plugin.fieldIndex;
     let renderingErrors: string[] = []
+    const payloads: Record<string, FieldsPayload> = {}
+    const updatedFields: string[] = []
     for (let id of f.fileLookupFiles.keys()) {
         const matchRegex = /(?<filePath>.*)__related__(?<fileClassName>.*)___(?<fieldName>.*)/
         const { filePath, fileClassName, fieldName } = id.match(matchRegex)?.groups || {}
@@ -35,6 +37,7 @@ export async function updateLookups(
         const dvApi = plugin.app.plugins.plugins.dataview?.api
         const dvFile = dvApi && dvApi.page(tFile.path)
         if (tFile && dvFile) {
+            payloads[filePath] = payloads[filePath] || []
             let newValue = "";
             const pages = f.fileLookupFiles.get(id)
             const field = f.filesFields.get(filePath)?.find(field => field.name == fieldName)
@@ -110,15 +113,16 @@ export async function updateLookups(
                     )
                 const valueHasChanged = (!currentValue && newValue !== "") || !arraysAsStringAreEqual(currentValue, newValue)
                 const formatHasChanged = outputType !== f.fileLookupFieldLastOutputType.get(id)
-
                 if (shouldCheckForUpdate) {
                     f.fileLookupFieldLastValue.set(id, newValue);
                     f.fileLookupFieldLastOutputType.set(id, outputType);
                 }// make sure that this is set at first indexing}
                 if (shouldCheckForUpdate && (valueHasChanged || formatHasChanged)) {
                     const previousValuesCount = plugin.fieldIndex.previousFileLookupFilesValues.get(id) || 0
-                    await plugin.fileTaskManager.pushTask(() => replaceValues(plugin, tFile, fieldName, newValue, previousValuesCount));
-                    f.fileLookupFieldsStatus.set(`${filePath}__${fieldName}`, Lookup.Status.upToDate)
+                    payloads[filePath].push({ name: fieldName, payload: { value: newValue, previousItemsCount: previousValuesCount } })
+                    updatedFields.push(`${filePath}__${fieldName}`)
+                    //await postValues(plugin, [{ name: fieldName, payload: { value: newValue, previousItemsCount: previousValuesCount } }], tFile)
+                    //f.fileLookupFieldsStatus.set(`${filePath}__${fieldName}`, Lookup.Status.upToDate)
                 } else if (source !== "full Index") { // this case is for fileClass changes, no need for rewrite other lookups after cache update
                     plugin.fieldIndex.fileChanged = false
                 }
@@ -128,6 +132,10 @@ export async function updateLookups(
             }
         }
     }
+    Object.entries(payloads).forEach(async ([filePath, payload]) => {
+        if (payload.length) await postValues(plugin, payload, filePath)
+    })
+    updatedFields.forEach(field => f.fileLookupFieldsStatus.set(field, Lookup.Status.upToDate))
     if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`)
     //console.log("finished update lookups [", source, "]", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision, `${(Date.now() - start)}ms`)
 }

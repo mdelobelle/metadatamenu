@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { Menu, TFile } from "obsidian";
-import { replaceValues } from "src/commands/replaceValues";
+import { postValues } from "src/commands/postValues";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { FieldOptions } from "src/components/NoteFields"
 import BooleanModal from "src/modals/fields/BooleanModal";
@@ -17,8 +17,7 @@ export default class BooleanField extends FieldManager {
 
     public async toggle(name: string, value: string, file: TFile): Promise<void> {
         const bValue = BooleanField.stringToBoolean(value);
-        await this.plugin.fileTaskManager
-            .pushTask(() => { replaceValues(this.plugin, file, name, (!bValue).toString()) })
+        await postValues(this.plugin, [{ name: name, payload: { value: (!bValue).toString() } }], file)
     }
 
     public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
@@ -69,9 +68,17 @@ export default class BooleanField extends FieldManager {
         return true
     }
 
-    public createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): void {
+    public createAndOpenFieldModal(
+        file: TFile,
+        selectedFieldName: string,
+        value?: string,
+        lineNumber?: number,
+        after?: boolean,
+        asList?: boolean,
+        asComment?: boolean
+    ): void {
         const bValue = BooleanField.stringToBoolean(value || "false");
-        const fieldModal = new BooleanModal(this.plugin, file, this.field, bValue, lineNumber, inFrontmatter, after, asList, asComment)
+        const fieldModal = new BooleanModal(this.plugin, file, this.field, bValue, lineNumber, after, asList, asComment)
         fieldModal.titleEl.setText(`Set value for ${selectedFieldName}`);
         fieldModal.open();
     }

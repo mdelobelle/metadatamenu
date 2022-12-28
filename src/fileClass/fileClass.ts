@@ -4,11 +4,9 @@ import { SuggestModal, TFile } from "obsidian";
 import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 import { capitalize } from "src/utils/textUtils";
 import { genuineKeys } from "src/utils/dataviewUtils";
-import { replaceValues } from "src/commands/replaceValues";
-import { insertValues } from "src/commands/insertValues";
-import { insertFrontmatterWithFields } from "src/commands/insertFrontmatterWithFields";
 import { FieldCommand } from "src/fields/Field";
 import { FieldManager } from "src/fields/FieldManager";
+import { FieldsPayload, postValues } from "src/commands/postValues";
 
 const options: Record<string, { name: string, toValue: (value: any) => string }> = {
     "limit": { name: "limit", toValue: (value: any) => `${value || ""}` },
@@ -78,26 +76,8 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
     async insertFileClassToFile(value: string) {
         const fileClassAlias = this.plugin.settings.fileClassAlias
         const currentFileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path)
-        const frontmatterFileClasses = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatter?.[fileClassAlias];
-        if (currentFileClasses && frontmatterFileClasses) {
-            replaceValues(this.plugin, this.file, fileClassAlias, [...currentFileClasses.map(fc => fc.name), value].join(", "))
-        } else {
-            const frontmatter = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatter
-            if (frontmatter) {
-                if (Object.keys(frontmatter).includes(fileClassAlias)) {
-                    //fileClass field is empty, has an empty array of is badly formatted: override it
-                    await replaceValues(this.plugin, this.file, fileClassAlias, value)
-                } else {
-                    //frontmatter exists but doesn't contain fileClass: add it
-                    const lineNumber = frontmatter.position.end.line - 1
-                    await insertValues(this.plugin, this.file, fileClassAlias, value, lineNumber, true)
-                }
-            } else {
-                const fields: Record<string, string> = {}
-                fields[fileClassAlias] = value
-                await insertFrontmatterWithFields(this.plugin, this.file, fields)
-            }
-        }
+        const newValue = currentFileClasses ? [...currentFileClasses.map(fc => fc.name), value].join(", ") : value
+        await postValues(this.plugin, [{ name: fileClassAlias, payload: { value: newValue } }], this.file)
     }
 }
 
@@ -291,30 +271,23 @@ class FileClass {
         } catch (error) {
             throw (error);
         }
+    }
 
+    public getVersion(): number {
+        const currentVersion = this.plugin.app.metadataCache.getFileCache(this.getClassFile())?.frontmatter?.version
+        return currentVersion && !isNaN(currentVersion) ? currentVersion : 0;
     }
 
     public async updateOptions(newOptions: FileClassOptions): Promise<void> {
-        const frontmatter = this.plugin.app.metadataCache.getFileCache(this.getClassFile())?.frontmatter
         const path = this.getClassFile().path
+        const payload: FieldsPayload = []
         Object.keys(options).forEach(async (key: keyof typeof options) => {
             const { name, toValue } = options[key]
-            if (frontmatter && frontmatter[name] !== undefined) {
-                await this.plugin.fileTaskManager.pushTask(() => replaceValues(
-                    this.plugin,
-                    path,
-                    name,
-                    toValue(newOptions[key as keyof FileClassOptions])
-                ))
-            } else {
-                await this.plugin.fileTaskManager.pushTask(() => insertValues(
-                    this.plugin,
-                    path,
-                    name,
-                    toValue(newOptions[key as keyof FileClassOptions]), -2, true
-                ))
-            }
+            payload.push({ name: name, payload: { value: toValue(newOptions[key as keyof FileClassOptions]) } })
         })
+        //incrementing a version to force obsidian resolve this new file even if it looks like the previous version
+        payload.push({ name: "version", payload: { value: `${this.getVersion() + 1}` } })
+        await postValues(this.plugin, payload, path)
     }
 
     public async updateAttribute(
@@ -374,6 +347,5 @@ class FileClass {
         return path.match(fileClassNameRegex)?.groups?.fileClassName
     }
 }
-
 
 export { FileClass };

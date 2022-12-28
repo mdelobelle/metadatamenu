@@ -7,11 +7,10 @@ import Field from "../Field";
 import { SettingLocation } from "../FieldManager";
 import { FieldManager } from "../FieldManager";
 import * as Lookup from "src/types/lookupTypes";
-import { replaceValues } from "src/commands/replaceValues";
-import { insertValues } from "src/commands/insertValues";
 import { Status } from "src/types/lookupTypes";
 import { FieldOptions } from "src/components/NoteFields";
 import { updateLookups } from "src/commands/updateLookups";
+import { postValues } from "src/commands/postValues";
 
 export default class LookupField extends FieldManager {
 
@@ -59,19 +58,24 @@ export default class LookupField extends FieldManager {
         }
     }
 
-    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
-        //no field modal, we include the field directly
-        if (lineNumber == -1) {
-            await this.plugin.fileTaskManager
-                .pushTask(() => { replaceValues(this.plugin, file, this.field.name, "") });
-        } else {
-            await this.plugin.fileTaskManager
-                .pushTask(() => { insertValues(this.plugin, file, this.field.name, "", lineNumber, inFrontmatter, after, asList, asComment) });
-        };
+    async createAndOpenFieldModal(
+        file: TFile,
+        selectedFieldName: string,
+        value?: string,
+        lineNumber?: number,
+        after?: boolean,
+        asList?: boolean,
+        asComment?: boolean
+    ): Promise<void> {
+        await postValues(this.plugin, [{ name: this.field.name, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
     }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }): void {
-
+        const file = p.file
+        const fieldName = this.field.name
+        const fileClassName = this.plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName)?.fileClassName || "presetField"
+        const fieldValue = dv.el('span', this.plugin.fieldIndex.fileLookupFieldLastValue.get(`${file.path}__related__${fileClassName}___${fieldName}`), attrs);
+        fieldContainer.appendChild(fieldValue);
     }
 
     private displaySelectedOutputOptionContainer(optionContainers: [Array<keyof typeof Lookup.Type>, HTMLElement | undefined][], value: keyof typeof Lookup.Type) {

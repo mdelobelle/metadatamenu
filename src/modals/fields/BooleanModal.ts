@@ -1,7 +1,6 @@
 import MetadataMenu from "main";
 import { Modal, TFile, ButtonComponent } from "obsidian";
-import { insertValues } from "src/commands/insertValues";
-import { replaceValues } from "src/commands/replaceValues";
+import { postValues } from "src/commands/postValues";
 import Field from "src/fields/Field";
 
 export default class BooleanModal extends Modal {
@@ -12,7 +11,6 @@ export default class BooleanModal extends Modal {
         private field: Field,
         private value: boolean,
         private lineNumber: number = -1,
-        private inFrontmatter: boolean = false,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
@@ -22,7 +20,6 @@ export default class BooleanModal extends Modal {
         this.file = file;
         this.value = value;
         this.lineNumber = lineNumber;
-        this.inFrontmatter = inFrontmatter;
         this.after = after;
         this.asList = asList;
         this.asComment = asComment;
@@ -68,13 +65,7 @@ export default class BooleanModal extends Modal {
         saveButton.setIcon("checkmark");
         saveButton.onClick(async () => {
             const value = this.value.toString()
-            if (this.lineNumber == -1) {
-                await this.plugin.fileTaskManager
-                    .pushTask(() => { replaceValues(this.plugin, this.file, this.field.name, value) });
-            } else {
-                await this.plugin.fileTaskManager
-                    .pushTask(() => { insertValues(this.plugin, this.file, this.field.name, value, this.lineNumber, this.inFrontmatter, this.after, this.asList, this.asComment) });
-            };
+            await postValues(this.plugin, [{ name: this.field.name, payload: { value: value } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
             this.close();
         });
     };

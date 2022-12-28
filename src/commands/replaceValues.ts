@@ -62,7 +62,7 @@ export async function replaceValues(
             throw Error("path doesn't correspond to a proper file");
         }
     }
-    const content = (await plugin.app.vault.cachedRead(file)).split('\n');
+    const content = (await plugin.app.vault.read(file)).split('\n');
     const frontmatter = plugin.app.metadataCache.getFileCache(file)?.frontmatter;
     //first look for lookup lists
 

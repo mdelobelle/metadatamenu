@@ -41,3 +41,18 @@ export function get_tfiles_from_folder(
 
     return files;
 }
+
+export function getFileFromFileOrPath(plugin: MetadataMenu, fileOrFilePath: TFile | string) {
+    let file: TFile;
+    if (fileOrFilePath instanceof TFile) {
+        file = fileOrFilePath;
+    } else {
+        const _file = plugin.app.vault.getAbstractFileByPath(fileOrFilePath)
+        if (_file instanceof TFile && _file.extension == "md") {
+            file = _file;
+        } else {
+            throw Error("path doesn't correspond to a proper file");
+        }
+    }
+    return file
+}

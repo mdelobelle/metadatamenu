@@ -24,7 +24,7 @@ export default class ContextMenu extends Component {
 			this.plugin.app.workspace.on('editor-menu', (menu, editor, view) => {
 				const file = this.plugin.app.workspace.getActiveFile();
 				const includedFields: string[] = [];
-				const frontmatter = this.plugin.app.metadataCache.getFileCache(view.file)?.frontmatter;
+				const frontmatter = view.file && this.plugin.app.metadataCache.getFileCache(view.file)?.frontmatter;
 				if (frontmatter
 					&& editor.getCursor().line > frontmatter.position.start.line
 					&& editor.getCursor().line < frontmatter.position.end.line

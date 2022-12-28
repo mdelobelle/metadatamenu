@@ -15,7 +15,7 @@ export default class chooseSectionModal extends SuggestModal<Line> {
     constructor(
         private plugin: MetadataMenu,
         private file: TFile,
-        private onSelect: (lineNumber: number, inFrontmatter: boolean, after: boolean, asList: boolean, asComment: boolean) => void,
+        private onSelect: (lineNumber: number, after: boolean, asList: boolean, asComment: boolean) => void,
     ) {
         super(plugin.app);
         this.onSelect = onSelect
@@ -65,7 +65,7 @@ export default class chooseSectionModal extends SuggestModal<Line> {
         const addAtEndOfFrontMatterBtn = new ButtonComponent(inputContainer)
         addAtEndOfFrontMatterBtn.setIcon("list-end")
         addAtEndOfFrontMatterBtn.onClick(() => {
-            this.onSelect(-2, true, false, false, false)
+            this.onSelect(-1, false, false, false)
             this.close();
         })
         addAtEndOfFrontMatterBtn.setTooltip("Add this field at the end of the frontmatter")
@@ -98,11 +98,8 @@ export default class chooseSectionModal extends SuggestModal<Line> {
     }
 
     onChooseSuggestion(item: Line, evt: MouseEvent | KeyboardEvent) {
-        const frontmatter = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatter
-        const inFrontmatter = frontmatter !== undefined && (item.lineNumber <= frontmatter.position.end.line)
         const after = item.lineNumber == -1 ? false : true;
         this.onSelect(item.lineNumber == -1 ? 0 : item.lineNumber,
-            inFrontmatter,
             after,
             this.addAsListItem,
             this.addAsComment)

@@ -1,4 +1,4 @@
-import { Component, TFile } from "obsidian"
+import { Component, Notice, TFile } from "obsidian"
 import MetadataMenu from "main"
 import Field from "../fields/Field";
 import { FileClass } from "src/fileClass/fileClass";
@@ -10,6 +10,9 @@ import { updateFormulas, cleanRemovedFormulasFromIndex } from "src/commands/upda
 
 import { FieldType } from "src/types/fieldTypes";
 import { Status as LookupStatus, Type as LookupType } from "src/types/lookupTypes";
+import { updateCanvas } from "src/commands/updateCanvas";
+import { CanvasData } from "obsidian/canvas";
+import { isFileNode } from "src/types/canvasTypes";
 
 export default class FieldIndex extends Component {
 
@@ -34,6 +37,7 @@ export default class FieldIndex extends Component {
     public fileLookupFieldLastValue: Map<string, string>;
     public fileLookupFieldLastOutputType: Map<string, keyof typeof LookupType>;
     public fileFormulaFieldLastValue: Map<string, string>;
+    public canvasLastFiles: Map<string, string[]>
     public lookupQueries: Map<string, Field>;
     public dv: any;
     public lastRevision: 0;
@@ -53,6 +57,7 @@ export default class FieldIndex extends Component {
         this.previousFileLookupFilesValues = new Map();
         this.fileLookupFieldLastOutputType = new Map();
         this.fileFormulaFieldLastValue = new Map();
+        this.canvasLastFiles = new Map();
         this.dv = this.plugin.app.plugins.plugins.dataview;
         this.classFilesPath = plugin.settings.classFilesPath;
     }
@@ -90,6 +95,15 @@ export default class FieldIndex extends Component {
         )
 
         this.registerEvent(
+            this.plugin.app.vault.on("modify", async (file) => {
+                //console.log(`file ${file.path} changed`)
+                if (file instanceof TFile && file.extension === "canvas") {
+                    await updateCanvas(this.plugin, { canvas: file });
+                }
+            })
+        )
+
+        this.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
                 //console.log("some file changed", this.fileChanged);
                 //console.log("new revision", this.dv?.api.index.revision)
@@ -106,7 +120,15 @@ export default class FieldIndex extends Component {
                     cleanRemovedFormulasFromIndex(this.plugin);
                     this.getFilesFieldsExists(file);
                     if (this.classFilesPath && file.path.startsWith(this.classFilesPath)) {
-                        this.fullIndex("fileClass changed")
+                        await this.fullIndex("fileClass changed")
+                        const fileClassName = this.fileClassesPath.get(file.path)?.name
+                        const canvasFields = (fileClassName && this.fileClassesFields.get(fileClassName)?.filter(field => field.type === FieldType.Canvas)) || []
+                        canvasFields.forEach(async field => {
+                            const canvasFile = this.plugin.app.vault.getAbstractFileByPath(field.options.canvasPath)
+                            if (canvasFile instanceof TFile && canvasFile.extension === "canvas") {
+                                await updateCanvas(this.plugin, { canvas: canvasFile })
+                            }
+                        })
                     } else {
                         await this.updateFormulas(false);
                         this.resolveLookups(false);
@@ -152,6 +174,7 @@ export default class FieldIndex extends Component {
         this.getFilesFieldsFromFileClass();
         this.getFilesFields();
         this.getFilesFieldsExists();
+        await this.getCanvasesFiles();
         await this.getValuesListNotePathValues();
         this.resolveLookups(without_lookups);
         await this.updateLookups("full Index", without_lookups, force_update_all);
@@ -163,6 +186,29 @@ export default class FieldIndex extends Component {
 
     resolveLookups(without_lookups: boolean): void {
         if (!without_lookups) resolveLookups(this.plugin);
+    }
+
+    async getCanvasesFiles(): Promise<void> {
+        const canvases = this.plugin.app.vault.getFiles().filter(t => t.extension === "canvas")
+        canvases.forEach(async canvas => {
+            const currentFilesPaths: string[] = []
+            let { nodes, edges }: CanvasData = { nodes: [], edges: [] };
+            try {
+                const canvasContent = JSON.parse(await this.plugin.app.vault.read(canvas)) as CanvasData;
+                nodes = canvasContent.nodes;
+                edges = canvasContent.edges
+            } catch (error) {
+                console.log(error)
+                new Notice(`Couldn't read ${canvas.path}`)
+            }
+            nodes?.forEach(async node => {
+                if (isFileNode(node)) {
+                    const targetFilePath = node.file
+                    if (!currentFilesPaths.includes(targetFilePath)) currentFilesPaths.push(targetFilePath)
+                }
+            })
+            this.plugin.fieldIndex.canvasLastFiles.set(canvas.path, currentFilesPaths)
+        })
     }
 
     async updateLookups(source: string = "", without_lookups: boolean, force_update_all: boolean): Promise<void> {

@@ -14,7 +14,7 @@ export async function getValues(plugin: MetadataMenu, fileOrfilePath: TFile | st
             throw Error("path doesn't correspond to a proper file");
         }
     }
-    const content = (await plugin.app.vault.cachedRead(file)).split('\n');
+    const content = (await plugin.app.vault.read(file)).split('\n');
     const frontmatter = plugin.app.metadataCache.getFileCache(file)?.frontmatter;
     const { position: { start, end } } = frontmatter ? frontmatter : { position: { start: undefined, end: undefined } };
     const result: string[] = [];

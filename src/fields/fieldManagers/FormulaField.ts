@@ -6,11 +6,10 @@ import { FieldType, FieldIcon } from "src/types/fieldTypes";
 import Field from "../Field";
 import { SettingLocation } from "../FieldManager";
 import { FieldManager } from "../FieldManager";
-import { replaceValues } from "src/commands/replaceValues";
-import { insertValues } from "src/commands/insertValues";
 import { Status } from "src/types/lookupTypes";
 import { FieldOptions } from "src/components/NoteFields";
 import { updateFormulas } from "src/commands/updateFormulas";
+import { postValues } from "src/commands/postValues";
 
 export default class FormulaField extends FieldManager {
 
@@ -47,19 +46,21 @@ export default class FormulaField extends FieldManager {
         }
     }
 
-    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, inFrontmatter?: boolean, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
-        //no field modal, we include the field directly
-        if (lineNumber == -1) {
-            await this.plugin.fileTaskManager
-                .pushTask(() => { replaceValues(this.plugin, file, this.field.name, "") });
-        } else {
-            await this.plugin.fileTaskManager
-                .pushTask(() => { insertValues(this.plugin, file, this.field.name, "", lineNumber, inFrontmatter, after, asList, asComment) });
-        };
+    async createAndOpenFieldModal(
+        file: TFile,
+        selectedFieldName: string,
+        value?: string,
+        lineNumber?: number,
+        after?: boolean,
+        asList?: boolean,
+        asComment?: boolean
+    ): Promise<void> {
+        await postValues(this.plugin, [{ name: this.field.name, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
     }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }): void {
-
+        const fieldValue = dv.el('span', p[this.field.name], attrs);
+        fieldContainer.appendChild(fieldValue);
     }
 
     public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked = () => { }): void {

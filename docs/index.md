@@ -38,3 +38,5 @@ It also enables frontmatter of inline-field autocompletion with suggested values
 [demo 11](https://youtu.be/I73uW8fqOZ8): Supercharged Tags, multi fileClasses and metadata button
 
 [demo 12](https://youtu.be/3jukvV7OODg): Fileclass View
+
+[demo 13](https://youtu.be/7oaau8ijVUA): Canvas fields

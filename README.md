@@ -33,6 +33,8 @@ For complete documentation : https://mdelobelle.github.io/metadatamenu
 
 [demo 12](https://youtu.be/3jukvV7OODg): Fileclass View
 
+[demo 13](https://youtu.be/7oaau8ijVUA): Canvas fields
+
 # General concepts
 
 Metadata Menu can manage any metadata field located in frontmatter (YAML syntax) or in the body of the note with the syntax `field::` (dataview style)
@@ -50,6 +52,7 @@ Available types are:
 - `MultiFile`: a field that will `Accept multiple links`
 - `Date`: a field that will `Accept a date`
 - `Lookup`: a field that will `Accept a lookup query`
+- `Canvas`: a field that will `Update with links in a canvas`
 
 ## Field settings
 By default each field is an `Input`

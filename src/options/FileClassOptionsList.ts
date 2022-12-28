@@ -1,9 +1,7 @@
 import MetadataMenu from "main";
 import { Menu, Notice, TFile } from "obsidian";
-import { insertFrontmatterWithFields } from "src/commands/insertFrontmatterWithFields";
 import { insertMissingFields } from "src/commands/insertMissingFields";
-import { insertValues } from "src/commands/insertValues";
-import { replaceValues } from "src/commands/replaceValues";
+import { postValues } from "src/commands/postValues";
 import { FileClassManager } from "src/components/fileClassManager";
 import { FileClass } from "src/fileClass/fileClass";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
@@ -40,20 +38,7 @@ export default class FileClassOptionsList {
 
     public createExtraOptionList(openAfterCreate: boolean = true): void {
         const mapWithTagAction = async () => {
-            const frontmatter = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatter
-            if (frontmatter) {
-                if (Object.keys(frontmatter).includes("mapWithTag")) {
-                    //fileClass field is empty, has an empty array of is badly formatted: override it
-                    await replaceValues(this.plugin, this.file, "mapWithTag", "true")
-                } else {
-                    //frontmatter exists but doesn't contain fileClass: add it
-                    const lineNumber = frontmatter.position.end.line - 1
-                    await insertValues(this.plugin, this.file, "mapWithTag", "true", lineNumber, true)
-                }
-            } else {
-                const fields: Record<string, string> = { "mapWithTag": "true" }
-                await insertFrontmatterWithFields(this.plugin, this.file, fields)
-            }
+            await postValues(this.plugin, [{ name: "mapWithTag", payload: { value: "true" } }], this.file);
         }
         const openFileClassTableViewAction = () => {
             const fileClassComponent = new FileClassManager(this.plugin, fileClass)
@@ -74,7 +59,6 @@ export default class FileClassOptionsList {
                         this.fromFile,
                         (
                             lineNumber: number,
-                            inFrontmatter: boolean,
                             after: boolean,
                             asList: boolean,
                             asComment: boolean
@@ -82,7 +66,6 @@ export default class FileClassOptionsList {
                             this.plugin,
                             dvFile.file.path,
                             lineNumber,
-                            inFrontmatter,
                             after,
                             asList,
                             asComment,
