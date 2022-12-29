@@ -35,6 +35,8 @@ For complete documentation : https://mdelobelle.github.io/metadatamenu
 
 [demo 13](https://youtu.be/7oaau8ijVUA): Canvas fields
 
+[demo 14](https://youtu.be/G47AYkmoKJs): Create a Kanban board with Canvas Group fields
+
 # General concepts
 
 Metadata Menu can manage any metadata field located in frontmatter (YAML syntax) or in the body of the note with the syntax `field::` (dataview style)
@@ -53,6 +55,7 @@ Available types are:
 - `Date`: a field that will `Accept a date`
 - `Lookup`: a field that will `Accept a lookup query`
 - `Canvas`: a field that will `Update with links in a canvas`
+- `Canvas Group`: a field that will `Update with groups in a canvas`
 
 ## Field settings
 By default each field is an `Input`
