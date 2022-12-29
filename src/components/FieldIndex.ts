@@ -12,7 +12,6 @@ import { FieldType } from "src/types/fieldTypes";
 import { Status as LookupStatus, Type as LookupType } from "src/types/lookupTypes";
 import { updateCanvas } from "src/commands/updateCanvas";
 import { CanvasData } from "obsidian/canvas";
-import { isFileNode } from "src/types/canvasTypes";
 
 export default class FieldIndex extends Component {
 
@@ -202,12 +201,12 @@ export default class FieldIndex extends Component {
                 new Notice(`Couldn't read ${canvas.path}`)
             }
             nodes?.forEach(async node => {
-                if (isFileNode(node)) {
+                if (node.type === "file") {
                     const targetFilePath = node.file
                     if (!currentFilesPaths.includes(targetFilePath)) currentFilesPaths.push(targetFilePath)
                 }
             })
-            this.plugin.fieldIndex.canvasLastFiles.set(canvas.path, currentFilesPaths)
+            this.canvasLastFiles.set(canvas.path, currentFilesPaths)
         })
     }
 

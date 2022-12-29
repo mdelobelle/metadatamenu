@@ -7,12 +7,6 @@ import * as Lookup from "src/types/lookupTypes";
 import { fieldComponents, inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
 import { genuineKeys } from "src/utils/dataviewUtils";
 
-
-/*=========================
-metadataSuggester à simplifier
-==========================*/
-
-
 export type FieldPayload = {
     value: string,
     previousItemsCount?: number,

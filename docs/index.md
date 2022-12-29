@@ -40,3 +40,5 @@ It also enables frontmatter of inline-field autocompletion with suggested values
 [demo 12](https://youtu.be/3jukvV7OODg): Fileclass View
 
 [demo 13](https://youtu.be/7oaau8ijVUA): Canvas fields
+
+[demo 14](https://youtu.be/G47AYkmoKJs): Create a Kanban board with Canvas Group fields

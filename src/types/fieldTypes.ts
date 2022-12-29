@@ -12,7 +12,8 @@ export const enum FieldType {
     "Date" = "Date",
     "Lookup" = "Lookup",
     "Formula" = "Formula",
-    "Canvas" = "Canvas"
+    "Canvas" = "Canvas",
+    "CanvasGroup" = "CanvasGroup"
 }
 
 export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = {
@@ -27,7 +28,8 @@ export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = 
     "Date": FieldType.Date,
     "Lookup": FieldType.Lookup,
     "Formula": FieldType.Formula,
-    "Canvas": FieldType.Canvas
+    "Canvas": FieldType.Canvas,
+    "CanvasGroup": FieldType.CanvasGroup
 };
 
 export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
@@ -42,7 +44,8 @@ export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
     "Date": "date",
     "Lookup": "lookup",
     "Formula": "formula",
-    "Canvas": "canvas-links"
+    "Canvas": "canvas-links",
+    "CanvasGroup": "canvas-links"
 }
 
 export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
@@ -57,7 +60,8 @@ export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
     "Date": "Accept a date",
     "Lookup": "Accept a lookup query",
     "Formula": "Accept a formula",
-    "Canvas": "Updates with links in canvas"
+    "Canvas": "Updates with links in canvas",
+    "CanvasGroup": "Updates with groups in canvas"
 }
 
 export const FieldManager: Record<keyof typeof FieldType, any> = {
@@ -72,7 +76,8 @@ export const FieldManager: Record<keyof typeof FieldType, any> = {
     "Date": Managers.Date,
     "Lookup": Managers.Lookup,
     "Formula": Managers.Formula,
-    "Canvas": Managers.Canvas
+    "Canvas": Managers.Canvas,
+    "CanvasGroup": Managers.CanvasGroup,
 }
 
 export const FieldIcon: Record<keyof typeof FieldType, string> = {
@@ -87,7 +92,8 @@ export const FieldIcon: Record<keyof typeof FieldType, string> = {
     "Date": "calendar-with-checkmark",
     "Lookup": "file-search",
     "Formula": "function-square",
-    "Canvas": "layout-dashboard"
+    "Canvas": "layout-dashboard",
+    "CanvasGroup": "box-select"
 }
 
 export const FieldBackgroundColorClass: Record<keyof typeof FieldType, string> = {
@@ -102,11 +108,13 @@ export const FieldBackgroundColorClass: Record<keyof typeof FieldType, string> =
     "Date": "date",
     "Lookup": "lookup",
     "Formula": "lookup",
-    "Canvas": "file"
+    "Canvas": "file",
+    "CanvasGroup": "file"
 }
 
 export const multiTypes = [
     FieldType.Multi,
     FieldType.MultiFile,
-    FieldType.Canvas
+    FieldType.Canvas,
+    FieldType.CanvasGroup
 ]

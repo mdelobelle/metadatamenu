@@ -10,6 +10,7 @@ import MultiFile from './MultiFileField'
 import Lookup from './LookupField'
 import Formula from './FormulaField'
 import Canvas from './CanvasField'
+import CanvasGroup from './CanvasGroupField'
 
 const Managers = {
     Input,
@@ -23,7 +24,8 @@ const Managers = {
     MultiFile,
     Lookup,
     Formula,
-    Canvas
+    Canvas,
+    CanvasGroup
 }
 
 export default Managers

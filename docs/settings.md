@@ -192,7 +192,7 @@ Example1: `return pages.length`
 Example2: `const i=0.0;const sum = pages.reduce((p, c) => p + c["age"], i); return sum / pages.length`
 
 ### `Canvas` options
-A canvas field a a given note is automatically updated with other notes connected to it in a specific canvas.
+A canvas field of a given note is automatically updated with other notes connected to it in a specific canvas.
 
 #### `Path of the canvas`
 The path to canvas where you want to search for matching connexions
@@ -226,6 +226,23 @@ You can remove a label from the list by clicking on the cross in the chip
 
 #### `Add new matching label`
 Add new labels to match with edge labels.
+
+### `Canvas Group` options
+A canvas group field of a given note is automatically updated with names of matching groups their nodes belong to in a specific canvas.
+
+#### `Path of the canvas`
+The path to canvas where you want to search for matching groups
+
+#### `Group matching color`
+Only the groups surrounding this node that have a color within the selected values will be triggered.
+You can define custom color values on top of the 6 default colors available in the canvas
+
+#### `Group matching label`
+Only the groups surrounding this node with an edge that has a label within the values list will be triggered.
+You can remove a label from the list by clicking on the cross in the chip
+
+#### `Add new matching label`
+Add new labels to match with groups labels.
 
 ## Fileclass settings
 If you want the same field to have different behaviours depending on the note they belong to, you can define field settings based on the "class" of the "note".
