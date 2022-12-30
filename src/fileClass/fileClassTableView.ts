@@ -50,6 +50,31 @@ export class FileClassTableView {
         this.refreshButton.removeCta();
     }
 
+    public buildTable(): void {
+        if (this.tableContainer) {
+            this.tableContainer.remove()
+        };
+        this.tableContainer = this.container.createDiv({ attr: { id: `table-container-${Math.floor(Date.now() / 1000)}` } })
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        if (dvApi) {
+            dvApi.executeJs(this.buildDvJSRendering(), this.tableContainer, this.plugin, this.fileClass.getClassFile().path)
+        }
+        // links aren't clickable anymore, rebinding them to click event
+        this.addClickEventToLink()
+    }
+
+    private addClickEventToLink(): void {
+        this.container.querySelectorAll("a.internal-link")
+            .forEach((link: HTMLLinkElement) => {
+                link.addEventListener("click", () => this.plugin.app.workspace.openLinkText(
+                    //@ts-ignore
+                    link.getAttr("data-href").split("/").last()?.replace(/(.*).md/, "$1"),
+                    this.fileClass.getClassFile().path,
+                    'tab'
+                ))
+            })
+    }
+
     private buildPaginationComponent(): void {
         this.paginationComponent.replaceChildren();
         const pagination = this.paginationComponent.createDiv({ cls: "row" })
@@ -160,26 +185,6 @@ export class FileClassTableView {
         })
     }
 
-
-    public buildTable(): void {
-        if (this.tableContainer) this.tableContainer.remove();
-        this.tableContainer = this.container.createDiv({ attr: { id: "table-container" } })
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        if (dvApi) {
-            dvApi.executeJs(this.buildDvJSRendering(), this.tableContainer, this.plugin, this.fileClass.getClassFile().path)
-        }
-        // links aren't clickable anymore, rebinding them to click event
-        this.container.querySelectorAll("a.internal-link")
-            .forEach((link: HTMLLinkElement) => link.addEventListener("click", () => {
-                this.plugin.app.workspace.openLinkText(
-                    //@ts-ignore
-                    link.getAttr("data-href").split("/").last()?.replace(/(.*).md/, "$1"),
-                    this.fileClass.getClassFile().path,
-                    'tab'
-                )
-            }))
-    }
-
     private buildFilterQuery(): string {
         return Object.entries(this.filters).map(([fieldName, input]) => {
             const field = fieldName === "file" ? `p.file.name` : `p["${fieldName}"]`
@@ -205,7 +210,7 @@ export class FileClassTableView {
     private buildDvJSQuery(): string {
         const tagsMappedToFileClass: string[] = []
         this.plugin.fieldIndex.tagsMatchingFileClasses.forEach((cls, tag) => {
-            if (this.fileClass === cls) {
+            if (this.fileClass.name === cls.name) {
                 tagsMappedToFileClass.push('#' + tag)
             }
         })

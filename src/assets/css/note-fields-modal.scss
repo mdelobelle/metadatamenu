@@ -106,6 +106,10 @@
                     padding-bottom: 0em;
                     border-bottom: 0.4em var(--color-accent) solid;
                 }
+
+                &:hover {
+                    cursor:context-menu;
+                }
             }
 
             button{

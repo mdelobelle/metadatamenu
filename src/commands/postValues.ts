@@ -67,7 +67,7 @@ export function renderField(
                 case FieldType.Multi: return renderMultiFields(rawValue, (item) => parseFieldValue(item));
                 case FieldType.MultiFile: return renderMultiFields(rawValue, (item) => `${item}`);
                 case FieldType.Canvas: return renderMultiFields(rawValue, (item) => `${item}`);
-                case undefined: if (["tagNames", "excludes", plugin.settings.fileClassAlias].includes(fieldName)) {
+                case undefined: if (["tags", "tagNames", "excludes", plugin.settings.fileClassAlias].includes(fieldName)) {
                     return renderMultiFields(rawValue, (item) => `${item}`)
                 } else {
                     return parseFieldValue(rawValue);
@@ -241,7 +241,11 @@ export async function postValues(
             const currentValue = dvApi && dvApi.page(file.path)?.[item.name]
             const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === item.name)
             const multi = field && multiTypes.includes(field.type)
-            const newValue = currentValue && item.payload.addToCurrentValues && multi ? `${currentValue}, ${item.payload.value}` : item.payload.value
+            const newValue = currentValue
+                && item.payload.addToCurrentValues
+                && (multi || ["tagNames", "tags", "excludes"].includes(item.name)) ?
+                `${currentValue}, ${item.payload.value}` :
+                item.payload.value
             item.payload.value = newValue
             if (frontmatter && Object.keys(frontmatter).includes(item.name)) {
                 toYaml[item.name] = item.payload
@@ -250,7 +254,7 @@ export async function postValues(
             }
         }
     })
-    //console.log("post values", file.path, payload)
+
     if (Object.keys(toYaml).length) await plugin.fileTaskManager
         .pushTask(() => { postFieldsInYaml(plugin, file, toYaml) })
     if (Object.keys(toCreateInline).length || Object.keys(toUpdateInline).length) await plugin.fileTaskManager

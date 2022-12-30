@@ -50,6 +50,9 @@ Dataview query returning a list of string. The dataview api can be accessed with
 example: 
 `dv.pages('#student').map(p => p.name)`
 
+#### `Cycle begins by a null value`
+When set to true, the value of the field will be set to null if increasing one step after the last value of the list
+
 ### `Input` options
 
 You can define a template to help fill your `Input` field.

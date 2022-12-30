@@ -53,10 +53,6 @@
         width: 100%;
     }
 
-    .is-selected{
-        background-color: var(--interactive-accent);
-    }
-
     .icon-container{
         margin: 0em 0.7em 0em 0em;
         display: block;
@@ -68,6 +64,10 @@
 
     &.value-checked{
         background-color: var(--interactive-accent);
+
+        &.is-selected{
+            background-color: var(--background-modifier-hover);
+        }
     }
 
     .item-with-add-on {

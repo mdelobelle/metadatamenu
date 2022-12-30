@@ -135,7 +135,7 @@ class FileClassAttributeModal extends Modal {
         const attrLine = typeSelectHeader.createEl("div");
         this.attrName = attrLine.createEl("strong");
         this.attrName.setText(`<${this.field.name}>`);
-        attrLine.append(` available in files with ${this.plugin.settings.fileClassAlias} = ${this.field.fileClassName}`);
+        attrLine.append(` available in files with ${this.plugin.settings.fileClassAlias} = ${this.fileClass.name}`);
 
     }
 

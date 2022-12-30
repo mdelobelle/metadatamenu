@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { Menu, setIcon, TextComponent, TFile } from "obsidian";
+import { Menu, setIcon, TextComponent, TFile, ToggleComponent } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import SelectModal from "src/modals/fields/SelectModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
@@ -7,6 +7,7 @@ import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
 import { FieldOptions } from "src/components/NoteFields";
 import { postValues } from "src/commands/postValues";
+import { SettingLocation } from "../FieldManager";
 
 export default class CycleField extends AbstractListBasedField {
 
@@ -17,15 +18,30 @@ export default class CycleField extends AbstractListBasedField {
         this.showModalOption = false;
     }
 
-    public nextOption(value: string): string {
+    public createSettingContainer(container: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
+        const allowNullValueContainer = container.createDiv({ cls: "field-container" });
+        allowNullValueContainer.createDiv({ cls: "label", text: "Cycle begins by a null value" });
+        allowNullValueContainer.createDiv({ cls: "spacer" });
+        const allowNullToggler = new ToggleComponent(allowNullValueContainer);
+        allowNullToggler.setValue(this.field.options.allowNull || false);
+        allowNullToggler.onChange(value => this.field.options.allowNull = value);
+        super.createSettingContainer(container, plugin, location);
+    }
+
+    public nextOption(rawValue: string): string {
         let nextOption: string;
         const values = this.getOptionsList();
+        const value = !rawValue ? "" : rawValue
         if (values.indexOf(value) === -1) {
             nextOption = values[0] || ""
         } else {
             nextOption = values[(values.indexOf(value) + 1) % values.length]
         }
         return nextOption
+    }
+
+    public getOptionsList(): string[] {
+        return this.field.options.allowNull ? ["", ...super.getOptionsList()] : super.getOptionsList();
     }
 
     private getRawOptionFromDuration(duration: any): string | undefined {
