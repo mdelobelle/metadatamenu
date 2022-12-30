@@ -18,6 +18,7 @@ import Field from "src/fields/Field";
 import { postValues } from "src/commands/postValues";
 
 interface IValueCompletion {
+    attr: string;
     value: string;
 };
 
@@ -28,6 +29,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     private inSentence: boolean = false;
     private didSelect: boolean = false;
     private field?: Field;
+    private lastValue: string = ""
 
     constructor(plugin: MetadataMenu) {
         super(plugin.app);
@@ -62,7 +64,16 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             cursor.line < frontmatter.position.end.line
         if (this.inFrontmatter) {
             const regex = new RegExp(`^${genericFieldRegex}:(?<values>.*)`, "u");
-            if (!regex.test(fullLine)) return null;
+            if (!regex.test(fullLine)) {
+                return null
+            } else {
+                //make sure we have a space after ':'
+                const line = editor.getLine(cursor.line)
+                const separatorPos = line.indexOf(":")
+                if (!["", " "].includes(line.slice(separatorPos + 1, separatorPos + 2))) {
+                    editor.replaceRange(" ", { line: cursor.line, ch: separatorPos + 1 }, { line: cursor.line, ch: separatorPos + 1 })
+                }
+            };
         } else if (getLineFields(fullLine).length === 0) {
             return null;
         }
@@ -126,14 +137,16 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 .replace(/\]$|\)$/, '')
                 .split(",").map(o => encodeLink(o.trim()))
             const lastValue = valuesList?.last()
+            this.lastValue = lastValue || "";
             const firstValues = valuesList?.slice(0, -1)
+
             //tags specific case
             if (fieldName === "tags" && this.inFrontmatter) {
                 //@ts-ignore
                 return Object.keys(this.plugin.app.metadataCache.getTags())
                     .filter(t => lastValue ? t.contains(lastValue) : t)
                     .sort()
-                    .map(tag => Object({ value: tag.replace(/^#/, "") }))
+                    .map(tag => Object({ attr: fieldName, value: tag.replace(/^#/, "") }))
             }
             if (this.field && [FieldType.Cycle, FieldType.Multi, FieldType.Select].contains(this.field.type)) {
                 const fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
@@ -141,7 +154,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 return (fieldManager as AbstractListBasedField)
                     .getOptionsList(dvApi.page(this.context?.file.path))
                     .filter(option => this.filterOption(firstValues, lastValue, option))
-                    .map(_value => Object({ value: _value }))
+                    .map(_value => Object({ attr: fieldName, value: _value }))
             } else if (this.field && [FieldType.File, FieldType.MultiFile].includes(this.field.type)) {
                 const sortingMethod = new Function("a", "b", `return ${this.field.options.customSorting}`) || function (a: TFile, b: TFile) { return a.basename < b.basename ? -1 : 1 }
                 const fieldManager: FileField = new FieldManager[this.field.type](this.plugin, this.field)
@@ -150,7 +163,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                     return files
                         .filter(f => f.basename.toLowerCase().includes(lastValue) || this.getAlias(f)?.toLowerCase().includes(lastValue))
                         .map(f => {
-                            return Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, this.getAlias(f)) })
+                            return Object({ attr: fieldName, value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, this.getAlias(f)) })
                         });
                 } else {
                     return files
@@ -159,7 +172,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                             if (dvApi && this.field?.options.customRendering) {
                                 alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(f.path))
                             }
-                            return Object({ value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, alias) })
+                            return Object({ attr: fieldName, value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, alias) })
                         });
                 }
             } else {
@@ -198,11 +211,22 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         const activeLine = editor.getLine(this.context!.start.line);
         const file = this.context?.file
         const position = this.context?.editor.getCursor().ch || 0
+        const fieldName = suggestion.attr
         if (this.inFrontmatter && file) {
             try {
-                let parsedField: Record<string, string | string[] | null> = parseYaml(activeLine)
-                let [attr, pastValues] = Object.entries(parsedField)[0]
-                await postValues(this.plugin, [{ name: attr, payload: { value: suggestion.value, addToCurrentValues: true } }], file)
+                const frontmatter = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter
+                //very edge case where when typing on the line, the frontmatter value of a list gets tampered as "a - non - indented - list" but as a string, let's split that
+                const currentValues: string[] = frontmatter?.[fieldName] ? Array.isArray(frontmatter[fieldName]) ? frontmatter[fieldName] : frontmatter[fieldName].split(" - ") : []
+                const filteredTags = currentValues.filter(t => t !== this.lastValue)
+
+                const value = [...filteredTags, suggestion.value].join(",")
+                await postValues(this.plugin, [{ name: fieldName, payload: { value: value, addToCurrentValues: false } }], file)
+                editor.replaceRange(
+                    "",
+                    { line: this.context!.start.line, ch: position - this.lastValue.length },
+                    { line: this.context!.start.line, ch: position }
+                )
+                editor.setCursor({ line: this.context!.start.line, ch: editor.getLine(this.context!.start.line).length })
             } catch (error) {
                 new Notice("Frontmatter wrongly formatted", 2000)
                 this.close()
