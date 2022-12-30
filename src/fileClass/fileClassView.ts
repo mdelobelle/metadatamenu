@@ -45,7 +45,7 @@ export class FileClassView extends ItemView {
     private viewContainer: HTMLDivElement
     private views: HTMLDivElement[] = []
     private settingsView: FileClassSettingsView
-    private tableView: FileClassTableView
+    public tableView: FileClassTableView
     private fieldsView: FileClassFieldsView
 
     constructor(

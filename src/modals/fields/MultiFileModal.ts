@@ -37,6 +37,7 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
         super.onOpen()
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter" && e.altKey) {
+                e.preventDefault();
                 await this.replaceValues();
                 this.close()
             }

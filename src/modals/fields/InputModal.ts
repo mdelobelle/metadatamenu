@@ -1,14 +1,16 @@
 import MetadataMenu from "main";
-import { ButtonComponent, DropdownComponent, Modal, setIcon, TextAreaComponent, TextComponent, TFile } from "obsidian";
+import { ButtonComponent, DropdownComponent, TextAreaComponent, TextComponent, TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import Field from "src/fields/Field";
+import BaseModal from "../baseModal";
 
-export default class InputModal extends Modal {
+export default class InputModal extends BaseModal {
     private templateValues: Record<string, string> = {};
     private renderedValue: TextAreaComponent;
+    private inputEl: TextComponent;
 
     constructor(
-        private plugin: MetadataMenu,
+        public plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
         private value: string,
@@ -16,9 +18,10 @@ export default class InputModal extends Modal {
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
-    ) { super(plugin.app); };
+    ) { super(plugin); };
 
     onOpen() {
+        super.onOpen()
         if (this.field.options.template) {
             const templateFieldRegex = new RegExp(`\\{\\{(?<field>[^\\}]+?)\\}\\}`, "gu");
             const tF = this.field.options.template.matchAll(templateFieldRegex)
@@ -87,28 +90,22 @@ export default class InputModal extends Modal {
         this.renderedValue.setValue(this.value);
     }
 
-    private buildSaveBtn(fieldContainer: HTMLDivElement) {
-        fieldContainer.createDiv({ cls: "spacer" })
-        const saveBtn = new ButtonComponent(fieldContainer);
-        saveBtn.setIcon("checkmark");
-        saveBtn.onClick(async () => {
-            let inputValue = this.renderedValue.getValue();
-            await postValues(this.plugin, [{ name: this.field.name, payload: { value: inputValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
-            this.close();
-        })
-    }
-
     private buildInputEl(container: HTMLDivElement): void {
         const inputEl = new TextComponent(container);
         inputEl.inputEl.focus();
         inputEl.inputEl.addClass("full-width");
-        inputEl.setValue(`${this.value}`);
+        inputEl.setValue(`${this.value || ""}`);
+        this.inputEl = inputEl
         const saveBtn = new ButtonComponent(container);
         saveBtn.setIcon("checkmark");
         saveBtn.onClick(async () => {
-            let inputValue = inputEl.getValue();
-            await postValues(this.plugin, [{ name: this.field.name, payload: { value: inputValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
-            this.close();
+            this.save()
         })
     };
+
+    public async save(): Promise<void> {
+        let inputValue = this.inputEl.getValue();
+        await postValues(this.plugin, [{ name: this.field.name, payload: { value: inputValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+        this.close();
+    }
 };
