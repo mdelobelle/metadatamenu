@@ -1,4 +1,4 @@
-import { MarkdownView, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
+import { MarkdownView, Notice, Plugin } from 'obsidian';
 import { addCommands } from 'src/commands/paletteCommands';
 import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
@@ -24,9 +24,19 @@ export default class MetadataMenu extends Plugin {
 	public extraButton: ExtraButton;
 	public contextMenu: ContextMenu;
 
+
 	async onload(): Promise<void> {
 		console.log('Metadata Menu loaded');
-
+		if (!this.app.plugins.enabledPlugins.has("dataview") || (
+			//@ts-ignore
+			this.app.plugins.plugins["dataview"] && !this.app.plugins.plugins["dataview"].settings.enableDataviewJs)
+		) {
+			new Notice(
+				`------------------------------------------\n` +
+				`/!\\ INFO /!\\ \n` +
+				`Please install and enable dataview and dataviewJS to use Metadata Menu\n` +
+				`------------------------------------------`, 60000)
+		}
 		//loading and migrating settings
 		await this.loadSettings();
 		if (this.settings.settingsVersion === undefined) await SettingsMigration.migrateSettingsV1toV2(this)

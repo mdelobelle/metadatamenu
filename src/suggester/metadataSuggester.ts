@@ -160,11 +160,12 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 const fieldManager: FileField = new FieldManager[this.field.type](this.plugin, this.field)
                 const files = fieldManager.getFiles(this.context?.file).sort(sortingMethod as (a: TFile, b: TFile) => number);
                 if (lastValue) {
-                    return files
-                        .filter(f => f.basename.toLowerCase().includes(lastValue) || this.getAlias(f)?.toLowerCase().includes(lastValue))
+                    const results = files
+                        .filter(f => f.basename.toLowerCase().includes(lastValue.toLowerCase()) || this.getAlias(f)?.toLowerCase().includes(lastValue.toLowerCase()))
                         .map(f => {
                             return Object({ attr: fieldName, value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, this.getAlias(f)) })
                         });
+                    return results;
                 } else {
                     return files
                         .map(f => {
@@ -215,11 +216,22 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         if (this.inFrontmatter && file) {
             try {
                 const frontmatter = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter
-                //very edge case where when typing on the line, the frontmatter value of a list gets tampered as "a - non - indented - list" but as a string, let's split that
-                const currentValues: string[] = frontmatter?.[fieldName] ? Array.isArray(frontmatter[fieldName]) ? frontmatter[fieldName] : frontmatter[fieldName].split(" - ") : []
-                const filteredTags = currentValues.filter(t => t !== this.lastValue)
-
-                const value = [...filteredTags, suggestion.value].join(",")
+                let currentValues: string[] = []
+                if (frontmatter?.[fieldName]) {
+                    const values = frontmatter[fieldName]
+                    if (Array.isArray(values)) {
+                        currentValues = values
+                    } else {
+                        //some edge cases
+                        currentValues = (values as string).split(/(?:,| - )+/)
+                    }
+                } else {
+                    currentValues = []
+                }
+                const filtereValues = currentValues.filter(t => t !== this.lastValue).filter(t => !!t)
+                const value = [...filtereValues, suggestion.value]
+                    .map(item => item.replace(/^(\"|\|\\\"')/, "").replace(/(\"|\|\\\"')$/, ""))
+                    .join(",")
                 await postValues(this.plugin, [{ name: fieldName, payload: { value: value, addToCurrentValues: false } }], file)
                 editor.replaceRange(
                     "",
@@ -228,6 +240,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 )
                 editor.setCursor({ line: this.context!.start.line, ch: editor.getLine(this.context!.start.line).length })
             } catch (error) {
+                console.log(error)
                 new Notice("Frontmatter wrongly formatted", 2000)
                 this.close()
                 return
