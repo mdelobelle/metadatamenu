@@ -1,7 +1,6 @@
 import MetadataMenu from "main";
-import { MarkdownView, Menu, Notice, TFile } from "obsidian";
+import { MarkdownView, Menu, TFile } from "obsidian";
 import { insertMissingFields } from "src/commands/insertMissingFields";
-import { FileClassManager } from "src/components/fileClassManager";
 import NoteFieldsComponent from "src/components/NoteFields";
 import Field from "src/fields/Field";
 import { FieldManager as F } from "src/fields/FieldManager";

@@ -1,11 +1,13 @@
 import MetadataMenu from "main";
-import { MarkdownView, parseYaml, TFile } from "obsidian";
+import { apiVersion, MarkdownView, parseYaml, Platform, TFile } from "obsidian";
 import { FieldType, multiTypes } from "src/types/fieldTypes";
 import { getFileFromFileOrPath } from "src/utils/fileUtils";
 import { getListBounds } from "src/utils/list";
 import * as Lookup from "src/types/lookupTypes";
 import { fieldComponents, inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
 import { genuineKeys } from "src/utils/dataviewUtils";
+
+export const ReservedMultiAttributes = ["tags", "tagNames", "excludes", "aliases"]
 
 export type FieldPayload = {
     value: string,
@@ -40,12 +42,13 @@ export function renderField(
     file: TFile,
     fieldName: string,
     rawValue: string,
-    location: "yaml" | "inline"
+    location: "yaml" | "inline",
+    legacy: boolean = false
 ): any {
     const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName)
     const parseFieldValue = (_rawValue: string) => {
         if (_rawValue.startsWith("[[")) {
-            return `${_rawValue}`
+            return `${legacy ? '"' : ''}${_rawValue}${legacy ? '"' : ''}`
         } else if (_rawValue.startsWith("#")) {
             return `${_rawValue}`;
         } else {
@@ -65,9 +68,9 @@ export function renderField(
             switch (field?.type) {
                 case FieldType.Lookup: return renderMultiFields(rawValue, (item) => parseFieldValue(item));
                 case FieldType.Multi: return renderMultiFields(rawValue, (item) => parseFieldValue(item));
-                case FieldType.MultiFile: return renderMultiFields(rawValue, (item) => `${item}`);
+                case FieldType.MultiFile: return renderMultiFields(rawValue, (item) => `${legacy ? '"' : ''}${item}${legacy ? '"' : ''}`);
                 case FieldType.Canvas: return renderMultiFields(rawValue, (item) => `${item}`);
-                case undefined: if (["tags", "tagNames", "excludes", plugin.settings.fileClassAlias].includes(fieldName)) {
+                case undefined: if ([...ReservedMultiAttributes, plugin.settings.fileClassAlias].includes(fieldName)) {
                     return renderMultiFields(rawValue, (item) => `${item}`)
                 } else {
                     return parseFieldValue(rawValue);
@@ -107,12 +110,74 @@ export async function postFieldsInYaml(
     file: TFile,
     fields: Record<string, FieldPayload>
 ) {
-    await plugin.app.fileManager.processFrontMatter(file, fm => {
-        Object.entries(fields).forEach(([fieldName, payload]) => {
-            const newValue = renderField(plugin, file, fieldName, payload.value, "yaml")
-            fm[fieldName] = newValue
+    // to be removed when public app version reach 1.4.2
+    const legacyMethod = (Platform.isAndroidApp || Platform.isIosApp || Platform.isMobileApp)
+    if (!legacyMethod) {
+        await plugin.app.fileManager.processFrontMatter(file, fm => {
+            Object.entries(fields).forEach(([fieldName, payload]) => {
+                const newValue = renderField(plugin, file, fieldName, payload.value, "yaml")
+                fm[fieldName] = newValue
+            })
         })
-    })
+    } else {
+        //fallback for legacy versions waiting for the new mobile app to catch up 1.4.2 version (iOS)
+        const frontmatter = plugin.app.metadataCache.getFileCache(file)?.frontmatter
+        const newContent = []
+        const currentFile = await app.vault.read(file)
+        const skippedLines: number[] = []
+
+        const pushNewField = (fieldName: string, payload: FieldPayload): void => {
+            const newValue = renderField(plugin, file, fieldName, payload.value, "yaml", true)
+            if (Array.isArray(newValue)) {
+                newContent.push(`${fieldName}:`);
+                newValue.forEach(item => { newContent.push(`  - ${item}`) });
+            } else {
+                newContent.push(`${fieldName}: ${newValue}`);
+            }
+        }
+
+        if (!frontmatter) {
+            newContent.push("---");
+            Object.entries(fields).forEach(([fieldName, payload]) => pushNewField(fieldName, payload));
+            newContent.push("---")
+            newContent.push(...currentFile.split("\n"))
+        } else {
+
+            const currentContent = currentFile.split("\n")
+            currentContent.forEach((line, lineNumber) => {
+                if (lineNumber > frontmatter.position.end.line) {
+                    // don't touch outside frontmatter : it's handled by postFieldsInline
+                    newContent.push(line)
+                } else if (!skippedLines.includes(lineNumber)) {
+                    //check if any of fields is matching this line and skip lines undeneath modified multi fields: they are reconstructed
+                    const matchedField: { name: string | undefined, payload: FieldPayload | undefined } = { name: undefined, payload: undefined }
+
+                    Object.entries(fields).forEach(([fieldName, payload]) => {
+                        const regex = new RegExp(`^${fieldName}:`, 'u');
+                        const r = line.match(regex);
+                        if (r && r.length > 0) {
+                            //search for indented value "below" and skip them
+                            let j = 1;
+                            while (currentContent[lineNumber + j].startsWith("  - ")) {
+                                skippedLines.push(lineNumber + j);
+                                j = j + 1
+                            }
+                            //we have a match
+                            matchedField.name = fieldName
+                            matchedField.payload = payload
+                        }
+                    })
+                    if (matchedField.name && matchedField.payload) {
+                        pushNewField(matchedField.name, matchedField.payload)
+                    } else {
+                        newContent.push(line)
+                    }
+                }
+            })
+        }
+        const updatedFile = newContent.join('\n')
+        await plugin.app.vault.modify(file, updatedFile);
+    }
 }
 
 export async function postFieldsInline(
@@ -243,7 +308,7 @@ export async function postValues(
             const multi = field && multiTypes.includes(field.type)
             const newValue = currentValue
                 && item.payload.addToCurrentValues
-                && (multi || ["tagNames", "tags", "excludes"].includes(item.name)) ?
+                && (multi || ReservedMultiAttributes.includes(item.name)) ?
                 `${currentValue}, ${item.payload.value}` :
                 item.payload.value
             item.payload.value = newValue
