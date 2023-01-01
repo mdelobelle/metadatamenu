@@ -7,7 +7,7 @@ import BaseModal from "../baseModal";
 export default class InputModal extends BaseModal {
     private templateValues: Record<string, string> = {};
     private renderedValue: TextAreaComponent;
-    private inputEl: TextComponent;
+    private inputEl: TextAreaComponent;
 
     constructor(
         public plugin: MetadataMenu,
@@ -91,7 +91,8 @@ export default class InputModal extends BaseModal {
     }
 
     private buildInputEl(container: HTMLDivElement): void {
-        const inputEl = new TextComponent(container);
+        const inputEl = new TextAreaComponent(container);
+        inputEl.inputEl.rows = 3;
         inputEl.inputEl.focus();
         inputEl.inputEl.addClass("full-width");
         inputEl.setValue(`${this.value || ""}`);

@@ -12,7 +12,6 @@ export default class BaseModal extends Modal {
             if (e.key == "Enter") {
                 e.preventDefault()
                 await this.save();
-                this.close()
             }
         }
     }

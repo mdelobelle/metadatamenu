@@ -829,13 +829,13 @@ span.flatpickr-weekday {
   margin: 1em 0; }
   .metadata-menu.modal-container .field-container .label {
     white-space: nowrap; }
-  .metadata-menu.modal-container .field-container input {
+  .metadata-menu.modal-container .field-container input, .metadata-menu.modal-container .field-container textarea {
     margin-right: 1em; }
-    .metadata-menu.modal-container .field-container input.with-label {
+    .metadata-menu.modal-container .field-container input.with-label, .metadata-menu.modal-container .field-container textarea.with-label {
       margin-left: 1em; }
-    .metadata-menu.modal-container .field-container input.full-width {
+    .metadata-menu.modal-container .field-container input.full-width, .metadata-menu.modal-container .field-container textarea.full-width {
       width: 100%; }
-    .metadata-menu.modal-container .field-container input:last-child {
+    .metadata-menu.modal-container .field-container input:last-child, .metadata-menu.modal-container .field-container textarea:last-child {
       margin-right: 0; }
   .metadata-menu.modal-container .field-container textarea.full-width {
     width: 100%; }
@@ -1104,13 +1104,13 @@ span.flatpickr-weekday {
   margin: 1em 0; }
   .metadata-menu.modal-container .field-container .label {
     white-space: nowrap; }
-  .metadata-menu.modal-container .field-container input {
+  .metadata-menu.modal-container .field-container input, .metadata-menu.modal-container .field-container textarea {
     margin-right: 1em; }
-    .metadata-menu.modal-container .field-container input.with-label {
+    .metadata-menu.modal-container .field-container input.with-label, .metadata-menu.modal-container .field-container textarea.with-label {
       margin-left: 1em; }
-    .metadata-menu.modal-container .field-container input.full-width {
+    .metadata-menu.modal-container .field-container input.full-width, .metadata-menu.modal-container .field-container textarea.full-width {
       width: 100%; }
-    .metadata-menu.modal-container .field-container input:last-child {
+    .metadata-menu.modal-container .field-container input:last-child, .metadata-menu.modal-container .field-container textarea:last-child {
       margin-right: 0; }
   .metadata-menu.modal-container .field-container textarea.full-width {
     width: 100%; }
