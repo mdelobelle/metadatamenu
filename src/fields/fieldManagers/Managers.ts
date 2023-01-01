@@ -11,6 +11,7 @@ import Lookup from './LookupField'
 import Formula from './FormulaField'
 import Canvas from './CanvasField'
 import CanvasGroup from './CanvasGroupField'
+import CanvasGroupLink from './CanvasGroupLinkField'
 
 const Managers = {
     Input,
@@ -25,7 +26,8 @@ const Managers = {
     Lookup,
     Formula,
     Canvas,
-    CanvasGroup
+    CanvasGroup,
+    CanvasGroupLink
 }
 
 export default Managers
