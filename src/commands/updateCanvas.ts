@@ -14,9 +14,7 @@ export async function updateCanvas(
     //console.log("start update canvas", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
     const f = plugin.fieldIndex;
     const dvApi = plugin.app.plugins.plugins.dataview?.api
-    //retrieve canvas files to screen -> make an index for that?
     const canvases = forceUpdateOne ? [forceUpdateOne.canvas] : plugin.app.vault.getFiles().filter(t => t.extension === "canvas")
-    //for each canvas check target nodes' files to see if they contain a Canvas field and populate an index with them
 
     const isNodeInGroup = (node: CanvasFileData, group: CanvasGroupData): boolean => {
         const { x: x1, y: y1, width: w1, height: h1 } = node;
