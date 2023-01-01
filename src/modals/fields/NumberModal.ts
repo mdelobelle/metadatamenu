@@ -4,13 +4,16 @@ import { postValues } from "src/commands/postValues";
 import Field from "src/fields/Field";
 import NumberField from "src/fields/fieldManagers/NumberField";
 import { FieldManager } from "src/types/fieldTypes";
+import BaseModal from "../baseModal";
 
-export default class NumberModal extends Modal {
+export default class NumberModal extends BaseModal {
 
     private fieldManager: NumberField;
+    private numberInput: TextComponent;
+    private errorField: HTMLDivElement;
 
     constructor(
-        private plugin: MetadataMenu,
+        public plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
         private value: string,
@@ -19,12 +22,13 @@ export default class NumberModal extends Modal {
         private asList: boolean = false,
         private asComment: boolean = false
     ) {
-        super(plugin.app);
+        super(plugin);
         this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
         this.containerEl.addClass("metadata-menu")
     };
 
     onOpen() {
+        super.onOpen()
         this.buildInputEl();
     };
 
@@ -68,7 +72,8 @@ export default class NumberModal extends Modal {
 
         const fieldContainer = this.contentEl.createEl("div", { cls: "field-container" })
 
-        const numberInput = new TextComponent(fieldContainer);
+        this.numberInput = new TextComponent(fieldContainer);
+        const numberInput = this.numberInput
         numberInput.inputEl.focus();
         numberInput.setValue(`${this.value}`);
 
@@ -88,16 +93,16 @@ export default class NumberModal extends Modal {
         const cancelBtn = new ButtonComponent(fieldContainer);
         cancelBtn.setIcon("cross");
 
-        const errorField = this.contentEl.createEl("div", { cls: "field-error" })
-        errorField.hide()
+        this.errorField = this.contentEl.createEl("div", { cls: "field-error" })
+        this.errorField.hide()
 
         this.toggleButtonsState(minusBtn, plusBtn, numberInput);
 
         //event handlers
         numberInput.onChange(() => {
             numberInput.inputEl.removeClass("is-invalid")
-            errorField.hide();
-            errorField.setText("");
+            this.errorField.hide();
+            this.errorField.setText("");
             this.toggleButtonsState(minusBtn, plusBtn, numberInput)
         })
 
@@ -119,16 +124,21 @@ export default class NumberModal extends Modal {
         })
 
         validateBtn.onClick(async () => {
-            let inputValue = numberInput.getValue();
-            if (!this.fieldManager.validateValue(inputValue)) {
-                const { min, max } = this.field.options
-                errorField.show();
-                errorField.setText(`value must be numeric${min ? " and >= " + min : ""} ${max ? " and <= " + max : ""}`)
-                numberInput.inputEl.setAttr("class", "is-invalid")
-                return
-            }
-            await postValues(this.plugin, [{ name: this.field.name, payload: { value: inputValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
-            this.close();
+            this.save();
         })
     };
+
+    public async save(): Promise<void> {
+        const inputValue = this.numberInput.getValue();
+
+        if (!this.fieldManager.validateValue(inputValue)) {
+            const { min, max } = this.field.options
+            this.errorField.show();
+            this.errorField.setText(`value must be numeric${min ? " and >= " + min : ""} ${max ? " and <= " + max : ""}`)
+            this.numberInput.inputEl.setAttr("class", "is-invalid")
+            return
+        }
+        await postValues(this.plugin, [{ name: this.field.name, payload: { value: inputValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
+        this.close();
+    }
 };

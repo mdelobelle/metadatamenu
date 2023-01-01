@@ -62,6 +62,7 @@ export default class DateModal extends BaseModal {
                 const nldates = this.plugin.app.plugins.plugins['nldates-obsidian'];
                 newValue = nldates.parseDate(this.value).moment;
             } catch (error) {
+                console.log(error)
                 newValue = moment(this.value, this.format);
             }
         } else {
@@ -73,6 +74,7 @@ export default class DateModal extends BaseModal {
             await postValues(this.plugin, [{ name: this.field.name, payload: { value: formattedValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
             if (this.nextIntervalField && this.pushNextInterval && this.nextShift) {
                 await postValues(this.plugin, [{ name: this.nextIntervalField!.name, payload: { value: this.nextShift! } }], this.file.path)
+                this.close()
             }
             this.close();
         } else if (!this.value) {
