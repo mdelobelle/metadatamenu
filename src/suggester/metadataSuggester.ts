@@ -10,7 +10,7 @@ import {
     parseYaml,
     Notice,
 } from "obsidian";
-import { FieldManager, FieldType } from "src/types/fieldTypes";
+import { FieldManager, FieldType, multiTypes, ReservedMultiAttributes } from "src/types/fieldTypes";
 import { genericFieldRegex, getLineFields, encodeLink } from "../utils/parser";
 import FileField from "src/fields/fieldManagers/FileField";
 import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
@@ -233,12 +233,22 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                     .map(item => item.replace(/^(\"|\|\\\"')/, "").replace(/(\"|\|\\\"')$/, ""))
                     .join(",")
                 await postValues(this.plugin, [{ name: fieldName, payload: { value: value, addToCurrentValues: false } }], file)
-                editor.replaceRange(
-                    "",
-                    { line: this.context!.start.line, ch: position - this.lastValue.length },
-                    { line: this.context!.start.line, ch: position }
-                )
-                editor.setCursor({ line: this.context!.start.line, ch: editor.getLine(this.context!.start.line).length })
+                if ((this.field?.type && multiTypes.includes(this.field.type)) ||
+                    ReservedMultiAttributes.includes(fieldName)) {
+                    editor.replaceRange(
+                        "",
+                        { line: this.context!.start.line, ch: editor.getLine(this.context!.start.line).indexOf(":") + 1 },
+                        { line: this.context!.start.line, ch: position }
+                    )
+                } else {
+                    editor.replaceRange(
+                        "",
+                        { line: this.context!.start.line, ch: position - this.lastValue.length },
+                        { line: this.context!.start.line, ch: position }
+                    )
+                    //editor.setCursor({ line: this.context!.start.line, ch: editor.getLine(this.context!.start.line).length })
+
+                }
             } catch (error) {
                 console.log(error)
                 new Notice("Frontmatter wrongly formatted", 2000)

@@ -1,13 +1,12 @@
 import MetadataMenu from "main";
-import { apiVersion, MarkdownView, parseYaml, Platform, TFile } from "obsidian";
+import { MarkdownView, parseYaml, Platform, TFile } from "obsidian";
 import { FieldType, multiTypes } from "src/types/fieldTypes";
 import { getFileFromFileOrPath } from "src/utils/fileUtils";
 import { getListBounds } from "src/utils/list";
 import * as Lookup from "src/types/lookupTypes";
 import { fieldComponents, inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
 import { genuineKeys } from "src/utils/dataviewUtils";
-
-export const ReservedMultiAttributes = ["tags", "tagNames", "excludes", "aliases"]
+import { ReservedMultiAttributes } from "src/types/fieldTypes";
 
 export type FieldPayload = {
     value: string,
@@ -97,7 +96,7 @@ export const matchInlineFields = (regex: RegExp, line: string, attribute: string
             const end = LocationWrapper[location].end;
             newFields.push({
                 oldField: match[0],
-                newField: `${inQuote || ""}${start}${inList || ""}${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer}${newValue}${end}`,
+                newField: `${inQuote || ""}${start}${inList || ""}${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer || " "}${newValue}${end}`,
             })
         }
         next = sR.next()
@@ -130,7 +129,7 @@ export async function postFieldsInYaml(
             const newValue = renderField(plugin, file, fieldName, payload.value, "yaml", true)
             if (Array.isArray(newValue)) {
                 newContent.push(`${fieldName}:`);
-                newValue.forEach(item => { newContent.push(`  - ${item}`) });
+                newValue.filter(v => !!v).forEach(item => { newContent.push(`  - ${item}`) });
             } else {
                 newContent.push(`${fieldName}: ${newValue}`);
             }
@@ -243,7 +242,7 @@ export async function postFieldsInline(
                 } else {
                     newValue = inputArray.length == 1 ? inputArray[0] : `${inputArray.join(', ')}`;
                 }
-                return `${inQuote || ""}${inList || ""}${startStyle}${fieldName}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer}${hiddenValue + newValue + emptyLineAfterList}`;
+                return `${inQuote || ""}${inList || ""}${startStyle}${fieldName}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer || " "}${hiddenValue + newValue + emptyLineAfterList}`;
             } else {
                 const newFields: FieldReplace[] = [];
                 const inSentenceRegexBrackets = new RegExp(`\\[${inlineFieldRegex(fieldName)}(?<values>[^\\]]+)?\\]`, "gu");
@@ -319,7 +318,6 @@ export async function postValues(
             }
         }
     })
-
     if (Object.keys(toYaml).length) await plugin.fileTaskManager
         .pushTask(() => { postFieldsInYaml(plugin, file, toYaml) })
     if (Object.keys(toCreateInline).length || Object.keys(toUpdateInline).length) await plugin.fileTaskManager

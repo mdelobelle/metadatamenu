@@ -118,3 +118,6 @@ export const multiTypes = [
     FieldType.Canvas,
     FieldType.CanvasGroup
 ]
+
+
+export const ReservedMultiAttributes = ["tags", "tagNames", "excludes", "aliases"]
