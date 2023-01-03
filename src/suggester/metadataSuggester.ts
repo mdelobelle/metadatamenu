@@ -34,7 +34,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
     constructor(plugin: MetadataMenu) {
         super(plugin.app);
         this.plugin = plugin;
-        this.setInstructions([{ command: "Shift", purpose: "put a space after::" }]);
+        this.setInstructions([{ command: "Shift", purpose: "remove space after::" }]);
 
         // @ts-ignore
         this.scope.register(["Shift"], "Enter", (evt: KeyboardEvent) => {
@@ -261,7 +261,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             while (![',', ':'].contains(cleanedLine.charAt(cleanedLine.length - 1))) {
                 cleanedLine = cleanedLine.slice(0, -1)
             }
-            editor.replaceRange(`${cleanedLine}${event.shiftKey ? " " : ""}` + suggestion.value,
+            editor.replaceRange(`${cleanedLine}${event.shiftKey ? "" : " "}` + suggestion.value,
                 { line: this.context!.start.line, ch: 0 }, this.context!.end);
         } else if (this.inSentence && this.field && file) {
             //replace directly in place to maintain cursor position
