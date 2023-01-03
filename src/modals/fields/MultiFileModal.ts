@@ -91,7 +91,7 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
             if (dvApi && this.field.options.customRendering) {
                 alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(file.path))
             }
-            return FM.buildMarkDownLink(this.plugin, this.file, file.basename, alias)
+            return FM.buildMarkDownLink(this.plugin, this.file, file.basename, undefined, alias)
         })
         await postValues(this.plugin, [{ name: this.field.name, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
     }
