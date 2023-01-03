@@ -163,7 +163,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                     const results = files
                         .filter(f => f.basename.toLowerCase().includes(lastValue.toLowerCase()) || this.getAlias(f)?.toLowerCase().includes(lastValue.toLowerCase()))
                         .map(f => {
-                            return Object({ attr: fieldName, value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, this.getAlias(f)) })
+                            return Object({ attr: fieldName, value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, undefined, this.getAlias(f)) })
                         });
                     return results;
                 } else {
@@ -173,7 +173,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                             if (dvApi && this.field?.options.customRendering) {
                                 alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(f.path))
                             }
-                            return Object({ attr: fieldName, value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, alias) })
+                            return Object({ attr: fieldName, value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, undefined, alias) })
                         });
                 }
             } else {

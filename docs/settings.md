@@ -247,6 +247,9 @@ You can remove a label from the list by clicking on the cross in the chip
 #### `Add new matching label`
 Add new labels to match with groups labels.
 
+### `Canvas Group Link` options
+Combination of the `Canvas` and the `Canvas Group` field options. This time, the field will target nodes linked to the groups the node belongs to
+
 ## Fileclass settings
 If you want the same field to have different behaviours depending on the note they belong to, you can define field settings based on the "class" of the "note".
 This is a particular frontmatter attribute that you will have to give to your note.

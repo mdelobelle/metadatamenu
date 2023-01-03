@@ -7,7 +7,7 @@ import BaseModal from "../baseModal";
 export default class InputModal extends BaseModal {
     private templateValues: Record<string, string> = {};
     private renderedValue: TextAreaComponent;
-    private inputEl: TextAreaComponent;
+    private newValue: string;
 
     constructor(
         public plugin: MetadataMenu,
@@ -42,10 +42,10 @@ export default class InputModal extends BaseModal {
             }
             this.contentEl.createDiv({ text: "Result preview" });
             this.buildResultPreview(this.contentEl.createDiv({ cls: "field-container" }));
-            this.buildSaveBtn(this.contentEl.createDiv({ cls: "footer-actions" }));
         } else {
             this.buildInputEl(this.contentEl.createDiv({ cls: "field-container" }));
         }
+        this.buildSaveBtn(this.contentEl.createDiv({ cls: "footer-actions" }));
         this.containerEl.addClass("metadata-menu")
     };
 
@@ -57,6 +57,7 @@ export default class InputModal extends BaseModal {
         })
 
         this.renderedValue.setValue(renderedString)
+        this.newValue = renderedString
     }
 
     private buildTemplateInputItem(fieldContainer: HTMLDivElement, name: string) {
@@ -96,17 +97,11 @@ export default class InputModal extends BaseModal {
         inputEl.inputEl.focus();
         inputEl.inputEl.addClass("full-width");
         inputEl.setValue(`${this.value || ""}`);
-        this.inputEl = inputEl
-        const saveBtn = new ButtonComponent(container);
-        saveBtn.setIcon("checkmark");
-        saveBtn.onClick(async () => {
-            this.save()
-        })
+        inputEl.onChange(value => this.newValue = value)
     };
 
     public async save(): Promise<void> {
-        let inputValue = this.inputEl.getValue();
-        await postValues(this.plugin, [{ name: this.field.name, payload: { value: inputValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+        await postValues(this.plugin, [{ name: this.field.name, payload: { value: this.newValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
         this.close();
     }
 };

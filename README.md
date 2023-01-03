@@ -56,6 +56,7 @@ Available types are:
 - `Lookup`: a field that will `Accept a lookup query`
 - `Canvas`: a field that will `Update with links in a canvas`
 - `Canvas Group`: a field that will `Update with groups in a canvas`
+- `Canvas Group Link`: a field that will `Update with groups links in a canvas`
 
 ## Field settings
 By default each field is an `Input`
