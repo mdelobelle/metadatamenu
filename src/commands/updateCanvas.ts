@@ -172,13 +172,16 @@ export async function updateCanvas(
         const previousFilesPaths = plugin.fieldIndex.canvasLastFiles.get(canvas.path) || []
         const currentFilesPaths: string[] = []
         let { nodes, edges }: CanvasData = { nodes: [], edges: [] };
-        try {
-            const canvasContent = JSON.parse(await plugin.app.vault.read(canvas)) as CanvasData;
-            nodes = canvasContent.nodes;
-            edges = canvasContent.edges
-        } catch (error) {
-            console.log(error)
-            new Notice(`Couldn't read ${canvas.path}`)
+        const rawContent = await this.plugin.app.vault.read(canvas)
+        if (rawContent) {
+            try {
+                const canvasContent = JSON.parse(rawContent) as CanvasData;
+                nodes = canvasContent.nodes;
+                edges = canvasContent.edges
+            } catch (error) {
+                console.log(error)
+                new Notice(`Couldn't read ${canvas.path}`)
+            }
         }
         const canvasGroups: CanvasGroupData[] = nodes.filter(node => node.type === "group") as CanvasGroupData[]
         const currentFiles: Map<string, {

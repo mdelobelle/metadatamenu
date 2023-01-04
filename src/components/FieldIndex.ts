@@ -192,13 +192,16 @@ export default class FieldIndex extends Component {
         canvases.forEach(async canvas => {
             const currentFilesPaths: string[] = []
             let { nodes, edges }: CanvasData = { nodes: [], edges: [] };
-            try {
-                const canvasContent = JSON.parse(await this.plugin.app.vault.read(canvas)) as CanvasData;
-                nodes = canvasContent.nodes;
-                edges = canvasContent.edges
-            } catch (error) {
-                console.log(error)
-                new Notice(`Couldn't read ${canvas.path}`)
+            const rawContent = await this.plugin.app.vault.read(canvas)
+            if (rawContent) {
+                try {
+                    const canvasContent = JSON.parse(rawContent) as CanvasData;
+                    nodes = canvasContent.nodes;
+                    edges = canvasContent.edges
+                } catch (error) {
+                    console.log(error)
+                    new Notice(`Couldn't read ${canvas.path}`)
+                }
             }
             nodes?.forEach(async node => {
                 if (node.type === "file") {
