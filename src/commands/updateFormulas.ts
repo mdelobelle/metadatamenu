@@ -41,7 +41,7 @@ export async function updateFormulas(
     let renderingErrors: string[] = [];
     //1. flatten all file__formulaField in a Map
     const fileFormulasFields: Map<string, Field> = new Map();
-    [...f.filesFieldsExists].forEach(([filePath, fields]) => {
+    [...f.filesLookupAndFormulaFieldsExists].forEach(([filePath, fields]) => {
         fields.filter(field => field.type === FieldType.Formula).forEach(field => {
             fileFormulasFields.set(`${filePath}__calculated__${field.fileClassName || "presetField"}___${field.name}`, field)
         })

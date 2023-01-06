@@ -21,7 +21,8 @@ export default class FieldIndex extends Component {
     public filesFieldsFromFileClassQueries: Map<string, Field[]>;
     public filesFieldsFromInnerFileClasses: Map<string, Field[]>;
     public filesFields: Map<string, Field[]>;
-    public filesFieldsExists: Map<string, Field[]>;
+    public filesLookupsAndFormulasFields: Map<string, Field[]>;
+    public filesLookupAndFormulaFieldsExists: Map<string, Field[]>;
     public filesFileClasses: Map<string, FileClass[]>;
     public filesFileClassesNames: Map<string, string[] | undefined>;
     public fileClassesAncestors: Map<string, string[]>
@@ -117,7 +118,7 @@ export default class FieldIndex extends Component {
                 ) {
                     //maybe fullIndex didn't catch new files that have to be updated: let's rebuild getFileFieldsExist for this file
                     cleanRemovedFormulasFromIndex(this.plugin);
-                    this.getFilesFieldsExists(file);
+                    this.getFilesLookupAndFormulaFieldsExists(file);
                     if (this.classFilesPath && file.path.startsWith(this.classFilesPath)) {
                         await this.fullIndex("fileClass changed")
                         const fileClassName = this.fileClassesPath.get(file.path)?.name
@@ -144,7 +145,8 @@ export default class FieldIndex extends Component {
 
     private flushCache() {
         this.filesFields = new Map();
-        this.filesFieldsExists = new Map();
+        this.filesLookupsAndFormulasFields = new Map();
+        this.filesLookupAndFormulaFieldsExists = new Map();
         this.fileClassesFields = new Map();
         this.fieldsFromGlobalFileClass = [];
         this.filesFieldsFromTags = new Map();
@@ -172,7 +174,7 @@ export default class FieldIndex extends Component {
         this.resolveFileClassQueries();
         this.getFilesFieldsFromFileClass();
         this.getFilesFields();
-        this.getFilesFieldsExists();
+        this.getFilesLookupAndFormulaFieldsExists();
         await this.getCanvasesFiles();
         await this.getValuesListNotePathValues();
         this.resolveLookups(without_lookups);
@@ -438,6 +440,10 @@ export default class FieldIndex extends Component {
             })
     }
 
+    isLookupOrFormula(field: Field): boolean {
+        return [FieldType.Lookup, FieldType.Formula].includes(field.type)
+    }
+
     getFilesFields(): void {
         /*
         Priority order:
@@ -460,8 +466,14 @@ export default class FieldIndex extends Component {
                     filesFields.push(...(fileFieldsFromTag || []).filter(field => !filesFields.map(f => f.name).includes(field.name)))
                     filesFields.push(...(fileFieldsFromQuery || []).filter(field => !filesFields.map(f => f.name).includes(field.name)))
                     this.filesFields.set(f.path, filesFields);
+                    const filesLookupAndFormulasFields: Field[] = filesFields.filter(f => this.isLookupOrFormula(f))
+                    filesLookupAndFormulasFields.push(...(fileFieldsFromTag || []).filter(field => !filesLookupAndFormulasFields.map(f => f.name).includes(field.name) && this.isLookupOrFormula(field)))
+                    filesLookupAndFormulasFields.push(...(fileFieldsFromQuery || []).filter(field => !filesLookupAndFormulasFields.map(f => f.name).includes(field.name) && this.isLookupOrFormula(field)))
+                    if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, filesLookupAndFormulasFields)
                 } else if (this.fieldsFromGlobalFileClass.length) {
                     this.filesFields.set(f.path, this.fieldsFromGlobalFileClass)
+                    const filesLookupAndFormulasFields = this.fieldsFromGlobalFileClass.filter(f => this.isLookupOrFormula(f))
+                    if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, this.fieldsFromGlobalFileClass.filter(f => this.isLookupOrFormula(f)))
                     this.filesFileClasses.set(f.path, [this.fileClassesName.get(this.plugin.settings.globalFileClass!)!])
                     this.filesFileClassesNames.set(f.path, [this.plugin.settings.globalFileClass!])
                 } else {
@@ -470,27 +482,30 @@ export default class FieldIndex extends Component {
                         return Object.assign(property, prop);
                     });
                     this.filesFields.set(f.path, fields)
+                    const filesLookupAndFormulasFields = fields.filter(f => this.isLookupOrFormula(f))
+                    if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, fields.filter(f => this.isLookupOrFormula(f)))
                 }
             })
     }
 
-    getFilesFieldsExists(file?: TFile): void {
+    getFilesLookupAndFormulaFieldsExists(file?: TFile): void {
         let fileFields: Array<[string, Field[]]>
         if (file) {
-            fileFields = [[file.path, this.filesFields.get(file.path) || []]]
+            fileFields = [[file.path, this.filesLookupsAndFormulasFields.get(file.path) || []]]
         } else {
-            fileFields = [...this.filesFields]
+            fileFields = [...this.filesLookupsAndFormulasFields]
         }
         fileFields.forEach(([filePath, fields]) => {
             const dvFile = this.dv.api.page(filePath)
             const existingFields: Field[] = []
-            fields.forEach(field => {
-                if (dvFile && dvFile[field.name] !== undefined) { existingFields.push(field) }
-            })
+            fields.filter(f => [FieldType.Lookup, FieldType.Formula]
+                .includes(f.type)).forEach(field => {
+                    if (dvFile && dvFile[field.name] !== undefined) { existingFields.push(field) }
+                })
             if (existingFields.length) {
-                this.filesFieldsExists.set(filePath, existingFields)
+                this.filesLookupAndFormulaFieldsExists.set(filePath, existingFields)
             } else {
-                this.filesFieldsExists.delete(filePath)
+                this.filesLookupAndFormulaFieldsExists.delete(filePath)
             }
         })
     }

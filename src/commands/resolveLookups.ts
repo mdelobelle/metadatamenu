@@ -12,7 +12,7 @@ export function resolveLookups(plugin: MetadataMenu, source: string = ""): void 
 
     });
     //then assign results to all files having implemented a lookupfield
-    [...f.filesFieldsExists].forEach(([filePath, fields]) => {
+    [...f.filesLookupAndFormulaFieldsExists].forEach(([filePath, fields]) => {
         fields.filter(field => field.type === FieldType.Lookup).forEach(lookupField => {
             //for all lookup fields in files that have lookupfields:
             //1. get the query results
