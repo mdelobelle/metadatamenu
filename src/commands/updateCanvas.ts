@@ -172,7 +172,7 @@ export async function updateCanvas(
         const previousFilesPaths = plugin.fieldIndex.canvasLastFiles.get(canvas.path) || []
         const currentFilesPaths: string[] = []
         let { nodes, edges }: CanvasData = { nodes: [], edges: [] };
-        const rawContent = await this.plugin.app.vault.read(canvas)
+        const rawContent = await plugin.app.vault.read(canvas)
         if (rawContent) {
             try {
                 const canvasContent = JSON.parse(rawContent) as CanvasData;
