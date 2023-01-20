@@ -3,7 +3,7 @@ import { ButtonComponent, DropdownComponent, Modal, Notice, TextComponent, TextA
 import Field, { FieldCommand } from "src/fields/Field";
 import FieldSetting from "src/settings/FieldSetting";
 import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
-import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip } from "src/types/fieldTypes";
+import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType } from "src/types/fieldTypes";
 
 export default class FieldSettingsModal extends Modal {
     private namePromptComponent: TextComponent;
@@ -15,6 +15,9 @@ export default class FieldSettingsModal extends Modal {
     private fieldManager: F;
     private command: FieldCommand;
     private addCommand: boolean;
+    private autoSuggest?: boolean;
+    private frontmatterListDisplay?: MultiDisplayType;
+    private frontmatterListDisplayContainer: HTMLDivElement;
     private iconName: TextComponent;
 
     constructor(
@@ -64,6 +67,9 @@ export default class FieldSettingsModal extends Modal {
 
         /* Command */
         this.createCommandContainer();
+
+        /* frontmatter list display*/
+        this.createFrontmatterListDisplayContainer();
 
         /* Type */
         const typeSelectContainer = this.contentEl.createDiv({ cls: "field-container" });
@@ -119,7 +125,13 @@ export default class FieldSettingsModal extends Modal {
         Object.keys(FieldTypeLabelMapping).forEach((f: keyof typeof FieldType) => select.addOption(f, FieldTypeTooltip[f]))
         if (this.field.type) {
             select.setValue(this.field.type)
+            if ([FieldType.Multi, FieldType.Select, FieldType.Cycle].includes(this.field.type)) {
+                this.frontmatterListDisplayContainer.show()
+            } else {
+                this.frontmatterListDisplayContainer.hide()
+            }
         }
+
         select.onChange((typeLabel: keyof typeof FieldType) => {
             this.field = new Field();
             Field.copyProperty(this.field, this.initialField);
@@ -132,12 +144,45 @@ export default class FieldSettingsModal extends Modal {
             ) {
                 this.field.options = {}
             }
+            if ([FieldType.Multi, FieldType.Select, FieldType.Cycle].includes(this.field.type)) {
+                this.frontmatterListDisplayContainer.show()
+            } else {
+                this.frontmatterListDisplayContainer.hide()
+            }
             while (this.fieldOptionsContainer.firstChild) {
                 this.fieldOptionsContainer.removeChild(this.fieldOptionsContainer.firstChild);
             }
             this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
             this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.PluginSettings)
         })
+    }
+
+    private createFrontmatterListDisplayContainer(): void {
+        this.frontmatterListDisplayContainer = this.contentEl.createDiv({ cls: "field-container" })
+        //label
+        this.frontmatterListDisplayContainer.createDiv({ text: "Frontmatter list display type", cls: "label" });
+        this.frontmatterListDisplayContainer.createDiv({ cls: "spacer" });
+        //add toggler
+        const frontmatterListDisplay = new DropdownComponent(this.frontmatterListDisplayContainer);
+        const options: Record<string, string> = {}
+        options["asArray"] = "display as array"
+        options["asList"] = "display as indented list"
+        options["undefined"] = `Plugin Default (${this.plugin.settings.frontmatterListDisplay})`
+        frontmatterListDisplay.addOptions(options);
+        switch (this.field.display) {
+            case MultiDisplayType.asArray: frontmatterListDisplay.setValue("asArray"); break
+            case MultiDisplayType.asList: frontmatterListDisplay.setValue("asList"); break
+            case undefined: frontmatterListDisplay.setValue("undefined"); break
+        }
+
+        frontmatterListDisplay.onChange(value => {
+            switch (value) {
+                case "asArray": this.frontmatterListDisplay = MultiDisplayType.asArray; break;
+                case "asList": this.frontmatterListDisplay = MultiDisplayType.asList; break;
+                case "undefined": this.frontmatterListDisplay = undefined; break;
+                default: this.frontmatterListDisplay = undefined;
+            }
+        });
     }
 
     private createCommandContainer(): void {
@@ -195,6 +240,11 @@ export default class FieldSettingsModal extends Modal {
                 this.field.command = this.command
             } else {
                 delete this.field.command
+            }
+            if (this.frontmatterListDisplay !== undefined) {
+                this.field.display = this.frontmatterListDisplay
+            } else {
+                delete this.field.display
             }
             this.saved = true;
             const currentExistingField = this.plugin.initialProperties.filter(p => p.id == this.field.id)[0];

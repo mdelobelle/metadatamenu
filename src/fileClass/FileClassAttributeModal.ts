@@ -1,6 +1,6 @@
 import { DropdownComponent, Modal, TextComponent, ButtonComponent, Notice, ToggleComponent, setIcon } from "obsidian";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
-import { FieldTypeTooltip, FieldType, FieldTypeLabelMapping, FieldManager } from "src/types/fieldTypes";
+import { FieldTypeTooltip, FieldType, FieldTypeLabelMapping, FieldManager, MultiDisplayType } from "src/types/fieldTypes";
 import { FileClass } from "src/fileClass/fileClass";
 import MetadataMenu from "main";
 import Field, { FieldCommand } from "src/fields/Field";
@@ -18,6 +18,9 @@ class FileClassAttributeModal extends Modal {
     private command: FieldCommand;
     private addCommand: boolean;
     private iconName: TextComponent;
+    private autoSuggest?: boolean;
+    private frontmatterListDisplay?: MultiDisplayType;
+    private frontmatterListDisplayContainer: HTMLDivElement;
 
 
     constructor(
@@ -57,6 +60,9 @@ class FileClassAttributeModal extends Modal {
         /* Command */
         this.buildCommandContainer();
 
+        /* frontmatter list display*/
+        this.createFrontmatterListDisplayContainer();
+
         /* Type */
         const typeSelectContainer = this.contentEl.createDiv({ cls: "field-container" });
         this.contentEl.createEl("hr");
@@ -93,6 +99,34 @@ class FileClassAttributeModal extends Modal {
             FieldSettingsModal.removeValidationError(input);
         });
         this.nameInput = input
+    }
+
+    private createFrontmatterListDisplayContainer(): void {
+        this.frontmatterListDisplayContainer = this.contentEl.createDiv({ cls: "field-container" })
+        //label
+        this.frontmatterListDisplayContainer.createDiv({ text: "Frontmatter list display type", cls: "label" });
+        this.frontmatterListDisplayContainer.createDiv({ cls: "spacer" });
+        //add toggler
+        const frontmatterListDisplay = new DropdownComponent(this.frontmatterListDisplayContainer);
+        const options: Record<string, string> = {}
+        options["asArray"] = "display as array"
+        options["asList"] = "display as indented list"
+        options["undefined"] = `Plugin Default (${this.plugin.settings.frontmatterListDisplay})`
+        frontmatterListDisplay.addOptions(options);
+        switch (this.field.display) {
+            case MultiDisplayType.asArray: frontmatterListDisplay.setValue("asArray"); break
+            case MultiDisplayType.asList: frontmatterListDisplay.setValue("asList"); break
+            case undefined: frontmatterListDisplay.setValue("undefined"); break
+        }
+
+        frontmatterListDisplay.onChange(value => {
+            switch (value) {
+                case "asArray": this.frontmatterListDisplay = MultiDisplayType.asArray; break;
+                case "asList": this.frontmatterListDisplay = MultiDisplayType.asList; break;
+                case "undefined": this.frontmatterListDisplay = undefined; break;
+                default: this.frontmatterListDisplay = undefined;
+            }
+        });
     }
 
     buildCommandContainer(): void {
@@ -149,6 +183,11 @@ class FileClassAttributeModal extends Modal {
         Object.keys(FieldTypeTooltip).forEach((key: keyof typeof FieldType) => typeSelect.addOption(key, FieldTypeTooltip[key]))
         if (this.field.type) {
             typeSelect.setValue(this.field.type);
+            if ([FieldType.Multi, FieldType.Select, FieldType.Cycle].includes(this.field.type)) {
+                this.frontmatterListDisplayContainer.show()
+            } else {
+                this.frontmatterListDisplayContainer.hide()
+            }
         }
         typeSelect.onChange((typeLabel: keyof typeof FieldType) => {
             this.field = new Field();
@@ -161,6 +200,11 @@ class FileClassAttributeModal extends Modal {
                 )
             ) {
                 this.field.options = {}
+            }
+            if ([FieldType.Multi, FieldType.Select, FieldType.Cycle].includes(this.field.type)) {
+                this.frontmatterListDisplayContainer.show()
+            } else {
+                this.frontmatterListDisplayContainer.hide()
             }
             while (this.fieldOptionsContainer.firstChild) {
                 this.fieldOptionsContainer.removeChild(this.fieldOptionsContainer.firstChild);
@@ -193,7 +237,19 @@ class FileClassAttributeModal extends Modal {
             } else {
                 delete this.field.command
             }
-            await this.fileClass.updateAttribute(this.field.type, this.field.name, this.field.options, this.attr, this.field.command);
+            if (this.frontmatterListDisplay) {
+                this.field.display = this.frontmatterListDisplay
+            } else {
+                delete this.field.display
+            }
+            await this.fileClass.updateAttribute(
+                this.field.type,
+                this.field.name,
+                this.field.options,
+                this.attr,
+                this.field.command,
+                this.field.display
+            );
             this.close();
         })
     }

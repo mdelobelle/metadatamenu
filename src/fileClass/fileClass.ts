@@ -1,7 +1,7 @@
 import { FileClassAttribute } from "./fileClassAttribute";
 import MetadataMenu from "main";
 import { SuggestModal, TFile } from "obsidian";
-import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
+import { FieldType, FieldTypeLabelMapping, MultiDisplayType } from "src/types/fieldTypes";
 import { capitalize } from "src/utils/textUtils";
 import { genuineKeys } from "src/utils/dataviewUtils";
 import { FieldCommand } from "src/fields/Field";
@@ -205,9 +205,9 @@ class FileClass {
                             ? JSON.stringify(dvFile[key])
                             : dvFile[key];
                         try {
-                            const { type, options, command } = JSON.parse(item);
+                            const { type, options, command, display } = JSON.parse(item);
                             const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
-                            const attr = new FileClassAttribute(this.name, key, fieldType, options, fileClass.name, command)
+                            const attr = new FileClassAttribute(this.name, key, fieldType, options, fileClass.name, command, display)
                             attributes.push(attr)
                         } catch (e) {
                             //do nothing
@@ -295,7 +295,8 @@ class FileClass {
         newName: string,
         newOptions?: string[] | Record<string, string>,
         attr?: FileClassAttribute,
-        newCommand?: FieldCommand
+        newCommand?: FieldCommand,
+        newDisplay?: MultiDisplayType
     ): Promise<void> {
         const fileClass = attr ? this.plugin.fieldIndex.fileClassesName.get(attr.fileClassName)! : this
         const file = fileClass.getClassFile();
@@ -308,6 +309,7 @@ class FileClass {
                     settings["type"] = newType;
                     if (newOptions) settings["options"] = newOptions;
                     if (newCommand) settings["command"] = newCommand;
+                    if (newDisplay) settings["display"] = newDisplay;
                     newContent.push(`${newName}:: ${JSON.stringify(settings)}`);
                 } else {
                     newContent.push(line);
@@ -319,6 +321,7 @@ class FileClass {
             settings["type"] = newType;
             if (newOptions) settings["options"] = newOptions;
             if (newCommand) settings["command"] = newCommand;
+            if (newDisplay) settings["display"] = newDisplay;
             result += (`\n${newName}:: ${JSON.stringify(settings)}`);
             await this.plugin.app.vault.modify(file, result);
         }

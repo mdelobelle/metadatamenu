@@ -64,7 +64,7 @@ export function fieldModifier(
 
     /* fieldContainer*/
     const fieldContainer: HTMLElement = dv.el("div", "")
-    fieldContainer.setAttr("class", "metadata-menu-dv-field-container")
+    fieldContainer.setAttr("class", `metadata-menu-dv-field-container ${fieldName}`)
 
     /* create fieldModifier depending on fileClass type or preset value*/
 
