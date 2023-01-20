@@ -269,13 +269,28 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 let parsedField: Record<string, string | string[] | null> = parseYaml(serializedField)
                 let [attr, pastValues] = Object.entries(parsedField)[0]
                 let newField: string
-                console.log(this.field?.getDisplay(this.plugin))
                 if (this.field && this.field.getDisplay(this.plugin) === MultiDisplayType.asList) {
                     const fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
                     const options = (fieldManager as AbstractListBasedField)
                         .getOptionsList(dvApi.page(this.context?.file.path))
                     //clean the past values in case the user has typed a comma to insert a new value, and append the new value
                     let valuesArray: string[] = [suggestion.value]
+                    if (typeof pastValues == 'string') {
+                        valuesArray = [...new Set([clean(pastValues), ...valuesArray]
+                            .filter(item => options.includes(item)))]
+                    } else if (Array.isArray(pastValues)) {
+                        valuesArray = [...new Set([
+                            ...pastValues
+                                .filter(v => !!v)
+                                .map(value => clean(value)),
+                            ...valuesArray
+                        ].filter(item => options.includes(item)))]
+                    }
+                    newField = `${attr}: ${valuesArray.map(value => `\n  - ${clean(value)}`).join("")}`
+                } else if (fieldName === "tags" && this.plugin.settings.frontmatterListDisplay === MultiDisplayType.asList) {
+                    let valuesArray: string[] = [suggestion.value]
+                    //@ts-ignore
+                    const options = Object.keys(this.plugin.app.metadataCache.getTags()).map(t => t.replace(/^#/, ""))
                     if (typeof pastValues == 'string') {
                         valuesArray = [...new Set([clean(pastValues), ...valuesArray]
                             .filter(item => options.includes(item)))]
@@ -314,6 +329,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 editor.replaceRange(newField, { line: beginFieldLineNumber, ch: 0 }, { line: endFieldLineNumber, ch: editor.getLine(endFieldLineNumber).length });
 
                 if (!(this.field?.getDisplay(this.plugin) === MultiDisplayType.asList)
+                    && !(fieldName === "tags" && this.plugin.settings.frontmatterListDisplay === MultiDisplayType.asList)
                     && (Array.isArray(pastValues) || typeof pastValues === 'string' && pastValues.contains(","))) {
                     editor.setCursor({ line: beginFieldLineNumber, ch: newField.length - 1 })
                 } else {
