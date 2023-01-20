@@ -1,5 +1,6 @@
 import Field from "src/fields/Field";
 import FileClassQuery from "src/fileClass/FileClassQuery";
+import { MultiDisplayType } from "src/types/fieldTypes";
 
 export interface MetadataMenuSettings {
 	presetFields: Array<Field>;
@@ -21,6 +22,7 @@ export interface MetadataMenuSettings {
 	enableSearch: boolean;
 	buttonIcon: string;
 	tableViewMaxRecords: number;
+	frontmatterListDisplay: MultiDisplayType;
 }
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
@@ -42,5 +44,6 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	enableFileExplorer: true,
 	enableSearch: true,
 	buttonIcon: "clipboard-list",
-	tableViewMaxRecords: 100
+	tableViewMaxRecords: 100,
+	frontmatterListDisplay: MultiDisplayType.asArray
 };

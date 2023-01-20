@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
-import { MarkdownView, parseYaml, Platform, TFile } from "obsidian";
-import { FieldType, multiTypes } from "src/types/fieldTypes";
+import { MarkdownView, parseYaml, TFile } from "obsidian";
+import { FieldType, MultiDisplayType, multiTypes } from "src/types/fieldTypes";
 import { getFileFromFileOrPath } from "src/utils/fileUtils";
 import { getListBounds } from "src/utils/list";
 import * as Lookup from "src/types/lookupTypes";
@@ -42,17 +42,20 @@ export function renderField(
     fieldName: string,
     rawValue: string,
     location: "yaml" | "inline",
-    legacy: boolean = false
 ): any {
     const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName)
     const parseFieldValue = (_rawValue: string) => {
-        if (_rawValue.startsWith("[[")) {
-            return `${legacy ? '"' : ''}${_rawValue}${legacy ? '"' : ''}`
-        } else if (_rawValue.startsWith("#")) {
-            return `${_rawValue}`;
+        if (_rawValue) {
+            if (_rawValue.startsWith("[[")) {
+                return `"${_rawValue}"`
+            } else if (_rawValue.startsWith("#")) {
+                return `${_rawValue}`;
+            } else {
+                return parseYaml(_rawValue);
+            };
         } else {
-            return parseYaml(_rawValue);
-        };
+            return ""
+        }
     }
     const renderMultiFields = (rawValue: string, itemRendering: (itemValue: string) => any) => {
         const values = rawValue
@@ -60,15 +63,15 @@ export function renderField(
             .split(',')
             .filter(v => !!v)
             .map(value => itemRendering(value));
-        return values.length ? values : null
+        return values.length ? values : ""
     }
     switch (location) {
         case "yaml":
             switch (field?.type) {
                 case FieldType.Lookup: return renderMultiFields(rawValue, (item) => parseFieldValue(item));
                 case FieldType.Multi: return renderMultiFields(rawValue, (item) => parseFieldValue(item));
-                case FieldType.MultiFile: return renderMultiFields(rawValue, (item) => `${legacy ? '"' : ''}${item}${legacy ? '"' : ''}`);
-                case FieldType.Canvas: return renderMultiFields(rawValue, (item) => `${item}`);
+                case FieldType.MultiFile: return renderMultiFields(rawValue, (item) => `"${item}"`);
+                case FieldType.Canvas: return renderMultiFields(rawValue, (item) => item ? `${item}` : "");
                 case undefined: if ([...ReservedMultiAttributes, plugin.settings.fileClassAlias].includes(fieldName)) {
                     return renderMultiFields(rawValue, (item) => `${item}`)
                 } else {
@@ -109,74 +112,66 @@ export async function postFieldsInYaml(
     file: TFile,
     fields: Record<string, FieldPayload>
 ) {
-    // to be removed when public app version reach 1.4.2
-    const legacyMethod = (Platform.isAndroidApp || Platform.isIosApp || Platform.isMobileApp)
-    if (!legacyMethod) {
-        await plugin.app.fileManager.processFrontMatter(file, fm => {
-            Object.entries(fields).forEach(([fieldName, payload]) => {
-                const newValue = renderField(plugin, file, fieldName, payload.value, "yaml")
-                fm[fieldName] = newValue
-            })
-        })
-    } else {
-        //fallback for legacy versions waiting for the new mobile app to catch up 1.4.2 version (iOS)
-        const frontmatter = plugin.app.metadataCache.getFileCache(file)?.frontmatter
-        const newContent = []
-        const currentFile = await app.vault.read(file)
-        const skippedLines: number[] = []
-
-        const pushNewField = (fieldName: string, payload: FieldPayload): void => {
-            const newValue = renderField(plugin, file, fieldName, payload.value, "yaml", true)
-            if (Array.isArray(newValue)) {
-                newContent.push(`${fieldName}:`);
+    const frontmatter = plugin.app.metadataCache.getFileCache(file)?.frontmatter
+    const newContent = []
+    const currentFile = await app.vault.read(file)
+    const skippedLines: number[] = []
+    const pushNewField = (fieldName: string, payload: FieldPayload): void => {
+        const newValue = renderField(plugin, file, fieldName, payload.value, "yaml")
+        if (Array.isArray(newValue)) {
+            const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName);
+            if (field?.getDisplay(plugin) === MultiDisplayType.asList) {
+                newContent.push(`${fieldName}:`)
                 newValue.filter(v => !!v).forEach(item => { newContent.push(`  - ${item}`) });
             } else {
-                newContent.push(`${fieldName}: ${newValue}`);
+                newContent.push(`${fieldName}: [${newValue.join(" ,")}]`);
             }
-        }
-
-        if (!frontmatter) {
-            newContent.push("---");
-            Object.entries(fields).forEach(([fieldName, payload]) => pushNewField(fieldName, payload));
-            newContent.push("---")
-            newContent.push(...currentFile.split("\n"))
         } else {
-
-            const currentContent = currentFile.split("\n")
-            currentContent.forEach((line, lineNumber) => {
-                if (lineNumber > frontmatter.position.end.line) {
-                    // don't touch outside frontmatter : it's handled by postFieldsInline
-                    newContent.push(line)
-                } else if (!skippedLines.includes(lineNumber)) {
-                    //check if any of fields is matching this line and skip lines undeneath modified multi fields: they are reconstructed
-                    const matchedField: { name: string | undefined, payload: FieldPayload | undefined } = { name: undefined, payload: undefined }
-
-                    Object.entries(fields).forEach(([fieldName, payload]) => {
-                        const regex = new RegExp(`^${fieldName}:`, 'u');
-                        const r = line.match(regex);
-                        if (r && r.length > 0) {
-                            //search for indented value "below" and skip them
-                            let j = 1;
-                            while (currentContent[lineNumber + j].startsWith("  - ")) {
-                                skippedLines.push(lineNumber + j);
-                                j = j + 1
-                            }
-                            //we have a match
-                            matchedField.name = fieldName
-                            matchedField.payload = payload
-                        }
-                    })
-                    if (matchedField.name && matchedField.payload) {
-                        pushNewField(matchedField.name, matchedField.payload)
-                    } else {
-                        newContent.push(line)
-                    }
-                }
-            })
+            newContent.push(`${fieldName}: ${newValue}`);
         }
-        const updatedFile = newContent.join('\n')
-        await plugin.app.vault.modify(file, updatedFile);
     }
+
+    if (!frontmatter) {
+        newContent.push("---");
+        Object.entries(fields).forEach(([fieldName, payload]) => pushNewField(fieldName, payload));
+        newContent.push("---")
+        newContent.push(...currentFile.split("\n"))
+    } else {
+
+        const currentContent = currentFile.split("\n")
+        currentContent.forEach((line, lineNumber) => {
+            if (lineNumber > frontmatter.position.end.line) {
+                // don't touch outside frontmatter : it's handled by postFieldsInline
+                newContent.push(line)
+            } else if (!skippedLines.includes(lineNumber)) {
+                //check if any of fields is matching this line and skip lines undeneath modified multi fields: they are reconstructed
+                const matchedField: { name: string | undefined, payload: FieldPayload | undefined } = { name: undefined, payload: undefined }
+
+                Object.entries(fields).forEach(([fieldName, payload]) => {
+                    const regex = new RegExp(`^${fieldName}:`, 'u');
+                    const r = line.match(regex);
+                    if (r && r.length > 0) {
+                        //search for indented value "below" and skip them
+                        let j = 1;
+                        while (currentContent[lineNumber + j].startsWith("  - ")) {
+                            skippedLines.push(lineNumber + j);
+                            j = j + 1
+                        }
+                        //we have a match
+                        matchedField.name = fieldName
+                        matchedField.payload = payload
+                    }
+                })
+                if (matchedField.name && matchedField.payload) {
+                    pushNewField(matchedField.name, matchedField.payload)
+                } else {
+                    newContent.push(line)
+                }
+            }
+        })
+    }
+    const updatedFile = newContent.join('\n')
+    await plugin.app.vault.modify(file, updatedFile);
 }
 
 export async function postFieldsInline(
@@ -318,6 +313,7 @@ export async function postValues(
             }
         }
     })
+    //console.log(toYaml, toCreateInline, toUpdateInline)
     if (Object.keys(toYaml).length) await plugin.fileTaskManager
         .pushTask(() => { postFieldsInYaml(plugin, file, toYaml) })
     if (Object.keys(toCreateInline).length || Object.keys(toUpdateInline).length) await plugin.fileTaskManager

@@ -1,4 +1,5 @@
-import { FieldType } from "../types/fieldTypes"
+import MetadataMenu from "main";
+import { FieldType, MultiDisplayType } from "../types/fieldTypes"
 
 export interface FieldCommand {
     id: string,
@@ -15,8 +16,13 @@ class Field {
         public id: string = "",
         public type: FieldType = FieldType.Input,
         public fileClassName?: string,
-        public command?: FieldCommand
+        public command?: FieldCommand,
+        public display?: MultiDisplayType
     ) { };
+
+    public getDisplay(plugin: MetadataMenu): MultiDisplayType {
+        return this.display || plugin.settings.frontmatterListDisplay
+    }
 
     static copyProperty(target: Field, source: Field) {
         target.id = source.id;
@@ -31,6 +37,7 @@ class Field {
             };
         });
         target.command = source.command
+        target.display = source.display
     };
 
     public static createDefault(name: string): Field {

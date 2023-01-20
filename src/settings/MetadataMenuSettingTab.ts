@@ -8,6 +8,7 @@ import { FileSuggest } from "src/suggester/FileSuggester";
 import FileClassQuery from "src/fileClass/FileClassQuery";
 import FileClassQuerySettingsModal from "./FileClassQuerySettingModal";
 import FileClassQuerySetting from "./FileClassQuerySetting";
+import { MultiDisplayType } from "src/types/fieldTypes";
 
 export default class MetadataMenuSettingTab extends PluginSettingTab {
 	private plugin: MetadataMenu;
@@ -97,6 +98,38 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		globallyIgnoredFieldsSetting.settingEl.addClass("vstacked");
 		globallyIgnoredFieldsSetting.settingEl.addClass("no-border");
 		globallyIgnoredFieldsSetting.controlEl.addClass("full-width");
+
+		/* Exclude Fields from context menu*/
+		const enableAutoComplete = new Setting(globalSettings)
+			.setName('Autocomplete')
+			.setDesc('Activate autocomplete fields')
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.isAutosuggestEnabled);
+				cb.onChange(value => {
+					this.plugin.settings.isAutosuggestEnabled = value;
+					this.plugin.saveSettings();
+				})
+			})
+		enableAutoComplete.settingEl.addClass("no-border");
+		enableAutoComplete.controlEl.addClass("full-width");
+
+
+		/* lists display in frontmatter*/
+		const frontmatterListDisplay = new Setting(globalSettings)
+			.setName('Frontmatter list display')
+			.setDesc('Choose wether lists should be displayed as arrays or indented lists in frontmatter')
+			.addDropdown((cb: DropdownComponent) => {
+				[["Array", "asArray"], ["Indented List", "asList"]].forEach(([display, value]: [string, MultiDisplayType]) => {
+					cb.addOption(value, display)
+				})
+				cb.setValue(this.plugin.settings.frontmatterListDisplay || MultiDisplayType.asArray)
+				cb.onChange(async (value: MultiDisplayType) => {
+					this.plugin.settings.frontmatterListDisplay = value;
+					await this.plugin.saveSettings();
+				});
+			});
+		frontmatterListDisplay.settingEl.addClass("no-border");
+		frontmatterListDisplay.controlEl.addClass("full-width");
 
 		/* First day of week (for Date Fields*/
 		new Setting(globalSettings)

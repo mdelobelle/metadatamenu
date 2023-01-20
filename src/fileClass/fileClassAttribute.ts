@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import Field, { FieldCommand } from "src/fields/Field";
-import { FieldManager, FieldType } from "src/types/fieldTypes";
+import { FieldManager, FieldType, MultiDisplayType } from "src/types/fieldTypes";
 
 class FileClassAttribute {
 
@@ -10,7 +10,8 @@ class FileClassAttribute {
         public type: FieldType = FieldType.Input,
         public options: string[] | Record<string, any> = [],
         public fileClassName: string,
-        public command: FieldCommand
+        public command: FieldCommand,
+        public display?: MultiDisplayType
     ) { }
 
     public getField() {
@@ -22,7 +23,7 @@ class FileClassAttribute {
         } else {
             options = this.options
         }
-        return new Field(this.name, options, this.name, this.type, this.fileClassName, this.command);
+        return new Field(this.name, options, this.name, this.type, this.fileClassName, this.command, this.display);
     }
 
     public getOptionsString(plugin: MetadataMenu) {

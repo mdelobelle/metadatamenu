@@ -129,3 +129,8 @@ export const multiTypes = [
 
 
 export const ReservedMultiAttributes = ["tags", "tagNames", "excludes", "aliases"]
+
+export enum MultiDisplayType {
+    "asArray" = 'asArray',
+    "asList" = "asList"
+}

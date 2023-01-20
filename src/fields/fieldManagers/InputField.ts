@@ -80,6 +80,8 @@ export default class InputField extends FieldManager {
         attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
     ): void {
         attrs.cls = "value-container"
+        /* button to display input */
+        const editBtn = fieldContainer.createEl("button");
         const fieldValue = (dv.el('span', p[this.field.name], attrs) as HTMLDivElement);
         fieldContainer.appendChild(fieldValue);
         const inputContainer = fieldContainer.createDiv({});
@@ -89,8 +91,6 @@ export default class InputField extends FieldManager {
         /* end spacer */
         const spacer = fieldContainer.createDiv({ cls: "spacer-1" });
         if (attrs.options?.alwaysOn) spacer.hide();
-        /* button to display input */
-        const editBtn = fieldContainer.createEl("button");
         setIcon(editBtn, FieldIcon[FieldType.Input]);
         if (!attrs?.options?.alwaysOn) {
             editBtn.hide();
