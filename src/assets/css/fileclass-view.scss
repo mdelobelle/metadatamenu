@@ -1,3 +1,21 @@
+@mixin footer-button {
+    display: flex;
+
+    .cell{
+
+        button{
+            margin-top: 1em;
+            
+
+            &.active{
+                background-color: var(--color-accent);
+                border-bottom: 3px solid var(--text-accent);
+                color: var(--text-on-accent);
+            }
+        }
+    }
+}
+
 .metadata-menu.fileclass-view{
     
     .fv-menu{
@@ -17,6 +35,92 @@
                 border-bottom: 3px solid var(--text-accent);
             }
         }
+    }
+
+    .fv-fields {
+        
+        .fields-container{
+            display: grid;
+            grid-template-columns: auto auto auto 1fr;
+            
+            @media screen and (max-width: 400px) {
+                grid-template-columns: auto auto auto;
+            }
+
+            .name-container{
+                grid-column: 1;
+                margin: 0.2em 1.3em 0.2em 0;
+                white-space: nowrap;
+                font-weight: 500;
+                @media screen and (max-width: 400px) {
+                    margin-top: 1em;
+                }
+            }
+
+            .type-container{
+                grid-column: 2;
+                @media screen and (max-width: 400px) {
+                    margin-top: 1em;
+                }
+
+                .chip{
+                    border-radius: 0.8em;
+                    padding: 0.1em 0.75em 0.25em 0.75em;
+                    color: white;
+                    margin-left: 0.5em;
+                    margin-right: 0.5em;
+                    height: 1.6em;
+                    white-space: nowrap;
+                    font-size: small;
+                    margin-top: 0.25em;
+                    opacity: 0.95;
+                }
+            }
+
+            .buttons-container{
+                grid-column: 3;
+                display: flex;
+                @media screen and (max-width: 400px) {
+                    margin-top: 1em;
+                }
+            }
+
+            .options-container{
+                grid-column: 4;
+                @media screen and (max-width: 400px) {
+                    grid-column: 1;
+                    grid-column-start: span 3;
+                }
+                
+                .description{
+                    white-space: nowrap;
+                    margin-left: 1em;
+                    color: var(--text-muted);
+
+                    @media screen and (max-width: 400px) {
+                        margin-left: 0em;
+                        white-space: normal;
+                    }
+                }
+            }
+
+            button {
+                border: none;
+                box-shadow: none;
+                //padding-right: 0;
+                background: none;
+
+                &:hover{
+                    color: var(--text-accent);
+                }
+            }
+        
+        }
+
+        .footer{
+            @include footer-button();
+        }
+        
     }
 
     .fv-settings{
@@ -147,23 +251,8 @@
         }
 
         .footer{
-
-            .cell{
-
-                button{
-                    margin-top: 1em;
-                    
-
-                    &.active{
-                        background-color: var(--color-accent);
-                        border-bottom: 3px solid var(--text-accent);
-                        color: var(--text-on-accent);
-                    }
-                }
-            }
+            @include footer-button();
         }
-        
-        
     }
 
     .fv-table{

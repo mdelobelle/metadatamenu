@@ -21,22 +21,22 @@ class FileClassFieldSetting {
 
     private buildSetting(): void {
 
-        const fieldNameContainer = this.container.createDiv({ cls: "cell" })
+        const fieldNameContainer = this.container.createDiv({ cls: "name-container" })
         fieldNameContainer.createEl("span", { text: this.fileClassAttribute.name, cls: "title" })
-        const typeContainer = this.container.createDiv({ cls: "cell" })
+        const typeContainer = this.container.createDiv({ cls: "type-container" })
         const chip = typeContainer.createDiv({ cls: `chip ${FieldTypeTagClass[this.fileClassAttribute.type]}` })
         chip.setText(this.fileClassAttribute.type)
-        const fieldOptionsContainer = this.container.createDiv({ cls: "cell" })
+        const fieldButtonsContainer = this.container.createDiv({ cls: "buttons-container" })
+        this.addEditButton(fieldButtonsContainer)
+        this.addDeleteButton(fieldButtonsContainer);
+        const fieldOptionsContainer = this.container.createDiv({ cls: "options-container" })
         fieldOptionsContainer.createEl("span", { cls: "description", text: `${this.fileClassAttribute.getOptionsString(this.plugin)}` })
-        this.addEditButton(this.container)
-        this.addDeleteButton(this.container);
     };
 
     private addEditButton(container: HTMLElement): void {
         const btn = new ButtonComponent(container);
         btn.setIcon("pencil")
         btn.setTooltip("Edit")
-        btn.setClass("cell")
         btn.onClick(() => {
             let modal = new FileClassAttributeModal(
                 this.plugin,
@@ -69,7 +69,7 @@ export class FileClassFieldsView {
         private fileClass: FileClass
     ) {
         this.plugin = plugin;
-        this.container = this.viewContainer.createDiv({ cls: "fv-settings" })
+        this.container = this.viewContainer.createDiv({ cls: "fv-fields" })
         this.buildSettings();
     };
 
@@ -86,10 +86,11 @@ export class FileClassFieldsView {
 
     buildSettings(): void {
         this.container.replaceChildren();
+        const fieldsContainer = this.container.createDiv({ cls: "fields-container" })
         const attributes = FileClass.getFileClassAttributes(this.plugin, this.fileClass);
         attributes.forEach(attribute => {
-            const settingContainer = this.container.createDiv({ cls: "setting" })
-            new FileClassFieldSetting(settingContainer, this.fileClass, attribute, this.plugin);
+            //const settingContainer = this.container.createDiv({ cls: "setting" })
+            new FileClassFieldSetting(fieldsContainer, this.fileClass, attribute, this.plugin);
         });
         this.builAddBtn();
     }

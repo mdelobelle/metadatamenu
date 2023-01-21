@@ -137,11 +137,18 @@ export async function postFieldsInYaml(
         newContent.push("---")
         newContent.push(...currentFile.split("\n"))
     } else {
-
         const currentContent = currentFile.split("\n")
         currentContent.forEach((line, lineNumber) => {
             if (lineNumber > frontmatter.position.end.line) {
                 // don't touch outside frontmatter : it's handled by postFieldsInline
+                newContent.push(line)
+            } else if (lineNumber === frontmatter.position.end.line) {
+                //insert here the new fields    
+                Object.entries(fields)
+                    .filter(([fieldName, payload]) => !Object.keys(frontmatter).includes(fieldName))
+                    .forEach(([fieldName, payload]) => {
+                        pushNewField(fieldName, payload)
+                    })
                 newContent.push(line)
             } else if (!skippedLines.includes(lineNumber)) {
                 //check if any of fields is matching this line and skip lines undeneath modified multi fields: they are reconstructed
@@ -313,7 +320,7 @@ export async function postValues(
             }
         }
     })
-    //console.log(toYaml, toCreateInline, toUpdateInline)
+    console.log(toYaml, toCreateInline, toUpdateInline)
     if (Object.keys(toYaml).length) await plugin.fileTaskManager
         .pushTask(() => { postFieldsInYaml(plugin, file, toYaml) })
     if (Object.keys(toCreateInline).length || Object.keys(toUpdateInline).length) await plugin.fileTaskManager

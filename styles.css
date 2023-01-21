@@ -1433,6 +1433,72 @@ span.flatpickr-weekday {
       color: var(--text-accent);
       border-bottom: 3px solid var(--text-accent); }
 
+.metadata-menu.fileclass-view .fv-fields .fields-container {
+  display: grid;
+  grid-template-columns: auto auto auto 1fr; }
+  @media screen and (max-width: 400px) {
+    .metadata-menu.fileclass-view .fv-fields .fields-container {
+      grid-template-columns: auto auto auto; } }
+  .metadata-menu.fileclass-view .fv-fields .fields-container .name-container {
+    grid-column: 1;
+    margin: 0.2em 1.3em 0.2em 0;
+    white-space: nowrap;
+    font-weight: 500; }
+    @media screen and (max-width: 400px) {
+      .metadata-menu.fileclass-view .fv-fields .fields-container .name-container {
+        margin-top: 1em; } }
+  .metadata-menu.fileclass-view .fv-fields .fields-container .type-container {
+    grid-column: 2; }
+    @media screen and (max-width: 400px) {
+      .metadata-menu.fileclass-view .fv-fields .fields-container .type-container {
+        margin-top: 1em; } }
+    .metadata-menu.fileclass-view .fv-fields .fields-container .type-container .chip {
+      border-radius: 0.8em;
+      padding: 0.1em 0.75em 0.25em 0.75em;
+      color: white;
+      margin-left: 0.5em;
+      margin-right: 0.5em;
+      height: 1.6em;
+      white-space: nowrap;
+      font-size: small;
+      margin-top: 0.25em;
+      opacity: 0.95; }
+  .metadata-menu.fileclass-view .fv-fields .fields-container .buttons-container {
+    grid-column: 3;
+    display: flex; }
+    @media screen and (max-width: 400px) {
+      .metadata-menu.fileclass-view .fv-fields .fields-container .buttons-container {
+        margin-top: 1em; } }
+  .metadata-menu.fileclass-view .fv-fields .fields-container .options-container {
+    grid-column: 4; }
+    @media screen and (max-width: 400px) {
+      .metadata-menu.fileclass-view .fv-fields .fields-container .options-container {
+        grid-column: 1;
+        grid-column-start: span 3; } }
+    .metadata-menu.fileclass-view .fv-fields .fields-container .options-container .description {
+      white-space: nowrap;
+      margin-left: 1em;
+      color: var(--text-muted); }
+      @media screen and (max-width: 400px) {
+        .metadata-menu.fileclass-view .fv-fields .fields-container .options-container .description {
+          margin-left: 0em;
+          white-space: normal; } }
+  .metadata-menu.fileclass-view .fv-fields .fields-container button {
+    border: none;
+    box-shadow: none;
+    background: none; }
+    .metadata-menu.fileclass-view .fv-fields .fields-container button:hover {
+      color: var(--text-accent); }
+
+.metadata-menu.fileclass-view .fv-fields .footer {
+  display: flex; }
+  .metadata-menu.fileclass-view .fv-fields .footer .cell button {
+    margin-top: 1em; }
+    .metadata-menu.fileclass-view .fv-fields .footer .cell button.active {
+      background-color: var(--color-accent);
+      border-bottom: 3px solid var(--text-accent);
+      color: var(--text-on-accent); }
+
 .metadata-menu.fileclass-view .fv-settings {
   display: table; }
   .metadata-menu.fileclass-view .fv-settings .setting {
@@ -1510,12 +1576,14 @@ span.flatpickr-weekday {
       .metadata-menu.fileclass-view .fv-settings .setting .cell .title {
         font-weight: 600;
         margin-right: 1em; }
-  .metadata-menu.fileclass-view .fv-settings .footer .cell button {
-    margin-top: 1em; }
-    .metadata-menu.fileclass-view .fv-settings .footer .cell button.active {
-      background-color: var(--color-accent);
-      border-bottom: 3px solid var(--text-accent);
-      color: var(--text-on-accent); }
+  .metadata-menu.fileclass-view .fv-settings .footer {
+    display: flex; }
+    .metadata-menu.fileclass-view .fv-settings .footer .cell button {
+      margin-top: 1em; }
+      .metadata-menu.fileclass-view .fv-settings .footer .cell button.active {
+        background-color: var(--color-accent);
+        border-bottom: 3px solid var(--text-accent);
+        color: var(--text-on-accent); }
 
 .metadata-menu.fileclass-view .fv-table .options .options-container {
   display: flex;
