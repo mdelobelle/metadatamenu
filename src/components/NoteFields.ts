@@ -30,7 +30,7 @@ export class FieldsModal extends Modal {
     private dvApi?: any
     public fields: Field[]
     public fieldContainers: HTMLDivElement[] = [];
-    private maxOptions: number = 0;
+    //private maxOptions: number = 0;
     private missingFields: boolean = false;
 
     constructor(
@@ -56,15 +56,17 @@ export class FieldsModal extends Modal {
     }
 
     //
-    buildFieldContainer(parentContainer: HTMLDivElement, field: Field, value?: string | null | undefined): HTMLDivElement {
+    buildFieldContainer(container: HTMLDivElement, field: Field, value?: string | null | undefined): void {
         const fieldManager = new FM[field.type](this.plugin, field)
-        const fieldContainer = parentContainer.createDiv({ cls: "field-container" })
-        const fieldNameContainer = fieldContainer.createDiv({ text: `${field.name}`, cls: "field-item field-name" });
+        const fieldNameWrapper = container.createDiv({ cls: "field-name-wrapper" })
+        const fieldNameContainer = fieldNameWrapper.createDiv({ text: `${field.name}`, cls: "field-item field-name" });
+        const fieldSettingsWrapper = container.createDiv({ cls: "field-settings-wrapper" });
+        fieldSettingsWrapper.createDiv({ cls: "field-settings-spacer" })
         const fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
         if (fileClass) {
             fieldNameContainer.addClass(`fileClassField__${fileClass.name.replace("/", "___").replace(" ", "_")}`)
         }
-        const fieldSettingContainer = fieldContainer.createDiv({ cls: "field-item field-setting" });
+        const fieldSettingContainer = fieldSettingsWrapper.createDiv({ cls: "field-item field-setting" });
         const fieldSettingBtn = new ButtonComponent(fieldSettingContainer);
         fieldSettingBtn.setIcon("gear")
         fieldSettingBtn.setTooltip(`${field.fileClassName ? field.fileClassName + " > " : "Preset Field > "} ${field.name} settings`)
@@ -76,9 +78,10 @@ export class FieldsModal extends Modal {
                 fileClassAttributeModal.open();
             }
         })
-        const fieldTypeContainer = fieldContainer.createDiv({ cls: `field-item` });
+        const fieldTypeContainer = fieldSettingsWrapper.createDiv({ cls: `field-item` });
         fieldTypeContainer.createDiv({ text: field.type, cls: `chip field-type ${FieldType.FieldBackgroundColorClass[field.type]}` })
-        const fieldValueContainer = fieldContainer.createDiv({
+        const fieldValueWrapper = container.createDiv({ cls: "field-value-wrapper" })
+        const fieldValueContainer = fieldValueWrapper.createDiv({
             cls: value !== undefined && value !== null ? "field-item field-value" : "field-item field-value emptyfield"
         })
         if (value === null) {
@@ -89,11 +92,13 @@ export class FieldsModal extends Modal {
         } else {
             fieldManager.displayValue(fieldValueContainer, this.file, field.name, () => { this.close() })
         }
-        const fieldOptions = new FieldOptions(fieldContainer)
+        const fieldOptionsWrapper = container.createDiv({ cls: "field-options-wrapper" });
+        fieldOptionsWrapper.createDiv({ cls: "field-options-spacer" });
+        const fieldOptions = new FieldOptions(fieldOptionsWrapper)
         if (value !== undefined) {
             fieldManager.addFieldOption(field.name, value, this.file, fieldOptions);
         } else {
-            const fieldBtnContainer = fieldContainer.createDiv({ cls: "field-item field-option" })
+            const fieldBtnContainer = fieldOptionsWrapper.createDiv({ cls: "field-item field-option" })
             const fieldBtn = new ButtonComponent(fieldBtnContainer)
             fieldBtn.setIcon("list-plus")
             fieldBtn.setTooltip("Add field at section")
@@ -119,11 +124,6 @@ export class FieldsModal extends Modal {
                 ).open();
             })
         };
-
-        const optionsCount = fieldContainer.querySelectorAll(".field-option").length
-        if (this.maxOptions < optionsCount) this.maxOptions = optionsCount
-
-        return fieldContainer
     }
 
     openInsertMissingFieldsForFileClassModal(fileClass: FileClass): void {
@@ -233,23 +233,6 @@ export class FieldsModal extends Modal {
         })
     }
 
-    formatOptionsColumns(fieldsContainer: HTMLDivElement): void {
-        //create empty cells for field with less options so that options are right aligned in the table
-        const fieldContainers = fieldsContainer.querySelectorAll('.field-container')
-        fieldContainers.forEach(field => {
-            const options = field.querySelectorAll('.field-option')
-            if (options.length < this.maxOptions) {
-                const parent = options[0]?.parentElement;
-                if (parent) {
-                    for (let i = 0; i < this.maxOptions - options.length; i++) {
-                        const emptyCell = parent.createDiv({ cls: "field-item field-option" })
-                        options[0].parentElement?.insertBefore(emptyCell, options[0])
-                    }
-                }
-            }
-        })
-    }
-
     buildFieldsContainer(): void {
         this.missingFields = false
         this.contentEl.replaceChildren();
@@ -257,9 +240,8 @@ export class FieldsModal extends Modal {
         const fieldsContainer = this.contentEl.createDiv({ cls: "note-fields-container" });
         this.fields.forEach(field => {
             const value = this.dvApi ? this.dvApi.page(this.file.path)[field.name] : undefined
-            this.fieldContainers.push(this.buildFieldContainer(fieldsContainer, field, value))
+            this.buildFieldContainer(fieldsContainer, field, value)
         })
-        this.formatOptionsColumns(fieldsContainer);
         if (this.missingFields) {
             const insertMissingFieldsContainer = this.contentEl.createDiv({ cls: "insert-all-fields" });
             insertMissingFieldsContainer.createDiv({ text: "Insert missing fields" });

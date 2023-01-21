@@ -16,6 +16,7 @@ export function clearExtraAttributes(link: HTMLElement) {
 }
 
 function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, destPath: string, viewTypeName: string | null, fileClassName?: string) {
+    if (link.classList.contains("metadata-menu-button-hidden")) return; //so that snippets can prevent the button from being added
     switch (viewTypeName) {
         case "a.internal-link": if (!plugin.settings.enableLinks) return; break;
         case "tabHeader": if (!plugin.settings.enableTabHeader) return; break;

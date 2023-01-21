@@ -73,7 +73,7 @@ export default class MultiField extends AbstractListBasedField {
                     }
                 })
             } else {
-                currentValues = p[this.field.name].split(",").map((v: string) => v.trim());
+                currentValues = p[this.field.name]?.split(",").map((v: string) => v.trim()) || [];
             }
         }
 

@@ -18,18 +18,59 @@
     .modal{
         width: auto;
         min-width: var(--dialog-width);
+
+        @media screen and (max-width: 400px) {
+            min-width: 95vw;
+        }
     }
 
     .note-fields-container{
-        display: table;
+        display: grid;
         border-collapse:separate;
+        grid-template-columns: auto auto 1fr auto;
+        margin-top: 3px;
+        @media screen and (max-width: 400px) {
+            grid-template-columns: 1fr auto;
+        }
 
-        .field-container {
-            display: table-row;
-            margin-top: 3px;
+        .field-name-wrapper{
+            grid-column: 1;
+        }
 
+        .field-settings-wrapper{
+            grid-column: 2;
+            display: flex;
+
+            .field-settings-spacer{
+                @media screen and (max-width: 400px) {
+                    width: 100%
+                }
+            }
+        }
+
+        .field-value-wrapper{
+            grid-column: 3;
+            @media screen and (max-width: 400px) {
+                grid-column: 1;
+                margin-bottom: 1em;
+            }
+        }
+        .field-options-wrapper{
+            grid-column: 4;
+            display: flex;
+            @media screen and (max-width: 400px) {
+                grid-column: 2;
+                margin-bottom: 1em;
+            }
+
+            .field-options-spacer{
+                width: 100%;
+            }
+        }
+
+        .field-name-wrapper, .field-value-wrapper, .field-settings-wrapper, .field-options-wrapper{
+            
             .field-item{
-                display: table-cell;
                 padding-top: 0.2em;
                 padding-right: 0.5em;
                 float: none;
@@ -42,10 +83,23 @@
                     color:var(--text-normal);
                     padding-left: 0.6em;
                     border: none;
+                    @media screen and (max-width: 400px) {
+                        padding-left: 0;
+                    }
 
                     &.active{
                         padding-left: 0.2em;
                         border-left: 0.4em var(--color-accent) solid;
+                    }
+                }
+
+                .field-type{
+                    margin-top:0.25em;
+
+                    &.chip{
+                        @media screen and (max-width: 400px) {
+                            margin-right: 0;
+                        }
                     }
                 }
 
@@ -67,12 +121,6 @@
                     &.emptyfield{
                         color: var(--text-faint);
                     }
-                }
-
-                &.field-options {
-                    display: flex;
-                    margin-top: 3px;
-                    justify-content: center;
                 }
             }
         }

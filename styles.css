@@ -1012,42 +1012,73 @@ span.flatpickr-weekday {
 .metadata-menu.modal-container.note-fields-modal .modal {
   width: auto;
   min-width: var(--dialog-width); }
+  @media screen and (max-width: 400px) {
+    .metadata-menu.modal-container.note-fields-modal .modal {
+      min-width: 95vw; } }
 
 .metadata-menu.modal-container.note-fields-modal .note-fields-container {
-  display: table;
-  border-collapse: separate; }
-  .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-container {
-    display: table-row;
-    margin-top: 3px; }
-    .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-container .field-item {
-      display: table-cell;
-      padding-top: 0.2em;
-      padding-right: 0.5em;
-      float: none;
-      vertical-align: middle; }
-      .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-container .field-item.field-name {
-        font-weight: bold;
-        white-space: nowrap;
-        background-color: none;
-        color: var(--text-normal);
-        padding-left: 0.6em;
-        border: none; }
-        .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-container .field-item.field-name.active {
-          padding-left: 0.2em;
-          border-left: 0.4em var(--color-accent) solid; }
-      .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-container .field-item.field-setting {
-        padding-right: 0; }
-        .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-container .field-item.field-setting button svg {
-          color: var(--text-faint);
-          height: 1em; }
-      .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-container .field-item.field-value {
-        width: 100%; }
-        .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-container .field-item.field-value.emptyfield {
-          color: var(--text-faint); }
-      .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-container .field-item.field-options {
-        display: flex;
-        margin-top: 3px;
-        justify-content: center; }
+  display: grid;
+  border-collapse: separate;
+  grid-template-columns: auto auto 1fr auto;
+  margin-top: 3px; }
+  @media screen and (max-width: 400px) {
+    .metadata-menu.modal-container.note-fields-modal .note-fields-container {
+      grid-template-columns: 1fr auto; } }
+  .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-name-wrapper {
+    grid-column: 1; }
+  .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-settings-wrapper {
+    grid-column: 2;
+    display: flex; }
+    @media screen and (max-width: 400px) {
+      .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-settings-wrapper .field-settings-spacer {
+        width: 100%; } }
+  .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-value-wrapper {
+    grid-column: 3; }
+    @media screen and (max-width: 400px) {
+      .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-value-wrapper {
+        grid-column: 1;
+        margin-bottom: 1em; } }
+  .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-options-wrapper {
+    grid-column: 4;
+    display: flex; }
+    @media screen and (max-width: 400px) {
+      .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-options-wrapper {
+        grid-column: 2;
+        margin-bottom: 1em; } }
+    .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-options-wrapper .field-options-spacer {
+      width: 100%; }
+  .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-name-wrapper .field-item, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-value-wrapper .field-item, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-settings-wrapper .field-item, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-options-wrapper .field-item {
+    padding-top: 0.2em;
+    padding-right: 0.5em;
+    float: none;
+    vertical-align: middle; }
+    .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-name-wrapper .field-item.field-name, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-value-wrapper .field-item.field-name, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-settings-wrapper .field-item.field-name, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-options-wrapper .field-item.field-name {
+      font-weight: bold;
+      white-space: nowrap;
+      background-color: none;
+      color: var(--text-normal);
+      padding-left: 0.6em;
+      border: none; }
+      @media screen and (max-width: 400px) {
+        .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-name-wrapper .field-item.field-name, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-value-wrapper .field-item.field-name, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-settings-wrapper .field-item.field-name, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-options-wrapper .field-item.field-name {
+          padding-left: 0; } }
+      .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-name-wrapper .field-item.field-name.active, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-value-wrapper .field-item.field-name.active, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-settings-wrapper .field-item.field-name.active, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-options-wrapper .field-item.field-name.active {
+        padding-left: 0.2em;
+        border-left: 0.4em var(--color-accent) solid; }
+    .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-name-wrapper .field-item .field-type, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-value-wrapper .field-item .field-type, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-settings-wrapper .field-item .field-type, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-options-wrapper .field-item .field-type {
+      margin-top: 0.25em; }
+      @media screen and (max-width: 400px) {
+        .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-name-wrapper .field-item .field-type.chip, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-value-wrapper .field-item .field-type.chip, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-settings-wrapper .field-item .field-type.chip, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-options-wrapper .field-item .field-type.chip {
+          margin-right: 0; } }
+    .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-name-wrapper .field-item.field-setting, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-value-wrapper .field-item.field-setting, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-settings-wrapper .field-item.field-setting, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-options-wrapper .field-item.field-setting {
+      padding-right: 0; }
+      .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-name-wrapper .field-item.field-setting button svg, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-value-wrapper .field-item.field-setting button svg, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-settings-wrapper .field-item.field-setting button svg, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-options-wrapper .field-item.field-setting button svg {
+        color: var(--text-faint);
+        height: 1em; }
+    .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-name-wrapper .field-item.field-value, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-value-wrapper .field-item.field-value, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-settings-wrapper .field-item.field-value, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-options-wrapper .field-item.field-value {
+      width: 100%; }
+      .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-name-wrapper .field-item.field-value.emptyfield, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-value-wrapper .field-item.field-value.emptyfield, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-settings-wrapper .field-item.field-value.emptyfield, .metadata-menu.modal-container.note-fields-modal .note-fields-container .field-options-wrapper .field-item.field-value.emptyfield {
+        color: var(--text-faint); }
 
 .metadata-menu.modal-container.note-fields-modal .insert-all-fields {
   margin-top: 0.4em;

@@ -92,14 +92,14 @@ export const matchInlineFields = (regex: RegExp, line: string, attribute: string
     while (!next.done) {
         const match = next.value;
         if (match.groups && Object.keys(match.groups).every(j => fieldComponents.includes(j))) {
-            const { inList, inQuote, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = match.groups
+            const { inList, inQuote, preSpacer, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = match.groups
             const inputArray = input ? input.replace(/(\,\s+)/g, ',').split(',') : [""];
             const newValue = inputArray.length == 1 ? inputArray[0] : `${inputArray.join(', ')}`;
             const start = LocationWrapper[location].start;
             const end = LocationWrapper[location].end;
             newFields.push({
                 oldField: match[0],
-                newField: `${inQuote || ""}${start}${inList || ""}${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer || " "}${newValue}${end}`,
+                newField: `${inQuote || ""}${start}${inList || ""}${preSpacer || ""}${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer || " "}${newValue}${end}`,
             })
         }
         next = sR.next()
@@ -222,7 +222,7 @@ export async function postFieldsInline(
                         }
                     }
                 }
-                const { inList, inQuote, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = fR.groups
+                const { inList, inQuote, preSpacer, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = fR.groups
                 const inputArray = payload.value ? payload.value.replace(/(\,\s+)/g, ',').split(',').sort() : [];
                 let newValue: string;
                 let hiddenValue = "";
@@ -237,7 +237,7 @@ export async function postFieldsInline(
                 } else {
                     newValue = inputArray.length == 1 ? inputArray[0] : `${inputArray.join(', ')}`;
                 }
-                return `${inQuote || ""}${inList || ""}${startStyle}${fieldName}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer || " "}${hiddenValue + newValue + emptyLineAfterList}`;
+                return `${inQuote || ""}${inList || ""}${preSpacer || ""}${startStyle}${fieldName}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer || " "}${hiddenValue + newValue + emptyLineAfterList}`;
             } else {
                 const newFields: FieldReplace[] = [];
                 const inSentenceRegexBrackets = new RegExp(`\\[${inlineFieldRegex(fieldName)}(?<values>[^\\]]+)?\\]`, "gu");
