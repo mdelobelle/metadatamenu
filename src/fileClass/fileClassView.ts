@@ -58,6 +58,7 @@ export class FileClassView extends ItemView {
         super(leaf)
         this.containerEl.addClass("metadata-menu")
         this.containerEl.addClass("fileclass-view")
+        this.contentEl.addClass("fileclass-view-content")
         this.navigation = false;
         this.icon = "file-spreadsheet"
         this.onunload = () => {
@@ -76,7 +77,7 @@ export class FileClassView extends ItemView {
 
     buildLayout(): void {
         this.menu = this.contentEl.createDiv({ cls: "fv-menu" });
-        this.viewContainer = this.contentEl.createDiv()
+        this.viewContainer = this.contentEl.createDiv({ cls: "view-container" })
         this.buildSettingsView();
         this.buildFieldsView();
         this.buildTableView();
