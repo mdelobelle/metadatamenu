@@ -44,6 +44,7 @@ interface FileClass extends FileClassOptions {
     attributes: Array<FileClassAttribute>;
     objects: FileClassObjects;
     errors: string[];
+    options: FileClassOptions;
 }
 
 export class AddFileClassToFileModal extends SuggestModal<string> {
@@ -140,9 +141,16 @@ class FileClass {
             tagNames: _tagNames,
             icon: _icon
         } = this.plugin.app.metadataCache.getFileCache(this.getClassFile())?.frontmatter as Record<string, any> || {}
+        const index = this.plugin.fieldIndex
         const parent = this.plugin.fieldIndex.fileClassesName.get(_parent);
         const excludedNames = FileClass.getExcludedFieldsFromFrontmatter(_excludes);
-        const excludes = this.attributes.filter(attr => excludedNames.includes(attr.name))
+
+        const excludes: FileClassAttribute[] = []
+        index.fileClassesAncestors.get(this.getClassFile().basename)?.forEach(ancestorName => {
+            index.fileClassesName.get(ancestorName)?.attributes.forEach(attr => {
+                if (excludedNames.includes(attr.name) && !excludes.map(attr => attr.name).includes(attr.name)) excludes.push(attr)
+            })
+        })
         const limit = typeof (_limit) === 'number' ? _limit : this.plugin.settings.tableViewMaxRecords
         const mapWithTag = FieldManager.stringToBoolean(_mapWithTag);
         const tagNames = FileClass.getTagNamesFromFrontMatter(_tagNames);
@@ -191,7 +199,6 @@ class FileClass {
     }
 
     static getFileClassAttributes(plugin: MetadataMenu, fileClass: FileClass, excludes?: string[]): FileClassAttribute[] {
-
         const file = fileClass.getClassFile();
         let attributes: Array<FileClassAttribute> = [];
         const dvApi = plugin.app.plugins.plugins["dataview"]?.api
@@ -245,7 +252,7 @@ class FileClass {
         }
     }
 
-    public getAttributes(excludeParents: boolean = false): void {
+    public getAttributes(): void {
         try {
             const file = this.getClassFile();
             const ancestors = this.plugin.fieldIndex.fileClassesAncestors.get(this.name);
@@ -254,17 +261,16 @@ class FileClass {
 
             const ancestorsAttributes: Map<string, FileClassAttribute[]> = new Map();
             ancestorsAttributes.set(this.name, FileClass.getFileClassAttributes(this.plugin, this, excludedFields))
-            if (!excludeParents) {
-                ancestors?.forEach(ancestorName => {
-                    const ancestorFile = this.plugin.app.vault.getAbstractFileByPath(`${this.plugin.settings.classFilesPath}${ancestorName}.md`)
-                    const ancestor = new FileClass(this.plugin, ancestorName);
-                    ancestorsAttributes.set(ancestorName, FileClass.getFileClassAttributes(this.plugin, ancestor, excludedFields))
-                    if (ancestorFile instanceof TFile && ancestorFile.extension === "md") {
-                        const _excludedFields = this.plugin.app.metadataCache.getFileCache(ancestorFile)?.frontmatter?.excludes
-                        excludedFields = FileClass.getExcludedFieldsFromFrontmatter(_excludedFields);
-                    }
-                })
-            }
+
+            ancestors?.forEach(ancestorName => {
+                const ancestorFile = this.plugin.app.vault.getAbstractFileByPath(`${this.plugin.settings.classFilesPath}${ancestorName}.md`)
+                const ancestor = new FileClass(this.plugin, ancestorName);
+                ancestorsAttributes.set(ancestorName, FileClass.getFileClassAttributes(this.plugin, ancestor, excludedFields))
+                if (ancestorFile instanceof TFile && ancestorFile.extension === "md") {
+                    const _excludedFields = this.plugin.app.metadataCache.getFileCache(ancestorFile)?.frontmatter?.excludes
+                    excludedFields.push(...FileClass.getExcludedFieldsFromFrontmatter(_excludedFields));
+                }
+            })
             for (const [fileClassName, fileClassAttributes] of ancestorsAttributes) {
                 this.attributes.push(...fileClassAttributes.filter(attr => !this.attributes.map(_attr => _attr.name).includes(attr.name)))
             }
@@ -341,7 +347,8 @@ class FileClass {
 
     static createFileClass(plugin: MetadataMenu, name: string, excludeParent: boolean = false): FileClass {
         const fileClass = new FileClass(plugin, name);
-        fileClass.getAttributes()
+        fileClass.options = fileClass.getFileClassOptions()
+        fileClass.getAttributes();
         return fileClass
     }
 

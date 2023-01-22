@@ -107,21 +107,18 @@ class FileClassSetting {
 
     private buildSetting(): void {
 
-        const labelContainer = this.container.createDiv({ cls: "cell" })
-        labelContainer.createDiv({ text: this.label, cls: "label" })
-        const actionContainer = this.container.createDiv({ cls: "cell" })
-        const action = actionContainer.createDiv({ cls: "action" })
-        const toolTipBtnContainer = this.container.createDiv({ cls: "cell" });
+        this.container.createDiv({ text: this.label, cls: "label" })
+        const toolTipBtnContainer = this.container.createDiv({ cls: "tooltip-btn" });
         const tooltipBtn = new ButtonComponent(toolTipBtnContainer)
             .setIcon("help-circle")
             .setClass("tooltip-button")
-        const toolTipContainer = this.container.createDiv({ cls: "cell" });
-        const tooltip = toolTipContainer.createDiv({ cls: "tooltip-text" });
+        const action = this.container.createDiv({ cls: "action" })
+        this.buildOptionAndAction(action);
+        const tooltip = this.container.createDiv({ cls: "tooltip-text" });
         tooltip.innerHTML = this.toolTipText
         tooltip.hide();
         tooltipBtn.buttonEl.onmouseover = () => tooltip.show();
         tooltipBtn.buttonEl.onmouseout = () => tooltip.hide();
-        this.buildOptionAndAction(action);
     };
 }
 
@@ -144,45 +141,40 @@ export class FileClassSettingsView {
     public buildSettings(): void {
         this.fileClassOptions = this.fileClass.getFileClassOptions()
         this.container.replaceChildren();
-        const limitContainer = this.container.createDiv({ cls: "setting" });
-        const iconContainer = this.container.createDiv({ cls: "setting" });
-        const mapWithTagContainer = this.container.createDiv({ cls: "setting" });
-        const tagNamesComponent = this.container.createDiv({ cls: "setting" });
-        const extendsComponent = this.container.createDiv({ cls: "setting" });
-        const excludesComponent = this.container.createDiv({ cls: "setting" });
+        const settingsContainer = this.container.createDiv({ cls: "settings-container" })
         new FileClassSetting(
-            limitContainer,
+            settingsContainer,
             "Max records per page",
             "Maximum lines displayed per page in the table view",
             (action: HTMLDivElement) => this.buildLimitComponent(action)
         );
         new FileClassSetting(
-            mapWithTagContainer,
+            settingsContainer,
             "Map with tag",
             `Bind tags with ${this.plugin.settings.fileClassAlias}<br/>` +
             `If Tag Names are empty this fileClass will be bound with the tag of same name`,
             (action: HTMLDivElement) => this.buildMapWithTagComponent(action)
         )
         new FileClassSetting(
-            iconContainer,
+            settingsContainer,
             "Button Icon",
             "Name of the icon for the metadata menu button<br/>(lucide.dev)",
             (action: HTMLDivElement) => this.buildIconComponent(action)
         )
         new FileClassSetting(
-            tagNamesComponent,
+            settingsContainer,
             "Tag Names",
             `Names of tags to bind this ${this.plugin.settings.fileClassAlias} with`,
             (action: HTMLDivElement) => this.buildTagNamesComponent(action)
         )
         new FileClassSetting(
-            extendsComponent,
+            settingsContainer,
             "Parent Fileclass",
             "Choose a fileClass to inherit fields from",
             (action: HTMLDivElement) => this.buildExtendComponent(action)
         )
         new FileClassSetting(
-            excludesComponent,
+            settingsContainer,
             "Excluded Fields",
             `Names of fields to exclude from ancestor fileclasses`,
             (action: HTMLDivElement) => this.buildExcludesComponent(action)

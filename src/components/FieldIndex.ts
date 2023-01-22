@@ -383,7 +383,10 @@ export default class FieldIndex extends Component {
 
                     if (fileFileClassesFieldsFromTag) {
                         const newFields = [...fileFileClassesFieldsFromTag]
-                        const filteredCurrentFields = currentFields?.filter(field => !newFields.map(f => f.name).includes(field.name)) || []
+                        const filteredCurrentFields = currentFields?.filter(field =>
+                            !newFields.map(f => f.name).includes(field.name) &&
+                            !fileClass.options?.excludes?.map(attr => attr.name).includes(field.name)
+                        ) || []
                         newFields.push(...filteredCurrentFields)
                         this.filesFieldsFromTags.set(filePath, newFields)
                     }
@@ -430,7 +433,10 @@ export default class FieldIndex extends Component {
                             const currentFields = this.filesFieldsFromInnerFileClasses.get(f.path)
                             if (fileClassesFieldsFromFile) {
                                 const newFields = [...fileClassesFieldsFromFile]
-                                const filteredCurrentFields = currentFields?.filter(field => !newFields.map(f => f.name).includes(field.name)) || []
+                                const filteredCurrentFields = currentFields?.filter(field =>
+                                    !newFields.map(f => f.name).includes(field.name) &&
+                                    !fileClass.options?.excludes?.map(attr => attr.name).includes(field.name)
+                                ) || []
                                 newFields.push(...filteredCurrentFields)
                                 this.filesFieldsFromInnerFileClasses.set(f.path, newFields)
                             } else { this.filesFieldsFromInnerFileClasses.set(f.path, []); }
@@ -459,9 +465,11 @@ export default class FieldIndex extends Component {
                 const fileFieldsFromInnerFileClasses = this.filesFieldsFromInnerFileClasses.get(f.path)
                 const fileFieldsFromQuery = this.filesFieldsFromFileClassQueries.get(f.path);
                 const fileFieldsFromTag = this.filesFieldsFromTags.get(f.path);
-                if (fileFieldsFromInnerFileClasses?.length ||
+                if (
+                    fileFieldsFromInnerFileClasses?.length ||
                     fileFieldsFromQuery?.length ||
-                    fileFieldsFromTag?.length) {
+                    fileFieldsFromTag?.length
+                ) {
                     const filesFields: Field[] = fileFieldsFromInnerFileClasses || [];
                     filesFields.push(...(fileFieldsFromTag || []).filter(field => !filesFields.map(f => f.name).includes(field.name)))
                     filesFields.push(...(fileFieldsFromQuery || []).filter(field => !filesFields.map(f => f.name).includes(field.name)))

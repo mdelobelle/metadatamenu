@@ -67,7 +67,6 @@ export class FileClassTableView {
                 const position = (e.target as HTMLDivElement).scrollLeft
                 if (window.matchMedia("(max-width: 400px)").matches) {
                     if (position !== 0) {
-                        console.log(this.tableFontSize, this.firstCollWidth, position)
                         table.addClass("scrolled");
                         table.querySelectorAll('tbody > tr > td:first-child').forEach((item: HTMLElement) => {
                             (item.querySelector("a:first-child") as HTMLElement).style.maxWidth = `${Math.max(
