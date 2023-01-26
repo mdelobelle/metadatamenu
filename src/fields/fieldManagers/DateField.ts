@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { Menu, moment, setIcon, TextComponent, TFile, ToggleComponent } from "obsidian";
+import { Menu, setIcon, TextComponent, moment, TFile, ToggleComponent } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import DateModal from "src/modals/fields/DateModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
@@ -13,7 +13,6 @@ import { postValues } from "src/commands/postValues";
 
 export default class DateField extends FieldManager {
 
-    private dateValidatorField: HTMLDivElement
     public defaultDateFormat: string = "YYYY-MM-DD"
     private shiftBtn: HTMLButtonElement
 
@@ -258,7 +257,7 @@ export default class DateField extends FieldManager {
         if (dvApi) {
             const value = dvApi.page(file.path)[fieldName]
             if (dvApi.value.isDate(value)) {
-                container.createDiv({ text: value.display });
+                container.createDiv({ text: moment(value.toJSDate()).format(this.field.options.dateFormat) });
             } else if (dvApi.value.isLink(value)) {
                 const link = container.createEl('a', { text: value.path.split("/").last().replace(/(.*).md/, "$1") })
                 link.onclick = () => {
@@ -300,7 +299,7 @@ export default class DateField extends FieldManager {
             if (cycle) {
                 //cycle field exists
                 const cycleManager: CycleField = new FM[cycle.type](this.plugin, cycle)
-                const options = cycleManager.getOptionsList(file);
+                const options = cycleManager.getOptionsList();
                 const currentValue = dvApi.page(file.path)[cycle.name]
                 if (currentValue) {
                     //current value is not null

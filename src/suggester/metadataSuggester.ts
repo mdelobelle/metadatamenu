@@ -48,8 +48,10 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         let frontmatterEnd: number | undefined = undefined
         if (editor.getLine(0) === "---") {
             for (let i = 1; i <= editor.lastLine(); i++) {
-                if (editor.getLine(i) === "---") frontmatterEnd = i;
-                break
+                if (editor.getLine(i) === "---") {
+                    frontmatterEnd = i;
+                    break
+                }
             }
         }
         return !!frontmatterEnd && cursor.line < frontmatterEnd
