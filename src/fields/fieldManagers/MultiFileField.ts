@@ -7,6 +7,7 @@ import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager, SettingLocation } from "../FieldManager";
 import { FieldOptions } from "src/components/NoteFields";
+import { getFiles } from "./FileFieldUtils";
 
 export default class MultiFileField extends FieldManager {
 
@@ -29,28 +30,7 @@ export default class MultiFileField extends FieldManager {
         return ""
     }
 
-    private getFiles = (currentFile?: TFile): TFile[] => {
-        //@ts-ignore
-        const getResults = (api: DataviewPlugin["api"]) => {
-            try {
-                return (new Function("dv", "current", `return ${this.field.options.dvQueryString}`))(api, api.page(currentFile?.path))
-            } catch (error) {
-                new Notice(`Wrong query for field <${this.field.name}>\ncheck your settings`, 3000)
-            }
-        };
-        const dataview = this.plugin.app.plugins.plugins["dataview"]
-        //@ts-ignore
-        if (this.field.options.dvQueryString && dataview?.settings.enableDataviewJs && dataview?.settings.enableInlineDataviewJs) {
-            try {
-                const filesPath = getResults(dataview.api).values.map((v: any) => v.file.path)
-                return this.plugin.app.vault.getMarkdownFiles().filter(f => filesPath.includes(f.path));
-            } catch (error) {
-                throw (error);
-            }
-        } else {
-            return this.plugin.app.vault.getMarkdownFiles();
-        }
-    }
+    private getFiles = (currentFile?: TFile): TFile[] => getFiles(this.plugin, this.field, this.field.options.dvQueryString, currentFile)
 
     public addFieldOption(name: string, value: any, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         const modal = new MultiFileModal(this.plugin, file, this.field, value)
