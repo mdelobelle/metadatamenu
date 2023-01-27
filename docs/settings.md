@@ -80,7 +80,9 @@ If `min` (float) is defined, you won't be able to set or change the value of the
 If `max` (float) is defined, you won't be able to set or change the value of the field with a value greater than `max` (an error will be displayed)
 
 ### `File`, `MultiFile` options
-`Dataview query` accepts a call to the api function dv.pages that will return pages from your vault according to this function. Dataview api can be accessed with the `dv` variable, and the current page (dv.page object) is available with the `current` variable
+
+#### `Dataview query` 
+It accepts a call to the api function dv.pages that will return pages from your vault according to this function. Dataview api can be accessed with the `dv` variable, and the current page (dv.page object) is available with the `current` variable
 
 you’ll have to use dv.pages function explained here : https://blacksmithgu.github.io/obsidian-dataview/api/code-reference/#dvpagessource
 
@@ -98,15 +100,43 @@ see documentation here https://blacksmithgu.github.io/obsidian-dataview/api/data
 
 A good source of help to build dataview queries is the obsidian discord server > plugin-advanced > dataview : the community is really helpful there.
 
-`Alias` accepts a javascript instruction returning a string using dataview `page` attribute
+**Advanced usage**
+
+1. If you want to suggest only the pages that are defined on a specific field inside your notes, you can write the following:
+
+```
+dv.pages().map(p => p.field)
+```
+
+where `field` is the name of the inline field you want to target. 
+
+
+1. You can also return an array of links directly from this query. This means that you can retrieve the value of a single field in any of your files.
+
+Example: 
+```
+dv.page("Jules Verne").books
+```
+
+This would work if you have a file named `Jules Verne.md` in your vault (its path doesn't matter) that contains an inline field named `books` filled with one or more links to other pages.
+
+
+For both of the above use cases :
+- only existing pages will appear in the suggestion
+- frontmatter fields are not supported
+
+#### `Alias`
+It accepts a javascript instruction returning a string using dataview `page` attribute
 
 example: `"🚀" + (page.surname || page.file.name)`
 
-`Sorting order`accepts a javascript instruction returning a number using two files `a` and `b`
 
-example 1: `a.basename < b.basename ? 1 : -1`
+#### `Sorting order`
+It accepts a javascript instruction returning a number using two files `a` and `b`
 
-example 2: `b.stat.ctime - b.stat.ctime`
+example 1: `a.basename < b.basename ? -1 : 1`
+
+example 2: `a.stat.ctime - b.stat.ctime`
 
 ### `Date` options
 
