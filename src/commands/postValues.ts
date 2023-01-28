@@ -320,7 +320,7 @@ export async function postValues(
             }
         }
     })
-    console.log(toYaml, toCreateInline, toUpdateInline)
+    //console.log(toYaml, toCreateInline, toUpdateInline)
     if (Object.keys(toYaml).length) await plugin.fileTaskManager
         .pushTask(() => { postFieldsInYaml(plugin, file, toYaml) })
     if (Object.keys(toCreateInline).length || Object.keys(toUpdateInline).length) await plugin.fileTaskManager
