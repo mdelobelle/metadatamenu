@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { FieldType, MultiDisplayType } from "../types/fieldTypes"
+import { FieldType, MultiDisplayType, multiTypes } from "../types/fieldTypes"
 
 export interface FieldCommand {
     id: string,
@@ -21,7 +21,11 @@ class Field {
     ) { };
 
     public getDisplay(plugin: MetadataMenu): MultiDisplayType {
-        return this.display || plugin.settings.frontmatterListDisplay
+        if (multiTypes.includes(this.type)) {
+            return this.display || plugin.settings.frontmatterListDisplay
+        } else {
+            return MultiDisplayType.asArray
+        }
     }
 
     static copyProperty(target: Field, source: Field) {
