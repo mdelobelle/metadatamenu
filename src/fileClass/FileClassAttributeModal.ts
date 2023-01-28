@@ -1,6 +1,6 @@
 import { DropdownComponent, Modal, TextComponent, ButtonComponent, Notice, ToggleComponent, setIcon } from "obsidian";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
-import { FieldTypeTooltip, FieldType, FieldTypeLabelMapping, FieldManager, MultiDisplayType } from "src/types/fieldTypes";
+import { FieldTypeTooltip, FieldType, FieldTypeLabelMapping, FieldManager, MultiDisplayType, multiTypes } from "src/types/fieldTypes";
 import { FileClass } from "src/fileClass/fileClass";
 import MetadataMenu from "main";
 import Field, { FieldCommand } from "src/fields/Field";
@@ -18,7 +18,6 @@ class FileClassAttributeModal extends Modal {
     private command: FieldCommand;
     private addCommand: boolean;
     private iconName: TextComponent;
-    private autoSuggest?: boolean;
     private frontmatterListDisplay?: MultiDisplayType;
     private frontmatterListDisplayContainer: HTMLDivElement;
 
@@ -127,6 +126,7 @@ class FileClassAttributeModal extends Modal {
                 default: this.frontmatterListDisplay = undefined;
             }
         });
+        if (!multiTypes.includes(this.field.type)) this.frontmatterListDisplayContainer.hide()
     }
 
     buildCommandContainer(): void {
@@ -183,7 +183,7 @@ class FileClassAttributeModal extends Modal {
         Object.keys(FieldTypeTooltip).forEach((key: keyof typeof FieldType) => typeSelect.addOption(key, FieldTypeTooltip[key]))
         if (this.field.type) {
             typeSelect.setValue(this.field.type);
-            if ([FieldType.Multi, FieldType.Select, FieldType.Cycle].includes(this.field.type)) {
+            if (multiTypes.includes(this.field.type)) {
                 this.frontmatterListDisplayContainer.show()
             } else {
                 this.frontmatterListDisplayContainer.hide()
@@ -201,7 +201,7 @@ class FileClassAttributeModal extends Modal {
             ) {
                 this.field.options = {}
             }
-            if ([FieldType.Multi, FieldType.Select, FieldType.Cycle].includes(this.field.type)) {
+            if (multiTypes.includes(this.field.type)) {
                 this.frontmatterListDisplayContainer.show()
             } else {
                 this.frontmatterListDisplayContainer.hide()

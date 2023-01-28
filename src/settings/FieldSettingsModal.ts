@@ -3,7 +3,7 @@ import { ButtonComponent, DropdownComponent, Modal, Notice, TextComponent, TextA
 import Field, { FieldCommand } from "src/fields/Field";
 import FieldSetting from "src/settings/FieldSetting";
 import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
-import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType } from "src/types/fieldTypes";
+import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, multiTypes } from "src/types/fieldTypes";
 
 export default class FieldSettingsModal extends Modal {
     private namePromptComponent: TextComponent;
@@ -125,7 +125,7 @@ export default class FieldSettingsModal extends Modal {
         Object.keys(FieldTypeLabelMapping).forEach((f: keyof typeof FieldType) => select.addOption(f, FieldTypeTooltip[f]))
         if (this.field.type) {
             select.setValue(this.field.type)
-            if ([FieldType.Multi, FieldType.Select, FieldType.Cycle].includes(this.field.type)) {
+            if (multiTypes.includes(this.field.type)) {
                 this.frontmatterListDisplayContainer.show()
             } else {
                 this.frontmatterListDisplayContainer.hide()
@@ -144,7 +144,7 @@ export default class FieldSettingsModal extends Modal {
             ) {
                 this.field.options = {}
             }
-            if ([FieldType.Multi, FieldType.Select, FieldType.Cycle].includes(this.field.type)) {
+            if (multiTypes.includes(this.field.type)) {
                 this.frontmatterListDisplayContainer.show()
             } else {
                 this.frontmatterListDisplayContainer.hide()
