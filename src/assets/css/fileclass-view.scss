@@ -265,7 +265,13 @@
 
     .fv-table{
         display: contents;
-
+        /*
+        .table-view-table {
+            @media screen and (max-width: 390px) {
+                width: 300px;
+            }
+        }
+*/
         div[id^="table-container"]{
             overflow: scroll;
 
@@ -295,24 +301,24 @@
 
             &.scrolled{
                 tbody > tr > td:first-child{
-                    @media screen and (max-width: 400px) {
+                    @media screen and (max-width: 390px) {
                         overflow: hidden;
                         text-overflow: ellipsis;
 
-                        a:first-child{
+                        a.internal-link{
                             white-space: nowrap;
                             text-overflow: ellipsis;
                             overflow: hidden;
+                            width: 6em
                         }
                     }
-                    
                 }
             }
         }
 
         .options{
             @media screen and (max-width: 400px) {
-                max-height: 15em;
+                max-height: 50em;
                 overflow: scroll;
             }
 

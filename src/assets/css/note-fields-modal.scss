@@ -20,7 +20,10 @@
         min-width: var(--dialog-width);
 
         @media screen and (max-width: 400px) {
-            min-width: 95vw;
+            max-width: 97vw;
+            min-width: 0px;
+            margin-bottom: 50px;
+            margin-left: 6px
         }
     }
 
@@ -30,7 +33,7 @@
         grid-template-columns: auto auto 1fr auto;
         margin-top: 3px;
         @media screen and (max-width: 400px) {
-            grid-template-columns: 1fr auto;
+            grid-template-columns: 270px 75px;
         }
 
         .field-name-wrapper{

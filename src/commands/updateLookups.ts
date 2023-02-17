@@ -14,8 +14,8 @@ export function arraysAsStringAreEqual(a: string, b: string) {
 async function parseFieldValues(plugin: MetadataMenu, file: TFile, fieldName: string) {
     const rawValue = (await getValues(plugin, file, fieldName))?.[0]
     const regex = new RegExp(`<div hidden id=\"${fieldName}_values\">(?<values>.*)</div>`)
-    const fR = rawValue.match(regex)
-    return fR?.groups && 'values' in fR?.groups ? fR.groups.values : rawValue
+    const fR = rawValue?.match(regex)
+    return fR?.groups && 'values' in fR?.groups ? fR.groups.values : rawValue || ""
 }
 
 export async function updateLookups(
