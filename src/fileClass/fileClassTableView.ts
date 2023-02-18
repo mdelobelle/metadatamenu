@@ -20,6 +20,7 @@ export class FileClassTableView {
     private sliceStart: number = 0
     private firstCollWidth: number;
     private tableFontSize: number;
+    private fieldsContainer: HTMLDivElement;
 
     constructor(
         plugin: MetadataMenu,
@@ -37,13 +38,14 @@ export class FileClassTableView {
         const header = this.container.createDiv({ cls: "options" })
         const limitContainer = header.createDiv({ cls: "limit" });
         this.paginationContainer = header.createDiv({ cls: "pagination" });
-        const fieldsContainer = header.createDiv({ cls: "fields" })
+        this.fieldsContainer = header.createDiv({ cls: "fields" })
         const applyContainer = header.createDiv({ cls: "footer" })
         this.buildLimitManager(limitContainer);
         this.buildPaginationManager(this.paginationContainer)
-        this.buildFiltersAndSortManager(fieldsContainer);
+        this.buildFiltersAndSortManager(this.fieldsContainer);
         this.buildRefreshManager(applyContainer);
         this.buildCleanFilters(applyContainer);
+        this.buildHideFilters(applyContainer);
     }
 
     public udpate(): void {
@@ -199,6 +201,7 @@ export class FileClassTableView {
         const btnContainer = container.createDiv({ cls: "cell" })
         this.refreshButton = new ButtonComponent(btnContainer);
         this.refreshButton.setIcon("refresh-ccw");
+        this.refreshButton.setTooltip("Apply the filters and refresh the results")
         this.refreshButton.onClick(() => {
             this.udpate()
         })
@@ -208,9 +211,33 @@ export class FileClassTableView {
         const btnContainer = container.createDiv({ cls: "cell" })
         const cleanFilterBtn = new ButtonComponent(btnContainer);
         cleanFilterBtn.setIcon("eraser");
+        cleanFilterBtn.setTooltip("remove filter values")
         cleanFilterBtn.onClick(() => {
             Object.values(this.filters).forEach(filter => filter.setValue(""))
             this.refreshButton.setCta()
+        })
+    }
+
+    private buildHideFilters(container: HTMLDivElement): void {
+        const btnContainer = container.createDiv({ cls: "cell" })
+        const hideFilterBtn = new ButtonComponent(btnContainer);
+        this.fieldsContainer.style.display = "none"
+        hideFilterBtn.setIcon("list-end");
+        hideFilterBtn.setTooltip("display filters")
+        const toggleState = () => {
+            if (this.fieldsContainer.getCssPropertyValue('display') !== "none") {
+                this.fieldsContainer.style.display = "none"
+                hideFilterBtn.setIcon("list-end");
+                hideFilterBtn.setTooltip("display filters")
+            } else {
+                this.fieldsContainer.style.display = "flex";
+                hideFilterBtn.setIcon("list-start");
+                hideFilterBtn.setTooltip("collapse filters");
+            }
+        }
+
+        hideFilterBtn.onClick(() => {
+            toggleState();
         })
     }
 

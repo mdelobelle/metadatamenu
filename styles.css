@@ -1501,7 +1501,8 @@ span.flatpickr-weekday {
 .metadata-menu.fileclass-view .fv-fields .footer {
   display: flex; }
   .metadata-menu.fileclass-view .fv-fields .footer .cell button {
-    margin-top: 1em; }
+    margin-top: 1em;
+    margin-right: 0.3em; }
     .metadata-menu.fileclass-view .fv-fields .footer .cell button.active {
       background-color: var(--color-accent);
       border-bottom: 3px solid var(--text-accent);
@@ -1594,7 +1595,8 @@ span.flatpickr-weekday {
 .metadata-menu.fileclass-view .fv-settings .footer {
   display: flex; }
   .metadata-menu.fileclass-view .fv-settings .footer .cell button {
-    margin-top: 1em; }
+    margin-top: 1em;
+    margin-right: 0.3em; }
     .metadata-menu.fileclass-view .fv-settings .footer .cell button.active {
       background-color: var(--color-accent);
       border-bottom: 3px solid var(--text-accent);
@@ -1680,7 +1682,8 @@ span.flatpickr-weekday {
   .metadata-menu.fileclass-view .fv-table .options .footer {
     display: flex; }
     .metadata-menu.fileclass-view .fv-table .options .footer .cell button {
-      margin-top: 1em; }
+      margin-top: 1em;
+      margin-right: 0.3em; }
       .metadata-menu.fileclass-view .fv-table .options .footer .cell button.active {
         background-color: var(--color-accent);
         border-bottom: 3px solid var(--text-accent);
