@@ -256,7 +256,6 @@ export default abstract class AbstractListBasedField extends FieldManager {
             this.field.options.sourceType = value;
             this.displaySelectedTypeContainer(valuesContainers, value)
         })
-
         this.displaySelectedTypeContainer(valuesContainers, this.field.options.sourceType)
     }
 
