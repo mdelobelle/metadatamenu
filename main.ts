@@ -24,7 +24,6 @@ export default class MetadataMenu extends Plugin {
 	public extraButton: ExtraButton;
 	public contextMenu: ContextMenu;
 
-
 	async onload(): Promise<void> {
 		console.log('Metadata Menu loaded');
 		if (!this.app.plugins.enabledPlugins.has("dataview") || (
