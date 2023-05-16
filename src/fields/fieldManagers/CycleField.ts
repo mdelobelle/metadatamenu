@@ -126,7 +126,7 @@ export default class CycleField extends AbstractListBasedField {
         fieldContainer: HTMLElement,
         attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, any> } = {}
     ): void {
-        attrs.cls = "value-container"
+        attrs.cls = attrs.cls + " value-container"
         fieldContainer.appendChild(dv.el('span', p[this.field.name], attrs))
         const nextOption = this.nextOption(p[this.field.name])
         const spacer = fieldContainer.createEl("div", { cls: "spacer" })

@@ -79,7 +79,7 @@ export default class InputField extends FieldManager {
         fieldContainer: HTMLElement,
         attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
     ): void {
-        attrs.cls = "value-container"
+        attrs.cls = attrs.cls + " value-container"
         /* button to display input */
         const editBtn = fieldContainer.createEl("button");
         const fieldValue = (dv.el('span', p[this.field.name], attrs) as HTMLDivElement);

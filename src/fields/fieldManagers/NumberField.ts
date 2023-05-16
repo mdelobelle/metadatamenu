@@ -224,7 +224,7 @@ export default class NumberField extends FieldManager {
         fieldContainer: HTMLElement,
         attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
     ): void {
-        attrs.cls = "value-container"
+        attrs.cls = attrs.cls + " value-container"
         const fieldValue = (dv.el('span', p[this.field.name], attrs) as HTMLDivElement);
         fieldContainer.appendChild(fieldValue)
         const inputContainer = fieldContainer.createDiv({});
