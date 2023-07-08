@@ -5,6 +5,8 @@ import FileClassOptionsList from "../options/FileClassOptionsList";
 import { frontMatterLineField, getLineFields } from "src/utils/parser";
 import FieldCommandSuggestModal from "../options/FieldCommandSuggestModal";
 import { FileClass } from "src/fileClass/fileClass";
+import { cachedDataVersionTag } from "v8";
+import { getFrontmatterPosition } from "src/utils/fileUtils";
 
 export default class ContextMenu extends Component {
 
@@ -24,10 +26,11 @@ export default class ContextMenu extends Component {
 			this.plugin.app.workspace.on('editor-menu', (menu, editor, view) => {
 				const file = this.plugin.app.workspace.getActiveFile();
 				const includedFields: string[] = [];
-				const frontmatter = view.file && this.plugin.app.metadataCache.getFileCache(view.file)?.frontmatter;
+				const cache = view.file && this.plugin.app.metadataCache.getFileCache(view.file)
+				const frontmatter = cache?.frontmatterPosition || cache?.frontmatter;
 				if (frontmatter
-					&& editor.getCursor().line > frontmatter.position.start.line
-					&& editor.getCursor().line < frontmatter.position.end.line
+					&& editor.getCursor().line > getFrontmatterPosition(this.plugin, view.file).start.line
+					&& editor.getCursor().line < getFrontmatterPosition(this.plugin, view.file).end.line
 				) {
 					const attribute = frontMatterLineField(editor.getLine(editor.getCursor().line))
 					if (attribute) includedFields.push(attribute);

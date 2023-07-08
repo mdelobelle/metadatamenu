@@ -4,6 +4,7 @@ import * as Lookup from "src/types/lookupTypes";
 import { FieldType } from "src/types/fieldTypes";
 import { getListBounds } from "src/utils/list";
 import { fieldComponents, inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
+import { getFrontmatterPosition } from "src/utils/fileUtils";
 
 const enum Location {
     'fullLine' = 'fullLine',
@@ -63,12 +64,12 @@ export async function replaceValues(
         }
     }
     const content = (await plugin.app.vault.read(file)).split('\n');
-    const frontmatter = plugin.app.metadataCache.getFileCache(file)?.frontmatter;
+
     //first look for lookup lists
 
     const skippedLines: number[] = []
 
-    const { position: { start, end } } = frontmatter ? frontmatter : { position: { start: undefined, end: undefined } };
+    const { start, end } = getFrontmatterPosition(plugin, file);
     const newContent = content.map((line, i) => {
         if (start && end && i >= start.line && i <= end.line) {
             const regex = new RegExp(`^${attribute}:`, 'u');

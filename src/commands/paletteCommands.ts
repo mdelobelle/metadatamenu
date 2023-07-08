@@ -16,6 +16,7 @@ import { FileClassManager } from "src/components/fileClassManager";
 import { FieldType } from "src/types/fieldTypes";
 import { updateLookups } from "./updateLookups";
 import { updateFormulas } from "./updateFormulas";
+import { getFrontmatterPosition } from "src/utils/fileUtils";
 
 function addFileClassAttributeOptions(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
@@ -121,10 +122,11 @@ function addManageFieldAtCursorCommand(plugin: MetadataMenu) {
             }
             if (inFile && editor !== undefined) {
                 const optionsList = new OptionsList(plugin, view!.file, "ManageAtCursorCommand")
-                const frontmatter = plugin.app.metadataCache.getFileCache(view!.file)?.frontmatter;
+                const cache = plugin.app.metadataCache.getFileCache(view!.file)
+                const frontmatter = cache?.frontmatter;
                 if (frontmatter && editor
-                    && editor.getCursor().line > frontmatter.position.start.line
-                    && editor.getCursor().line < frontmatter.position.end.line) {
+                    && editor.getCursor().line > getFrontmatterPosition(plugin, view!.file).start.line
+                    && editor.getCursor().line < getFrontmatterPosition(plugin, view!.file).end.line) {
                     const attribute = frontMatterLineField(editor.getLine(editor.getCursor().line))
                     if (attribute) optionsList.createAndOpenFieldModal(attribute)
                 } else if (editor) {

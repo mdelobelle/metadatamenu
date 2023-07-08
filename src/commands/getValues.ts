@@ -1,5 +1,6 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian"
+import { getFrontmatterPosition } from "src/utils/fileUtils";
 import { inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
 
 export async function getValues(plugin: MetadataMenu, fileOrfilePath: TFile | string, attribute: string): Promise<string[]> {
@@ -15,8 +16,7 @@ export async function getValues(plugin: MetadataMenu, fileOrfilePath: TFile | st
         }
     }
     const content = (await plugin.app.vault.read(file)).split('\n');
-    const frontmatter = plugin.app.metadataCache.getFileCache(file)?.frontmatter;
-    const { position: { start, end } } = frontmatter ? frontmatter : { position: { start: undefined, end: undefined } };
+    const { start, end } = getFrontmatterPosition(plugin, file);
     const result: string[] = [];
     content.map((line, i) => {
         if (start && end && i >= start.line && i <= end.line) {
