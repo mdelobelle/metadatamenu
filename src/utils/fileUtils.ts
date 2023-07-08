@@ -56,3 +56,16 @@ export function getFileFromFileOrPath(plugin: MetadataMenu, fileOrFilePath: TFil
     }
     return file
 }
+
+export function getFrontmatterPosition(plugin: MetadataMenu, file: TFile) {
+    const cache = plugin.app.metadataCache.getFileCache(file)
+    if (cache) {
+        if (cache.frontmatterPosition) {
+            return cache.frontmatterPosition
+        } else {
+            return cache.frontmatter.position
+        }
+    } else {
+        return { start: undefined, end: undefined }
+    }
+}   

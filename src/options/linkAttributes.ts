@@ -39,7 +39,6 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
     const classFilessPath = plugin.settings.classFilesPath
     const fileClass = plugin.fieldIndex.fileClassesPath.get(destPath + ".md")
     if (classFilessPath && fileClass) {
-
         const icon = "file-spreadsheet"
         link.setAttribute("fileclass-name", fileClass.name)
         const el = link.nextElementSibling

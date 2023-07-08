@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { MarkdownView, parseYaml, TFile } from "obsidian";
 import { FieldType, MultiDisplayType, multiTypes } from "src/types/fieldTypes";
-import { getFileFromFileOrPath } from "src/utils/fileUtils";
+import { getFileFromFileOrPath, getFrontmatterPosition } from "src/utils/fileUtils";
 import { getListBounds } from "src/utils/list";
 import * as Lookup from "src/types/lookupTypes";
 import { fieldComponents, inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
@@ -112,7 +112,8 @@ export async function postFieldsInYaml(
     file: TFile,
     fields: Record<string, FieldPayload>
 ) {
-    const frontmatter = plugin.app.metadataCache.getFileCache(file)?.frontmatter
+    const cache = plugin.app.metadataCache.getFileCache(file)
+    const frontmatter = cache?.frontmatter
     const newContent = []
     const currentFile = await app.vault.read(file)
     const skippedLines: number[] = []
@@ -139,10 +140,10 @@ export async function postFieldsInYaml(
     } else {
         const currentContent = currentFile.split("\n")
         currentContent.forEach((line, lineNumber) => {
-            if (lineNumber > frontmatter.position.end.line) {
+            if (lineNumber > getFrontmatterPosition(plugin, file).end.line) {
                 // don't touch outside frontmatter : it's handled by postFieldsInline
                 newContent.push(line)
-            } else if (lineNumber === frontmatter.position.end.line) {
+            } else if (lineNumber === getFrontmatterPosition(plugin, file).end.line) {
                 //insert here the new fields    
                 Object.entries(fields)
                     .filter(([fieldName, payload]) => !Object.keys(frontmatter).includes(fieldName))
@@ -287,8 +288,9 @@ export async function postValues(
     asComment: boolean = false
 ): Promise<void> {
     const file = getFileFromFileOrPath(plugin, fileOrFilePath);
-    const frontmatter = plugin.app.metadataCache.getFileCache(file)?.frontmatter
-    const { position: { start, end } } = frontmatter ? frontmatter : { position: { start: undefined, end: undefined } };
+    const cache = plugin.app.metadataCache.getFileCache(file)
+    const frontmatter = cache?.frontmatter
+    const { start, end } = getFrontmatterPosition(plugin, file);
     const dvAPi = plugin.app.plugins.plugins.dataview?.api
     const inFrontmatter = !!(lineNumber === -1 || (lineNumber && start && end && lineNumber >= start.line && lineNumber <= end.line))
     const toCreateInline: Record<string, FieldPayload> = {};

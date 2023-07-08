@@ -12,6 +12,7 @@ import AddNewFileClassModal from "src/modals/addNewFileClassModal";
 import InputModal from "src/modals/fields/InputModal";
 import { FieldIcon, FieldManager, FieldType } from "src/types/fieldTypes";
 import { genuineKeys } from "src/utils/dataviewUtils";
+import { getFrontmatterPosition } from "src/utils/fileUtils";
 import chooseSectionModal from "../modals/chooseSectionModal";
 import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
 import FileClassOptionsList from "./FileClassOptionsList";
@@ -347,7 +348,7 @@ export default class OptionsList {
 			const frontmatter = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatter
 			let lineNumber = currentLineNumber
 			if (frontmatter) {
-				const { position: { start, end } } = frontmatter
+				const { start, end } = getFrontmatterPosition(this.plugin, this.file)
 				if (currentLineNumber >= start.line && currentLineNumber < end.line) lineNumber = -1
 			}
 			if (isMenu(this.location)) {
