@@ -31,7 +31,7 @@ export default class CycleField extends AbstractListBasedField {
     public nextOption(rawValue: string): string {
         let nextOption: string;
         const values = this.getOptionsList();
-        const value = !rawValue ? "" : rawValue
+        const value = !rawValue ? "" : rawValue.toString()
         if (values.indexOf(value) === -1) {
             nextOption = values[0] || ""
         } else {
@@ -89,7 +89,7 @@ export default class CycleField extends AbstractListBasedField {
         const action = async () => this.next(name, value, file);
         if (CycleField.isMenu(location)) {
             location.addItem((item) => {
-                item.setTitle(`${name} : ${matchedValue} ▷ ${this.nextOption(matchedValue)}`);
+                item.setTitle(`${name} : ${matchedValue} ▷ ${this.nextOption(matchedValue).toString()}`);
                 item.setIcon(iconName);
                 item.onClick(action);
                 item.setSection("metadata-menu.fields");
@@ -97,12 +97,12 @@ export default class CycleField extends AbstractListBasedField {
         } else if (CycleField.isSuggest(location)) {
             location.options.push({
                 id: `${name}_${matchedValue}_${this.nextOption(matchedValue)}`,
-                actionLabel: `<span><b>${name}</b> : ${matchedValue} ▷ ${this.nextOption(matchedValue)}</span>`,
+                actionLabel: `<span><b>${name}</b> : ${matchedValue} ▷ ${this.nextOption(matchedValue).toString()}</span>`,
                 action: action,
                 icon: iconName
             })
         } else if (CycleField.isFieldOptions(location)) {
-            location.addOption(iconName, action, `${matchedValue} ▷ ${this.nextOption(matchedValue)}`);
+            location.addOption(iconName, action, `${matchedValue} ▷ ${this.nextOption(matchedValue).toString()}`);
         };
     };
 

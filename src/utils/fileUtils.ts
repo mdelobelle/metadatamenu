@@ -63,7 +63,7 @@ export function getFrontmatterPosition(plugin: MetadataMenu, file: TFile) {
         if (cache.frontmatterPosition) {
             return cache.frontmatterPosition
         } else {
-            return cache.frontmatter.position
+            return cache.frontmatter?.position || { start: undefined, end: undefined }
         }
     } else {
         return { start: undefined, end: undefined }

@@ -64,7 +64,7 @@ export class FieldsModal extends Modal {
         fieldSettingsWrapper.createDiv({ cls: "field-settings-spacer" })
         const fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
         if (fileClass) {
-            fieldNameContainer.addClass(`fileClassField__${fileClass.name.replace("/", "___").replace(" ", "_")}`)
+            fieldNameContainer.addClass(`fileClassField__${fileClass.name.replace("/", "___").replaceAll(" ", "_")}`)
         }
         const fieldSettingContainer = fieldSettingsWrapper.createDiv({ cls: "field-item field-setting" });
         const fieldSettingBtn = new ButtonComponent(fieldSettingContainer);
