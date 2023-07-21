@@ -125,7 +125,7 @@ export async function postFieldsInYaml(
                 newContent.push(`${fieldName}:`)
                 newValue.filter(v => !!v).forEach(item => { newContent.push(`  - ${item}`) });
             } else {
-                newContent.push(`${fieldName}: [${newValue.join(" ,")}]`);
+                newContent.push(`${fieldName}: [${newValue.join(", ")}]`);
             }
         } else {
             newContent.push(`${fieldName}: ${newValue}`);
