@@ -4,6 +4,7 @@ import { FieldManager } from "src/types/fieldTypes";
 import { FieldManager as FM } from "src/fields/FieldManager";
 import MetadataMenu from "main";
 import { postValues } from "src/commands/postValues";
+import { cleanActions } from "src/utils/modals";
 
 export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
 
@@ -42,6 +43,7 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
                 this.close()
             }
         }
+        cleanActions(this.containerEl, ".footer-actions")
         const buttonContainer = this.containerEl.createDiv({ cls: "footer-actions" })
         buttonContainer.createDiv({ cls: "spacer" })
         const infoContainer = buttonContainer.createDiv({ cls: "info" })

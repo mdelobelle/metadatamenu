@@ -4,6 +4,7 @@ import { postValues } from "src/commands/postValues";
 import Field from "src/fields/Field";
 import NumberField from "src/fields/fieldManagers/NumberField";
 import { FieldManager } from "src/types/fieldTypes";
+import { cleanActions } from "src/utils/modals";
 import BaseModal from "../baseModal";
 
 export default class NumberModal extends BaseModal {
@@ -69,7 +70,7 @@ export default class NumberModal extends BaseModal {
 
     private buildInputEl(): void {
         const { step } = this.field.options
-
+        cleanActions(this.contentEl, ".field-container")
         const fieldContainer = this.contentEl.createEl("div", { cls: "field-container" })
 
         this.numberInput = new TextComponent(fieldContainer);
@@ -92,7 +93,7 @@ export default class NumberModal extends BaseModal {
 
         const cancelBtn = new ButtonComponent(fieldContainer);
         cancelBtn.setIcon("cross");
-
+        cleanActions(this.contentEl, ".field-error")
         this.errorField = this.contentEl.createEl("div", { cls: "field-error" })
         this.errorField.hide()
 

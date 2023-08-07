@@ -1,4 +1,5 @@
 import MetadataMenu from "main";
+import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { FieldType, MultiDisplayType, multiTypes } from "../types/fieldTypes"
 
 export interface FieldCommand {
@@ -17,7 +18,8 @@ class Field {
         public type: FieldType = FieldType.Input,
         public fileClassName?: string,
         public command?: FieldCommand,
-        public display?: MultiDisplayType
+        public display?: MultiDisplayType,
+        public style?: Record<keyof typeof FieldStyleLabel, boolean>
     ) { };
 
     public getDisplay(plugin: MetadataMenu): MultiDisplayType {
@@ -42,6 +44,7 @@ class Field {
         });
         target.command = source.command
         target.display = source.display
+        target.style = source.style
     };
 
     public static createDefault(name: string): Field {

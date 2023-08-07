@@ -56,6 +56,45 @@
 
         .label {
             white-space: nowrap;
+
+            &.bold {
+                font-weight: var(--bold-weight);
+                color: var(--bold-color);
+            }
+
+            &.code {
+                font-family: monospace;
+                color: var(--code-normal);
+                font-size: var(--code-size);
+                background-color: var(--code-background);
+                white-space: pre;
+            }
+            &.italic {
+                font-style: italic;
+                color: var(--italic-color);
+            }
+            &.strikethrough {
+                text-decoration: line-through;
+            }
+        }
+        .style-buttons-container {
+            display: inline-flex;
+
+            .style-button-container {
+                display: block;
+                margin-right: 1em;
+                margin-top: 0;
+                margin-bottom: 0;
+                
+                &:last-child{
+                    margin-right: 0;
+                }
+
+                .style-btn-label {
+                    margin-right: 0.5em;
+                }
+            }
+
         }
 
         input, textarea {

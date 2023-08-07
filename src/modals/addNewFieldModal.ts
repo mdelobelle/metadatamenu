@@ -1,6 +1,7 @@
 import { Modal, TextComponent, ButtonComponent, TFile } from "obsidian";
 import MetadataMenu from "main";
 import { postValues } from "src/commands/postValues";
+import { cleanActions } from "src/utils/modals";
 
 export default class addNewFieldModal extends Modal {
 
@@ -26,6 +27,7 @@ export default class addNewFieldModal extends Modal {
         const valueInput = new TextComponent(valueContainer);
         valueInput.inputEl.addClass("with-label");
         valueInput.inputEl.addClass("full-width");
+        cleanActions(this.contentEl, ".footer-actions");
         const footerButtons = this.contentEl.createDiv({
             cls: 'footer-actions'
         });

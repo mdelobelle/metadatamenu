@@ -6,6 +6,7 @@ import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedFi
 import * as selectValuesSource from "src/types/selectValuesSourceTypes"
 import FileField from "src/fields/fieldManagers/FileField";
 import { postValues } from "src/commands/postValues";
+import { cleanActions } from "src/utils/modals";
 
 export default class MultiSuggestModal extends SuggestModal<string> {
 
@@ -72,8 +73,7 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
         inputContainer.appendChild(this.inputEl)
         this.containerEl.find(".prompt").prepend(inputContainer)
-
-
+        cleanActions(this.containerEl, ".footer-action")
         const buttonContainer = this.containerEl.createDiv({ cls: "footer-actions" })
         buttonContainer.createDiv({ cls: "spacer" })
         const infoContainer = buttonContainer.createDiv({ cls: "info" })
