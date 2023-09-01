@@ -229,7 +229,7 @@ export default class NumberField extends FieldManager {
         fieldContainer.appendChild(fieldValue)
         const inputContainer = fieldContainer.createDiv({});
         const input = inputContainer.createEl("input");
-        input.value = p[this.field.name] || "toto";
+        input.value = p[this.field.name] || "";
         /* end spacer */
         const tripleSpacer = fieldContainer.createDiv({ cls: "spacer-3" });
 
