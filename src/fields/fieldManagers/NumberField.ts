@@ -31,7 +31,7 @@ export default class NumberField extends FieldManager {
         const fStep = parseFloat(step);
         const fMin = parseFloat(min);
         return !(
-            isNaN(parseFloat(value)) ||
+            //isNaN(parseFloat(value)) ||
             !isNaN(fMin) &&
             (
                 !isNaN(fStep) && (
@@ -47,7 +47,7 @@ export default class NumberField extends FieldManager {
         const fStep = parseFloat(step);
         const fMax = parseFloat(max);
         return !(
-            isNaN(parseFloat(value)) ||
+            //isNaN(parseFloat(value)) ||
             !isNaN(fMax) &&
             (
                 !isNaN(fStep) && (
@@ -75,7 +75,7 @@ export default class NumberField extends FieldManager {
         const fMin = parseFloat(min)
         const fMax = parseFloat(max)
         const fStep = parseFloat(step)
-        const fValue = parseFloat(value)
+        const fValue = parseFloat(value) || 0
         const canDecrease = !isNaN(fMin) && fValue - fStep >= fMin;
         const canIncrease = !isNaN(fMax) && fValue + fStep <= fMax;
         const action = () => modal.open()
@@ -229,7 +229,7 @@ export default class NumberField extends FieldManager {
         fieldContainer.appendChild(fieldValue)
         const inputContainer = fieldContainer.createDiv({});
         const input = inputContainer.createEl("input");
-        input.value = p[this.field.name];
+        input.value = p[this.field.name] || "toto";
         /* end spacer */
         const tripleSpacer = fieldContainer.createDiv({ cls: "spacer-3" });
 
