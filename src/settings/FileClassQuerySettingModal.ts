@@ -2,6 +2,7 @@ import MetadataMenu from "main";
 import { ButtonComponent, DropdownComponent, ExtraButtonComponent, Modal, Setting, TextAreaComponent, TextComponent } from "obsidian";
 import { FileClass } from "src/fileClass/fileClass";
 import FileClassQuery from "src/fileClass/FileClassQuery";
+import { cleanActions } from "src/utils/modals";
 import FileClassQuerySetting from "./FileClassQuerySetting";
 
 export default class FileClassQuerySettingsModal extends Modal {
@@ -118,6 +119,7 @@ export default class FileClassQuerySettingsModal extends Modal {
         this.createQueryInputContainer(fileClassQueryContainer);
 
         /* footer buttons*/
+        cleanActions(this.contentEl, ".footer-actions");
         const footer = this.contentEl.createDiv({ cls: "footer-actions" });
         footer.createDiv({ cls: "spacer" })
         this.createSaveButton(footer);

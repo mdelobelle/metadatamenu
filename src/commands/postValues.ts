@@ -1,6 +1,7 @@
 import MetadataMenu from "main";
 import { MarkdownView, parseYaml, TFile } from "obsidian";
 import { FieldType, MultiDisplayType, multiTypes } from "src/types/fieldTypes";
+import { FieldStyleLabel, buildEndStyle, buildStartStyle } from "src/types/dataviewTypes";
 import { getFileFromFileOrPath, getFrontmatterPosition } from "src/utils/fileUtils";
 import { getListBounds } from "src/utils/list";
 import * as Lookup from "src/types/lookupTypes";
@@ -11,7 +12,8 @@ import { ReservedMultiAttributes } from "src/types/fieldTypes";
 export type FieldPayload = {
     value: string,
     previousItemsCount?: number,
-    addToCurrentValues?: boolean
+    addToCurrentValues?: boolean,
+    style?: Record<keyof typeof FieldStyleLabel, boolean>
 }
 
 export type FieldsPayload = Array<{
@@ -82,10 +84,9 @@ export function renderField(
         case "inline":
             return rawValue;
     }
-
 }
 
-export const matchInlineFields = (regex: RegExp, line: string, attribute: string, input: string, location: keyof typeof Location = "fullLine"): FieldReplace[] => {
+export const matchInlineFields = (regex: RegExp, line: string, attribute: string, input: string, location: keyof typeof Location = "fullLine", style?: Record<keyof typeof FieldStyleLabel, boolean>): FieldReplace[] => {
     const sR = line.matchAll(regex);
     let next = sR.next();
     const newFields: FieldReplace[] = [];
@@ -97,9 +98,11 @@ export const matchInlineFields = (regex: RegExp, line: string, attribute: string
             const newValue = inputArray.length == 1 ? inputArray[0] : `${inputArray.join(', ')}`;
             const start = LocationWrapper[location].start;
             const end = LocationWrapper[location].end;
+            const targetStartStyle = style ? buildStartStyle(style) : startStyle
+            const targetEndStyle = style ? buildEndStyle(style) : endStyle
             newFields.push({
                 oldField: match[0],
-                newField: `${inQuote || ""}${start}${inList || ""}${preSpacer || ""}${startStyle}${attribute}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer || " "}${newValue}${end}`,
+                newField: `${inQuote || ""}${start}${inList || ""}${preSpacer || ""}${targetStartStyle}${attribute}${targetEndStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer || " "}${newValue}${end}`,
             })
         }
         next = sR.next()
@@ -203,7 +206,9 @@ export async function postFieldsInline(
         if (_lineNumber == lineNumber) {
             if (after) newContent.push(line);
             Object.entries(fieldsToCreate).forEach(([fieldName, payload]) => {
-                const newLine = `${asComment ? ">" : ""}${asList ? "- " : ""}${fieldName}:: ${payload.value}`;
+                const startStyle = payload.style ? buildStartStyle(payload.style) : ""
+                const endStyle = payload.style ? buildEndStyle(payload.style) : ""
+                const newLine = `${asComment ? ">" : ""}${asList ? "- " : ""}${startStyle}${fieldName}${endStyle}:: ${payload.value}`;
                 newContent.push(newLine);
             })
             if (!after) newContent.push(line);
@@ -231,6 +236,8 @@ export async function postFieldsInline(
                     }
                 }
                 const { inList, inQuote, preSpacer, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = fR.groups
+                const targetStartStyle = payload.style ? buildStartStyle(payload.style) : startStyle
+                const targetEndStyle = payload.style ? buildEndStyle(payload.style) : endStyle
                 const inputArray = payload.value ? payload.value.replace(/(\,\s+)/g, ',').split(',').sort() : [];
                 let newValue: string;
                 let hiddenValue = "";
@@ -245,13 +252,13 @@ export async function postFieldsInline(
                 } else {
                     newValue = inputArray.length == 1 ? inputArray[0] : `${inputArray.join(', ')}`;
                 }
-                return `${inQuote || ""}${inList || ""}${preSpacer || ""}${startStyle}${fieldName}${endStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer || " "}${hiddenValue + newValue + emptyLineAfterList}`;
+                return `${inQuote || ""}${inList || ""}${preSpacer || ""}${targetStartStyle}${fieldName}${targetEndStyle}${beforeSeparatorSpacer}::${afterSeparatorSpacer || " "}${hiddenValue + newValue + emptyLineAfterList}`;
             } else {
                 const newFields: FieldReplace[] = [];
                 const inSentenceRegexBrackets = new RegExp(`\\[${inlineFieldRegex(fieldName)}(?<values>[^\\]]+)?\\]`, "gu");
                 const inSentenceRegexPar = new RegExp(`\\(${inlineFieldRegex(fieldName)}(?<values>[^\\)]+)?\\)`, "gu");
-                newFields.push(...matchInlineFields(inSentenceRegexBrackets, encodedLine, fieldName, encodedInput, Location.brackets))
-                newFields.push(...matchInlineFields(inSentenceRegexPar, encodedLine, fieldName, encodedInput, Location.parenthesis))
+                newFields.push(...matchInlineFields(inSentenceRegexBrackets, encodedLine, fieldName, encodedInput, Location.brackets, payload.style))
+                newFields.push(...matchInlineFields(inSentenceRegexPar, encodedLine, fieldName, encodedInput, Location.parenthesis, payload.style))
                 newFields.forEach(field => {
                     const fieldRegex = new RegExp(field.oldField.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "u")
                     encodedLine = encodedLine.replace(fieldRegex, field.newField);
@@ -302,7 +309,12 @@ export async function postValues(
             if (!lineNumber || inFrontmatter) {
                 toYaml[item.name] = item.payload
             } else {
-                toCreateInline[item.name] = item.payload
+                const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === item.name)
+                const itemPayload = item.payload
+                if (field?.style) {
+                    itemPayload.style = field.style
+                }
+                toCreateInline[item.name] = itemPayload
             }
         } else {
             const dvApi = plugin.app.plugins.plugins.dataview?.api;
@@ -318,6 +330,10 @@ export async function postValues(
             if (frontmatter && Object.keys(frontmatter).includes(item.name)) {
                 toYaml[item.name] = item.payload
             } else {
+                const itemPayload = item.payload
+                if (field?.style) {
+                    itemPayload.style = field.style
+                }
                 toUpdateInline[item.name] = item.payload
             }
         }

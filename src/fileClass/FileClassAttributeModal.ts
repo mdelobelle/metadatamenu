@@ -6,6 +6,8 @@ import MetadataMenu from "main";
 import Field, { FieldCommand } from "src/fields/Field";
 import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
+import { FieldHTMLTagMap, FieldStyle, FieldStyleKey } from "src/types/dataviewTypes";
+import { cleanActions } from "src/utils/modals";
 
 class FileClassAttributeModal extends Modal {
 
@@ -62,6 +64,9 @@ class FileClassAttributeModal extends Modal {
         /* frontmatter list display*/
         this.createFrontmatterListDisplayContainer();
 
+        /* Style for inline fields */
+        const styleContainer = this.contentEl.createDiv({ cls: "field-container" })
+
         /* Type */
         const typeSelectContainer = this.contentEl.createDiv({ cls: "field-container" });
         this.contentEl.createEl("hr");
@@ -70,6 +75,7 @@ class FileClassAttributeModal extends Modal {
         this.fieldOptionsContainer = this.contentEl.createDiv();
 
         // footer buttons
+        cleanActions(this.contentEl, ".footer-actions")
         const footer = this.contentEl.createDiv({ cls: "footer-actions" });
         footer.createDiv({ cls: "spacer" })
         this.createSaveBtn(footer);
@@ -77,6 +83,7 @@ class FileClassAttributeModal extends Modal {
         this.createCancelBtn(footer);
 
         /* init state */
+        this.buildStyleSelectorContainer(styleContainer)
         this.buildTypeSelectContainer(typeSelectContainer);
         this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.FileClassAttributeSettings);
 
@@ -173,6 +180,39 @@ class FileClassAttributeModal extends Modal {
 
     }
 
+    private setLabelStyle(label: HTMLDivElement): void {
+        const fieldStyle = this.field.style || {}
+        Object.keys(FieldStyle).forEach((style: keyof typeof FieldStyle) => {
+            const styleKey = FieldStyleKey[style]
+            if (!!fieldStyle[styleKey]) {
+                label.addClass(styleKey)
+            } else {
+                label.removeClass(styleKey)
+            }
+        })
+    }
+
+    buildStyleSelectorContainer(parentNode: HTMLDivElement): void {
+        const styleSelectorLabel = parentNode.createDiv({ cls: "label" });
+        styleSelectorLabel.setText(`Inline field style`);
+        this.setLabelStyle(styleSelectorLabel);
+        parentNode.createDiv({ text: "::" })
+        parentNode.createDiv({ cls: "spacer" })
+        const styleButtonsContainer = parentNode.createDiv({ cls: "style-buttons-container" })
+        Object.keys(FieldStyle).forEach((style: keyof typeof FieldStyle) => {
+            const styleBtnContainer = styleButtonsContainer.createEl(FieldHTMLTagMap[style], { cls: "style-button-container" })
+            styleBtnContainer.createDiv({ cls: "style-btn-label", text: FieldStyleKey[style] })
+            const styleBtnToggler = new ToggleComponent(styleBtnContainer)
+            const fieldStyle = this.field.style || {}
+            styleBtnToggler.setValue(fieldStyle[FieldStyleKey[style]])
+            styleBtnToggler.onChange(v => {
+                fieldStyle[FieldStyleKey[style]] = v
+                this.field.style = fieldStyle
+                this.setLabelStyle(styleSelectorLabel);
+            })
+        })
+    }
+
     buildTypeSelectContainer(container: HTMLDivElement): void {
 
         //dropdown
@@ -248,7 +288,8 @@ class FileClassAttributeModal extends Modal {
                 this.field.options,
                 this.attr,
                 this.field.command,
-                this.field.display
+                this.field.display,
+                this.field.style
             );
             this.close();
         })

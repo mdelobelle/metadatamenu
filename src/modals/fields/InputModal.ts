@@ -2,6 +2,7 @@ import MetadataMenu from "main";
 import { ButtonComponent, DropdownComponent, TextAreaComponent, TextComponent, TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import Field from "src/fields/Field";
+import { cleanActions } from "src/utils/modals";
 import BaseModal from "../baseModal";
 
 export default class InputModal extends BaseModal {
@@ -45,6 +46,7 @@ export default class InputModal extends BaseModal {
         } else {
             this.buildInputEl(this.contentEl.createDiv({ cls: "field-container" }));
         }
+        cleanActions(this.contentEl, ".footer-actions")
         this.buildSaveBtn(this.contentEl.createDiv({ cls: "footer-actions" }));
         this.containerEl.addClass("metadata-menu")
     };

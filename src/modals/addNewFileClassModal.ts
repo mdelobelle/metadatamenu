@@ -1,6 +1,7 @@
 import MetadataMenu from "main";
 import { ButtonComponent, Modal, TextComponent, ToggleComponent } from "obsidian";
 import { createFileClass } from "src/commands/createFileClass";
+import { cleanActions } from "src/utils/modals";
 
 
 export default class AddNewFileClassModal extends Modal {
@@ -44,7 +45,7 @@ export default class AddNewFileClassModal extends Modal {
         tagNamesInput.inputEl.addClass("full-width");
         tagNamesInput.setPlaceholder("Leave empty to map with the tag of same name as fileclass")
         tagNamesContainer.hide();
-
+        cleanActions(this.contentEl, ".footer-actions")
         const actionsContainer = this.contentEl.createDiv({ cls: "footer-actions" });
         actionsContainer.createDiv({ cls: "spacer" })
         const saveBtn = new ButtonComponent(actionsContainer);

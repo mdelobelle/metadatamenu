@@ -8,6 +8,7 @@ import { FieldIcon, FieldType, FieldManager } from "src/types/fieldTypes";
 import DateField from "src/fields/fieldManagers/DateField";
 import { postValues } from "src/commands/postValues";
 import BaseModal from "../baseModal";
+import { cleanActions } from "src/utils/modals";
 
 export default class DateModal extends BaseModal {
 
@@ -46,6 +47,8 @@ export default class DateModal extends BaseModal {
     onOpen() {
         super.onOpen()
         this.containerEl.addClass("metadata-menu")
+        cleanActions(this.contentEl, ".field-container");
+        cleanActions(this.contentEl, ".field-error");
         const fieldContainer = this.contentEl.createDiv({ cls: "field-container" });
         this.buildFields(fieldContainer);
         this.errorField = this.contentEl.createEl("div", { cls: "field-error" });

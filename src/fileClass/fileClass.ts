@@ -7,6 +7,7 @@ import { genuineKeys } from "src/utils/dataviewUtils";
 import { FieldCommand } from "src/fields/Field";
 import { FieldManager } from "src/fields/FieldManager";
 import { FieldsPayload, postValues } from "src/commands/postValues";
+import { FieldStyleLabel } from "src/types/dataviewTypes";
 
 const options: Record<string, { name: string, toValue: (value: any) => string }> = {
     "limit": { name: "limit", toValue: (value: any) => `${value || ""}` },
@@ -212,9 +213,9 @@ class FileClass {
                             ? JSON.stringify(dvFile[key])
                             : dvFile[key];
                         try {
-                            const { type, options, command, display } = JSON.parse(item);
+                            const { type, options, command, display, style } = JSON.parse(item);
                             const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
-                            const attr = new FileClassAttribute(this.name, key, fieldType, options, fileClass.name, command, display)
+                            const attr = new FileClassAttribute(this.name, key, fieldType, options, fileClass.name, command, display, style)
                             attributes.push(attr)
                         } catch (e) {
                             //do nothing
@@ -302,7 +303,8 @@ class FileClass {
         newOptions?: string[] | Record<string, string>,
         attr?: FileClassAttribute,
         newCommand?: FieldCommand,
-        newDisplay?: MultiDisplayType
+        newDisplay?: MultiDisplayType,
+        newStyle?: Record<keyof typeof FieldStyleLabel, boolean>
     ): Promise<void> {
         const fileClass = attr ? this.plugin.fieldIndex.fileClassesName.get(attr.fileClassName)! : this
         const file = fileClass.getClassFile();
@@ -316,6 +318,7 @@ class FileClass {
                     if (newOptions) settings["options"] = newOptions;
                     if (newCommand) settings["command"] = newCommand;
                     if (newDisplay) settings["display"] = newDisplay;
+                    if (newStyle) settings["style"] = newStyle;
                     newContent.push(`${newName}:: ${JSON.stringify(settings)}`);
                 } else {
                     newContent.push(line);
@@ -328,6 +331,7 @@ class FileClass {
             if (newOptions) settings["options"] = newOptions;
             if (newCommand) settings["command"] = newCommand;
             if (newDisplay) settings["display"] = newDisplay;
+            if (newStyle) settings["style"] = newStyle;
             result += (`\n${newName}:: ${JSON.stringify(settings)}`);
             await this.plugin.app.vault.modify(file, result);
         }

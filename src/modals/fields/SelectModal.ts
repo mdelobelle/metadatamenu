@@ -5,6 +5,7 @@ import * as selectValuesSource from "src/types/selectValuesSourceTypes"
 import { FieldManager } from "src/types/fieldTypes";
 import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
 import { postValues } from "src/commands/postValues";
+import { cleanActions } from "src/utils/modals";
 
 export default class ValueSuggestModal extends SuggestModal<string>{
 
@@ -29,6 +30,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
         const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
         inputContainer.appendChild(this.inputEl)
         this.containerEl.find(".prompt").prepend(inputContainer)
+        cleanActions(this.containerEl, ".footer-actions")
         const buttonContainer = this.containerEl.createDiv({ cls: "footer-actions" })
         buttonContainer.createDiv({ cls: "spacer" })
         const infoContainer = buttonContainer.createDiv({ cls: "info" })
@@ -115,7 +117,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
         let dvFile: any;
         if (dvApi) dvFile = dvApi.page(this.file.path)
         const fieldManager = new FieldManager[this.field.type](this.plugin, this.field) as AbstractListBasedField
-        const values = fieldManager.getOptionsList(dvFile).filter(o => o.toLowerCase().includes(query.toLowerCase()))
+        const values = fieldManager.getOptionsList(dvFile).filter(o => String(o).toLowerCase().includes(query.toLowerCase()))
         if (this.addButton) {
             (values.some(p => p === query) || this.field.options.sourceType == selectValuesSource.Type.ValuesFromDVQuery || !query) ?
                 this.addButton.buttonEl.hide() :
