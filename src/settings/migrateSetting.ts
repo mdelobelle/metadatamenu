@@ -14,6 +14,8 @@ interface V2Field extends Field {
     valuesListNotePath?: string
 }
 
+
+
 export const migrateSettingsV1toV2 = async (plugin: MetadataMenu) => {
     const presetFields = plugin.settings.presetFields
     presetFields.forEach((p: V1Field) => {
@@ -68,4 +70,11 @@ export const migrateSettingsV2toV3 = async (plugin: MetadataMenu) => {
     plugin.settings.settingsVersion = 3
     await plugin.saveData(plugin.settings)
     console.log("Metadata menu settings migrated to version 3")
+}
+
+export const migrateSettingsV3toV4 = async (plugin: MetadataMenu) => {
+    plugin.settings.fileClassExcludedFolders = []
+    plugin.settings.settingsVersion = 4
+    await plugin.saveData(plugin.settings)
+    console.log("Metadata menu settings migrated to version 4")
 }

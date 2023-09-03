@@ -40,6 +40,7 @@ export default class MetadataMenu extends Plugin {
 		await this.loadSettings();
 		if (this.settings.settingsVersion === undefined) await SettingsMigration.migrateSettingsV1toV2(this)
 		if (this.settings.settingsVersion === 2) await SettingsMigration.migrateSettingsV2toV3(this)
+		if (this.settings.settingsVersion === 3) await SettingsMigration.migrateSettingsV3toV4(this)
 
 		//loading components
 		this.fieldIndex = this.addChild(new FieldIndex(this, "1", () => { }))

@@ -46,8 +46,11 @@ export default class OptionsList {
 		this.location = location;
 		this.attributes = {};
 		this.includedFields = includedFields ? [this.plugin.settings.fileClassAlias, ...includedFields] : [this.plugin.settings.fileClassAlias];
-		this.getFieldsFromIndex();
-		this.getFieldsValues();
+		const excludedFolders = this.plugin.settings.fileClassExcludedFolders
+		if (!excludedFolders.some(path => file.path.includes(path))) {
+			this.getFieldsFromIndex();
+			this.getFieldsValues();
+		}
 	};
 
 	private getFieldsValues(): void {
@@ -119,15 +122,17 @@ export default class OptionsList {
 		if (isInsertFieldCommand(location)) {
 			this.addFieldAtCurrentPositionOption();
 		} else if (isSuggest(location)) {
-			this.openNoteFieldModalOption();
-			this.buildFieldOptions();
-			this.addFieldAtCurrentPositionOption();
-			this.addSectionSelectModalOption();
-			this.addFieldAtTheEndOfFrontmatterOption();
-			if (dvApi) {
-				const currentFieldsNames = genuineKeys(dvApi.page(this.file.path))
-				if (![...this.plugin.fieldIndex.filesFields.get(this.file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
-					this.addAllMissingFieldsAtSection();
+			if (!this.plugin.settings.fileClassExcludedFolders.some(path => this.file.path.includes(path))) {
+				this.openNoteFieldModalOption();
+				this.buildFieldOptions();
+				this.addFieldAtCurrentPositionOption();
+				this.addSectionSelectModalOption();
+				this.addFieldAtTheEndOfFrontmatterOption();
+				if (dvApi) {
+					const currentFieldsNames = genuineKeys(dvApi.page(this.file.path))
+					if (![...this.plugin.fieldIndex.filesFields.get(this.file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
+						this.addAllMissingFieldsAtSection();
+					}
 				}
 			}
 			const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || []
@@ -146,15 +151,17 @@ export default class OptionsList {
 			this.addNewFileClassOption();
 			if (openAfterCreate) location.open();
 		} else if (isMenu(location)) {
-			this.openNoteFieldModalOption();
-			this.buildFieldOptions();
-			this.addSectionSelectModalOption();
-			this.addFieldAtCurrentPositionOption();
-			this.addFieldAtTheEndOfFrontmatterOption();
-			if (dvApi) {
-				const currentFieldsNames = genuineKeys(dvApi.page(this.file.path))
-				if (![...this.plugin.fieldIndex.filesFields.get(this.file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
-					this.addAllMissingFieldsAtSection();
+			if (!this.plugin.settings.fileClassExcludedFolders.some(path => this.file.path.includes(path))) {
+				this.openNoteFieldModalOption();
+				this.buildFieldOptions();
+				this.addSectionSelectModalOption();
+				this.addFieldAtCurrentPositionOption();
+				this.addFieldAtTheEndOfFrontmatterOption();
+				if (dvApi) {
+					const currentFieldsNames = genuineKeys(dvApi.page(this.file.path))
+					if (![...this.plugin.fieldIndex.filesFields.get(this.file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
+						this.addAllMissingFieldsAtSection();
+					}
 				}
 			}
 			const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || []

@@ -258,6 +258,29 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		global.settingEl.addClass("narrow-title");
 		global.controlEl.addClass("full-width");
 
+
+		/* Exclude Fields from context menu*/
+		const excludedFolders = new Setting(classFilesSettings)
+			.setName('Excluded folders')
+			.setDesc('Folders where fileClass options won\'t be applied (useful for templates folders)')
+			.addTextArea((text) => {
+				text
+					.setPlaceholder('Enter/folders/paths/, comma/separated/')
+					.setValue(this.plugin.settings.fileClassExcludedFolders.join(', '))
+					.onChange(async (value) => {
+						const values = value.split(",")
+						const paths: Array<string> = []
+						values.forEach(path => { if (path.trim()) paths.push(path.trim().replace(/\/?$/, '/')) })
+						this.plugin.settings.fileClassExcludedFolders = paths;
+						await this.plugin.saveSettings();
+					});
+				text.inputEl.rows = 6;
+				text.inputEl.cols = 25;
+			})
+		excludedFolders.settingEl.addClass("vstacked");
+		excludedFolders.settingEl.addClass("no-border");
+		excludedFolders.controlEl.addClass("full-width");
+
 		/* 
 		--------------------------------------------------
 		Managing extra button display options

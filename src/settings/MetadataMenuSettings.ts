@@ -23,6 +23,7 @@ export interface MetadataMenuSettings {
 	buttonIcon: string;
 	tableViewMaxRecords: number;
 	frontmatterListDisplay: MultiDisplayType;
+	fileClassExcludedFolders: Array<string>;
 }
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
@@ -45,5 +46,6 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	enableSearch: true,
 	buttonIcon: "clipboard-list",
 	tableViewMaxRecords: 100,
-	frontmatterListDisplay: MultiDisplayType.asArray
+	frontmatterListDisplay: MultiDisplayType.asArray,
+	fileClassExcludedFolders: []
 };
