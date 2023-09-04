@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { MarkdownView, parseYaml, TFile } from "obsidian";
-import { FieldType, MultiDisplayType, multiTypes } from "src/types/fieldTypes";
+import { FieldType, MultiDisplayType, multiTypes, objectTypes } from "src/types/fieldTypes";
 import { FieldStyleLabel, buildEndStyle, buildStartStyle } from "src/types/dataviewTypes";
 import { getFileFromFileOrPath, getFrontmatterPosition } from "src/utils/fileUtils";
 import { getListBounds } from "src/utils/list";
@@ -8,6 +8,7 @@ import * as Lookup from "src/types/lookupTypes";
 import { fieldComponents, inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
 import { genuineKeys } from "src/utils/dataviewUtils";
 import { ReservedMultiAttributes } from "src/types/fieldTypes";
+import { dump, load } from "js-yaml";
 
 export type FieldPayload = {
     value: string,
@@ -43,7 +44,7 @@ export function renderField(
     file: TFile,
     fieldName: string,
     rawValue: string,
-    location: "yaml" | "inline",
+    location: "yaml" | "inline"
 ): any {
     const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName)
     const parseFieldValue = (_rawValue: string) => {
@@ -52,6 +53,8 @@ export function renderField(
                 return `"${_rawValue}"`
             } else if (_rawValue.startsWith("#")) {
                 return `${_rawValue}`;
+            } else if (field?.type && objectTypes.includes(field?.type)) {
+                return `\n  ${_rawValue.split("\n").join("\n  ")}`;
             } else {
                 return parseYaml(_rawValue);
             };
@@ -82,7 +85,11 @@ export function renderField(
                 default: return parseFieldValue(rawValue);
             }
         case "inline":
-            return rawValue;
+            switch (field?.type) {
+                case FieldType.JSON: return JSON.stringify(JSON.parse(rawValue))
+                case FieldType.YAML: return dump(load(rawValue)); break;
+                default: return rawValue;
+            }
     }
 }
 
@@ -121,17 +128,19 @@ export async function postFieldsInYaml(
     const currentFile = await app.vault.read(file)
     const skippedLines: number[] = []
     const pushNewField = (fieldName: string, payload: FieldPayload): void => {
-        const newValue = renderField(plugin, file, fieldName, payload.value, "yaml")
-        if (Array.isArray(newValue)) {
-            const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName);
-            if (field?.getDisplay(plugin) === MultiDisplayType.asList) {
-                newContent.push(`${fieldName}:`)
-                newValue.filter(v => !!v).forEach(item => { newContent.push(`  - ${item}`) });
+        const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName);
+        if (field) {
+            const newValue = renderField(plugin, file, fieldName, payload.value, "yaml")
+            if (Array.isArray(newValue)) {
+                if (field?.getDisplay(plugin) === MultiDisplayType.asList) {
+                    newContent.push(`${fieldName}:`)
+                    newValue.filter(v => !!v).forEach(item => { newContent.push(`  - ${item}`) });
+                } else {
+                    newContent.push(`${fieldName}: [${newValue.join(", ")}]`);
+                }
             } else {
-                newContent.push(`${fieldName}: [${newValue.join(", ")}]`);
+                newContent.push(`${fieldName}: ${newValue}`);
             }
-        } else {
-            newContent.push(`${fieldName}: ${newValue}`);
         }
     }
 
@@ -164,7 +173,9 @@ export async function postFieldsInYaml(
                     if (r && r.length > 0) {
                         //search for indented value "below" and skip them
                         let j = 1;
-                        while (currentContent[lineNumber + j].startsWith("  - ")) {
+
+                        //while (currentContent[lineNumber + j].startsWith("  - ")) {
+                        while (currentContent[lineNumber + j].startsWith("  ")) {
                             skippedLines.push(lineNumber + j);
                             j = j + 1
                         }
@@ -206,9 +217,10 @@ export async function postFieldsInline(
         if (_lineNumber == lineNumber) {
             if (after) newContent.push(line);
             Object.entries(fieldsToCreate).forEach(([fieldName, payload]) => {
+                const newValue = renderField(plugin, file, fieldName, payload.value, "inline")
                 const startStyle = payload.style ? buildStartStyle(payload.style) : ""
                 const endStyle = payload.style ? buildEndStyle(payload.style) : ""
-                const newLine = `${asComment ? ">" : ""}${asList ? "- " : ""}${startStyle}${fieldName}${endStyle}:: ${payload.value}`;
+                const newLine = `${asComment ? ">" : ""}${asList ? "- " : ""}${startStyle}${fieldName}${endStyle}:: ${newValue}`;
                 newContent.push(newLine);
             })
             if (!after) newContent.push(line);
@@ -238,7 +250,12 @@ export async function postFieldsInline(
                 const { inList, inQuote, preSpacer, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = fR.groups
                 const targetStartStyle = payload.style ? buildStartStyle(payload.style) : startStyle
                 const targetEndStyle = payload.style ? buildEndStyle(payload.style) : endStyle
-                const inputArray = payload.value ? payload.value.replace(/(\,\s+)/g, ',').split(',').sort() : [];
+                let inputArray: any[] = []
+                switch (field?.type) {
+                    case FieldType.JSON: inputArray = [JSON.stringify(JSON.parse(payload.value))]; break;
+                    case FieldType.YAML: inputArray = ["\"" + payload.value.split("\n").join("\\n") + "\""]; break;
+                    default: inputArray = payload.value ? payload.value.replace(/(\,\s+)/g, ',').split(',').sort() : [];
+                }
                 let newValue: string;
                 let hiddenValue = "";
                 let emptyLineAfterList = "";

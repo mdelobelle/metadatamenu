@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { ButtonComponent, DropdownComponent, TextAreaComponent, TextComponent, TFile } from "obsidian";
+import { DropdownComponent, TextAreaComponent, TextComponent, TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import Field from "src/fields/Field";
 import { cleanActions } from "src/utils/modals";

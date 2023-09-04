@@ -864,6 +864,12 @@ span.flatpickr-weekday {
 .metadata-menu .chip.canvas-links {
   background-color: var(--color-blue);
 }
+.metadata-menu .chip.yaml {
+  background-color: var(--color-blue);
+}
+.metadata-menu .chip.json {
+  background-color: var(--color-blue);
+}
 
 .metadata-menu-dv-field-container {
   display: flex;
