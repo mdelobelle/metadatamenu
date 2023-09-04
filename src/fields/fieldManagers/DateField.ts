@@ -103,7 +103,7 @@ export default class DateField extends FieldManager {
         const defaultInsertAsLink = new ToggleComponent(defaultInsertAsLinkContainer);
         defaultInsertAsLink.setValue(DateField.stringToBoolean(this.field.options.defaultInsertAsLink))
         defaultInsertAsLink.onChange((value: boolean) => {
-            this.field.options.defaultInsertAsLink = value.toString();
+            this.field.options.defaultInsertAsLink = value;
         });
 
         //folder path for link

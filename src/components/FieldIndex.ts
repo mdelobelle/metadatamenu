@@ -12,6 +12,7 @@ import { FieldType } from "src/types/fieldTypes";
 import { Status as LookupStatus, Type as LookupType } from "src/types/lookupTypes";
 import { updateCanvas } from "src/commands/updateCanvas";
 import { CanvasData } from "obsidian/canvas";
+import { FileClassMigration } from "src/fileClass/fileClassMigration";
 
 export default class FieldIndex extends Component {
 
@@ -27,6 +28,7 @@ export default class FieldIndex extends Component {
     public filesFileClassesNames: Map<string, string[] | undefined>;
     public fileClassesAncestors: Map<string, string[]>
     public fileClassesPath: Map<string, FileClass>;
+    public legacyFileClassesPath: Map<string, FileClass>;
     public fileClassesName: Map<string, FileClass>;
     public valuesListNotePathValues: Map<string, string[]>;
     public tagsMatchingFileClasses: Map<string, FileClass>;
@@ -153,6 +155,7 @@ export default class FieldIndex extends Component {
         this.filesFieldsFromFileClassQueries = new Map();
         this.filesFieldsFromInnerFileClasses = new Map();
         this.fileClassesPath = new Map();
+        this.legacyFileClassesPath = new Map();
         this.fileClassesName = new Map();
         this.fileClassesAncestors = new Map();
         this.valuesListNotePathValues = new Map();
@@ -181,12 +184,21 @@ export default class FieldIndex extends Component {
         await this.updateLookups("full Index", without_lookups, force_update_all);
         if (force_update_all || !this.firstIndexingDone) await this.updateFormulas(force_update_all); //calculate formulas at start of with force update
         this.firstIndexingDone = true;
+        await this.migrateLegacyFileClasses();
         this.plugin.app.workspace.trigger("metadata-menu:updated-index");
         //console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     }
 
     resolveLookups(without_lookups: boolean): void {
         if (!without_lookups) resolveLookups(this.plugin);
+    }
+
+    async migrateLegacyFileClasses(): Promise<void> {
+        const remaininglegacyFileClass = this.legacyFileClassesPath.values().next().value
+        if (remaininglegacyFileClass) {
+            const migration = new FileClassMigration(this.plugin)
+            await migration.migrateAttributesToFrontmatter(remaininglegacyFileClass)
+        }
     }
 
     async getCanvasesFiles(): Promise<void> {
@@ -332,6 +344,9 @@ export default class FieldIndex extends Component {
                             this.fileClassesPath.set(f.path, fileClass)
                             this.fileClassesName.set(fileClass.name, fileClass)
                             const cache = this.plugin.app.metadataCache.getFileCache(f);
+                            if (!cache?.frontmatter?.fields) {
+                                this.legacyFileClassesPath.set(f.path, fileClass)
+                            }
                             if (cache?.frontmatter?.mapWithTag) {
                                 if (cache?.frontmatter?.tagNames) {
                                     const _tagNames = cache?.frontmatter?.tagNames as string | string[];

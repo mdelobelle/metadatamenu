@@ -141,9 +141,10 @@ export async function postFieldsInYaml(
             } else {
                 newContent.push(`${fieldName}: ${newValue}`);
             }
+        } else {
+            newContent.push(`${fieldName}: ${payload.value}`);
         }
     }
-
     if (!frontmatter) {
         newContent.push("---");
         Object.entries(fields).forEach(([fieldName, payload]) => pushNewField(fieldName, payload));

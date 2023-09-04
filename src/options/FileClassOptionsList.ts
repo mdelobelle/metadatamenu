@@ -38,7 +38,7 @@ export default class FileClassOptionsList {
 
     public createExtraOptionList(openAfterCreate: boolean = true): void {
         const mapWithTagAction = async () => {
-            await postValues(this.plugin, [{ name: "mapWithTag", payload: { value: "true" } }], this.file);
+            this.plugin.app.fileManager.processFrontMatter(this.file, fm => fm.mapWithTag = true)
         }
         const openFileClassTableViewAction = () => {
             const fileClassComponent = new FileClassManager(this.plugin, fileClass)

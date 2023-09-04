@@ -3,19 +3,18 @@ import MetadataMenu from "main";
 import { SuggestModal, TFile } from "obsidian";
 import { FieldType, FieldTypeLabelMapping, MultiDisplayType } from "src/types/fieldTypes";
 import { capitalize } from "src/utils/textUtils";
-import { genuineKeys } from "src/utils/dataviewUtils";
 import { FieldCommand } from "src/fields/Field";
 import { FieldManager } from "src/fields/FieldManager";
-import { FieldsPayload, postValues } from "src/commands/postValues";
+import { postValues } from "src/commands/postValues";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 
-const options: Record<string, { name: string, toValue: (value: any) => string }> = {
-    "limit": { name: "limit", toValue: (value: any) => `${value || ""}` },
-    "mapWithTag": { name: "mapWithTag", toValue: (value: boolean) => value.toString() },
-    "icon": { name: "icon", toValue: (value: any) => `${value || ""}` },
-    "tagNames": { name: "tagNames", toValue: (values: string[]) => values.join(", ") },
-    "excludes": { name: "excludes", toValue: (values: FileClassAttribute[]) => values.map(attr => attr.name).join(", ") },
-    "parent": { name: "extends", toValue: (value: FileClass) => `${value?.name || ""}` }
+const options: Record<string, { name: string, toValue: (value: any) => any }> = {
+    "limit": { name: "limit", toValue: (value: any) => value },
+    "mapWithTag": { name: "mapWithTag", toValue: (value: boolean) => value },
+    "icon": { name: "icon", toValue: (value: any) => `${value || "file-spreadsheet"}` },
+    "tagNames": { name: "tagNames", toValue: (values: string[]) => values.length ? values : null },
+    "excludes": { name: "excludes", toValue: (values: FileClassAttribute[]) => values.length ? values.map(attr => attr.name) : null },
+    "parent": { name: "extends", toValue: (value: FileClass) => value?.name || null }
 }
 
 export interface FileClassOptions {
@@ -43,7 +42,6 @@ export class FileClassOptions {
 
 interface FileClass extends FileClassOptions {
     attributes: Array<FileClassAttribute>;
-    objects: FileClassObjects;
     errors: string[];
     options: FileClassOptions;
 }
@@ -83,53 +81,8 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
     }
 }
 
-class FileClassObjects {
-
-    constructor(public instance: FileClass) { }
-
-    public all() {
-        const filesWithFileClassName = this.instance.plugin.app.vault.getMarkdownFiles().filter(file => {
-            const cache = this.instance.plugin.app.metadataCache.getFileCache(file);
-            const fileClassAlias = this.instance.plugin.settings.fileClassAlias;
-            return cache?.frontmatter
-                && Object.keys(cache.frontmatter).includes(fileClassAlias)
-                && cache.frontmatter[fileClassAlias] == this.instance.name;
-        })
-        return filesWithFileClassName;
-    }
-
-    public get(name: string) {
-        const filesWithName = this.all().filter(file => file.path.replace(/md$/, "").endsWith(name));
-        if (filesWithName.length > 1) {
-            const error = new Error("More than one value found");
-            throw error;
-        }
-        if (filesWithName.length == 0) {
-            const error = new Error("No file value found");
-            throw error;
-        }
-        return filesWithName[0];
-
-    }
-
-    public getPath(path: string) {
-        const filesWithName = this.all().filter(file => file.path == path);
-        if (filesWithName.length > 1) {
-            const error = new Error("More than one value found");
-            throw error;
-        }
-        if (filesWithName.length == 0) {
-            const error = new Error("No file value found");
-            throw error;
-        }
-        return filesWithName[0];
-
-    }
-}
-
 class FileClass {
     constructor(public plugin: MetadataMenu, public name: string) {
-        this.objects = new FileClassObjects(this);
         this.attributes = [];
     }
 
@@ -199,33 +152,16 @@ class FileClass {
         return icon
     }
 
+
     static getFileClassAttributes(plugin: MetadataMenu, fileClass: FileClass, excludes?: string[]): FileClassAttribute[] {
         const file = fileClass.getClassFile();
-        let attributes: Array<FileClassAttribute> = [];
-        const dvApi = plugin.app.plugins.plugins["dataview"]?.api
-        //@ts-ignore
-        if (dvApi) {
-            const dvFile = dvApi.page(file.path)
-            try {
-                genuineKeys(dvFile).forEach(key => {
-                    if (key !== "file" && !Object.keys(dvFile.file.frontmatter || {}).includes(key)) {
-                        const item = typeof dvFile[key] !== "string"
-                            ? JSON.stringify(dvFile[key])
-                            : dvFile[key];
-                        try {
-                            const { type, options, command, display, style } = JSON.parse(item);
-                            const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
-                            const attr = new FileClassAttribute(this.name, key, fieldType, options, fileClass.name, command, display, style)
-                            attributes.push(attr)
-                        } catch (e) {
-                            //do nothing
-                        }
-                    }
-                })
-            } catch (error) {
-                throw (error);
-            }
-        }
+        const rawAttributes = plugin.app.metadataCache.getFileCache(file)?.frontmatter?.fields || []
+        const attributes: FileClassAttribute[] = [];
+        rawAttributes.forEach((attr: any) => {
+            const { type, options, command, display, style } = attr;
+            const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
+            attributes.push(new FileClassAttribute(this.name, attr.name, fieldType, options, fileClass.name, command, display, style))
+        })
         if (excludes) {
             return attributes.filter(attr => !excludes.includes(attr.name))
         } else {
@@ -286,15 +222,13 @@ class FileClass {
     }
 
     public async updateOptions(newOptions: FileClassOptions): Promise<void> {
-        const path = this.getClassFile().path
-        const payload: FieldsPayload = []
-        Object.keys(options).forEach(async (key: keyof typeof options) => {
-            const { name, toValue } = options[key]
-            payload.push({ name: name, payload: { value: toValue(newOptions[key as keyof FileClassOptions]) } })
+        const file = this.getClassFile()
+        await this.plugin.app.fileManager.processFrontMatter(file, fm => {
+            Object.keys(options).forEach(async (key: keyof typeof options) => {
+                const { name, toValue } = options[key]
+                fm[name] = toValue(newOptions[key as keyof FileClassOptions])
+            })
         })
-        //incrementing a version to force obsidian resolve this new file even if it looks like the previous version
-        payload.push({ name: "version", payload: { value: `${this.getVersion() + 1}` } })
-        await postValues(this.plugin, payload, path)
     }
 
     public async updateAttribute(
@@ -308,45 +242,33 @@ class FileClass {
     ): Promise<void> {
         const fileClass = attr ? this.plugin.fieldIndex.fileClassesName.get(attr.fileClassName)! : this
         const file = fileClass.getClassFile();
-        let result = await this.plugin.app.vault.read(file)
-        if (attr) {
-            let newContent: string[] = [];
-            result.split('\n').forEach(line => {
-                if (line.startsWith(attr.name)) {
-                    let settings: Record<string, any> = {};
-                    settings["type"] = newType;
-                    if (newOptions) settings["options"] = newOptions;
-                    if (newCommand) settings["command"] = newCommand;
-                    if (newDisplay) settings["display"] = newDisplay;
-                    if (newStyle) settings["style"] = newStyle;
-                    newContent.push(`${newName}:: ${JSON.stringify(settings)}`);
-                } else {
-                    newContent.push(line);
-                }
-            })
-            await this.plugin.app.vault.modify(file, newContent.join('\n'));
-        } else {
-            let settings: Record<string, any> = {};
-            settings["type"] = newType;
-            if (newOptions) settings["options"] = newOptions;
-            if (newCommand) settings["command"] = newCommand;
-            if (newDisplay) settings["display"] = newDisplay;
-            if (newStyle) settings["style"] = newStyle;
-            result += (`\n${newName}:: ${JSON.stringify(settings)}`);
-            await this.plugin.app.vault.modify(file, result);
-        }
+        await this.plugin.app.fileManager.processFrontMatter(file, fm => {
+            if (attr) {
+                const field = fm.fields.find((f: FileClassAttribute) => f.name === attr.name)
+                field.type = newType;
+                if (newOptions) field.options = newOptions;
+                if (newCommand) field.command = newCommand;
+                if (newDisplay) field.display = newDisplay;
+                if (newStyle) field.style = newStyle;
+                if (newName) field.name = newName;
+            } else {
+                fm.fields.push({
+                    name: newName,
+                    type: newType,
+                    options: newOptions,
+                    command: newCommand,
+                    display: newDisplay,
+                    style: newStyle
+                })
+            }
+        })
     }
 
     public async removeAttribute(attr: FileClassAttribute): Promise<void> {
         const file = this.getClassFile();
-        const result = await this.plugin.app.vault.read(file)
-        let newContent: string[] = [];
-        result.split('\n').forEach(line => {
-            if (!line.startsWith(attr.name)) {
-                newContent.push(line);
-            }
+        await this.plugin.app.fileManager.processFrontMatter(file, fm => {
+            fm.fields = fm.fields.filter((f: any) => f.name !== attr.name)
         })
-        await this.plugin.app.vault.modify(file, newContent.join('\n'));
     }
 
     static createFileClass(plugin: MetadataMenu, name: string, excludeParent: boolean = false): FileClass {

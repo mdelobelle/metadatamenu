@@ -131,31 +131,31 @@ export default class NumberField extends FieldManager {
         numberStepValueContainer.createDiv({ cls: "spacer" });
         this.numberStepValue = new TextComponent(numberStepValueContainer)
         this.numberStepValue.inputEl.addClass("with-label")
-        this.numberStepValue.setValue(this.field.options.step || "")
+        this.numberStepValue.setValue(`${this.field.options.step}` || "")
 
         const numberMinValueContainer = container.createDiv({ cls: "field-container" });
         numberMinValueContainer.createEl("span", { text: "Min value (optional)", cls: 'label' })
         this.numberMinValue = new TextComponent(numberMinValueContainer)
         this.numberMinValue.inputEl.addClass("full-width");
         this.numberMinValue.inputEl.addClass("with-label")
-        this.numberMinValue.setValue(this.field.options.min || "")
+        this.numberMinValue.setValue(`${this.field.options.min}` || "")
 
         const numberMaxValueContainer = container.createDiv({ cls: "field-container" });
         numberMaxValueContainer.createEl("span", { text: "Max value (optional)", cls: 'label' })
         this.numberMaxValue = new TextComponent(numberMaxValueContainer)
         this.numberMaxValue.inputEl.addClass("full-width");
         this.numberMaxValue.inputEl.addClass("with-label")
-        this.numberMaxValue.setValue(this.field.options.max || "")
+        this.numberMaxValue.setValue(`${this.field.options.max}` || "")
         this.numberStepValue.onChange(value => {
-            this.field.options.step = value;
+            this.field.options.step = parseFloat(value);
             FieldSettingsModal.removeValidationError(this.numberStepValue);
         })
         this.numberMinValue.onChange(value => {
-            this.field.options.min = value;
+            this.field.options.min = parseFloat(value);
             FieldSettingsModal.removeValidationError(this.numberMinValue);
         })
         this.numberMaxValue.onChange(value => {
-            this.field.options.max = value;
+            this.field.options.max = parseFloat(value);
             FieldSettingsModal.removeValidationError(this.numberMaxValue);
         })
     }
