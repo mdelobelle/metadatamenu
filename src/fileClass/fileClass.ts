@@ -216,9 +216,33 @@ class FileClass {
         }
     }
 
-    public getVersion(): number {
-        const currentVersion = this.plugin.app.metadataCache.getFileCache(this.getClassFile())?.frontmatter?.version
-        return currentVersion && !isNaN(currentVersion) ? currentVersion : 0;
+    public getVersion(): string {
+        return this.plugin.app.metadataCache.getFileCache(this.getClassFile())?.frontmatter?.version
+    }
+
+    public getMajorVersion(): number | undefined {
+        const version = this.getVersion();
+        if (version) {
+            //in v1 of fileClass, version was a number; in newer versions it is a string x.y
+            const [x, y] = `${version}`.split(".")
+            if (!y) return undefined
+            return parseInt(x)
+        } else {
+            return undefined
+        }
+    }
+
+    private async incrementVersion(): Promise<void> {
+        const file = this.getClassFile()
+        const currentVersion = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.version
+        await this.plugin.app.fileManager.processFrontMatter(file, fm => {
+            if (currentVersion) {
+                const [x, y] = currentVersion.split(".");
+                fm.version = `${x}.${parseInt(y) + 1}`
+            } else {
+                fm.version = "2.0"
+            }
+        })
     }
 
     public async updateOptions(newOptions: FileClassOptions): Promise<void> {
@@ -229,6 +253,7 @@ class FileClass {
                 fm[name] = toValue(newOptions[key as keyof FileClassOptions])
             })
         })
+        await this.incrementVersion();
     }
 
     public async updateAttribute(
@@ -262,6 +287,7 @@ class FileClass {
                 })
             }
         })
+        await this.incrementVersion();
     }
 
     public async removeAttribute(attr: FileClassAttribute): Promise<void> {

@@ -12,7 +12,7 @@ import { FieldType } from "src/types/fieldTypes";
 import { Status as LookupStatus, Type as LookupType } from "src/types/lookupTypes";
 import { updateCanvas } from "src/commands/updateCanvas";
 import { CanvasData } from "obsidian/canvas";
-import { FileClassMigration } from "src/fileClass/fileClassMigration";
+import { V1FileClassMigration, V2FileClassMigration } from "src/fileClass/fileClassMigration";
 
 export default class FieldIndex extends Component {
 
@@ -28,7 +28,8 @@ export default class FieldIndex extends Component {
     public filesFileClassesNames: Map<string, string[] | undefined>;
     public fileClassesAncestors: Map<string, string[]>
     public fileClassesPath: Map<string, FileClass>;
-    public legacyFileClassesPath: Map<string, FileClass>;
+    public v1FileClassesPath: Map<string, FileClass>;
+    public v2FileClassesPath: Map<string, FileClass>;
     public fileClassesName: Map<string, FileClass>;
     public valuesListNotePathValues: Map<string, string[]>;
     public tagsMatchingFileClasses: Map<string, FileClass>;
@@ -155,7 +156,8 @@ export default class FieldIndex extends Component {
         this.filesFieldsFromFileClassQueries = new Map();
         this.filesFieldsFromInnerFileClasses = new Map();
         this.fileClassesPath = new Map();
-        this.legacyFileClassesPath = new Map();
+        this.v1FileClassesPath = new Map();
+        this.v2FileClassesPath = new Map();
         this.fileClassesName = new Map();
         this.fileClassesAncestors = new Map();
         this.valuesListNotePathValues = new Map();
@@ -184,7 +186,7 @@ export default class FieldIndex extends Component {
         await this.updateLookups("full Index", without_lookups, force_update_all);
         if (force_update_all || !this.firstIndexingDone) await this.updateFormulas(force_update_all); //calculate formulas at start of with force update
         this.firstIndexingDone = true;
-        await this.migrateLegacyFileClasses();
+        await this.migrateFileClasses();
         this.plugin.app.workspace.trigger("metadata-menu:updated-index");
         //console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     }
@@ -193,11 +195,34 @@ export default class FieldIndex extends Component {
         if (!without_lookups) resolveLookups(this.plugin);
     }
 
-    async migrateLegacyFileClasses(): Promise<void> {
-        const remaininglegacyFileClass = this.legacyFileClassesPath.values().next().value
-        if (remaininglegacyFileClass) {
-            const migration = new FileClassMigration(this.plugin)
-            await migration.migrateAttributesToFrontmatter(remaininglegacyFileClass)
+    async migrateFileClasses(): Promise<void> {
+        await this.migrateV1FileClasses();
+        //await this.migrateV2FileClasses();
+    }
+
+    async migrateV1FileClasses(): Promise<void> {
+        if ([...this.v1FileClassesPath.keys()].length) {
+            const remainingV1FileClass = this.v1FileClassesPath.values().next().value
+            if (remainingV1FileClass) {
+                const migration = new V1FileClassMigration(this.plugin)
+                await migration.migrate(remainingV1FileClass)
+                //console.log("migrated ", remainingV1FileClass.name, "to v2")
+            }
+        }
+    }
+
+
+    async migrateV2FileClasses(): Promise<void> {
+        if (
+            [...this.v2FileClassesPath.keys()].length &&
+            ![...this.v1FileClassesPath.keys()].length
+        ) {
+            const remainingV2FileClass = this.v2FileClassesPath.values().next().value
+            if (remainingV2FileClass) {
+                const migration = new V2FileClassMigration(this.plugin)
+                await migration.migrate(remainingV2FileClass)
+                //console.log("migrated ", remainingV2FileClass.name, "to v3")
+            }
         }
     }
 
@@ -344,8 +369,10 @@ export default class FieldIndex extends Component {
                             this.fileClassesPath.set(f.path, fileClass)
                             this.fileClassesName.set(fileClass.name, fileClass)
                             const cache = this.plugin.app.metadataCache.getFileCache(f);
-                            if (!cache?.frontmatter?.fields) {
-                                this.legacyFileClassesPath.set(f.path, fileClass)
+                            if (fileClass.getMajorVersion() === undefined || fileClass.getMajorVersion() as number < 2) {
+                                this.v1FileClassesPath.set(f.path, fileClass)
+                            } else if (fileClass.getMajorVersion() === 2) {
+                                this.v2FileClassesPath.set(f.path, fileClass)
                             }
                             if (cache?.frontmatter?.mapWithTag) {
                                 if (cache?.frontmatter?.tagNames) {
@@ -361,7 +388,7 @@ export default class FieldIndex extends Component {
                                 }
                             }
                         } catch (error) {
-                            //console.log(error) 
+                            //console.log(error)
                         }
                     }
                 })

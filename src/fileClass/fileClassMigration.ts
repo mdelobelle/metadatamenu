@@ -6,7 +6,10 @@ import { capitalize } from "src/utils/textUtils";
 import { FileClass } from "./fileClass";
 import { FileClassAttribute } from "./fileClassAttribute";
 
-export class FileClassMigration {
+export class V1FileClassMigration {
+    /*
+    Moving fileClass fields definition from dataview inline fields to frontmatter yaml
+    */
     constructor(public plugin: MetadataMenu) {
 
     }
@@ -45,33 +48,49 @@ export class FileClassMigration {
         }
     }
 
-    public async migrateAttributesToFrontmatter(fileClass: FileClass): Promise<void> {
+    public async migrate(fileClass: FileClass): Promise<void> {
         const file = fileClass.getClassFile();
-        const fields: any[] = []
-        await this.plugin.app.fileManager.processFrontMatter(file, async (fm) => {
-            const attributes = FileClassMigration.getInlineFileClassAttributes(this.plugin, fileClass)
-            attributes.forEach(attr => {
-                fields.push({
-                    command: attr.command,
-                    display: attr.display,
-                    name: attr.name,
-                    options: attr.options,
-                    style: attr.style,
-                    type: attr.type
+        if (!fileClass.getMajorVersion() || fileClass.getMajorVersion() as number < 2) {
+            const fields: any[] = []
+            await this.plugin.app.fileManager.processFrontMatter(file, async (fm) => {
+                const attributes = V1FileClassMigration.getInlineFileClassAttributes(this.plugin, fileClass)
+                attributes.forEach(attr => {
+                    fields.push({
+                        command: attr.command,
+                        display: attr.display,
+                        name: attr.name,
+                        options: attr.options,
+                        style: attr.style,
+                        type: attr.type
+                    })
                 })
+                fm.fields = fields
+                fm.version = "2.0"
             })
-            fm.fields = fields
-            //dont activate cleaning right now.in case the user wan't to revert to a previous version, the data is still available
-            //await this.plugin.fileTaskManager.pushTask(() => { this.cleanLegacyAttributes() })
-        })
+        }
     }
 
-    public async cleanLegacyAttributes(fileClass: FileClass): Promise<void> {
+}
+
+
+export class V2FileClassMigration {
+    /*
+    removing inline fields definitions
+    */
+    constructor(public plugin: MetadataMenu) {
+
+    }
+
+    public async migrate(fileClass: FileClass): Promise<void> {
         const file = fileClass.getClassFile();
-        const content = await app.vault.read(file)
-        const end = getFrontmatterPosition(this.plugin, file).end
-        const newContent = content.split("\n").slice(0, end.line + 1).join("\n")
-        app.vault.modify(file, newContent)
+        if (!fileClass.getMajorVersion() || fileClass.getMajorVersion() as number === 2) {
+            this.plugin.app.fileManager.processFrontMatter(file, async (fm) => {
+                fm.version = "3.0"
+            })
+            const content = await app.vault.read(file)
+            const end = getFrontmatterPosition(this.plugin, file).end
+            const newContent = content.split("\n").slice(0, end.line + 1).join("\n")
+            await this.plugin.fileTaskManager.pushTask(() => app.vault.modify(file, newContent))
+        }
     }
-
 }
