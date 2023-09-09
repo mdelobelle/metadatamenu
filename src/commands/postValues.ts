@@ -8,7 +8,7 @@ import * as Lookup from "src/types/lookupTypes";
 import { fieldComponents, inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
 import { genuineKeys } from "src/utils/dataviewUtils";
 import { ReservedMultiAttributes } from "src/types/fieldTypes";
-import { dump, load } from "js-yaml";
+
 
 export type FieldPayload = {
     value: string,
@@ -87,7 +87,7 @@ export function renderField(
         case "inline":
             switch (field?.type) {
                 case FieldType.JSON: return JSON.stringify(JSON.parse(rawValue))
-                case FieldType.YAML: return dump(load(rawValue)); break;
+                case FieldType.YAML: return rawValue; break;
                 default: return rawValue;
             }
     }

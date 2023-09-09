@@ -5,7 +5,7 @@ import Field from "../Field";
 import ObjectField from "./AbstractObjectField";
 import * as yamlMode from '@codemirror/legacy-modes/mode/yaml';
 import { Diagnostic, linter } from "@codemirror/lint";
-import { dump, load } from "js-yaml";
+import { stringify, parse } from "yaml";
 
 export default class YAMLField extends ObjectField {
 
@@ -14,13 +14,13 @@ export default class YAMLField extends ObjectField {
     }
 
     public dumpValue(value: any): string {
-        return `${dump(value, { lineWidth: 50 }) || ""}`
+        return `${stringify(value, { lineWidth: 50 }) || ""}`
     }
 
     public loadValue(value: any): any {
         try {
             //handle inline fields where YAML are not parsed by dataview
-            return load(value.split("\\n").join("\n"))
+            return parse(value.split("\\n").join("\n"))
         } catch (e) {
             return value
         }
@@ -32,7 +32,7 @@ export default class YAMLField extends ObjectField {
         const yamlLinter = linter(view => {
             let diagnostics: Diagnostic[] = [];
             try {
-                load(view.state.doc.toString())
+                parse(view.state.doc.toString())
             }
             catch (e) {
                 var loc = e.mark;
