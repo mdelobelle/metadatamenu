@@ -72,7 +72,7 @@ export class FieldsModal extends Modal {
         fieldSettingBtn.setTooltip(`${field.fileClassName ? field.fileClassName + " > " : "Preset Field > "} ${field.name} settings`)
         fieldSettingBtn.onClick(() => {
             const _fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
-            const fileClassAttribute = _fileClass?.attributes.find(attr => attr.name === field.name)
+            const fileClassAttribute = _fileClass?.attributes.find(attr => attr.id === field.id)
             if (fileClassAttribute && _fileClass) {
                 const fileClassAttributeModal = new FileClassAttributeModal(this.plugin, _fileClass, fileClassAttribute)
                 fileClassAttributeModal.open();

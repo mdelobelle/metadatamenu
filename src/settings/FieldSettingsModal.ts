@@ -6,6 +6,7 @@ import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
 import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, multiTypes } from "src/types/fieldTypes";
 import { FieldHTMLTagMap, FieldStyle, FieldStyleKey, FieldStyleLabel } from "src/types/dataviewTypes";
 import { cleanActions } from "src/utils/modals";
+import { v4 as uuidv4 } from 'uuid';
 
 export default class FieldSettingsModal extends Modal {
     private namePromptComponent: TextComponent;
@@ -35,15 +36,10 @@ export default class FieldSettingsModal extends Modal {
             this.field = field;
             Field.copyProperty(this.initialField, this.field)
         } else {
-            let newId = 1;
-            this.plugin.initialProperties.forEach(prop => {
-                if (parseInt(prop.id) && parseInt(prop.id) >= newId) {
-                    newId = parseInt(prop.id) + 1;
-                };
-            });
+            const id = uuidv4()
             this.field = new Field();
-            this.field.id = newId.toString();
-            this.initialField.id = newId.toString();
+            this.field.id = id;
+            this.initialField.id = id;
         };
         this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field);
         this.addCommand = this.field.command !== undefined;
@@ -63,17 +59,14 @@ export default class FieldSettingsModal extends Modal {
             this.titleEl.setText(`Manage settings options for ${this.field.name}`);
         };
 
-        /* Name */
+        /* Name and parent */
         this.createnameInputContainer();
+        this.createParentSelectContainer();
         this.contentEl.createEl("hr");
 
-        /* Command */
+        /* Commands and display */
         this.createCommandContainer();
-
-        /* frontmatter list display*/
         this.createFrontmatterListDisplayContainer();
-
-        /* Style for inline fields */
         const styleContainer = this.contentEl.createDiv({ cls: "field-container" })
 
         /* Type */
@@ -123,6 +116,26 @@ export default class FieldSettingsModal extends Modal {
         });
         this.namePromptComponent = input;
     };
+
+    private createParentSelectContainer(): void {
+        const compatibleParents = this.field.getCompatibleParentFieldsNames(this.plugin)
+        const container = this.contentEl.createDiv({ cls: "field-container" })
+        const parentSelectorContainerLabel = container.createDiv({ cls: "label" });
+        parentSelectorContainerLabel.setText(`Parent:`);
+        container.createDiv({ cls: "spacer" })
+        const select = new DropdownComponent(container);
+        select.addOption("none", "--None--")
+        compatibleParents.forEach(parent => select.addOption(parent, parent))
+        if (this.field.parent) {
+            select.setValue(this.field.parent || "none")
+        } else {
+            select.setValue("none")
+        }
+
+        select.onChange((value: string) => {
+            this.field.parent = value !== "none" ? value : undefined
+        })
+    }
 
     private setLabelStyle(label: HTMLDivElement): void {
         const fieldStyle = this.field.style || {}

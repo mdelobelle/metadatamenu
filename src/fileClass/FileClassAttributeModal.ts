@@ -55,6 +55,7 @@ class FileClassAttributeModal extends Modal {
 
         /* Name */
         this.buildNameInputContainer();
+        this.createParentSelectContainer();
         this.buildHeader();
         this.contentEl.createEl("hr");
 
@@ -105,6 +106,26 @@ class FileClassAttributeModal extends Modal {
             FieldSettingsModal.removeValidationError(input);
         });
         this.nameInput = input
+    }
+
+    private createParentSelectContainer(): void {
+        const compatibleParents = this.field.getCompatibleParentFieldsNames(this.plugin)
+        const container = this.contentEl.createDiv({ cls: "field-container" })
+        const parentSelectorContainerLabel = container.createDiv({ cls: "label" });
+        parentSelectorContainerLabel.setText(`Parent:`);
+        container.createDiv({ cls: "spacer" })
+        const select = new DropdownComponent(container);
+        select.addOption("none", "--None--")
+        compatibleParents.forEach(parent => select.addOption(parent, parent))
+        if (this.field.parent) {
+            select.setValue(this.field.parent || "none")
+        } else {
+            select.setValue("none")
+        }
+
+        select.onChange((value: string) => {
+            this.field.parent = value !== "none" ? value : undefined
+        })
     }
 
     private createFrontmatterListDisplayContainer(): void {

@@ -16,7 +16,8 @@ export const enum FieldType {
     "CanvasGroup" = "CanvasGroup",
     "CanvasGroupLink" = "CanvasGroupLink",
     "YAML" = "YAML",
-    "JSON" = "JSON"
+    "JSON" = "JSON",
+    "Nested" = "Nested"
 }
 
 export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = {
@@ -35,7 +36,8 @@ export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = 
     "CanvasGroup": FieldType.CanvasGroup,
     "CanvasGroupLink": FieldType.CanvasGroupLink,
     "YAML": FieldType.YAML,
-    "JSON": FieldType.JSON
+    "JSON": FieldType.JSON,
+    "Nested": FieldType.Nested
 };
 
 export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
@@ -54,7 +56,8 @@ export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
     "CanvasGroup": "canvas-links",
     "CanvasGroupLink": "canvas-links",
     "YAML": "yaml",
-    "JSON": "json"
+    "JSON": "json",
+    "Nested": "nested"
 }
 
 export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
@@ -73,7 +76,8 @@ export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
     "CanvasGroup": "Updates with groups in canvas",
     "CanvasGroupLink": "Updates with links to groups in canvas",
     "YAML": "Accept a YAML object",
-    "JSON": "Accept a JSON object"
+    "JSON": "Accept a JSON object",
+    "Nested": "Accept nested sub-fields"
 }
 
 export const FieldManager: Record<keyof typeof FieldType, any> = {
@@ -92,7 +96,8 @@ export const FieldManager: Record<keyof typeof FieldType, any> = {
     "CanvasGroup": Managers.CanvasGroup,
     "CanvasGroupLink": Managers.CanvasGroupLink,
     "YAML": Managers.YAML,
-    "JSON": Managers.JSON
+    "JSON": Managers.JSON,
+    "Nested": Managers.Nested
 }
 
 export const FieldIcon: Record<keyof typeof FieldType, string> = {
@@ -111,7 +116,8 @@ export const FieldIcon: Record<keyof typeof FieldType, string> = {
     "CanvasGroup": "box-select",
     "CanvasGroupLink": "box-select",
     "YAML": "file-json-2",
-    "JSON": "file-json-2"
+    "JSON": "file-json-2",
+    "Nested": "list-tree"
 }
 
 export const FieldBackgroundColorClass: Record<keyof typeof FieldType, string> = {
@@ -130,7 +136,8 @@ export const FieldBackgroundColorClass: Record<keyof typeof FieldType, string> =
     "CanvasGroup": "file",
     "CanvasGroupLink": "file",
     "YAML": "file",
-    "JSON": "file"
+    "JSON": "file",
+    "Nested": "lookup"
 }
 
 export const multiTypes = [
@@ -145,8 +152,8 @@ export const multiTypes = [
 export const ReservedMultiAttributes = ["tags", "tagNames", "excludes", "aliases"]
 
 export enum MultiDisplayType {
-    "asArray" = 'asArray',
-    "asList" = "asList"
+    "asArray" = 'asArray', //YAML flow style
+    "asList" = "asList" //YAML block style
 }
 
 export const objectTypes = [

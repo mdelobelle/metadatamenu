@@ -870,6 +870,9 @@ span.flatpickr-weekday {
 .metadata-menu .chip.json {
   background-color: var(--color-blue);
 }
+.metadata-menu .chip.nested {
+  background-color: var(--color-red);
+}
 
 .metadata-menu-dv-field-container {
   display: flex;

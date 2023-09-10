@@ -1,6 +1,7 @@
 import MetadataMenu from "main";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { FieldType, MultiDisplayType, multiTypes } from "../types/fieldTypes"
+import NestedField from "./fieldManagers/NestedField";
 
 export interface FieldCommand {
     id: string,
@@ -10,6 +11,7 @@ export interface FieldCommand {
 }
 
 class Field {
+    static parentPathSeparator = "__parentOfNestedMetadataMenuField__"
 
     constructor(
         public name: string = "",
@@ -19,7 +21,8 @@ class Field {
         public fileClassName?: string,
         public command?: FieldCommand,
         public display?: MultiDisplayType,
-        public style?: Record<keyof typeof FieldStyleLabel, boolean>
+        public style?: Record<keyof typeof FieldStyleLabel, boolean>,
+        public parent?: string
     ) { };
 
     public getDisplay(plugin: MetadataMenu): MultiDisplayType {
@@ -27,6 +30,20 @@ class Field {
             return this.display || plugin.settings.frontmatterListDisplay
         } else {
             return MultiDisplayType.asArray
+        }
+    }
+
+
+    public getCompatibleParentFieldsNames(plugin: MetadataMenu): string[] {
+        if (this.fileClassName) {
+            const index = plugin.fieldIndex
+            const nestedFields = index.fileClassesFields
+                .get(this.fileClassName)?.filter(field => field.type === FieldType.Nested) || []
+            return nestedFields.map(field => field.name)
+        } else {
+            const nestedFields = plugin.settings.presetFields
+                .filter(field => field.type === FieldType.Nested)
+            return nestedFields.map(field => field.name)
         }
     }
 
@@ -45,6 +62,7 @@ class Field {
         target.command = source.command
         target.display = source.display
         target.style = source.style
+        target.parent = source.parent
     };
 
     public static createDefault(name: string): Field {

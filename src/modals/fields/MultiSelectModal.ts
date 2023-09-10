@@ -128,7 +128,7 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         const fileClassName = this.plugin.fieldIndex.filesFields.get(this.file.path)?.find(field => field.name === this.field.name)?.fileClassName
         if (fileClassName) {
             const fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
-            const fileClassAttribute = fileClass?.attributes.find(attr => attr.name === this.field.name)
+            const fileClassAttribute = fileClass?.attributes.find(attr => attr.id === this.field.id)
             if (fileClass && fileClassAttribute) {
 
                 let newOptions: string[] | Record<string, string>;

@@ -8,6 +8,7 @@ class FileClassAttribute {
     constructor(
         public origin: string,
         public name: string,
+        public id: string,
         public type: FieldType = FieldType.Input,
         public options: string[] | Record<string, any> = [],
         public fileClassName: string,
@@ -25,7 +26,7 @@ class FileClassAttribute {
         } else {
             options = this.options
         }
-        return new Field(this.name, options, this.name, this.type, this.fileClassName, this.command, this.display, this.style);
+        return new Field(this.name, options, this.id, this.type, this.fileClassName, this.command, this.display, this.style);
     }
 
     public getOptionsString(plugin: MetadataMenu) {

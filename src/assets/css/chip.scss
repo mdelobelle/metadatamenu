@@ -62,4 +62,7 @@
         background-color: var(--color-blue);
     }
     
+    &.nested{
+        background-color: var(--color-red);
+    }
 }
