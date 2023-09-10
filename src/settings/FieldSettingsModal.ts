@@ -118,22 +118,22 @@ export default class FieldSettingsModal extends Modal {
     };
 
     private createParentSelectContainer(): void {
-        const compatibleParents = this.field.getCompatibleParentFieldsNames(this.plugin)
+        const compatibleParents = this.field.getCompatibleParentFields(this.plugin)
         const container = this.contentEl.createDiv({ cls: "field-container" })
         const parentSelectorContainerLabel = container.createDiv({ cls: "label" });
         parentSelectorContainerLabel.setText(`Parent:`);
         container.createDiv({ cls: "spacer" })
         const select = new DropdownComponent(container);
         select.addOption("none", "--None--")
-        compatibleParents.forEach(parent => select.addOption(parent, parent))
+        compatibleParents.forEach(parent => select.addOption(parent.id, parent.name))
         if (this.field.parent) {
             select.setValue(this.field.parent || "none")
         } else {
             select.setValue("none")
         }
 
-        select.onChange((value: string) => {
-            this.field.parent = value !== "none" ? value : undefined
+        select.onChange((parentId: string) => {
+            this.field.parent = parentId !== "none" ? parentId : undefined
         })
     }
 

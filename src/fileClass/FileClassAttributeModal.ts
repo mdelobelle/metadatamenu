@@ -36,6 +36,7 @@ class FileClassAttributeModal extends Modal {
             Field.copyProperty(this.initialField, this.field)
         } else {
             this.field = new Field();
+            this.field.fileClassName = this.fileClass.name
         }
         this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field);
 
@@ -109,22 +110,23 @@ class FileClassAttributeModal extends Modal {
     }
 
     private createParentSelectContainer(): void {
-        const compatibleParents = this.field.getCompatibleParentFieldsNames(this.plugin)
+        const compatibleParents = this.field.getCompatibleParentFields(this.plugin)
         const container = this.contentEl.createDiv({ cls: "field-container" })
         const parentSelectorContainerLabel = container.createDiv({ cls: "label" });
         parentSelectorContainerLabel.setText(`Parent:`);
         container.createDiv({ cls: "spacer" })
         const select = new DropdownComponent(container);
         select.addOption("none", "--None--")
-        compatibleParents.forEach(parent => select.addOption(parent, parent))
+        compatibleParents.forEach(parent => { console.log(parent); select.addOption(parent.id, parent.name) })
         if (this.field.parent) {
             select.setValue(this.field.parent || "none")
         } else {
             select.setValue("none")
         }
 
-        select.onChange((value: string) => {
-            this.field.parent = value !== "none" ? value : undefined
+        select.onChange((parentId: string) => {
+            this.field.parent = parentId !== "none" ? parentId : undefined
+            console.log(this.field)
         })
     }
 
@@ -303,6 +305,7 @@ class FileClassAttributeModal extends Modal {
             } else {
                 delete this.field.display
             }
+            console.log(this.field.parent)
             await this.fileClass.updateAttribute(
                 this.field.type,
                 this.field.name,
@@ -310,7 +313,8 @@ class FileClassAttributeModal extends Modal {
                 this.attr,
                 this.field.command,
                 this.field.display,
-                this.field.style
+                this.field.style,
+                this.field.parent
             );
             this.close();
         })

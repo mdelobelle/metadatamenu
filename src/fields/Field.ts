@@ -11,7 +11,6 @@ export interface FieldCommand {
 }
 
 class Field {
-    static parentPathSeparator = "__parentOfNestedMetadataMenuField__"
 
     constructor(
         public name: string = "",
@@ -34,18 +33,27 @@ class Field {
     }
 
 
-    public getCompatibleParentFieldsNames(plugin: MetadataMenu): string[] {
+    public getCompatibleParentFields(plugin: MetadataMenu): { id: string, name: string }[] {
+        let nestedFields: Field[]
         if (this.fileClassName) {
             const index = plugin.fieldIndex
-            const nestedFields = index.fileClassesFields
+            nestedFields = index.fileClassesFields
                 .get(this.fileClassName)?.filter(field => field.type === FieldType.Nested) || []
-            return nestedFields.map(field => field.name)
+
         } else {
-            const nestedFields = plugin.settings.presetFields
+            nestedFields = plugin.settings.presetFields
                 .filter(field => field.type === FieldType.Nested)
-            return nestedFields.map(field => field.name)
         }
+        return nestedFields.map(field => {
+            return {
+                id: field.id,
+                name: field.name
+            }
+        })
     }
+
+    // il ne faut pas proposer des "compatibleParent" si le field en question figure parmis les ancetres
+    // il faut mettre l'id en tant que parent
 
     static copyProperty(target: Field, source: Field) {
         target.id = source.id;

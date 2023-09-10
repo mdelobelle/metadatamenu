@@ -7,6 +7,7 @@ import { FieldCommand } from "src/fields/Field";
 import { FieldManager } from "src/fields/FieldManager";
 import { postValues } from "src/commands/postValues";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
+import { v4 as uuidv4 } from "uuid"
 
 const options: Record<string, { name: string, toValue: (value: any) => any }> = {
     "limit": { name: "limit", toValue: (value: any) => value },
@@ -263,7 +264,8 @@ class FileClass {
         attr?: FileClassAttribute,
         newCommand?: FieldCommand,
         newDisplay?: MultiDisplayType,
-        newStyle?: Record<keyof typeof FieldStyleLabel, boolean>
+        newStyle?: Record<keyof typeof FieldStyleLabel, boolean>,
+        newParent?: string
     ): Promise<void> {
         const fileClass = attr ? this.plugin.fieldIndex.fileClassesName.get(attr.fileClassName)! : this
         const file = fileClass.getClassFile();
@@ -276,6 +278,7 @@ class FileClass {
                 if (newDisplay) field.display = newDisplay;
                 if (newStyle) field.style = newStyle;
                 if (newName) field.name = newName;
+                if (newParent) field.parent = newParent
             } else {
                 fm.fields.push({
                     name: newName,
@@ -283,7 +286,9 @@ class FileClass {
                     options: newOptions,
                     command: newCommand,
                     display: newDisplay,
-                    style: newStyle
+                    style: newStyle,
+                    parent: newParent,
+                    id: uuidv4()
                 })
             }
         })
