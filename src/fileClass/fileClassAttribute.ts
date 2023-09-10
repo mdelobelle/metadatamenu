@@ -14,7 +14,8 @@ class FileClassAttribute {
         public fileClassName: string,
         public command: FieldCommand,
         public display?: MultiDisplayType,
-        public style?: Record<keyof typeof FieldStyleLabel, boolean>
+        public style?: Record<keyof typeof FieldStyleLabel, boolean>,
+        public parent?: string
     ) { }
 
     public getField() {
@@ -26,7 +27,7 @@ class FileClassAttribute {
         } else {
             options = this.options
         }
-        return new Field(this.name, options, this.id, this.type, this.fileClassName, this.command, this.display, this.style);
+        return new Field(this.name, options, this.id, this.type, this.fileClassName, this.command, this.display, this.style, this.parent);
     }
 
     public getOptionsString(plugin: MetadataMenu) {

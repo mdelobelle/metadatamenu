@@ -125,7 +125,7 @@ export default class FieldSettingsModal extends Modal {
         container.createDiv({ cls: "spacer" })
         const select = new DropdownComponent(container);
         select.addOption("none", "--None--")
-        compatibleParents.forEach(parent => select.addOption(parent.id, parent.name))
+        compatibleParents.forEach(parent => select.addOption(parent.id, parent.path))
         if (this.field.parent) {
             select.setValue(this.field.parent || "none")
         } else {

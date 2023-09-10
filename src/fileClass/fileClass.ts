@@ -159,9 +159,9 @@ class FileClass {
         const rawAttributes = plugin.app.metadataCache.getFileCache(file)?.frontmatter?.fields || []
         const attributes: FileClassAttribute[] = [];
         rawAttributes.forEach((attr: any) => {
-            const { type, options, command, display, style } = attr;
+            const { name, id, type, options, command, display, style, parent } = attr;
             const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
-            attributes.push(new FileClassAttribute(this.name, attr.name, attr.id, fieldType, options, fileClass.name, command, display, style))
+            attributes.push(new FileClassAttribute(this.name, name, id, fieldType, options, fileClass.name, command, display, style, parent))
         })
         if (excludes) {
             return attributes.filter(attr => !excludes.includes(attr.name))
@@ -271,6 +271,7 @@ class FileClass {
         const file = fileClass.getClassFile();
         await this.plugin.app.fileManager.processFrontMatter(file, fm => {
             if (attr) {
+                console.log(newParent)
                 const field = fm.fields.find((f: FileClassAttribute) => f.id === attr.id)
                 field.type = newType;
                 if (newOptions) field.options = newOptions;
@@ -278,7 +279,11 @@ class FileClass {
                 if (newDisplay) field.display = newDisplay;
                 if (newStyle) field.style = newStyle;
                 if (newName) field.name = newName;
-                if (newParent) field.parent = newParent
+                if (newParent) {
+                    field.parent = newParent
+                } else {
+                    delete field.parent
+                }
             } else {
                 fm.fields.push({
                     name: newName,

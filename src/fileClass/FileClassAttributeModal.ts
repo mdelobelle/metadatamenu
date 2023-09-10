@@ -117,7 +117,7 @@ class FileClassAttributeModal extends Modal {
         container.createDiv({ cls: "spacer" })
         const select = new DropdownComponent(container);
         select.addOption("none", "--None--")
-        compatibleParents.forEach(parent => { console.log(parent); select.addOption(parent.id, parent.name) })
+        compatibleParents.forEach(parent => select.addOption(parent.id, parent.path))
         if (this.field.parent) {
             select.setValue(this.field.parent || "none")
         } else {
@@ -125,8 +125,11 @@ class FileClassAttributeModal extends Modal {
         }
 
         select.onChange((parentId: string) => {
-            this.field.parent = parentId !== "none" ? parentId : undefined
-            console.log(this.field)
+            if (parentId === "none") {
+                delete this.field.parent
+            } else {
+                this.field.parent = parentId
+            }
         })
     }
 
@@ -305,7 +308,7 @@ class FileClassAttributeModal extends Modal {
             } else {
                 delete this.field.display
             }
-            console.log(this.field.parent)
+            console.log("newParent: ", this.field.parent)
             await this.fileClass.updateAttribute(
                 this.field.type,
                 this.field.name,

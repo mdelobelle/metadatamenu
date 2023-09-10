@@ -32,22 +32,75 @@ class Field {
         }
     }
 
+    static getFieldFromId(plugin: MetadataMenu, id: string, fileClassName?: string): Field | undefined {
+        let field: Field | undefined = undefined;
+        if (fileClassName) {
+            const index = plugin.fieldIndex
+            field = index.fileClassesFields
+                .get(fileClassName)?.find(field => field.type === FieldType.Nested && field.id === id)
 
-    public getCompatibleParentFields(plugin: MetadataMenu): { id: string, name: string }[] {
+        } else {
+            const _field = plugin.settings.presetFields
+                .find(field => field.type === FieldType.Nested && field.id === id)
+            if (_field) {
+                field = new Field();
+                Object.assign(field, _field);
+            }
+        }
+        return field
+    }
+
+    public hasItselfAsAncestor(plugin: MetadataMenu, childId: string): boolean {
+        if (!this.parent) {
+            return false
+        } else {
+            if (this.parent === childId) {
+                return true;
+            } else {
+                const field = Field.getFieldFromId(plugin, this.parent, this.fileClassName)
+                return field?.hasItselfAsAncestor(plugin, childId) || false
+            }
+        }
+    }
+
+    public getCompatibleParentFields(plugin: MetadataMenu): { id: string, path: string }[] {
+        const otherNestedFields = this.getOtherNestedFields(plugin)
+        if (this.type !== FieldType.Nested) {
+            return otherNestedFields
+        } else {
+            return otherNestedFields.filter(_field => {
+                const field = Field.getFieldFromId(plugin, _field.id, this.fileClassName)
+                return !field?.hasItselfAsAncestor(plugin, this.id)
+            })
+        }
+    }
+
+    public getPath(plugin: MetadataMenu, fieldId: string): string {
+        const field = Field.getFieldFromId(plugin, fieldId, this.fileClassName) as Field
+        if (!field.parent) {
+            return field.name
+        } else {
+            const parent = Field.getFieldFromId(plugin, field.parent, this.fileClassName) as Field
+            return parent.getPath(plugin, parent!.id) + ` > ${field.name}`
+        }
+    }
+
+    public getOtherNestedFields(plugin: MetadataMenu): { id: string, path: string }[] {
         let nestedFields: Field[]
         if (this.fileClassName) {
             const index = plugin.fieldIndex
             nestedFields = index.fileClassesFields
-                .get(this.fileClassName)?.filter(field => field.type === FieldType.Nested) || []
+                .get(this.fileClassName)?.filter(field => field.type === FieldType.Nested && field.id !== this.id) || []
 
         } else {
             nestedFields = plugin.settings.presetFields
-                .filter(field => field.type === FieldType.Nested)
+                .filter(field => field.type === FieldType.Nested && field.id !== this.id)
         }
-        return nestedFields.map(field => {
+        return nestedFields.map(_field => {
+            const field = Field.getFieldFromId(plugin, _field.id, this.fileClassName) as Field
             return {
                 id: field.id,
-                name: field.name
+                path: field.getPath(plugin, field.id)
             }
         })
     }
