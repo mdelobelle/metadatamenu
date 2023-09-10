@@ -1,7 +1,6 @@
 import MetadataMenu from "main";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { FieldType, MultiDisplayType, multiTypes } from "../types/fieldTypes"
-import NestedField from "./fieldManagers/NestedField";
 
 export interface FieldCommand {
     id: string,
@@ -50,7 +49,7 @@ class Field {
         return field
     }
 
-    public hasItselfAsAncestor(plugin: MetadataMenu, childId: string): boolean {
+    public hasIdAsAncestor(plugin: MetadataMenu, childId: string): boolean {
         if (!this.parent) {
             return false
         } else {
@@ -58,7 +57,7 @@ class Field {
                 return true;
             } else {
                 const field = Field.getFieldFromId(plugin, this.parent, this.fileClassName)
-                return field?.hasItselfAsAncestor(plugin, childId) || false
+                return field?.hasIdAsAncestor(plugin, childId) || false
             }
         }
     }
@@ -70,18 +69,21 @@ class Field {
         } else {
             return otherNestedFields.filter(_field => {
                 const field = Field.getFieldFromId(plugin, _field.id, this.fileClassName)
-                return !field?.hasItselfAsAncestor(plugin, this.id)
+                return !field?.hasIdAsAncestor(plugin, this.id)
             })
         }
     }
 
-    public getPath(plugin: MetadataMenu, fieldId: string): string {
-        const field = Field.getFieldFromId(plugin, fieldId, this.fileClassName) as Field
+    public getAncestors(plugin: MetadataMenu, fieldId: string, ancestors: string[]): string[] {
+        const field = Field.getFieldFromId(plugin, fieldId, this.fileClassName)
+        if (!field) return ancestors
         if (!field.parent) {
-            return field.name
+            return ancestors
         } else {
-            const parent = Field.getFieldFromId(plugin, field.parent, this.fileClassName) as Field
-            return parent.getPath(plugin, parent!.id) + ` > ${field.name}`
+            const parent = Field.getFieldFromId(plugin, field.parent, this.fileClassName)
+            if (!parent) return ancestors
+            ancestors.unshift(parent.id)
+            return parent.getAncestors(plugin, parent.id, ancestors)
         }
     }
 
@@ -97,16 +99,16 @@ class Field {
                 .filter(field => field.type === FieldType.Nested && field.id !== this.id)
         }
         return nestedFields.map(_field => {
-            const field = Field.getFieldFromId(plugin, _field.id, this.fileClassName) as Field
+            const field = Field.getFieldFromId(plugin, _field.id, this.fileClassName) as Field //sure exists!
             return {
                 id: field.id,
-                path: field.getPath(plugin, field.id)
+                path: field
+                    .getAncestors(plugin, field.id, [field.id])
+                    .map(id => Field.getFieldFromId(plugin, id, this.fileClassName)!.name)
+                    .join(" > ")
             }
         })
     }
-
-    // il ne faut pas proposer des "compatibleParent" si le field en question figure parmis les ancetres
-    // il faut mettre l'id en tant que parent
 
     static copyProperty(target: Field, source: Field) {
         target.id = source.id;
