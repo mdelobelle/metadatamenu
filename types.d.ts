@@ -15,6 +15,12 @@ declare module "obsidian" {
             };
         };
     }
+    interface CachedMetadata {
+        frontmatterPosition: {
+            end: { line: number, col: number, offset: number },
+            start: { line: number, col: number, offset: number }
+        }
+    }
     interface MetadataCache {
         inProgressTaskCount: number;
         on(

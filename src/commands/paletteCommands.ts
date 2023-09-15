@@ -125,8 +125,8 @@ function addManageFieldAtCursorCommand(plugin: MetadataMenu) {
                 const cache = plugin.app.metadataCache.getFileCache(view!.file)
                 const frontmatter = cache?.frontmatter;
                 if (frontmatter && editor
-                    && editor.getCursor().line > getFrontmatterPosition(plugin, view!.file).start.line
-                    && editor.getCursor().line < getFrontmatterPosition(plugin, view!.file).end.line) {
+                    && editor.getCursor().line > getFrontmatterPosition(plugin, view!.file).start!.line
+                    && editor.getCursor().line < getFrontmatterPosition(plugin, view!.file).end!.line) {
                     const attribute = frontMatterLineField(editor.getLine(editor.getCursor().line))
                     if (attribute) optionsList.createAndOpenFieldModal(attribute)
                 } else if (editor) {

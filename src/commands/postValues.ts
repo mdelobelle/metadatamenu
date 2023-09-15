@@ -8,6 +8,8 @@ import * as Lookup from "src/types/lookupTypes";
 import { fieldComponents, inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
 import { genuineKeys } from "src/utils/dataviewUtils";
 import { ReservedMultiAttributes } from "src/types/fieldTypes";
+import Field from "src/fields/Field";
+import { Note } from "src/note/note";
 
 
 export type FieldPayload = {
@@ -127,19 +129,42 @@ export async function postFieldsInYaml(
     const newContent = []
     const currentFile = await app.vault.read(file)
     const skippedLines: number[] = []
+    //tests
+    const note = new Note(plugin, file)
+    await note.buildNodes()
+    note.createOrUpdateNodeInFrontmatter(fields)
+    console.log(note.renderNode())
+
+    const indentAncestor = (field: Field, ancestor: string, level: number) => {
+        const ancestorName = Field.getFieldFromId(plugin, ancestor, field.fileClassName)?.name || "unknown";
+        return `${"  ".repeat(level)}${ancestorName}:`
+    }
+    const nestFieldName = (field: Field) => {
+        const ancestors = field.getAncestors(plugin);
+        const level = ancestors.length
+        return `${ancestors.map((ancestor, i) => indentAncestor(field, ancestor, i)).join("\n")}${level === 0 ? "" : "\n"}${"  ".repeat(level)}${field.name}`
+    }
+    const nestItem = (field: Field, value: any) => {
+        const ancestors = field.getAncestors(plugin);
+        const level = ancestors.length
+        return `${"  ".repeat(level)}- ${value}`
+    }
     const pushNewField = (fieldName: string, payload: FieldPayload): void => {
         const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName);
         if (field) {
             const newValue = renderField(plugin, file, fieldName, payload.value, "yaml")
+
             if (Array.isArray(newValue)) {
                 if (field?.getDisplay(plugin) === MultiDisplayType.asList) {
-                    newContent.push(`${fieldName}:`)
-                    newValue.filter(v => !!v).forEach(item => { newContent.push(`  - ${item}`) });
+                    newContent.push(`${nestFieldName(field)}:`)
+                    newValue.filter(v => !!v).forEach(item => {
+                        newContent.push(nestItem(field, item))
+                    });
                 } else {
-                    newContent.push(`${fieldName}: [${newValue.join(", ")}]`);
+                    newContent.push(`${nestFieldName(field)}: [${newValue.join(", ")}]`);
                 }
             } else {
-                newContent.push(`${fieldName}: ${newValue}`);
+                newContent.push(`${nestFieldName(field)}: ${newValue}`);
             }
         } else {
             newContent.push(`${fieldName}: ${payload.value}`);
@@ -153,10 +178,10 @@ export async function postFieldsInYaml(
     } else {
         const currentContent = currentFile.split("\n")
         currentContent.forEach((line, lineNumber) => {
-            if (lineNumber > getFrontmatterPosition(plugin, file).end.line) {
+            if (lineNumber > getFrontmatterPosition(plugin, file).end!.line) {
                 // don't touch outside frontmatter : it's handled by postFieldsInline
                 newContent.push(line)
-            } else if (lineNumber === getFrontmatterPosition(plugin, file).end.line) {
+            } else if (lineNumber === getFrontmatterPosition(plugin, file).end!.line) {
                 //insert here the new fields    
                 Object.entries(fields)
                     .filter(([fieldName, payload]) => !Object.keys(frontmatter).includes(fieldName))
@@ -167,7 +192,17 @@ export async function postFieldsInYaml(
             } else if (!skippedLines.includes(lineNumber)) {
                 //check if any of fields is matching this line and skip lines undeneath modified multi fields: they are reconstructed
                 const matchedField: { name: string | undefined, payload: FieldPayload | undefined } = { name: undefined, payload: undefined }
+                /* 
+                ici on doit changer la détection du field, ça devient plus compliqué
+                premiere difficulté: 
+                on doit chercher récursivement le premier ancetre puis le suivant etc, jusqu'à ce qu'on arrive au près et là on peut skip les lignes
+                deuxième difficulté: si un des ancêtre n'existe pas encore dans l'arborescence il faut le créer
+                peut-être changer totalement la manière dont on explore le document
+                par exemple faire une liste de nodes {line number, field, level, value} pour l'ensemble des fields de la fileclass ou des preseetFields
+                avantage: on peut reconstruire un document en insérant des lignes, changeant le level des nodes, leur value facilement
 
+                commençons par ça
+                */
                 Object.entries(fields).forEach(([fieldName, payload]) => {
                     const regex = new RegExp(`^${fieldName}:`, 'u');
                     const r = line.match(regex);

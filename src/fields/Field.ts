@@ -36,11 +36,11 @@ class Field {
         if (fileClassName) {
             const index = plugin.fieldIndex
             field = index.fileClassesFields
-                .get(fileClassName)?.find(field => field.type === FieldType.Nested && field.id === id)
+                .get(fileClassName)?.find(field => field.id === id)
 
         } else {
             const _field = plugin.settings.presetFields
-                .find(field => field.type === FieldType.Nested && field.id === id)
+                .find(field => field.id === id)
             if (_field) {
                 field = new Field();
                 Object.assign(field, _field);
@@ -74,7 +74,20 @@ class Field {
         }
     }
 
-    public getAncestors(plugin: MetadataMenu, fieldId: string, ancestors: string[]): string[] {
+    static getValue(obj: any, path: string): string {
+        if (!path) return obj;
+        const properties: string[] = path.split('.');
+        return Field.getValue(obj[properties.shift()!], properties.join('.'))
+    }
+
+    public getValueFromFileAttributes(plugin: MetadataMenu, attributes: Record<string, any>) {
+        const ancestorsIds = this.getAncestors(plugin)
+        const ancestors = ancestorsIds.map(id => Field.getFieldFromId(plugin, id)?.name)
+        const path = `${ancestors.join(".")}${ancestors.length ? "." : ""}${this.name}`
+        return Field.getValue(attributes, path)
+    }
+
+    public getAncestors(plugin: MetadataMenu, fieldId: string = this.id, ancestors: string[] = []): string[] {
         const field = Field.getFieldFromId(plugin, fieldId, this.fileClassName)
         if (!field) return ancestors
         if (!field.parent) {

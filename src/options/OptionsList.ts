@@ -33,7 +33,7 @@ export default class OptionsList {
 
 	// adds options to context menu or to a dropdown modal trigger with "Field: Options" command in command pallette
 	path: string;
-	attributes: Record<string, string>;
+	attributes: Record<string, any>;
 	fieldsFromIndex: Record<string, Field> = {};
 
 	constructor(
@@ -89,17 +89,18 @@ export default class OptionsList {
 
 	public createAndOpenFieldModal(fieldName: string): void {
 		const field = this.fieldsFromIndex[fieldName]
+		const value = field.getValueFromFileAttributes(this.plugin, this.attributes)
 		if (field) {
 			const fieldManager = new FieldManager[field.type](this.plugin, field) as F;
 			switch (fieldManager.type) {
 				case FieldType.Boolean:
-					(fieldManager as BooleanField).toggle(field.name, this.attributes[field.name], this.file)
+					(fieldManager as BooleanField).toggle(field.name, value, this.file)
 					break;
 				case FieldType.Cycle:
-					(fieldManager as CycleField).next(field.name, this.attributes[field.name], this.file)
+					(fieldManager as CycleField).next(field.name, value, this.file)
 					break;
 				default:
-					fieldManager.createAndOpenFieldModal(this.file, field.name, this.attributes[field.name])
+					fieldManager.createAndOpenFieldModal(this.file, field.name, value)
 					break;
 			}
 
@@ -356,7 +357,7 @@ export default class OptionsList {
 			let lineNumber = currentLineNumber
 			if (frontmatter) {
 				const { start, end } = getFrontmatterPosition(this.plugin, this.file)
-				if (currentLineNumber >= start.line && currentLineNumber < end.line) lineNumber = -1
+				if (currentLineNumber >= start!.line && currentLineNumber < end!.line) lineNumber = -1
 			}
 			if (isMenu(this.location)) {
 				this.location.addItem((item) => {
