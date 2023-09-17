@@ -131,9 +131,6 @@ export async function postFieldsInYaml(
     const skippedLines: number[] = []
     //tests
     const note = new Note(plugin, file)
-    await note.buildNodes()
-    note.createOrUpdateNodeInFrontmatter(fields)
-    console.log(note.renderNode())
 
     const indentAncestor = (field: Field, ancestor: string, level: number) => {
         const ancestorName = Field.getFieldFromId(plugin, ancestor, field.fileClassName)?.name || "unknown";
@@ -147,7 +144,7 @@ export async function postFieldsInYaml(
     const nestItem = (field: Field, value: any) => {
         const ancestors = field.getAncestors(plugin);
         const level = ancestors.length
-        return `${"  ".repeat(level)}- ${value}`
+        return `${"  ".repeat(level + 1)}- ${value}`
     }
     const pushNewField = (fieldName: string, payload: FieldPayload): void => {
         const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName);
@@ -229,7 +226,9 @@ export async function postFieldsInYaml(
         })
     }
     const updatedFile = newContent.join('\n')
-    await plugin.app.vault.modify(file, updatedFile);
+
+    // ---- don't modify the note to check modification in the note object solely -----
+    //await plugin.app.vault.modify(file, updatedFile);
 }
 
 export async function postFieldsInline(
@@ -328,7 +327,9 @@ export async function postFieldsInline(
 
     //console.log("started writing...", input)
     const updatedFile = newContent.filter((line, i) => !skippedLines.includes(i)).join('\n')
-    await plugin.app.vault.modify(file, updatedFile);
+    //don't modify the note to check modificiation in note solely
+    //await plugin.app.vault.modify(file, updatedFile);
+
     //console.log("finished writing...", input)
     const editor = plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor
     if (editor) {
@@ -392,8 +393,16 @@ export async function postValues(
         }
     })
     //console.log(toYaml, toCreateInline, toUpdateInline)
+    /*
     if (Object.keys(toYaml).length) await plugin.fileTaskManager
         .pushTask(() => { postFieldsInYaml(plugin, file, toYaml) })
     if (Object.keys(toCreateInline).length || Object.keys(toUpdateInline).length) await plugin.fileTaskManager
         .pushTask(() => { postFieldsInline(plugin, file, toUpdateInline, toCreateInline, lineNumber, after, asList, asComment) })
+    */
+    const note = new Note(plugin, file)
+    await note.buildLines()
+    console.log(note.renderNote())
+    note.createOrUpdateFields(payload, lineNumber)
+    console.log(note.renderNote())
+
 }

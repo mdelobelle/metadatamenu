@@ -1,4 +1,5 @@
 import MetadataMenu from "main";
+import { Notice } from "obsidian";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { FieldType, MultiDisplayType, multiTypes } from "../types/fieldTypes"
 
@@ -77,12 +78,17 @@ class Field {
     static getValue(obj: any, path: string): string {
         if (!path) return obj;
         const properties: string[] = path.split('.');
-        return Field.getValue(obj[properties.shift()!], properties.join('.'))
+        try {
+            const subValue = Field.getValue(obj[properties.shift()!], properties.join('.'))
+            return subValue
+        } catch (e) {
+            return ""
+        }
     }
 
     public getValueFromFileAttributes(plugin: MetadataMenu, attributes: Record<string, any>) {
         const ancestorsIds = this.getAncestors(plugin)
-        const ancestors = ancestorsIds.map(id => Field.getFieldFromId(plugin, id)?.name)
+        const ancestors = ancestorsIds.map(id => Field.getFieldFromId(plugin, id, this.fileClassName)?.name)
         const path = `${ancestors.join(".")}${ancestors.length ? "." : ""}${this.name}`
         return Field.getValue(attributes, path)
     }

@@ -271,7 +271,6 @@ class FileClass {
         const file = fileClass.getClassFile();
         await this.plugin.app.fileManager.processFrontMatter(file, fm => {
             if (attr) {
-                console.log(newParent)
                 const field = fm.fields.find((f: FileClassAttribute) => f.id === attr.id)
                 field.type = newType;
                 if (newOptions) field.options = newOptions;

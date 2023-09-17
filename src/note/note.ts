@@ -1,81 +1,77 @@
 import MetadataMenu from "main";
-import { CachedMetadata, FrontMatterCache, parseYaml, TFile } from "obsidian";
-import { FieldPayload } from "src/commands/postValues";
+import { CachedMetadata, parseYaml, TFile } from "obsidian";
+import { FieldPayload, FieldsPayload } from "src/commands/postValues";
 import Field from "src/fields/Field";
 import { objectTypes, FieldType, ReservedMultiAttributes, MultiDisplayType } from "src/types/fieldTypes";
 import { getFrontmatterPosition } from "src/utils/fileUtils";
+import { Line } from "./line";
 import { Node } from "./node";
 
 export class Note {
-    public nodes: Node[] = []
-    public fileFields: { id: string, field: Field, header: string }[] = []
+    public lines: Line[] = []
+    public fields: Field[] = []
     public cache: CachedMetadata | null
 
     constructor(
         public plugin: MetadataMenu,
         public file: TFile,
     ) {
-        const fields = this.plugin.fieldIndex.filesFields.get(this.file.path) || []
+        this.fields = this.plugin.fieldIndex.filesFields.get(this.file.path) || []
         this.cache = this.plugin.app.metadataCache.getFileCache(file)
-        fields.forEach(field => {
-            const fieldHeader = this.getFieldHeader(field);
-            this.fileFields.push({
-                id: field.id,
-                header: fieldHeader,
-                field: field
-            })
-        })
     }
 
     public getField(fieldName: string): Field | undefined {
-        return this.fileFields.find(fF => fF.field.name === fieldName)?.field
+        return this.fields.find(field => field.name === fieldName)
     }
 
-    public renderField(
+    public parseFieldValue(_rawValue: string, fieldType?: FieldType): string {
+        if (_rawValue) {
+            if (_rawValue.startsWith("[[")) {
+                return `"${_rawValue}"`
+            } else if (_rawValue.startsWith("#")) {
+                return `${_rawValue}`;
+            } else if (fieldType && objectTypes.includes(fieldType)) {
+                return `\n  ${_rawValue.split("\n").join("\n  ")}`;
+            } else {
+                return parseYaml(_rawValue);
+            };
+        } else {
+            return ""
+        }
+    }
+
+    public renderMultiFields = (rawValue: string, itemRendering: (itemValue: string) => any) => {
+        const values = rawValue
+            .replace(/(\,\s+)/g, ',')
+            .split(',')
+            .filter(v => !!v)
+            .map(value => itemRendering(value));
+        return values.length ? values : ""
+    }
+
+    public renderFieldValue(
         fieldName: string,
         rawValue: string,
         location: "yaml" | "inline"
     ): any {
         const field = this.getField(fieldName)
-        const parseFieldValue = (_rawValue: string) => {
-            if (_rawValue) {
-                if (_rawValue.startsWith("[[")) {
-                    return `"${_rawValue}"`
-                } else if (_rawValue.startsWith("#")) {
-                    return `${_rawValue}`;
-                } else if (field?.type && objectTypes.includes(field?.type)) {
-                    return `\n  ${_rawValue.split("\n").join("\n  ")}`;
-                } else {
-                    return parseYaml(_rawValue);
-                };
-            } else {
-                return ""
-            }
-        }
-        const renderMultiFields = (rawValue: string, itemRendering: (itemValue: string) => any) => {
-            const values = rawValue
-                .replace(/(\,\s+)/g, ',')
-                .split(',')
-                .filter(v => !!v)
-                .map(value => itemRendering(value));
-            return values.length ? values : ""
-        }
+        const type = field?.type
         switch (location) {
             case "yaml":
-                switch (field?.type) {
-                    case FieldType.Lookup: return renderMultiFields(rawValue, (item) => parseFieldValue(item));
-                    case FieldType.Multi: return renderMultiFields(rawValue, (item) => parseFieldValue(item));
-                    case FieldType.MultiFile: return renderMultiFields(rawValue, (item) => `"${item}"`);
-                    case FieldType.Canvas: return renderMultiFields(rawValue, (item) => item ? `${item}` : "");
+                switch (type) {
+                    case FieldType.Lookup: return this.renderMultiFields(rawValue, (item) => this.parseFieldValue(item, type));
+                    case FieldType.Multi: return this.renderMultiFields(rawValue, (item) => this.parseFieldValue(item, type));
+                    case FieldType.MultiFile: return this.renderMultiFields(rawValue, (item) => `"${item}"`);
+                    case FieldType.Canvas: return this.renderMultiFields(rawValue, (item) => item ? `${item}` : "");
                     case undefined: if ([...ReservedMultiAttributes, this.plugin.settings.fileClassAlias].includes(fieldName)) {
-                        return renderMultiFields(rawValue, (item) => `${item}`)
+                        return this.renderMultiFields(rawValue, (item) => `${item}`)
                     } else {
-                        return parseFieldValue(rawValue);
+                        return this.parseFieldValue(rawValue, type);
                     };
-                    default: return parseFieldValue(rawValue);
+                    default: return this.parseFieldValue(rawValue, type);
                 }
             case "inline":
-                switch (field?.type) {
+                switch (type) {
                     case FieldType.JSON: return JSON.stringify(JSON.parse(rawValue))
                     case FieldType.YAML: return rawValue; break;
                     default: return rawValue;
@@ -83,103 +79,91 @@ export class Note {
         }
     }
 
-    public getFieldHeader = (field: Field): string => {
-        const ancestors = field.getAncestors(this.plugin);
-        const level = ancestors.length
-        return `${"  ".repeat(level)}${field.name}`
-    }
-
-    public async buildNodes() {
+    public async buildLines() {
         const content = await app.vault.read(this.file)
-        content.split("\n").forEach(async (line, i) => {
-            const node = new Node(this.plugin, this, line)
-            await node.buildNode()
-            this.nodes.push(node)
+        const { end: frontMatterEnd } = getFrontmatterPosition(this.plugin, this.file)
+        content.split("\n").forEach((rawLine, i) => {
+            const position = !!frontMatterEnd?.line && i <= frontMatterEnd?.line ? "yaml" : "inline"
+            new Line(this.plugin, this, position, rawLine, i)
         })
     }
-    public indentAncestor = (field: Field, ancestor: string, level: number) => {
-        const ancestorName = Field.getFieldFromId(this.plugin, ancestor, field.fileClassName)?.name || "unknown";
-        return `${"  ".repeat(level)}${ancestorName}:`
-    }
-    public nestFieldName = (field: Field): [string, number | undefined] => {
-        let insertLine: number | undefined
-        let levelToInclude: number = 0
-        const ancestors = field.getAncestors(this.plugin);
-        const ancestorsToInclude: string[] = []
-        ancestors.forEach((id, level) => {
-            //check if a node exists with the ancestor if so: get the line
-            const node = this.nodes.find(node => node.field?.field.id === id)
-            if (node) {
-                insertLine = this.nodes.indexOf(node) + 1
-                levelToInclude = level
-            } else {
-                ancestorsToInclude.push(id)
-            }
-        })
-        const level = ancestors.length
-        return [`${ancestorsToInclude.map((ancestor, i) =>
-            this.indentAncestor(field, ancestor, levelToInclude + 1 + i)).join("\n")
-            }${level === 0 ? "" : "\n"
-            }${"  ".repeat(level)
-            }${field.name}`, insertLine]
-    }
-    public nestItem = (field: Field, value: any) => {
-        const ancestors = field.getAncestors(this.plugin);
-        const level = ancestors.length
-        return `${"  ".repeat(level)}- ${value}`
-    }
 
-    public createNodeContent(fieldName: string, payload: FieldPayload, location: "yaml" | "inline"): [string[], number | undefined] {
-        const field = this.getField(fieldName)
-        let insertLine: number | undefined
-        let newContent = []
-        if (field) {
-            const [fieldHeader, _insertLine] = this.nestFieldName(field)
-            insertLine = _insertLine
-            const newValue = this.renderField(fieldName, payload.value, location)
-
-            if (Array.isArray(newValue)) {
-                if (field?.getDisplay(this.plugin) === MultiDisplayType.asList) {
-                    newContent.push(`${fieldHeader}:`)
-                    newValue.filter(v => !!v).forEach(item => {
-                        newContent.push(this.nestItem(field, item))
-                    });
-                } else {
-                    newContent.push(`${fieldHeader}: [${newValue.join(", ")}]`);
-                }
-            } else {
-                newContent.push(`${fieldHeader}: ${newValue}`);
-            }
-        } else {
-            newContent.push(`${fieldName}: ${payload.value}`);
+    public getNodeForFieldName(fieldName: string): Node | undefined {
+        for (const line of this.lines) {
+            const node = line.nodes.find(_node => _node.field?.name === fieldName)
+            if (node) return node
         }
-        return [newContent, insertLine]
+        return undefined
     }
 
-    public updateNode(fieldName: string, payload: FieldPayload, location: "yaml" | "inline") {
-
+    public getNodeForFieldId(fieldId: string): Node | undefined {
+        for (const line of this.lines) {
+            const node = line.nodes.find(_node => _node.field?.name === fieldId)
+            if (node) return node
+        }
+        return undefined
     }
 
-    public createOrUpdateNodeInFrontmatter(fields: Record<string, FieldPayload>) {
-        Object.entries(fields).forEach(([fieldName, payload]) => {
-            const node = this.nodes.find(node => node.field?.field.name === fieldName)
-            if (node && node.field) {
-                const newValue = this.renderField(fieldName, payload.value, "yaml")
-                node.rawContent = `${node.field.header}: ${newValue}`
-            } else {
-                const [nodeContent, insertLine] = this.createNodeContent(fieldName, payload, "yaml")
-                const newNode = new Node(this.plugin, this, nodeContent.join("\n"))
-                const frontmatterEndLine = getFrontmatterPosition(this.plugin, this.file).end!.line
-                if (frontmatterEndLine) {
-                    this.nodes.splice(insertLine || frontmatterEndLine, 0, newNode)
+    public insertField(fieldName: string, payload: FieldPayload, lineNumber?: number): void {
+
+        const frontMatterEnd = getFrontmatterPosition(this.plugin, this.file)?.end?.line
+
+        let insertLineNumber =
+            lineNumber ||
+            frontMatterEnd ||
+            this.lines.last()?.number ||
+            0
+
+        const position = frontMatterEnd && (insertLineNumber <= frontMatterEnd) ? "yaml" : "inline"
+
+        const createLine = (fieldName: string, value: string, position: "yaml" | "inline", lineNumber: number) => {
+            const newLine = new Line(this.plugin, this, position, "", lineNumber)
+            const newNode = new Node(this.plugin, newLine)
+            newNode.createFieldNodeContent(fieldName, value, position);
+            newLine.renderLine()
+        }
+
+        const field = this.getField(fieldName)
+        if (field) {
+            //look for ancestors
+            const ancestors = field.getAncestors(this.plugin)
+            ancestors.forEach((id, level) => {
+                const node = this.getNodeForFieldId(id)
+                if (node) {
+                    insertLineNumber = node.line.number!
                 } else {
-
+                    const ancestorField = this.fields.find(field => field.id === id)!
+                    createLine(ancestorField.name, "", position, insertLineNumber)
+                    insertLineNumber += 1
                 }
+            })
+
+        }
+        createLine(fieldName, payload.value, position, insertLineNumber)
+    }
+
+
+    public createOrUpdateFields(fields: FieldsPayload, lineNumber?: number): void {
+        //TODO tester les JSON fields et YAML fields et Lookup fields
+        fields.forEach(field => {
+            const node = this.getNodeForFieldName(field.name)
+            if (node && node.field) {
+                //update : on déconstruit et reconstruit le node
+                node.createFieldNodeContent(field.name, field.payload.value, node.line.position)
+                node.line.renderLine()
+            } else {
+                //insert
+                this.insertField(field.name, field.payload, lineNumber)
             }
         })
+        this.plugin.fileTaskManager.pushTask(() => { this.updateFile() })
     }
 
-    public renderNode() {
-        return this.nodes.map(node => node.rawContent).join("\n")
+    public async updateFile() {
+        await this.plugin.app.vault.modify(this.file, this.renderNote())
+    }
+
+    public renderNote(): string {
+        return this.lines.map(line => line.rawContent).join("\n")
     }
 }

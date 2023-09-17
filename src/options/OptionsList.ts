@@ -88,8 +88,8 @@ export default class OptionsList {
 	}
 
 	public createAndOpenFieldModal(fieldName: string): void {
-		const field = this.fieldsFromIndex[fieldName]
-		const value = field.getValueFromFileAttributes(this.plugin, this.attributes)
+		const field = Object.entries(this.fieldsFromIndex).find(([_fieldName, _field]) => _fieldName === fieldName)?.[1]
+		const value = field ? field.getValueFromFileAttributes(this.plugin, this.attributes) : ""
 		if (field) {
 			const fieldManager = new FieldManager[field.type](this.plugin, field) as F;
 			switch (fieldManager.type) {

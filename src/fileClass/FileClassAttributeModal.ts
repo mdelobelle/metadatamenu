@@ -308,7 +308,6 @@ class FileClassAttributeModal extends Modal {
             } else {
                 delete this.field.display
             }
-            console.log("newParent: ", this.field.parent)
             await this.fileClass.updateAttribute(
                 this.field.type,
                 this.field.name,

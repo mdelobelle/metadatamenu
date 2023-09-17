@@ -238,7 +238,7 @@ export default class FieldIndex extends Component {
                     nodes = canvasContent.nodes;
                     edges = canvasContent.edges
                 } catch (error) {
-                    console.log(error)
+                    //console.log(error)
                     new Notice(`Couldn't read ${canvas.path}`)
                 }
             }

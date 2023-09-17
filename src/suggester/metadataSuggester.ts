@@ -343,7 +343,6 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                     editor.setCursor({ line: endFieldLineNumber, ch: editor.getLine(endFieldLineNumber).length })
                 }
             } catch (error) {
-                console.log(error)
                 new Notice("Frontmatter wrongly formatted", 2000)
                 this.close()
                 return

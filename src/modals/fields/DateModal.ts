@@ -65,7 +65,6 @@ export default class DateModal extends BaseModal {
                 const nldates = this.plugin.app.plugins.plugins['nldates-obsidian'];
                 newValue = nldates.parseDate(this.value).moment;
             } catch (error) {
-                console.log(error)
                 newValue = moment(this.value, this.format);
             }
         } else {
