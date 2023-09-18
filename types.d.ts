@@ -14,6 +14,9 @@ declare module "obsidian" {
                 };
             };
         };
+        statusBar: {
+            containerEl: HTMLDivElement;
+        }
     }
     interface CachedMetadata {
         frontmatterPosition: {

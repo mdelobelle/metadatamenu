@@ -4,6 +4,7 @@ import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
 import FieldIndex from 'src/components/FieldIndex';
 import FileTaskManager from 'src/components/FileTaskManager';
+import IndexStatus from 'src/components/IndexStatus';
 import Field from 'src/fields/Field';
 import FileClassQuery from 'src/fileClass/FileClassQuery';
 import type { IMetadataMenuApi } from 'src/MetadataMenuApi';
@@ -23,6 +24,7 @@ export default class MetadataMenu extends Plugin {
 	public fileTaskManager: FileTaskManager;
 	public extraButton: ExtraButton;
 	public contextMenu: ContextMenu;
+	public indexStatus: IndexStatus;
 
 	async onload(): Promise<void> {
 		console.log('Metadata Menu loaded');
@@ -43,6 +45,8 @@ export default class MetadataMenu extends Plugin {
 		if (this.settings.settingsVersion === 3) await SettingsMigration.migrateSettingsV3toV4(this)
 
 		//loading components
+		this.indexStatus = this.addChild(new IndexStatus(this))
+		if (this.settings.showIndexingStatusInStatusBar) this.indexStatus.load()
 		this.fieldIndex = this.addChild(new FieldIndex(this, "1", () => { }))
 		this.fileTaskManager = this.addChild(new FileTaskManager(this, "1", () => { }))
 		this.extraButton = this.addChild(new ExtraButton(this, "1", () => { }))
@@ -76,9 +80,13 @@ export default class MetadataMenu extends Plugin {
 		)
 		this.registerEvent(
 			this.app.workspace.on('metadata-menu:indexed', () => {
+				this.indexStatus.setState("indexed")
 				addCommands(this, undefined);
 			})
 		)
+		this.registerEvent(this.app.workspace.on("metadata-menu:updated-index", () => {
+			this.indexStatus.setState("indexed")
+		}));
 
 		//building palette commands
 		addCommands(this, this.app.workspace.getActiveViewOfType(MarkdownView));

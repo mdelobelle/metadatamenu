@@ -4,7 +4,7 @@ export const genericFieldRegex = "(?<inQuote>\>*(\\s+)?)?(?<inList>- )?(?<preSpa
 
 export const inlineFieldRegex = (attribute: string) => `(?<inQuote>\>*(\\s+)?)?(?<inList>- )?(?<preSpacer>(\\s+)?)?(?<startStyle>[_\\*~\`]*)(?<attribute>${attribute})(?<endStyle>[_\\*~\`]*)(?<beforeSeparatorSpacer>\\s*)::(?<afterSeparatorSpacer>\\s*)`;
 
-export const fullLineRegex = new RegExp(`^(\s*)${genericFieldRegex}::\\s*(?<values>.*)?`, "u");
+export const fullLineRegex = new RegExp(`^\\s*${genericFieldRegex}::\\s*(?<values>.*)?`, "u");
 
 export const inSentenceRegexBrackets = new RegExp(`\\[${genericFieldRegex}::\\s*(?<values>[^\\]]+)?\\]`, "gu");
 

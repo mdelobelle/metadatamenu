@@ -170,6 +170,7 @@ export default class FieldIndex extends Component {
     async fullIndex(event: string, force_update_all = false, without_lookups = false): Promise<void> {
         //console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
         let start = Date.now(), time = Date.now()
+        this.plugin.indexStatus.setState("indexing")
         this.flushCache();
         this.getFileClassesAncestors();
         this.getGlobalFileClass();

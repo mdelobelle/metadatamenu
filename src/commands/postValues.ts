@@ -357,6 +357,7 @@ export async function postValues(
     const toCreateInline: Record<string, FieldPayload> = {};
     const toUpdateInline: Record<string, FieldPayload> = {};
     const toYaml: Record<string, FieldPayload> = {};
+    console.log(payload)
     payload.forEach(async item => {
         const create = !genuineKeys(dvAPi.page(file.path)).includes(item.name)
         if (create) {

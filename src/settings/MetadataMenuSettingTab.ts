@@ -99,7 +99,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		globallyIgnoredFieldsSetting.settingEl.addClass("no-border");
 		globallyIgnoredFieldsSetting.controlEl.addClass("full-width");
 
-		/* Exclude Fields from context menu*/
+		/* Autocomplete*/
 		const enableAutoComplete = new Setting(globalSettings)
 			.setName('Autocomplete')
 			.setDesc('Activate autocomplete fields')
@@ -112,6 +112,25 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			})
 		enableAutoComplete.settingEl.addClass("no-border");
 		enableAutoComplete.controlEl.addClass("full-width");
+
+		/* Indexing Status icon*/
+		const showIndexingStatus = new Setting(globalSettings)
+			.setName('Fields Indexing Status')
+			.setDesc('Show fields indexing status icon in status toolbar')
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.showIndexingStatusInStatusBar);
+				cb.onChange(value => {
+					this.plugin.settings.showIndexingStatusInStatusBar = value;
+					if (!value) {
+						this.plugin.indexStatus.unload()
+					} else {
+						this.plugin.indexStatus.load()
+					}
+					this.plugin.saveSettings();
+				})
+			})
+		showIndexingStatus.settingEl.addClass("no-border");
+		showIndexingStatus.controlEl.addClass("full-width");
 
 
 		/* lists display in frontmatter*/

@@ -953,6 +953,25 @@ span.flatpickr-weekday {
   vertical-align: calc(var(--font-text-size) * -0.15);
 }
 
+.plugin-metadata-menu {
+  padding: 0 var(--size-2-2);
+}
+.plugin-metadata-menu .status-item-btn {
+  box-shadow: none;
+  padding: 0;
+  height: inherit;
+}
+.plugin-metadata-menu .status-item-btn .sync-status-icon .svg-icon {
+  stroke-width: 1.5;
+  stroke: var(--text-faint);
+}
+.plugin-metadata-menu .status-item-btn .sync-status-icon.indexing .rotating {
+  stroke: var(--color-blue);
+}
+.plugin-metadata-menu .status-item-btn .sync-status-icon.indexed .check-mark {
+  stroke: var(--color-green);
+}
+
 .metadata-menu.modal-container .modal {
   overflow: auto;
 }

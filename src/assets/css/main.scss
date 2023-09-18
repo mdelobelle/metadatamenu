@@ -10,3 +10,35 @@
         }
     }
 }
+
+.plugin-metadata-menu{
+    padding: 0 var(--size-2-2);
+
+    .status-item-btn{
+
+        box-shadow: none;
+        padding: 0;
+        height: inherit;
+
+        .sync-status-icon{
+
+            .svg-icon{
+                stroke-width: 1.5;
+                stroke: var(--text-faint);
+            }
+
+            &.indexing{
+                .rotating{
+                    stroke: var(--color-blue);
+                }
+            }
+
+            &.indexed{
+                .check-mark{
+                    stroke: var(--color-green)
+                }
+            }
+        }
+    }
+
+}
