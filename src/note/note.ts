@@ -108,7 +108,7 @@ export class Note {
 
     public getNodeForFieldId(fieldId: string): Node | undefined {
         for (const line of this.lines) {
-            const node = line.nodes.find(_node => _node.field?.name === fieldId)
+            const node = line.nodes.find(_node => _node.field?.id === fieldId)
             if (node) return node
         }
         return undefined
@@ -119,7 +119,7 @@ export class Note {
         const frontMatterEnd = getFrontmatterPosition(this.plugin, this.file)?.end?.line
 
         let insertLineNumber =
-            lineNumber ||
+            (lineNumber ? Math.max(lineNumber, 0) : undefined) ||
             frontMatterEnd ||
             this.lines.last()?.number ||
             0
@@ -140,7 +140,7 @@ export class Note {
             ancestors.forEach((id, level) => {
                 const node = this.getNodeForFieldId(id)
                 if (node) {
-                    insertLineNumber = node.line.number!
+                    insertLineNumber = node.line.number! + 1
                 } else {
                     const ancestorField = this.fields.find(field => field.id === id)!
                     createLine(ancestorField.name, "", position, insertLineNumber)

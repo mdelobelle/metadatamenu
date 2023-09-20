@@ -138,7 +138,6 @@ export function updatePropertiesPane(propertiesEl: HTMLElement, file: TFile, app
                     }
                 }
             }
-            console.log(foundS, el)
             if (!!foundS) {
                 updateDivExtraAttributes(plugin.app, plugin, el, "properties", foundS);
             }

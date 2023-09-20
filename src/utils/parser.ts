@@ -29,7 +29,7 @@ export const frontMatterLineField = (line: string): string | undefined => {
     const fR = line.match(frontMatterRegex);
 
     if (fR?.groups) {
-        const { attribute, values } = fR?.groups
+        const { attribute } = fR?.groups
         return attribute
     }
 }

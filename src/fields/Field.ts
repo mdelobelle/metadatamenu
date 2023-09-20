@@ -86,6 +86,23 @@ class Field {
         }
     }
 
+    static findPath(obj: any, name: string, currentPath: string = ""): string | undefined {
+        let matchingPath: string | undefined;
+
+        if (!obj || typeof obj !== 'object') return
+        for (const key of Object.keys(obj)) {
+            if (key === name) {
+                matchingPath = currentPath
+            } else if (key === "file") {
+                continue;
+            } else {
+                matchingPath = Field.findPath(obj[key], name, `${currentPath ? currentPath + "." : ""}${key}`)
+            }
+            if (matchingPath) break
+        }
+        return matchingPath
+    }
+
     public getValueFromFileAttributes(plugin: MetadataMenu, attributes: Record<string, any>) {
         const ancestorsIds = this.getAncestors(plugin)
         const ancestors = ancestorsIds.map(id => Field.getFieldFromId(plugin, id, this.fileClassName)?.name)

@@ -128,12 +128,22 @@ function addManageFieldAtCursorCommand(plugin: MetadataMenu) {
                     && editor.getCursor().line > getFrontmatterPosition(plugin, view!.file).start!.line
                     && editor.getCursor().line < getFrontmatterPosition(plugin, view!.file).end!.line) {
                     const attribute = frontMatterLineField(editor.getLine(editor.getCursor().line))
-                    if (attribute) optionsList.createAndOpenFieldModal(attribute)
+                    if (attribute) {
+                        optionsList.createAndOpenFieldModal(attribute)
+                    } else {
+                        new Notice("No field on this line", 1000)
+                    }
                 } else if (editor) {
                     const { attribute, values } = getLineFields(editor.getLine(editor.getCursor().line)).find(field =>
                         editor.getCursor().ch <= field.index + field.length
                         && editor.getCursor().ch >= field.index) || {};
-                    if (attribute) optionsList.createAndOpenFieldModal(attribute)
+                    if (attribute) {
+                        optionsList.createAndOpenFieldModal(attribute)
+                    } else {
+                        new Notice("No field on this line", 1000)
+                    }
+                } else {
+                    new Notice("No field on this line", 1000)
                 }
             }
         }

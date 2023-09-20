@@ -105,14 +105,37 @@ export default class OptionsList {
 			}
 
 		} else {
-			const defaultField = new Field(fieldName)
-			defaultField.type = FieldType.Input
-			if (fieldName === this.plugin.settings.fileClassAlias) {
-				this.buildFileClassFieldOptions(defaultField, this.attributes[fieldName])
-			} else if (this.location === "ManageAtCursorCommand") {
-				const fieldManager = new Managers.Input(this.plugin, defaultField) as F
-				(fieldManager as F).createAndOpenFieldModal(this.file, fieldName, this.attributes[fieldName])
+			//look for upper YAML or nested or whatever
+			const path = Field.findPath(this.attributes, fieldName)
+			if (path && path.split(".").length > 0) {
+				const upperFieldName = path.split(".")[0]
+				const upperField = Object.entries(this.fieldsFromIndex).find(([_fieldName, _field]) => _fieldName === upperFieldName)?.[1]
+				const upperValue = upperField ? upperField.getValueFromFileAttributes(this.plugin, this.attributes) : ""
+				if (upperField) {
+					const fieldManager = new FieldManager[upperField.type](this.plugin, upperField) as F;
+					switch (fieldManager.type) {
+						case FieldType.YAML:
+							fieldManager.createAndOpenFieldModal(this.file, upperField.name, upperValue)
+							break;
+						case FieldType.JSON:
+							fieldManager.createAndOpenFieldModal(this.file, upperField.name, upperValue)
+							break;
+						default:
+							break;
+					}
+				}
+			} else {
+				//and fallback to default
+				const defaultField = new Field(fieldName)
+				defaultField.type = FieldType.Input
+				if (fieldName === this.plugin.settings.fileClassAlias) {
+					this.buildFileClassFieldOptions(defaultField, this.attributes[fieldName])
+				} else if (this.location === "ManageAtCursorCommand") {
+					const fieldManager = new Managers.Input(this.plugin, defaultField) as F
+					(fieldManager as F).createAndOpenFieldModal(this.file, fieldName, this.attributes[fieldName])
+				}
 			}
+
 		}
 	}
 
