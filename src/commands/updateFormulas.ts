@@ -43,11 +43,14 @@ export async function updateFormulas(
     const fileFormulasFields: Map<string, Field> = new Map();
     [...f.filesLookupAndFormulaFieldsExists].forEach(([filePath, fields]) => {
         fields.filter(field => field.type === FieldType.Formula).forEach(field => {
-            fileFormulasFields.set(`${filePath}__calculated__${field.fileClassName || "presetField"}___${field.name}`, field)
+            const fileFormulaField = `${filePath}__calculated__${field.fileClassName || "presetField"}___${field.name}`
+            fileFormulasFields.set(fileFormulaField, field)
         })
     });
+
     //2. calculate formula and update file if value has changed
     [...fileFormulasFields].forEach(async ([id, field]) => {
+
         const matchRegex = /(?<filePath>.*)__calculated__(?<fileClassName>.*)___(?<fieldName>.*)/
         const { filePath, fileClassName, fieldName } = id.match(matchRegex)?.groups || {}
         const shouldUpdate =
@@ -61,6 +64,7 @@ export async function updateFormulas(
         f.fileFormulaFieldLastValue.set(id, currentValue);
         try {
             const newValue = (new Function("current, dv", `return ${field.options.formula}`))(dvFile, f.dv.api).toString();
+
             const valueHasChanged = (!currentValue && newValue !== "") || !arraysAsStringAreEqual(currentValue, newValue) || currentValue !== newValue
             if (!valueHasChanged) {
                 f.fileFormulaFieldsStatus.set(`${filePath}__${fieldName}`, Status.upToDate);
@@ -75,7 +79,7 @@ export async function updateFormulas(
                 }
             }
         } catch {
-            if (renderingErrors.includes(field.name)) renderingErrors.push(field.name)
+            if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
         }
     })
     if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`);

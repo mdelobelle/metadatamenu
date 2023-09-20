@@ -84,7 +84,7 @@ export default class FormulaField extends FieldManager {
 
         const formulaTopContainer = container.createDiv({ cls: "vstacked" });
         formulaTopContainer.createEl("span", { text: "javascript formula", cls: 'label' });
-        formulaTopContainer.createEl("span", { text: "current and pages variables are available`", cls: 'sub-text' });
+        formulaTopContainer.createEl("span", { text: "current and dv variables are available`", cls: 'sub-text' });
         const formulaContainer = formulaTopContainer.createDiv({ cls: "field-container" });
         const formula = new TextAreaComponent(formulaContainer);
         formula.inputEl.addClass("full-width");

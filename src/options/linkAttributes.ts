@@ -19,6 +19,7 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
     if (link.classList.contains("metadata-menu-button-hidden")) return; //so that snippets can prevent the button from being added
     switch (viewTypeName) {
         case "a.internal-link": if (!plugin.settings.enableLinks) return; break;
+        case "properties": if (!plugin.settings.enableLinks) return; break;
         case "tabHeader": if (!plugin.settings.enableTabHeader) return; break;
         case "starred": if (!plugin.settings.enableStarred) return; break;
         case "file-explorer": if (!plugin.settings.enableFileExplorer) return; break;
@@ -109,6 +110,68 @@ export function updateElLinks(app: App, plugin: MetadataMenu, el: HTMLElement, c
     });
 }
 
+export function updatePropertiesPane(propertiesEl: HTMLElement, file: TFile, app: App, plugin: MetadataMenu) {
+    const frontmatter = app.metadataCache.getCache(file.path)?.frontmatter;
+    if (!!frontmatter) {
+        const nodes = propertiesEl.querySelectorAll("div.internal-link > .multi-select-pill-content");
+        for (let i = 0; i < nodes.length; ++i) {
+            const el = nodes[i] as HTMLElement;
+            const linkText = el.textContent;
+            const keyEl = el?.parentElement?.parentElement?.parentElement?.parentElement?.children[0].children[1];
+            // @ts-ignore
+            const key = keyEl.value;
+            const listOfLinks: [string] = frontmatter[key];
+            let foundS = null;
+            if (!listOfLinks) {
+                continue;
+            }
+            for (const s of listOfLinks) {
+                if (s.length > 4 && s.startsWith("[[") && s.endsWith("]]")) {
+                    const slicedS = s.slice(2, -2);
+                    const split = slicedS.split("|");
+                    if (split.length == 1 && split[0] == linkText) {
+                        foundS = split[0];
+                        break;
+                    } else if (split.length == 2 && split[1] == linkText) {
+                        foundS = split[0];
+                        break;
+                    }
+                }
+            }
+            console.log(foundS, el)
+            if (!!foundS) {
+                updateDivExtraAttributes(plugin.app, plugin, el, "properties", foundS);
+            }
+        }
+        const singleNodes = propertiesEl.querySelectorAll("div.metadata-link-inner");
+        for (let i = 0; i < singleNodes.length; ++i) {
+            const el = singleNodes[i] as HTMLElement;
+            const linkText = el.textContent;
+            const keyEl = el?.parentElement?.parentElement?.parentElement?.children[0].children[1];
+            // @ts-ignore
+            const key = keyEl.value;
+            const link: string = frontmatter[key];
+            if (!link) {
+                continue;
+            }
+            let foundS: string | null = null;
+            if (link.length > 4 && link.startsWith("[[") && link.endsWith("]]")) {
+                const slicedS = link.slice(2, -2);
+                const split = slicedS.split("|");
+                if (split.length == 1 && split[0] == linkText) {
+                    foundS = split[0];
+                } else if (split.length == 2 && split[1] == linkText) {
+                    foundS = split[0];
+                }
+            }
+            if (!!foundS) {
+                updateDivExtraAttributes(plugin.app, plugin, el, "properties", foundS);
+            }
+        }
+    }
+}
+
+
 export function updateVisibleLinks(app: App, plugin: MetadataMenu) {
     const settings = plugin.settings;
     app.workspace.iterateRootLeaves((leaf) => {
@@ -116,6 +179,13 @@ export function updateVisibleLinks(app: App, plugin: MetadataMenu) {
             const file: TFile = leaf.view.file;
             const cachedFile = app.metadataCache.getFileCache(file);
             const fileName = file.path.replace(/(.*).md/, "$1")
+
+            // @ts-ignore
+            const metadata = leaf.view?.metadataEditor.contentEl;
+            if (!!metadata) {//
+                updatePropertiesPane(metadata, file, app, plugin);
+            }
+
             //@ts-ignore
             const tabHeader: HTMLElement = leaf.tabHeaderInnerTitleEl;
             if (settings.enableTabHeader) {

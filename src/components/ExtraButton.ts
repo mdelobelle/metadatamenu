@@ -27,11 +27,6 @@ export default class ExtraButton extends Component {
         const ext = Prec.lowest(buildCMViewPlugin(this.plugin));
         this.plugin.registerEditorExtension(ext);
 
-        this.plugin.registerMarkdownPostProcessor((el, ctx) => {
-            updateElLinks(this.plugin.app, this.plugin, el, ctx)
-        });
-
-
         const plugin = this.plugin;
         const updateLinks = (_file: TFile) => {
             updateVisibleLinks(plugin.app, plugin);

@@ -6,6 +6,7 @@ import { objectTypes, FieldType, ReservedMultiAttributes, MultiDisplayType } fro
 import { getFrontmatterPosition } from "src/utils/fileUtils";
 import { Line } from "./line";
 import { Node } from "./node";
+import * as Lookup from "src/types/lookupTypes";
 
 export class Note {
     public lines: Line[] = []
@@ -72,8 +73,17 @@ export class Note {
                 }
             case "inline":
                 switch (type) {
+                    case FieldType.Lookup: {
+                        if (field &&
+                            Lookup.bulletListLookupTypes.includes(field.options.outputType as Lookup.Type)
+                        ) {
+                            return this.renderMultiFields(rawValue, (item) => item);
+                        } else {
+                            return rawValue;
+                        }
+                    }
                     case FieldType.JSON: return JSON.stringify(JSON.parse(rawValue))
-                    case FieldType.YAML: return rawValue; break;
+                    case FieldType.YAML: return rawValue;
                     default: return rawValue;
                 }
         }
@@ -156,11 +166,7 @@ export class Note {
                 this.insertField(field.name, field.payload, lineNumber)
             }
         })
-        this.plugin.fileTaskManager.pushTask(() => { this.updateFile() })
-    }
-
-    public async updateFile() {
-        await this.plugin.app.vault.modify(this.file, this.renderNote())
+        this.plugin.fileTaskManager.pushTask(async () => { await this.plugin.app.vault.modify(this.file, this.renderNote()) })
     }
 
     public renderNote(): string {

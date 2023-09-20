@@ -1,10 +1,14 @@
 import MetadataMenu from "main";
-import { ButtonComponent, Component } from "obsidian";
+import { ButtonComponent, Component, FileView, MarkdownEditView, TFile, View } from "obsidian";
+import { updateLookups } from "src/commands/updateLookups";
+import { FieldType } from "src/types/fieldTypes";
+import { Status } from "src/types/lookupTypes";
 
 
 enum Statuses {
     "indexing" = "indexing",
-    "indexed" = "indexed"
+    "indexed" = "indexed",
+    "update" = "update",
 }
 
 const statusIcon: Record<keyof typeof Statuses, string> = {
@@ -22,12 +26,18 @@ const statusIcon: Record<keyof typeof Statuses, string> = {
         `<svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" stroke="currentColor" viewBox="0 0 24 24" fill="none">
             <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
             <path class="check-mark" d="m9 13 2 2 4-4"/>
+        </svg>`,
+    "update":
+        `<svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke="red" d="M8.42 10.61a2.1 2.1 0 1 1 2.97 2.97L5.95 19 2 20l.99-3.95 5.43-5.44Z"/>
+            <path d="M2 11.5V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-9.5"/>
         </svg>`
 }
 
 const statusTooltip: Record<keyof typeof Statuses, string> = {
     "indexing": "Metadata Menu: indexing fields",
-    "indexed": "Metadata Menu: field index complete"
+    "indexed": "Metadata Menu: field index complete",
+    "update": "Click to update lookups and formulas"
 }
 
 export default class IndexStatus extends Component {
@@ -35,6 +45,7 @@ export default class IndexStatus extends Component {
     public statusBtn: ButtonComponent;
     public statusIcon: HTMLSpanElement;
     public state: keyof typeof Statuses = Statuses.indexed;
+    public file: TFile | undefined
 
     constructor(private plugin: MetadataMenu) {
         super()
@@ -59,16 +70,42 @@ export default class IndexStatus extends Component {
         this.statusIcon = this.statusBtn.buttonEl.createEl("span", { cls: "status-bar-item-icon sync-status-icon" })
         this.setState("indexed")
         this.statusBtn.onClick(() => {
-            switch (this.state) {
-                case Statuses.indexed: this.setState("indexing"); break;
-                case Statuses.indexing: this.setState("indexed"); break;
+            if (this.state === "update") {
+                const lookupFields = this.getLookupFieldsToUpdate()
+                lookupFields.forEach(field => {
+                    if (this.file) updateLookups(this.plugin, "", { file: this.file, fieldName: field.name })
+                })
             }
         })
-
     }
 
     onunload(): void {
         const indexStatusEl = document.querySelector(".status-bar-item.plugin-metadata-menu")
         if (indexStatusEl) this.plugin.app.statusBar.containerEl.removeChild(indexStatusEl)
+    }
+
+    public getLookupFieldsToUpdate() {
+        if (this.file) {
+            const index = this.plugin.fieldIndex
+            const fileLookUpFields = index.filesLookupsAndFormulasFields.get(this.file.path) || []
+            return fileLookUpFields.filter(field => field.type === FieldType.Lookup)
+        }
+        return []
+    }
+
+    public checkForUpdate(view: View | undefined) {
+        if (view && view instanceof FileView) {
+            const file = this.plugin.app.vault.getAbstractFileByPath(view.file.path)
+            if (file instanceof TFile && file.extension === 'md') {
+                this.file = file
+                const index = this.plugin.fieldIndex
+                const lookupFields = this.getLookupFieldsToUpdate()
+                if (lookupFields.some(field => index.fileLookupFieldsStatus.get(`${file.path}__${field.name}`) === Status.changed)) this.setState("update")
+            } else {
+                this.file = undefined
+            }
+        } else {
+            this.file = undefined
+        }
     }
 }

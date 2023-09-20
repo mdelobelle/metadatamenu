@@ -6,6 +6,7 @@ import { Note } from "./note";
 import { Line } from "./line";
 import { frontMatterLineField, parsedField } from "src/utils/parser";
 import { buildEndStyle, buildStartStyle } from "src/types/dataviewTypes";
+import * as Lookup from "src/types/lookupTypes";
 
 export const separator: Record<"yaml" | "inline", ":" | "::"> = {
     "yaml": ":",
@@ -76,7 +77,8 @@ export class Node {
         if (!this.field ||
             !(this.field.getDisplay(this.plugin) === MultiDisplayType.asList ||
                 this.field.type === FieldType.JSON ||
-                this.field.type === FieldType.YAML)
+                this.field.type === FieldType.YAML ||
+                this.field.type === FieldType.Lookup)
         ) return
         const indentLevel = this.field.getAncestors(this.plugin).length
         const nextLines = this.line.note.lines.filter(_line => _line.number > this.line.number)
@@ -110,7 +112,12 @@ export class Node {
             const newValue = this.line.note.renderFieldValue(fieldName, value, location)
             this.removeIndentedListItems()
             if (Array.isArray(newValue)) {
-                if (this.field.getDisplay(this.plugin) === MultiDisplayType.asList) {
+                if (this.field.getDisplay(this.plugin) === MultiDisplayType.asList ||
+                    (
+                        this.field.type === FieldType.Lookup &&
+                        Lookup.bulletListLookupTypes.includes(this.field.options.outputType as Lookup.Type)
+                    )
+                ) {
                     //clean following items before creating new
                     content = `${fieldHeader}${_}`
                     //create new nodes, insert new lines for each item

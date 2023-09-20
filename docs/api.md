@@ -12,23 +12,6 @@ Returns an array with the values of the field
 
 This is an asynchronous function, so you should await it.
 
-### replaceValues (deprecated)
-`replaceValues(fileOrFilePath: TFile | string, attribute: string, input: string)`
-
-Takes a TFile containing the field, a string for the related field name, a new value for this field and updates the field with the new value
-
-This is an asynchronous function, so you should await it.
-
-### insertValues (deprecated)
-`insertValues(fileOrFilePath: TFile | string, attribute: string, value: string, lineNumber: number, inFrontmatter: boolean, top: boolean)`
-
-Takes a TFile, a string for the field name, a value for this field and insert the formatted field in the file at the line specified.
-
-You'll have to specify if the field will be in frontmatter to apply YAML syntax
-
-This is an asynchronous function, so you should await it.
-
-
 ### postValues
 creates or updates fields with values in the target note
 `postValues(fileOrFilePath: TFile | string, payload: FieldsPayload, lineNumber?: number, after?: boolean, asList?: boolean, asComment?:boolean)`

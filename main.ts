@@ -27,7 +27,7 @@ export default class MetadataMenu extends Plugin {
 	public indexStatus: IndexStatus;
 
 	async onload(): Promise<void> {
-		console.log('Metadata Menu loaded');
+		console.log('<------ Metadata Menu loaded ------>');
 		if (!this.app.plugins.enabledPlugins.has("dataview") || (
 			//@ts-ignore
 			this.app.plugins.plugins["dataview"] && !this.app.plugins.plugins["dataview"].settings.enableDataviewJs)
@@ -76,6 +76,7 @@ export default class MetadataMenu extends Plugin {
 			this.app.workspace.on('active-leaf-change', (leaf) => {
 				const view = leaf?.view
 				addCommands(this, view);
+				this.indexStatus.checkForUpdate(view)
 			})
 		)
 		this.registerEvent(
@@ -111,6 +112,6 @@ export default class MetadataMenu extends Plugin {
 	};
 
 	onunload() {
-		console.log('Metadata Menu unloaded');
+		console.log('>------ Metadata Menu unloaded ------>');
 	};
 }
