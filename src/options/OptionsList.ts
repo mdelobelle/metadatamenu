@@ -105,7 +105,7 @@ export default class OptionsList {
 			}
 
 		} else {
-			//look for upper YAML or nested or whatever
+			//look for upper YAML or Object or whatever
 			const path = Field.findPath(this.attributes, fieldName)
 			if (path && path.split(".").length > 0) {
 				const upperFieldName = path.split(".")[0]

@@ -64,11 +64,11 @@ class Field {
     }
 
     public getCompatibleParentFields(plugin: MetadataMenu): { id: string, path: string }[] {
-        const otherNestedFields = this.getOtherNestedFields(plugin)
-        if (this.type !== FieldType.Nested) {
-            return otherNestedFields
+        const otherObjectFields = this.getOtherObjectFields(plugin)
+        if (this.type !== FieldType.Object) {
+            return otherObjectFields
         } else {
-            return otherNestedFields.filter(_field => {
+            return otherObjectFields.filter(_field => {
                 const field = Field.getFieldFromId(plugin, _field.id, this.fileClassName)
                 return !field?.hasIdAsAncestor(plugin, this.id)
             })
@@ -123,18 +123,18 @@ class Field {
         }
     }
 
-    public getOtherNestedFields(plugin: MetadataMenu): { id: string, path: string }[] {
-        let nestedFields: Field[]
+    public getOtherObjectFields(plugin: MetadataMenu): { id: string, path: string }[] {
+        let objectFields: Field[]
         if (this.fileClassName) {
             const index = plugin.fieldIndex
-            nestedFields = index.fileClassesFields
-                .get(this.fileClassName)?.filter(field => field.type === FieldType.Nested && field.id !== this.id) || []
+            objectFields = index.fileClassesFields
+                .get(this.fileClassName)?.filter(field => field.type === FieldType.Object && field.id !== this.id) || []
 
         } else {
-            nestedFields = plugin.settings.presetFields
-                .filter(field => field.type === FieldType.Nested && field.id !== this.id)
+            objectFields = plugin.settings.presetFields
+                .filter(field => field.type === FieldType.Object && field.id !== this.id)
         }
-        return nestedFields.map(_field => {
+        return objectFields.map(_field => {
             const field = Field.getFieldFromId(plugin, _field.id, this.fileClassName) as Field //sure exists!
             return {
                 id: field.id,

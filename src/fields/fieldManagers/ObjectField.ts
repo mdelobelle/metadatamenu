@@ -8,10 +8,10 @@ import { FieldOptions } from "src/components/NoteFields";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { postValues } from "src/commands/postValues";
 
-export default class NestedField extends FieldManager {
+export default class ObjectField extends FieldManager {
 
     constructor(plugin: MetadataMenu, field: Field) {
-        super(plugin, field, FieldType.Nested)
+        super(plugin, field, FieldType.Object)
     }
 
     addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
