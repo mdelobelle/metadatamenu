@@ -17,7 +17,7 @@ import ValueSuggest from "src/suggester/metadataSuggester";
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
 	public settings: MetadataMenuSettings;
-	public initialProperties: Array<Field> = [];
+	public presetFields: Array<Field> = [];
 	public initialFileClassQueries: Array<FileClassQuery> = [];
 	public settingTab: MetadataMenuSettingTab;
 	public fieldIndex: FieldIndex;
@@ -54,9 +54,9 @@ export default class MetadataMenu extends Plugin {
 
 		//building settings tab
 		this.settings.presetFields.forEach(prop => {
-			const property = new Field();
+			const property = new Field(this);
 			Object.assign(property, prop);
-			this.initialProperties.push(property);
+			this.presetFields.push(property);
 		});
 
 		this.settings.fileClassQueries.forEach(query => {
@@ -104,7 +104,9 @@ export default class MetadataMenu extends Plugin {
 	};
 
 	async saveSettings() {
-		this.settings.presetFields = this.initialProperties;
+
+		//remove the 'plugin' attribute from the Field object before writing the field to the settings
+		this.settings.presetFields = this.presetFields.map(_field => { const { plugin, ...field } = _field; return field });
 		this.settings.fileClassQueries = this.initialFileClassQueries;
 		await this.saveData(this.settings);
 		await this.fieldIndex.fullIndex("setting", true, false);

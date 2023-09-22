@@ -15,6 +15,7 @@ import CanvasGroupLink from './CanvasGroupLinkField'
 import YAML from "./YAMLField"
 import JSON from "./JSONField"
 import Object from "./ObjectField"
+import ObjectList from "./ObjectListField"
 
 const Managers = {
     Input,
@@ -33,7 +34,8 @@ const Managers = {
     CanvasGroupLink,
     YAML,
     JSON,
-    Object
+    Object,
+    ObjectList
 }
 
 export default Managers

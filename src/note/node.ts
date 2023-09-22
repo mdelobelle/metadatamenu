@@ -37,21 +37,31 @@ export class Node {
         public parsedField?: parsedField
     ) {
         //try to get field from content if not provided
-        if (this.line.position === "yaml") {
-            for (const field of this.line.note.fields) {
-                const yamlAttr = frontMatterLineField(this.rawContent)
-                if (yamlAttr === field.name) {
-                    this.field = field
-                    break;
+        switch (this.line.position) {
+            case "yaml":
+                {
+                    for (const field of this.line.note.fields) {
+                        const yamlAttr = frontMatterLineField(this.rawContent)
+                        if (yamlAttr === field.name) {
+                            this.field = field
+                            this.line.note.existingFields.push(field)
+                            break;
+                        }
+                    }
                 }
-            }
+            case "inline":
+                {
+                    if (field) {
+                        this.line.note.existingFields.push(field)
+                    }
+                }
         }
         this.line.nodes.push(this)
     }
 
     public buildDecoratedFieldName = (): string => {
         if (!this.field) return ""
-        const ancestors = this.field.getAncestors(this.plugin);
+        const ancestors = this.field.getAncestors();
         const level = ancestors.length
         switch (this.line.position) {
             case "yaml":
@@ -66,21 +76,21 @@ export class Node {
 
     }
 
-    public buildIndentedListItem = (plugin: MetadataMenu, value: any) => {
+    public buildIndentedListItem = (value: any) => {
         if (!this.field) return ""
-        const ancestors = this.field.getAncestors(plugin);
+        const ancestors = this.field.getAncestors();
         const level = ancestors.length
         return `${"  ".repeat(level + 1)}- ${value}`
     }
 
     public removeIndentedListItems = () => {
         if (!this.field ||
-            !(this.field.getDisplay(this.plugin) === MultiDisplayType.asList ||
+            !(this.field.getDisplay() === MultiDisplayType.asList ||
                 this.field.type === FieldType.JSON ||
                 this.field.type === FieldType.YAML ||
                 this.field.type === FieldType.Lookup)
         ) return
-        const indentLevel = this.field.getAncestors(this.plugin).length
+        const indentLevel = this.field.getAncestors().length
         const nextLines = this.line.note.lines.filter(_line => _line.number > this.line.number)
         for (const line of nextLines) {
             if (line.rawContent.startsWith("  ".repeat(indentLevel + 1))) {
@@ -112,7 +122,7 @@ export class Node {
             const newValue = this.line.note.renderFieldValue(fieldName, value, location)
             this.removeIndentedListItems()
             if (Array.isArray(newValue)) {
-                if (this.field.getDisplay(this.plugin) === MultiDisplayType.asList ||
+                if (this.field.getDisplay() === MultiDisplayType.asList ||
                     (
                         this.field.type === FieldType.Lookup &&
                         Lookup.bulletListLookupTypes.includes(this.field.options.outputType as Lookup.Type)
@@ -123,7 +133,7 @@ export class Node {
                     //create new nodes, insert new lines for each item
                     newValue.filter(v => !!v).reverse().forEach((item, i) => {
                         const newItemLine = new Line(this.plugin, this.line.note, location, "", this.line.number! + 1)
-                        new Node(this.plugin, newItemLine, this.buildIndentedListItem(this.plugin, item))
+                        new Node(this.plugin, newItemLine, this.buildIndentedListItem(item))
                         newItemLine.renderLine()
                     });
                 } else {

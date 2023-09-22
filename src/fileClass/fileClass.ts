@@ -159,9 +159,9 @@ class FileClass {
         const rawAttributes = plugin.app.metadataCache.getFileCache(file)?.frontmatter?.fields || []
         const attributes: FileClassAttribute[] = [];
         rawAttributes.forEach((attr: any) => {
-            const { name, id, type, options, command, display, style, parent } = attr;
+            const { name, id, type, options, command, display, style, path } = attr;
             const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
-            attributes.push(new FileClassAttribute(this.name, name, id, fieldType, options, fileClass.name, command, display, style, parent))
+            attributes.push(new FileClassAttribute(plugin, this.name, name, id, fieldType, options, fileClass.name, command, display, style, path))
         })
         if (excludes) {
             return attributes.filter(attr => !excludes.includes(attr.name))
@@ -265,7 +265,7 @@ class FileClass {
         newCommand?: FieldCommand,
         newDisplay?: MultiDisplayType,
         newStyle?: Record<keyof typeof FieldStyleLabel, boolean>,
-        newParent?: string
+        newPath?: string
     ): Promise<void> {
         const fileClass = attr ? this.plugin.fieldIndex.fileClassesName.get(attr.fileClassName)! : this
         const file = fileClass.getClassFile();
@@ -278,11 +278,7 @@ class FileClass {
                 if (newDisplay) field.display = newDisplay;
                 if (newStyle) field.style = newStyle;
                 if (newName) field.name = newName;
-                if (newParent) {
-                    field.parent = newParent
-                } else {
-                    delete field.parent
-                }
+                if (newPath) field.path = newPath
             } else {
                 fm.fields.push({
                     name: newName,
@@ -291,7 +287,7 @@ class FileClass {
                     command: newCommand,
                     display: newDisplay,
                     style: newStyle,
-                    parent: newParent,
+                    path: newPath,
                     id: uuidv4()
                 })
             }

@@ -22,6 +22,7 @@ class FileClassAttributeModal extends Modal {
     private iconName: TextComponent;
     private frontmatterListDisplay?: MultiDisplayType;
     private frontmatterListDisplayContainer: HTMLDivElement;
+    private path: string
 
 
     constructor(
@@ -30,14 +31,15 @@ class FileClassAttributeModal extends Modal {
         private attr?: FileClassAttribute
     ) {
         super(plugin.app);
-        this.initialField = new Field();
+        this.initialField = new Field(plugin);
         if (this.attr) {
             this.field = attr!.getField()
             Field.copyProperty(this.initialField, this.field)
         } else {
-            this.field = new Field();
+            this.field = new Field(plugin);
             this.field.fileClassName = this.fileClass.name
         }
+        this.path = this.field.path
         this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field);
 
         this.addCommand = this.field.command !== undefined;
@@ -110,25 +112,32 @@ class FileClassAttributeModal extends Modal {
     }
 
     private createParentSelectContainer(): void {
-        const compatibleParents = this.field.getCompatibleParentFields(this.plugin)
+        const compatibleParents = this.field.getCompatibleParents()
         const container = this.contentEl.createDiv({ cls: "field-container" })
         const parentSelectorContainerLabel = container.createDiv({ cls: "label" });
         parentSelectorContainerLabel.setText(`Parent:`);
         container.createDiv({ cls: "spacer" })
         const select = new DropdownComponent(container);
         select.addOption("none", "--None--")
-        compatibleParents.forEach(parent => select.addOption(parent.id, parent.path))
-        if (this.field.parent) {
-            select.setValue(this.field.parent || "none")
+        compatibleParents.forEach(parent => {
+            const path = parent.path ? parent.path + "____" + parent.id : parent.id
+            const display = path.split("____").map(id => Field.getFieldFromId(this.plugin, id, this.fileClass.name)?.name || "").join(" > ")
+            console.log(display)
+            select.addOption(path, display)
+        })
+        if (this.field.path) {
+            select.setValue(this.field.path || "none")
         } else {
             select.setValue("none")
         }
 
-        select.onChange((parentId: string) => {
-            if (parentId === "none") {
-                delete this.field.parent
+        select.onChange((path: string) => {
+            if (path === "none") {
+                this.path = ""
+                this.field.path = ""
             } else {
-                this.field.parent = parentId
+                this.path = path
+                this.field.path = path
             }
         })
     }
@@ -256,10 +265,11 @@ class FileClassAttributeModal extends Modal {
             }
         }
         typeSelect.onChange((typeLabel: keyof typeof FieldType) => {
-            this.field = new Field();
+            this.field = new Field(this.plugin);
             Field.copyProperty(this.field, this.initialField);
             this.field.name = this.nameInput.getValue()
             this.field.type = FieldTypeLabelMapping[typeLabel];
+            this.field.path = this.path
             if (this.field.type !== this.initialField.type &&
                 ![this.field.type, this.initialField.type].every(fieldType =>
                     [FieldType.Multi, FieldType.Select, FieldType.Cycle].includes(fieldType)
@@ -316,7 +326,7 @@ class FileClassAttributeModal extends Modal {
                 this.field.command,
                 this.field.display,
                 this.field.style,
-                this.field.parent
+                this.field.path
             );
             this.close();
         })

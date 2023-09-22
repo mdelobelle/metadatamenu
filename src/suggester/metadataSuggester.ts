@@ -272,7 +272,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 let parsedField: Record<string, string | string[] | null> = parseYaml(serializedField)
                 let [attr, pastValues] = Object.entries(parsedField)[0]
                 let newField: string
-                if (this.field && this.field.getDisplay(this.plugin) === MultiDisplayType.asList) {
+                if (this.field && this.field.getDisplay() === MultiDisplayType.asList) {
                     const fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
                     const options = (fieldManager as AbstractListBasedField)
                         .getOptionsList(dvApi.page(this.context?.file.path))
@@ -331,7 +331,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 }
                 editor.replaceRange(newField, { line: beginFieldLineNumber, ch: 0 }, { line: endFieldLineNumber, ch: editor.getLine(endFieldLineNumber).length });
 
-                if (!(this.field?.getDisplay(this.plugin) === MultiDisplayType.asList)
+                if (!(this.field?.getDisplay() === MultiDisplayType.asList)
                     && !(fieldName === "tags" && this.plugin.settings.frontmatterListDisplay === MultiDisplayType.asList)
                     && (Array.isArray(pastValues) || typeof pastValues === 'string' && pastValues.contains(","))) {
                     editor.setCursor({ line: beginFieldLineNumber, ch: newField.length - 1 })

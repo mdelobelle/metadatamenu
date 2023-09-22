@@ -23,7 +23,7 @@ export class V1FileClassMigration {
         if (dvApi) {
             const dvFile = dvApi.page(file.path)
             try {
-                genuineKeys(dvFile).forEach(key => {
+                genuineKeys(plugin, dvFile).forEach(key => {
                     if (key !== "file" && !Object.keys(dvFile.file.frontmatter || {}).includes(key)) {
                         const item = typeof dvFile[key] !== "string"
                             ? JSON.stringify(dvFile[key])
@@ -31,7 +31,7 @@ export class V1FileClassMigration {
                         try {
                             const { type, options, command, display, style } = JSON.parse(item);
                             const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
-                            const attr = new FileClassAttribute(this.name, key, this.name, fieldType, options, fileClass.name, command, display, style)
+                            const attr = new FileClassAttribute(plugin, this.name, key, this.name, fieldType, options, fileClass.name, command, display, style)
                             attributes.push(attr)
                         } catch (e) {
                             //do nothing
@@ -63,7 +63,8 @@ export class V1FileClassMigration {
                         name: attr.name,
                         options: attr.options,
                         style: attr.style,
-                        type: attr.type
+                        type: attr.type,
+                        path: ""
                     })
                 })
                 fm.fields = fields
@@ -90,7 +91,7 @@ export class V2FileClassMigration {
                 fm.version = "3.0"
             })
             const content = await app.vault.read(file)
-            const end = getFrontmatterPosition(this.plugin, file).end
+            const end = getFrontmatterPosition(this.plugin, file).end!
             const newContent = content.split("\n").slice(0, end.line + 1).join("\n")
             await this.plugin.fileTaskManager.pushTask(() => app.vault.modify(file, newContent))
         }

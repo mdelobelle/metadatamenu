@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { CachedMetadata, parseYaml, TFile } from "obsidian";
 import { FieldPayload, FieldsPayload } from "src/commands/postValues";
 import Field from "src/fields/Field";
-import { objectTypes, FieldType, ReservedMultiAttributes, MultiDisplayType } from "src/types/fieldTypes";
+import { rawObjectTypes, FieldType, ReservedMultiAttributes, MultiDisplayType } from "src/types/fieldTypes";
 import { getFrontmatterPosition } from "src/utils/fileUtils";
 import { Line } from "./line";
 import { Node } from "./node";
@@ -11,6 +11,7 @@ import * as Lookup from "src/types/lookupTypes";
 export class Note {
     public lines: Line[] = []
     public fields: Field[] = []
+    public existingFields: Field[] = []
     public cache: CachedMetadata | null
 
     constructor(
@@ -31,7 +32,7 @@ export class Note {
                 return `"${_rawValue}"`
             } else if (_rawValue.startsWith("#")) {
                 return `${_rawValue}`;
-            } else if (fieldType && objectTypes.includes(fieldType)) {
+            } else if (fieldType && rawObjectTypes.includes(fieldType)) {
                 return `\n  ${_rawValue.split("\n").join("\n  ")}`;
             } else {
                 return parseYaml(_rawValue);
@@ -136,13 +137,13 @@ export class Note {
         const field = this.getField(fieldName)
         if (field) {
             //look for ancestors
-            const ancestors = field.getAncestors(this.plugin)
-            ancestors.forEach((id, level) => {
-                const node = this.getNodeForFieldId(id)
+            const ancestors = field.getAncestors()
+            ancestors.forEach((ancestor, level) => {
+                const node = this.getNodeForFieldId(ancestor.id)
                 if (node) {
                     insertLineNumber = node.line.number! + 1
                 } else {
-                    const ancestorField = this.fields.find(field => field.id === id)!
+                    const ancestorField = this.fields.find(field => field.id === ancestor.id)!
                     createLine(ancestorField.name, "", position, insertLineNumber)
                     insertLineNumber += 1
                 }

@@ -59,7 +59,7 @@ export default class OptionsList {
 		if (dvApi) {
 			const dvFile = dvApi.page(this.file.path)
 			try {
-				genuineKeys(dvFile).forEach(key => this.addAttribute(key, dvFile[key]))
+				genuineKeys(this.plugin, dvFile).forEach(key => this.addAttribute(key, dvFile[key]))
 			} catch (error) {
 				throw (error);
 			}
@@ -89,7 +89,7 @@ export default class OptionsList {
 
 	public createAndOpenFieldModal(fieldName: string): void {
 		const field = Object.entries(this.fieldsFromIndex).find(([_fieldName, _field]) => _fieldName === fieldName)?.[1]
-		const value = field ? field.getValueFromFileAttributes(this.plugin, this.attributes) : ""
+		const value = field ? field.getValueFromFileAttributes(this.attributes) : ""
 		if (field) {
 			const fieldManager = new FieldManager[field.type](this.plugin, field) as F;
 			switch (fieldManager.type) {
@@ -110,7 +110,7 @@ export default class OptionsList {
 			if (path && path.split(".").length > 0) {
 				const upperFieldName = path.split(".")[0]
 				const upperField = Object.entries(this.fieldsFromIndex).find(([_fieldName, _field]) => _fieldName === upperFieldName)?.[1]
-				const upperValue = upperField ? upperField.getValueFromFileAttributes(this.plugin, this.attributes) : ""
+				const upperValue = upperField ? upperField.getValueFromFileAttributes(this.attributes) : ""
 				if (upperField) {
 					const fieldManager = new FieldManager[upperField.type](this.plugin, upperField) as F;
 					switch (fieldManager.type) {
@@ -126,7 +126,7 @@ export default class OptionsList {
 				}
 			} else {
 				//and fallback to default
-				const defaultField = new Field(fieldName)
+				const defaultField = new Field(this.plugin, fieldName)
 				defaultField.type = FieldType.Input
 				if (fieldName === this.plugin.settings.fileClassAlias) {
 					this.buildFileClassFieldOptions(defaultField, this.attributes[fieldName])
@@ -153,7 +153,7 @@ export default class OptionsList {
 				this.addSectionSelectModalOption();
 				this.addFieldAtTheEndOfFrontmatterOption();
 				if (dvApi) {
-					const currentFieldsNames = genuineKeys(dvApi.page(this.file.path))
+					const currentFieldsNames = genuineKeys(this.plugin, dvApi.page(this.file.path))
 					if (![...this.plugin.fieldIndex.filesFields.get(this.file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
 						this.addAllMissingFieldsAtSection();
 					}
@@ -182,7 +182,7 @@ export default class OptionsList {
 				this.addFieldAtCurrentPositionOption();
 				this.addFieldAtTheEndOfFrontmatterOption();
 				if (dvApi) {
-					const currentFieldsNames = genuineKeys(dvApi.page(this.file.path))
+					const currentFieldsNames = genuineKeys(this.plugin, dvApi.page(this.file.path))
 					if (![...this.plugin.fieldIndex.filesFields.get(this.file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
 						this.addAllMissingFieldsAtSection();
 					}
@@ -256,7 +256,7 @@ export default class OptionsList {
 				const fieldManager = new FieldManager[field.type](this.plugin, field);
 				fieldManager.addFieldOption(key, value, this.file, this.location);
 			} else if (key !== "file" && (isSuggest(this.location) || isMenu(this.location))) {
-				const defaultField = new Field(key)
+				const defaultField = new Field(this.plugin, key)
 				defaultField.type = FieldType.Input
 				if (key === this.plugin.settings.fileClassAlias) {
 					this.buildFileClassFieldOptions(defaultField, value)

@@ -165,7 +165,7 @@ function insertMissingFieldsCommand(plugin: MetadataMenu) {
             const dvApi = plugin.app.plugins.plugins.dataview?.api;
             if (dvApi && inFile) {
                 const file = view.file;
-                const currentFieldsNames = genuineKeys(dvApi.page(file.path))
+                const currentFieldsNames = genuineKeys(plugin, dvApi.page(file.path))
                 if (![...plugin.fieldIndex.filesFields.get(file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
                     new chooseSectionModal(
                         plugin,
@@ -215,7 +215,7 @@ function addOpenFieldsModalCommand(plugin: MetadataMenu) {
 
 function addInsertFieldCommand(plugin: MetadataMenu): void {
     const fields: Field[] = [];
-    plugin.settings.presetFields.forEach(f => { if (f.command) fields.push(f) });
+    plugin.presetFields.forEach(f => { if (f.command) fields.push(f) });
     [...plugin.fieldIndex.fileClassesFields].forEach(([fileClassName, _fields]) => {
         _fields.forEach(field => { if (field.command) { fields.push(field) } })
     });

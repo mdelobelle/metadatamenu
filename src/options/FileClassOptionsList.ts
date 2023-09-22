@@ -53,7 +53,7 @@ export default class FileClassOptionsList {
             if (dvApi) {
                 const dvFile = dvApi.page(this.fromFile.path);
                 if (dvFile) {
-                    currentFieldsNames.push(...genuineKeys(dvFile))
+                    currentFieldsNames.push(...genuineKeys(this.plugin, dvFile))
                     const modal = new chooseSectionModal(
                         this.plugin,
                         this.fromFile,

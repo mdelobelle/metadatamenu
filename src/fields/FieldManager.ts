@@ -135,7 +135,7 @@ export abstract class FieldManager {
     }
 
     public static createDefault(plugin: MetadataMenu, name: string): FieldManager {
-        const field = Field.createDefault(name);
+        const field = Field.createDefault(plugin, name);
         return new FM[field.type](plugin, field);
     }
 

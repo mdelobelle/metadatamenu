@@ -10,6 +10,8 @@ import { insertMissingFields } from "src/commands/insertMissingFields";
 import { FileClass } from "src/fileClass/fileClass";
 import { genuineKeys } from "src/utils/dataviewUtils";
 import { FileClassManager } from "./fileClassManager";
+import { getLineFields } from "src/utils/parser";
+import { Note } from "src/note/note";
 
 export class FieldOptions {
 
@@ -156,13 +158,16 @@ export class FieldsModal extends Modal {
 
     missingFieldsForFileClass(fileClass: FileClass): boolean {
         const currentFieldsNames: string[] = []
+
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
             const dvFile = dvApi.page(this.file.path);
             if (dvFile) {
-                currentFieldsNames.push(...genuineKeys(dvFile))
+                currentFieldsNames.push(...genuineKeys(this.plugin, dvFile))
             }
         };
+        const note = new Note(this.plugin, this.file)
+        note.buildLines()
 
         const missingFields = fileClass && this.file ?
             !this.plugin.fieldIndex.fileClassesFields.get(fileClass.name)?.map(f => f.name).every(fieldName => currentFieldsNames.includes(fieldName)) :

@@ -192,8 +192,8 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			}).settingEl.addClass("no-border");
 
 		/* Managed properties that currently have preset options */
-		this.plugin.initialProperties.forEach(prop => {
-			const property = new Field();
+		this.plugin.presetFields.forEach(prop => {
+			const property = new Field(this.plugin);
 			Object.assign(property, prop);
 			new FieldSetting(presetFieldsSettings, property, this.plugin);
 		});

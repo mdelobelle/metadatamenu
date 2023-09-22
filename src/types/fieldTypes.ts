@@ -17,7 +17,8 @@ export const enum FieldType {
     "CanvasGroupLink" = "CanvasGroupLink",
     "YAML" = "YAML",
     "JSON" = "JSON",
-    "Object" = "Object"
+    "Object" = "Object",
+    "ObjectList" = "ObjectList"
 }
 
 export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = {
@@ -37,7 +38,8 @@ export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = 
     "CanvasGroupLink": FieldType.CanvasGroupLink,
     "YAML": FieldType.YAML,
     "JSON": FieldType.JSON,
-    "Object": FieldType.Object
+    "Object": FieldType.Object,
+    "ObjectList": FieldType.ObjectList
 };
 
 export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
@@ -57,7 +59,8 @@ export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
     "CanvasGroupLink": "canvas-links",
     "YAML": "yaml",
     "JSON": "json",
-    "Object": "object"
+    "Object": "object",
+    "ObjectList": "object-list"
 }
 
 export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
@@ -77,7 +80,8 @@ export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
     "CanvasGroupLink": "Updates with links to groups in canvas",
     "YAML": "Accept a YAML object",
     "JSON": "Accept a JSON object",
-    "Object": "Accept objects (values are fields)"
+    "Object": "Accept objects (values are fields)",
+    "ObjectList": "Accept a list of object fields"
 }
 
 export const FieldManager: Record<keyof typeof FieldType, any> = {
@@ -97,7 +101,8 @@ export const FieldManager: Record<keyof typeof FieldType, any> = {
     "CanvasGroupLink": Managers.CanvasGroupLink,
     "YAML": Managers.YAML,
     "JSON": Managers.JSON,
-    "Object": Managers.Object
+    "Object": Managers.Object,
+    "ObjectList": Managers.ObjectList
 }
 
 export const FieldIcon: Record<keyof typeof FieldType, string> = {
@@ -115,9 +120,10 @@ export const FieldIcon: Record<keyof typeof FieldType, string> = {
     "Canvas": "layout-dashboard",
     "CanvasGroup": "box-select",
     "CanvasGroupLink": "box-select",
-    "YAML": "file-json-2",
+    "YAML": "file-code-2",
     "JSON": "file-json-2",
-    "Object": "braces"
+    "Object": "braces",
+    "ObjectList": "file-json"
 }
 
 export const FieldBackgroundColorClass: Record<keyof typeof FieldType, string> = {
@@ -137,7 +143,8 @@ export const FieldBackgroundColorClass: Record<keyof typeof FieldType, string> =
     "CanvasGroupLink": "file",
     "YAML": "file",
     "JSON": "file",
-    "Object": "lookup"
+    "Object": "lookup",
+    "ObjectList": "lookup"
 }
 
 export const multiTypes = [
@@ -145,7 +152,8 @@ export const multiTypes = [
     FieldType.MultiFile,
     FieldType.Canvas,
     FieldType.CanvasGroup,
-    FieldType.CanvasGroupLink
+    FieldType.CanvasGroupLink,
+    FieldType.ObjectList
 ]
 
 
@@ -156,7 +164,12 @@ export enum MultiDisplayType {
     "asList" = "asList" //YAML block style
 }
 
-export const objectTypes = [
+export const rawObjectTypes = [
     FieldType.YAML,
     FieldType.JSON
+]
+
+export const objectTypes = [
+    FieldType.Object,
+    FieldType.ObjectList
 ]

@@ -52,9 +52,9 @@ export default class FieldSetting extends Setting {
             b.setIcon("trash")
                 .setTooltip("Delete")
                 .onClick(() => {
-                    const currentExistingProperty = this.plugin.initialProperties.filter(p => p.id == this.field.id)[0];
+                    const currentExistingProperty = this.plugin.presetFields.filter(p => p.id == this.field.id)[0];
                     if (currentExistingProperty) {
-                        this.plugin.initialProperties.remove(currentExistingProperty);
+                        this.plugin.presetFields.remove(currentExistingProperty);
                     };
                     this.settingEl.parentElement?.removeChild(this.settingEl);
                     this.plugin.saveSettings();

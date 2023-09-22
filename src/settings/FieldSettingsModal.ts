@@ -22,6 +22,7 @@ export default class FieldSettingsModal extends Modal {
     private frontmatterListDisplay?: MultiDisplayType;
     private frontmatterListDisplayContainer: HTMLDivElement;
     private iconName: TextComponent;
+    private path: string;
 
     constructor(
         private plugin: MetadataMenu,
@@ -30,17 +31,18 @@ export default class FieldSettingsModal extends Modal {
         field?: Field
     ) {
         super(plugin.app);
-        this.initialField = new Field();
+        this.initialField = new Field(plugin);
         if (field) {
             this.new = false;
             this.field = field;
             Field.copyProperty(this.initialField, this.field)
         } else {
             const id = uuidv4()
-            this.field = new Field();
+            this.field = new Field(plugin);
             this.field.id = id;
             this.initialField.id = id;
         };
+        this.path = this.field.path
         this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field);
         this.addCommand = this.field.command !== undefined;
         this.command = this.field.command || {
@@ -118,22 +120,32 @@ export default class FieldSettingsModal extends Modal {
     };
 
     private createParentSelectContainer(): void {
-        const compatibleParents = this.field.getCompatibleParentFields(this.plugin)
+        const compatibleParents = this.field.getCompatibleParents()
         const container = this.contentEl.createDiv({ cls: "field-container" })
         const parentSelectorContainerLabel = container.createDiv({ cls: "label" });
         parentSelectorContainerLabel.setText(`Parent:`);
         container.createDiv({ cls: "spacer" })
         const select = new DropdownComponent(container);
         select.addOption("none", "--None--")
-        compatibleParents.forEach(parent => select.addOption(parent.id, parent.path))
-        if (this.field.parent) {
-            select.setValue(this.field.parent || "none")
+        compatibleParents.forEach(parent => {
+            const path = parent.path ? parent.path + "____" + parent.id : parent.id
+            const display = path.split("____").map(id => Field.getFieldFromId(this.plugin, id)?.name || "").join(" > ")
+            select.addOption(path, display)
+        })
+        if (this.field.path) {
+            select.setValue(this.field.path || "none")
         } else {
             select.setValue("none")
         }
 
-        select.onChange((parentId: string) => {
-            this.field.parent = parentId !== "none" ? parentId : undefined
+        select.onChange((path: string) => {
+            if (path === "none") {
+                this.path = ""
+                this.field.path = ""
+            } else {
+                this.path = path
+                this.field.path = path
+            }
         })
     }
 
@@ -186,10 +198,11 @@ export default class FieldSettingsModal extends Modal {
         }
 
         select.onChange((typeLabel: keyof typeof FieldType) => {
-            this.field = new Field();
+            this.field = new Field(this.plugin);
             Field.copyProperty(this.field, this.initialField);
             this.field.name = this.namePromptComponent.getValue()
             this.field.type = FieldTypeLabelMapping[typeLabel];
+            this.field.path = this.path
             if (this.field.type !== this.initialField.type &&
                 ![this.field.type, this.initialField.type].every(fieldType =>
                     [FieldType.Multi, FieldType.Select, FieldType.Cycle].includes(fieldType)
@@ -300,16 +313,17 @@ export default class FieldSettingsModal extends Modal {
                 delete this.field.display
             }
             this.saved = true;
-            const currentExistingField = this.plugin.initialProperties.filter(p => p.id == this.field.id)[0];
+            const currentExistingField = this.plugin.presetFields.filter(p => p.id == this.field.id)[0];
             if (currentExistingField) {
                 Field.copyProperty(currentExistingField, this.field);
             } else {
-                this.plugin.initialProperties.push(this.field);
+                this.plugin.presetFields.push(this.field);
+                console.log(this.plugin.presetFields)
             };
             Field.copyProperty(this.initialField, this.field)
             if (this.parentSetting) Field.copyProperty(this.parentSetting.field, this.field);
             this.parentSetting?.setTextContentWithname()
-            this.plugin.saveSettings();
+            await this.plugin.saveSettings();
             this.close();
         });
     };

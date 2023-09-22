@@ -1,9 +1,24 @@
-import Field from "src/fields/Field";
+import MetadataMenu from "main";
+import Field, { FieldCommand } from "src/fields/Field";
 import FileClassQuery from "src/fileClass/FileClassQuery";
-import { MultiDisplayType } from "src/types/fieldTypes";
+import { FieldStyleLabel } from "src/types/dataviewTypes";
+import { FieldType, MultiDisplayType } from "src/types/fieldTypes";
+
+interface _Field {
+	name: string,
+	options: Record<string, any>,
+	id: string,
+	type: FieldType,
+	fileClassName?: string,
+	command?: FieldCommand,
+	display?: MultiDisplayType,
+	style?: Record<keyof typeof FieldStyleLabel, boolean>,
+	path: string
+}
+
 
 export interface MetadataMenuSettings {
-	presetFields: Array<Field>;
+	presetFields: Array<_Field>;
 	fileClassQueries: Array<FileClassQuery>;
 	displayFieldsInContextMenu: boolean;
 	globallyIgnoredFields: Array<string>;

@@ -17,7 +17,7 @@ interface V2Field extends Field {
 
 
 export const migrateSettingsV1toV2 = async (plugin: MetadataMenu) => {
-    const presetFields = plugin.settings.presetFields
+    const presetFields = plugin.presetFields
     presetFields.forEach((p: V1Field) => {
         if (!Object.keys(p).contains("type")) {
             if (p.isMulti) p.type = FieldType.Multi
@@ -43,7 +43,7 @@ export const migrateSettingsV1toV2 = async (plugin: MetadataMenu) => {
 }
 
 export const migrateSettingsV2toV3 = async (plugin: MetadataMenu) => {
-    const presetFields = plugin.settings.presetFields
+    const presetFields = plugin.presetFields
     presetFields.forEach((p: V2Field) => {
         if ([FieldType.Select, FieldType.Multi].includes(p.type)) {
             //Step0: modify options for Select and MultiSelect

@@ -1,5 +1,4 @@
 import MetadataMenu from "main";
-import { Notice } from "obsidian";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { FieldType, MultiDisplayType, multiTypes } from "../types/fieldTypes"
 
@@ -13,6 +12,7 @@ export interface FieldCommand {
 class Field {
 
     constructor(
+        public plugin: MetadataMenu,
         public name: string = "",
         public options: Record<string, any> = {},
         public id: string = "",
@@ -21,69 +21,137 @@ class Field {
         public command?: FieldCommand,
         public display?: MultiDisplayType,
         public style?: Record<keyof typeof FieldStyleLabel, boolean>,
-        public parent?: string
-    ) { };
+        public path: string = ""
+    ) {
 
-    public getDisplay(plugin: MetadataMenu): MultiDisplayType {
+    };
+
+    public getDisplay(): MultiDisplayType {
         if (multiTypes.includes(this.type)) {
-            return this.display || plugin.settings.frontmatterListDisplay
+            return this.display || this.plugin.settings.frontmatterListDisplay
         } else {
             return MultiDisplayType.asArray
         }
     }
 
-    static getFieldFromId(plugin: MetadataMenu, id: string, fileClassName?: string): Field | undefined {
-        let field: Field | undefined = undefined;
-        if (fileClassName) {
-            const index = plugin.fieldIndex
-            field = index.fileClassesFields
-                .get(fileClassName)?.find(field => field.id === id)
 
-        } else {
-            const _field = plugin.settings.presetFields
-                .find(field => field.id === id)
-            if (_field) {
-                field = new Field();
-                Object.assign(field, _field);
-            }
-        }
-        return field
-    }
-
-    public hasIdAsAncestor(plugin: MetadataMenu, childId: string): boolean {
-        if (!this.parent) {
+    public hasIdAsAncestor(childId: string): boolean {
+        if (!this.path) {
             return false
         } else {
-            if (this.parent === childId) {
+            const parentId = this.path.split("____").last()!
+            if (parentId === childId) {
                 return true;
             } else {
-                const field = Field.getFieldFromId(plugin, this.parent, this.fileClassName)
-                return field?.hasIdAsAncestor(plugin, childId) || false
+                const field = Field.getFieldFromId(this.plugin, parentId, this.fileClassName)
+                return field?.hasIdAsAncestor(childId) || false
             }
         }
     }
 
-    public getCompatibleParentFields(plugin: MetadataMenu): { id: string, path: string }[] {
-        const otherObjectFields = this.getOtherObjectFields(plugin)
+
+    public getCompatibleParents(): Field[] {
+        const otherObjectFields = this.getOtherObjectFields()
         if (this.type !== FieldType.Object) {
             return otherObjectFields
         } else {
             return otherObjectFields.filter(_field => {
-                const field = Field.getFieldFromId(plugin, _field.id, this.fileClassName)
-                return !field?.hasIdAsAncestor(plugin, this.id)
+                const field = Field.getFieldFromId(this.plugin, _field.id, this.fileClassName)
+                return !field?.hasIdAsAncestor(this.id)
             })
         }
     }
 
-    static getValue(obj: any, path: string): string {
-        if (!path) return obj;
-        const properties: string[] = path.split('.');
-        try {
-            const subValue = Field.getValue(obj[properties.shift()!], properties.join('.'))
-            return subValue
-        } catch (e) {
-            return ""
+    public getValueFromFileAttributes(attributes: Record<string, any>) {
+        const path = `${this.path.split("____").join(".")}${this.path ? "." : ""}${this.name}`
+        return Field.getValue(attributes, path)
+    }
+
+    public getAncestors(fieldId: string = this.id): Field[] {
+        const field = Field.getFieldFromId(this.plugin, fieldId, this.fileClassName)
+        const ancestors: Field[] = []
+        if (!field || !field.path) return ancestors
+
+        const ancestorsIds = field.path.split("____")
+        for (const id of ancestorsIds) {
+            const ancestor = Field.getFieldFromId(this.plugin, id, this.fileClassName)
+            if (ancestor) ancestors.push(ancestor)
         }
+        return ancestors
+    }
+
+    public getOtherObjectFields(): Field[] {
+        let objectFields: Field[]
+        if (this.fileClassName) {
+            const index = this.plugin.fieldIndex
+            objectFields = index.fileClassesFields
+                .get(this.fileClassName)?.filter(field => field.type === FieldType.Object && field.id !== this.id) || []
+
+        } else {
+            objectFields = this.plugin.presetFields
+                .filter(field => field.type === FieldType.Object && field.id !== this.id)
+        }
+        return objectFields.map(_field => {
+            return Field.getFieldFromId(this.plugin, _field.id, this.fileClassName) as Field //sure exists!
+        })
+    }
+
+    static copyProperty(target: Field, source: Field) {
+        target.id = source.id;
+        target.name = source.name;
+        target.type = source.type
+        Object.keys(source.options).forEach(k => {
+            target.options[k] = source.options[k];
+        });
+        Object.keys(target.options).forEach(k => {
+            if (!Object.keys(source.options).includes(k)) {
+                delete target.options[k];
+            };
+        });
+        target.command = source.command
+        target.display = source.display
+        target.style = source.style
+        target.path = source.path
+    };
+
+    static createDefault(plugin: MetadataMenu, name: string): Field {
+        const field = new Field(plugin);
+        field.type = FieldType.Input;
+        field.name = name;
+        return field;
+    }
+
+    static existingFields(plugin: MetadataMenu, filePath: string, obj: any, depth: number = 0, path: string = ""): Field[] {
+        const reservedKeys = ["file", "aliases", "tags"]
+        const fields = plugin.fieldIndex.filesFields.get(filePath)
+        const fieldsNames = fields?.map(field => field.name) || []
+        let _obj: any
+        if (depth === 0) {
+            const dvApi = plugin.app.plugins.plugins.dataview?.api
+            if (dvApi) {
+                _obj = dvApi.page(filePath)
+            } else {
+                return []
+            }
+        } else {
+            _obj = obj
+        }
+        const _existingFields: Field[] = []
+        if (typeof obj === 'object') {
+            for (const key of obj) {
+                if (depth === 0 && reservedKeys.includes(key)) continue;
+                if (typeof obj[key] === 'object' && obj[key] !== null) {
+                    _existingFields.push(...Field.existingFields(plugin, filePath, obj[key], depth + 1, `${path ? path + "." : ""}${key}`).filter(k => !_existingFields.includes(k)))
+                } else if (!_existingFields.map(k => k.name.toLowerCase().replace(/\s/g, "-")).includes(key.toLowerCase().replace(/\s/g, "-"))) {
+                    _existingFields.push(key)
+                } else {
+                    if (key !== key.toLowerCase().replace(/\s/g, "-")) {
+                        _existingFields[_existingFields.indexOf(key.toLowerCase().replace(/\s/g, "-"))] = key
+                    }
+                }
+            }
+        }
+        return _existingFields
     }
 
     static findPath(obj: any, name: string, currentPath: string = ""): string | undefined {
@@ -103,72 +171,35 @@ class Field {
         return matchingPath
     }
 
-    public getValueFromFileAttributes(plugin: MetadataMenu, attributes: Record<string, any>) {
-        const ancestorsIds = this.getAncestors(plugin)
-        const ancestors = ancestorsIds.map(id => Field.getFieldFromId(plugin, id, this.fileClassName)?.name)
-        const path = `${ancestors.join(".")}${ancestors.length ? "." : ""}${this.name}`
-        return Field.getValue(attributes, path)
-    }
 
-    public getAncestors(plugin: MetadataMenu, fieldId: string = this.id, ancestors: string[] = []): string[] {
-        const field = Field.getFieldFromId(plugin, fieldId, this.fileClassName)
-        if (!field) return ancestors
-        if (!field.parent) {
-            return ancestors
-        } else {
-            const parent = Field.getFieldFromId(plugin, field.parent, this.fileClassName)
-            if (!parent) return ancestors
-            ancestors.unshift(parent.id)
-            return parent.getAncestors(plugin, parent.id, ancestors)
-        }
-    }
-
-    public getOtherObjectFields(plugin: MetadataMenu): { id: string, path: string }[] {
-        let objectFields: Field[]
-        if (this.fileClassName) {
+    static getFieldFromId(plugin: MetadataMenu, id: string, fileClassName?: string): Field | undefined {
+        let field: Field | undefined = undefined;
+        if (fileClassName) {
             const index = plugin.fieldIndex
-            objectFields = index.fileClassesFields
-                .get(this.fileClassName)?.filter(field => field.type === FieldType.Object && field.id !== this.id) || []
+            field = index.fileClassesFields
+                .get(fileClassName)?.find(field => field.id === id)
 
         } else {
-            objectFields = plugin.settings.presetFields
-                .filter(field => field.type === FieldType.Object && field.id !== this.id)
-        }
-        return objectFields.map(_field => {
-            const field = Field.getFieldFromId(plugin, _field.id, this.fileClassName) as Field //sure exists!
-            return {
-                id: field.id,
-                path: field
-                    .getAncestors(plugin, field.id, [field.id])
-                    .map(id => Field.getFieldFromId(plugin, id, this.fileClassName)!.name)
-                    .join(" > ")
+            const _field = plugin.presetFields
+                .find(field => field.id === id)
+            if (_field) {
+                field = new Field(plugin);
+                Object.assign(field, _field);
             }
-        })
+        }
+        return field
     }
 
-    static copyProperty(target: Field, source: Field) {
-        target.id = source.id;
-        target.name = source.name;
-        target.type = source.type
-        Object.keys(source.options).forEach(k => {
-            target.options[k] = source.options[k];
-        });
-        Object.keys(target.options).forEach(k => {
-            if (!Object.keys(source.options).includes(k)) {
-                delete target.options[k];
-            };
-        });
-        target.command = source.command
-        target.display = source.display
-        target.style = source.style
-        target.parent = source.parent
-    };
 
-    public static createDefault(name: string): Field {
-        const field = new Field();
-        field.type = FieldType.Input;
-        field.name = name;
-        return field;
+    static getValue(obj: any, path: string): string {
+        if (!path) return obj;
+        const properties: string[] = path.split('.');
+        try {
+            const subValue = Field.getValue(obj[properties.shift()!], properties.join('.'))
+            return subValue
+        } catch (e) {
+            return ""
+        }
     }
 };
 

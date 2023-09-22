@@ -281,7 +281,7 @@ export default class FieldIndex extends Component {
                 }
             })
         })
-        this.plugin.settings.presetFields.forEach(async setting => {
+        this.plugin.presetFields.forEach(async setting => {
             if (setting.options.valuesListNotePath) {
                 this.valuesListNotePathValues.set(
                     setting.options.valuesListNotePath,
@@ -397,7 +397,7 @@ export default class FieldIndex extends Component {
     }
 
     getLookupQueries(): void {
-        this.plugin.settings.presetFields.filter(field => field.type === FieldType.Lookup).forEach(field => {
+        this.plugin.presetFields.filter(field => field.type === FieldType.Lookup).forEach(field => {
             this.lookupQueries.set(`presetField___${field.name}`, field)
         });
         [...this.fileClassesFields].forEach(([fileClassName, fields]) => {
@@ -528,8 +528,8 @@ export default class FieldIndex extends Component {
                     this.filesFileClasses.set(f.path, [this.fileClassesName.get(this.plugin.settings.globalFileClass!)!])
                     this.filesFileClassesNames.set(f.path, [this.plugin.settings.globalFileClass!])
                 } else {
-                    const fields = this.plugin.settings.presetFields.map(prop => {
-                        const property = new Field();
+                    const fields = this.plugin.presetFields.map(prop => {
+                        const property = new Field(this.plugin);
                         return Object.assign(property, prop);
                     });
                     this.filesFields.set(f.path, fields)

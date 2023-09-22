@@ -152,7 +152,7 @@ export default class MultiSuggestModal extends SuggestModal<string> {
                 }
             }
         } else {
-            const presetField = this.plugin.settings.presetFields.find(field => field.name === this.field.name)
+            const presetField = this.plugin.presetFields.find(field => field.name === this.field.name)
             if (presetField?.options.sourceType === selectValuesSource.Type.ValuesListNotePath) {
                 const valuesFile = this.plugin.app.vault.getAbstractFileByPath(presetField.options.valuesListNotePath)
                 if (valuesFile instanceof TFile && valuesFile.extension == "md") {
@@ -160,7 +160,7 @@ export default class MultiSuggestModal extends SuggestModal<string> {
                     this.plugin.app.vault.modify(valuesFile, `${result}\n${newValue}`);
                 }
             } else if (presetField?.options.sourceType === selectValuesSource.Type.ValuesList) {
-                const currentExistingField = this.plugin.initialProperties.find(p => p.id == this.field.id);
+                const currentExistingField = this.plugin.presetFields.find(p => p.id == this.field.id);
                 if (currentExistingField) {
                     const valuesList = currentExistingField.options.valuesList
                     valuesList[`${Object.keys(valuesList).length + 1}`] = newValue
