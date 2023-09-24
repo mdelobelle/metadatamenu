@@ -9,12 +9,12 @@ test('link decoding', () => {
 })
 
 test('frontmatter attribute', () => {
-    expect(parser.frontMatterLineField('fieldName:value')).toBe('fieldName')
+    expect(parser.frontMatterLineField('fieldName:value').attribute).toBe('fieldName')
 })
 
 
 test('frontmatter attribute with space', () => {
-    expect(parser.frontMatterLineField('fieldName :value')).toBe('fieldName')
+    expect(parser.frontMatterLineField('fieldName :value').attribute).toBe('fieldName')
 })
 
 test('parse line with starting inline dataview field', () => {

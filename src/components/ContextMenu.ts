@@ -32,7 +32,7 @@ export default class ContextMenu extends Component {
 					&& editor.getCursor().line > getFrontmatterPosition(this.plugin, view.file).start.line
 					&& editor.getCursor().line < getFrontmatterPosition(this.plugin, view.file).end.line
 				) {
-					const attribute = frontMatterLineField(editor.getLine(editor.getCursor().line))
+					const { attribute } = frontMatterLineField(editor.getLine(editor.getCursor().line))
 					if (attribute) includedFields.push(attribute);
 				} else {
 					getLineFields(editor.getLine(editor.getCursor().line)).forEach(field => {

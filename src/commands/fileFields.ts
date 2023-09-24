@@ -56,7 +56,7 @@ export function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | string)
     if (dvApi) {
         const dvFile = dvApi.page(file.path)
         try {
-            genuineKeys(plugin, dvFile).forEach(async key => {
+            genuineKeys(dvFile).forEach(async key => {
                 if (key !== "file") {
                     const fieldInfo = new FieldInfo;
                     fieldInfo.unique = !Object.keys(fields).includes(key);

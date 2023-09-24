@@ -23,7 +23,7 @@ export class V1FileClassMigration {
         if (dvApi) {
             const dvFile = dvApi.page(file.path)
             try {
-                genuineKeys(plugin, dvFile).forEach(key => {
+                genuineKeys(dvFile).forEach(key => {
                     if (key !== "file" && !Object.keys(dvFile.file.frontmatter || {}).includes(key)) {
                         const item = typeof dvFile[key] !== "string"
                             ? JSON.stringify(dvFile[key])

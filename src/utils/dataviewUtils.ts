@@ -1,12 +1,13 @@
-import MetadataMenu from "main";
-
-export function genuineKeys(plugin: MetadataMenu, obj: any, depth: number = 0): string[] {
+export function genuineKeys(obj: any, depth: number = 0): string[] {
     const reservedKeys = ["file", "aliases", "tags"]
     const _genuineKeys: string[] = []
     for (const key of Object.keys(obj)) {
         if (depth === 0 && reservedKeys.includes(key)) continue;
         if (typeof obj[key] === 'object' && obj[key] !== null) {
-            _genuineKeys.push(...genuineKeys(plugin, obj[key], depth + 1).filter(k => !_genuineKeys.includes(k)))
+            if (!_genuineKeys.map(k => k.toLowerCase().replace(/\s/g, "-")).includes(key.toLowerCase().replace(/\s/g, "-"))) {
+                _genuineKeys.push(key)
+            }
+            _genuineKeys.push(...genuineKeys(obj[key], depth + 1).filter(k => !_genuineKeys.includes(k)))
         } else if (!_genuineKeys.map(k => k.toLowerCase().replace(/\s/g, "-")).includes(key.toLowerCase().replace(/\s/g, "-"))) {
             _genuineKeys.push(key)
         } else {

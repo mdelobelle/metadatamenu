@@ -17,6 +17,7 @@ import { FieldType } from "src/types/fieldTypes";
 import { updateLookups } from "./updateLookups";
 import { updateFormulas } from "./updateFormulas";
 import { getFrontmatterPosition } from "src/utils/fileUtils";
+import { Note } from "src/note/note";
 
 function addFileClassAttributeOptions(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
@@ -121,30 +122,14 @@ function addManageFieldAtCursorCommand(plugin: MetadataMenu) {
                 return inFile && editor !== undefined
             }
             if (inFile && editor !== undefined) {
-                const optionsList = new OptionsList(plugin, view!.file, "ManageAtCursorCommand")
-                const cache = plugin.app.metadataCache.getFileCache(view!.file)
-                const frontmatter = cache?.frontmatter;
-                if (frontmatter && editor
-                    && editor.getCursor().line > getFrontmatterPosition(plugin, view!.file).start!.line
-                    && editor.getCursor().line < getFrontmatterPosition(plugin, view!.file).end!.line) {
-                    const attribute = frontMatterLineField(editor.getLine(editor.getCursor().line))
-                    if (attribute) {
-                        optionsList.createAndOpenFieldModal(attribute)
-                    } else {
-                        new Notice("No field on this line", 1000)
-                    }
-                } else if (editor) {
-                    const { attribute, values } = getLineFields(editor.getLine(editor.getCursor().line)).find(field =>
-                        editor.getCursor().ch <= field.index + field.length
-                        && editor.getCursor().ch >= field.index) || {};
-                    if (attribute) {
-                        optionsList.createAndOpenFieldModal(attribute)
-                    } else {
-                        new Notice("No field on this line", 1000)
-                    }
-                } else {
-                    new Notice("No field on this line", 1000)
-                }
+                const optionsList = new OptionsList(plugin, view!.file, "ManageAtCursorCommand");
+                (async function () {
+                    const note = new Note(plugin, view.file)
+                    await note.buildLines()
+                    const node = note.getNodeAtPosition(editor.getCursor())
+                    if (node) optionsList.createAndOpenFieldModal(node)
+                    else new Notice("No field with definition at this position", 2000)
+                })()
             }
         }
     })
@@ -165,7 +150,7 @@ function insertMissingFieldsCommand(plugin: MetadataMenu) {
             const dvApi = plugin.app.plugins.plugins.dataview?.api;
             if (dvApi && inFile) {
                 const file = view.file;
-                const currentFieldsNames = genuineKeys(plugin, dvApi.page(file.path))
+                const currentFieldsNames = genuineKeys(dvApi.page(file.path))
                 if (![...plugin.fieldIndex.filesFields.get(file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
                     new chooseSectionModal(
                         plugin,

@@ -398,11 +398,11 @@ export default class FieldIndex extends Component {
 
     getLookupQueries(): void {
         this.plugin.presetFields.filter(field => field.type === FieldType.Lookup).forEach(field => {
-            this.lookupQueries.set(`presetField___${field.name}`, field)
+            this.lookupQueries.set(`presetField___${field.id}`, field)
         });
         [...this.fileClassesFields].forEach(([fileClassName, fields]) => {
             fields.filter(field => field.type === FieldType.Lookup).forEach(field => {
-                this.lookupQueries.set(`${fileClassName}___${field.name}`, field)
+                this.lookupQueries.set(`${fileClassName}___${field.id}`, field)
             })
         })
     }
@@ -427,8 +427,8 @@ export default class FieldIndex extends Component {
                     if (fileFileClassesFieldsFromTag) {
                         const newFields = [...fileFileClassesFieldsFromTag]
                         const filteredCurrentFields = currentFields?.filter(field =>
-                            !newFields.map(f => f.name).includes(field.name) &&
-                            !fileClass.options?.excludes?.map(attr => attr.name).includes(field.name)
+                            !newFields.map(f => f.id).includes(field.id) &&
+                            !fileClass.options?.excludes?.map(attr => attr.id).includes(field.id)
                         ) || []
                         newFields.push(...filteredCurrentFields)
                         this.filesFieldsFromTags.set(filePath, newFields)
@@ -477,8 +477,8 @@ export default class FieldIndex extends Component {
                             if (fileClassesFieldsFromFile) {
                                 const newFields = [...fileClassesFieldsFromFile]
                                 const filteredCurrentFields = currentFields?.filter(field =>
-                                    !newFields.map(f => f.name).includes(field.name) &&
-                                    !fileClass.options?.excludes?.map(attr => attr.name).includes(field.name)
+                                    !newFields.map(f => f.id).includes(field.id) &&
+                                    !fileClass.options?.excludes?.map(attr => attr.id).includes(field.id)
                                 ) || []
                                 newFields.push(...filteredCurrentFields)
                                 this.filesFieldsFromInnerFileClasses.set(f.path, newFields)
@@ -514,12 +514,12 @@ export default class FieldIndex extends Component {
                     fileFieldsFromTag?.length
                 ) {
                     const filesFields: Field[] = fileFieldsFromInnerFileClasses || [];
-                    filesFields.push(...(fileFieldsFromTag || []).filter(field => !filesFields.map(f => f.name).includes(field.name)))
-                    filesFields.push(...(fileFieldsFromQuery || []).filter(field => !filesFields.map(f => f.name).includes(field.name)))
+                    filesFields.push(...(fileFieldsFromTag || []).filter(field => !filesFields.map(f => f.id).includes(field.id)))
+                    filesFields.push(...(fileFieldsFromQuery || []).filter(field => !filesFields.map(f => f.id).includes(field.id)))
                     this.filesFields.set(f.path, filesFields);
                     const filesLookupAndFormulasFields: Field[] = filesFields.filter(f => this.isLookupOrFormula(f))
-                    filesLookupAndFormulasFields.push(...(fileFieldsFromTag || []).filter(field => !filesLookupAndFormulasFields.map(f => f.name).includes(field.name) && this.isLookupOrFormula(field)))
-                    filesLookupAndFormulasFields.push(...(fileFieldsFromQuery || []).filter(field => !filesLookupAndFormulasFields.map(f => f.name).includes(field.name) && this.isLookupOrFormula(field)))
+                    filesLookupAndFormulasFields.push(...(fileFieldsFromTag || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
+                    filesLookupAndFormulasFields.push(...(fileFieldsFromQuery || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
                     if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, filesLookupAndFormulasFields)
                 } else if (this.fieldsFromGlobalFileClass.length) {
                     this.filesFields.set(f.path, this.fieldsFromGlobalFileClass)

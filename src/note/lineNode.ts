@@ -1,8 +1,6 @@
 import MetadataMenu from "main";
-import { FieldPayload } from "src/commands/postValues";
 import Field from "src/fields/Field";
 import { FieldType, MultiDisplayType } from "src/types/fieldTypes";
-import { Note } from "./note";
 import { Line } from "./line";
 import { frontMatterLineField, parsedField } from "src/utils/parser";
 import { buildEndStyle, buildStartStyle } from "src/types/dataviewTypes";
@@ -24,7 +22,7 @@ export const enclosure: Record<"brackets" | "parenthesis", { start: "(" | "[", e
     }
 }
 
-export class Node {
+export class LineNode {
 
     constructor(
         public plugin: MetadataMenu,
@@ -40,12 +38,40 @@ export class Node {
         switch (this.line.position) {
             case "yaml":
                 {
+                    const frontmatter = this.line.note.cache?.frontmatter!
+                    let indentationLevel: number = 0;
+                    const indentRegex = new RegExp(/(?<indentation>\s*).*/)
+                    const fR = this.rawContent.match(indentRegex);
+                    if (fR?.groups && fR.groups.indentation) {
+                        indentationLevel = fR.groups.indentation.length / 2
+                    }
+                    this.line.indentationLevel = indentationLevel
+                    if (indentationLevel) {
+                        const parentLine = this.line.note.lines.filter(line =>
+                            line.number < this.line.number &&
+                            line.indentationLevel < this.line.indentationLevel
+                        ).last()
+                        this.line.parentLine = parentLine
+                    }
                     for (const field of this.line.note.fields) {
-                        const yamlAttr = frontMatterLineField(this.rawContent)
+                        const { attribute: yamlAttr, values: value } = frontMatterLineField(this.rawContent)
                         if (yamlAttr === field.name) {
-                            this.field = field
-                            this.line.note.existingFields.push(field)
-                            break;
+                            if (field.path) {
+                                if (this.line.parentLine?.nodes[0]?.field?.id === field.path.split("____").last()) {
+                                    this.field = field
+                                    const dottedPath = field.getDottedPath()
+                                    this.value = Field.getValueFromPath(frontmatter, dottedPath)
+                                    this.line.note.existingFields.push(field)
+                                    break;
+                                } else {
+                                    break;
+                                }
+                            } else {
+                                this.field = field
+                                this.value = frontmatter[field.name]
+                                this.line.note.existingFields.push(field)
+                                break;
+                            }
                         }
                     }
                 }
@@ -133,7 +159,7 @@ export class Node {
                     //create new nodes, insert new lines for each item
                     newValue.filter(v => !!v).reverse().forEach((item, i) => {
                         const newItemLine = new Line(this.plugin, this.line.note, location, "", this.line.number! + 1)
-                        new Node(this.plugin, newItemLine, this.buildIndentedListItem(item))
+                        new LineNode(this.plugin, newItemLine, this.buildIndentedListItem(item))
                         newItemLine.renderLine()
                     });
                 } else {

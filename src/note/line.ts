@@ -1,17 +1,19 @@
 import MetadataMenu from "main";
 import { Note } from "./note"
-import { Node } from "./node";
+import { LineNode } from "./lineNode";
 import { getLineFields } from "src/utils/parser";
 
 export class Line {
-    public nodes: Node[] = []
+    public nodes: LineNode[] = []
+    public parentLine?: Line
 
     constructor(
         public plugin: MetadataMenu,
         public note: Note,
         public position: "yaml" | "inline",
         public rawContent: string = "",
-        public number: number
+        public number: number,
+        public indentationLevel: number = 0
     ) {
         this.buildNodes()
         this.insertLineInNote()
@@ -20,7 +22,7 @@ export class Line {
     public buildNodes() {
         switch (this.position) {
             case "yaml":
-                new Node(this.plugin, this, this.rawContent)
+                new LineNode(this.plugin, this, this.rawContent)
                 break;
             case "inline":
                 const fields = getLineFields(this.rawContent)
@@ -37,14 +39,23 @@ export class Line {
                         const start = parsedField.index
                         const end = start + parsedField.length
                         const field = this.note.getField(parsedField.attribute)
-                        new Node(this.plugin, this, this.rawContent.slice(start, end), 0, index, field, undefined, parsedField)
+                        new LineNode(this.plugin, this, this.rawContent.slice(start, end), 0, index, field, parsedField.values, parsedField)
                     } else {
+                        //no field, just text
                         const nextIndex = nodesIndexes[nodesIndexes.indexOf(index) + 1] || this.rawContent.length
                         const content = this.rawContent.slice(index, nextIndex)
-                        if (content) new Node(this.plugin, this, content, 0, index)
+                        if (content) new LineNode(this.plugin, this, content, 0, index)
                     }
                 }
                 break
+        }
+    }
+
+    public getRootLineWithField(): Line | undefined {
+        if (this.indentationLevel > 0) {
+            return this.parentLine?.getRootLineWithField()
+        } else {
+            if (this.nodes.some(node => !!node.field)) return this
         }
     }
 

@@ -122,7 +122,6 @@ class FileClassAttributeModal extends Modal {
         compatibleParents.forEach(parent => {
             const path = parent.path ? parent.path + "____" + parent.id : parent.id
             const display = path.split("____").map(id => Field.getFieldFromId(this.plugin, id, this.fileClass.name)?.name || "").join(" > ")
-            console.log(display)
             select.addOption(path, display)
         })
         if (this.field.path) {

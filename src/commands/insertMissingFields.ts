@@ -19,7 +19,7 @@ export async function insertMissingFields(
         const f = plugin.fieldIndex;
         const tm = plugin.fileTaskManager;
         const fields = f.filesFields.get(file.path)
-        const currentFieldsNames = genuineKeys(plugin, dvApi.page(file.path))
+        const currentFieldsNames = genuineKeys(dvApi.page(file.path))
         const filteredClassFields = fileClassName ? plugin.fieldIndex.fileClassesFields.get(fileClassName)?.filter(field => field.fileClassName === fileClassName) || undefined : undefined
         const fieldsToInsert: FieldsPayload = []
         fields?.filter(field => !currentFieldsNames.includes(field.name))

@@ -24,13 +24,30 @@ export const decodeLink = (value: string): string => {
         .replace(/ù€/gu, "]]") : value
 }
 
-export const frontMatterLineField = (line: string): string | undefined => {
-    const frontMatterRegex = new RegExp(/(\s*)(?<attribute>[0-9\w\p{Letter}\p{Emoji_Presentation}][-0-9\w\p{Letter}\p{Emoji_Presentation}\s]*[^\s])(?<beforeSeparatorSpacer>\s*):(?<afterSeparatorSpacer>\s*)(?<values>.*)/u)
+export const frontMatterLineField = (line: string): {
+    attribute: string | undefined,
+    indentation: string | undefined,
+    beforeSeparatorSpacer: string | undefined,
+    afterSeparatorSpacer: string | undefined,
+    values: string | undefined
+} => {
+    const frontMatterRegex = new RegExp(/(?<indentation>\s*)(?<attribute>[0-9\w\p{Letter}\p{Emoji_Presentation}][-0-9\w\p{Letter}\p{Emoji_Presentation}\s]*[^\s])(?<beforeSeparatorSpacer>\s*):(?<afterSeparatorSpacer>\s*)(?<values>.*)/u)
     const fR = line.match(frontMatterRegex);
-
     if (fR?.groups) {
-        const { attribute } = fR?.groups
-        return attribute
+        return {
+            attribute: fR?.groups.attribute,
+            indentation: fR?.groups.indentation,
+            beforeSeparatorSpacer: fR?.groups.beforeSeparatorSpacer,
+            afterSeparatorSpacer: fR?.groups.afterSeparatorSpacer,
+            values: fR?.groups.values
+        }
+    }
+    return {
+        attribute: undefined,
+        indentation: undefined,
+        beforeSeparatorSpacer: undefined,
+        afterSeparatorSpacer: undefined,
+        values: undefined
     }
 }
 

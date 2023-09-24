@@ -1,11 +1,11 @@
 import MetadataMenu from "main";
-import { CachedMetadata, parseYaml, TFile } from "obsidian";
+import { CachedMetadata, EditorPosition, parseYaml, TFile } from "obsidian";
 import { FieldPayload, FieldsPayload } from "src/commands/postValues";
 import Field from "src/fields/Field";
-import { rawObjectTypes, FieldType, ReservedMultiAttributes, MultiDisplayType } from "src/types/fieldTypes";
+import { rawObjectTypes, FieldType, ReservedMultiAttributes } from "src/types/fieldTypes";
 import { getFrontmatterPosition } from "src/utils/fileUtils";
 import { Line } from "./line";
-import { Node } from "./node";
+import { LineNode } from "./lineNode";
 import * as Lookup from "src/types/lookupTypes";
 
 export class Note {
@@ -99,7 +99,7 @@ export class Note {
         })
     }
 
-    public getNodeForFieldName(fieldName: string): Node | undefined {
+    public getNodeForFieldName(fieldName: string): LineNode | undefined {
         for (const line of this.lines) {
             const node = line.nodes.find(_node => _node.field?.name === fieldName)
             if (node) return node
@@ -107,12 +107,22 @@ export class Note {
         return undefined
     }
 
-    public getNodeForFieldId(fieldId: string): Node | undefined {
+    public getNodeForFieldId(fieldId: string): LineNode | undefined {
         for (const line of this.lines) {
             const node = line.nodes.find(_node => _node.field?.id === fieldId)
             if (node) return node
         }
         return undefined
+    }
+
+    public getNodeAtPosition(position: EditorPosition): LineNode | undefined {
+        const { ch: cursor, line: lineNumber } = position
+        const nodes = this.lines.find(line => line.number === lineNumber)?.nodes || []
+        nodes.sort((a, b) => a.index - b.index)
+        for (const node of nodes) {
+            if (node.index <= cursor && cursor <= (node.rawContent.length + node.index)) return node
+        }
+        return
     }
 
     public insertField(fieldName: string, payload: FieldPayload, lineNumber?: number): void {
@@ -129,7 +139,7 @@ export class Note {
 
         const createLine = (fieldName: string, value: string, position: "yaml" | "inline", lineNumber: number) => {
             const newLine = new Line(this.plugin, this, position, "", lineNumber)
-            const newNode = new Node(this.plugin, newLine)
+            const newNode = new LineNode(this.plugin, newLine)
             newNode.createFieldNodeContent(fieldName, value, position);
             newLine.renderLine()
         }

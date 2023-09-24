@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { MarkdownView, Menu, TFile } from "obsidian";
+import { MarkdownView, Menu, Notice, TFile } from "obsidian";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import NoteFieldsComponent from "src/components/NoteFields";
 import Field from "src/fields/Field";
@@ -10,6 +10,7 @@ import Managers from "src/fields/fieldManagers/Managers";
 import { AddFileClassToFileModal } from "src/fileClass/fileClass";
 import AddNewFileClassModal from "src/modals/addNewFileClassModal";
 import InputModal from "src/modals/fields/InputModal";
+import { LineNode } from "src/note/lineNode";
 import { FieldIcon, FieldManager, FieldType } from "src/types/fieldTypes";
 import { genuineKeys } from "src/utils/dataviewUtils";
 import { getFrontmatterPosition } from "src/utils/fileUtils";
@@ -33,7 +34,7 @@ export default class OptionsList {
 
 	// adds options to context menu or to a dropdown modal trigger with "Field: Options" command in command pallette
 	path: string;
-	attributes: Record<string, any>;
+	attributes: Map<{ name: string, id: string | undefined }, any>;
 	fieldsFromIndex: Record<string, Field> = {};
 
 	constructor(
@@ -44,7 +45,7 @@ export default class OptionsList {
 	) {
 		this.file = file;
 		this.location = location;
-		this.attributes = {};
+		this.attributes = new Map();
 		this.includedFields = includedFields ? [this.plugin.settings.fileClassAlias, ...includedFields] : [this.plugin.settings.fileClassAlias];
 		const excludedFolders = this.plugin.settings.fileClassExcludedFolders
 		if (!excludedFolders.some(path => file.path.includes(path))) {
@@ -59,83 +60,58 @@ export default class OptionsList {
 		if (dvApi) {
 			const dvFile = dvApi.page(this.file.path)
 			try {
-				genuineKeys(this.plugin, dvFile).forEach(key => this.addAttribute(key, dvFile[key]))
+				genuineKeys(dvFile).forEach(key => this.addAttribute(key, undefined, dvFile[key]))
 			} catch (error) {
 				throw (error);
 			}
 		}
 	}
 
-	private addAttribute(key: string, value: any): void {
+	private addAttribute(name: string, id: string | undefined, value: any): void {
 		const includedFields = this.includedFields!.filter(f => f !== this.plugin.settings.fileClassAlias)
 		if (includedFields.length > 0) {
 			if (
-				this.includedFields!.includes(key)
+				this.includedFields!.includes(name)
 				&&
-				!this.plugin.settings.globallyIgnoredFields.includes(key)
+				!this.plugin.settings.globallyIgnoredFields.includes(name)
 			) {
-				this.attributes[key] = value
+				this.attributes.set({ name: name, id: id }, value)
 			}
-		} else if (!this.plugin.settings.globallyIgnoredFields.includes(key)) {
-			this.attributes[key] = value
+		} else if (!this.plugin.settings.globallyIgnoredFields.includes(name)) {
+			this.attributes.set({ name: name, id: id }, value)
 		}
 	}
 
 	private getFieldsFromIndex(): void {
 		const index = this.plugin.fieldIndex
 		const fields = index.filesFields.get(this.file.path)
-		fields?.forEach(field => this.fieldsFromIndex[field.name] = field)
+		fields?.forEach(field => this.fieldsFromIndex[field.id] = field)
 	}
 
-	public createAndOpenFieldModal(fieldName: string): void {
-		const field = Object.entries(this.fieldsFromIndex).find(([_fieldName, _field]) => _fieldName === fieldName)?.[1]
-		const value = field ? field.getValueFromFileAttributes(this.attributes) : ""
-		if (field) {
-			const fieldManager = new FieldManager[field.type](this.plugin, field) as F;
+	public createAndOpenFieldModal(node: LineNode): void {
+		const { field, value } = node
+		const rootNode = node?.line?.getRootLineWithField()?.nodes[0]
+		const rootField = rootNode?.field
+		const rootFieldValue = rootNode?.value
+		const managedField = field || rootField
+		const managedValue = field ? value : rootFieldValue
+		//-----
+		if (managedField) {
+			const fieldManager = new FieldManager[managedField.type](this.plugin, managedField) as F;
 			switch (fieldManager.type) {
 				case FieldType.Boolean:
-					(fieldManager as BooleanField).toggle(field.name, value, this.file)
+					(fieldManager as BooleanField).toggle(managedField.name, managedValue || "", this.file)
 					break;
 				case FieldType.Cycle:
-					(fieldManager as CycleField).next(field.name, value, this.file)
+					(fieldManager as CycleField).next(managedField.name, managedValue || "", this.file)
 					break;
 				default:
-					fieldManager.createAndOpenFieldModal(this.file, field.name, value)
+					fieldManager.createAndOpenFieldModal(this.file, managedField.name, managedValue)
 					break;
 			}
 
 		} else {
-			//look for upper YAML or Object or whatever
-			const path = Field.findPath(this.attributes, fieldName)
-			if (path && path.split(".").length > 0) {
-				const upperFieldName = path.split(".")[0]
-				const upperField = Object.entries(this.fieldsFromIndex).find(([_fieldName, _field]) => _fieldName === upperFieldName)?.[1]
-				const upperValue = upperField ? upperField.getValueFromFileAttributes(this.attributes) : ""
-				if (upperField) {
-					const fieldManager = new FieldManager[upperField.type](this.plugin, upperField) as F;
-					switch (fieldManager.type) {
-						case FieldType.YAML:
-							fieldManager.createAndOpenFieldModal(this.file, upperField.name, upperValue)
-							break;
-						case FieldType.JSON:
-							fieldManager.createAndOpenFieldModal(this.file, upperField.name, upperValue)
-							break;
-						default:
-							break;
-					}
-				}
-			} else {
-				//and fallback to default
-				const defaultField = new Field(this.plugin, fieldName)
-				defaultField.type = FieldType.Input
-				if (fieldName === this.plugin.settings.fileClassAlias) {
-					this.buildFileClassFieldOptions(defaultField, this.attributes[fieldName])
-				} else if (this.location === "ManageAtCursorCommand") {
-					const fieldManager = new Managers.Input(this.plugin, defaultField) as F
-					(fieldManager as F).createAndOpenFieldModal(this.file, fieldName, this.attributes[fieldName])
-				}
-			}
-
+			new Notice("No field with definition at this position", 2000)
 		}
 	}
 
@@ -153,7 +129,7 @@ export default class OptionsList {
 				this.addSectionSelectModalOption();
 				this.addFieldAtTheEndOfFrontmatterOption();
 				if (dvApi) {
-					const currentFieldsNames = genuineKeys(this.plugin, dvApi.page(this.file.path))
+					const currentFieldsNames = genuineKeys(dvApi.page(this.file.path))
 					if (![...this.plugin.fieldIndex.filesFields.get(this.file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
 						this.addAllMissingFieldsAtSection();
 					}
@@ -182,7 +158,7 @@ export default class OptionsList {
 				this.addFieldAtCurrentPositionOption();
 				this.addFieldAtTheEndOfFrontmatterOption();
 				if (dvApi) {
-					const currentFieldsNames = genuineKeys(this.plugin, dvApi.page(this.file.path))
+					const currentFieldsNames = genuineKeys(dvApi.page(this.file.path))
 					if (![...this.plugin.fieldIndex.filesFields.get(this.file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
 						this.addAllMissingFieldsAtSection();
 					}
@@ -248,21 +224,20 @@ export default class OptionsList {
 	}
 
 	private buildFieldOptions(): void {
-		Object.keys(this.attributes).forEach((key: string) => {
-			const value = this.attributes[key];
-			const field = this.fieldsFromIndex[key]
+		this.attributes.forEach((value, key, map) => {
+			const field = key.id ? this.fieldsFromIndex[key.id] : undefined
 
 			if (field) {
 				const fieldManager = new FieldManager[field.type](this.plugin, field);
 				fieldManager.addFieldOption(key, value, this.file, this.location);
-			} else if (key !== "file" && (isSuggest(this.location) || isMenu(this.location))) {
-				const defaultField = new Field(this.plugin, key)
+			} else if (key.name !== "file" && (isSuggest(this.location) || isMenu(this.location))) {
+				const defaultField = new Field(this.plugin, key.name)
 				defaultField.type = FieldType.Input
-				if (key === this.plugin.settings.fileClassAlias) {
+				if (key.name === this.plugin.settings.fileClassAlias) {
 					this.buildFileClassFieldOptions(defaultField, value)
 				} else {
 					const fieldManager = new Managers.Input(this.plugin, defaultField)
-					fieldManager.addFieldOption(key, value || "", this.file, this.location)
+					fieldManager.addFieldOption(key.name, value || "", this.file, this.location)
 				}
 			}
 

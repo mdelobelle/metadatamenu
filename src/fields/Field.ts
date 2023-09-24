@@ -34,6 +34,11 @@ class Field {
         }
     }
 
+    public getDottedPath(): string {
+        if (!this.path) return this.name
+        const upperDottedPath = this.path.split("____").map(id => Field.getFieldFromId(this.plugin, id, this.fileClassName)?.name).join(".")
+        return `${upperDottedPath}.${this.name}`
+    }
 
     public hasIdAsAncestor(childId: string): boolean {
         if (!this.path) {
@@ -63,8 +68,19 @@ class Field {
     }
 
     public getValueFromFileAttributes(attributes: Record<string, any>) {
-        const path = `${this.path.split("____").join(".")}${this.path ? "." : ""}${this.name}`
-        return Field.getValue(attributes, path)
+        console.log(this)
+        if (this.path) {
+            const path = `${this.path
+                .split("____")
+                .map(id => Field.getFieldFromId(this.plugin, id, this.fileClassName)?.name)
+                .join(".")
+                }${this.path ? "." : ""}${this.name}`
+            return Field.getValueFromPath(attributes, path)
+        } else {
+            return Field.getValueFromPath(attributes, "")
+        }
+
+
     }
 
     public getAncestors(fieldId: string = this.id): Field[] {
@@ -154,24 +170,6 @@ class Field {
         return _existingFields
     }
 
-    static findPath(obj: any, name: string, currentPath: string = ""): string | undefined {
-        let matchingPath: string | undefined;
-
-        if (!obj || typeof obj !== 'object') return
-        for (const key of Object.keys(obj)) {
-            if (key === name) {
-                matchingPath = currentPath
-            } else if (key === "file") {
-                continue;
-            } else {
-                matchingPath = Field.findPath(obj[key], name, `${currentPath ? currentPath + "." : ""}${key}`)
-            }
-            if (matchingPath) break
-        }
-        return matchingPath
-    }
-
-
     static getFieldFromId(plugin: MetadataMenu, id: string, fileClassName?: string): Field | undefined {
         let field: Field | undefined = undefined;
         if (fileClassName) {
@@ -191,11 +189,11 @@ class Field {
     }
 
 
-    static getValue(obj: any, path: string): string {
+    static getValueFromPath(obj: any, path: string): string {
         if (!path) return obj;
         const properties: string[] = path.split('.');
         try {
-            const subValue = Field.getValue(obj[properties.shift()!], properties.join('.'))
+            const subValue = Field.getValueFromPath(obj[properties.shift()!], properties.join('.'))
             return subValue
         } catch (e) {
             return ""

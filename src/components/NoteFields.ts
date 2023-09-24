@@ -163,7 +163,7 @@ export class FieldsModal extends Modal {
         if (dvApi) {
             const dvFile = dvApi.page(this.file.path);
             if (dvFile) {
-                currentFieldsNames.push(...genuineKeys(this.plugin, dvFile))
+                currentFieldsNames.push(...genuineKeys(dvFile))
             }
         };
         const note = new Note(this.plugin, this.file)
