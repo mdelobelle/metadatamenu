@@ -8,9 +8,7 @@ import { FieldManager as FM } from "src/types/fieldTypes";
 import { FieldManager as F, FieldManager } from "src/fields/FieldManager";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { FileClass } from "src/fileClass/fileClass";
-import { genuineKeys } from "src/utils/dataviewUtils";
 import { FileClassManager } from "./fileClassManager";
-import { getLineFields } from "src/utils/parser";
 import { Note } from "src/note/note";
 
 export class FieldOptions {
@@ -29,32 +27,30 @@ export class FieldOptions {
 
 export class FieldsModal extends Modal {
 
-    private dvApi?: any
-    public fields: Field[]
     public fieldContainers: HTMLDivElement[] = [];
     //private maxOptions: number = 0;
     private missingFields: boolean = false;
+    private note: Note;
 
     constructor(
         public plugin: MetadataMenu,
         private file: TFile
     ) {
         super(plugin.app);
-        this.dvApi = plugin.app.plugins.plugins.dataview?.api;
-        this.getFields();
         this.containerEl.addClass("metadata-menu")
         this.containerEl.addClass("note-fields-modal")
     }
 
     //ok
-    onOpen() {
+    async onOpen() {
         this.titleEl.setText(`Fields of ${this.file.basename}.${this.file.extension}`)
+        await this.buildNote();
         this.buildFieldsContainer();
     };
 
-    //ok
-    getFields(): void {
-        this.fields = this.plugin.fieldIndex.filesFields.get(this.file.path) || [];
+    public async buildNote(): Promise<void> {
+        this.note = new Note(this.plugin, this.file)
+        await this.note.buildLines()
     }
 
     //
@@ -92,7 +88,7 @@ export class FieldsModal extends Modal {
             this.missingFields = true
             fieldValueContainer.setText("<missing>");
         } else {
-            fieldManager.displayValue(fieldValueContainer, this.file, field.name, () => { this.close() })
+            fieldManager.displayValue(fieldValueContainer, this.file, value, () => { this.close() })
         }
         const fieldOptionsWrapper = container.createDiv({ cls: "field-options-wrapper" });
         fieldOptionsWrapper.createDiv({ cls: "field-options-spacer" });
@@ -129,48 +125,35 @@ export class FieldsModal extends Modal {
     }
 
     openInsertMissingFieldsForFileClassModal(fileClass: FileClass): void {
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        if (dvApi) {
-            const dvFile = dvApi.page(this.file.path);
-            if (dvFile) {
-                const modal = new ChooseSectionModal(
-                    this.plugin,
-                    this.file,
-                    (
-                        lineNumber: number,
-                        after: boolean,
-                        asList: boolean,
-                        asComment: boolean
-                    ) => insertMissingFields(
-                        this.plugin,
-                        dvFile.file.path,
-                        lineNumber,
-                        after,
-                        asList,
-                        asComment,
-                        fileClass.name
-                    )
-                );
-                modal.open()
-            }
-        }
+        const modal = new ChooseSectionModal(
+            this.plugin,
+            this.file,
+            (
+                lineNumber: number,
+                after: boolean,
+                asList: boolean,
+                asComment: boolean
+            ) => insertMissingFields(
+                this.plugin,
+                this.file.path,
+                lineNumber,
+                after,
+                asList,
+                asComment,
+                fileClass.name
+            )
+        );
+        modal.open()
     }
 
-    missingFieldsForFileClass(fileClass: FileClass): boolean {
-        const currentFieldsNames: string[] = []
+    async missingFieldsForFileClass(fileClass: FileClass): Promise<boolean> {
 
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        if (dvApi) {
-            const dvFile = dvApi.page(this.file.path);
-            if (dvFile) {
-                currentFieldsNames.push(...genuineKeys(dvFile))
-            }
-        };
         const note = new Note(this.plugin, this.file)
-        note.buildLines()
+        await note.buildLines()
+        const currentFieldsIds: string[] = note.existingFields.map(_f => _f.id)
 
         const missingFields = fileClass && this.file ?
-            !this.plugin.fieldIndex.fileClassesFields.get(fileClass.name)?.map(f => f.name).every(fieldName => currentFieldsNames.includes(fieldName)) :
+            !this.plugin.fieldIndex.fileClassesFields.get(fileClass.name)?.map(f => f.id).every(id => currentFieldsIds.includes(id)) :
             false
         return missingFields
     }
@@ -182,14 +165,14 @@ export class FieldsModal extends Modal {
             const _ancestors = this.plugin.fieldIndex.fileClassesAncestors.get(fileClass.name) || [];
             const ancestors = [..._ancestors].reverse();
             ancestors.push(fileClass.name);
-            ancestors.forEach((fileClassName, i) => {
+            ancestors.forEach(async (fileClassName, i) => {
                 const _fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
                 if (_fileClass) {
                     const fileClassOptionsContainer = fileClassManagerContainer.createDiv({ cls: "fileclass-manager-container" })
                     const fileClassNameContainer = fileClassOptionsContainer.createDiv({ cls: "name", text: _fileClass.name })
                     fileClassNameContainer.setAttr("id", `fileClass__${_fileClass.name.replace("/", "___").replace(" ", "_")}`)
 
-                    if (this.missingFieldsForFileClass(_fileClass)) {
+                    if (await this.missingFieldsForFileClass(_fileClass)) {
                         const fileClassInsertMissingFieldsBtn = new ButtonComponent(fileClassOptionsContainer)
                         fileClassInsertMissingFieldsBtn.setIcon("battery-full")
                         fileClassInsertMissingFieldsBtn.setTooltip(`Insert missing fields for ${_fileClass.name}`)
@@ -243,9 +226,9 @@ export class FieldsModal extends Modal {
         this.contentEl.replaceChildren();
         this.contentEl.createEl('hr')
         const fieldsContainer = this.contentEl.createDiv({ cls: "note-fields-container" });
-        this.fields.forEach(field => {
-            const value = this.dvApi ? this.dvApi.page(this.file.path)[field.name] : undefined
-            this.buildFieldContainer(fieldsContainer, field, value)
+        this.note.existingFields.forEach(field => {
+            const fieldNode = this.note.getNodeForFieldId(field.id)
+            this.buildFieldContainer(fieldsContainer, field, fieldNode?.value || "")
         })
         if (this.missingFields) {
             const insertMissingFieldsContainer = this.contentEl.createDiv({ cls: "insert-all-fields" });
@@ -253,26 +236,23 @@ export class FieldsModal extends Modal {
             const insertMissingFieldsBtn = new ButtonComponent(insertMissingFieldsContainer)
             insertMissingFieldsBtn.setIcon("battery-full")
             insertMissingFieldsBtn.onClick(() => {
-                const dvFile = this.dvApi?.page(this.file.path)
-                if (dvFile) {
-                    new ChooseSectionModal(
+                new ChooseSectionModal(
+                    this.plugin,
+                    this.file,
+                    (
+                        lineNumber: number,
+                        after: boolean,
+                        asList: boolean,
+                        asComment: boolean
+                    ) => insertMissingFields(
                         this.plugin,
-                        this.file,
-                        (
-                            lineNumber: number,
-                            after: boolean,
-                            asList: boolean,
-                            asComment: boolean
-                        ) => insertMissingFields(
-                            this.plugin,
-                            dvFile.file.path,
-                            lineNumber,
-                            after,
-                            asList,
-                            asComment
-                        )
-                    ).open();
-                }
+                        this.file.path,
+                        lineNumber,
+                        after,
+                        asList,
+                        asComment
+                    )
+                ).open();
             })
         }
         this.contentEl.createEl('hr')
@@ -300,8 +280,8 @@ export default class NoteFieldsComponent extends Component {
     }
 
     onload(): void {
-        this.plugin.registerEvent(this.plugin.app.metadataCache.on('dataview:metadata-change', () => {
-            this.fieldsModal.getFields();
+        this.plugin.registerEvent(this.plugin.app.metadataCache.on('dataview:metadata-change', async () => {
+            await this.fieldsModal.buildNote();
             this.fieldsModal.buildFieldsContainer();
         }))
         this.fieldsModal.open()

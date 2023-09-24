@@ -89,7 +89,7 @@ export default class LookupField extends FieldManager {
     }
 
     public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked = () => { }): void {
-        const fileClassName = this.plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName)?.fileClassName || "presetField"
+        const fileClassName = this.plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.id === this.field.id)?.fileClassName || "presetField"
         container.createDiv({ text: this.plugin.fieldIndex.fileLookupFieldLastValue.get(`${file.path}__related__${fileClassName}___${fieldName}`) })
     }
 

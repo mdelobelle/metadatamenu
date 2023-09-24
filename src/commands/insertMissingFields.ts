@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
-import { genuineKeys } from "src/utils/dataviewUtils";
+import { Note } from "src/note/note";
 import { getFileFromFileOrPath } from "src/utils/fileUtils";
 import { FieldsPayload, postValues } from "./postValues";
 
@@ -14,19 +14,17 @@ export async function insertMissingFields(
     fileClassName?: string
 ): Promise<void> {
     const file = getFileFromFileOrPath(plugin, fileOrFilePath)
-    const dvApi = plugin.app.plugins.plugins.dataview?.api
-    if (dvApi) {
-        const f = plugin.fieldIndex;
-        const tm = plugin.fileTaskManager;
-        const fields = f.filesFields.get(file.path)
-        const currentFieldsNames = genuineKeys(dvApi.page(file.path))
-        const filteredClassFields = fileClassName ? plugin.fieldIndex.fileClassesFields.get(fileClassName)?.filter(field => field.fileClassName === fileClassName) || undefined : undefined
-        const fieldsToInsert: FieldsPayload = []
-        fields?.filter(field => !currentFieldsNames.includes(field.name))
-            .filter(field => filteredClassFields ? filteredClassFields.map(f => f.name).includes(field.name) : true)
-            .forEach(async field => {
-                fieldsToInsert.push({ name: field.name, payload: { value: "" } })
-            })
-        if (fieldsToInsert.length) await postValues(plugin, fieldsToInsert, file, lineNumber, after, asList, asComment);
-    }
+    const note = new Note(plugin, file)
+    await note.buildLines()
+
+    const f = plugin.fieldIndex;
+    const fields = f.filesFields.get(file.path)
+    const filteredClassFields = fileClassName ? plugin.fieldIndex.fileClassesFields.get(fileClassName)?.filter(field => field.fileClassName === fileClassName) || undefined : undefined
+    const fieldsToInsert: FieldsPayload = []
+    fields?.filter(field => !note.existingFields.map(_f => _f.id).includes(field.id))
+        .filter(field => filteredClassFields ? filteredClassFields.map(f => f.id).includes(field.id) : true)
+        .forEach(async field => {
+            fieldsToInsert.push({ name: field.name, id: field.id, payload: { value: "" } })
+        })
+    if (fieldsToInsert.length) await postValues(plugin, fieldsToInsert, file, lineNumber, after, asList, asComment);
 }

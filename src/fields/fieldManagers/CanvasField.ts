@@ -5,6 +5,7 @@ import { FieldOptions } from "src/components/NoteFields"
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
 import FieldSettingsModal from "src/settings/FieldSettingsModal"
 import { FieldType } from "src/types/fieldTypes"
+import { getLink } from "src/utils/parser"
 import Field from "../Field"
 import { SettingLocation } from "../FieldManager"
 import AbstractCanvasBasedField from "./AbstractCanvasBasedField"
@@ -17,26 +18,25 @@ export default class CanvasField extends AbstractCanvasBasedField {
         super(plugin, field, FieldType.Canvas)
     }
 
-    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClick: () => void): void {
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        if (dvApi) {
-            const dvValue = dvApi.page(file.path)[fieldName]
-            const values = Array.isArray(dvValue) ? dvValue : [dvValue]
-            values.forEach((value, i) => {
-                if (dvApi.value.isLink(value)) {
-                    const link = container.createEl('a', { text: value.path.split("/").last().replace(/(.*).md/, "$1") });
-                    link.onclick = () => {
-                        this.plugin.app.workspace.openLinkText(value.path, file.path, true)
-                        onClick()
-                    }
-                } else {
-                    container.createDiv({ text: value });
+    public displayValue(container: HTMLDivElement, file: TFile, value: any, onClick: () => void): void {
+
+        const values = Array.isArray(value) ? value : [value]
+        values.forEach((value, i) => {
+            const link = getLink(value, file)
+            if (link?.path) {
+                const linkText = link.path.split("/").last() || ""
+                const linkEl = container.createEl('a', { text: linkText.replace(/(.*).md/, "$1") });
+                linkEl.onclick = () => {
+                    this.plugin.app.workspace.openLinkText(value.path, file.path, true)
+                    onClick()
                 }
-                if (i < values.length - 1) {
-                    container.createEl('span', { text: " | " })
-                }
-            })
-        }
+            } else {
+                container.createDiv({ text: value });
+            }
+            if (i < values.length - 1) {
+                container.createEl('span', { text: " | " })
+            }
+        })
         container.createDiv()
     }
 

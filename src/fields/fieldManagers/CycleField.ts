@@ -60,20 +60,18 @@ export default class CycleField extends AbstractListBasedField {
         return matchedValue
     }
 
-    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked?: () => void): void {
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+    public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {
+
         let valueText: string;
-        if (dvApi) {
-            switch (dvApi.page(file.path)[fieldName]) {
-                case undefined: valueText = ""; break;
-                case null: valueText = ""; break;
-                case false: valueText = "false"; break;
-                case 0: valueText = "0"; break;
-                default: valueText = dvApi.page(file.path)[fieldName];
-            }
-        } else {
-            valueText = "";
+
+        switch (value) {
+            case undefined: valueText = ""; break;
+            case null: valueText = ""; break;
+            case false: valueText = "false"; break;
+            case 0: valueText = "0"; break;
+            default: valueText = value.toString() || "";
         }
+
         container.createDiv({ text: this.getRawOptionFromDuration(valueText) || valueText })
     }
 

@@ -14,6 +14,7 @@ export type FieldPayload = {
 
 export type FieldsPayload = Array<{
     name: string,
+    id?: string,
     payload: FieldPayload
 }>
 

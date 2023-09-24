@@ -63,9 +63,9 @@ export default class FormulaField extends FieldManager {
         fieldContainer.appendChild(fieldValue);
     }
 
-    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked = () => { }): void {
-        const fileClassName = this.plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName)?.fileClassName || "presetField"
-        container.createDiv({ text: this.plugin.fieldIndex.fileFormulaFieldLastValue.get(`${file.path}__calculated__${fileClassName}___${fieldName}`) })
+    public displayValue(container: HTMLDivElement, file: TFile, value: string, onClicked = () => { }): void {
+        const fileClassName = this.plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.id === this.field.id)?.fileClassName || "presetField"
+        container.createDiv({ text: this.plugin.fieldIndex.fileFormulaFieldLastValue.get(`${file.path}__calculated__${fileClassName}___${this.field.name}`) })
     }
 
     private createFormulaContainer(container: HTMLDivElement): void {

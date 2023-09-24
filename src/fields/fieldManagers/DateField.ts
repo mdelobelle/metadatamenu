@@ -10,6 +10,7 @@ import { FieldManager as FM } from "src/types/fieldTypes";
 import { compareDuration } from "src/utils/dataviewUtils";
 import { FieldOptions } from "src/components/NoteFields";
 import { postValues } from "src/commands/postValues";
+import { getLink } from "src/utils/parser";
 
 export default class DateField extends FieldManager {
 
@@ -252,17 +253,29 @@ export default class DateField extends FieldManager {
         return true;
     }
 
-    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked: () => {}): void {
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        if (dvApi) {
-            const value = dvApi.page(file.path)[fieldName]
-            if (dvApi.value.isDate(value)) {
-                container.createDiv({ text: moment(value.toJSDate()).format(this.field.options.dateFormat) });
-            } else if (dvApi.value.isLink(value)) {
-                const link = container.createEl('a', { text: value.path.split("/").last().replace(/(.*).md/, "$1") })
-                link.onclick = () => {
-                    this.plugin.app.workspace.openLinkText(value.path, file.path, true);
-                    onClicked()
+    public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked: () => {}): void {
+        const dateFormat = this.field.options.dateFormat
+        const dateLink = getLink(value, file)
+        if (dateLink?.path) {
+            const linkText = dateLink.path.split("/").last() || ""
+            const linkEl = container.createEl('a', { text: linkText.replace(/(.*).md/, "$1") });
+            linkEl.onclick = () => {
+                this.plugin.app.workspace.openLinkText(dateLink.path, file.path, true)
+                onClicked();
+            }
+        } else {
+            const date = moment(value, dateFormat)
+            if (date.isValid()) {
+                const dateText = date.format(this.field.options.dateFormat)
+                if (this.field.options.defaultInsertAsLink) {
+                    const rootFolder = this.field.options.linkPath
+                    const linkEl = container.createEl('a', { text: dateText });
+                    linkEl.onclick = () => {
+                        this.plugin.app.workspace.openLinkText(`${rootFolder ? rootFolder + "/" : ""}${dateText}.md`, file.path, true)
+                        onClicked();
+                    }
+                } else {
+                    container.createDiv({ text: dateText });
                 }
             } else {
                 container.createDiv({ text: value });
