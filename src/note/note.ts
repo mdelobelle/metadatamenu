@@ -151,9 +151,13 @@ export class Note {
 
             }
         } else if (id.startsWith("new-field-")) {
+            const position = frontMatterEnd && ((lineNumber || this.lines.length) <= frontMatterEnd) ? "yaml" : "inline"
+            const _ = position === "yaml" ? ":" : "::"
             const fR = id.match(/new-field-(?<fieldName>.*)/)
             if (fR?.groups?.fieldName) {
-                //TODO manage the insertion of Raw Field
+                const content = `${fR.groups.fieldName}${_} ${payload.value}`
+                const newLine = new Line(this.plugin, this, position, content, lineNumber || this.lines.length)
+                newLine.renderLine()
             }
         } else {
             const field = this.getField(id)

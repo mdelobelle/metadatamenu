@@ -4,7 +4,7 @@ import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { FieldManager, FieldType, MultiDisplayType } from "src/types/fieldTypes";
 
 class FileClassAttribute {
-    //TODO: remove Attribute based on ID not NAME
+
     constructor(
         public plugin: MetadataMenu,
         public origin: string,

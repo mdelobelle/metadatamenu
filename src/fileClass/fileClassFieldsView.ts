@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { ButtonComponent, setIcon, Setting } from "obsidian";
-import { removeFileClassAttributeWithName } from "src/commands/removeFileClassAttribute";
+import { removeFileClassAttributeWithId } from "src/commands/removeFileClassAttribute";
 import { FieldTypeTagClass } from "src/types/fieldTypes";
 import { FileClass } from "./fileClass";
 import { FileClassAttribute } from "./fileClassAttribute";
@@ -54,7 +54,7 @@ class FileClassFieldSetting {
         btn.setClass("cell")
         btn.onClick(() => {
 
-            removeFileClassAttributeWithName(this.plugin, this.fileClass, this.fileClassAttribute.name)
+            removeFileClassAttributeWithId(this.plugin, this.fileClass, this.fileClassAttribute.id)
         })
     };
 }

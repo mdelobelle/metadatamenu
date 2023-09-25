@@ -74,7 +74,6 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
     onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
         this.insertFileClassToFile(item)
     }
-    //TODO manage 'fileClass' insertion as it is not a managed field - pass fileClassAlias as an id and manage it in note
     async insertFileClassToFile(value: string) {
         const fileClassAlias = this.plugin.settings.fileClassAlias
         const currentFileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path)

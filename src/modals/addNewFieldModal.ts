@@ -16,7 +16,6 @@ export default class addNewFieldModal extends Modal {
     }
 
     onOpen() {
-        //TODO manage new field insertion as it is not a managed field. pass 'new-field-<name>' as an id and manage it in note
         this.titleEl.setText("Insert new field");
         const nameContainer = this.contentEl.createDiv({ cls: "field-container" });
         nameContainer.createDiv({ text: "Field name: ", cls: "label" });
