@@ -65,7 +65,7 @@ export default class BooleanModal extends Modal {
         saveButton.setIcon("checkmark");
         saveButton.onClick(async () => {
             const value = this.value.toString()
-            await postValues(this.plugin, [{ name: this.field.name, payload: { value: value } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
+            await postValues(this.plugin, [{ id: this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
             this.close();
         });
     };

@@ -77,7 +77,7 @@ export default class CycleField extends AbstractListBasedField {
 
     public async next(name: string, value: string, file: TFile): Promise<void> {
         let matchedValue = this.getRawOptionFromDuration(value) || value;
-        await postValues(this.plugin, [{ name: name, payload: { value: this.nextOption(matchedValue).toString() } }], file)
+        await postValues(this.plugin, [{ id: this.field.id, payload: { value: this.nextOption(matchedValue).toString() } }], file)
     }
 
     public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
@@ -146,7 +146,7 @@ export default class CycleField extends AbstractListBasedField {
 
         /* button on click : go to next version*/
         cycleBtn.onclick = (e) => {
-            CycleField.replaceValues(this.plugin, p.file.path, this.field.name, nextOption);
+            CycleField.replaceValues(this.plugin, p.file.path, this.field.id, nextOption);
             if (!attrs?.options?.alwaysOn) {
                 cycleBtn.hide();
                 spacer.show();

@@ -15,7 +15,7 @@ export async function insertMissingFields(
 ): Promise<void> {
     const file = getFileFromFileOrPath(plugin, fileOrFilePath)
     const note = new Note(plugin, file)
-    await note.buildLines()
+    await note.build()
 
     const f = plugin.fieldIndex;
     const fields = f.filesFields.get(file.path)
@@ -24,7 +24,7 @@ export async function insertMissingFields(
     fields?.filter(field => !note.existingFields.map(_f => _f.id).includes(field.id))
         .filter(field => filteredClassFields ? filteredClassFields.map(f => f.id).includes(field.id) : true)
         .forEach(async field => {
-            fieldsToInsert.push({ name: field.name, id: field.id, payload: { value: "" } })
+            fieldsToInsert.push({ id: field.id, payload: { value: "" } })
         })
     if (fieldsToInsert.length) await postValues(plugin, fieldsToInsert, file, lineNumber, after, asList, asComment);
 }

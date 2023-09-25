@@ -174,12 +174,12 @@ export default class MultiSuggestModal extends SuggestModal<string> {
 
     async replaceValues() {
         const options = this.selectedOptions;
-        await postValues(this.plugin, [{ name: this.field.name, payload: { value: options.join(", ") } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.field.id, payload: { value: options.join(", ") } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
         this.close();
     }
 
     async clearValues() {
-        await postValues(this.plugin, [{ name: this.field.name, payload: { value: "" } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
     }
 
     renderSelected() {

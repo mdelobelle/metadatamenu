@@ -75,6 +75,6 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
             alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(item.path))
         }
         const value = FileField.buildMarkDownLink(this.plugin, this.file, item.basename, undefined, alias)
-        await postValues(this.plugin, [{ name: this.field.name, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asComment)
     }
 }

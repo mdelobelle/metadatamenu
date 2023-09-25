@@ -79,8 +79,8 @@ export default class NumberField extends FieldManager {
         const canDecrease = !isNaN(fMin) && fValue - fStep >= fMin;
         const canIncrease = !isNaN(fMax) && fValue + fStep <= fMax;
         const action = () => modal.open()
-        const decrease = async () => await postValues(this.plugin, [{ name: name, payload: { value: (fValue - fStep).toString() } }], file)
-        const increase = async () => await postValues(this.plugin, [{ name: name, payload: { value: (fValue + fStep).toString() } }], file)
+        const decrease = async () => await postValues(this.plugin, [{ id: this.field.id, payload: { value: (fValue - fStep).toString() } }], file)
+        const increase = async () => await postValues(this.plugin, [{ id: this.field.id, payload: { value: (fValue + fStep).toString() } }], file)
         if (NumberField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
@@ -271,7 +271,7 @@ export default class NumberField extends FieldManager {
             if (this.validateValue(input.value)) {
                 const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
                 if (file instanceof TFile && file.extension == "md") {
-                    await postValues(this.plugin, [{ name: this.field.name, payload: { value: input.value } }], file)
+                    await postValues(this.plugin, [{ id: this.field.id, payload: { value: input.value } }], file)
                     this.toggleDvButtons(decrementButton, incrementButton, input.value)
                 }
                 fieldContainer.removeChild(inputContainer)
@@ -306,7 +306,7 @@ export default class NumberField extends FieldManager {
                 if (this.validateValue(input.value)) {
                     const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
                     if (file instanceof TFile && file.extension == "md") {
-                        await postValues(this.plugin, [{ name: this.field.name, payload: { value: input.value } }], file)
+                        await postValues(this.plugin, [{ id: this.field.id, payload: { value: input.value } }], file)
                         this.toggleDvButtons(decrementButton, incrementButton, input.value)
                     }
                     fieldContainer.removeChild(inputContainer)
@@ -340,7 +340,7 @@ export default class NumberField extends FieldManager {
                 const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
                 if (file instanceof TFile && file.extension == "md") {
                     const newValue = (!!fStep ? p[this.field.name] - fStep : p[this.field.name] - 1).toString();
-                    await postValues(this.plugin, [{ name: this.field.name, payload: { value: newValue } }], file)
+                    await postValues(this.plugin, [{ id: this.field.id, payload: { value: newValue } }], file)
                     this.toggleDvButtons(decrementButton, incrementButton, newValue);
                 }
             }
@@ -354,7 +354,7 @@ export default class NumberField extends FieldManager {
                 const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
                 if (file instanceof TFile && file.extension == "md") {
                     const newValue = (!!fStep ? p[this.field.name] + fStep : p[this.field.name] + 1).toString();
-                    await postValues(this.plugin, [{ name: this.field.name, payload: { value: newValue } }], file)
+                    await postValues(this.plugin, [{ id: this.field.id, payload: { value: newValue } }], file)
                     this.toggleDvButtons(decrementButton, incrementButton, newValue);
                 }
             }

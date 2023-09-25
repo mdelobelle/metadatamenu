@@ -110,7 +110,7 @@ export default class InputField extends FieldManager {
         const validateIcon = inputContainer.createEl("button");
         setIcon(validateIcon, "checkmark");
         validateIcon.onclick = (e) => {
-            InputField.replaceValues(this.plugin, p.file.path, this.field.name, input.value);
+            InputField.replaceValues(this.plugin, p.file.path, this.field.id, input.value);
             inputContainer.hide()
         }
         const cancelIcon = inputContainer.createEl("button");
@@ -125,7 +125,7 @@ export default class InputField extends FieldManager {
 
         input.onkeydown = (e) => {
             if (e.key === "Enter") {
-                InputField.replaceValues(this.plugin, p.file.path, this.field.name, input.value);
+                InputField.replaceValues(this.plugin, p.file.path, this.field.id, input.value);
                 inputContainer.hide();
             }
             if (e.key === 'Escape') {

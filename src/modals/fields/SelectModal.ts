@@ -108,7 +108,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
     }
 
     async clearValues() {
-        await postValues(this.plugin, [{ name: this.field.name, payload: { value: "" } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
 
     }
 
@@ -133,7 +133,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
     }
 
     private async saveItem(item: string): Promise<void> {
-        await postValues(this.plugin, [{ name: this.field.name, payload: { value: item.toString() } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.field.id, payload: { value: item.toString() } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
     }
 
     async onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {

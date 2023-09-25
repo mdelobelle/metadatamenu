@@ -72,10 +72,10 @@ export abstract class FieldManager {
         return true;
     }
 
-    public static async replaceValues(plugin: MetadataMenu, path: string, fieldName: string, value: string): Promise<void> {
+    public static async replaceValues(plugin: MetadataMenu, path: string, id: string, value: string): Promise<void> {
         const file = plugin.app.vault.getAbstractFileByPath(path)
         if (file instanceof TFile && file.extension == "md") {
-            await postValues(plugin, [{ name: fieldName, payload: { value: value } }], file)
+            await postValues(plugin, [{ id: id, payload: { value: value } }], file)
         }
     }
 

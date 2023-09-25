@@ -77,7 +77,7 @@ export default class InputModal extends BaseModal {
 
     public async save(): Promise<void> {
         const newContent = this.editor.state.doc.toString()
-        await postValues(this.plugin, [{ name: this.field.name, payload: { value: newContent } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.field.id, payload: { value: newContent } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
         this.close();
     }
 };

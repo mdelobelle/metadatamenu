@@ -1,7 +1,6 @@
 import MetadataMenu from "main";
 import { Menu, Notice, TFile } from "obsidian";
 import { insertMissingFields } from "src/commands/insertMissingFields";
-import { postValues } from "src/commands/postValues";
 import { FileClassManager } from "src/components/fileClassManager";
 import { FileClass } from "src/fileClass/fileClass";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";

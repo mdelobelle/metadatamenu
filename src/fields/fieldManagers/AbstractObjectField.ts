@@ -105,7 +105,7 @@ export default abstract class ObjectField extends FieldManager {
         const validateIcon = inputContainer.createEl("button");
         setIcon(validateIcon, "checkmark");
         validateIcon.onclick = (e) => {
-            ObjectField.replaceValues(this.plugin, p.file.path, this.field.name, input.value);
+            ObjectField.replaceValues(this.plugin, p.file.path, this.field.id, input.value);
             inputContainer.hide()
         }
         const cancelIcon = inputContainer.createEl("button");
@@ -120,7 +120,7 @@ export default abstract class ObjectField extends FieldManager {
 
         input.onkeydown = (e) => {
             if (e.key === "Enter") {
-                ObjectField.replaceValues(this.plugin, p.file.path, this.field.name, input.value);
+                ObjectField.replaceValues(this.plugin, p.file.path, this.field.id, input.value);
                 inputContainer.hide();
             }
             if (e.key === 'Escape') {

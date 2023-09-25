@@ -8,6 +8,7 @@ import { FieldManager } from "src/fields/FieldManager";
 import { postValues } from "src/commands/postValues";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { v4 as uuidv4 } from "uuid"
+import { Note } from "src/note/note";
 
 const options: Record<string, { name: string, toValue: (value: any) => any }> = {
     "limit": { name: "limit", toValue: (value: any) => value },
@@ -73,12 +74,12 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
     onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
         this.insertFileClassToFile(item)
     }
-
+    //TODO manage 'fileClass' insertion as it is not a managed field - pass fileClassAlias as an id and manage it in note
     async insertFileClassToFile(value: string) {
         const fileClassAlias = this.plugin.settings.fileClassAlias
         const currentFileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path)
         const newValue = currentFileClasses ? [...currentFileClasses.map(fc => fc.name), value].join(", ") : value
-        await postValues(this.plugin, [{ name: fileClassAlias, payload: { value: newValue } }], this.file)
+        await postValues(this.plugin, [{ id: `fileclass-field-${fileClassAlias}`, payload: { value: newValue } }], this.file, -1)
     }
 }
 
@@ -153,6 +154,17 @@ class FileClass {
         return icon
     }
 
+    public async missingFieldsForFileClass(file: TFile): Promise<boolean> {
+
+        const note = new Note(this.plugin, file)
+        await note.build()
+        const currentFieldsIds: string[] = note.existingFields.map(_f => _f.id)
+
+        const missingFields = this && file ?
+            !this.plugin.fieldIndex.fileClassesFields.get(this.name)?.map(f => f.id).every(id => currentFieldsIds.includes(id)) :
+            false
+        return missingFields
+    }
 
     static getFileClassAttributes(plugin: MetadataMenu, fileClass: FileClass, excludes?: string[]): FileClassAttribute[] {
         const file = fileClass.getClassFile();

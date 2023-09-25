@@ -6,9 +6,9 @@ import ObjectField from "./AbstractObjectField";
 import * as yamlMode from '@codemirror/legacy-modes/mode/yaml';
 import { Diagnostic, linter } from "@codemirror/lint";
 import { stringify, parse } from "yaml";
+import { TFile } from "obsidian";
 
 export default class YAMLField extends ObjectField {
-
     constructor(plugin: MetadataMenu, field: Field) {
         super(plugin, field, FieldType.YAML)
     }
@@ -24,6 +24,11 @@ export default class YAMLField extends ObjectField {
         } catch (e) {
             return value
         }
+    }
+
+    public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {
+        const valueString = this.dumpValue(value)
+        container.setText(`${valueString.slice(0, 50)}${valueString.length > 50 ? "..." : ""}`)
     }
 
     public getExtraExtensions() {

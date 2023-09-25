@@ -97,7 +97,7 @@ export default class MultiField extends AbstractListBasedField {
             valueRemoveBtn.hide();
             valueRemoveBtn.onclick = async () => {
                 const remainingValues = currentValues.filter(cV => cV !== v).join(", ")
-                MultiField.replaceValues(this.plugin, p.file.path, this.field.name, remainingValues);
+                MultiField.replaceValues(this.plugin, p.file.path, this.field.id, remainingValues);
             }
 
             valueContainer.onmouseover = () => {

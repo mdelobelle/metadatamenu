@@ -125,7 +125,7 @@ function addManageFieldAtCursorCommand(plugin: MetadataMenu) {
                 const optionsList = new OptionsList(plugin, view!.file, "ManageAtCursorCommand");
                 (async function () {
                     const note = new Note(plugin, view.file)
-                    await note.buildLines()
+                    await note.build()
                     const node = note.getNodeAtPosition(editor.getCursor())
                     if (node) optionsList.createAndOpenFieldModal(node)
                     else new Notice("No field with definition at this position", 2000)

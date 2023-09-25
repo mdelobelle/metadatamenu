@@ -16,6 +16,7 @@ export default class addNewFieldModal extends Modal {
     }
 
     onOpen() {
+        //TODO manage new field insertion as it is not a managed field. pass 'new-field-<name>' as an id and manage it in note
         this.titleEl.setText("Insert new field");
         const nameContainer = this.contentEl.createDiv({ cls: "field-container" });
         nameContainer.createDiv({ text: "Field name: ", cls: "label" });
@@ -35,7 +36,7 @@ export default class addNewFieldModal extends Modal {
         const saveButton = new ButtonComponent(footerButtons);
         saveButton.setIcon("checkmark");
         saveButton.onClick(async () => {
-            await postValues(this.plugin, [{ name: nameInput.getValue(), payload: { value: valueInput.getValue() } }], this.file, this.lineNumber, this.after);
+            await postValues(this.plugin, [{ id: `new-field-${nameInput.getValue()}`, payload: { value: valueInput.getValue() } }], this.file, this.lineNumber, this.after);
             this.close();
         });
         const cancelButton = new ButtonComponent(footerButtons);

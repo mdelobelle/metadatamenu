@@ -45,12 +45,12 @@ export class FieldsModal extends Modal {
     async onOpen() {
         this.titleEl.setText(`Fields of ${this.file.basename}.${this.file.extension}`)
         await this.buildNote();
-        this.buildFieldsContainer();
+        await this.buildFieldsContainer();
     };
 
     public async buildNote(): Promise<void> {
         this.note = new Note(this.plugin, this.file)
-        await this.note.buildLines()
+        await this.note.build()
     }
 
     //
@@ -146,17 +146,6 @@ export class FieldsModal extends Modal {
         modal.open()
     }
 
-    async missingFieldsForFileClass(fileClass: FileClass): Promise<boolean> {
-
-        const note = new Note(this.plugin, this.file)
-        await note.buildLines()
-        const currentFieldsIds: string[] = note.existingFields.map(_f => _f.id)
-
-        const missingFields = fileClass && this.file ?
-            !this.plugin.fieldIndex.fileClassesFields.get(fileClass.name)?.map(f => f.id).every(id => currentFieldsIds.includes(id)) :
-            false
-        return missingFields
-    }
 
     buildFileClassManager(container: HTMLDivElement): void {
         const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || [];
@@ -172,7 +161,7 @@ export class FieldsModal extends Modal {
                     const fileClassNameContainer = fileClassOptionsContainer.createDiv({ cls: "name", text: _fileClass.name })
                     fileClassNameContainer.setAttr("id", `fileClass__${_fileClass.name.replace("/", "___").replace(" ", "_")}`)
 
-                    if (await this.missingFieldsForFileClass(_fileClass)) {
+                    if (await _fileClass.missingFieldsForFileClass(this.file)) {
                         const fileClassInsertMissingFieldsBtn = new ButtonComponent(fileClassOptionsContainer)
                         fileClassInsertMissingFieldsBtn.setIcon("battery-full")
                         fileClassInsertMissingFieldsBtn.setTooltip(`Insert missing fields for ${_fileClass.name}`)
@@ -222,13 +211,14 @@ export class FieldsModal extends Modal {
     }
 
     buildFieldsContainer(): void {
-        this.missingFields = false
+        this.missingFields = this.note.fields.some(_field => !this.note.existingFields.map(_f => _f.id).includes(_field.id))
         this.contentEl.replaceChildren();
         this.contentEl.createEl('hr')
         const fieldsContainer = this.contentEl.createDiv({ cls: "note-fields-container" });
-        this.note.existingFields.forEach(field => {
+        console.log(this.note)
+        this.note.fields.forEach(field => {
             const fieldNode = this.note.getNodeForFieldId(field.id)
-            this.buildFieldContainer(fieldsContainer, field, fieldNode?.value || "")
+            this.buildFieldContainer(fieldsContainer, field, fieldNode?.value)
         })
         if (this.missingFields) {
             const insertMissingFieldsContainer = this.contentEl.createDiv({ cls: "insert-all-fields" });
@@ -282,7 +272,7 @@ export default class NoteFieldsComponent extends Component {
     onload(): void {
         this.plugin.registerEvent(this.plugin.app.metadataCache.on('dataview:metadata-change', async () => {
             await this.fieldsModal.buildNote();
-            this.fieldsModal.buildFieldsContainer();
+            await this.fieldsModal.buildFieldsContainer();
         }))
         this.fieldsModal.open()
     }

@@ -139,13 +139,13 @@ export class LineNode {
         return content
     }
 
-    public createFieldNodeContent(fieldName: string, value: string, location: "yaml" | "inline") {
+    public createFieldNodeContent(field: Field, value: string, location: "yaml" | "inline") {
         const _ = separator[location]
-        this.field = this.line.note.getField(fieldName)
+        this.field = field
         let content: string
         if (this.field) {
             const fieldHeader = this.buildDecoratedFieldName()
-            const newValue = this.line.note.renderFieldValue(fieldName, value, location)
+            const newValue = this.line.note.renderFieldValue(this.field, value, location)
             this.removeIndentedListItems()
             if (Array.isArray(newValue)) {
                 if (this.field.getDisplay() === MultiDisplayType.asList ||
@@ -169,7 +169,7 @@ export class LineNode {
                 content = `${fieldHeader}${_} ${newValue}`;
             }
         } else {
-            content = `${fieldName}${_} ${value}`;
+            content = `${field.name}${_} ${value}`;
         }
         if (location === "inline") {
             this.rawContent = this.wrapField(content)

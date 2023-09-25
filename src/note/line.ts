@@ -38,7 +38,7 @@ export class Line {
                     if (parsedField) {
                         const start = parsedField.index
                         const end = start + parsedField.length
-                        const field = this.note.getField(parsedField.attribute)
+                        const field = this.note.getFieldFromName(parsedField.attribute)
                         new LineNode(this.plugin, this, this.rawContent.slice(start, end), 0, index, field, parsedField.values, parsedField)
                     } else {
                         //no field, just text

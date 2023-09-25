@@ -17,7 +17,7 @@ export default class BooleanField extends FieldManager {
 
     public async toggle(name: string, value: string, file: TFile): Promise<void> {
         const bValue = BooleanField.stringToBoolean(value);
-        await postValues(this.plugin, [{ name: name, payload: { value: (!bValue).toString() } }], file)
+        await postValues(this.plugin, [{ id: this.field.id, payload: { value: (!bValue).toString() } }], file)
     }
 
     public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
@@ -93,7 +93,7 @@ export default class BooleanField extends FieldManager {
         checkbox.checked = p[this.field.name]
         fieldContainer.appendChild(checkbox)
         checkbox.onchange = (value) => {
-            BooleanField.replaceValues(this.plugin, p.file.path, this.field.name, checkbox.checked.toString());
+            BooleanField.replaceValues(this.plugin, p.file.path, this.field.id, checkbox.checked.toString());
         }
     }
 }

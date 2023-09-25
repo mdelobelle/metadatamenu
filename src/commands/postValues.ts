@@ -13,8 +13,7 @@ export type FieldPayload = {
 }
 
 export type FieldsPayload = Array<{
-    name: string,
-    id?: string,
+    id: string,
     payload: FieldPayload
 }>
 
@@ -30,7 +29,6 @@ export async function postValues(
 ): Promise<void> {
     const file = getFileFromFileOrPath(plugin, fileOrFilePath);
     const note = new Note(plugin, file)
-    await note.buildLines()
+    await note.build()
     note.createOrUpdateFields(payload, lineNumber)
-
 }

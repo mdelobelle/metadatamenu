@@ -1,6 +1,7 @@
 import { json } from "@codemirror/lang-json";
 import { Diagnostic, linter } from "@codemirror/lint";
 import MetadataMenu from "main";
+import { TFile } from "obsidian";
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import ObjectField from "./AbstractObjectField";
@@ -22,6 +23,11 @@ export default class JSONField extends ObjectField {
         } catch (e) {
             return value;
         }
+    }
+
+    public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {
+        const valueString = this.dumpValue(value)
+        container.setText(`${valueString.slice(0, 50)}${valueString.length > 50 ? "..." : ""}`)
     }
 
     public getExtraExtensions() {

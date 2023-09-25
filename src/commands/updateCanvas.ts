@@ -5,6 +5,7 @@ import { FieldType } from "src/types/fieldTypes";
 import { FieldsPayload, postValues } from "./postValues";
 import { FieldManager } from "src/fields/FieldManager";
 import Field from "src/fields/Field";
+import { Note } from "src/note/note";
 
 export async function updateCanvas(
     plugin: MetadataMenu,
@@ -248,18 +249,23 @@ export async function updateCanvas(
         currentFiles.forEach(async ({ cumulatedLinksFields, cumulatedGroupsFields, cumulatedGroupsLinksFields }, filePath) => {
             const file = app.vault.getAbstractFileByPath(filePath)
             if (file && file instanceof TFile) {
+                const note = new Note(plugin, file)
+                await note.build()
                 const payload: FieldsPayload = []
                 cumulatedLinksFields.forEach((linkNodes, name) => {
+                    const field = note.getNodeForFieldName(name)?.field
                     const values = linkNodes.map((node: CanvasFileData) => FieldManager.buildMarkDownLink(plugin, file, node.file, node.subpath))
-                    payload.push({ name: name, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
+                    if (field) payload.push({ id: field.id, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
                 })
                 cumulatedGroupsFields.forEach((groupNodes, name) => {
+                    const field = note.getNodeForFieldName(name)?.field
                     const values = groupNodes.map((group: CanvasGroupData) => group.label)
-                    payload.push({ name: name, payload: { value: values ? [...(new Set(values.filter(v => !!v)))].join(",") : "" } })
+                    if (field) payload.push({ id: field.id, payload: { value: values ? [...(new Set(values.filter(v => !!v)))].join(",") : "" } })
                 })
                 cumulatedGroupsLinksFields.forEach((linkNodes, name) => {
+                    const field = note.getNodeForFieldName(name)?.field
                     const values = linkNodes.map((node: CanvasFileData) => FieldManager.buildMarkDownLink(plugin, file, node.file, node.subpath))
-                    payload.push({ name: name, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
+                    if (field) payload.push({ id: field.id, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
                 })
                 if (payload.length) await postValues(plugin, payload, file)
             }
@@ -275,19 +281,19 @@ export async function updateCanvas(
                     field.type === FieldType.Canvas
                     && field.options.canvasPath === canvas.path
                 )
-                canvasFields?.forEach(field => { payload.push({ name: field.name, payload: { value: "" } }) })
+                canvasFields?.forEach(field => { payload.push({ id: field.id, payload: { value: "" } }) })
                 // canvas group fields
                 const canvasGroupFields = f.filesFields.get(filePath)?.filter(field =>
                     field.type === FieldType.CanvasGroup
                     && field.options.canvasPath === canvas.path
                 )
-                canvasGroupFields?.forEach(field => { payload.push({ name: field.name, payload: { value: "" } }) })
+                canvasGroupFields?.forEach(field => { payload.push({ id: field.id, payload: { value: "" } }) })
                 // canvas group links fields
                 const canvasGroupLinksFields = f.filesFields.get(filePath)?.filter(field =>
                     field.type === FieldType.CanvasGroupLink
                     && field.options.canvasPath === canvas.path
                 )
-                canvasGroupLinksFields?.forEach(field => { payload.push({ name: field.name, payload: { value: "" } }) })
+                canvasGroupLinksFields?.forEach(field => { payload.push({ id: field.id, payload: { value: "" } }) })
                 if (payload.length) await postValues(plugin, payload, targetFile)
             }
         })

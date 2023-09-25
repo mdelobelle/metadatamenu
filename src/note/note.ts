@@ -22,18 +22,23 @@ export class Note {
         this.cache = this.plugin.app.metadataCache.getFileCache(file)
     }
 
-    public getField(fieldName: string): Field | undefined {
-        return this.fields.find(field => field.name === fieldName)
+    public getField(id: string): Field | undefined {
+        return this.fields.find(field => field.id === id)
     }
 
-    public parseFieldValue(_rawValue: string, fieldType?: FieldType): string {
+    public getFieldFromName(name: string): Field | undefined {
+        return this.fields.find(field => field.name === name)
+    }
+
+    public renderValueString(_rawValue: string, fieldType?: FieldType, indentationLevel: number = 0): string {
         if (_rawValue) {
             if (_rawValue.startsWith("[[")) {
                 return `"${_rawValue}"`
             } else if (_rawValue.startsWith("#")) {
                 return `${_rawValue}`;
             } else if (fieldType && rawObjectTypes.includes(fieldType)) {
-                return `\n  ${_rawValue.split("\n").join("\n  ")}`;
+                const indentation = `\n${"  ".repeat(indentationLevel + 1)}`
+                return `${indentation}${_rawValue.split("\n").join(indentation)}`;
             } else {
                 return parseYaml(_rawValue);
             };
@@ -52,25 +57,25 @@ export class Note {
     }
 
     public renderFieldValue(
-        fieldName: string,
+        field: Field,
         rawValue: string,
         location: "yaml" | "inline"
     ): any {
-        const field = this.getField(fieldName)
         const type = field?.type
+        const indentationLevel = field?.path ? field.path.split("____").length : 0
         switch (location) {
             case "yaml":
                 switch (type) {
-                    case FieldType.Lookup: return this.renderMultiFields(rawValue, (item) => this.parseFieldValue(item, type));
-                    case FieldType.Multi: return this.renderMultiFields(rawValue, (item) => this.parseFieldValue(item, type));
+                    case FieldType.Lookup: return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
+                    case FieldType.Multi: return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
                     case FieldType.MultiFile: return this.renderMultiFields(rawValue, (item) => `"${item}"`);
                     case FieldType.Canvas: return this.renderMultiFields(rawValue, (item) => item ? `${item}` : "");
-                    case undefined: if ([...ReservedMultiAttributes, this.plugin.settings.fileClassAlias].includes(fieldName)) {
+                    case undefined: if ([...ReservedMultiAttributes, this.plugin.settings.fileClassAlias].includes(field.name)) {
                         return this.renderMultiFields(rawValue, (item) => `${item}`)
                     } else {
-                        return this.parseFieldValue(rawValue, type);
+                        return this.renderValueString(rawValue, type, indentationLevel);
                     };
-                    default: return this.parseFieldValue(rawValue, type);
+                    default: return this.renderValueString(rawValue, type, indentationLevel);
                 }
             case "inline":
                 switch (type) {
@@ -90,7 +95,7 @@ export class Note {
         }
     }
 
-    public async buildLines() {
+    public async build() {
         const content = await app.vault.read(this.file)
         const { end: frontMatterEnd } = getFrontmatterPosition(this.plugin, this.file)
         content.split("\n").forEach((rawLine, i) => {
@@ -125,28 +130,43 @@ export class Note {
         return
     }
 
-    public insertField(fieldName: string, payload: FieldPayload, lineNumber?: number): void {
+    private createLine = (value: string, position: "yaml" | "inline", lineNumber: number, field?: Field) => {
+        const newLine = new Line(this.plugin, this, position, "", lineNumber)
+        const newNode = new LineNode(this.plugin, newLine)
+        if (field) newNode.createFieldNodeContent(field, value, position);
+        newLine.renderLine()
+    }
 
+    private insertField(id: string, payload: FieldPayload, lineNumber?: number): void {
         const frontMatterEnd = getFrontmatterPosition(this.plugin, this.file)?.end?.line
-
-        let insertLineNumber =
-            (lineNumber ? Math.max(lineNumber, 0) : undefined) ||
-            frontMatterEnd ||
-            this.lines.last()?.number ||
-            0
-
-        const position = frontMatterEnd && (insertLineNumber <= frontMatterEnd) ? "yaml" : "inline"
-
-        const createLine = (fieldName: string, value: string, position: "yaml" | "inline", lineNumber: number) => {
-            const newLine = new Line(this.plugin, this, position, "", lineNumber)
-            const newNode = new LineNode(this.plugin, newLine)
-            newNode.createFieldNodeContent(fieldName, value, position);
-            newLine.renderLine()
+        if (lineNumber === -1 && !frontMatterEnd) {
+            for (let i of [0, 1]) new Line(this.plugin, this, "yaml", "---", 0)
         }
+        if (id.startsWith("fileclass-field")) {
+            const fR = id.match(/fileclass-field-(?<fileClassAlias>.*)/)
+            if (fR?.groups?.fileClassAlias) {
+                const content = `${fR.groups.fileClassAlias}: ${payload.value}`
+                const newLine = new Line(this.plugin, this, "yaml", content, 1)
+                newLine.renderLine()
 
-        const field = this.getField(fieldName)
-        if (field) {
-            //look for ancestors
+            }
+        } else if (id.startsWith("new-field-")) {
+            const fR = id.match(/new-field-(?<fieldName>.*)/)
+            if (fR?.groups?.fieldName) {
+                //TODO manage the insertion of Raw Field
+            }
+        } else {
+            const field = this.getField(id)
+            if (!field) return
+            let insertLineNumber =
+                (lineNumber ? Math.max(lineNumber, 0) : undefined) ||
+                frontMatterEnd ||
+                this.lines.last()?.number ||
+                0
+
+            const position = frontMatterEnd && (insertLineNumber <= frontMatterEnd) ? "yaml" : "inline"
+
+            //look for ancestors and create their lines
             const ancestors = field.getAncestors()
             ancestors.forEach((ancestor, level) => {
                 const node = this.getNodeForFieldId(ancestor.id)
@@ -154,27 +174,26 @@ export class Note {
                     insertLineNumber = node.line.number! + 1
                 } else {
                     const ancestorField = this.fields.find(field => field.id === ancestor.id)!
-                    createLine(ancestorField.name, "", position, insertLineNumber)
+                    this.createLine("", position, insertLineNumber, ancestorField)
                     insertLineNumber += 1
                 }
             })
-
+            //create this field's line
+            this.createLine(payload.value, position, insertLineNumber, field)
         }
-        createLine(fieldName, payload.value, position, insertLineNumber)
     }
 
 
     public createOrUpdateFields(fields: FieldsPayload, lineNumber?: number): void {
-        //TODO tester les JSON fields et YAML fields et Lookup fields
         fields.forEach(field => {
-            const node = this.getNodeForFieldName(field.name)
+            const node = this.getNodeForFieldId(field.id)
             if (node && node.field) {
                 //update : on déconstruit et reconstruit le node
-                node.createFieldNodeContent(field.name, field.payload.value, node.line.position)
+                node.createFieldNodeContent(node.field, field.payload.value, node.line.position)
                 node.line.renderLine()
             } else {
                 //insert
-                this.insertField(field.name, field.payload, lineNumber)
+                this.insertField(field.id, field.payload, lineNumber)
             }
         })
         this.plugin.fileTaskManager.pushTask(async () => { await this.plugin.app.vault.modify(this.file, this.renderNote()) })
