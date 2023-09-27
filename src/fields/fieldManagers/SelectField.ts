@@ -6,6 +6,7 @@ import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
 import { FieldOptions } from "src/components/NoteFields";
+import { Note } from "src/note/note";
 
 export default class SelectField extends AbstractListBasedField {
 
@@ -15,10 +16,17 @@ export default class SelectField extends AbstractListBasedField {
         super(plugin, field, FieldType.Select)
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
-        const modal = new SelectModal(this.plugin, file, value, this.field);
+    public async buildAndOpenModal(file: TFile): Promise<void> {
+        const note = new Note(this.plugin, file)
+        await note.build()
+        const modal = new SelectModal(this.plugin, file, this.field, note);
         modal.titleEl.setText("Select value");
-        const action = () => modal.open()
+        modal.open()
+    }
+
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+        const name = this.field.name
+        const action = async () => await this.buildAndOpenModal(file)
         if (SelectField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update ${name}`);
@@ -43,13 +51,13 @@ export default class SelectField extends AbstractListBasedField {
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        note?: Note,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new SelectModal(this.plugin, file, value || "", this.field, lineNumber, after, asList, asComment);
+        const fieldModal = new SelectModal(this.plugin, file, this.field, note, lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -68,14 +76,13 @@ export default class SelectField extends AbstractListBasedField {
         const dropDownButton = fieldContainer.createEl("button");
         setIcon(dropDownButton, "down-chevron-glyph");
         const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
-        let fieldModal: SelectModal;
         if (file instanceof TFile && file.extension == "md") {
-            fieldModal = new SelectModal(this.plugin, file, p[this.field.name], this.field)
+            dropDownButton.onclick = async () => await this.buildAndOpenModal(file)
         } else {
-            throw Error("path doesn't correspond to a proper file");
+            dropDownButton.onclick = () => { }
         }
 
-        dropDownButton.onclick = () => fieldModal.open()
+
         if (!attrs?.options?.alwaysOn) {
             dropDownButton.hide();
             spacer.show();

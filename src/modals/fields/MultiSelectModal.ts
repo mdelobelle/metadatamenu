@@ -7,6 +7,8 @@ import * as selectValuesSource from "src/types/selectValuesSourceTypes"
 import FileField from "src/fields/fieldManagers/FileField";
 import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
+import { Note } from "src/note/note";
+import { getLink } from "src/utils/parser";
 
 export default class MultiSuggestModal extends SuggestModal<string> {
 
@@ -18,32 +20,33 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         private plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        initialOptions: any,
+        private note: Note | undefined,
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
     ) {
         super(plugin.app);
+        const initialOptions: string | string[] = this.note ? this.note.getNodeForFieldId(this.field.id)?.value || [] : []
         if (initialOptions) {
             if (Array.isArray(initialOptions)) {
-                const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-                if (dvApi && initialOptions.some(o => dvApi.value.isLink(o))) {
-                    this.selectedOptions = initialOptions.map(item => {
-                        if (dvApi.value.isLink(item)) {
-                            return FileField.buildMarkDownLink(this.plugin, this.file, item.path)
-                        } else {
-                            return item.toString()
-                        }
-                    })
-                }
+                this.selectedOptions = initialOptions.map(item => {
+                    const link = getLink(item, this.file)
+                    if (link) {
+                        return FileField.buildMarkDownLink(this.plugin, this.file, link.path)
+                    } else {
+                        return item.toString()
+                    }
+                })
+
                 this.selectedOptions = initialOptions.map(item => item.toString())
             }
             else if (typeof (initialOptions) === "string" && initialOptions.toString().startsWith("[[")) {
                 this.selectedOptions = initialOptions.split(",").map(item => item.trim());
             } else {
-                if (Object.keys(initialOptions).includes("path")) {
-                    this.selectedOptions = [`[[${initialOptions.path.replace(".md", "")}]]`]
+                const link = getLink(initialOptions, this.file)
+                if (link) {
+                    this.selectedOptions = [`[[${link.path.replace(".md", "")}]]`]
                 } else if (typeof (initialOptions) === "string") {
                     this.selectedOptions = initialOptions.toString().replace(/^\[(.*)\]$/, "$1").split(",").map(item => item.trim());
                 }

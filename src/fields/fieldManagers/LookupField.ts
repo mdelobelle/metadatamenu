@@ -11,6 +11,7 @@ import { Status } from "src/types/lookupTypes";
 import { FieldOptions } from "src/components/NoteFields";
 import { updateLookups } from "src/commands/updateLookups";
 import { postValues } from "src/commands/postValues";
+import { Note } from "src/note/note";
 
 export default class LookupField extends FieldManager {
 
@@ -19,7 +20,8 @@ export default class LookupField extends FieldManager {
         this.showModalOption = false
     }
 
-    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+        const name = this.field.name
         if (!this.field.options.autoUpdate && this.field.options.autoUpdate !== undefined) {
             const f = this.plugin.fieldIndex;
             const id = `${file.path}__${this.field.name}`;
@@ -61,7 +63,7 @@ export default class LookupField extends FieldManager {
     async createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        note?: Note,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,

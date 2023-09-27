@@ -1,5 +1,6 @@
 import MetadataMenu from "main";
 import { FuzzyMatch, FuzzySuggestModal, setIcon, TFile } from "obsidian";
+import { Note } from "src/note/note";
 import { FieldIcon, FieldManager, FieldType, FieldTypeTagClass } from "src/types/fieldTypes";
 import addNewFieldModal from "./addNewFieldModal";
 
@@ -11,7 +12,7 @@ interface Option {
 
 
 export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
-
+    private note: Note
     constructor(
         private plugin: MetadataMenu,
         private file: TFile,
@@ -20,6 +21,9 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
     ) {
         super(plugin.app);
         this.containerEl.addClass("metadata-menu")
+        this.note = new Note(this.plugin, this.file)
+        // no need to be awaited, it will be used later during field selection.
+        this.note.build()
     };
 
     getItems(): Option[] {
@@ -51,9 +55,9 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
             this.close();
         } else {
             const field = this.plugin.fieldIndex.filesFields.get(this.file.path)?.find(field => field.name === item.actionLabel)
-            if (field) {
+            if (field && this.note) {
                 const fieldManager = new FieldManager[field.type](this.plugin, field);
-                fieldManager.createAndOpenFieldModal(this.file, item.actionLabel, "", this.lineNumber, this.after, false, false);
+                fieldManager.createAndOpenFieldModal(this.file, item.actionLabel, this.note, this.lineNumber, this.after, false, false);
             }
         }
     }

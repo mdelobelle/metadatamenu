@@ -318,7 +318,6 @@ export default class FieldSettingsModal extends Modal {
                 Field.copyProperty(currentExistingField, this.field);
             } else {
                 this.plugin.presetFields.push(this.field);
-                console.log(this.plugin.presetFields)
             };
             Field.copyProperty(this.initialField, this.field)
             if (this.parentSetting) Field.copyProperty(this.parentSetting.field, this.field);

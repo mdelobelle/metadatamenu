@@ -73,6 +73,14 @@ export class LineNode {
                                 break;
                             }
                         }
+                        if (yamlAttr === this.plugin.settings.fileClassAlias) {
+                            const fileClassField = new Field(this.plugin, yamlAttr)
+                            fileClassField.type = FieldType.Input
+                            fileClassField.id = `fileclass-field-${this.plugin.settings.fileClassAlias}`
+                            this.field = fileClassField
+                            this.value = value
+                            this.line.note.existingFields.push(fileClassField)
+                        }
                     }
                 }
             case "inline":

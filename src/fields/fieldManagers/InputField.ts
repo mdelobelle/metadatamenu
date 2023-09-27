@@ -6,6 +6,7 @@ import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
 import { FieldOptions } from "src/components/NoteFields";
+import { Note } from "src/note/note";
 
 export default class InputField extends FieldManager {
 
@@ -17,11 +18,18 @@ export default class InputField extends FieldManager {
         return this.field.options.template || ""
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
-        const modal = new InputModal(this.plugin, file, this.field, value);
-        modal.titleEl.setText(`Change Value for <${name}>`);
+    private async buildAndOpenModal(file: TFile): Promise<void> {
+        const note = new Note(this.plugin, file)
+        await note.build()
+        const modal = new InputModal(this.plugin, file, this.field, note);
+        modal.titleEl.setText(`Change Value for <${this.field.name}>`);
+        modal.open()
+    }
+
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+        const name = this.field.name
         const iconName = FieldIcon[FieldType.Input];
-        const action = () => modal.open();
+        const action = async () => await this.buildAndOpenModal(file);
         if (InputField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
@@ -62,13 +70,13 @@ export default class InputField extends FieldManager {
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        note?: Note,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new InputModal(this.plugin, file, this.field, value || "", lineNumber, after, asList, asComment);
+        const fieldModal = new InputModal(this.plugin, file, this.field, note, lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -136,12 +144,11 @@ export default class InputField extends FieldManager {
             }
         }
         /* button on click : remove button and field and display input field*/
-        editBtn.onclick = () => {
+        editBtn.onclick = async () => {
             if (this.field.options.template) {
                 const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path);
                 if (file instanceof TFile && file.extension === 'md') {
-                    const inputModal = new InputModal(this.plugin, file, this.field, p[this.field.name]);
-                    inputModal.open();
+                    await this.buildAndOpenModal(file)
                 }
             } else {
                 inputContainer.show();

@@ -7,6 +7,7 @@ import { TFile, Menu } from "obsidian";
 import { FieldOptions } from "src/components/NoteFields";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { postValues } from "src/commands/postValues";
+import { Note } from "src/note/note";
 
 export default class ObjectField extends FieldManager {
 
@@ -14,7 +15,7 @@ export default class ObjectField extends FieldManager {
         super(plugin, field, FieldType.Object)
     }
 
-    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
 
     }
     validateOptions(): boolean {
@@ -30,7 +31,7 @@ export default class ObjectField extends FieldManager {
     getOptionsStr(): string {
         return ""
     }
-    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
+    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
         await postValues(this.plugin, [{ id: this.field.id, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
     }
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {

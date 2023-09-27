@@ -2,6 +2,7 @@ import MetadataMenu from "main"
 import { TFile, Menu, TextComponent } from "obsidian"
 import { postValues } from "src/commands/postValues"
 import { FieldOptions } from "src/components/NoteFields"
+import { Note } from "src/note/note"
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
 import FieldSettingsModal from "src/settings/FieldSettingsModal"
 import { FieldType } from "src/types/fieldTypes"
@@ -17,11 +18,11 @@ export default class CanvasGroupField extends AbstractCanvasBasedField {
         super(plugin, field, FieldType.CanvasGroup)
     }
 
-    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         //no field option to add for this field, it is automatically updated
     }
 
-    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
+    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
         await postValues(this.plugin, [{ id: this.field.id, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
     }
 

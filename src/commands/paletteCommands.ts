@@ -122,7 +122,9 @@ function addManageFieldAtCursorCommand(plugin: MetadataMenu) {
                 return inFile && editor !== undefined
             }
             if (inFile && editor !== undefined) {
+
                 const optionsList = new OptionsList(plugin, view!.file, "ManageAtCursorCommand");
+
                 (async function () {
                     const note = new Note(plugin, view.file)
                     await note.build()
@@ -236,7 +238,6 @@ function addInsertFieldCommand(plugin: MetadataMenu): void {
                                 plugin,
                                 view.file,
                                 fieldName,
-                                "",
                                 lineNumber,
                                 after,
                                 asList,

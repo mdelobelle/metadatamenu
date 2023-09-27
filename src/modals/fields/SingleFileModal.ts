@@ -4,6 +4,8 @@ import { FieldManager } from "src/types/fieldTypes";
 import FileField from "src/fields/fieldManagers/FileField";
 import MetadataMenu from "main";
 import { postValues } from "src/commands/postValues";
+import { Note } from "src/note/note";
+import { getLink } from "src/utils/parser";
 
 export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
 
@@ -13,19 +15,19 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
         private plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        initialValueObject: any,
+        private note: Note | undefined,
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
     ) {
         super(plugin.app);
-        const dvApi = this.plugin.app.plugins.plugins["dataview"]?.api
-        if (dvApi) {
-            if (dvApi.value.isLink(initialValueObject)) {
-                const file = this.plugin.app.vault.getAbstractFileByPath(initialValueObject.path)
-                if (file instanceof TFile) this.selectedFile = file
-            }
+        console.log(this.note)
+        const initialValueObject: string = this.note ? this.note.getNodeForFieldId(this.field.id)?.value || "" : ""
+        const link = getLink(initialValueObject, this.file)
+        if (link) {
+            const file = this.plugin.app.vault.getAbstractFileByPath(link.path)
+            if (file instanceof TFile) this.selectedFile = file
         }
         this.containerEl.addClass("metadata-menu");
     }

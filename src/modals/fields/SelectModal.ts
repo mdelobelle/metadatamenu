@@ -6,22 +6,25 @@ import { FieldManager } from "src/types/fieldTypes";
 import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
 import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
+import { Note } from "src/note/note";
 
 export default class ValueSuggestModal extends SuggestModal<string>{
 
     private addButton: ButtonComponent;
+    private value: string
 
     constructor(
         private plugin: MetadataMenu,
         private file: TFile,
-        private value: string,
         private field: Field,
+        private note: Note | undefined,
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
     ) {
         super(plugin.app);
+        this.value = this.note?.getNodeForFieldId(this.field.id)?.value || ""
         this.containerEl.addClass("metadata-menu");
     };
 

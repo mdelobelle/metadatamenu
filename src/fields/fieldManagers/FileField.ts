@@ -5,6 +5,7 @@ import Field from "../Field";
 import AbstractFileBasedField from "./AbstractFileBasedField";
 import SingleFileModal from "src/modals/fields/SingleFileModal";
 import { getLink } from "src/utils/parser";
+import { Note } from "src/note/note";
 
 export default class FileField extends AbstractFileBasedField<SingleFileModal> {
 
@@ -17,13 +18,13 @@ export default class FileField extends AbstractFileBasedField<SingleFileModal> {
         plugin: MetadataMenu,
         file: TFile,
         field: Field,
-        initialValueObject: any,
+        note: Note | undefined,
         lineNumber: number = -1,
         after: boolean = false,
         asList: boolean = false,
         asComment: boolean = false
     ): SingleFileModal {
-        return new SingleFileModal(plugin, file, field, initialValueObject, lineNumber, after, asList, asComment);
+        return new SingleFileModal(plugin, file, field, note, lineNumber, after, asList, asComment);
     }
 
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked: () => {}): void {

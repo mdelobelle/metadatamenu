@@ -94,7 +94,7 @@ export class FieldsModal extends Modal {
         fieldOptionsWrapper.createDiv({ cls: "field-options-spacer" });
         const fieldOptions = new FieldOptions(fieldOptionsWrapper)
         if (value !== undefined) {
-            fieldManager.addFieldOption(field.name, value, this.file, fieldOptions);
+            fieldManager.addFieldOption(this.file, fieldOptions);
         } else {
             const fieldBtnContainer = fieldOptionsWrapper.createDiv({ cls: "field-item field-option" })
             const fieldBtn = new ButtonComponent(fieldBtnContainer)
@@ -113,7 +113,6 @@ export class FieldsModal extends Modal {
                         this.plugin,
                         this.file,
                         field.name,
-                        "",
                         lineNumber,
                         after,
                         asList,
@@ -215,7 +214,6 @@ export class FieldsModal extends Modal {
         this.contentEl.replaceChildren();
         this.contentEl.createEl('hr')
         const fieldsContainer = this.contentEl.createDiv({ cls: "note-fields-container" });
-        console.log(this.note)
         this.note.fields.forEach(field => {
             const fieldNode = this.note.getNodeForFieldId(field.id)
             this.buildFieldContainer(fieldsContainer, field, fieldNode?.value)

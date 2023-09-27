@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
-import { genuineKeys } from "src/utils/dataviewUtils";
+import { legacyGenuineKeys } from "src/utils/dataviewUtils";
 import { getFrontmatterPosition } from "src/utils/fileUtils";
 import { capitalize } from "src/utils/textUtils";
 import { FileClass } from "./fileClass";
@@ -23,7 +23,7 @@ export class V1FileClassMigration {
         if (dvApi) {
             const dvFile = dvApi.page(file.path)
             try {
-                genuineKeys(dvFile).forEach(key => {
+                legacyGenuineKeys(dvFile).forEach(key => {
                     if (key !== "file" && !Object.keys(dvFile.file.frontmatter || {}).includes(key)) {
                         const item = typeof dvFile[key] !== "string"
                             ? JSON.stringify(dvFile[key])

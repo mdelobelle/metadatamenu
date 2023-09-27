@@ -6,6 +6,7 @@ import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
 import { FieldOptions } from "src/components/NoteFields";
+import { Note } from "src/note/note";
 
 export default class MultiField extends AbstractListBasedField {
 
@@ -15,10 +16,17 @@ export default class MultiField extends AbstractListBasedField {
         super(plugin, field, FieldType.Multi)
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
-        const modal = new MultiSelectModal(this.plugin, file, this.field, value);
+    public async buildAndOpenModal(file: TFile): Promise<void> {
+        const note = new Note(this.plugin, file)
+        await note.build()
+        const modal = new MultiSelectModal(this.plugin, file, this.field, note);
         modal.titleEl.setText("Select values");
-        const action = () => modal.open()
+        modal.open()
+    }
+
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+        const name = this.field.name
+        const action = async () => await this.buildAndOpenModal(file)
         if (MultiField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
@@ -41,13 +49,13 @@ export default class MultiField extends AbstractListBasedField {
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        note?: Note,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new MultiSelectModal(this.plugin, file, this.field, value || "", lineNumber, after, asList, asComment);
+        const fieldModal = new MultiSelectModal(this.plugin, file, this.field, note, lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Select options for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -78,12 +86,7 @@ export default class MultiField extends AbstractListBasedField {
         }
 
         const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
-        let fieldModal: MultiSelectModal;
-        if (file instanceof TFile && file.extension == "md") {
-            fieldModal = new MultiSelectModal(this.plugin, file, this.field, p[this.field.name])
-        } else {
-            throw Error("path doesn't correspond to a proper file");
-        }
+
 
         /* current values container */
         const valuesContainer = fieldContainer.createDiv({ cls: "values-container" })
@@ -120,8 +123,12 @@ export default class MultiField extends AbstractListBasedField {
         /* button to display input */
         const addBtn = valuesContainer.createEl("button");
         setIcon(addBtn, "list-plus");
-
-        addBtn.onclick = () => fieldModal.open();
+        let fieldModal: MultiSelectModal;
+        if (file instanceof TFile && file.extension == "md") {
+            addBtn.onclick = async () => await this.buildAndOpenModal(file);
+        } else {
+            addBtn.onclick = () => { };
+        }
 
         /* end spacer */
         const singleSpacer = valuesContainer.createDiv({ cls: "spacer-1" });

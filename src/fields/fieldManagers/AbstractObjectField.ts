@@ -8,6 +8,7 @@ import { FieldManager } from "../FieldManager";
 import { FieldOptions } from "src/components/NoteFields";
 import { LanguageSupport } from "@codemirror/language";
 import { Extension } from "@codemirror/state"
+import { Note } from "src/note/note";
 
 export default abstract class ObjectField extends FieldManager {
 
@@ -23,11 +24,18 @@ export default abstract class ObjectField extends FieldManager {
         return this.field.options.template || ""
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
-        const modal = new ObjectModal(this.plugin, file, this.field, value);
-        modal.titleEl.setText(`Change Value for <${name}>`);
+    public async buildAndOpenModal(file: TFile): Promise<void> {
+        const note = new Note(this.plugin, file)
+        await note.build()
+        const value = note.getNodeForFieldId(this.field.id)?.value || ""
+        const modal = new ObjectModal(this.plugin, file, this.field, note);
+        modal.open()
+    }
+
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+        const name = this.field.name
         const iconName = FieldIcon[this.type];
-        const action = () => modal.open();
+        const action = async () => this.buildAndOpenModal(file);
         if (ObjectField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
@@ -57,13 +65,13 @@ export default abstract class ObjectField extends FieldManager {
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        note?: Note,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new ObjectModal(this.plugin, file, this.field, value || "", lineNumber, after, asList, asComment);
+        const fieldModal = new ObjectModal(this.plugin, file, this.field, note, lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -79,10 +87,6 @@ export default abstract class ObjectField extends FieldManager {
         const editBtn = fieldContainer.createEl("button");
         const fieldValue = (dv.el('span', p[this.field.name], attrs) as HTMLDivElement);
         fieldContainer.appendChild(fieldValue);
-        const inputContainer = fieldContainer.createDiv({});
-        inputContainer.hide();
-        const input = inputContainer.createEl("input");
-        input.value = p[this.field.name];
         /* end spacer */
         const spacer = fieldContainer.createDiv({ cls: "spacer-1" });
         if (attrs.options?.alwaysOn) spacer.hide();
@@ -91,10 +95,9 @@ export default abstract class ObjectField extends FieldManager {
             editBtn.hide();
             spacer.show();
             fieldContainer.onmouseover = () => {
-                if (!inputContainer.isShown()) {
-                    editBtn.show();
-                    spacer.hide();
-                }
+                editBtn.show();
+                spacer.hide();
+
             }
             fieldContainer.onmouseout = () => {
                 editBtn.hide();
@@ -102,45 +105,12 @@ export default abstract class ObjectField extends FieldManager {
             }
         }
 
-        const validateIcon = inputContainer.createEl("button");
-        setIcon(validateIcon, "checkmark");
-        validateIcon.onclick = (e) => {
-            ObjectField.replaceValues(this.plugin, p.file.path, this.field.id, input.value);
-            inputContainer.hide()
-        }
-        const cancelIcon = inputContainer.createEl("button");
-        setIcon(cancelIcon, "cross");
-        cancelIcon.onclick = (e) => {
-            inputContainer.hide();
-            fieldValue.show();
-            editBtn.show();
-            if (!attrs.options?.alwaysOn) spacer.show();
-        }
-        input.focus()
-
-        input.onkeydown = (e) => {
-            if (e.key === "Enter") {
-                ObjectField.replaceValues(this.plugin, p.file.path, this.field.id, input.value);
-                inputContainer.hide();
-            }
-            if (e.key === 'Escape') {
-                inputContainer.hide();
-                fieldValue.show();
-                editBtn.show();
-                if (!attrs.options?.alwaysOn) spacer.show();
-            }
-        }
         /* button on click : remove button and field and display input field*/
-        editBtn.onclick = () => {
-            if (this.field.options.template) {
-                const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path);
-                if (file instanceof TFile && file.extension === 'md') {
-                    const inputModal = new ObjectModal(this.plugin, file, this.field, p[this.field.name]);
-                    inputModal.open();
-                }
-            } else {
-                inputContainer.show();
-                input.focus()
+        editBtn.onclick = async () => {
+
+            const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path);
+            if (file instanceof TFile && file.extension === 'md') {
+                await this.buildAndOpenModal(file)
             }
             fieldValue.hide();
             editBtn.hide();

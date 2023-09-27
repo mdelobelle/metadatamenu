@@ -5,8 +5,10 @@ import { FieldManager as FM } from "src/fields/FieldManager";
 import MetadataMenu from "main";
 import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
+import { Note } from "src/note/note";
+import { getLink } from "src/utils/parser";
 
-export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
+export default class MultiFileModal extends FuzzySuggestModal<TFile> {
 
     private selectedFiles: TFile[] = [];
 
@@ -14,23 +16,23 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
         private plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        initialValueObject: any,
+        private note: Note | undefined,
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
     ) {
         super(plugin.app);
-        const dvApi = this.plugin.app.plugins.plugins["dataview"]?.api
-        if (dvApi) {
-            const selectedValues: Array<any> = Array.isArray(initialValueObject) ? initialValueObject : [initialValueObject]
-            selectedValues.forEach(value => {
-                if (dvApi.value.isLink(value)) {
-                    const file = this.plugin.app.vault.getAbstractFileByPath(value.path)
-                    if (file instanceof TFile) this.selectedFiles.push(file)
-                }
-            })
-        }
+
+        const initialValueObject: string | string[] = this.note ? (this.note.getNodeForFieldId(this.field.id)?.value || "").split(",").map(i => i.trim()) : []
+        const selectedValues: Array<any> = Array.isArray(initialValueObject) ? initialValueObject : [initialValueObject]
+        selectedValues.forEach(value => {
+            const link = getLink(value, this.file)
+            if (link) {
+                const file = this.plugin.app.vault.getAbstractFileByPath(link.path)
+                if (file instanceof TFile) this.selectedFiles.push(file)
+            }
+        })
         this.containerEl.addClass("metadata-menu")
     }
 

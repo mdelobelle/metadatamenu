@@ -2,28 +2,23 @@ import MetadataMenu from "main";
 import { Modal, TFile, ButtonComponent } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import Field from "src/fields/Field";
+import BooleanField from "src/fields/fieldManagers/BooleanField";
+import { Note } from "src/note/note";
 
 export default class BooleanModal extends Modal {
-
+    private value: boolean
     constructor(
         private plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        private value: boolean,
+        private note: Note | undefined,
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
     ) {
         super(plugin.app);
-        this.plugin = plugin;
-        this.file = file;
-        this.value = value;
-        this.lineNumber = lineNumber;
-        this.after = after;
-        this.asList = asList;
-        this.asComment = asComment;
-        this.field = field
+        this.value = this.note ? BooleanField.stringToBoolean(this.note.getNodeForFieldId(this.field.id)?.value || "") : false;
     };
 
     onOpen() {

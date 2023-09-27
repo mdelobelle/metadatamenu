@@ -7,6 +7,7 @@ import BooleanModal from "src/modals/fields/BooleanModal";
 import { FieldType, FieldIcon } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
+import { Note } from "src/note/note";
 
 export default class BooleanField extends FieldManager {
 
@@ -15,19 +16,21 @@ export default class BooleanField extends FieldManager {
         this.showModalOption = false
     }
 
-    public async toggle(name: string, value: string, file: TFile): Promise<void> {
-        const bValue = BooleanField.stringToBoolean(value);
-        await postValues(this.plugin, [{ id: this.field.id, payload: { value: (!bValue).toString() } }], file)
+    public async toggle(file: TFile): Promise<void> {
+        const note = new Note(this.plugin, file)
+        await note.build()
+        const value = note.getNodeForFieldId(this.field.id)?.value || "false"
+        await postValues(this.plugin, [{ id: this.field.id, payload: { value: value === "false" ? "true" : "false" } }], file)
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
-        const bValue = BooleanField.stringToBoolean(value);
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+        const name = this.field.name
         const iconName = FieldIcon[FieldType.Boolean]
-        const action = async () => await this.toggle(name, value, file)
+        const action = async () => await this.toggle(file)
 
         if (BooleanField.isMenu(location)) {
             location.addItem((item) => {
-                item.setTitle(`<${name}> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);
+                item.setTitle(`<Toggle ${name}>`);
                 item.setIcon(iconName);
                 item.onClick(action);
                 item.setSection("metadata-menu.fields");
@@ -35,15 +38,15 @@ export default class BooleanField extends FieldManager {
         } else if (BooleanField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
-                actionLabel: `<span><b>${name}</b> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}</span>`,
+                actionLabel: `Toggle <span><b>${name}</b></span>`,
                 action: action,
                 icon: iconName
             });
         } else if (BooleanField.isFieldOptions(location)) {
             location.addOption(
-                bValue ? "x-square" : "check-square",
+                "check-square",
                 action,
-                bValue ? "✅ ▷ ❌" : "❌ ▷ ✅");
+                "✅");
         };
     };
     public getOptionsStr(): string {
@@ -71,14 +74,13 @@ export default class BooleanField extends FieldManager {
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        note?: Note,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const bValue = BooleanField.stringToBoolean(value || "false");
-        const fieldModal = new BooleanModal(this.plugin, file, this.field, bValue, lineNumber, after, asList, asComment)
+        const fieldModal = new BooleanModal(this.plugin, file, this.field, note, lineNumber, after, asList, asComment)
         fieldModal.titleEl.setText(`Set value for ${selectedFieldName}`);
         fieldModal.open();
     }

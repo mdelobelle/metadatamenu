@@ -11,6 +11,7 @@ import { AddFileClassToFileModal } from "src/fileClass/fileClass";
 import AddNewFileClassModal from "src/modals/addNewFileClassModal";
 import InputModal from "src/modals/fields/InputModal";
 import { LineNode } from "src/note/lineNode";
+import { Note } from "src/note/note";
 import { FieldIcon, FieldManager, FieldType } from "src/types/fieldTypes";
 import { genuineKeys } from "src/utils/dataviewUtils";
 import { getFrontmatterPosition } from "src/utils/fileUtils";
@@ -47,20 +48,33 @@ export default class OptionsList {
 		this.location = location;
 		this.attributes = new Map();
 		this.includedFields = includedFields ? [this.plugin.settings.fileClassAlias, ...includedFields] : [this.plugin.settings.fileClassAlias];
+		this.build()
+	};
+
+	public build(): void {
 		const excludedFolders = this.plugin.settings.fileClassExcludedFolders
-		if (!excludedFolders.some(path => file.path.includes(path))) {
+		if (!excludedFolders.some(path => this.file.path.includes(path))) {
 			this.getFieldsFromIndex();
 			this.getFieldsValues();
 		}
-	};
+	}
 
 	private getFieldsValues(): void {
+		//get synchronously values
 		const dvApi = this.plugin.app.plugins.plugins["dataview"]?.api
+		const fields = this.plugin.fieldIndex.filesFields.get(this.file.path)
 		//@ts-ignore
 		if (dvApi) {
 			const dvFile = dvApi.page(this.file.path)
 			try {
-				genuineKeys(dvFile).forEach(key => this.addAttribute(key, undefined, dvFile[key]))
+				genuineKeys(dvFile)
+					.filter(_k => Object.values(this.fieldsFromIndex)
+						.map(_f => _f.name)
+						.includes(_k) || _k === this.plugin.settings.fileClassAlias)
+					.forEach(key => {
+						const id = fields?.find(field => field.name === key)?.id
+						this.addAttribute(key, id, dvFile[key])
+					})
 			} catch (error) {
 				throw (error);
 			}
@@ -100,13 +114,13 @@ export default class OptionsList {
 			const fieldManager = new FieldManager[managedField.type](this.plugin, managedField) as F;
 			switch (fieldManager.type) {
 				case FieldType.Boolean:
-					(fieldManager as BooleanField).toggle(managedField.name, managedValue || "", this.file)
+					(fieldManager as BooleanField).toggle(this.file)
 					break;
 				case FieldType.Cycle:
-					(fieldManager as CycleField).next(managedField.name, managedValue || "", this.file)
+					(fieldManager as CycleField).next(managedField.name, this.file)
 					break;
 				default:
-					fieldManager.createAndOpenFieldModal(this.file, managedField.name, managedValue)
+					fieldManager.createAndOpenFieldModal(this.file, managedField.name, node.line.note, undefined, undefined, undefined, undefined)
 					break;
 			}
 
@@ -174,21 +188,29 @@ export default class OptionsList {
 		}
 	}
 
-	private buildFileClassFieldOptions(field: Field, value: string): void {
-		const modal = new InputModal(this.plugin, this.file, field, value);
+	//TODO: replace the input field by a select field
+	private async buildAndOpenFileClassModal(field: Field): Promise<void> {
+		const note = new Note(this.plugin, this.file)
+		await note.build()
+		const modal = new InputModal(this.plugin, this.file, field, undefined);
 		modal.titleEl.setText(`Change Value for <${field.name}>`);
+		modal.open()
+	}
+
+	private buildFileClassFieldOptions(field: Field, value: string): void {
+		const action = async () => this.buildAndOpenFileClassModal(field)
 		if (isMenu(this.location)) {
 			this.location.addItem((item) => {
 				item.setTitle(`Update ${field.name}`);
 				item.setIcon("wrench");
-				item.onClick(() => modal.open());
+				item.onClick(action);
 				item.setSection("metadata-menu");
 			})
 		} else if (isSuggest(this.location)) {
 			this.location.options.push({
 				id: `update_${field.name}`,
 				actionLabel: `<span>Update <b>${field.name}</b></span>`,
-				action: () => modal.open(),
+				action: action,
 				icon: FieldIcon[FieldType.Input]
 			});
 		};
@@ -229,7 +251,7 @@ export default class OptionsList {
 
 			if (field) {
 				const fieldManager = new FieldManager[field.type](this.plugin, field);
-				fieldManager.addFieldOption(key, value, this.file, this.location);
+				fieldManager.addFieldOption(key.name, this.file, this.location);
 			} else if (key.name !== "file" && (isSuggest(this.location) || isMenu(this.location))) {
 				const defaultField = new Field(this.plugin, key.name)
 				defaultField.type = FieldType.Input
@@ -237,7 +259,7 @@ export default class OptionsList {
 					this.buildFileClassFieldOptions(defaultField, value)
 				} else {
 					const fieldManager = new Managers.Input(this.plugin, defaultField)
-					fieldManager.addFieldOption(key.name, value || "", this.file, this.location)
+					fieldManager.addFieldOption(this.file, this.location)
 				}
 			}
 
@@ -257,7 +279,6 @@ export default class OptionsList {
 				this.plugin,
 				this.file,
 				undefined,
-				"",
 				lineNumber,
 				after,
 				asList,
@@ -284,44 +305,40 @@ export default class OptionsList {
 	};
 
 	private addAllMissingFieldsAtSection(): void {
-		const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-		if (dvApi) {
-			const dvFile = dvApi.page(this.file.path);
-			const modal = new chooseSectionModal(
+		const modal = new chooseSectionModal(
+			this.plugin,
+			this.file,
+			(
+				lineNumber: number,
+				after: boolean,
+				asList: boolean,
+				asComment: boolean
+			) => insertMissingFields(
 				this.plugin,
-				this.file,
-				(
-					lineNumber: number,
-					after: boolean,
-					asList: boolean,
-					asComment: boolean
-				) => insertMissingFields(
-					this.plugin,
-					dvFile.file.path,
-					lineNumber,
-					after,
-					asList,
-					asComment
-				)
-			);
-			if (isMenu(this.location)) {
-				this.location.addItem((item) => {
-					item.setIcon("battery-full");
-					item.setTitle("Add missing fields at section...");
-					item.onClick((evt: MouseEvent) => {
-						modal.open();
-					});
-					item.setSection("metadata-menu");
+				this.file.path,
+				lineNumber,
+				after,
+				asList,
+				asComment
+			)
+		);
+		if (isMenu(this.location)) {
+			this.location.addItem((item) => {
+				item.setIcon("battery-full");
+				item.setTitle("Add missing fields at section...");
+				item.onClick((evt: MouseEvent) => {
+					modal.open();
 				});
-			} else if (isSuggest(this.location)) {
-				this.location.options.push({
-					id: "add_missing_fields_at_section",
-					actionLabel: "Add missing fields at section...",
-					action: () => modal.open(),
-					icon: "battery-full"
-				})
-			};
-		}
+				item.setSection("metadata-menu");
+			});
+		} else if (isSuggest(this.location)) {
+			this.location.options.push({
+				id: "add_missing_fields_at_section",
+				actionLabel: "Add missing fields at section...",
+				action: () => modal.open(),
+				icon: "battery-full"
+			})
+		};
 	};
 
 	private addFieldAtTheEndOfFrontmatterOption(): void {
@@ -331,7 +348,7 @@ export default class OptionsList {
 					item.setIcon("pin");
 					item.setTitle("Add field in frontmatter");
 					item.onClick(async (evt: MouseEvent) => {
-						F.openFieldModal(this.plugin, this.file, undefined, "", -1, false, false, false)
+						F.openFieldModal(this.plugin, this.file, undefined, -1, false, false, false)
 					});
 					item.setSection("metadata-menu");
 				});
@@ -340,7 +357,7 @@ export default class OptionsList {
 					id: "add_field_in_frontmatter",
 					actionLabel: "Add a field in frontmatter...",
 					action: () => F.openFieldModal(
-						this.plugin, this.file, undefined, "", -1, false, false, false),
+						this.plugin, this.file, undefined, -1, false, false, false),
 					icon: "pin"
 				})
 			}
@@ -363,19 +380,19 @@ export default class OptionsList {
 					item.setTitle("Add field at cursor");
 					item.onClick((evt: MouseEvent) => {
 						F.openFieldModal(
-							this.plugin, this.file, undefined, "", lineNumber, false, false, false)
+							this.plugin, this.file, undefined, lineNumber, false, false, false)
 					});
 					item.setSection("metadata-menu");
 				});
 			} else if (isInsertFieldCommand(this.location)) {
 				F.openFieldModal(
-					this.plugin, this.file, undefined, "", lineNumber, false, false, false);
+					this.plugin, this.file, undefined, lineNumber, false, false, false);
 			} else if (isSuggest(this.location)) {
 				this.location.options.push({
 					id: "add_field_at_cursor",
 					actionLabel: "Add field at cursor...",
 					action: () => F.openFieldModal(
-						this.plugin, this.file, undefined, "", lineNumber, false, false, false),
+						this.plugin, this.file, undefined, lineNumber, false, false, false),
 					icon: "pin"
 				})
 			};

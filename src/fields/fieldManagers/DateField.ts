@@ -11,6 +11,7 @@ import { compareDuration } from "src/utils/dataviewUtils";
 import { FieldOptions } from "src/components/NoteFields";
 import { postValues } from "src/commands/postValues";
 import { getLink } from "src/utils/parser";
+import { Note } from "src/note/note";
 
 export default class DateField extends FieldManager {
 
@@ -22,12 +23,19 @@ export default class DateField extends FieldManager {
         this.showModalOption = false;
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
-        const modal = new DateModal(this.plugin, file, this.field, value);
-        modal.titleEl.setText(`Change date for <${name}>`);
+    public async buildAndOpenModal(file: TFile): Promise<void> {
+        const note = new Note(this.plugin, file)
+        await note.build()
+        const modal = new DateModal(this.plugin, file, this.field, note);
+        modal.titleEl.setText(`Change date for <${this.field.name}>`);
+        modal.open()
+    }
+
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+        const name = this.field.name
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api;
         const dateIconName = FieldIcon[FieldType.Date];
-        const dateModalAction = () => modal.open();
+        const dateModalAction = async () => await this.buildAndOpenModal(file);
         const p = dvApi.page(file.path)
         const shiftDateAction = () => this.shiftDate(dvApi, p, file);
         const fieldManager: DateField = new FM[this.field.type](this.plugin, this.field);
@@ -71,13 +79,13 @@ export default class DateField extends FieldManager {
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        note?: Note,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new DateModal(this.plugin, file, this.field, value || "", lineNumber, after, asList, asComment);
+        const fieldModal = new DateModal(this.plugin, file, this.field, note, lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Enter date for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -201,26 +209,12 @@ export default class DateField extends FieldManager {
         }
 
         const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
-        let fieldModal: DateModal;
+
         if (file instanceof TFile && file.extension == "md") {
-            if (p[this.field.name] && p[this.field.name].hasOwnProperty("path")) {
-                const dateFile = this.plugin.app.vault.getAbstractFileByPath(p[this.field.name])
-                if (dateFile instanceof TFile && dateFile.extension == "md") {
-                    fieldModal = new DateModal(this.plugin, file, this.field, dateFile.name)
-                } else {
-                    fieldModal = new DateModal(this.plugin, file, this.field, p[this.field.name].path.split("/").last().replace(".md", ""))
-                }
-            } else if (p[this.field.name]) {
-                fieldModal = new DateModal(this.plugin, file, this.field, p[this.field.name])
-            } else {
-                fieldModal = new DateModal(this.plugin, file, this.field, "")
-            }
-            if (this.shiftBtn) this.shiftBtn.onclick = () => { this.shiftDate(dv, p, file) }
+            dateBtn.onclick = async () => await this.buildAndOpenModal(file)
         } else {
-            throw Error("path doesn't correspond to a proper file");
+            dateBtn.onclick = async () => { }
         }
-        fieldModal.onClose = () => { fieldModal.contentEl.innerHTML = ""; }
-        dateBtn.onclick = () => { fieldModal.open() }
 
         if (!attrs?.options?.alwaysOn) {
             dateBtn.hide()

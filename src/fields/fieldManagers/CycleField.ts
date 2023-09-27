@@ -8,6 +8,7 @@ import AbstractListBasedField from "./AbstractListBasedField";
 import { FieldOptions } from "src/components/NoteFields";
 import { postValues } from "src/commands/postValues";
 import { SettingLocation } from "../FieldManager";
+import { Note } from "src/note/note";
 
 export default class CycleField extends AbstractListBasedField {
 
@@ -75,45 +76,47 @@ export default class CycleField extends AbstractListBasedField {
         container.createDiv({ text: this.getRawOptionFromDuration(valueText) || valueText })
     }
 
-    public async next(name: string, value: string, file: TFile): Promise<void> {
+    public async next(name: string, file: TFile): Promise<void> {
+        const note = new Note(this.plugin, file)
+        await note.build()
+        const value = note.getNodeForFieldId(this.field.id)?.value || ""
         let matchedValue = this.getRawOptionFromDuration(value) || value;
         await postValues(this.plugin, [{ id: this.field.id, payload: { value: this.nextOption(matchedValue).toString() } }], file)
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
-        // dataview is converting strings to duration, let's find back the raw string option from duration if needed
-        let matchedValue = this.getRawOptionFromDuration(value) || value;
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+        const name = this.field.name
         const iconName = FieldIcon[FieldType.Cycle];
-        const action = async () => this.next(name, value, file);
+        const action = async () => this.next(name, file);
         if (CycleField.isMenu(location)) {
             location.addItem((item) => {
-                item.setTitle(`${name} : ${matchedValue} ▷ ${this.nextOption(matchedValue).toString()}`);
+                item.setTitle(`Cycle ${name}`);
                 item.setIcon(iconName);
                 item.onClick(action);
                 item.setSection("metadata-menu.fields");
             });
         } else if (CycleField.isSuggest(location)) {
             location.options.push({
-                id: `${name}_${matchedValue}_${this.nextOption(matchedValue)}`,
-                actionLabel: `<span><b>${name}</b> : ${matchedValue} ▷ ${this.nextOption(matchedValue).toString()}</span>`,
+                id: `cycle_${name}`,
+                actionLabel: `<span>Cycle <b>${name}</b></span>`,
                 action: action,
                 icon: iconName
             })
         } else if (CycleField.isFieldOptions(location)) {
-            location.addOption(iconName, action, `${matchedValue} ▷ ${this.nextOption(matchedValue).toString()}`);
+            location.addOption(iconName, action, `Cycle ${name}`);
         };
     };
 
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        note?: Note,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new SelectModal(this.plugin, file, value || "", this.field, lineNumber, after, asList, asComment);
+        const fieldModal = new SelectModal(this.plugin, file, this.field, note, lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }

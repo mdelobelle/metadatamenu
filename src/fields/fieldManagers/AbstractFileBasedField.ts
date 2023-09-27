@@ -7,6 +7,7 @@ import MetadataMenu from "main";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { FieldOptions } from "src/components/NoteFields";
 import { Link } from "src/types/dataviewTypes";
+import { Note } from "src/note/note";
 
 
 const convertDataviewArrayOfLinkToArrayOfPath = (arr: (Link | any)[]) => {
@@ -70,13 +71,19 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
     }
     public getFiles = (currentFile?: TFile): TFile[] => getFiles(this.plugin, this.field, this.field.options.dvQueryString, currentFile)
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    public async buildAndOpenModal(file: TFile): Promise<void> {
+        const note = new Note(this.plugin, file)
+        await note.build()
+        const modal = this.modalFactory(this.plugin, file, this.field, note)
+        modal.open()
+    }
 
-        const modal = this.modalFactory(this.plugin, file, this.field, value)
-        const action = () => modal.open()
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+        const name = this.field.name
+        const action = async () => await this.buildAndOpenModal(file)
         if (AbstractFileBasedField.isMenu(location)) {
             location.addItem((item) => {
-                item.setTitle(`Update ${name}`);
+                item.setTitle(`Update ${this.field}`);
                 item.setIcon(FieldIcon[FieldType.File]);
                 item.onClick(action);
                 item.setSection("metadata-menu.fields");
@@ -165,13 +172,13 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        note?: Note,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = this.modalFactory(this.plugin, file, this.field, value, lineNumber, after, asList, asComment)
+        const fieldModal = this.modalFactory(this.plugin, file, this.field, note, lineNumber, after, asList, asComment)
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -190,15 +197,12 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
         const spacer = fieldContainer.createEl("div", { cls: "spacer" })
 
         const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
-        let fieldModal: T
         if (file instanceof TFile && file.extension == "md") {
-            fieldModal = this.modalFactory(this.plugin, file, this.field, p[this.field.name])
+            searchBtn.onclick = async () => await this.buildAndOpenModal(file)
         } else {
-            throw Error("path doesn't correspond to a proper file");
+            searchBtn.onclick = async () => { }
         }
-        searchBtn.onclick = () => {
-            fieldModal.open()
-        }
+
 
         if (!attrs?.options?.alwaysOn) {
             searchBtn.hide()

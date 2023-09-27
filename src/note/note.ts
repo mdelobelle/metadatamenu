@@ -2,11 +2,12 @@ import MetadataMenu from "main";
 import { CachedMetadata, EditorPosition, parseYaml, TFile } from "obsidian";
 import { FieldPayload, FieldsPayload } from "src/commands/postValues";
 import Field from "src/fields/Field";
-import { rawObjectTypes, FieldType, ReservedMultiAttributes } from "src/types/fieldTypes";
+import { rawObjectTypes, FieldType, ReservedMultiAttributes, FieldManager } from "src/types/fieldTypes";
 import { getFrontmatterPosition } from "src/utils/fileUtils";
 import { Line } from "./line";
 import { LineNode } from "./lineNode";
 import * as Lookup from "src/types/lookupTypes";
+import YAMLField from "src/fields/fieldManagers/YAMLField";
 
 export class Note {
     public lines: Line[] = []
@@ -89,7 +90,11 @@ export class Note {
                         }
                     }
                     case FieldType.JSON: return JSON.stringify(JSON.parse(rawValue))
-                    case FieldType.YAML: return rawValue;
+                    case FieldType.YAML: {
+                        console.log(rawValue.split("\n"))
+                        const fm = new FieldManager[FieldType.YAML](this.plugin, field) as YAMLField
+                        return fm.dumpValue(rawValue)
+                    }
                     default: return rawValue;
                 }
         }

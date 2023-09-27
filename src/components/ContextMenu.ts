@@ -27,10 +27,10 @@ export default class ContextMenu extends Component {
 				const file = this.plugin.app.workspace.getActiveFile();
 				const includedFields: string[] = [];
 				const cache = view.file && this.plugin.app.metadataCache.getFileCache(view.file)
-				const frontmatter = cache?.frontmatterPosition || cache?.frontmatter;
+				const frontmatter = cache && (cache?.frontmatterPosition || cache?.frontmatter);
 				if (frontmatter
-					&& editor.getCursor().line > getFrontmatterPosition(this.plugin, view.file).start.line
-					&& editor.getCursor().line < getFrontmatterPosition(this.plugin, view.file).end.line
+					&& editor.getCursor().line > getFrontmatterPosition(this.plugin, view.file).start!.line
+					&& editor.getCursor().line < getFrontmatterPosition(this.plugin, view.file).end!.line
 				) {
 					const { attribute } = frontMatterLineField(editor.getLine(editor.getCursor().line))
 					if (attribute) includedFields.push(attribute);

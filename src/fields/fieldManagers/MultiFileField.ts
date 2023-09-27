@@ -1,6 +1,7 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
 import MultiFileModal from "src/modals/fields/MultiFileModal";
+import { Note } from "src/note/note";
 import { FieldType } from "src/types/fieldTypes";
 import { getLink } from "src/utils/parser";
 import Field from "../Field";
@@ -16,14 +17,16 @@ export default class MultiFileField extends AbstractFileBasedField<MultiFileModa
         plugin: MetadataMenu,
         file: TFile,
         field: Field,
-        initialValueObject: any,
+        note: Note,
         lineNumber: number = -1,
         after: boolean = false,
         asList: boolean = false,
         asComment: boolean = false
     ): MultiFileModal {
-        return new MultiFileModal(plugin, file, field, initialValueObject, lineNumber, after, asList, asComment);
+        //return new MultiFileModal(plugin, file, field, initialValueObject, lineNumber, after, asList, asComment);
+        return new MultiFileModal(plugin, file, field, note, lineNumber, after, asList, asComment);
     }
+
 
     static buildMarkDownLink(plugin: MetadataMenu, file: TFile, path: string): string {
         const destFile = plugin.app.metadataCache.getFirstLinkpathDest(path, file.path)
@@ -52,7 +55,7 @@ export default class MultiFileField extends AbstractFileBasedField<MultiFileModa
                 const linkText = link.path.split("/").last() || ""
                 const linkEl = container.createEl('a', { text: linkText.replace(/(.*).md/, "$1") });
                 linkEl.onclick = () => {
-                    this.plugin.app.workspace.openLinkText(value.path, file.path, true)
+                    this.plugin.app.workspace.openLinkText(link.path, file.path, true)
                     onClick()
                 }
             } else {

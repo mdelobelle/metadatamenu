@@ -10,6 +10,7 @@ import { Status } from "src/types/lookupTypes";
 import { FieldOptions } from "src/components/NoteFields";
 import { updateFormulas } from "src/commands/updateFormulas";
 import { postValues } from "src/commands/postValues";
+import { Note } from "src/note/note";
 
 export default class FormulaField extends FieldManager {
 
@@ -18,7 +19,7 @@ export default class FormulaField extends FieldManager {
         this.showModalOption = false
     }
 
-    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
         const f = this.plugin.fieldIndex;
         const id = `${file.path}__${this.field.name}`;
         let status: Status;
@@ -49,7 +50,7 @@ export default class FormulaField extends FieldManager {
     async createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        note?: Note,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,

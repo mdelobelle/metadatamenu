@@ -3,6 +3,7 @@ import { Modal, TextComponent, TFile, ButtonComponent } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import Field from "src/fields/Field";
 import NumberField from "src/fields/fieldManagers/NumberField";
+import { Note } from "src/note/note";
 import { FieldManager } from "src/types/fieldTypes";
 import { cleanActions } from "src/utils/modals";
 import BaseModal from "../baseModal";
@@ -12,18 +13,20 @@ export default class NumberModal extends BaseModal {
     private fieldManager: NumberField;
     private numberInput: TextComponent;
     private errorField: HTMLDivElement;
+    private value: string;
 
     constructor(
         public plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        private value: string,
+        private note: Note | undefined,
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
     ) {
         super(plugin);
+        this.value = this.note ? this.note.getNodeForFieldId(this.field.id)?.value || "" : ""
         this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
         this.containerEl.addClass("metadata-menu")
     };

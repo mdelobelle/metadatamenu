@@ -8,23 +8,28 @@ import { EditorView, basicSetup } from "codemirror"
 import { lintGutter } from "@codemirror/lint";
 import { StateField, EditorState } from "@codemirror/state"
 import { FieldManager } from "src/types/fieldTypes";
+import { Note } from "src/note/note";
 
 
 export default class InputModal extends BaseModal {
 
     private editor: EditorView;
     private positionContainer: HTMLDivElement;
+    private value: string
 
     constructor(
         public plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        private value: string,
+        private note: Note | undefined,
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
-    ) { super(plugin); };
+    ) {
+        super(plugin);
+        this.value = this.note ? this.note.getNodeForFieldId(this.field.id)?.value || "" : ""
+    };
 
     onOpen() {
         super.onOpen()

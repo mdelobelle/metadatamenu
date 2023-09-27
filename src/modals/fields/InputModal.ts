@@ -2,6 +2,7 @@ import MetadataMenu from "main";
 import { DropdownComponent, TextAreaComponent, TextComponent, TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import Field from "src/fields/Field";
+import { Note } from "src/note/note";
 import { cleanActions } from "src/utils/modals";
 import BaseModal from "../baseModal";
 
@@ -9,17 +10,22 @@ export default class InputModal extends BaseModal {
     private templateValues: Record<string, string> = {};
     private renderedValue: TextAreaComponent;
     private newValue: string;
+    private value: string;
 
     constructor(
         public plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        private value: string,
+        private note: Note | undefined,
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
-    ) { super(plugin); };
+    ) {
+        super(plugin);
+        console.log(this.note)
+        this.value = this.note?.getNodeForFieldId(this.field.id)?.value || ""
+    };
 
     onOpen() {
         super.onOpen()
