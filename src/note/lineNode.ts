@@ -117,7 +117,7 @@ export class LineNode {
         return `${"  ".repeat(level + 1)}- ${value}`
     }
 
-    public removeIndentedListItems = () => {
+    private removeIndentedListItems = () => {
         if (!this.field ||
             !(this.field.getDisplay() === MultiDisplayType.asList ||
                 this.field.type === FieldType.JSON ||

@@ -66,7 +66,6 @@ export default class InputModal extends BaseModal {
         })
 
         const gutter = lintGutter()
-
         this.editor = new EditorView({
             doc: manager.dumpValue(manager.loadValue(this.value)),
             extensions: [
@@ -81,7 +80,7 @@ export default class InputModal extends BaseModal {
     };
 
     public async save(): Promise<void> {
-        const newContent = this.editor.state.doc.toString()
+        const newContent = this.editor.state.doc.toString().trim()
         await postValues(this.plugin, [{ id: this.field.id, payload: { value: newContent } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
         this.close();
     }

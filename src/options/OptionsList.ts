@@ -251,7 +251,7 @@ export default class OptionsList {
 
 			if (field) {
 				const fieldManager = new FieldManager[field.type](this.plugin, field);
-				fieldManager.addFieldOption(key.name, this.file, this.location);
+				fieldManager.addFieldOption(this.file, this.location);
 			} else if (key.name !== "file" && (isSuggest(this.location) || isMenu(this.location))) {
 				const defaultField = new Field(this.plugin, key.name)
 				defaultField.type = FieldType.Input

@@ -20,7 +20,7 @@ export default class YAMLField extends ObjectField {
     public loadValue(value: any): any {
         try {
             //handle inline fields where YAML are not parsed by dataview
-            return parse(value.split("\\n").join("\n"))
+            return parse(value.split("\\n").join("\n") || null)
         } catch (e) {
             return value
         }

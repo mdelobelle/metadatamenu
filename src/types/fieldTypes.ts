@@ -120,10 +120,10 @@ export const FieldIcon: Record<keyof typeof FieldType, string> = {
     "Canvas": "layout-dashboard",
     "CanvasGroup": "box-select",
     "CanvasGroupLink": "box-select",
-    "YAML": "file-code-2",
+    "YAML": "file-json-2",
     "JSON": "file-json-2",
-    "Object": "braces",
-    "ObjectList": "file-json"
+    "Object": "package",
+    "ObjectList": "boxes"
 }
 
 export const FieldBackgroundColorClass: Record<keyof typeof FieldType, string> = {

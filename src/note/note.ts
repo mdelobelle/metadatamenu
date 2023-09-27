@@ -91,7 +91,6 @@ export class Note {
                     }
                     case FieldType.JSON: return JSON.stringify(JSON.parse(rawValue))
                     case FieldType.YAML: {
-                        console.log(rawValue.split("\n"))
                         const fm = new FieldManager[FieldType.YAML](this.plugin, field) as YAMLField
                         return fm.dumpValue(rawValue)
                     }

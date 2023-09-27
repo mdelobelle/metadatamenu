@@ -873,6 +873,9 @@ span.flatpickr-weekday {
 .metadata-menu .chip.object {
   background-color: var(--color-red);
 }
+.metadata-menu .chip.object-list {
+  background-color: var(--color-red);
+}
 
 .metadata-menu-dv-field-container {
   display: flex;
