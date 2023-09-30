@@ -76,18 +76,18 @@ export default class CycleField extends AbstractListBasedField {
         container.createDiv({ text: this.getRawOptionFromDuration(valueText) || valueText })
     }
 
-    public async next(name: string, file: TFile): Promise<void> {
+    public async next(name: string, file: TFile, indexedPath?: string): Promise<void> {
         const note = new Note(this.plugin, file)
         await note.build()
-        const value = note.getNodeForFieldId(this.field.id)?.value || ""
+        const value = note.getExistingFieldForIndexedPath(indexedPath)?.value || ""
         let matchedValue = this.getRawOptionFromDuration(value) || value;
         await postValues(this.plugin, [{ id: this.field.id, payload: { value: this.nextOption(matchedValue).toString() } }], file)
     }
 
-    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         const name = this.field.name
         const iconName = FieldIcon[FieldType.Cycle];
-        const action = async () => this.next(name, file);
+        const action = async () => this.next(name, file, indexedPath);
         if (CycleField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Cycle ${name}`);
@@ -111,12 +111,13 @@ export default class CycleField extends AbstractListBasedField {
         file: TFile,
         selectedFieldName: string,
         note?: Note,
+        indexedPath?: string,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new SelectModal(this.plugin, file, this.field, note, lineNumber, after, asList, asComment);
+        const fieldModal = new SelectModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }

@@ -18,13 +18,14 @@ export default class ValueSuggestModal extends SuggestModal<string>{
         private file: TFile,
         private field: Field,
         private note: Note | undefined,
+        private indexedPath?: string,
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
     ) {
         super(plugin.app);
-        this.value = this.note?.getNodeForFieldId(this.field.id)?.value || ""
+        this.value = this.note?.getExistingFieldForIndexedPath(this.indexedPath)?.value || ""
         this.containerEl.addClass("metadata-menu");
     };
 

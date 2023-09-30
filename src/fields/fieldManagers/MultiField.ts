@@ -16,17 +16,17 @@ export default class MultiField extends AbstractListBasedField {
         super(plugin, field, FieldType.Multi)
     }
 
-    public async buildAndOpenModal(file: TFile): Promise<void> {
+    public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
         const note = new Note(this.plugin, file)
         await note.build()
-        const modal = new MultiSelectModal(this.plugin, file, this.field, note);
+        const modal = new MultiSelectModal(this.plugin, file, this.field, note, indexedPath);
         modal.titleEl.setText("Select values");
         modal.open()
     }
 
-    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         const name = this.field.name
-        const action = async () => await this.buildAndOpenModal(file)
+        const action = async () => await this.buildAndOpenModal(file, indexedPath)
         if (MultiField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
@@ -50,12 +50,13 @@ export default class MultiField extends AbstractListBasedField {
         file: TFile,
         selectedFieldName: string,
         note?: Note,
+        indexedPath?: string,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new MultiSelectModal(this.plugin, file, this.field, note, lineNumber, after, asList, asComment);
+        const fieldModal = new MultiSelectModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Select options for ${selectedFieldName}`);
         fieldModal.open();
     }

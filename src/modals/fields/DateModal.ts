@@ -31,13 +31,14 @@ export default class DateModal extends BaseModal {
         private file: TFile,
         private field: Field,
         private note: Note | undefined,
+        private indexedPath?: string,
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
     ) {
         super(plugin);
-        const initialValue = this.note?.getNodeForFieldId(this.field.id)?.value || ""
+        const initialValue = this.note?.getExistingFieldForIndexedPath(this.indexedPath)?.value || ""
         this.initialValue = initialValue ? initialValue.toString().replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last() || "" : "";
         this.insertAsLink = FM.stringToBoolean(this.field.options.defaultInsertAsLink || "false") || false;
         this.format = this.field.options.dateFormat || this.field.options.defaultDateFormat;

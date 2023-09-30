@@ -16,14 +16,14 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
         private file: TFile,
         private field: Field,
         private note: Note | undefined,
+        private indexedPath: string | undefined,
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
     ) {
         super(plugin.app);
-        console.log(this.note)
-        const initialValueObject: string = this.note ? this.note.getNodeForFieldId(this.field.id)?.value || "" : ""
+        const initialValueObject: string = this.note ? this.note.getExistingFieldForIndexedPath(this.indexedPath)?.value || "" : ""
         const link = getLink(initialValueObject, this.file)
         if (link) {
             const file = this.plugin.app.vault.getAbstractFileByPath(link.path)

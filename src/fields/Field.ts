@@ -184,6 +184,17 @@ class Field {
         return field
     }
 
+    static getIdAndIndex(indexedId?: string) {
+        const { id, index } = indexedId?.match(/(?<id>[^\[]*)(?:\[(?<index>.*)\])?/)?.groups || { id: "", index: undefined }
+        return { id, index }
+    }
+
+    static upperPath(indexedPath: string) {
+        const upperIndexedIds = indexedPath?.split("____")
+        upperIndexedIds?.pop()
+        return upperIndexedIds?.join("____")
+    }
+
     static getValueFromIndexedPath(carriageField: Field, obj: any, indexedPath: string): any {
         //fonction récursive qui part du frontmatter et qui cherche la valeur correspondant à l'indexedPath
         //l'argument field sert à récupérer la fileclass et à récupérer l'attribute plugin
@@ -203,15 +214,17 @@ class Field {
         try {
             // on part du haut de l'indexedPath avec la première indexedProp
             const indexedProp = indexedProps.shift()!
+            //console.log("indexedProp: ", indexedProp)
             // on récupère l'id et l'éventuel index
-            const { id, index } = indexedProp.match(/(?<id>[^\[]*)(?:\[(?<index>.*)\])?/)?.groups || {}
-
+            const { id, index } = Field.getIdAndIndex(indexedProp)
+            //console.log("id: ", id)
+            //console.log("index: ", index)
             // on récupère la définition du field selon son id et sa fileClass
             const field = Field.getFieldFromId(plugin, id, fileClassName)
             if (!field) return "" // s'il n'existe pas, on renvoie vide
             let value: any
-            if (index) {
-                value = obj[index][field.name]
+            if (index !== undefined) {
+                value = obj[field.name][index]
             } else {
                 value = obj[field.name]
             }
@@ -225,7 +238,7 @@ class Field {
                 const subValue = Field.getValueFromIndexedPath(field, value, indexedProps.join("____"))
                 return subValue
             } else if (Array.isArray(value)) {
-                if (!isNaN(parseInt(index))) {
+                if (index && !isNaN(parseInt(index))) {
                     // on récupère l'élément à l'index voulu.
                     // par construction c'est un obj...
                     const subObject = value[parseInt(index)]

@@ -16,17 +16,17 @@ export default class BooleanField extends FieldManager {
         this.showModalOption = false
     }
 
-    public async toggle(file: TFile): Promise<void> {
+    public async toggle(file: TFile, indexedPath?: string): Promise<void> {
         const note = new Note(this.plugin, file)
         await note.build()
-        const value = note.getNodeForFieldId(this.field.id)?.value || "false"
+        const value = note.existingFields.find(eF => eF.indexedPath === indexedPath)?.value || "false"
         await postValues(this.plugin, [{ id: this.field.id, payload: { value: value === "false" ? "true" : "false" } }], file)
     }
 
-    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         const name = this.field.name
         const iconName = FieldIcon[FieldType.Boolean]
-        const action = async () => await this.toggle(file)
+        const action = async () => await this.toggle(file, indexedPath)
 
         if (BooleanField.isMenu(location)) {
             location.addItem((item) => {
@@ -75,12 +75,13 @@ export default class BooleanField extends FieldManager {
         file: TFile,
         selectedFieldName: string,
         note?: Note,
+        indexedPath?: string,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new BooleanModal(this.plugin, file, this.field, note, lineNumber, after, asList, asComment)
+        const fieldModal = new BooleanModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment)
         fieldModal.titleEl.setText(`Set value for ${selectedFieldName}`);
         fieldModal.open();
     }

@@ -18,11 +18,12 @@ export default class CanvasGroupLinkField extends AbstractCanvasBasedField {
         super(plugin, field, FieldType.CanvasGroupLink)
     }
 
-    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         //no field option to add for this field, it is automatically updated
     }
 
-    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
+    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note,
+        indexedPath?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
         await postValues(this.plugin, [{ id: this.field.id, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
     }
 

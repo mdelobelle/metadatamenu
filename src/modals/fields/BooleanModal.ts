@@ -12,13 +12,14 @@ export default class BooleanModal extends Modal {
         private file: TFile,
         private field: Field,
         private note: Note | undefined,
+        private indexedPath?: string,
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
     ) {
         super(plugin.app);
-        this.value = this.note ? BooleanField.stringToBoolean(this.note.getNodeForFieldId(this.field.id)?.value || "") : false;
+        this.value = this.note ? BooleanField.stringToBoolean(this.note.getExistingFieldForIndexedPath(this.indexedPath)?.value || "") : false;
     };
 
     onOpen() {

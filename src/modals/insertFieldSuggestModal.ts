@@ -57,7 +57,7 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
             const field = this.plugin.fieldIndex.filesFields.get(this.file.path)?.find(field => field.name === item.actionLabel)
             if (field && this.note) {
                 const fieldManager = new FieldManager[field.type](this.plugin, field);
-                fieldManager.createAndOpenFieldModal(this.file, item.actionLabel, this.note, this.lineNumber, this.after, false, false);
+                fieldManager.createAndOpenFieldModal(this.file, item.actionLabel, this.note, undefined, this.lineNumber, this.after, false, false);
             }
         }
     }

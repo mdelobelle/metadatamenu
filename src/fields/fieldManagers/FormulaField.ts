@@ -19,7 +19,7 @@ export default class FormulaField extends FieldManager {
         this.showModalOption = false
     }
 
-    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         const f = this.plugin.fieldIndex;
         const id = `${file.path}__${this.field.name}`;
         let status: Status;
@@ -51,6 +51,7 @@ export default class FormulaField extends FieldManager {
         file: TFile,
         selectedFieldName: string,
         note?: Note,
+        indexedPath?: string,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,

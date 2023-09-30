@@ -15,10 +15,12 @@ export default class ObjectField extends FieldManager {
         super(plugin, field, FieldType.Object)
     }
 
-    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, noteField: NoteFieldsComponent, index?: string): void {
-        const action = async () => await noteField.moveToObject(`${this.field.id}${index ? "[" + index + "]" : ""}`);
-        if (ObjectField.isFieldOptions(location)) {
-            location.addOption(FieldIcon[FieldType.Object], action, `Go to ${this.field.name}'s fields`);
+    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string, noteField?: NoteFieldsComponent): void {
+        if (noteField) {
+            const action = async () => await noteField.moveToObject(`${indexedPath}`);
+            if (ObjectField.isFieldOptions(location)) {
+                location.addOption(FieldIcon[FieldType.Object], action, `Go to ${this.field.name}'s fields`);
+            }
         }
     }
     validateOptions(): boolean {
@@ -34,7 +36,8 @@ export default class ObjectField extends FieldManager {
     getOptionsStr(): string {
         return ""
     }
-    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
+    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note,
+        indexedPath?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
 
     }
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {

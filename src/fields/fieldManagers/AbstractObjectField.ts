@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { Menu, setIcon, TextAreaComponent, TFile } from "obsidian";
+import { Menu, setIcon, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
@@ -24,18 +24,17 @@ export default abstract class ObjectField extends FieldManager {
         return this.field.options.template || ""
     }
 
-    public async buildAndOpenModal(file: TFile): Promise<void> {
+    public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
         const note = new Note(this.plugin, file)
         await note.build()
-        const value = note.getNodeForFieldId(this.field.id)?.value || ""
-        const modal = new ObjectModal(this.plugin, file, this.field, note);
+        const modal = new ObjectModal(this.plugin, file, this.field, note, indexedPath);
         modal.open()
     }
 
-    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         const name = this.field.name
         const iconName = FieldIcon[this.type];
-        const action = async () => this.buildAndOpenModal(file);
+        const action = async () => this.buildAndOpenModal(file, indexedPath);
         if (ObjectField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
@@ -66,12 +65,13 @@ export default abstract class ObjectField extends FieldManager {
         file: TFile,
         selectedFieldName: string,
         note?: Note,
+        indexedPath?: string,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new ObjectModal(this.plugin, file, this.field, note, lineNumber, after, asList, asComment);
+        const fieldModal = new ObjectModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

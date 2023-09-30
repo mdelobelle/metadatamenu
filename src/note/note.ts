@@ -46,10 +46,6 @@ export class Note {
         return this.fields.find(field => field.id === id)
     }
 
-    private getFieldFromIndexedPath(indexedPath: string): Field | undefined {
-        return this.existingFields.find(eF => eF.indexedPath === indexedPath)?.field
-    }
-
     public getFieldFromName(name: string): Field | undefined {
         return this.fields.find(field => field.name === name)
     }
@@ -150,6 +146,10 @@ export class Note {
         return undefined
     }
 
+    public getExistingFieldForIndexedPath(indexedPath?: string): ExistingField | undefined {
+        return this.existingFields.find(eF => eF.indexedPath === indexedPath)
+    }
+
     public getNodeForIndexedPath(indexedPath: string) {
         for (const line of this.lines) {
             const node = line.nodes.find(_node => _node.indexedPath === indexedPath)
@@ -177,6 +177,9 @@ export class Note {
     //TODO: remove field, in case of objectList items, it will be funny
 
     private insertField(id: string, payload: FieldPayload, lineNumber?: number): void {
+        //TODO: manage insertion of pbjectlist item
+        //TODO: changer postValues il faut utiliser le indexedPath à  la place de l'id
+        //don't ask for line
         const frontMatterEnd = getFrontmatterPosition(this.plugin, this.file)?.end?.line
         if (lineNumber === -1 && !frontMatterEnd) {
             for (let i of [0, 1]) new Line(this.plugin, this, "yaml", "---", 0)

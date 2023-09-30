@@ -71,16 +71,16 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
     }
     public getFiles = (currentFile?: TFile): TFile[] => getFiles(this.plugin, this.field, this.field.options.dvQueryString, currentFile)
 
-    public async buildAndOpenModal(file: TFile): Promise<void> {
+    public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
         const note = new Note(this.plugin, file)
         await note.build()
-        const modal = this.modalFactory(this.plugin, file, this.field, note)
+        const modal = this.modalFactory(this.plugin, file, this.field, note, indexedPath)
         modal.open()
     }
 
-    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         const name = this.field.name
-        const action = async () => await this.buildAndOpenModal(file)
+        const action = async () => await this.buildAndOpenModal(file, indexedPath)
         if (AbstractFileBasedField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update ${this.field}`);
@@ -173,12 +173,13 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
         file: TFile,
         selectedFieldName: string,
         note?: Note,
+        indexedPath?: string,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = this.modalFactory(this.plugin, file, this.field, note, lineNumber, after, asList, asComment)
+        const fieldModal = this.modalFactory(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment)
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

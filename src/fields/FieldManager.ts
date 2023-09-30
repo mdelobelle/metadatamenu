@@ -15,8 +15,7 @@ export const enum SettingLocation {
 }
 
 export abstract class FieldManager {
-    //TODO: remove value from addFieldOption property
-    abstract addFieldOption(file: TFile, location: Menu | FCSM | FieldOptions, ...args: any): void;
+    abstract addFieldOption(file: TFile, location: Menu | FCSM | FieldOptions, indexedPath?: string, ...args: any): void;
     abstract validateOptions(): boolean;
     abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
     abstract createDvField(
@@ -30,7 +29,7 @@ export abstract class FieldManager {
         }
     ): void
     abstract getOptionsStr(): string;
-    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): void;
+    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note, indexedPath?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): void;
     public showModalOption: boolean = true;
 
     constructor(public plugin: MetadataMenu, public field: Field, public type: FieldType) {
@@ -102,6 +101,7 @@ export abstract class FieldManager {
         fieldName: string,
         field: Field | undefined,
         note?: Note,
+        indexedPath?: string,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
@@ -109,10 +109,10 @@ export abstract class FieldManager {
     ): void {
         if (field) {
             const fieldManager = new FM[field.type](plugin, field);
-            fieldManager.createAndOpenFieldModal(file, fieldName, note, lineNumber, after, asList, asComment);
+            fieldManager.createAndOpenFieldModal(file, fieldName, note, indexedPath, lineNumber, after, asList, asComment);
         } else {
             const fieldManager = FieldManager.createDefault(plugin, fieldName!);
-            fieldManager.createAndOpenFieldModal(file, fieldName!, note, lineNumber, after, asList, asComment);
+            fieldManager.createAndOpenFieldModal(file, fieldName!, note, indexedPath, lineNumber, after, asList, asComment);
         }
     }
 
@@ -130,7 +130,7 @@ export abstract class FieldManager {
             modal.open();
         } else {
             const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
-            if (field) this.createAndOpenModal(plugin, file, fieldName, field, undefined, lineNumber, after, asList, asComment);
+            if (field) this.createAndOpenModal(plugin, file, fieldName, field, undefined, undefined, lineNumber, after, asList, asComment);
         }
     }
 

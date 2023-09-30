@@ -18,13 +18,14 @@ export default class MultiFileField extends AbstractFileBasedField<MultiFileModa
         file: TFile,
         field: Field,
         note: Note,
+        indexedPath: string | undefined,
         lineNumber: number = -1,
         after: boolean = false,
         asList: boolean = false,
         asComment: boolean = false
     ): MultiFileModal {
         //return new MultiFileModal(plugin, file, field, initialValueObject, lineNumber, after, asList, asComment);
-        return new MultiFileModal(plugin, file, field, note, lineNumber, after, asList, asComment);
+        return new MultiFileModal(plugin, file, field, note, indexedPath, lineNumber, after, asList, asComment);
     }
 
 

@@ -120,7 +120,7 @@ export default class OptionsList {
 					(fieldManager as CycleField).next(managedField.name, this.file)
 					break;
 				default:
-					fieldManager.createAndOpenFieldModal(this.file, managedField.name, node.line.note, undefined, undefined, undefined, undefined)
+					fieldManager.createAndOpenFieldModal(this.file, managedField.name, node.line.note, node.indexedPath, undefined, undefined, undefined, undefined)
 					break;
 			}
 
@@ -248,7 +248,7 @@ export default class OptionsList {
 	private buildFieldOptions(): void {
 		this.attributes.forEach((value, key, map) => {
 			const field = key.id ? this.fieldsFromIndex[key.id] : undefined
-
+			//FIXME: what is this key.id? is it still working with indexedPath?
 			if (field) {
 				const fieldManager = new FieldManager[field.type](this.plugin, field);
 				fieldManager.addFieldOption(this.file, this.location);

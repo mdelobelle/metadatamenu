@@ -69,22 +69,22 @@ export default class NumberField extends FieldManager {
         )
     }
 
-    public async buildAndOpenModal(file: TFile): Promise<void> {
+    public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
         const note = new Note(this.plugin, file)
         await note.build()
-        const modal = new NumberModal(this.plugin, file, this.field, note);
+        const modal = new NumberModal(this.plugin, file, this.field, note, indexedPath);
         modal.titleEl.setText(`Change Value for <${name}>`);
         modal.open()
     }
 
-    private async applyStep(file: TFile, direction: "increase" | "decrease"): Promise<void> {
+    private async applyStep(file: TFile, direction: "increase" | "decrease", indexedPath?: string): Promise<void> {
         const { min, max, step } = this.field.options;
         const fMin = parseFloat(min)
         const fMax = parseFloat(max)
         const fStep = parseFloat(step)
         const note = new Note(this.plugin, file)
         await note.build()
-        const value = note.getNodeForFieldId(this.field.id)?.value || ""
+        const value = note.getExistingFieldForIndexedPath(indexedPath)?.value || ""
         const fValue = parseFloat(value)
         if (!isNaN(fValue)) {
             switch (direction) {
@@ -106,13 +106,13 @@ export default class NumberField extends FieldManager {
 
     }
 
-    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         const name = this.field.name
         const { step } = this.field.options;
         const fStep = parseFloat(step)
-        const action = async () => await this.buildAndOpenModal(file)
-        const increase = async () => await this.applyStep(file, "increase")
-        const decrease = async () => await this.applyStep(file, "increase")
+        const action = async () => await this.buildAndOpenModal(file, indexedPath)
+        const increase = async () => await this.applyStep(file, "increase", indexedPath)
+        const decrease = async () => await this.applyStep(file, "decrease", indexedPath)
         if (NumberField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
@@ -221,12 +221,13 @@ export default class NumberField extends FieldManager {
         file: TFile,
         selectedFieldName: string,
         note?: Note,
+        indexedPath?: string,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new NumberModal(this.plugin, file, this.field, note, lineNumber, after, asList, asComment);
+        const fieldModal = new NumberModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

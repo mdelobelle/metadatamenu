@@ -90,6 +90,7 @@ export class LineNode {
                                         if (listItem) {
                                             // c'est un débute d'item: on crée une nouvelle liste de lignes (object item)
                                             // et on l'ajoute à l'ensemble des listes de lignes de l'objectList
+                                            // et on rajoute également un existing field?
                                             objectListLines.push([this.line])
                                         } else {
                                             // c'est un autre field qui appartient à un object item de la liste, 
@@ -100,8 +101,9 @@ export class LineNode {
                                         // on crée un indexedID en rajoutant le rang de l'object item dans la liste d'objectList auquel il appartient
                                         // ça servira à créer l'indexedPath dans la fonction Field.getValueFromIndexedPath
                                         const index = objectListLines.length - 1
-                                        this.indexedId = `${this.field.id.replace(/(.*)\[(\w+)\]/, "$1")}[${index}]`
-                                        this.indexedPath = `${this.indexedPath}[${index}]`
+                                        const upperPath = Field.upperPath(this.indexedPath).replace(/(.*)\[(\w+)\]/, "$1")
+                                        this.indexedId = `${this.field.id}`
+                                        this.indexedPath = `${upperPath}[${index}]____${this.field.id}`
                                     }
                                     // on récupère la valeur
                                     this.value = Field.getValueFromIndexedPath(this.field, this.line.note.cache!.frontmatter!, this.indexedPath)

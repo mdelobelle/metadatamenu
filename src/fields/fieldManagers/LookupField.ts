@@ -20,7 +20,7 @@ export default class LookupField extends FieldManager {
         this.showModalOption = false
     }
 
-    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         const name = this.field.name
         if (!this.field.options.autoUpdate && this.field.options.autoUpdate !== undefined) {
             const f = this.plugin.fieldIndex;
@@ -34,6 +34,7 @@ export default class LookupField extends FieldManager {
                 this.field.options.outputType
             ) status = Status.changed
             const icon = status === Status.changed ? "refresh-ccw" : "file-check"
+            //FIXME: updateFormula and updateLookups have to adapted to indexedPath?
             const action = () => { updateLookups(this.plugin, "single_command", { file: file, fieldName: this.field.name }) }
             if (LookupField.isMenu(location) && status === Status.changed) {
                 location.addItem((item) => {
@@ -64,6 +65,7 @@ export default class LookupField extends FieldManager {
         file: TFile,
         selectedFieldName: string,
         note?: Note,
+        indexedPath?: string,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,

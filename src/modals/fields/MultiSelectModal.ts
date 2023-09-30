@@ -21,13 +21,14 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         private file: TFile,
         private field: Field,
         private note: Note | undefined,
+        private indexedPath: string | undefined,
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
     ) {
         super(plugin.app);
-        const initialOptions: string | string[] = this.note ? this.note.getNodeForFieldId(this.field.id)?.value || [] : []
+        const initialOptions: string | string[] = this.note ? this.note.getExistingFieldForIndexedPath(this.indexedPath)?.value || [] : []
         if (initialOptions) {
             if (Array.isArray(initialOptions)) {
                 this.selectedOptions = initialOptions.map(item => {
