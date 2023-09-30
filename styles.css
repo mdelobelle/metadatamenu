@@ -1258,6 +1258,12 @@ span.flatpickr-weekday {
   margin-right: 0;
 }
 
+.metadata-menu.modal-container.note-fields-modal .navigation-separator {
+  margin-top: 1em;
+}
+.metadata-menu.modal-container.note-fields-modal .back-button-wrapper {
+  display: flex;
+}
 .metadata-menu.modal-container.note-fields-modal button {
   padding: 0 0 0.4em 0.4em;
   height: auto;

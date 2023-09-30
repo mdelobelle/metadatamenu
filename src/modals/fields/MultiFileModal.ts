@@ -23,16 +23,26 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
         private asComment: boolean = false
     ) {
         super(plugin.app);
-
-        const initialValueObject: string | string[] = this.note ? (this.note.getNodeForFieldId(this.field.id)?.value || "").split(",").map(i => i.trim()) : []
-        const selectedValues: Array<any> = Array.isArray(initialValueObject) ? initialValueObject : [initialValueObject]
-        selectedValues.forEach(value => {
-            const link = getLink(value, this.file)
-            if (link) {
-                const file = this.plugin.app.vault.getAbstractFileByPath(link.path)
-                if (file instanceof TFile) this.selectedFiles.push(file)
+        const initialOptions: string | string[] = this.note ? this.note.getNodeForFieldId(this.field.id)?.value || [] : []
+        if (initialOptions) {
+            if (Array.isArray(initialOptions)) {
+                initialOptions.map(item => {
+                    const link = getLink(item, this.file)
+                    if (link) {
+                        const file = this.plugin.app.vault.getAbstractFileByPath(link.path)
+                        if (file instanceof TFile && !this.selectedFiles.map(_f => _f.path).includes(file.path)) this.selectedFiles.push(file)
+                    }
+                })
+            } else {
+                const link = getLink(initialOptions, this.file)
+                if (link) {
+                    const file = this.plugin.app.vault.getAbstractFileByPath(link.path)
+                    if (file instanceof TFile && !this.selectedFiles.map(_f => _f.path).includes(link.path)) this.selectedFiles.push(file)
+                }
             }
-        })
+        } else {
+            this.selectedFiles = [];
+        }
         this.containerEl.addClass("metadata-menu")
     }
 

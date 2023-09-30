@@ -2,7 +2,6 @@ import { Component, TFile } from "obsidian"
 import MetadataMenu from "main"
 import { v4 as uuidv4 } from 'uuid';
 
-
 export class Task {
     public status: "pending" | "ongoing" | "done";
     public id: string;

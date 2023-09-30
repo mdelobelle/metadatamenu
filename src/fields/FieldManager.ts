@@ -16,7 +16,7 @@ export const enum SettingLocation {
 
 export abstract class FieldManager {
     //TODO: remove value from addFieldOption property
-    abstract addFieldOption(file: TFile, location: Menu | FCSM | FieldOptions): void;
+    abstract addFieldOption(file: TFile, location: Menu | FCSM | FieldOptions, ...args: any): void;
     abstract validateOptions(): boolean;
     abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
     abstract createDvField(

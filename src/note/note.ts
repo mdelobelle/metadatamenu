@@ -9,10 +9,29 @@ import { LineNode } from "./lineNode";
 import * as Lookup from "src/types/lookupTypes";
 import YAMLField from "src/fields/fieldManagers/YAMLField";
 
+
+export class ExistingField {
+    public name: string
+    constructor(
+        public field: Field,
+        public value?: any,
+        public indexedId?: string,
+        public indexedPath?: string
+    ) {
+        this.name = this.field.name
+        this.indexedId = this.indexedId || this.field.id
+        this.indexedPath = this.indexedPath || this.indexedId
+    }
+
+    public isRoot() {
+        return this.indexedId === this.indexedPath
+    }
+}
+
 export class Note {
     public lines: Line[] = []
     public fields: Field[] = []
-    public existingFields: Field[] = []
+    public existingFields: ExistingField[] = []
     public cache: CachedMetadata | null
 
     constructor(
@@ -23,8 +42,12 @@ export class Note {
         this.cache = this.plugin.app.metadataCache.getFileCache(file)
     }
 
-    public getField(id: string): Field | undefined {
+    private getField(id: string): Field | undefined {
         return this.fields.find(field => field.id === id)
+    }
+
+    private getFieldFromIndexedPath(indexedPath: string): Field | undefined {
+        return this.existingFields.find(eF => eF.indexedPath === indexedPath)?.field
     }
 
     public getFieldFromName(name: string): Field | undefined {
@@ -116,9 +139,20 @@ export class Note {
         return undefined
     }
 
+    //TODO: il faut appeler getNodeForIndexedPath à la place, c'est plus générique
+    // la présence d'objectList rend cette méthode fausse, 
+    // elle ne renverrait que le premier des fields d'un objectList pour un type donnée
     public getNodeForFieldId(fieldId: string): LineNode | undefined {
         for (const line of this.lines) {
             const node = line.nodes.find(_node => _node.field?.id === fieldId)
+            if (node) return node
+        }
+        return undefined
+    }
+
+    public getNodeForIndexedPath(indexedPath: string) {
+        for (const line of this.lines) {
+            const node = line.nodes.find(_node => _node.indexedPath === indexedPath)
             if (node) return node
         }
         return undefined
@@ -140,6 +174,7 @@ export class Note {
         if (field) newNode.createFieldNodeContent(field, value, position);
         newLine.renderLine()
     }
+    //TODO: remove field, in case of objectList items, it will be funny
 
     private insertField(id: string, payload: FieldPayload, lineNumber?: number): void {
         const frontMatterEnd = getFrontmatterPosition(this.plugin, this.file)?.end?.line

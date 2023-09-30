@@ -7,7 +7,6 @@ import { FieldCommand } from "src/fields/Field";
 import { FieldManager } from "src/fields/FieldManager";
 import { postValues } from "src/commands/postValues";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
-import { v4 as uuidv4 } from "uuid"
 import { Note } from "src/note/note";
 
 const options: Record<string, { name: string, toValue: (value: any) => any }> = {
@@ -157,7 +156,7 @@ class FileClass {
 
         const note = new Note(this.plugin, file)
         await note.build()
-        const currentFieldsIds: string[] = note.existingFields.map(_f => _f.id)
+        const currentFieldsIds: string[] = note.existingFields.map(_f => _f.field.id)
 
         const missingFields = this && file ?
             !this.plugin.fieldIndex.fileClassesFields.get(this.name)?.map(f => f.id).every(id => currentFieldsIds.includes(id)) :
@@ -299,7 +298,7 @@ class FileClass {
                     display: newDisplay,
                     style: newStyle,
                     path: newPath,
-                    id: uuidv4()
+                    id: this.plugin.fieldIndex.getNewFieldId()
                 })
             }
         })

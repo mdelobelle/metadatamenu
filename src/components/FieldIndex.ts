@@ -7,7 +7,7 @@ import FieldSetting from "src/settings/FieldSetting";
 import { resolveLookups } from "src/commands/resolveLookups";
 import { updateLookups } from "src/commands/updateLookups";
 import { updateFormulas, cleanRemovedFormulasFromIndex } from "src/commands/updateFormulas";
-
+import cryptoRandomString from "crypto-random-string";
 import { FieldType } from "src/types/fieldTypes";
 import { Status as LookupStatus, Type as LookupType } from "src/types/lookupTypes";
 import { updateCanvas } from "src/commands/updateCanvas";
@@ -145,6 +145,22 @@ export default class FieldIndex extends Component {
         this.plugin.app.workspace.trigger("metadata-menu:indexed")
     }
 
+    public getNewFieldId(): string {
+        const ids: string[] = [];
+        for (const fileClassFields of this.fileClassesFields.values()) {
+            for (const field of fileClassFields) {
+                ids.push(field.id)
+            }
+        }
+        for (const field of this.plugin.presetFields) {
+            ids.push(field.id)
+        }
+        let id = cryptoRandomString({ length: 6, type: "alphanumeric" })
+        while (ids.includes(id)) {
+            id = cryptoRandomString({ length: 6, type: "alphanumeric" })
+        }
+        return id
+    }
 
     private flushCache() {
         this.filesFields = new Map();

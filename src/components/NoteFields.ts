@@ -11,6 +11,37 @@ import { FileClass } from "src/fileClass/fileClass";
 import { FileClassManager } from "./fileClassManager";
 import { Note } from "src/note/note";
 
+/*
+introduce a navigation in this component for object fields.
+when clicking on an object field, the note should display its child fields and so on
+
+this means that the notefield component should maintain the navigation state and the fieldContainer is another component
+the fieldContainer is tied to an objectField or ObjectList (that is an object)
+the rootFieldContainer displays the fields that have no parent (path === "")
+
+      ┌────────────────────────────────────┐
+      │                                    │
+      │ Path>Of>The>Field                  │
+      ├────────────────────────────────────┤
+  F C │                                    │
+  i o │  Field 1                           │
+  e n │  Field 2                           │
+  l t │  ObjectField                  ->   │ navigates to fieldContainer
+  d a │  Field 4                           │ of path ...___ObjectField
+    i │                                    │
+    n │                                    │
+    e │                                    │
+    r ├────────────────────────────────────┤
+      │  (|||) insert missing fields       │
+      ├────────────────────────────────────┤
+      │                                    │
+      │  FileClass manager                 │
+      │                                    │
+      └────────────────────────────────────┘
+
+*/
+
+
 export class FieldOptions {
 
     constructor(public container: HTMLDivElement) { }
@@ -28,13 +59,16 @@ export class FieldOptions {
 export class FieldsModal extends Modal {
 
     public fieldContainers: HTMLDivElement[] = [];
+    public navigationContainer: HTMLDivElement;
     //private maxOptions: number = 0;
     private missingFields: boolean = false;
     private note: Note;
 
     constructor(
         public plugin: MetadataMenu,
-        private file: TFile
+        private file: TFile,
+        public noteFields: NoteFieldsComponent,
+        public indexedId: string | undefined
     ) {
         super(plugin.app);
         this.containerEl.addClass("metadata-menu")
@@ -45,16 +79,54 @@ export class FieldsModal extends Modal {
     async onOpen() {
         this.titleEl.setText(`Fields of ${this.file.basename}.${this.file.extension}`)
         await this.buildNote();
-        await this.buildFieldsContainer();
+        this.build();
+
     };
 
     public async buildNote(): Promise<void> {
         this.note = new Note(this.plugin, this.file)
         await this.note.build()
+        console.log(this.note)
     }
 
+
+    build(): void {
+        //FIXME: this is wrong
+        //this.missingFields = this.note.fields.filter(_f => _f.path === this.path).some(_field => !this.note.existingFields.map(_f => _f.field.id).includes(_field.id))
+        this.contentEl.replaceChildren();
+        if (this.indexedId) {
+            const eF = this.note.existingFields.find(_f => _f.indexedId === this.indexedId)
+            if (eF?.isRoot()) {
+                this.buildNavigation("");
+            } else {
+                const previousIndexedId = eF?.indexedPath?.split("___").reverse()[1]
+                this.buildNavigation(previousIndexedId || "");
+            }
+
+            this.contentEl.createEl('hr', { cls: "navigation-separator" })
+        } else {
+            this.contentEl.createEl('hr')
+        }
+        this.buildFieldsContainer();
+        this.contentEl.createEl('hr')
+        const fileClassManagersContainer = this.contentEl.createDiv({ cls: "fields-container" });
+        this.buildFileClassManager(fileClassManagersContainer)
+    }
+
+    buildNavigation(upperPath: string): void {
+        const fileName = this.file.name.replace(/(.*).md$/, "$1")
+        const upperObjectName = upperPath ? this.note.getNodeForFieldId(upperPath)?.field?.name || fileName : fileName
+        const backBtnWrapper = this.contentEl.createDiv({ cls: "back-button-wrapper" })
+        const backBtn = new ButtonComponent(backBtnWrapper)
+        backBtn.setIcon("chevron-left")
+        backBtn.setTooltip(`Go to ${upperObjectName} fields`)
+        backBtnWrapper.createSpan({ text: upperObjectName })
+        backBtnWrapper.onclick = async () => {
+            await this.noteFields.moveToObject(upperPath)
+        }
+    }
     //
-    buildFieldContainer(container: HTMLDivElement, field: Field, value?: string | null | undefined): void {
+    private buildFieldContainer(container: HTMLDivElement, field: Field, value?: string | null | undefined, index?: string): void {
         const fieldManager = new FM[field.type](this.plugin, field)
         const fieldNameWrapper = container.createDiv({ cls: "field-name-wrapper" })
         const fieldNameContainer = fieldNameWrapper.createDiv({ text: `${field.name}`, cls: "field-item field-name" });
@@ -94,7 +166,12 @@ export class FieldsModal extends Modal {
         fieldOptionsWrapper.createDiv({ cls: "field-options-spacer" });
         const fieldOptions = new FieldOptions(fieldOptionsWrapper)
         if (value !== undefined) {
-            fieldManager.addFieldOption(this.file, fieldOptions);
+            if (FieldType.objectTypes.includes(field.type)) {
+                fieldManager.addFieldOption(this.file, fieldOptions, this.noteFields, index);
+            } else {
+                fieldManager.addFieldOption(this.file, fieldOptions);
+            }
+
         } else {
             const fieldBtnContainer = fieldOptionsWrapper.createDiv({ cls: "field-item field-option" })
             const fieldBtn = new ButtonComponent(fieldBtnContainer)
@@ -209,14 +286,21 @@ export class FieldsModal extends Modal {
         })
     }
 
-    buildFieldsContainer(): void {
-        this.missingFields = this.note.fields.some(_field => !this.note.existingFields.map(_f => _f.id).includes(_field.id))
-        this.contentEl.replaceChildren();
-        this.contentEl.createEl('hr')
+    buildFieldsContainer() {
         const fieldsContainer = this.contentEl.createDiv({ cls: "note-fields-container" });
-        this.note.fields.forEach(field => {
-            const fieldNode = this.note.getNodeForFieldId(field.id)
-            this.buildFieldContainer(fieldsContainer, field, fieldNode?.value)
+        this.note.existingFields.filter(_f => {
+            if (!this.indexedId) {
+                //this is for root fields
+                return _f.isRoot()
+            }
+            else {
+                // for lowerFields they have and indexedPath composed of the upper indexPath + their id
+                // so if we split and get the berfore last item, it should be comparable to the indexedId of this field's screen (i.e. this.path)
+                return _f.indexedPath?.split("____").slice().reverse()[1] === this.indexedId
+            }
+        }).forEach(eF => {
+            const { index } = eF.indexedId?.match(/(?<id>[^\[]*)(?:\[(?<index>.*)\])?/)?.groups || {}
+            this.buildFieldContainer(fieldsContainer, eF.field, eF.value, index)
         })
         if (this.missingFields) {
             const insertMissingFieldsContainer = this.contentEl.createDiv({ cls: "insert-all-fields" });
@@ -243,9 +327,6 @@ export class FieldsModal extends Modal {
                 ).open();
             })
         }
-        this.contentEl.createEl('hr')
-        const fileClassManagersContainer = this.contentEl.createDiv({ cls: "fields-container" });
-        this.buildFileClassManager(fileClassManagersContainer)
     }
 }
 
@@ -257,21 +338,29 @@ export default class NoteFieldsComponent extends Component {
         public plugin: MetadataMenu,
         public cacheVersion: string,
         public onChange: () => void,
-        public file: TFile
+        public file: TFile,
+        public indexedPath?: string
     ) {
         super();
-        this.fieldsModal = new FieldsModal(this.plugin, file)
+        this.fieldsModal = new FieldsModal(this.plugin, this.file, this, this.indexedPath)
         this.fieldsModal.onClose = () => {
             this.plugin.removeChild(this)
             this.unload()
         }
     }
 
+    async moveToObject(indexedPath: string) {
+        await this.fieldsModal.buildNote();
+        this.fieldsModal.indexedId = indexedPath
+        this.fieldsModal.build();
+    }
+
     onload(): void {
         this.plugin.registerEvent(this.plugin.app.metadataCache.on('dataview:metadata-change', async () => {
             await this.fieldsModal.buildNote();
-            await this.fieldsModal.buildFieldsContainer();
+            this.fieldsModal.build();
         }))
         this.fieldsModal.open()
+
     }
 }

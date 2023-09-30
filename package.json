@@ -40,12 +40,13 @@
 		"@codemirror/lint": "^6.4.1",
 		"@codemirror/stream-parser": "^0.19.9",
 		"@popperjs/core": "^2.11.5",
-		"@types/uuid": "^8.3.4",
+		"@types/uuid": "^9.0.4",
 		"codemirror": "^6.0.1",
+		"crypto-random-string": "^5.0.0",
 		"flatpickr": "^4.6.13",
 		"moment": ">=2.29.4",
 		"sass": "^1.64.1",
-		"uuid": "^9.0.0",
+		"uuid": "^9.0.1",
 		"yaml": "^2.3.2"
 	}
 }

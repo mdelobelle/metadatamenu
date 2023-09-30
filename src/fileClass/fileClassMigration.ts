@@ -5,7 +5,6 @@ import { getFrontmatterPosition } from "src/utils/fileUtils";
 import { capitalize } from "src/utils/textUtils";
 import { FileClass } from "./fileClass";
 import { FileClassAttribute } from "./fileClassAttribute";
-import { v4 as uuidv4 } from 'uuid';
 
 export class V1FileClassMigration {
     /*
@@ -57,7 +56,7 @@ export class V1FileClassMigration {
                 const attributes = V1FileClassMigration.getInlineFileClassAttributes(this.plugin, fileClass)
                 attributes.forEach(attr => {
                     fields.push({
-                        id: uuidv4(),
+                        id: this.plugin.fieldIndex.getNewFieldId(),
                         command: attr.command,
                         display: attr.display,
                         name: attr.name,

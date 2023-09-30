@@ -6,6 +6,7 @@ import { getLineFields } from "src/utils/parser";
 export class Line {
     public nodes: LineNode[] = []
     public parentLine?: Line
+    public objectListLines: Line[][] = []
 
     constructor(
         public plugin: MetadataMenu,

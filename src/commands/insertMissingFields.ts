@@ -21,7 +21,7 @@ export async function insertMissingFields(
     const fields = f.filesFields.get(file.path)
     const filteredClassFields = fileClassName ? plugin.fieldIndex.fileClassesFields.get(fileClassName)?.filter(field => field.fileClassName === fileClassName) || undefined : undefined
     const fieldsToInsert: FieldsPayload = []
-    fields?.filter(field => !note.existingFields.map(_f => _f.id).includes(field.id))
+    fields?.filter(field => !note.existingFields.map(_f => _f.field.id).includes(field.id))
         .filter(field => filteredClassFields ? filteredClassFields.map(f => f.id).includes(field.id) : true)
         .forEach(async field => {
             fieldsToInsert.push({ id: field.id, payload: { value: "" } })

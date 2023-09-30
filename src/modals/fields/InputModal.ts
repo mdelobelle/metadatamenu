@@ -23,7 +23,6 @@ export default class InputModal extends BaseModal {
         private asComment: boolean = false
     ) {
         super(plugin);
-        console.log(this.note)
         this.value = this.note?.getNodeForFieldId(this.field.id)?.value || ""
     };
 

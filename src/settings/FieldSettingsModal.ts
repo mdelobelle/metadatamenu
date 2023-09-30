@@ -6,7 +6,6 @@ import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
 import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, multiTypes } from "src/types/fieldTypes";
 import { FieldHTMLTagMap, FieldStyle, FieldStyleKey, FieldStyleLabel } from "src/types/dataviewTypes";
 import { cleanActions } from "src/utils/modals";
-import { v4 as uuidv4 } from 'uuid';
 
 export default class FieldSettingsModal extends Modal {
     private namePromptComponent: TextComponent;
@@ -37,7 +36,7 @@ export default class FieldSettingsModal extends Modal {
             this.field = field;
             Field.copyProperty(this.initialField, this.field)
         } else {
-            const id = uuidv4()
+            const id = this.plugin.fieldIndex.getNewFieldId()
             this.field = new Field(plugin);
             this.field.id = id;
             this.initialField.id = id;

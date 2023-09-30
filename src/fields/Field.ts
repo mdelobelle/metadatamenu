@@ -1,6 +1,7 @@
 import MetadataMenu from "main";
+import { LineNode } from "src/note/lineNode";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
-import { FieldType, MultiDisplayType, multiTypes } from "../types/fieldTypes"
+import { FieldType, MultiDisplayType, multiTypes, objectTypes } from "../types/fieldTypes"
 
 export interface FieldCommand {
     id: string,
@@ -10,7 +11,6 @@ export interface FieldCommand {
 }
 
 class Field {
-
     constructor(
         public plugin: MetadataMenu,
         public name: string = "",
@@ -23,7 +23,6 @@ class Field {
         public style?: Record<keyof typeof FieldStyleLabel, boolean>,
         public path: string = ""
     ) {
-
     };
 
     public getDisplay(): MultiDisplayType {
@@ -32,6 +31,19 @@ class Field {
         } else {
             return MultiDisplayType.asArray
         }
+    }
+
+    public getIndexedPath(node: LineNode): string {
+        if (this.path === "") return node.indexedId
+        const parentNode = node.line.parentLine?.nodes[0]
+        const parentField = parentNode?.field
+        if (parentField) {
+            const parentIndexedPath = parentField.getIndexedPath(parentNode)
+            return `${parentIndexedPath}${parentIndexedPath ? "____" : ""}${node.indexedId}`
+        } else {
+            return ""
+        }
+
     }
 
     public getDottedPath(): string {
@@ -57,7 +69,7 @@ class Field {
 
     public getCompatibleParents(): Field[] {
         const otherObjectFields = this.getOtherObjectFields()
-        if (this.type !== FieldType.Object) {
+        if (objectTypes.includes(this.type)) {
             return otherObjectFields
         } else {
             return otherObjectFields.filter(_field => {
@@ -65,22 +77,6 @@ class Field {
                 return !field?.hasIdAsAncestor(this.id)
             })
         }
-    }
-
-    public getValueFromFileAttributes(attributes: Record<string, any>) {
-        console.log(this)
-        if (this.path) {
-            const path = `${this.path
-                .split("____")
-                .map(id => Field.getFieldFromId(this.plugin, id, this.fileClassName)?.name)
-                .join(".")
-                }${this.path ? "." : ""}${this.name}`
-            return Field.getValueFromPath(attributes, path)
-        } else {
-            return Field.getValueFromPath(attributes, "")
-        }
-
-
     }
 
     public getAncestors(fieldId: string = this.id): Field[] {
@@ -101,11 +97,11 @@ class Field {
         if (this.fileClassName) {
             const index = this.plugin.fieldIndex
             objectFields = index.fileClassesFields
-                .get(this.fileClassName)?.filter(field => field.type === FieldType.Object && field.id !== this.id) || []
+                .get(this.fileClassName)?.filter(field => objectTypes.includes(field.type) && field.id !== this.id) || []
 
         } else {
             objectFields = this.plugin.presetFields
-                .filter(field => field.type === FieldType.Object && field.id !== this.id)
+                .filter(field => objectTypes.includes(field.type) && field.id !== this.id)
         }
         return objectFields.map(_field => {
             return Field.getFieldFromId(this.plugin, _field.id, this.fileClassName) as Field //sure exists!
@@ -188,6 +184,69 @@ class Field {
         return field
     }
 
+    static getValueFromIndexedPath(carriageField: Field, obj: any, indexedPath: string): any {
+        //fonction récursive qui part du frontmatter et qui cherche la valeur correspondant à l'indexedPath
+        //l'argument field sert à récupérer la fileclass et à récupérer l'attribute plugin
+
+        //si l'indexPath = "", on est dans le cas d'un field racine et on renvoit l'object directement
+        //ça ne doit pas arrive car cette méthode est appelée dans le cas ou carriageField a un path existant non ""
+        //console.log("---- NEXT ------")
+        //console.log("carriageField: ", carriageField)
+        //console.log("obj: ", obj)
+        //console.log("indexedPath: ", indexedPath)
+        if (!indexedPath) return obj;
+        const plugin = carriageField.plugin
+        const fileClassName = carriageField.fileClassName
+        // on décompose l'indexedPath
+        const indexedProps: string[] = indexedPath.split('____');
+
+        try {
+            // on part du haut de l'indexedPath avec la première indexedProp
+            const indexedProp = indexedProps.shift()!
+            // on récupère l'id et l'éventuel index
+            const { id, index } = indexedProp.match(/(?<id>[^\[]*)(?:\[(?<index>.*)\])?/)?.groups || {}
+
+            // on récupère la définition du field selon son id et sa fileClass
+            const field = Field.getFieldFromId(plugin, id, fileClassName)
+            if (!field) return "" // s'il n'existe pas, on renvoie vide
+            let value: any
+            if (index) {
+                value = obj[index][field.name]
+            } else {
+                value = obj[field.name]
+            }
+
+            //console.log("field: ", field.name)
+            //console.log("value: ", value)
+            //console.log("index: ", index)
+            //console.log("indexedLowerProps: ", indexedProps.join("____"))
+            if (typeof value === 'object') {
+                // value est un object, on continue à inspecter
+                const subValue = Field.getValueFromIndexedPath(field, value, indexedProps.join("____"))
+                return subValue
+            } else if (Array.isArray(value)) {
+                if (!isNaN(parseInt(index))) {
+                    // on récupère l'élément à l'index voulu.
+                    // par construction c'est un obj...
+                    const subObject = value[parseInt(index)]
+                    const subValue = Field.getValueFromIndexedPath(field, subObject, indexedProps.join("____"))
+                    return subValue
+                } else {
+
+                    // c'est "juste" un tableau
+                    // par construction il ne peut pas y avoir sur subProps
+                    // on le renvoie telquel
+                    return value
+                }
+            } else {
+                // ni dans le cas d'un sous-objet, ni dans le cas d'une liste de sous objets, on renvoie la value
+                return value
+            }
+        } catch (e) {
+            //console.log("<<<<<EXCEPTION>>>>>>>>><")
+            return ""
+        }
+    }
 
     static getValueFromPath(obj: any, path: string): string {
         if (!path) return obj;

@@ -1,10 +1,10 @@
 import MetadataMenu from "main";
-import { FieldType } from "src/types/fieldTypes";
+import { FieldIcon, FieldType } from "src/types/fieldTypes";
 
 import { FieldManager, SettingLocation } from "../FieldManager";
 import Field from "../Field";
 import { TFile, Menu } from "obsidian";
-import { FieldOptions } from "src/components/NoteFields";
+import NoteFieldsComponent, { FieldOptions } from "src/components/NoteFields";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { postValues } from "src/commands/postValues";
 import { Note } from "src/note/note";
@@ -15,8 +15,11 @@ export default class ObjectField extends FieldManager {
         super(plugin, field, FieldType.Object)
     }
 
-    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
-
+    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, noteField: NoteFieldsComponent, index?: string): void {
+        const action = async () => await noteField.moveToObject(`${this.field.id}${index ? "[" + index + "]" : ""}`);
+        if (ObjectField.isFieldOptions(location)) {
+            location.addOption(FieldIcon[FieldType.Object], action, `Go to ${this.field.name}'s fields`);
+        }
     }
     validateOptions(): boolean {
         return true
@@ -32,10 +35,11 @@ export default class ObjectField extends FieldManager {
         return ""
     }
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
-        await postValues(this.plugin, [{ id: this.field.id, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
+
     }
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {
-        container.setText("")
+        const fields = this.plugin.fieldIndex.filesFields.get(file.path)
+        container.setText(`${fields?.filter(_f => _f.path === this.field.id).map(_f => _f.name)}`)
     }
 
 }
