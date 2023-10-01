@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { Menu, setIcon, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
-import ObjectModal from "src/modals/fields/ObjectModal";
+import RawObjectModal from "src/modals/fields/RawObjectModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
@@ -27,7 +27,7 @@ export default abstract class RawObjectField extends FieldManager {
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
         const note = new Note(this.plugin, file)
         await note.build()
-        const modal = new ObjectModal(this.plugin, file, this.field, note, indexedPath);
+        const modal = new RawObjectModal(this.plugin, file, this.field, note, indexedPath);
         modal.open()
     }
 
@@ -71,7 +71,7 @@ export default abstract class RawObjectField extends FieldManager {
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new ObjectModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment);
+        const fieldModal = new RawObjectModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

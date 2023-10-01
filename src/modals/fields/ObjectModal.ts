@@ -1,26 +1,18 @@
 import MetadataMenu from "main";
-import { TFile } from "obsidian";
+import { Modal, TFile, ButtonComponent, SuggestModal } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import Field from "src/fields/Field";
-import { cleanActions } from "src/utils/modals";
-import BaseModal from "../baseModal";
-import { EditorView, basicSetup } from "codemirror"
-import { lintGutter } from "@codemirror/lint";
-import { StateField, EditorState } from "@codemirror/state"
-import { FieldManager } from "src/types/fieldTypes";
-import { Note } from "src/note/note";
+import BooleanField from "src/fields/fieldManagers/BooleanField";
+import CycleField from "src/fields/fieldManagers/CycleField";
+import ObjectListField, { ObjectListItem } from "src/fields/fieldManagers/ObjectListField";
+import { ExistingField, Note } from "src/note/note";
+import { FieldManager, FieldType } from "src/types/fieldTypes";
 
-
-export default class InputModal extends BaseModal {
-
-    private editor: EditorView;
-    private positionContainer: HTMLDivElement;
-    private value: string
+export default class ObjectModal extends SuggestModal<ExistingField | Field> {
 
     constructor(
-        public plugin: MetadataMenu,
+        private plugin: MetadataMenu,
         private file: TFile,
-        private field: Field,
         private note: Note | undefined,
         private indexedPath?: string,
         private lineNumber: number = -1,
@@ -28,61 +20,51 @@ export default class InputModal extends BaseModal {
         private asList: boolean = false,
         private asComment: boolean = false
     ) {
-        super(plugin);
-        this.value = this.note ? this.note.getExistingFieldForIndexedPath(this.indexedPath)?.value || "" : ""
+        super(plugin.app);
     };
 
     onOpen() {
         super.onOpen()
-        this.containerEl.onkeydown = async (e) => {
-            if (e.key == "Enter") {
-                e.preventDefault()
-            }
-        }
-
-        this.buildPositionContainer();
-        this.buildInputEl(this.contentEl.createDiv({ cls: "field-container" }));
-        cleanActions(this.contentEl, ".footer-actions")
-        this.buildSaveBtn(this.contentEl.createDiv({ cls: "footer-actions" }));
         this.containerEl.addClass("metadata-menu")
+        this.containerEl.addClass("narrow")
     };
-    private buildPositionContainer() {
-        this.positionContainer = this.contentEl.createDiv({ cls: "field-container" })
-        this.positionContainer.textContent = "Position: "
+
+    getSuggestions(query: string = ""): Array<ExistingField | Field> {
+        const existingFields = this.note?.existingFields?.filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === this.indexedPath) || []
+        const { id, index } = Field.getIdAndIndex(this.indexedPath)
+        const missingFields = this.note?.fields.filter(_f => _f.path === id).filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
+        return [...existingFields, ...missingFields]
     }
-    private buildInputEl(container: HTMLDivElement): void {
-        const manager = new FieldManager[this.field.type](this.plugin, this.field)
 
-        const getPosition = (state: EditorState) => {
-            const range = state.selection.ranges.filter(range => range.empty).first()
-            const position = range?.from || 0
-            const line = state.doc.lineAt(range?.head || 0)
-            const col = (range?.head || 0) - line.from
-            this.positionContainer.textContent = `Line: ${line.number} | Col: ${col} | Position: ${position}`
+    renderSuggestion(item: ExistingField | Field, el: HTMLElement) {
+        if (item instanceof ExistingField) {
+            el.setText(`${item.field.name}: ` + item.value || "not found")
+        } else {
+            el.setText(`${item.name}: missing`)
         }
+    }
 
-        const positionChange = StateField.define<void>({
-            create: (state: EditorState) => getPosition(state),
-            update(value, tr) { getPosition(tr.state) }
-        })
 
-        const gutter = lintGutter()
-        this.editor = new EditorView({
-            doc: manager.dumpValue(manager.loadValue(this.value)),
-            extensions: [
-                basicSetup,
-                gutter,
-                positionChange,
-                manager.getExtraExtensions()
-            ],
-            parent: container,
-        });
-
-    };
-
-    public async save(): Promise<void> {
-        const newContent = this.editor.state.doc.toString().trim()
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: newContent } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
-        this.close();
+    async onChooseSuggestion(item: ExistingField | Field, evt: MouseEvent | KeyboardEvent) {
+        if (item instanceof ExistingField) {
+            //open field modal
+            const field = item.field
+            const fieldManager = new FieldManager[field.type](this.plugin, field)
+            switch (fieldManager.type) {
+                case FieldType.Boolean:
+                    (fieldManager as BooleanField).toggle(this.file)
+                    break;
+                case FieldType.Cycle:
+                    (fieldManager as CycleField).next(field.name, this.file)
+                    break;
+                default:
+                    fieldManager.createAndOpenFieldModal(this.file, field.name, this.note, item.indexedPath, undefined, undefined, undefined, undefined)
+                    break;
+            }
+        } else {
+            //insert field
+            const { id, index } = Field.getIdAndIndex(this.indexedPath)
+            console.log("insert field for ", this.note?.fields.find(_f => _f.id === id)?.name)
+        }
     }
 };

@@ -8,6 +8,7 @@ import NoteFieldsComponent, { FieldOptions } from "src/components/NoteFields";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { postValues } from "src/commands/postValues";
 import { Note } from "src/note/note";
+import ObjectModal from "src/modals/fields/ObjectModal";
 
 export default class ObjectField extends FieldManager {
 
@@ -56,7 +57,8 @@ export default class ObjectField extends FieldManager {
     }
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note,
         indexedPath?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
-
+        const fieldModal = new ObjectModal(this.plugin, file, note, indexedPath, lineNumber, after, asList, asComment)
+        fieldModal.open();
     }
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {
         const fields = this.plugin.fieldIndex.filesFields.get(file.path)

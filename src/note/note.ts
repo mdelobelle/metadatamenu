@@ -8,6 +8,7 @@ import { Line } from "./line";
 import { LineNode } from "./lineNode";
 import * as Lookup from "src/types/lookupTypes";
 import YAMLField from "src/fields/fieldManagers/YAMLField";
+import { ObjectListItem } from "src/fields/fieldManagers/ObjectListField";
 
 
 export class ExistingField {
@@ -148,6 +149,23 @@ export class Note {
 
     public getExistingFieldForIndexedPath(indexedPath?: string): ExistingField | undefined {
         return this.existingFields.find(eF => eF.indexedPath === indexedPath)
+    }
+
+    public getExistingChildrenForIndexedPath(indexedPath?: string): ObjectListItem[] {
+        const parentField = this.getExistingFieldForIndexedPath(indexedPath)
+        if (!indexedPath || !parentField || !Array.isArray(parentField.value)) return []
+        const items: ObjectListItem[] = []
+        parentField.value.forEach((value, index) => {
+            //on crée les ObjectListItem
+            const upperPath = `${indexedPath}[${index}]`
+            const eFields = this.existingFields.filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === upperPath)
+            items.push({
+                fields: eFields,
+                indexInList: index,
+                indexedPath: upperPath
+            })
+        })
+        return items
     }
 
     public getNodeForIndexedPath(indexedPath: string) {

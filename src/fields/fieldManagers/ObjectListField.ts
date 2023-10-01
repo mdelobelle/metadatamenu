@@ -7,7 +7,15 @@ import { TFile, Menu, DropdownComponent } from "obsidian";
 import NoteFieldsComponent, { FieldOptions } from "src/components/NoteFields";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { postValues } from "src/commands/postValues";
-import { Note } from "src/note/note";
+import { ExistingField, Note } from "src/note/note";
+import ObjectListModal from "src/modals/fields/ObjectListModal";
+
+
+export interface ObjectListItem {
+    fields: ExistingField[],
+    indexInList: number,
+    indexedPath: string | undefined
+}
 
 export default class ObjectListField extends FieldManager {
     /*
@@ -73,6 +81,8 @@ export default class ObjectListField extends FieldManager {
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note, indexedPath?: string,
         lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
         //TODO: create add and delete item options
+        const fieldModal = new ObjectListModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment)
+        fieldModal.open();
     }
 
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {
