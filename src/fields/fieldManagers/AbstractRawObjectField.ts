@@ -35,14 +35,7 @@ export default abstract class RawObjectField extends FieldManager {
         const name = this.field.name
         const iconName = FieldIcon[this.type];
         const action = async () => this.buildAndOpenModal(file, indexedPath);
-        if (RawObjectField.isMenu(location)) {
-            location.addItem((item) => {
-                item.setTitle(`Update <${name}>`);
-                item.setIcon(iconName);
-                item.onClick(action);
-                item.setSection("metadata-menu.fields");
-            })
-        } else if (RawObjectField.isSuggest(location)) {
+        if (RawObjectField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,

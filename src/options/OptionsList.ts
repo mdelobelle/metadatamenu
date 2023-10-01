@@ -34,7 +34,7 @@ function isSuggest(location: Menu | "InsertFieldCommand" | FieldCommandSuggestMo
 export default class OptionsList {
 
 	// adds options to context menu or to a dropdown modal trigger with "Field: Options" command in command pallette
-	path: string;
+	// TODO: Remove menu options (to have everything async and manage all fields with Select modals
 	attributes: Map<{ name: string, id: string | undefined }, any>;
 	fieldsFromIndex: Record<string, Field> = {};
 
@@ -42,23 +42,31 @@ export default class OptionsList {
 		private plugin: MetadataMenu,
 		private file: TFile,
 		private location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal | "ManageAtCursorCommand",
-		private includedFields?: string[]
+		private includedFields?: string[],
+		private path: string = ""
 	) {
 		this.file = file;
 		this.location = location;
 		this.attributes = new Map();
 		this.includedFields = includedFields ? [this.plugin.settings.fileClassAlias, ...includedFields] : [this.plugin.settings.fileClassAlias];
-		this.build()
+		//this.build()
 	};
 
-	public build(): void {
+	public async build(): Promise<void> {
 		const excludedFolders = this.plugin.settings.fileClassExcludedFolders
 		if (!excludedFolders.some(path => this.file.path.includes(path))) {
 			this.getFieldsFromIndex();
-			this.getFieldsValues();
+			await this.getFieldsValues();
 		}
 	}
 
+	private async getFieldsValues(): Promise<void> {
+		const note = new Note(this.plugin, this.file)
+		await note.build()
+		console.log(note.existingFields)
+	}
+
+	/*
 	private getFieldsValues(): void {
 		//get synchronously values
 		const dvApi = this.plugin.app.plugins.plugins["dataview"]?.api
@@ -80,7 +88,8 @@ export default class OptionsList {
 			}
 		}
 	}
-
+	*/
+	/*
 	private addAttribute(name: string, id: string | undefined, value: any): void {
 		const includedFields = this.includedFields!.filter(f => f !== this.plugin.settings.fileClassAlias)
 		if (includedFields.length > 0) {
@@ -95,6 +104,7 @@ export default class OptionsList {
 			this.attributes.set({ name: name, id: id }, value)
 		}
 	}
+	*/
 
 	private getFieldsFromIndex(): void {
 		const index = this.plugin.fieldIndex
@@ -128,10 +138,41 @@ export default class OptionsList {
 		}
 	}
 
-	public createExtraOptionList(openAfterCreate: boolean = true): void {
+	public createContextMenuOptionsList() {
+		const location = this.location
+		if (isMenu(location)) {
+			location.addSeparator();
+			if (!this.plugin.settings.fileClassExcludedFolders.some(path => this.file.path.includes(path))) {
+				this.openNoteFieldModalOption();
+				this.buildFieldOptions();
+				this.addSectionSelectModalOption();
+				this.addFieldAtCurrentPositionOption();
+				this.addFieldAtTheEndOfFrontmatterOption();
+				this.addAllMissingFieldsAtSection(); // we don't know if there are, but this way, no need for synchronous values fetching
+				/*
+				if (dvApi) {
+					const currentFieldsNames = genuineKeys(dvApi.page(this.file.path))
+					if (![...this.plugin.fieldIndex.filesFields.get(this.file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
+						
+					}
+				}
+				*/
+			}
+			const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || []
+			fileClasses.forEach(fileClass => {
+				const fileClassOptionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), location, this.file)
+				fileClassOptionsList.createExtraOptionList(false);
+			})
+			this.addFileClassToFileOption();
+			this.addNewFileClassOption();
+		}
+	}
+
+	public async createExtraOptionList(openAfterCreate: boolean = true): Promise<void> {
+		await this.build()
 		const dvApi = this.plugin.app.plugins.plugins.dataview?.api
 		const location = this.location
-		if (isMenu(location)) { location.addSeparator(); };
+
 		if (isInsertFieldCommand(location)) {
 			this.addFieldAtCurrentPositionOption();
 		} else if (isSuggest(location)) {
@@ -151,8 +192,8 @@ export default class OptionsList {
 			const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || []
 			fileClasses.forEach(fileClass => {
 				const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.plugin.app)
-				const optionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), fieldCommandSuggestModal, this.file);
-				optionsList.createExtraOptionList(false);
+				const fielClassOptionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), fieldCommandSuggestModal, this.file);
+				fielClassOptionsList.createExtraOptionList(false);
 				location.options.push({
 					id: "manage_fileClass_attributes",
 					actionLabel: `<span>Manage <b>${fileClass.name}</b> fileClass fields</span>`,
@@ -163,27 +204,6 @@ export default class OptionsList {
 			this.addFileClassToFileOption();
 			this.addNewFileClassOption();
 			if (openAfterCreate) location.open();
-		} else if (isMenu(location)) {
-			if (!this.plugin.settings.fileClassExcludedFolders.some(path => this.file.path.includes(path))) {
-				this.openNoteFieldModalOption();
-				this.buildFieldOptions();
-				this.addSectionSelectModalOption();
-				this.addFieldAtCurrentPositionOption();
-				this.addFieldAtTheEndOfFrontmatterOption();
-				if (dvApi) {
-					const currentFieldsNames = genuineKeys(dvApi.page(this.file.path))
-					if (![...this.plugin.fieldIndex.filesFields.get(this.file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
-						this.addAllMissingFieldsAtSection();
-					}
-				}
-			}
-			const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || []
-			fileClasses.forEach(fileClass => {
-				const fileClassOptionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), location, this.file)
-				fileClassOptionsList.createExtraOptionList(false);
-			})
-			this.addFileClassToFileOption();
-			this.addNewFileClassOption();
 		}
 	}
 
@@ -244,7 +264,22 @@ export default class OptionsList {
 
 	}
 
+
 	private buildFieldOptions(): void {
+		if (isMenu(this.location)) {
+			this.location.addItem((item) => {
+				item.setIcon("pencil");
+				item.setTitle("Manage fields");
+				item.onClick(async (evt: MouseEvent) => {
+					const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.plugin.app)
+					const optionsList = new OptionsList(this.plugin, this.file, fieldCommandSuggestModal);
+					await optionsList.createExtraOptionList();
+				});
+				item.setSection("metadata-menu");
+			});
+		}
+		//FIXME: add fileClass edition menu-option
+		/*
 		this.attributes.forEach((value, key, map) => {
 			const field = key.id ? this.fieldsFromIndex[key.id] : undefined
 			//FIXME: what is this key.id? is it still working with indexedPath?
@@ -266,6 +301,7 @@ export default class OptionsList {
 			}
 
 		});
+		*/
 	}
 
 	private addSectionSelectModalOption(): void {

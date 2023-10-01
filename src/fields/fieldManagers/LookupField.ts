@@ -36,14 +36,7 @@ export default class LookupField extends FieldManager {
             const icon = status === Status.changed ? "refresh-ccw" : "file-check"
             //FIXME: updateFormula and updateLookups have to adapted to indexedPath?
             const action = () => { updateLookups(this.plugin, "single_command", { file: file, fieldName: this.field.name }) }
-            if (LookupField.isMenu(location) && status === Status.changed) {
-                location.addItem((item) => {
-                    item.setTitle(`Update <${name}>`);
-                    item.setIcon(icon);
-                    item.onClick(action);
-                    item.setSection("metadata-menu.fields");
-                })
-            } else if (LookupField.isSuggest(location) && status === Status.changed) {
+            if (LookupField.isSuggest(location) && status === Status.changed) {
                 location.options.push({
                     id: `update_${name}`,
                     actionLabel: `<span>Update <b>${name}</b></span>`,

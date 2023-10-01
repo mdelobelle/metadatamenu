@@ -28,14 +28,7 @@ export default class BooleanField extends FieldManager {
         const iconName = FieldIcon[FieldType.Boolean]
         const action = async () => await this.toggle(file, indexedPath)
 
-        if (BooleanField.isMenu(location)) {
-            location.addItem((item) => {
-                item.setTitle(`<Toggle ${name}>`);
-                item.setIcon(iconName);
-                item.onClick(action);
-                item.setSection("metadata-menu.fields");
-            })
-        } else if (BooleanField.isSuggest(location)) {
+        if (BooleanField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `Toggle <span><b>${name}</b></span>`,

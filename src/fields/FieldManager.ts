@@ -81,10 +81,6 @@ export abstract class FieldManager {
         }
     }
 
-    public static isMenu(location: Menu | "InsertFieldCommand" | FCSM | FieldOptions): location is Menu {
-        return (location as Menu).addItem !== undefined;
-    };
-
     public static isSuggest(location: Menu | "InsertFieldCommand" | FCSM | FieldOptions): location is FCSM {
         return (location as FCSM).getItems !== undefined;
     };

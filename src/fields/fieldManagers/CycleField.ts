@@ -88,14 +88,7 @@ export default class CycleField extends AbstractListBasedField {
         const name = this.field.name
         const iconName = FieldIcon[FieldType.Cycle];
         const action = async () => this.next(name, file, indexedPath);
-        if (CycleField.isMenu(location)) {
-            location.addItem((item) => {
-                item.setTitle(`Cycle ${name}`);
-                item.setIcon(iconName);
-                item.onClick(action);
-                item.setSection("metadata-menu.fields");
-            });
-        } else if (CycleField.isSuggest(location)) {
+        if (CycleField.isSuggest(location)) {
             location.options.push({
                 id: `cycle_${name}`,
                 actionLabel: `<span>Cycle <b>${name}</b></span>`,

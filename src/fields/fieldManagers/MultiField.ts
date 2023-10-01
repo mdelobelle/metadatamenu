@@ -27,14 +27,7 @@ export default class MultiField extends AbstractListBasedField {
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         const name = this.field.name
         const action = async () => await this.buildAndOpenModal(file, indexedPath)
-        if (MultiField.isMenu(location)) {
-            location.addItem((item) => {
-                item.setTitle(`Update <${name}>`);
-                item.setIcon(FieldIcon[FieldType.Multi]);
-                item.onClick(action);
-                item.setSection("metadata-menu.fields");
-            });
-        } else if (MultiField.isSuggest(location)) {
+        if (MultiField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,

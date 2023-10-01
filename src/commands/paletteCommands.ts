@@ -33,8 +33,8 @@ function addFileClassAttributeOptions(plugin: MetadataMenu) {
             }
             if (inFileClass) {
                 const fieldCommandSuggestModal = new FieldCommandSuggestModal(plugin.app)
-                const optionsList = new FileClassOptionsList(plugin, view!.file, fieldCommandSuggestModal);
-                optionsList.createExtraOptionList();
+                const fileClassOptionsList = new FileClassOptionsList(plugin, view!.file, fieldCommandSuggestModal);
+                fileClassOptionsList.createExtraOptionList();
             }
         },
     });
@@ -81,7 +81,7 @@ function addInsertFieldAtPositionCommand(plugin: MetadataMenu) {
             }
             if (inFile) {
                 const optionsList = new OptionsList(plugin, view!.file, "InsertFieldCommand");
-                optionsList.createExtraOptionList();
+                (async () => await optionsList.createExtraOptionList())()
             }
         }
     })
@@ -102,7 +102,8 @@ function addFieldOptionsCommand(plugin: MetadataMenu) {
             if (inFile) {
                 const fieldCommandSuggestModal = new FieldCommandSuggestModal(plugin.app)
                 const optionsList = new OptionsList(plugin, view!.file, fieldCommandSuggestModal);
-                optionsList.createExtraOptionList();
+                (async () => await optionsList.createExtraOptionList())()
+
             }
         },
     });

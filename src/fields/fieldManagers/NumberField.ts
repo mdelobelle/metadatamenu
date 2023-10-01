@@ -113,29 +113,7 @@ export default class NumberField extends FieldManager {
         const action = async () => await this.buildAndOpenModal(file, indexedPath)
         const increase = async () => await this.applyStep(file, "increase", indexedPath)
         const decrease = async () => await this.applyStep(file, "decrease", indexedPath)
-        if (NumberField.isMenu(location)) {
-            location.addItem((item) => {
-                item.setTitle(`Update <${name}>`);
-                item.setIcon(FieldIcon[FieldType.Number]);
-                item.onClick(action);
-                item.setSection("metadata-menu.fields");
-            })
-
-            if (fStep) {
-                location.addItem((item) => {
-                    item.setIcon("minus-square");
-                    item.setTitle(`<${name}> -${fStep}`);
-                    item.onClick(decrease);
-                    item.setSection("metadata-menu.fields");
-                })
-                location.addItem((item) => {
-                    item.setIcon("plus-square");
-                    item.setTitle(`<${name}> +${fStep}`);
-                    item.onClick(increase);
-                    item.setSection("metadata-menu.fields");
-                })
-            }
-        } else if (NumberField.isSuggest(location)) {
+        if (NumberField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,

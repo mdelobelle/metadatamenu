@@ -36,14 +36,7 @@ export default class ObjectListField extends FieldManager {
             //TODO: leads to a modal where there's a list of objectList items 
             const name = this.field.name
             const action = () => { }
-            if (ObjectListField.isMenu(location)) {
-                location.addItem((item) => {
-                    item.setTitle(`Update <${name}>`);
-                    item.setIcon(FieldIcon[FieldType.ObjectList]);
-                    item.onClick(action);
-                    item.setSection("metadata-menu.fields");
-                });
-            } else if (ObjectListField.isSuggest(location)) {
+            if (ObjectListField.isSuggest(location)) {
                 location.options.push({
                     id: `update_${name}`,
                     actionLabel: `<span>Update <b>${name}</b></span>`,

@@ -16,7 +16,7 @@ export default class ContextMenu extends Component {
 
 	onload(): void {
 		this.plugin.registerEvent(
-			this.plugin.app.workspace.on('file-menu', (menu, abstractFile, source) => {
+			this.plugin.app.workspace.on('file-menu', async (menu, abstractFile, source) => {
 				const file = this.plugin.app.vault.getAbstractFileByPath(abstractFile.path);
 				this.buildOptions(file, menu);
 			})
@@ -61,9 +61,9 @@ export default class ContextMenu extends Component {
 					menu.setSectionSubmenu(`metadata-menu-fileclass.${fileClassName}.fileclass-fields`, { title: "Manage fields", icon: "wrench" });
 				} else {
 					//@ts-ignore
-					menu.setSectionSubmenu("metadata-menu.current_field", { title: "Current field", icon: "pencil" })
+					//menu.setSectionSubmenu("metadata-menu.current_field", { title: "Current field", icon: "pencil" })
 					//@ts-ignore
-					menu.setSectionSubmenu("metadata-menu.fields", { title: "Manage fields", icon: "pencil" })
+					//menu.setSectionSubmenu("metadata-menu.fields", { title: "Manage fields", icon: "pencil" })
 					const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(file.path) || [];
 					fileClasses.forEach(fileClass => {
 						//@ts-ignore
@@ -78,16 +78,16 @@ export default class ContextMenu extends Component {
 					fileClassOptionsList.createExtraOptionList();
 				} else {
 					const optionsList = new OptionsList(this.plugin, file, menu, includedFields);
-					optionsList.createExtraOptionList();
+					optionsList.createContextMenuOptionsList();
 				};
 			} else {
 				menu.addItem((item) => {
 					item.setIcon("list")
 					item.setTitle("Field Options")
-					item.onClick(() => {
+					item.onClick(async () => {
 						const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.plugin.app)
 						const optionsList = new OptionsList(this.plugin, file, fieldCommandSuggestModal);
-						optionsList.createExtraOptionList();
+						await optionsList.createExtraOptionList();
 					})
 				})
 			}

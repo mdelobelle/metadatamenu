@@ -81,14 +81,7 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         const name = this.field.name
         const action = async () => await this.buildAndOpenModal(file, indexedPath)
-        if (AbstractFileBasedField.isMenu(location)) {
-            location.addItem((item) => {
-                item.setTitle(`Update <${this.field.name}>`);
-                item.setIcon(FieldIcon[FieldType.File]);
-                item.onClick(action);
-                item.setSection("metadata-menu.fields");
-            });
-        } else if (AbstractFileBasedField.isSuggest(location)) {
+        if (AbstractFileBasedField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,

@@ -40,22 +40,7 @@ export default class DateField extends FieldManager {
         const shiftDateAction = () => this.shiftDate(dvApi, p, file);
         const fieldManager: DateField = new FM[this.field.type](this.plugin, this.field);
         const [currentShift]: [string | undefined, Field | undefined, string | undefined] = fieldManager.shiftDuration(file);
-        if (DateField.isMenu(location)) {
-            location.addItem((item) => {
-                item.setTitle(`Update <${name}>`);
-                item.setIcon(dateIconName);
-                item.onClick(dateModalAction);
-                item.setSection("metadata-menu.fields");
-            })
-            if (this.field.options.dateShiftInterval || this.field.options.nextShiftIntervalField && dvApi) {
-                location.addItem((item) => {
-                    item.setTitle(`Shift <${name}> ${currentShift} ahead`);
-                    item.setIcon("skip-forward");
-                    item.onClick(shiftDateAction);
-                    item.setSection("metadata-menu.fields");
-                })
-            }
-        } else if (DateField.isSuggest(location)) {
+        if (DateField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,

@@ -25,14 +25,7 @@ export default class ObjectField extends FieldManager {
         } else {
             const name = this.field.name
             const action = () => { }
-            if (ObjectField.isMenu(location)) {
-                location.addItem((item) => {
-                    item.setTitle(`Update <${name}>`);
-                    item.setIcon(FieldIcon[FieldType.Object]);
-                    item.onClick(action);
-                    item.setSection("metadata-menu.fields");
-                });
-            } else if (ObjectField.isSuggest(location)) {
+            if (ObjectField.isSuggest(location)) {
                 location.options.push({
                     id: `update_${name}`,
                     actionLabel: `<span>Update <b>${name}</b></span>`,

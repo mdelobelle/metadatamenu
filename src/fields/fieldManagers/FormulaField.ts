@@ -26,14 +26,8 @@ export default class FormulaField extends FieldManager {
         status = f.fileFormulaFieldsStatus.get(id) || Status.changed
         const icon = status === Status.changed ? "refresh-ccw" : "file-check"
         const action = () => { updateFormulas(this.plugin, { file: file, fieldName: this.field.name }) };
-        if (FormulaField.isMenu(location) && status === Status.changed) {
-            location.addItem((item) => {
-                item.setTitle(`Update <${name}>`);
-                item.setIcon(icon);
-                item.onClick(action);
-                item.setSection("metadata-menu.fields");
-            })
-        } else if (FormulaField.isSuggest(location) && status === Status.changed) {
+        const name = this.field.name
+        if (FormulaField.isSuggest(location) && status === Status.changed) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,

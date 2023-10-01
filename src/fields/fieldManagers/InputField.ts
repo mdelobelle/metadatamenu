@@ -30,14 +30,7 @@ export default class InputField extends FieldManager {
         const name = this.field.name
         const iconName = FieldIcon[FieldType.Input];
         const action = async () => await this.buildAndOpenModal(file, indexedPath);
-        if (InputField.isMenu(location)) {
-            location.addItem((item) => {
-                item.setTitle(`Update <${name}>`);
-                item.setIcon(iconName);
-                item.onClick(action);
-                item.setSection("metadata-menu.fields");
-            })
-        } else if (InputField.isSuggest(location)) {
+        if (InputField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
