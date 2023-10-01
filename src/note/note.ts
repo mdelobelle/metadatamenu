@@ -126,6 +126,7 @@ export class Note {
             const position = !!frontMatterEnd?.line && i <= frontMatterEnd?.line ? "yaml" : "inline"
             new Line(this.plugin, this, position, rawLine, i)
         })
+        //console.log(this)
     }
 
     public getNodeForFieldName(fieldName: string): LineNode | undefined {
@@ -187,6 +188,8 @@ export class Note {
     }
 
     private createLine = (value: string, position: "yaml" | "inline", lineNumber: number, field?: Field) => {
+        //will create a line at lineNumber
+        //the current line at LineNumber and following lines will be shifted one line below
         const newLine = new Line(this.plugin, this, position, "", lineNumber)
         const newNode = new LineNode(this.plugin, newLine)
         if (field) newNode.createFieldNodeContent(field, value, position);
@@ -194,8 +197,9 @@ export class Note {
     }
     //TODO: remove field, in case of objectList items, it will be funny
 
-    private insertField(id: string, payload: FieldPayload, lineNumber?: number): void {
+    private insertField(id: string, payload: FieldPayload, indexedPath?: string, lineNumber?: number): void {
         //TODO: manage insertion of pbjectlist item
+
         //TODO: changer postValues il faut utiliser le indexedPath à la place de l'id
         const frontMatterEnd = getFrontmatterPosition(this.plugin, this.file)?.end?.line
         if (lineNumber === -1 && !frontMatterEnd) {
@@ -219,30 +223,53 @@ export class Note {
                 newLine.renderLine()
             }
         } else {
-            const field = this.getField(id)
-            if (!field) return
-            let insertLineNumber =
-                (lineNumber ? Math.max(lineNumber, 0) : undefined) ||
-                frontMatterEnd ||
-                this.lines.last()?.number ||
-                0
-
-            const position = frontMatterEnd && (insertLineNumber <= frontMatterEnd) ? "yaml" : "inline"
-
-            //look for ancestors and create their lines
-            const ancestors = field.getAncestors()
-            ancestors.forEach((ancestor, level) => {
-                const node = this.getNodeForFieldId(ancestor.id)
-                if (node) {
-                    insertLineNumber = node.line.number! + 1
+            if (indexedPath) {
+                const upperPath = Field.upperPath(indexedPath)
+                const { id: _id, index } = Field.getIdAndIndex(upperPath.split("___").last())
+                if (index) {
+                    const i = parseInt(index)
+                    //we are in an Item of an ObjectList
+                    //if the parent field doesn't exist, lets quit
+                    const parentFieldIndexedPath = upperPath.replace(/\[\w+\]$/, '')
+                    const parentNode = this.getNodeForIndexedPath(parentFieldIndexedPath)
+                    const field = this.getField(_id)
+                    if (!parentNode) return
+                    const lastItemLineNumber = parentNode.line.objectListLines[i].last()?.number
+                    if (lastItemLineNumber) {
+                        this.createLine(payload.value, "yaml", lastItemLineNumber, field)
+                        console.log("note after line: ", this)
+                    } else {
+                        // get the last item of objectListLines or under parentNote.line
+                    }
                 } else {
-                    const ancestorField = this.fields.find(field => field.id === ancestor.id)!
-                    this.createLine("", position, insertLineNumber, ancestorField)
-                    insertLineNumber += 1
+                    //not in an ObjectList paste the code below?
                 }
-            })
-            //create this field's line
-            this.createLine(payload.value, position, insertLineNumber, field)
+            } else {
+                const field = this.getField(id)
+                if (!field) return
+                let insertLineNumber =
+                    (lineNumber ? Math.max(lineNumber, 0) : undefined) ||
+                    frontMatterEnd ||
+                    this.lines.last()?.number ||
+                    0
+
+                const position = frontMatterEnd && (insertLineNumber <= frontMatterEnd) ? "yaml" : "inline"
+
+                //look for ancestors and create their lines
+                //FIXME this is useless, we shouldn't accept to create a chiled field if parentfield is not created
+                const ancestors = field.getAncestors()
+                ancestors.forEach((ancestor, level) => {
+                    const node = this.getNodeForFieldId(ancestor.id)
+                    if (node) {
+                        insertLineNumber = node.line.number! + 1
+                    } else {
+                        const ancestorField = this.fields.find(field => field.id === ancestor.id)!
+                        this.createLine("", position, insertLineNumber, ancestorField)
+                        insertLineNumber += 1
+                    }
+                })
+                this.createLine(payload.value, position, insertLineNumber, field)
+            }
         }
     }
 
@@ -256,7 +283,7 @@ export class Note {
                 node.line.renderLine()
             } else {
                 //insert
-                this.insertField(field.id, field.payload, lineNumber)
+                this.insertField(field.id, field.payload, field.id, lineNumber)
             }
         })
         this.plugin.fileTaskManager.pushTask(async () => { await this.plugin.app.vault.modify(this.file, this.renderNote()) })

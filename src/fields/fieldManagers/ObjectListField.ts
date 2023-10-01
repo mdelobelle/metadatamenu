@@ -30,7 +30,8 @@ export default class ObjectListField extends FieldManager {
         if (noteField) {
             const action = async () => await noteField.moveToObject(`${indexedPath}`);
             if (ObjectListField.isFieldOptions(location)) {
-                location.addOption(FieldIcon[FieldType.Object], action, `Go to ${this.field.name}'s fields`);
+                //location.addOption(FieldIcon[FieldType.ObjectList], action, `Go to ${this.field.name}'s fields`);
+                location.addOption(FieldIcon[FieldType.ObjectList], action, `Go to ${indexedPath}`);
             }
         } else {
             //TODO: leads to a modal where there's a list of objectList items 

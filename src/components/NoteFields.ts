@@ -93,7 +93,7 @@ export class FieldsModal extends Modal {
 
     build(): void {
         this.contentEl.replaceChildren();
-        const { id, index } = Field.getIdAndIndex(this.indexedPath)
+        const { id, index } = Field.getIdAndIndex(this.indexedPath?.split("____").last())
         this.existingFields = this.note.existingFields.filter(_f => {
             if (!this.indexedPath) {
                 //this is for root fields
@@ -108,32 +108,26 @@ export class FieldsModal extends Modal {
             }
         })
         //on cherche les fields de la note qui ont comme path le indexedPath sans l'index
+        //FIXME je pense que _f.path === id c'est faux
         this.missingFields = this.note.fields.filter(_f => _f.path === id && !this.existingFields.map(eF => eF.field.id).includes(_f.id))
-        //console.log("undexedPath: ", this.indexedPath)
+
         if (this.indexedPath) {
             const eF = this.note.existingFields.find(_f => _f.indexedPath === this.indexedPath)
-            //console.log("ef: ", eF)
             if (eF?.isRoot()) {
                 this.buildNavigation("");
             } else {
                 const upperIndexedIds = eF?.indexedPath?.split("____") || []
                 let previousIndexedPath: string | undefined
-                //console.log("index: ", index)
                 if (index !== undefined) {
                     //this is a list item, go back to the list
                     upperIndexedIds.pop();
                     previousIndexedPath = [...upperIndexedIds, id].join("____")
-
                 } else {
                     upperIndexedIds.pop()
                     previousIndexedPath = upperIndexedIds?.join("____")
-
                 }
-                //console.log("previousPath: ", previousIndexedPath)
                 this.buildNavigation(previousIndexedPath || "");
-
             }
-
             this.contentEl.createEl('hr', { cls: "navigation-separator" })
         } else {
             this.contentEl.createEl('hr')
@@ -231,7 +225,7 @@ export class FieldsModal extends Modal {
                     ).open();
                 } else {
                     //TODO manage field insertion in case of grandchild of object
-                    //console.log("A faire")
+                    console.log("A faire")
                     FieldManager.openFieldModal(
                         this.plugin,
                         this.file,
@@ -397,9 +391,9 @@ export class FieldsModal extends Modal {
 
     buildFieldsContainer() {
         const fieldsContainer = this.contentEl.createDiv({ cls: "note-fields-container" });
-        const { id, index } = Field.getIdAndIndex(this.indexedPath)
-        if (this.indexedPath && this.note.fields.find(_f => _f.id === this.indexedPath)?.type === FieldType.FieldType.ObjectList && index === undefined) {
-            const field = this.note.fields.find(_f => _f.id === this.indexedPath)!
+        const { id, index } = Field.getIdAndIndex(this.indexedPath?.split("____").last())
+        if (this.indexedPath && this.note.fields.find(_f => _f.id === id)?.type === FieldType.FieldType.ObjectList && index === undefined) {
+            const field = this.note.fields.find(_f => _f.id === id)!
             const items = this.note.existingFields.find(eF => eF.indexedPath === this.indexedPath)?.value
             items.forEach((item: any, index: number) => this.buildObjectListItemContainer(fieldsContainer, field, item, index, `${this.indexedPath}[${index}]`))
         } else {

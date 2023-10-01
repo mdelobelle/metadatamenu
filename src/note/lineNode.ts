@@ -82,11 +82,8 @@ export class LineNode {
 
                                 if (parentField?.id === field.path.split("____").last()) {
                                     this.field = field
-                                    this.indexedPath = this.field.getIndexedPath(this)
                                     //la ligne "père" a un field dont l'id est bien l'id du parent_field de ce field -> on continue
-                                    this.field = field
                                     // on crée l'indexedPath de ce champ pour pouvoir chercher sa valeur dans le "frontmatter"
-
                                     if (this.field && parentField?.type === FieldType.ObjectList) {
                                         // dans le cas d'un père de type "objectlist" on va chercher la position de ce field dans la liste du père
                                         const objectListLines = parentLine!.objectListLines
@@ -104,9 +101,11 @@ export class LineNode {
                                         // on crée un indexedID en rajoutant le rang de l'object item dans la liste d'objectList auquel il appartient
                                         // ça servira à créer l'indexedPath dans la fonction Field.getValueFromIndexedPath
                                         const index = objectListLines.length - 1
-                                        const upperPath = Field.upperPath(this.indexedPath).replace(/(.*)\[(\w+)\]/, "$1")
                                         this.indexedId = `${this.field.id}`
-                                        this.indexedPath = `${upperPath}[${index}]____${this.field.id}`
+                                        this.indexedPath = `${parentNode?.indexedPath}[${index}]____${this.field.id}`
+                                    } else {
+                                        this.indexedId = `${this.field.id}`
+                                        this.indexedPath = `${parentNode?.indexedPath}____${this.field.id}`
                                     }
                                     // on récupère la valeur
                                     this.value = Field.getValueFromIndexedPath(this.field, this.line.note.cache!.frontmatter!, this.indexedPath)

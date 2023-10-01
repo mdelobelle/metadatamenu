@@ -6,6 +6,7 @@ import BooleanField from "src/fields/fieldManagers/BooleanField";
 import CycleField from "src/fields/fieldManagers/CycleField";
 import ObjectListField, { ObjectListItem } from "src/fields/fieldManagers/ObjectListField";
 import { ExistingField, Note } from "src/note/note";
+import { FieldManager as F } from "src/fields/FieldManager";
 import { FieldManager, FieldType } from "src/types/fieldTypes";
 
 export default class ObjectModal extends SuggestModal<ExistingField | Field> {
@@ -31,7 +32,7 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
 
     getSuggestions(query: string = ""): Array<ExistingField | Field> {
         const existingFields = this.note?.existingFields?.filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === this.indexedPath) || []
-        const { id, index } = Field.getIdAndIndex(this.indexedPath)
+        const { id, index } = Field.getIdAndIndex(this.indexedPath?.split("____").last())
         const missingFields = this.note?.fields.filter(_f => _f.path === id).filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
         return [...existingFields, ...missingFields]
     }
@@ -64,7 +65,8 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
         } else {
             //insert field
             const { id, index } = Field.getIdAndIndex(this.indexedPath)
-            console.log("insert field for ", this.note?.fields.find(_f => _f.id === id)?.name)
+            const fieldManager = new FieldManager[item.type](this.plugin, item) as F
+            fieldManager.createAndOpenFieldModal(this.file, item.name, this.note, `${this.indexedPath}____${item.id}`, this.lineNumber, this.after, this.asList, this.asComment)
         }
     }
 };
