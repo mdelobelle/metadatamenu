@@ -18,6 +18,7 @@ export abstract class FieldManager {
     abstract addFieldOption(file: TFile, location: Menu | FCSM | FieldOptions, indexedPath?: string, ...args: any): void;
     abstract validateOptions(): boolean;
     abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
+    //TODO: limit createDvField to root fields. if it is called on a nested field: open the upper object field
     abstract createDvField(
         dv: any,
         p: any,
@@ -75,6 +76,7 @@ export abstract class FieldManager {
     public static async replaceValues(plugin: MetadataMenu, path: string, id: string, value: string): Promise<void> {
         const file = plugin.app.vault.getAbstractFileByPath(path)
         if (file instanceof TFile && file.extension == "md") {
+            //TODO: changer postValues il faut utiliser le indexedPath
             await postValues(plugin, [{ id: id, payload: { value: value } }], file)
         }
     }

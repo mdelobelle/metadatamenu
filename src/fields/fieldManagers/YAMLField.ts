@@ -2,13 +2,13 @@ import { LanguageSupport, StreamLanguage } from "@codemirror/language";
 import MetadataMenu from "main";
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
-import ObjectField from "./AbstractObjectField";
+import RawObjectField from "./AbstractRawObjectField";
 import * as yamlMode from '@codemirror/legacy-modes/mode/yaml';
 import { Diagnostic, linter } from "@codemirror/lint";
 import { stringify, parse } from "yaml";
 import { TFile } from "obsidian";
 
-export default class YAMLField extends ObjectField {
+export default class YAMLField extends RawObjectField {
     constructor(plugin: MetadataMenu, field: Field) {
         super(plugin, field, FieldType.YAML)
     }

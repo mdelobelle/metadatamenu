@@ -87,7 +87,7 @@ export class FieldsModal extends Modal {
     public async buildNote(): Promise<void> {
         this.note = new Note(this.plugin, this.file)
         await this.note.build()
-        console.log(this.note)
+        //console.log(this.note)
     }
 
 
@@ -109,16 +109,16 @@ export class FieldsModal extends Modal {
         })
         //on cherche les fields de la note qui ont comme path le indexedPath sans l'index
         this.missingFields = this.note.fields.filter(_f => _f.path === id && !this.existingFields.map(eF => eF.field.id).includes(_f.id))
-        console.log("undexedPath: ", this.indexedPath)
+        //console.log("undexedPath: ", this.indexedPath)
         if (this.indexedPath) {
             const eF = this.note.existingFields.find(_f => _f.indexedPath === this.indexedPath)
-            console.log("ef: ", eF)
+            //console.log("ef: ", eF)
             if (eF?.isRoot()) {
                 this.buildNavigation("");
             } else {
                 const upperIndexedIds = eF?.indexedPath?.split("____") || []
                 let previousIndexedPath: string | undefined
-                console.log("index: ", index)
+                //console.log("index: ", index)
                 if (index !== undefined) {
                     //this is a list item, go back to the list
                     upperIndexedIds.pop();
@@ -129,7 +129,7 @@ export class FieldsModal extends Modal {
                     previousIndexedPath = upperIndexedIds?.join("____")
 
                 }
-                console.log("previousPath: ", previousIndexedPath)
+                //console.log("previousPath: ", previousIndexedPath)
                 this.buildNavigation(previousIndexedPath || "");
 
             }
@@ -231,7 +231,7 @@ export class FieldsModal extends Modal {
                     ).open();
                 } else {
                     //TODO manage field insertion in case of grandchild of object
-                    console.log("A faire")
+                    //console.log("A faire")
                     FieldManager.openFieldModal(
                         this.plugin,
                         this.file,

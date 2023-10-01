@@ -104,11 +104,10 @@ export default class OptionsList {
 
 	public createAndOpenFieldModal(node: LineNode): void {
 		const { field, value } = node
-		const rootNode = node?.line?.getRootLineWithField()?.nodes[0]
+		const rootNode = node?.line?.getParentLineWithField()?.nodes[0]
+		const indexedPath = !field ? rootNode?.indexedPath || node.indexedPath : node.indexedPath
 		const rootField = rootNode?.field
-		const rootFieldValue = rootNode?.value
 		const managedField = field || rootField
-		const managedValue = field ? value : rootFieldValue
 		//-----
 		if (managedField) {
 			const fieldManager = new FieldManager[managedField.type](this.plugin, managedField) as F;
@@ -120,7 +119,7 @@ export default class OptionsList {
 					(fieldManager as CycleField).next(managedField.name, this.file)
 					break;
 				default:
-					fieldManager.createAndOpenFieldModal(this.file, managedField.name, node.line.note, node.indexedPath, undefined, undefined, undefined, undefined)
+					fieldManager.createAndOpenFieldModal(this.file, managedField.name, node.line.note, indexedPath, undefined, undefined, undefined, undefined)
 					break;
 			}
 
@@ -249,9 +248,12 @@ export default class OptionsList {
 		this.attributes.forEach((value, key, map) => {
 			const field = key.id ? this.fieldsFromIndex[key.id] : undefined
 			//FIXME: what is this key.id? is it still working with indexedPath?
+			//les autres se gèreront dans des appels successifs de modals
 			if (field) {
-				const fieldManager = new FieldManager[field.type](this.plugin, field);
-				fieldManager.addFieldOption(this.file, this.location);
+				if (field.isRoot()) {
+					const fieldManager = new FieldManager[field.type](this.plugin, field);
+					fieldManager.addFieldOption(this.file, this.location);
+				}
 			} else if (key.name !== "file" && (isSuggest(this.location) || isMenu(this.location))) {
 				const defaultField = new Field(this.plugin, key.name)
 				defaultField.type = FieldType.Input

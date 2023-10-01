@@ -20,7 +20,7 @@ export default class BooleanField extends FieldManager {
         const note = new Note(this.plugin, file)
         await note.build()
         const value = note.existingFields.find(eF => eF.indexedPath === indexedPath)?.value || "false"
-        await postValues(this.plugin, [{ id: this.field.id, payload: { value: value === "false" ? "true" : "false" } }], file)
+        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: value === "false" ? "true" : "false" } }], file)
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {

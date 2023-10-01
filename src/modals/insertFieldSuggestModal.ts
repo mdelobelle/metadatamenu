@@ -19,6 +19,10 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
         private lineNumber: number,
         private after: boolean,
     ) {
+        /*
+        choose a root field to insert
+        TODO: manage nested fields
+        */
         super(plugin.app);
         this.containerEl.addClass("metadata-menu")
         this.note = new Note(this.plugin, this.file)
@@ -29,7 +33,7 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
     getItems(): Option[] {
         return [{ actionLabel: '++New++' }]
             .concat(this.plugin.fieldIndex.filesFields
-                .get(this.file.path)?.map(field => {
+                .get(this.file.path)?.filter(_f => _f.isRoot()).map(field => {
                     return { actionLabel: field.name, type: field.type }
                 }) || []
             );

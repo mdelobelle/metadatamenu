@@ -13,6 +13,10 @@ export async function insertMissingFields(
     asComment: boolean = false,
     fileClassName?: string
 ): Promise<void> {
+    /*
+    Insert "root" fields that are notre in the note.
+    TODO: insert missing fields of an objectFIeld
+    */
     const file = getFileFromFileOrPath(plugin, fileOrFilePath)
     const note = new Note(plugin, file)
     await note.build()
@@ -21,7 +25,8 @@ export async function insertMissingFields(
     const fields = f.filesFields.get(file.path)
     const filteredClassFields = fileClassName ? plugin.fieldIndex.fileClassesFields.get(fileClassName)?.filter(field => field.fileClassName === fileClassName) || undefined : undefined
     const fieldsToInsert: FieldsPayload = []
-    fields?.filter(field => !note.existingFields.map(_f => _f.field.id).includes(field.id))
+    //limit to root fields
+    fields?.filter(field => field.isRoot() && !note.existingFields.map(_f => _f.field.id).includes(field.id))
         .filter(field => filteredClassFields ? filteredClassFields.map(f => f.id).includes(field.id) : true)
         .forEach(async field => {
             fieldsToInsert.push({ id: field.id, payload: { value: "" } })

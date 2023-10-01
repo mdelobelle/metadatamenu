@@ -77,14 +77,15 @@ export default class DateModal extends BaseModal {
         if (newValue.isValid()) {
             const linkPath = this.plugin.app.metadataCache.getFirstLinkpathDest(this.field.options.linkPath || "" + newValue.format(this.format), this.file.path)
             const formattedValue = this.insertAsLink ? `[[${this.field.options.linkPath || ""}${newValue.format(this.format)}${linkPath ? "|" + linkPath.basename : ""}]]` : newValue.format(this.format)
-            await postValues(this.plugin, [{ id: this.field.id, payload: { value: formattedValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+            await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: formattedValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
             if (this.nextIntervalField && this.pushNextInterval && this.nextShift) {
+                //TODO: Probable bug if nextIntervalField is in an ObjectField....
                 await postValues(this.plugin, [{ id: this.nextIntervalField!.id, payload: { value: this.nextShift! } }], this.file.path)
                 this.close()
             }
             this.close();
         } else if (!this.value) {
-            await postValues(this.plugin, [{ id: this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
+            await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
             this.close()
         } else {
             this.errorField.show();

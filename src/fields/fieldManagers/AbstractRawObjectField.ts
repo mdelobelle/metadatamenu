@@ -10,7 +10,7 @@ import { LanguageSupport } from "@codemirror/language";
 import { Extension } from "@codemirror/state"
 import { Note } from "src/note/note";
 
-export default abstract class ObjectField extends FieldManager {
+export default abstract class RawObjectField extends FieldManager {
 
     abstract dumpValue(value: any): string;
     abstract getExtraExtensions(): Array<LanguageSupport | Extension>
@@ -35,21 +35,21 @@ export default abstract class ObjectField extends FieldManager {
         const name = this.field.name
         const iconName = FieldIcon[this.type];
         const action = async () => this.buildAndOpenModal(file, indexedPath);
-        if (ObjectField.isMenu(location)) {
+        if (RawObjectField.isMenu(location)) {
             location.addItem((item) => {
                 item.setTitle(`Update <${name}>`);
                 item.setIcon(iconName);
                 item.onClick(action);
                 item.setSection("metadata-menu.fields");
             })
-        } else if (ObjectField.isSuggest(location)) {
+        } else if (RawObjectField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
                 action: action,
                 icon: iconName
             });
-        } else if (ObjectField.isFieldOptions(location)) {
+        } else if (RawObjectField.isFieldOptions(location)) {
             location.addOption(FieldIcon[this.type], action, `Update ${name}'s value`);
         }
     };

@@ -21,6 +21,24 @@ export default class ObjectField extends FieldManager {
             if (ObjectField.isFieldOptions(location)) {
                 location.addOption(FieldIcon[FieldType.Object], action, `Go to ${this.field.name}'s fields`);
             }
+        } else {
+            const name = this.field.name
+            const action = () => { }
+            if (ObjectField.isMenu(location)) {
+                location.addItem((item) => {
+                    item.setTitle(`Update <${name}>`);
+                    item.setIcon(FieldIcon[FieldType.Object]);
+                    item.onClick(action);
+                    item.setSection("metadata-menu.fields");
+                });
+            } else if (ObjectField.isSuggest(location)) {
+                location.options.push({
+                    id: `update_${name}`,
+                    actionLabel: `<span>Update <b>${name}</b></span>`,
+                    action: action,
+                    icon: FieldIcon[FieldType.Object]
+                });
+            }
         }
     }
     validateOptions(): boolean {

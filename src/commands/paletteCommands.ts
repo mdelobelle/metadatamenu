@@ -202,9 +202,9 @@ function addOpenFieldsModalCommand(plugin: MetadataMenu) {
 
 function addInsertFieldCommand(plugin: MetadataMenu): void {
     const fields: Field[] = [];
-    plugin.presetFields.forEach(f => { if (f.command) fields.push(f) });
+    plugin.presetFields.forEach(f => { if (f.command && f.isRoot()) fields.push(f) });
     [...plugin.fieldIndex.fileClassesFields].forEach(([fileClassName, _fields]) => {
-        _fields.forEach(field => { if (field.command) { fields.push(field) } })
+        _fields.forEach(field => { if (field.command && field.isRoot()) { fields.push(field) } })
     });
     fields.forEach(field => {
         if (field.command) {

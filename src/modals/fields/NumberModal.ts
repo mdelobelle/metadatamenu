@@ -145,7 +145,7 @@ export default class NumberModal extends BaseModal {
             this.numberInput.inputEl.setAttr("class", "is-invalid")
             return
         }
-        await postValues(this.plugin, [{ id: this.field.id, payload: { value: inputValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: inputValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
         this.close();
     }
 };

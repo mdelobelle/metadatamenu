@@ -178,13 +178,16 @@ export default class DateField extends FieldManager {
         const currentDvDate = dv.date(moment(currentDateValue, dateFormat).toISOString());
         const newDate = currentDvDate.plus(dv.duration(currentShift || "1 day"));
         const newValue = moment(newDate.toString()).format(dateFormat)
+        //TODO: how to pass indexedPath?
         if (nextIntervalField && nextShift) {
+            //TODO: changer postValues il faut utiliser le indexedPath
             await postValues(this.plugin, [{ id: nextIntervalField.id, payload: { value: nextShift } }], file.path)
         }
         const linkFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath || "" + newValue.format(dateFormat), file.path)
         const formattedValue = DateField.stringToBoolean(defaultInsertAsLink) ?
             `[[${linkPath || ""}${newValue}${linkFile ? "|" + linkFile.basename : ""}]]` :
             newValue
+        //TODO: changer postValues il faut utiliser le indexedPath
         await postValues(this.plugin, [{ id: this.field.id, payload: { value: formattedValue } }], file)
 
     }

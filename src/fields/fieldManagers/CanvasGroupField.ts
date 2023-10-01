@@ -24,7 +24,7 @@ export default class CanvasGroupField extends AbstractCanvasBasedField {
 
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note,
         indexedPath?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
-        await postValues(this.plugin, [{ id: this.field.id, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
+        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
     }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined }): void {

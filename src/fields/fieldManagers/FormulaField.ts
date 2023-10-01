@@ -57,7 +57,7 @@ export default class FormulaField extends FieldManager {
         asList?: boolean,
         asComment?: boolean
     ): Promise<void> {
-        await postValues(this.plugin, [{ id: this.field.id, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
+        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
     }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }): void {

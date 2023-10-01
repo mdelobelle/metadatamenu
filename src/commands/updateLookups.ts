@@ -133,6 +133,7 @@ export async function updateLookups(
         }
     }
     Object.entries(payloads).forEach(async ([filePath, payload]) => {
+        //TODO: changer postValues il faut utiliser le indexedPath
         if (payload.length) await postValues(plugin, payload, filePath)
     })
     updatedFields.forEach(field => f.fileLookupFieldsStatus.set(field, Lookup.Status.upToDate))

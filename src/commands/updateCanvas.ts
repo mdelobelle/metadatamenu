@@ -267,6 +267,7 @@ export async function updateCanvas(
                     const values = linkNodes.map((node: CanvasFileData) => FieldManager.buildMarkDownLink(plugin, file, node.file, node.subpath))
                     if (field) payload.push({ id: field.id, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
                 })
+                //TODO: changer postValues il faut utiliser le indexedPath
                 if (payload.length) await postValues(plugin, payload, file)
             }
         })

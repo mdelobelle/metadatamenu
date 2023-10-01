@@ -79,11 +79,14 @@ export class LineNode {
                                 const parentLine = this.line.parentLine
                                 const parentNode = parentLine?.nodes[0]
                                 const parentField = parentNode?.field
+
                                 if (parentField?.id === field.path.split("____").last()) {
+                                    this.field = field
+                                    this.indexedPath = this.field.getIndexedPath(this)
                                     //la ligne "père" a un field dont l'id est bien l'id du parent_field de ce field -> on continue
                                     this.field = field
                                     // on crée l'indexedPath de ce champ pour pouvoir chercher sa valeur dans le "frontmatter"
-                                    this.indexedPath = this.field.getIndexedPath(this)
+
                                     if (this.field && parentField?.type === FieldType.ObjectList) {
                                         // dans le cas d'un père de type "objectlist" on va chercher la position de ce field dans la liste du père
                                         const objectListLines = parentLine!.objectListLines
@@ -113,6 +116,9 @@ export class LineNode {
                                     this.line.note.existingFields.push(existingField)
 
                                     break;
+                                } else if (!parentField) {
+                                    this.field = field
+                                    this.indexedPath = this.field.getIndexedPath(this)
                                 } else {
                                     //la ligne "père" a un field dont l'id n'est pas l'id du parent_field de ce field -> pb on s'arrête
                                     break;
@@ -120,6 +126,7 @@ export class LineNode {
 
                             } else {
                                 this.field = field
+                                this.indexedPath = this.field.getIndexedPath(this)
                                 this.value = frontmatter[field.name]
                                 existingField.value = this.value
                                 this.line.note.existingFields.push(existingField)
@@ -132,6 +139,7 @@ export class LineNode {
                         fileClassField.type = FieldType.Input
                         fileClassField.id = `fileclass-field-${this.plugin.settings.fileClassAlias}`
                         this.field = fileClassField
+                        this.indexedPath = fileClassField.id
                         this.value = value
                         const existingField = new ExistingField(fileClassField, value, this.field.id)
                         this.line.note.existingFields.push(existingField)
@@ -141,6 +149,8 @@ export class LineNode {
                 {
                     if (field) {
                         const existingField = new ExistingField(field, this.value, field.id)
+                        this.indexedId = field.id
+                        this.indexedPath = field.getIndexedPath(this)
                         this.line.note.existingFields.push(existingField)
                     }
                 }
@@ -148,13 +158,13 @@ export class LineNode {
         this.line.nodes.push(this)
     }
 
-    public buildDecoratedFieldName = (): string => {
+    private buildDecoratedFieldName = (): string => {
         if (!this.field) return ""
-        const ancestors = this.field.getAncestors();
-        const level = ancestors.length
+        let level = this.field.getIndentationLevel(this)
         switch (this.line.position) {
             case "yaml":
-                return `${"  ".repeat(level)}${this.field.name}`;
+                const _ = this.field.isFirstItemOfObjectList(this) ? "- " : ""
+                return `${"  ".repeat(level)}${_}${this.field.name}`;
             case "inline":
                 {
                     const targetStartStyle = buildStartStyle(this.field.style || {})
@@ -177,8 +187,7 @@ export class LineNode {
             !(this.field.getDisplay() === MultiDisplayType.asList ||
                 this.field.type === FieldType.JSON ||
                 this.field.type === FieldType.YAML ||
-                this.field.type === FieldType.Lookup ||
-                objectTypes.includes(this.field.type))
+                this.field.type === FieldType.Lookup)
         ) return
         const indentLevel = this.field.getAncestors().length
         const nextLines = this.line.note.lines.filter(_line => _line.number > this.line.number)

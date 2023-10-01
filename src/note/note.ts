@@ -178,8 +178,7 @@ export class Note {
 
     private insertField(id: string, payload: FieldPayload, lineNumber?: number): void {
         //TODO: manage insertion of pbjectlist item
-        //TODO: changer postValues il faut utiliser le indexedPath à  la place de l'id
-        //don't ask for line
+        //TODO: changer postValues il faut utiliser le indexedPath à la place de l'id
         const frontMatterEnd = getFrontmatterPosition(this.plugin, this.file)?.end?.line
         if (lineNumber === -1 && !frontMatterEnd) {
             for (let i of [0, 1]) new Line(this.plugin, this, "yaml", "---", 0)
@@ -232,7 +231,7 @@ export class Note {
 
     public createOrUpdateFields(fields: FieldsPayload, lineNumber?: number): void {
         fields.forEach(field => {
-            const node = this.getNodeForFieldId(field.id)
+            const node = this.getNodeForIndexedPath(field.id)
             if (node && node.field) {
                 //update : on déconstruit et reconstruit le node
                 node.createFieldNodeContent(node.field, field.payload.value, node.line.position)

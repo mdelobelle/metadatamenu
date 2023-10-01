@@ -81,7 +81,7 @@ export default class CycleField extends AbstractListBasedField {
         await note.build()
         const value = note.getExistingFieldForIndexedPath(indexedPath)?.value || ""
         let matchedValue = this.getRawOptionFromDuration(value) || value;
-        await postValues(this.plugin, [{ id: this.field.id, payload: { value: this.nextOption(matchedValue).toString() } }], file)
+        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: this.nextOption(matchedValue).toString() } }], file)
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {

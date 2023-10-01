@@ -45,11 +45,18 @@ export default class CanvasField extends AbstractCanvasBasedField {
         //no field option to add for this field, it is automatically updated
     }
 
-    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note, indexedPath?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
-        await postValues(this.plugin, [{ id: this.field.id, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
+    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note, indexedPath?: string,
+        lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
+        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file,
+            lineNumber, after, asList, asComment)
     }
 
-    createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined }): void {
+    createDvField(dv: any, p: any, fieldContainer: HTMLElement,
+        attrs?: {
+            cls?: string | undefined;
+            attr?: Record<string, string> | undefined;
+            options?: Record<string, string> | undefined
+        }): void {
         const fieldValue = dv.el('span', p[this.field.name], attrs);
         fieldContainer.appendChild(fieldValue);
     }

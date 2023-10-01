@@ -22,7 +22,6 @@ export function genuineKeys(obj: any, depth: number = 0): string[] {
 export function legacyGenuineKeys(dvFile: any): string[] {
     const genuineKeys: string[] = []
     Object.keys(dvFile).forEach(key => {
-        //FIXME: Catches unwanted objectsa  
         if (!genuineKeys.map(k => k.toLowerCase().replace(/\s/g, "-")).includes(key.toLowerCase().replace(/\s/g, "-"))) {
             genuineKeys.push(key)
         } else {

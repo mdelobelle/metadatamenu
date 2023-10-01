@@ -83,7 +83,7 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
         const action = async () => await this.buildAndOpenModal(file, indexedPath)
         if (AbstractFileBasedField.isMenu(location)) {
             location.addItem((item) => {
-                item.setTitle(`Update ${this.field}`);
+                item.setTitle(`Update <${this.field.name}>`);
                 item.setIcon(FieldIcon[FieldType.File]);
                 item.onClick(action);
                 item.setSection("metadata-menu.fields");

@@ -4,9 +4,9 @@ import MetadataMenu from "main";
 import { TFile } from "obsidian";
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
-import ObjectField from "./AbstractObjectField";
+import RawObjectField from "./AbstractRawObjectField";
 
-export default class JSONField extends ObjectField {
+export default class JSONField extends RawObjectField {
 
     constructor(plugin: MetadataMenu, field: Field) {
         super(plugin, field, FieldType.JSON)

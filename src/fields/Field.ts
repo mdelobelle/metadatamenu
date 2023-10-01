@@ -25,6 +25,10 @@ class Field {
     ) {
     };
 
+    public isRoot(): boolean {
+        return this.path === ""
+    }
+
     public getDisplay(): MultiDisplayType {
         if (multiTypes.includes(this.type)) {
             return this.display || this.plugin.settings.frontmatterListDisplay
@@ -90,6 +94,28 @@ class Field {
             if (ancestor) ancestors.push(ancestor)
         }
         return ancestors
+    }
+
+    public getIndentationLevel(node: LineNode) {
+        const ancestors = this.getAncestors();
+        let level: number = 0
+        ancestors.forEach(ancestor => {
+            level = ancestor.type === FieldType.ObjectList ? level + 2 : level + 1
+        })
+        if (this.isFirstItemOfObjectList(node)) level = level - 1
+        return level
+    }
+
+    public isFirstItemOfObjectList(node: LineNode) {
+        const ancestors = this.getAncestors(this.id)
+        if (ancestors.last()?.type === FieldType.ObjectList) {
+            const indentRegex = new RegExp(/(?<indentation>\s*)(?<list>-\s)?.*/)
+            const fR = node.rawContent.match(indentRegex);
+            if (fR?.groups?.list) {
+                return true
+            }
+        }
+        return false
     }
 
     public getOtherObjectFields(): Field[] {

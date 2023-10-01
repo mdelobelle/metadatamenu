@@ -109,7 +109,7 @@ export default class InputModal extends BaseModal {
     };
 
     public async save(): Promise<void> {
-        await postValues(this.plugin, [{ id: this.field.id, payload: { value: this.newValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: this.newValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
         this.close();
     }
 };

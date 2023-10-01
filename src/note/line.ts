@@ -52,9 +52,13 @@ export class Line {
         }
     }
 
-    public getRootLineWithField(): Line | undefined {
-        if (this.indentationLevel > 0) {
-            return this.parentLine?.getRootLineWithField()
+    public getParentLineWithField(): Line | undefined {
+        if (this.parentLine) {
+            if (!this.parentLine.nodes.some(node => !!node.field)) {
+                return this.parentLine.getParentLineWithField()
+            } else {
+                return this.parentLine
+            }
         } else {
             if (this.nodes.some(node => !!node.field)) return this
         }

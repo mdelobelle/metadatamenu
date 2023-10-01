@@ -90,12 +90,12 @@ export default class NumberField extends FieldManager {
             switch (direction) {
                 case "decrease":
                     if (!isNaN(fMin) && fValue - fStep >= fMin) {
-                        await postValues(this.plugin, [{ id: this.field.id, payload: { value: (fValue - fStep).toString() } }], file)
+                        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: (fValue - fStep).toString() } }], file)
                     }
                     break;
                 case "increase":
                     if (!isNaN(fMax) && fValue + fStep <= fMax) {
-                        await postValues(this.plugin, [{ id: this.field.id, payload: { value: (fValue + fStep).toString() } }], file)
+                        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: (fValue + fStep).toString() } }], file)
                     }
 
                 default:
