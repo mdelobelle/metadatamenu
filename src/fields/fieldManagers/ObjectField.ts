@@ -9,6 +9,7 @@ import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { postValues } from "src/commands/postValues";
 import { Note } from "src/note/note";
 import ObjectModal from "src/modals/fields/ObjectModal";
+import OptionsList from "src/options/OptionsList";
 
 export default class ObjectField extends FieldManager {
 
@@ -24,7 +25,12 @@ export default class ObjectField extends FieldManager {
             }
         } else {
             const name = this.field.name
-            const action = () => { }
+            const action = async () => {
+                //create an optionList for this indexedPath
+                const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.plugin.app)
+                const optionsList = new OptionsList(this.plugin, file, fieldCommandSuggestModal, undefined, indexedPath)
+                await optionsList.createExtraOptionList()
+            }
             if (ObjectField.isSuggest(location)) {
                 location.options.push({
                     id: `update_${name}`,

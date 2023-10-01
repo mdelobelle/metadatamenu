@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { FieldIcon, FieldType } from "src/types/fieldTypes";
+import { FieldIcon, FieldType, FieldManager as F } from "src/types/fieldTypes";
 
 import { FieldManager, SettingLocation } from "../FieldManager";
 import Field from "../Field";
@@ -35,7 +35,12 @@ export default class ObjectListField extends FieldManager {
         } else {
             //TODO: leads to a modal where there's a list of objectList items 
             const name = this.field.name
-            const action = () => { }
+            const action = async () => {
+                const note = new Note(this.plugin, file)
+                await note.build()
+                const eF = note.existingFields.find(eF => eF.indexedPath === indexedPath)
+                if (eF) this.createAndOpenFieldModal(file, eF.field.name, note, eF.indexedPath)
+            }
             if (ObjectListField.isSuggest(location)) {
                 location.options.push({
                     id: `update_${name}`,
@@ -80,7 +85,7 @@ export default class ObjectListField extends FieldManager {
 
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {
         const fields = this.plugin.fieldIndex.filesFields.get(file.path)
-        if (Array.isArray(value)) container.setText(`${value.length} items: [${fields?.filter(_f => _f.path === this.field.id).map(_f => _f.name).join(", ")}]`)
+        if (Array.isArray(value)) container.setText(`${value.length} items: [${fields?.filter(_f => _f.path === this.field.id).map(_f => _f.name).join(" | ")}]`)
     }
 
 }

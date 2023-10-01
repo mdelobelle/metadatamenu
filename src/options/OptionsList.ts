@@ -11,7 +11,7 @@ import { AddFileClassToFileModal } from "src/fileClass/fileClass";
 import AddNewFileClassModal from "src/modals/addNewFileClassModal";
 import InputModal from "src/modals/fields/InputModal";
 import { LineNode } from "src/note/lineNode";
-import { Note } from "src/note/note";
+import { ExistingField, Note } from "src/note/note";
 import { FieldIcon, FieldManager, FieldType } from "src/types/fieldTypes";
 import { genuineKeys } from "src/utils/dataviewUtils";
 import { getFrontmatterPosition } from "src/utils/fileUtils";
@@ -34,9 +34,7 @@ function isSuggest(location: Menu | "InsertFieldCommand" | FieldCommandSuggestMo
 export default class OptionsList {
 
 	// adds options to context menu or to a dropdown modal trigger with "Field: Options" command in command pallette
-	// TODO: Remove menu options (to have everything async and manage all fields with Select modals
-	attributes: Map<{ name: string, id: string | undefined }, any>;
-	fieldsFromIndex: Record<string, Field> = {};
+	note?: Note
 
 	constructor(
 		private plugin: MetadataMenu,
@@ -47,69 +45,16 @@ export default class OptionsList {
 	) {
 		this.file = file;
 		this.location = location;
-		this.attributes = new Map();
 		this.includedFields = includedFields ? [this.plugin.settings.fileClassAlias, ...includedFields] : [this.plugin.settings.fileClassAlias];
-		//this.build()
+
 	};
 
 	public async build(): Promise<void> {
 		const excludedFolders = this.plugin.settings.fileClassExcludedFolders
 		if (!excludedFolders.some(path => this.file.path.includes(path))) {
-			this.getFieldsFromIndex();
-			await this.getFieldsValues();
+			this.note = new Note(this.plugin, this.file)
+			await this.note.build()
 		}
-	}
-
-	private async getFieldsValues(): Promise<void> {
-		const note = new Note(this.plugin, this.file)
-		await note.build()
-		console.log(note.existingFields)
-	}
-
-	/*
-	private getFieldsValues(): void {
-		//get synchronously values
-		const dvApi = this.plugin.app.plugins.plugins["dataview"]?.api
-		const fields = this.plugin.fieldIndex.filesFields.get(this.file.path)
-		//@ts-ignore
-		if (dvApi) {
-			const dvFile = dvApi.page(this.file.path)
-			try {
-				genuineKeys(dvFile)
-					.filter(_k => Object.values(this.fieldsFromIndex)
-						.map(_f => _f.name)
-						.includes(_k) || _k === this.plugin.settings.fileClassAlias)
-					.forEach(key => {
-						const id = fields?.find(field => field.name === key)?.id
-						this.addAttribute(key, id, dvFile[key])
-					})
-			} catch (error) {
-				throw (error);
-			}
-		}
-	}
-	*/
-	/*
-	private addAttribute(name: string, id: string | undefined, value: any): void {
-		const includedFields = this.includedFields!.filter(f => f !== this.plugin.settings.fileClassAlias)
-		if (includedFields.length > 0) {
-			if (
-				this.includedFields!.includes(name)
-				&&
-				!this.plugin.settings.globallyIgnoredFields.includes(name)
-			) {
-				this.attributes.set({ name: name, id: id }, value)
-			}
-		} else if (!this.plugin.settings.globallyIgnoredFields.includes(name)) {
-			this.attributes.set({ name: name, id: id }, value)
-		}
-	}
-	*/
-
-	private getFieldsFromIndex(): void {
-		const index = this.plugin.fieldIndex
-		const fields = index.filesFields.get(this.file.path)
-		fields?.forEach(field => this.fieldsFromIndex[field.id] = field)
 	}
 
 	public createAndOpenFieldModal(node: LineNode): void {
@@ -144,19 +89,11 @@ export default class OptionsList {
 			location.addSeparator();
 			if (!this.plugin.settings.fileClassExcludedFolders.some(path => this.file.path.includes(path))) {
 				this.openNoteFieldModalOption();
-				this.buildFieldOptions();
+				this.buildFieldOptionsForMenu();
 				this.addSectionSelectModalOption();
 				this.addFieldAtCurrentPositionOption();
 				this.addFieldAtTheEndOfFrontmatterOption();
 				this.addAllMissingFieldsAtSection(); // we don't know if there are, but this way, no need for synchronous values fetching
-				/*
-				if (dvApi) {
-					const currentFieldsNames = genuineKeys(dvApi.page(this.file.path))
-					if (![...this.plugin.fieldIndex.filesFields.get(this.file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
-						
-					}
-				}
-				*/
 			}
 			const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || []
 			fileClasses.forEach(fileClass => {
@@ -265,7 +202,7 @@ export default class OptionsList {
 	}
 
 
-	private buildFieldOptions(): void {
+	private buildFieldOptionsForMenu(): void {
 		if (isMenu(this.location)) {
 			this.location.addItem((item) => {
 				item.setIcon("pencil");
@@ -278,30 +215,18 @@ export default class OptionsList {
 				item.setSection("metadata-menu");
 			});
 		}
-		//FIXME: add fileClass edition menu-option
-		/*
-		this.attributes.forEach((value, key, map) => {
-			const field = key.id ? this.fieldsFromIndex[key.id] : undefined
-			//FIXME: what is this key.id? is it still working with indexedPath?
-			//les autres se gèreront dans des appels successifs de modals
-			if (field) {
-				if (field.isRoot()) {
-					const fieldManager = new FieldManager[field.type](this.plugin, field);
-					fieldManager.addFieldOption(this.file, this.location);
-				}
-			} else if (key.name !== "file" && (isSuggest(this.location) || isMenu(this.location))) {
-				const defaultField = new Field(this.plugin, key.name)
-				defaultField.type = FieldType.Input
-				if (key.name === this.plugin.settings.fileClassAlias) {
-					this.buildFileClassFieldOptions(defaultField, value)
-				} else {
-					const fieldManager = new Managers.Input(this.plugin, defaultField)
-					fieldManager.addFieldOption(this.file, this.location)
-				}
-			}
+	}
 
-		});
-		*/
+	private buildFieldOptions(): void {
+		this.note?.existingFields
+			.filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === this.path)
+			.forEach(eF => {
+				const field = eF.field
+				if (field) {
+					const fieldManager = new FieldManager[field.type](this.plugin, field);
+					fieldManager.addFieldOption(this.file, this.location, eF.indexedPath);
+				}
+			})
 	}
 
 	private addSectionSelectModalOption(): void {
