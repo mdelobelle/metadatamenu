@@ -1,5 +1,6 @@
 import MetadataMenu from "main";
 import { LineNode } from "src/note/lineNode";
+import { Note } from "src/note/note";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { FieldType, MultiDisplayType, multiTypes, objectTypes } from "../types/fieldTypes"
 
@@ -48,6 +49,11 @@ class Field {
             return ""
         }
 
+    }
+
+    public getFirstAncestor(): Field | undefined {
+        const ancestors = this.getAncestors()
+        return ancestors.last()
     }
 
     public getDottedPath(): string {
@@ -215,36 +221,34 @@ class Field {
         return { id, index }
     }
 
-    static upperPath(indexedPath: string) {
+    static upperPath(indexedPath: string): string {
         const upperIndexedIds = indexedPath?.split("____")
         upperIndexedIds?.pop()
-        return upperIndexedIds?.join("____")
+        return upperIndexedIds?.join("____") || ""
+    }
+
+    static upperIndexedPathObjectPath(indexedPath: string) {
+        const endingIndex = indexedPath.match(/\[\w+\]$/)
+        if (endingIndex) {
+            return indexedPath.replace(/\[\w+\]$/, '')
+        } else {
+            return Field.upperPath(indexedPath)
+        }
     }
 
     static getValueFromIndexedPath(carriageField: Field, obj: any, indexedPath: string): any {
         //fonction récursive qui part du frontmatter et qui cherche la valeur correspondant à l'indexedPath
         //l'argument field sert à récupérer la fileclass et à récupérer l'attribute plugin
 
-        //si l'indexPath = "", on est dans le cas d'un field racine et on renvoit l'object directement
-        //ça ne doit pas arrive car cette méthode est appelée dans le cas ou carriageField a un path existant non ""
-        //console.log("---- NEXT ------")
-        //console.log("carriageField: ", carriageField)
-        //console.log("obj: ", obj)
-        //console.log("indexedPath: ", indexedPath)
         if (!indexedPath) return obj;
         const plugin = carriageField.plugin
         const fileClassName = carriageField.fileClassName
-        // on décompose l'indexedPath
         const indexedProps: string[] = indexedPath.split('____');
 
         try {
-            // on part du haut de l'indexedPath avec la première indexedProp
             const indexedProp = indexedProps.shift()!
-            //console.log("indexedProp: ", indexedProp)
             // on récupère l'id et l'éventuel index
             const { id, index } = Field.getIdAndIndex(indexedProp)
-            //console.log("id: ", id)
-            //console.log("index: ", index)
             // on récupère la définition du field selon son id et sa fileClass
             const field = Field.getFieldFromId(plugin, id, fileClassName)
             if (!field) return "" // s'il n'existe pas, on renvoie vide
@@ -254,11 +258,6 @@ class Field {
             } else {
                 value = obj[field.name]
             }
-
-            //console.log("field: ", field.name)
-            //console.log("value: ", value)
-            //console.log("index: ", index)
-            //console.log("indexedLowerProps: ", indexedProps.join("____"))
             if (typeof value === 'object') {
                 // value est un object, on continue à inspecter
                 const subValue = Field.getValueFromIndexedPath(field, value, indexedProps.join("____"))
@@ -271,7 +270,6 @@ class Field {
                     const subValue = Field.getValueFromIndexedPath(field, subObject, indexedProps.join("____"))
                     return subValue
                 } else {
-
                     // c'est "juste" un tableau
                     // par construction il ne peut pas y avoir sur subProps
                     // on le renvoie telquel
@@ -282,7 +280,6 @@ class Field {
                 return value
             }
         } catch (e) {
-            //console.log("<<<<<EXCEPTION>>>>>>>>><")
             return ""
         }
     }

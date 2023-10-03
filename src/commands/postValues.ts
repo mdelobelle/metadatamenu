@@ -13,7 +13,7 @@ export type FieldPayload = {
 }
 
 export type FieldsPayload = Array<{
-    id: string,
+    id: string, //is the indexedPath of the field in the note, not the fieldId per say
     payload: FieldPayload
 }>
 

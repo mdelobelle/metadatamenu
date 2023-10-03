@@ -33,7 +33,7 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
     getSuggestions(query: string = ""): Array<ExistingField | Field> {
         const existingFields = this.note?.existingFields?.filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === this.indexedPath) || []
         const { id, index } = Field.getIdAndIndex(this.indexedPath?.split("____").last())
-        const missingFields = this.note?.fields.filter(_f => _f.path === id).filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
+        const missingFields = this.note?.fields.filter(_f => _f.getFirstAncestor()?.id === id).filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
         return [...existingFields, ...missingFields]
     }
 

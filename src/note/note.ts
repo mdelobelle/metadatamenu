@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { CachedMetadata, EditorPosition, parseYaml, TFile } from "obsidian";
+import { CachedMetadata, EditorPosition, Notice, parseYaml, TFile } from "obsidian";
 import { FieldPayload, FieldsPayload } from "src/commands/postValues";
 import Field from "src/fields/Field";
 import { rawObjectTypes, FieldType, ReservedMultiAttributes, FieldManager } from "src/types/fieldTypes";
@@ -28,6 +28,16 @@ export class ExistingField {
         return this.indexedId === this.indexedPath
     }
 }
+
+export class IndexedPath {
+    constructor(
+        public note: Note,
+        public indexedPath: string,
+    ) {
+
+    }
+}
+
 
 export class Note {
     public lines: Line[] = []
@@ -129,25 +139,6 @@ export class Note {
         //console.log(this)
     }
 
-    public getNodeForFieldName(fieldName: string): LineNode | undefined {
-        for (const line of this.lines) {
-            const node = line.nodes.find(_node => _node.field?.name === fieldName)
-            if (node) return node
-        }
-        return undefined
-    }
-
-    //TODO: il faut appeler getNodeForIndexedPath à la place, c'est plus générique
-    // la présence d'objectList rend cette méthode fausse, 
-    // elle ne renverrait que le premier des fields d'un objectList pour un type donnée
-    public getNodeForFieldId(fieldId: string): LineNode | undefined {
-        for (const line of this.lines) {
-            const node = line.nodes.find(_node => _node.field?.id === fieldId)
-            if (node) return node
-        }
-        return undefined
-    }
-
     public getExistingFieldForIndexedPath(indexedPath?: string): ExistingField | undefined {
         return this.existingFields.find(eF => eF.indexedPath === indexedPath)
     }
@@ -197,10 +188,11 @@ export class Note {
     }
     //TODO: remove field, in case of objectList items, it will be funny
 
-    private insertField(id: string, payload: FieldPayload, indexedPath?: string, lineNumber?: number): void {
-        //TODO: manage insertion of pbjectlist item
-
-        //TODO: changer postValues il faut utiliser le indexedPath à la place de l'id
+    private insertField(indexedPath: string, payload: FieldPayload, lineNumber?: number): void {
+        //TODO: exclude insertion of object and objectlist items inline
+        const upperPath = Field.upperPath(indexedPath)
+        const { id, index } = Field.getIdAndIndex(indexedPath.split("____").last())
+        const { id: upperFieldId, index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
         const frontMatterEnd = getFrontmatterPosition(this.plugin, this.file)?.end?.line
         if (lineNumber === -1 && !frontMatterEnd) {
             for (let i of [0, 1]) new Line(this.plugin, this, "yaml", "---", 0)
@@ -223,26 +215,24 @@ export class Note {
                 newLine.renderLine()
             }
         } else {
-            if (indexedPath) {
-                const upperPath = Field.upperPath(indexedPath)
-                const { id: _id, index } = Field.getIdAndIndex(upperPath.split("___").last())
-                if (index) {
-                    const i = parseInt(index)
-                    //we are in an Item of an ObjectList
-                    //if the parent field doesn't exist, lets quit
-                    const parentFieldIndexedPath = upperPath.replace(/\[\w+\]$/, '')
-                    const parentNode = this.getNodeForIndexedPath(parentFieldIndexedPath)
-                    const field = this.getField(_id)
-                    if (!parentNode) return
-                    const lastItemLineNumber = parentNode.line.objectListLines[i].last()?.number
-                    if (lastItemLineNumber) {
-                        this.createLine(payload.value, "yaml", lastItemLineNumber, field)
-                        console.log("note after line: ", this)
-                    } else {
-                        // get the last item of objectListLines or under parentNote.line
-                    }
+            if (upperFieldIndex) {
+                const i = parseInt(upperFieldIndex)
+                //we are in an Item of an ObjectList
+                const parentFieldIndexedPath = upperPath.replace(/\[\w+\]$/, '')
+                const parentNode = this.getNodeForIndexedPath(parentFieldIndexedPath)
+                //if the parent field doesn't exist, lets quit
+                if (!parentNode) {
+                    new Notice("A parent field is missing, this field can't be added")
+                    return
+                }
+                const field = this.getField(id)
+                const lastItemLineNumber = parentNode.line.objectListLines[i].last()?.number
+                if (lastItemLineNumber) {
+                    this.createLine(payload.value, "yaml", lastItemLineNumber + 1, field)
                 } else {
-                    //not in an ObjectList paste the code below?
+                    // TODO: add a new item
+                    // get the last item of objectListLines or under parentNote.line
+
                 }
             } else {
                 const field = this.getField(id)
@@ -254,20 +244,6 @@ export class Note {
                     0
 
                 const position = frontMatterEnd && (insertLineNumber <= frontMatterEnd) ? "yaml" : "inline"
-
-                //look for ancestors and create their lines
-                //FIXME this is useless, we shouldn't accept to create a chiled field if parentfield is not created
-                const ancestors = field.getAncestors()
-                ancestors.forEach((ancestor, level) => {
-                    const node = this.getNodeForFieldId(ancestor.id)
-                    if (node) {
-                        insertLineNumber = node.line.number! + 1
-                    } else {
-                        const ancestorField = this.fields.find(field => field.id === ancestor.id)!
-                        this.createLine("", position, insertLineNumber, ancestorField)
-                        insertLineNumber += 1
-                    }
-                })
                 this.createLine(payload.value, position, insertLineNumber, field)
             }
         }
@@ -278,12 +254,10 @@ export class Note {
         fields.forEach(field => {
             const node = this.getNodeForIndexedPath(field.id)
             if (node && node.field) {
-                //update : on déconstruit et reconstruit le node
                 node.createFieldNodeContent(node.field, field.payload.value, node.line.position)
                 node.line.renderLine()
             } else {
-                //insert
-                this.insertField(field.id, field.payload, field.id, lineNumber)
+                this.insertField(field.id, field.payload, lineNumber)
             }
         })
         this.plugin.fileTaskManager.pushTask(async () => { await this.plugin.app.vault.modify(this.file, this.renderNote()) })
