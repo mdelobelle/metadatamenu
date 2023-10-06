@@ -66,6 +66,25 @@ export abstract class FieldManager {
             );
             error = true;
         };
+        if (this.field.fileClassName) {
+            const fields = this.plugin.fieldIndex.fileClassesFields.get(this.field.fileClassName)?.filter(_f => _f.path === this.field.path)
+            if (fields?.map(_f => _f.name).includes(this.field.name)) {
+                FieldSettingsModal.setValidationError(
+                    textInput,
+                    `There is already a field with this name for this path in this ${this.plugin.settings.fileClassAlias}. Please choose another name`
+                );
+                error = true;
+            }
+        } else {
+            const fields = this.plugin.presetFields.filter(_f => _f.path === this.field.path)
+            if (fields?.map(_f => _f.name).includes(this.field.name)) {
+                FieldSettingsModal.setValidationError(
+                    textInput,
+                    "There is already a field with this name for this path in presetFields. Please choose another name"
+                );
+                error = true;
+            }
+        }
         return !error
     }
 

@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { Menu, setIcon, TextComponent, moment, TFile, ToggleComponent } from "obsidian";
+import { Menu, setIcon, TextComponent, moment, TFile, ToggleComponent, DropdownComponent } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import DateModal from "src/modals/fields/DateModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
@@ -133,15 +133,21 @@ export default class DateField extends FieldManager {
             cls: 'label'
         });
         nextShiftIntervalFieldContainer.createDiv({ cls: "spacer" })
-        const nextShiftIntervalField = new TextComponent(nextShiftIntervalFieldContainer);
-        nextShiftIntervalField.setValue(this.field.options.nextShiftIntervalField)
-        nextShiftIntervalField.onChange((value: string) => {
-            if (!value) {
+        const nextShiftIntervalField = new DropdownComponent(nextShiftIntervalFieldContainer);
+        nextShiftIntervalField.addOption("none", "---None---")
+        const fileClassRootFields = this.plugin.fieldIndex.fileClassesFields
+            .get(this.field.fileClassName || "")?.filter(_f => _f.isRoot() && _f.name !== this.field.name) || []
+        // limit choices to root fields
+        fileClassRootFields.forEach(_f => nextShiftIntervalField.addOption(_f.id, _f.name))
+        const currentField = fileClassRootFields.find(_f => _f.name === this.field.options.nextShiftIntervalField)?.id || "none"
+        nextShiftIntervalField.setValue(currentField)
+        nextShiftIntervalField.onChange(value => {
+            if (value === "none") {
                 delete this.field.options.nextShiftIntervalField;
             } else {
-                this.field.options.nextShiftIntervalField = value.toString();
+                this.field.options.nextShiftIntervalField = fileClassRootFields.find(_f => _f.id === value)?.name.toString();
             }
-        });
+        })
 
     }
 
@@ -163,9 +169,7 @@ export default class DateField extends FieldManager {
         const currentDvDate = dv.date(moment(currentDateValue, dateFormat).toISOString());
         const newDate = currentDvDate.plus(dv.duration(currentShift || "1 day"));
         const newValue = moment(newDate.toString()).format(dateFormat)
-        //TODO: how to pass indexedPath?
         if (nextIntervalField && nextShift) {
-            //TODO: changer postValues il faut utiliser le indexedPath
             await postValues(this.plugin, [{ id: nextIntervalField.id, payload: { value: nextShift } }], file.path)
         }
         const linkFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath || "" + newValue.format(dateFormat), file.path)
@@ -181,12 +185,13 @@ export default class DateField extends FieldManager {
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
-        attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }
+        attrs: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }
     ): void {
+        attrs.cls = "value-container"
         const fieldValue = dv.el('span', p[this.field.name], attrs);
         const dateBtn = fieldContainer.createEl("button")
         setIcon(dateBtn, FieldIcon[FieldType.Date])
-        /* end spacer */
+
         const spacer = fieldContainer.createDiv({ cls: "spacer-1" })
         if (this.field.options.dateShiftInterval || this.field.options.nextShiftIntervalField) {
             this.shiftBtn = fieldContainer.createEl("button")

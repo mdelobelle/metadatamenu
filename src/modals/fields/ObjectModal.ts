@@ -8,9 +8,11 @@ import ObjectListField, { ObjectListItem } from "src/fields/fieldManagers/Object
 import { ExistingField, Note } from "src/note/note";
 import { FieldManager as F } from "src/fields/FieldManager";
 import { FieldManager, FieldType } from "src/types/fieldTypes";
+import { cleanActions } from "src/utils/modals";
 
 export default class ObjectModal extends SuggestModal<ExistingField | Field> {
 
+    private addButton: ButtonComponent;
     constructor(
         private plugin: MetadataMenu,
         private file: TFile,
@@ -64,7 +66,6 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
             }
         } else {
             //insert field
-            const { id, index } = Field.getIdAndIndex(this.indexedPath)
             const fieldManager = new FieldManager[item.type](this.plugin, item) as F
             fieldManager.createAndOpenFieldModal(this.file, item.name, this.note, `${this.indexedPath}____${item.id}`, this.lineNumber, this.after, this.asList, this.asComment)
         }

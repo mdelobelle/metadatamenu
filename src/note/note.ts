@@ -57,8 +57,8 @@ export class Note {
         return this.fields.find(field => field.id === id)
     }
 
-    public getFieldFromName(name: string): Field | undefined {
-        return this.fields.find(field => field.name === name)
+    public getFieldFromNameAndPath(name: string, path: string = ""): Field | undefined {
+        return this.fields.find(field => field.name === name && field.path === path)
     }
 
     public renderValueString(_rawValue: string, fieldType?: FieldType, indentationLevel: number = 0): string {
@@ -190,7 +190,7 @@ export class Note {
 
     private insertField(indexedPath: string, payload: FieldPayload, lineNumber?: number): void {
         //TODO: exclude insertion of object and objectlist items inline
-        const upperPath = Field.upperPath(indexedPath)
+        const upperPath = Field.upperIndexedPathObjectPath(indexedPath)
         const { id, index } = Field.getIdAndIndex(indexedPath.split("____").last())
         const { id: upperFieldId, index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
         const frontMatterEnd = getFrontmatterPosition(this.plugin, this.file)?.end?.line
@@ -228,10 +228,16 @@ export class Note {
                 const field = this.getField(id)
                 const lastItemLineNumber = parentNode.line.objectListLines[i].last()?.number
                 if (lastItemLineNumber) {
-                    this.createLine(payload.value, "yaml", lastItemLineNumber + 1, field)
-                } else {
-                    // TODO: add a new item
-                    // get the last item of objectListLines or under parentNote.line
+                    //if line is " .... - " it is a place holder for fields, let's add the line here
+                    if (/-(\s+)?$/.test(parentNode.line.objectListLines[i].last()?.rawContent || "") && field) {
+                        //FIXME try to replace the line
+                        //this.lines[lastItemLineNumber].removeLineFromNote()
+                        const node = this.lines[lastItemLineNumber].nodes[0]
+                        node.createFieldNodeContent(field, payload.value, "yaml");
+                        node.line.renderLine()
+                    } else {
+                        this.createLine(payload.value, "yaml", lastItemLineNumber + 1, field)
+                    }
 
                 }
             } else {
@@ -244,7 +250,18 @@ export class Note {
                     0
 
                 const position = frontMatterEnd && (insertLineNumber <= frontMatterEnd) ? "yaml" : "inline"
-                this.createLine(payload.value, position, insertLineNumber, field)
+                if (field.type === FieldType.ObjectList) {
+                    //specific case where the field is object but the upperIndex is unknown
+                    //it mean that we have to insert a new ObjectListItem
+                    const node = this.getNodeForIndexedPath(upperPath)
+                    if (node) {
+                        const newItemLine = new Line(this.plugin, node.line.note, position, "", node.line.number! + 1)
+                        new LineNode(this.plugin, newItemLine, node.buildIndentedListItem("", 1))
+                        newItemLine.renderLine()
+                    }
+                } else {
+                    this.createLine(payload.value, position, insertLineNumber, field)
+                }
             }
         }
     }

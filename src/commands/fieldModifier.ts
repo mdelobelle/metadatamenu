@@ -44,6 +44,13 @@ function createDvField(
     attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
 ): void {
     const field = plugin.fieldIndex.filesFields.get(p.file.path)?.find(field => field.name === fieldName)
+    if (!field?.isRoot()) {
+        /*
+        field modifiers are only available for root fields
+        */
+        dv.el('span', p[this.field.name], attrs);
+        return
+    }
     if (field?.type) {
         const fieldManager = new FieldManager[field.type](plugin, field);
         fieldManager.createDvField(dv, p, fieldContainer, attrs);

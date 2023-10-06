@@ -76,10 +76,10 @@ export default abstract class RawObjectField extends FieldManager {
         attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
     ): void {
         attrs.cls = "value-container"
-        /* button to display input */
-        const editBtn = fieldContainer.createEl("button");
         const fieldValue = (dv.el('span', p[this.field.name], attrs) as HTMLDivElement);
         fieldContainer.appendChild(fieldValue);
+        /* button to display input */
+        const editBtn = fieldContainer.createEl("button");
         /* end spacer */
         const spacer = fieldContainer.createDiv({ cls: "spacer-1" });
         if (attrs.options?.alwaysOn) spacer.hide();

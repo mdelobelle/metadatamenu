@@ -4,10 +4,12 @@ import { postValues } from "src/commands/postValues";
 import Field from "src/fields/Field";
 import ObjectListField, { ObjectListItem } from "src/fields/fieldManagers/ObjectListField";
 import { Note } from "src/note/note";
+import { FieldManager } from "src/types/fieldTypes";
+import { cleanActions } from "src/utils/modals";
 import ObjectModal from "./ObjectModal";
 
 export default class ObjectListModal extends SuggestModal<ObjectListItem> {
-
+    private addButton: ButtonComponent;
     constructor(
         private plugin: MetadataMenu,
         private file: TFile,
@@ -26,7 +28,18 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
         super.onOpen()
         this.containerEl.addClass("metadata-menu")
         this.containerEl.addClass("narrow")
-        //TODO: create an Add Button
+        const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
+        inputContainer.appendChild(this.inputEl)
+        this.containerEl.find(".prompt").prepend(inputContainer)
+        // addButton
+        this.addButton = new ButtonComponent(inputContainer)
+        this.addButton.setIcon("plus")
+        this.addButton.onClick(async () => {
+            const fieldManager = new FieldManager[this.field.type](this.plugin, this.field) as ObjectListField
+            if (this.note) fieldManager.addObjectListItem(this.note, this.indexedPath)
+        })
+        this.addButton.setCta();
+        this.addButton.setTooltip("Add this value to this field settings")
     };
 
     getSuggestions(query: string = ""): ObjectListItem[] {

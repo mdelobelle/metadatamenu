@@ -291,6 +291,7 @@ export default class FieldSettingsModal extends Modal {
             this.fieldManager.validateOptions();
     }
 
+
     private createSaveButton(container: HTMLDivElement): void {
         const b = new ButtonComponent(container)
         b.setTooltip("Save");

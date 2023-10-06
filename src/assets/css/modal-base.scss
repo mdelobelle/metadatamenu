@@ -276,14 +276,13 @@
     }
 
     .field-error{
-        height: 2em;
+        height: 100%;
         color: var(--text-on-accent);
         width: 100%;
         background-color: var(--color-accent);
         padding: var(--size-4-1) var(--size-4-2);
         font-size: var(--font-ui-small);
         border-radius: var(--input-radius);
-        height: var(--input-height);
     }
 
     .field-warning{

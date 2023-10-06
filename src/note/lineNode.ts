@@ -68,6 +68,20 @@ export class LineNode {
                         this.line.parentLine = parentLine
                     }
                     const { attribute: yamlAttr, values: value } = frontMatterLineField(this.rawContent)
+                    //manage ObjectList empty item
+                    if (!yamlAttr && listItem) {
+                        const parentLine = this.line.parentLine
+                        const parentNode = parentLine?.nodes[0]
+                        const parentField = parentNode?.field
+                        if (parentField?.type === FieldType.ObjectList) {
+                            const objectListLines = parentLine!.objectListLines
+                            objectListLines.push([this.line])
+                            const index = objectListLines.length - 1
+                            this.indexedId = ""
+                            this.indexedPath = `${parentNode?.indexedPath}[${index}]`
+                            this.value = ""
+                        }
+                    }
                     for (const field of this.line.note.fields) {
                         if (yamlAttr === field.name) {
                             this.indexedId = field.id
@@ -174,11 +188,11 @@ export class LineNode {
 
     }
 
-    public buildIndentedListItem = (value: any) => {
+    public buildIndentedListItem = (value: any, shift: number = 0) => {
         if (!this.field) return ""
         const ancestors = this.field.getAncestors();
         const level = ancestors.length
-        return `${"  ".repeat(level + 1)}- ${value}`
+        return `${"  ".repeat(level + 1 + shift)}- ${value}`
     }
 
     private removeIndentedListItems = () => {
@@ -239,6 +253,11 @@ export class LineNode {
                 }
             } else {
                 content = `${fieldHeader}${_} ${newValue}`;
+                if (this.field.type === FieldType.ObjectList) {
+                    const newItemLine = new Line(this.plugin, this.line.note, location, "", this.line.number! + 1)
+                    new LineNode(this.plugin, newItemLine, this.buildIndentedListItem("", 1))
+                    newItemLine.renderLine()
+                }
             }
         } else {
             content = `${field.name}${_} ${value}`;

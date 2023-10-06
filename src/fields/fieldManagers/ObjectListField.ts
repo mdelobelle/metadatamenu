@@ -34,7 +34,6 @@ export default class ObjectListField extends FieldManager {
                 location.addOption(FieldIcon[FieldType.ObjectList], action, `Go to ${indexedPath}`);
             }
         } else {
-            //TODO: leads to a modal where there's a list of objectList items 
             const name = this.field.name
             const action = async () => {
                 const note = new Note(this.plugin, file)
@@ -77,6 +76,14 @@ export default class ObjectListField extends FieldManager {
     getOptionsStr(): string {
         return ""
     }
+
+    public async addObjectListItem(note: Note, indexedPath?: string) {
+        //search for object's value in note
+        const value = note.getExistingFieldForIndexedPath(indexedPath)?.value
+        const indexForNew = !value || value.length === 0 ? 0 : value.length
+        if (indexedPath) await postValues(this.plugin, [{ id: `${indexedPath}[${indexForNew}]`, payload: { value: "" } }], note.file, -1)
+    }
+
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note, indexedPath?: string,
         lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
         //TODO: create add and delete item options
