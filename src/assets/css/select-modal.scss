@@ -30,12 +30,17 @@
     button:last-child{
             margin-right: 1em;
     }
+
+    .input-as-title{
+        font-weight: 500;
+    }
 }
 
 .value-container {
 
     display: flex;
     white-space: nowrap;
+    align-items: center;
 
     button{
         margin: 0 0.3em;
@@ -51,6 +56,17 @@
 
     .spacer{
         width: 100%;
+    }
+
+    .index-container{
+        margin: 0em 0.7em 0em 0em;
+        display: block;
+        background-color: var(--color-accent);
+        color: var(--text-on-accent);
+        border-radius: 0.75em;
+        font-size: x-small;
+        min-width: 1.5em;
+        text-align: center;
     }
 
     .icon-container{
@@ -79,5 +95,9 @@
             padding-top: 0.4em;
             color: var(--color-base-60);
         }
+    }
+
+    .empty{
+        color: var(--text-faint)
     }
 }

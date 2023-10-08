@@ -1757,10 +1757,14 @@ span.flatpickr-weekday {
 .suggester-input button:last-child {
   margin-right: 1em;
 }
+.suggester-input .input-as-title {
+  font-weight: 500;
+}
 
 .value-container {
   display: flex;
   white-space: nowrap;
+  align-items: center;
 }
 .value-container button {
   margin: 0 0.3em;
@@ -1773,6 +1777,16 @@ span.flatpickr-weekday {
 }
 .value-container .spacer {
   width: 100%;
+}
+.value-container .index-container {
+  margin: 0em 0.7em 0em 0em;
+  display: block;
+  background-color: var(--color-accent);
+  color: var(--text-on-accent);
+  border-radius: 0.75em;
+  font-size: x-small;
+  min-width: 1.5em;
+  text-align: center;
 }
 .value-container .icon-container {
   margin: 0em 0.7em 0em 0em;
@@ -1795,6 +1809,9 @@ span.flatpickr-weekday {
   margin-left: 1em;
   padding-top: 0.4em;
   color: var(--color-base-60);
+}
+.value-container .empty {
+  color: var(--text-faint);
 }
 
 .metadata-menu.settings .setting-divider {

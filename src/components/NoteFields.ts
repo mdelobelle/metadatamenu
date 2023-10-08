@@ -10,6 +10,7 @@ import { insertMissingFields } from "src/commands/insertMissingFields";
 import { FileClass } from "src/fileClass/fileClass";
 import { FileClassManager } from "./fileClassManager";
 import { ExistingField, Note } from "src/note/note";
+import ObjectListField from "src/fields/fieldManagers/ObjectListField";
 
 export class FieldOptions {
 
@@ -44,7 +45,6 @@ export class FieldsModal extends Modal {
         this.containerEl.addClass("note-fields-modal")
     }
 
-    //ok
     async onOpen() {
         await this.buildNote();
         this.build();
@@ -57,6 +57,9 @@ export class FieldsModal extends Modal {
         //console.log(this.note)
     }
 
+    public removeObject(indexedPath: string) {
+        this.note.removeObject(indexedPath)
+    }
 
     public build(): void {
         this.contentEl.replaceChildren();
@@ -194,7 +197,15 @@ export class FieldsModal extends Modal {
     private buildObjectListItemContainer(container: HTMLDivElement, field: Field, item: any, itemIndexedPath: string) {
         const fieldManager = new FM[field.type](this.plugin, field)
         const { id, index } = Field.getIdAndIndex(itemIndexedPath.split("____").last())
-        const value = `TODO`
+        const value = Object.keys(item || {}).map(key => {
+            if (Array.isArray(item[key])) {
+                return `${item[key].length} ${key}`
+            } else if (typeof item[key] === 'object') {
+                return `${key}: {...}`
+            } else {
+                return `${key}: ${item[key]}`
+            }
+        }).join(" | ")
         const fieldNameWrapper = container.createDiv({ cls: "field-name-wrapper" })
         const fieldNameContainer = fieldNameWrapper.createDiv({ text: `${field.name} [${index}]`, cls: "field-item field-name" });
         const fieldSettingsWrapper = container.createDiv({ cls: "field-settings-wrapper" });
@@ -226,7 +237,6 @@ export class FieldsModal extends Modal {
         fieldOptionsWrapper.createDiv({ cls: "field-options-spacer" });
         const fieldOptions = new FieldOptions(fieldOptionsWrapper)
         fieldManager.addFieldOption(this.file, fieldOptions, itemIndexedPath, this.noteFields);
-        //TODO: bouton pour ajouter un nouvel item à la liste
     }
 
     private openInsertMissingFieldsForFileClassModal(fileClass: FileClass): void {
@@ -321,6 +331,20 @@ export class FieldsModal extends Modal {
         })
     }
 
+    private buildInsertNewItem(field: Field, indexedPath: string) {
+        const insertNewItemContainer = this.contentEl.createDiv({ cls: "insert-all-fields" });
+        insertNewItemContainer.createDiv({ text: "Add a new item" });
+        const insertNewItemBtn = new ButtonComponent(insertNewItemContainer)
+        insertNewItemBtn.setIcon("list-plus")
+
+        insertNewItemBtn.onClick(async () => {
+            const fieldManager = new FieldType.FieldManager[field.type](this.plugin, field) as ObjectListField
+            if (this.note) fieldManager.addObjectListItem(this.note, this.indexedPath)
+            this.indexedPath = indexedPath
+            this.close()
+        })
+    }
+
     private buildFieldsContainer() {
         const fieldsContainer = this.contentEl.createDiv({ cls: "note-fields-container" });
         const { id, index } = Field.getIdAndIndex(this.indexedPath?.split("____").last())
@@ -328,6 +352,7 @@ export class FieldsModal extends Modal {
             const field = this.note.fields.find(_f => _f.id === id)!
             const items = this.note.existingFields.find(eF => eF.indexedPath === this.indexedPath)?.value
             items.forEach((item: any, index: number) => this.buildObjectListItemContainer(fieldsContainer, field, item, `${this.indexedPath}[${index}]`))
+            this.buildInsertNewItem(field, this.indexedPath)
         } else {
             this.existingFields.forEach(eF => {
                 this.buildFieldContainer(fieldsContainer, eF.field, eF.value, eF.indexedPath)
@@ -363,6 +388,11 @@ export default class NoteFieldsComponent extends Component {
         await this.fieldsModal.buildNote();
         this.fieldsModal.indexedPath = indexedPath
         this.fieldsModal.build();
+    }
+
+    async removeObject(indexedPath: string) {
+        await this.fieldsModal.buildNote()
+        this.fieldsModal.removeObject(indexedPath)
     }
 
     onload(): void {

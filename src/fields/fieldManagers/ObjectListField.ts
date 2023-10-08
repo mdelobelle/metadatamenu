@@ -26,27 +26,40 @@ export default class ObjectListField extends FieldManager {
     }
 
     addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string, noteField?: NoteFieldsComponent): void {
-
+        const name = this.field.name
         if (noteField) {
-            const action = async () => await noteField.moveToObject(`${indexedPath}`);
+            const moveToObject = async () => await noteField.moveToObject(`${indexedPath}`);
+            const removeObject = async () => await noteField.removeObject(`${indexedPath}`)
             if (ObjectListField.isFieldOptions(location)) {
                 //location.addOption(FieldIcon[FieldType.ObjectList], action, `Go to ${this.field.name}'s fields`);
-                location.addOption(FieldIcon[FieldType.ObjectList], action, `Go to ${indexedPath}`);
+                location.addOption(FieldIcon[FieldType.ObjectList], moveToObject, `Go to this ${name} item`);
+                location.addOption("trash", removeObject, `Remove this ${name} item`)
             }
         } else {
-            const name = this.field.name
-            const action = async () => {
+
+            const moveToObject = async () => {
                 const note = new Note(this.plugin, file)
                 await note.build()
                 const eF = note.existingFields.find(eF => eF.indexedPath === indexedPath)
                 if (eF) this.createAndOpenFieldModal(file, eF.field.name, note, eF.indexedPath)
             }
+            const removeObject = async () => {
+                const note = new Note(this.plugin, file)
+                await note.build()
+                if (indexedPath) note.removeObject(indexedPath)
+            }
             if (ObjectListField.isSuggest(location)) {
                 location.options.push({
                     id: `update_${name}`,
                     actionLabel: `<span>Update <b>${name}</b></span>`,
-                    action: action,
+                    action: moveToObject,
                     icon: FieldIcon[FieldType.ObjectList]
+                });
+                location.options.push({
+                    id: `remove_${name}`,
+                    actionLabel: `<span>Remove this <b>${name}</b> item</span>`,
+                    action: removeObject,
+                    icon: "trash"
                 });
             }
         }
@@ -92,8 +105,13 @@ export default class ObjectListField extends FieldManager {
     }
 
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {
+        console.log(value)
         const fields = this.plugin.fieldIndex.filesFields.get(file.path)
-        if (Array.isArray(value)) container.setText(`${value.length} items: [${fields?.filter(_f => _f.path === this.field.id).map(_f => _f.name).join(" | ")}]`)
+        if (Array.isArray(value)) {
+            const items = fields?.filter(_f => Field.upperPath(_f.path) === this.field.path && _f.path !== "").map(_f => _f.name) || []
+            console.log(fields)
+            container.setText(`${value.length} item${value.length !== 1 ? "(s)" : ""}: [${items.join(" | ")}]`)
+        }
     }
 
 }

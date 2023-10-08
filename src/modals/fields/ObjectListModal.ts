@@ -1,15 +1,16 @@
 import MetadataMenu from "main";
-import { Modal, TFile, ButtonComponent, SuggestModal } from "obsidian";
+import { Modal, TFile, ButtonComponent, SuggestModal, setIcon } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import Field from "src/fields/Field";
 import ObjectListField, { ObjectListItem } from "src/fields/fieldManagers/ObjectListField";
 import { Note } from "src/note/note";
-import { FieldManager } from "src/types/fieldTypes";
+import { FieldManager, FieldType } from "src/types/fieldTypes";
 import { cleanActions } from "src/utils/modals";
 import ObjectModal from "./ObjectModal";
 
 export default class ObjectListModal extends SuggestModal<ObjectListItem> {
     private addButton: ButtonComponent;
+    private toRemove?: ObjectListItem
     constructor(
         private plugin: MetadataMenu,
         private file: TFile,
@@ -30,16 +31,29 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
         this.containerEl.addClass("narrow")
         const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
         inputContainer.appendChild(this.inputEl)
+        this.inputEl.disabled = true
+        this.inputEl.value = `${this.field.name} items`
+        this.inputEl.addClass("input-as-title")
         this.containerEl.find(".prompt").prepend(inputContainer)
         // addButton
         this.addButton = new ButtonComponent(inputContainer)
         this.addButton.setIcon("plus")
         this.addButton.onClick(async () => {
             const fieldManager = new FieldManager[this.field.type](this.plugin, this.field) as ObjectListField
-            if (this.note) fieldManager.addObjectListItem(this.note, this.indexedPath)
+            if (this.note) {
+                await fieldManager.addObjectListItem(this.note, this.indexedPath);
+                //FIXME too fast for reopening better close
+                /*
+                const newNote = new Note(this.plugin, this.file);
+                await newNote.build()
+                const fieldModal = new ObjectListModal(this.plugin, this.file, this.field, newNote, this.indexedPath, this.lineNumber, this.after, this.asList, this.asComment)
+                fieldModal.open();
+                */
+                this.close()
+            }
         })
         this.addButton.setCta();
-        this.addButton.setTooltip("Add this value to this field settings")
+        this.addButton.setTooltip("Add a new item")
     };
 
     getSuggestions(query: string = ""): ObjectListItem[] {
@@ -48,12 +62,38 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
     }
 
     renderSuggestion(item: ObjectListItem, el: HTMLElement) {
-        el.setText(`${item.indexInList}: ` + item.fields.map(eF => eF.value).join(", ") || "not found")
+        const container = el.createDiv({ cls: "value-container" })
+        const index = container.createDiv({ cls: "index-container" })
+        index.setText(`${item.indexInList}`)
+        const valueContainer = container.createDiv({})
+        if (item.fields.length) {
+            valueContainer.setText(item.fields.map(eF => {
+                if (Array.isArray(eF.value)) {
+                    return `${eF.value.length} ${eF.field.name}`
+                } else if (typeof eF.value === 'object') {
+                    return `${eF.field.name}: {...}`
+                } else {
+                    return `${eF.field.name}: ${eF.value}`
+                }
+            }).join(" | "))
+        } else {
+            valueContainer.setText("<--empty-->")
+            valueContainer.addClass("empty")
+        }
+        container.createDiv({ cls: "spacer" })
+        const removeContainer = container.createDiv({ cls: "icon-container" })
+        setIcon(removeContainer, "trash")
+        removeContainer.onclick = () => { this.toRemove = item }
     }
 
     async onChooseSuggestion(item: ObjectListItem, evt: MouseEvent | KeyboardEvent) {
-        const objectModal = new ObjectModal(this.plugin, this.file, this.note, item.indexedPath)
-        objectModal.open()
-
+        if (this.toRemove) {
+            const note = new Note(this.plugin, this.file)
+            await note.build()
+            if (item.indexedPath) note.removeObject(item.indexedPath)
+        } else {
+            const objectModal = new ObjectModal(this.plugin, this.file, this.note, item.indexedPath)
+            objectModal.open()
+        }
     }
 };

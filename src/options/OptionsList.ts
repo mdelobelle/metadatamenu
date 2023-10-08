@@ -144,7 +144,7 @@ export default class OptionsList {
 		}
 	}
 
-	//TODO: replace the input field by a select field
+	//TODO: replace the input field by a select field managed in note or lineNode
 	private async buildAndOpenFileClassModal(field: Field): Promise<void> {
 		const note = new Note(this.plugin, this.file)
 		await note.build()
@@ -152,26 +152,6 @@ export default class OptionsList {
 		modal.titleEl.setText(`Change Value for <${field.name}>`);
 		modal.open()
 	}
-
-	private buildFileClassFieldOptions(field: Field, value: string): void {
-		const action = async () => this.buildAndOpenFileClassModal(field)
-		if (isMenu(this.location)) {
-			this.location.addItem((item) => {
-				item.setTitle(`Update ${field.name}`);
-				item.setIcon("wrench");
-				item.onClick(action);
-				item.setSection("metadata-menu");
-			})
-		} else if (isSuggest(this.location)) {
-			this.location.options.push({
-				id: `update_${field.name}`,
-				actionLabel: `<span>Update <b>${field.name}</b></span>`,
-				action: action,
-				icon: FieldIcon[FieldType.Input]
-			});
-		};
-	}
-
 
 	private openNoteFieldModalOption(): void {
 		const lastFileClassName = this.plugin.fieldIndex.filesFileClassesNames.get(this.file.path)?.last()

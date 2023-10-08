@@ -27,7 +27,7 @@ export default class MetadataMenu extends Plugin {
 	public indexStatus: IndexStatus;
 
 	async onload(): Promise<void> {
-		console.log('<------ Metadata Menu loaded -------->');
+		console.log('+------ Metadata Menu loaded --------+');
 		if (!this.app.plugins.enabledPlugins.has("dataview") || (
 			//@ts-ignore
 			this.app.plugins.plugins["dataview"] && !this.app.plugins.plugins["dataview"].settings.enableDataviewJs)
@@ -114,6 +114,6 @@ export default class MetadataMenu extends Plugin {
 	};
 
 	onunload() {
-		console.log('>------ Metadata Menu unloaded ------>');
+		console.log('x------ Metadata Menu unloaded ------x');
 	};
 }

@@ -188,6 +188,7 @@ export class Note {
     }
     //TODO: remove field, in case of objectList items, it will be funny
 
+
     private insertField(indexedPath: string, payload: FieldPayload, lineNumber?: number): void {
         //TODO: exclude insertion of object and objectlist items inline
         const upperPath = Field.upperIndexedPathObjectPath(indexedPath)
@@ -256,6 +257,7 @@ export class Note {
                     const node = this.getNodeForIndexedPath(upperPath)
                     if (node) {
                         const newItemLine = new Line(this.plugin, node.line.note, position, "", node.line.number! + 1)
+                        // FIXME if field is not in list, shift of 0, else shift 1
                         new LineNode(this.plugin, newItemLine, node.buildIndentedListItem("", 1))
                         newItemLine.renderLine()
                     }
@@ -266,6 +268,11 @@ export class Note {
         }
     }
 
+    public removeObject(indexedPath: string): void {
+        const nodes = this.lines.map(_l => _l.nodes.filter(_n => _n.indexedPath?.startsWith(indexedPath))).flat(Infinity) as LineNode[]
+        nodes.map(_n => _n.line.removeLineFromNote())
+        this.plugin.fileTaskManager.pushTask(async () => { await this.plugin.app.vault.modify(this.file, this.renderNote()) })
+    }
 
     public createOrUpdateFields(fields: FieldsPayload, lineNumber?: number): void {
         fields.forEach(field => {

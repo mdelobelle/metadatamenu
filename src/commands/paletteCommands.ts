@@ -270,7 +270,6 @@ function addFileClassTableViewCommand(plugin: MetadataMenu) {
     })
 }
 
-
 function addUpdateLookupsAndFormulas(plugin: MetadataMenu) {
     plugin.addCommand({
         id: "update_all_lookups",
@@ -332,7 +331,6 @@ function addUpdateFileFormulasCommand(plugin: MetadataMenu) {
         }
     })
 }
-
 
 export function addCommands(plugin: MetadataMenu, view: View | undefined | null) {
     const classFilesPath = plugin.settings.classFilesPath
