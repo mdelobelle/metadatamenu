@@ -414,11 +414,11 @@ export default class FieldIndex extends Component {
 
     getLookupQueries(): void {
         this.plugin.presetFields.filter(field => field.type === FieldType.Lookup).forEach(field => {
-            this.lookupQueries.set(`presetField___${field.id}`, field)
+            this.lookupQueries.set(`presetField___${field.name}`, field)
         });
         [...this.fileClassesFields].forEach(([fileClassName, fields]) => {
             fields.filter(field => field.type === FieldType.Lookup).forEach(field => {
-                this.lookupQueries.set(`${fileClassName}___${field.id}`, field)
+                this.lookupQueries.set(`${fileClassName}___${field.name}`, field)
             })
         })
     }

@@ -99,17 +99,14 @@ export default class ObjectListField extends FieldManager {
 
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note, indexedPath?: string,
         lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
-        //TODO: create add and delete item options
         const fieldModal = new ObjectListModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment)
         fieldModal.open();
     }
 
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {
-        console.log(value)
         const fields = this.plugin.fieldIndex.filesFields.get(file.path)
         if (Array.isArray(value)) {
             const items = fields?.filter(_f => Field.upperPath(_f.path) === this.field.path && _f.path !== "").map(_f => _f.name) || []
-            console.log(fields)
             container.setText(`${value.length} item${value.length !== 1 ? "(s)" : ""}: [${items.join(" | ")}]`)
         }
     }

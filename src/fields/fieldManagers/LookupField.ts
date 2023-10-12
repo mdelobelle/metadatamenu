@@ -10,8 +10,9 @@ import * as Lookup from "src/types/lookupTypes";
 import { Status } from "src/types/lookupTypes";
 import { FieldOptions } from "src/components/NoteFields";
 import { updateLookups } from "src/commands/updateLookups";
-import { postValues } from "src/commands/postValues";
 import { Note } from "src/note/note";
+import { extractLinks, getLink } from "src/utils/parser";
+import { displayLinksOrText } from "src/utils/linksUtils";
 
 export default class LookupField extends FieldManager {
 
@@ -64,7 +65,7 @@ export default class LookupField extends FieldManager {
         asList?: boolean,
         asComment?: boolean
     ): Promise<void> {
-        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
+        //await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
     }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }): void {
@@ -73,6 +74,7 @@ export default class LookupField extends FieldManager {
         const fileClassName = this.plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName)?.fileClassName || "presetField"
         const fieldValue = dv.el('span', this.plugin.fieldIndex.fileLookupFieldLastValue.get(`${file.path}__related__${fileClassName}___${fieldName}`), attrs);
         fieldContainer.appendChild(fieldValue);
+
     }
 
     private displaySelectedOutputOptionContainer(optionContainers: [Array<keyof typeof Lookup.Type>, HTMLElement | undefined][], value: keyof typeof Lookup.Type) {
@@ -85,9 +87,8 @@ export default class LookupField extends FieldManager {
         })
     }
 
-    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked = () => { }): void {
-        const fileClassName = this.plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.id === this.field.id)?.fileClassName || "presetField"
-        container.createDiv({ text: this.plugin.fieldIndex.fileLookupFieldLastValue.get(`${file.path}__related__${fileClassName}___${fieldName}`) })
+    public displayValue(container: HTMLDivElement, file: TFile, value: string, onClicked = () => { }): void {
+        displayLinksOrText(value, file, container, this.plugin, () => onClicked)
     }
 
     private displaySelectedOutputWarningContainer(optionWarningContainer: HTMLDivElement, value: keyof typeof Lookup.Type) {

@@ -176,9 +176,7 @@ export class FieldsModal extends Modal {
             fieldBtn.setTooltip("Add field at section")
             fieldBtn.onClick(() => {
                 //in case of objectField grand-child, don't ask for chooseSection
-                //TODO could be simplified? with path !== ""
-                const isObjectGrandChild = FieldType.objectTypes.includes(field.getAncestors(field.id)[0]?.type)
-                if (!isObjectGrandChild) {
+                if (field.path === "") {
                     new ChooseSectionModal(
                         this.plugin,
                         this.file,
@@ -321,13 +319,23 @@ export class FieldsModal extends Modal {
         insertMissingFieldsBtn.setIcon("battery-full")
 
         insertMissingFieldsBtn.onClick(() => {
-            new ChooseSectionModal(
-                this.plugin,
-                this.file,
-                (lineNumber: number, after: boolean, asList: boolean, asComment: boolean) => insertMissingFields(
-                    this.plugin, this.file.path, lineNumber, after, asList, asComment
+            if (this.indexedPath === "") {
+                new ChooseSectionModal(
+                    this.plugin,
+                    this.file,
+                    (lineNumber: number, after: boolean, asList: boolean, asComment: boolean) => insertMissingFields(
+                        this.plugin, this.file.path, lineNumber, after, asList, asComment
+                    )
+                ).open();
+            } else {
+                //FIXME doesnt work for objectlistitem
+                const field = this.note.getExistingFieldForIndexedPath(this.indexedPath)?.field
+                const fileClass = field?.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
+                insertMissingFields(
+                    this.plugin, this.file.path, -1, false, false, false, fileClass?.name, this.indexedPath
                 )
-            ).open();
+
+            }
         })
     }
 

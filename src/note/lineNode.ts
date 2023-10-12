@@ -40,40 +40,43 @@ export class LineNode {
         public parsedField?: parsedField
     ) {
         //try to get field from content if not provided
+
+        const frontmatter = this.line.note.cache?.frontmatter!
+        let indentationLevel: number = 0;
+        const indentRegex = new RegExp(/(?<indentation>\s*)(?<list>-\s)?(?<value>.*)/)
+        const fR = this.rawContent.match(indentRegex);
+        let listItem: boolean = false
+        if (fR?.groups && fR.groups.indentation) {
+            indentationLevel = fR.groups.indentation.length / 2
+            if (fR.groups.list) {
+                // list nous sert à déterminer que cette ligne correspond à l'item d'une liste
+                // ça va servir dans le cas des objectList fields plus bas
+                indentationLevel += 1;
+                listItem = true
+            }
+        }
+        this.line.indentationLevel = indentationLevel
+        if (indentationLevel) {
+            const parentLine = this.line.note.lines.filter(line =>
+                line.number < this.line.number &&
+                line.indentationLevel < this.line.indentationLevel
+            ).last()
+            this.line.parentLine = parentLine
+        }
         switch (this.line.position) {
             case "yaml":
                 {
                     //console.log("=========== NEXT LINE ============")
                     //console.log(this.rawContent)
-                    const frontmatter = this.line.note.cache?.frontmatter!
-                    let indentationLevel: number = 0;
-                    const indentRegex = new RegExp(/(?<indentation>\s*)(?<list>-\s)?.*/)
-                    const fR = this.rawContent.match(indentRegex);
-                    let listItem: boolean = false
-                    if (fR?.groups && fR.groups.indentation) {
-                        indentationLevel = fR.groups.indentation.length / 2
-                        if (fR.groups.list) {
-                            // list nous sert à déterminer que cette ligne correspond à l'item d'une liste
-                            // ça va servir dans le cas des objectList fields plus bas
-                            indentationLevel += 1;
-                            listItem = true
-                        }
-                    }
-                    this.line.indentationLevel = indentationLevel
-                    if (indentationLevel) {
-                        const parentLine = this.line.note.lines.filter(line =>
-                            line.number < this.line.number &&
-                            line.indentationLevel < this.line.indentationLevel
-                        ).last()
-                        this.line.parentLine = parentLine
-                    }
                     const { attribute: yamlAttr, values: value } = frontMatterLineField(this.rawContent)
                     //manage ObjectList empty item
                     if (!yamlAttr && listItem) {
                         const parentLine = this.line.parentLine
                         const parentNode = parentLine?.nodes[0]
                         const parentField = parentNode?.field
-                        if (parentField?.type === FieldType.ObjectList) {
+                        if (parentField?.type === FieldType.ObjectList ||
+                            (parentField?.type === FieldType.Lookup &&
+                                Lookup.bulletListLookupTypes.includes(parentField.options.outputType as Lookup.Type))) {
                             const objectListLines = parentLine!.objectListLines
                             objectListLines.push([this.line])
                             const index = objectListLines.length - 1
@@ -158,6 +161,7 @@ export class LineNode {
                         this.line.note.existingFields.push(existingField)
                     }
                 }
+                break;
             case "inline":
                 {
                     if (field) {
@@ -165,8 +169,26 @@ export class LineNode {
                         this.indexedId = field.id
                         this.indexedPath = field.getIndexedPath(this)
                         this.line.note.existingFields.push(existingField)
+                    } else if (listItem) {
+                        const parentLine = this.line.parentLine
+                        const parentNode = parentLine?.nodes[0]
+                        const parentField = parentNode?.field
+                        if (parentField && parentField?.type === FieldType.Lookup &&
+                            Lookup.bulletListLookupTypes.includes(parentField.options.outputType as Lookup.Type)) {
+                            const objectListLines = parentLine!.objectListLines
+                            objectListLines.push([this.line])
+                            this.indexedId = ""
+                            this.value = ""
+                            const eF = parentLine!.note.getExistingFieldForIndexedPath(parentField.id)
+                            if (eF) {
+                                if (fR?.groups && fR.groups.value) {
+                                    eF.value = [...(eF.value || []), fR.groups.value]
+                                }
+                            }
+                        }
                     }
                 }
+                break;
         }
         this.line.nodes.push(this)
     }

@@ -6,7 +6,7 @@ import MetadataMenu from "main";
 import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
 import { Note } from "src/note/note";
-import { getLink } from "src/utils/parser";
+import { extractLinks, getLink } from "src/utils/parser";
 
 export default class MultiFileModal extends FuzzySuggestModal<TFile> {
 
@@ -24,10 +24,10 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
         private asComment: boolean = false
     ) {
         super(plugin.app);
-        console.log(this.note?.getExistingFieldForIndexedPath(this.indexedPath))
         const initialOptions: string | string[] = this.note ? this.note.getExistingFieldForIndexedPath(this.indexedPath)?.value || [] : []
         if (initialOptions) {
             if (Array.isArray(initialOptions)) {
+                // in frontmatter it can be a regular array
                 initialOptions.map(item => {
                     const link = getLink(item, this.file)
                     if (link) {
@@ -36,11 +36,15 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
                     }
                 })
             } else {
-                const link = getLink(initialOptions, this.file)
-                if (link) {
-                    const file = this.plugin.app.vault.getAbstractFileByPath(link.path)
-                    if (file instanceof TFile && !this.selectedFiles.map(_f => _f.path).includes(link.path)) this.selectedFiles.push(file)
-                }
+                // in inline fields, it can be links comma separated, let's matchAll
+                const links = extractLinks(initialOptions)
+                links.forEach(_link => {
+                    const link = getLink(_link, this.file)
+                    if (link) {
+                        const file = this.plugin.app.vault.getAbstractFileByPath(link.path)
+                        if (file instanceof TFile && !this.selectedFiles.map(_f => _f.path).includes(link.path)) this.selectedFiles.push(file)
+                    }
+                })
             }
         } else {
             this.selectedFiles = [];

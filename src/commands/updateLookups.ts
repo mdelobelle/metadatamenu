@@ -31,8 +31,8 @@ export async function updateLookups(
     const payloads: Record<string, FieldsPayload> = {}
     const updatedFields: string[] = []
     for (let lookupFileId of f.fileLookupFiles.keys()) {
-        const matchRegex = /(?<filePath>.*)__related__(?<fileClassName>.*)___(?<id>.*)/
-        const { filePath, fileClassName, id } = lookupFileId.match(matchRegex)?.groups || {}
+        const matchRegex = /(?<filePath>.*)__related__(?<fileClassName>.*)___(?<fieldName>.*)/
+        const { filePath, fileClassName, fieldName } = lookupFileId.match(matchRegex)?.groups || {}
         const tFile = plugin.app.vault.getAbstractFileByPath(filePath) as TFile
         const dvApi = plugin.app.plugins.plugins.dataview?.api
         const dvFile = dvApi && dvApi.page(tFile.path)
@@ -40,7 +40,7 @@ export async function updateLookups(
             payloads[filePath] = payloads[filePath] || []
             let newValue = "";
             const pages = f.fileLookupFiles.get(lookupFileId)
-            const field = f.filesFields.get(filePath)?.find(field => field.id == id)
+            const field = f.filesFields.get(filePath)?.find(field => field.name == fieldName)
             if (field) {
                 const outputType = field.options.outputType
                 if (!f.fileLookupFieldLastOutputType.get(lookupFileId)) f.fileLookupFieldLastOutputType.set(lookupFileId, outputType)
@@ -120,14 +120,14 @@ export async function updateLookups(
                 if (shouldCheckForUpdate && (valueHasChanged || formatHasChanged)) {
                     const previousValuesCount = plugin.fieldIndex.previousFileLookupFilesValues.get(lookupFileId) || 0
                     payloads[filePath].push({ id: field.id, payload: { value: newValue, previousItemsCount: previousValuesCount } })
-                    updatedFields.push(`${filePath}__${id}`)
+                    updatedFields.push(`${filePath}__${fieldName}`)
                     //await postValues(plugin, [{ name: fieldName, payload: { value: newValue, previousItemsCount: previousValuesCount } }], tFile)
                     //f.fileLookupFieldsStatus.set(`${filePath}__${fieldName}`, Lookup.Status.upToDate)
                 } else if (source !== "full Index") { // this case is for fileClass changes, no need for rewrite other lookups after cache update
                     plugin.fieldIndex.fileChanged = false
                 }
                 if (!valueHasChanged && !formatHasChanged) {
-                    f.fileLookupFieldsStatus.set(`${filePath}__${id}`, Lookup.Status.upToDate)
+                    f.fileLookupFieldsStatus.set(`${filePath}__${fieldName}`, Lookup.Status.upToDate)
                 }
             }
         }

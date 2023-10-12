@@ -246,6 +246,7 @@ export async function updateCanvas(
             }
         })
         //update target files
+        // TODO tester
         currentFiles.forEach(async ({ cumulatedLinksFields, cumulatedGroupsFields, cumulatedGroupsLinksFields }, filePath) => {
             const file = app.vault.getAbstractFileByPath(filePath)
             if (file && file instanceof TFile) {
@@ -253,21 +254,20 @@ export async function updateCanvas(
                 await note.build()
                 const payload: FieldsPayload = []
                 cumulatedLinksFields.forEach((linkNodes, name) => {
-                    const field = note.getNodeForFieldName(name)?.field
+                    const field = note.fields.find(_f => _f.name === name)
                     const values = linkNodes.map((node: CanvasFileData) => FieldManager.buildMarkDownLink(plugin, file, node.file, node.subpath))
                     if (field) payload.push({ id: field.id, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
                 })
                 cumulatedGroupsFields.forEach((groupNodes, name) => {
-                    const field = note.getNodeForFieldName(name)?.field
+                    const field = note.fields.find(_f => _f.name === name)
                     const values = groupNodes.map((group: CanvasGroupData) => group.label)
                     if (field) payload.push({ id: field.id, payload: { value: values ? [...(new Set(values.filter(v => !!v)))].join(",") : "" } })
                 })
                 cumulatedGroupsLinksFields.forEach((linkNodes, name) => {
-                    const field = note.getNodeForFieldName(name)?.field
+                    const field = note.fields.find(_f => _f.name === name)
                     const values = linkNodes.map((node: CanvasFileData) => FieldManager.buildMarkDownLink(plugin, file, node.file, node.subpath))
                     if (field) payload.push({ id: field.id, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
                 })
-                //TODO: changer postValues il faut utiliser le indexedPath
                 if (payload.length) await postValues(plugin, payload, file)
             }
         })

@@ -28,6 +28,16 @@ export const getLink = (linkText: string, source: TFile): { path: string, alias?
     return
 }
 
+export const extractLinks = (rawContent: string): string[] => {
+    const links: string[] = []
+    const linksIterator = rawContent.matchAll(/\[\[(?:[^\]]*)\]\]/g)
+    let rawLink: string
+    while (rawLink = linksIterator.next()?.value?.[0]) {
+        links.push(rawLink)
+    }
+    return links
+}
+
 export const encodeLink = (value: string): string => {
     /* replace link brackets by "impossible" combination of characters so that they won't be mixed up with inSentence field brackets when seaching with regex*/
     return value ? value

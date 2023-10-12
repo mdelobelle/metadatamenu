@@ -3,6 +3,7 @@ import { TFile } from "obsidian";
 import MultiFileModal from "src/modals/fields/MultiFileModal";
 import { Note } from "src/note/note";
 import { FieldType } from "src/types/fieldTypes";
+import { displayLinksOrText } from "src/utils/linksUtils";
 import { getLink } from "src/utils/parser";
 import Field from "../Field";
 import AbstractFileBasedField from "./AbstractFileBasedField";
@@ -49,24 +50,6 @@ export default class MultiFileField extends AbstractFileBasedField<MultiFileModa
 
     public displayValue(container: HTMLDivElement, file: TFile, value: string, onClick: () => {}): void {
 
-        const values = Array.isArray(value) ? value : [value]
-        values.forEach((value, i) => {
-            const link = getLink(value, file)
-            if (link?.path) {
-                const linkText = link.path.split("/").last() || ""
-                const linkEl = container.createEl('a', { text: linkText.replace(/(.*).md/, "$1") });
-                linkEl.onclick = () => {
-                    this.plugin.app.workspace.openLinkText(link.path, file.path, true)
-                    onClick()
-                }
-            } else {
-                container.createDiv({ text: value });
-            }
-            if (i < values.length - 1) {
-                container.createEl('span', { text: " | " })
-            }
-        })
-
-        container.createDiv()
+        displayLinksOrText(value, file, container, this.plugin, () => onClick)
     }
 }

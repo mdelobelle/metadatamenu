@@ -22,6 +22,7 @@ export default class FieldSettingsModal extends Modal {
     private frontmatterListDisplayContainer: HTMLDivElement;
     private iconName: TextComponent;
     private path: string;
+    private parentSelect: DropdownComponent
 
     constructor(
         private plugin: MetadataMenu,
@@ -124,20 +125,25 @@ export default class FieldSettingsModal extends Modal {
         const parentSelectorContainerLabel = container.createDiv({ cls: "label" });
         parentSelectorContainerLabel.setText(`Parent:`);
         container.createDiv({ cls: "spacer" })
-        const select = new DropdownComponent(container);
-        select.addOption("none", "--None--")
+        this.parentSelect = new DropdownComponent(container);
+        this.parentSelect.addOption("none", "--None--")
         compatibleParents.forEach(parent => {
             const path = parent.path ? parent.path + "____" + parent.id : parent.id
             const display = path.split("____").map(id => Field.getFieldFromId(this.plugin, id)?.name || "").join(" > ")
-            select.addOption(path, display)
+            this.parentSelect.addOption(path, display)
         })
         if (this.field.path) {
-            select.setValue(this.field.path || "none")
+            this.parentSelect.setValue(this.field.path || "none")
         } else {
-            select.setValue("none")
+            this.parentSelect.setValue("none")
         }
 
-        select.onChange((path: string) => {
+        if (this.field.type === FieldType.Lookup || this.field.type === FieldType.Formula) {
+            this.parentSelect.setDisabled(true)
+            this.path = ""
+        }
+
+        this.parentSelect.onChange((path: string) => {
             if (path === "none") {
                 this.path = ""
                 this.field.path = ""
@@ -208,6 +214,14 @@ export default class FieldSettingsModal extends Modal {
                 )
             ) {
                 this.field.options = {}
+            }
+            if (this.field.type === FieldType.Lookup || this.field.type === FieldType.Formula) {
+                this.parentSelect.setDisabled(true)
+                this.parentSelect.setValue("none")
+                this.path = ""
+                this.field.path = ""
+            } else {
+                this.parentSelect.setDisabled(false)
             }
             if (multiTypes.includes(this.field.type)) {
                 this.frontmatterListDisplayContainer.show()

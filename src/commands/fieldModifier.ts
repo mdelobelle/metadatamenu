@@ -48,7 +48,7 @@ function createDvField(
         /*
         field modifiers are only available for root fields
         */
-        dv.el('span', p[this.field.name], attrs);
+        dv.el('span', p[field!.name], attrs);
         return
     }
     if (field?.type) {
@@ -67,7 +67,6 @@ export function fieldModifier(
     fieldName: string,
     attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
 ): HTMLElement {
-
     /* fieldContainer*/
     const fieldContainer: HTMLElement = dv.el("div", "")
     fieldContainer.setAttr("class", `metadata-menu-dv-field-container ${fieldName}`)
