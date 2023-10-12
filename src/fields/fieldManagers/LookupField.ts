@@ -35,7 +35,6 @@ export default class LookupField extends FieldManager {
                 this.field.options.outputType
             ) status = Status.changed
             const icon = status === Status.changed ? "refresh-ccw" : "file-check"
-            //FIXME: updateFormula and updateLookups have to adapted to indexedPath?
             const action = () => { updateLookups(this.plugin, "single_command", { file: file, fieldName: this.field.name }) }
             if (LookupField.isSuggest(location) && status === Status.changed) {
                 location.options.push({

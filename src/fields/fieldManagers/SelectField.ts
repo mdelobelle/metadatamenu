@@ -35,7 +35,7 @@ export default class SelectField extends AbstractListBasedField {
                 icon: FieldIcon[FieldType.Select]
             });
         } else if (SelectField.isFieldOptions(location)) {
-            location.addOption(FieldIcon[FieldType.Multi], action, `Update ${name}'s value`);
+            location.addOption(FieldIcon[FieldType.Select], action, `Update ${name}'s value`);
         };
     };
 

@@ -151,8 +151,9 @@ export class LineNode {
                         }
                     }
                     if (yamlAttr === this.plugin.settings.fileClassAlias) {
-                        const fileClassField = new Field(this.plugin, yamlAttr)
-                        fileClassField.type = FieldType.Input
+                        const fileClasses = [...this.plugin.fieldIndex.fileClassesName.keys()].sort()
+                        const fileClassField = new Field(this.plugin, yamlAttr, fileClasses)
+                        fileClassField.type = FieldType.Select
                         fileClassField.id = `fileclass-field-${this.plugin.settings.fileClassAlias}`
                         this.field = fileClassField
                         this.indexedPath = fileClassField.id
