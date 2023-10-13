@@ -73,7 +73,6 @@ export async function updateFormulas(
                 if (!shouldUpdate) {
                     f.fileFormulaFieldsStatus.set(`${filePath}__${field.name}`, Status.changed)
                 } else {
-                    //TODO: tester
                     await postValues(plugin, [{ id: field.id, payload: { value: newValue } }], filePath)
                     f.fileFormulaFieldLastValue.set(id, newValue);
                     f.fileFormulaFieldsStatus.set(`${filePath}__${field.name}`, Status.upToDate)

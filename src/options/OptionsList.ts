@@ -40,12 +40,10 @@ export default class OptionsList {
 		private plugin: MetadataMenu,
 		private file: TFile,
 		private location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal | "ManageAtCursorCommand",
-		private includedFields?: string[],
 		private path: string = ""
 	) {
 		this.file = file;
 		this.location = location;
-		this.includedFields = includedFields ? [this.plugin.settings.fileClassAlias, ...includedFields] : [this.plugin.settings.fileClassAlias];
 
 	};
 
@@ -144,14 +142,6 @@ export default class OptionsList {
 		}
 	}
 
-	//TODO: replace the input field by a select field managed in note or lineNode
-	private async buildAndOpenFileClassModal(field: Field): Promise<void> {
-		const note = new Note(this.plugin, this.file)
-		await note.build()
-		const modal = new InputModal(this.plugin, this.file, field, undefined);
-		modal.titleEl.setText(`Change Value for <${field.name}>`);
-		modal.open()
-	}
 
 	private openNoteFieldModalOption(): void {
 		const lastFileClassName = this.plugin.fieldIndex.filesFileClassesNames.get(this.file.path)?.last()

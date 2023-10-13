@@ -28,7 +28,7 @@ export default class ObjectField extends FieldManager {
             const action = async () => {
                 //create an optionList for this indexedPath
                 const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.plugin.app)
-                const optionsList = new OptionsList(this.plugin, file, fieldCommandSuggestModal, undefined, indexedPath)
+                const optionsList = new OptionsList(this.plugin, file, fieldCommandSuggestModal)
                 await optionsList.createExtraOptionList()
             }
             if (ObjectField.isSuggest(location)) {
