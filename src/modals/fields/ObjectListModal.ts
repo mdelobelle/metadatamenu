@@ -35,6 +35,7 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
         this.inputEl.value = `${this.field.name} items`
         this.inputEl.addClass("input-as-title")
         this.containerEl.find(".prompt").prepend(inputContainer)
+
         // addButton
         this.addButton = new ButtonComponent(inputContainer)
         this.addButton.setIcon("plus")
@@ -42,13 +43,6 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
             const fieldManager = new FieldManager[this.field.type](this.plugin, this.field) as ObjectListField
             if (this.note) {
                 await fieldManager.addObjectListItem(this.note, this.indexedPath);
-                //FIXME too fast for reopening better close
-                /*
-                const newNote = new Note(this.plugin, this.file);
-                await newNote.build()
-                const fieldModal = new ObjectListModal(this.plugin, this.file, this.field, newNote, this.indexedPath, this.lineNumber, this.after, this.asList, this.asComment)
-                fieldModal.open();
-                */
                 this.close()
             }
         })

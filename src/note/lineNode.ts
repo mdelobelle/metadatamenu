@@ -45,14 +45,13 @@ export class LineNode {
         let indentationLevel: number = 0;
         const indentRegex = new RegExp(/(?<indentation>\s*)(?<list>-\s)?(?<value>.*)/)
         const fR = this.rawContent.match(indentRegex);
-        let listItem: boolean = false
         if (fR?.groups && fR.groups.indentation) {
             indentationLevel = fR.groups.indentation.length / 2
             if (fR.groups.list) {
                 // list nous sert à déterminer que cette ligne correspond à l'item d'une liste
                 // ça va servir dans le cas des objectList fields plus bas
                 indentationLevel += 1;
-                listItem = true
+                this.line.isNewListItem = true
             }
         }
         this.line.indentationLevel = indentationLevel
@@ -70,7 +69,7 @@ export class LineNode {
                     //console.log(this.rawContent)
                     const { attribute: yamlAttr, values: value } = frontMatterLineField(this.rawContent)
                     //manage ObjectList empty item
-                    if (!yamlAttr && listItem) {
+                    if (!yamlAttr && this.line.isNewListItem) {
                         const parentLine = this.line.parentLine
                         const parentNode = parentLine?.nodes[0]
                         const parentField = parentNode?.field
@@ -104,7 +103,7 @@ export class LineNode {
                                     if (this.field && parentField?.type === FieldType.ObjectList) {
                                         // dans le cas d'un père de type "objectlist" on va chercher la position de ce field dans la liste du père
                                         const objectListLines = parentLine!.objectListLines
-                                        if (listItem) {
+                                        if (this.line.isNewListItem) {
                                             // c'est un débute d'item: on crée une nouvelle liste de lignes (object item)
                                             // et on l'ajoute à l'ensemble des listes de lignes de l'objectList
                                             // et on rajoute également un existing field?
@@ -170,7 +169,7 @@ export class LineNode {
                         this.indexedId = field.id
                         this.indexedPath = field.getIndexedPath(this)
                         this.line.note.existingFields.push(existingField)
-                    } else if (listItem) {
+                    } else if (this.line.isNewListItem) {
                         const parentLine = this.line.parentLine
                         const parentNode = parentLine?.nodes[0]
                         const parentField = parentNode?.field

@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { FuzzyMatch, FuzzySuggestModal, setIcon, TFile } from "obsidian";
 import { Note } from "src/note/note";
-import { FieldIcon, FieldManager, FieldType, FieldTypeTagClass } from "src/types/fieldTypes";
+import { FieldIcon, FieldManager, FieldType, FieldTypeTagClass, objectTypes } from "src/types/fieldTypes";
 import addNewFieldModal from "./addNewFieldModal";
 
 
@@ -27,12 +27,27 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
     };
 
     getItems(): Option[] {
-        return [{ actionLabel: '++New++' }]
-            .concat(this.plugin.fieldIndex.filesFields
-                .get(this.file.path)?.filter(_f => _f.isRoot()).map(field => {
-                    return { actionLabel: field.name, type: field.type }
-                }) || []
-            );
+        const { start, end } = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatterPosition || {}
+        console.log()
+        if (start && end && start.line <= this.lineNumber && end.line >= this.lineNumber || this.lineNumber === -1) {
+            console.log("ici")
+            return [{ actionLabel: '++New++' }]
+                .concat(this.plugin.fieldIndex.filesFields
+                    .get(this.file.path)?.filter(_f => _f.isRoot()).map(field => {
+                        return { actionLabel: field.name, type: field.type }
+                    }) || []
+                );
+        } else {
+            return [{ actionLabel: '++New++' }]
+                .concat(this.plugin.fieldIndex.filesFields
+                    .get(this.file.path)?.filter(_f => _f.isRoot())
+                    .filter(_f => !objectTypes.includes(_f.type))
+                    .map(field => {
+                        return { actionLabel: field.name, type: field.type }
+                    }) || []
+                );
+        }
+
     }
 
     getItemText(item: Option): string {

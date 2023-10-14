@@ -176,7 +176,7 @@ export default class DateField extends FieldManager {
         const formattedValue = DateField.stringToBoolean(defaultInsertAsLink) ?
             `[[${linkPath || ""}${newValue}${linkFile ? "|" + linkFile.basename : ""}]]` :
             newValue
-        //TODO: changer postValues il faut utiliser le indexedPath
+        //Since nextIntervalField path are limited to root, we can pass the field id as an argument for post values
         await postValues(this.plugin, [{ id: this.field.id, payload: { value: formattedValue } }], file)
 
     }

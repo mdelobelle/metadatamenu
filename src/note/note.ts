@@ -178,6 +178,17 @@ export class Note {
         return
     }
 
+    private getLastChildLineForIndexedPath(indexedPath: string): Line | undefined {
+
+        let lastChildLine: Line | undefined
+        this.lines.forEach(line => {
+            if (line.nodes[0]?.indexedPath?.startsWith(indexedPath) && (lastChildLine === undefined || lastChildLine.number < line.number)) {
+                lastChildLine = line
+            }
+        })
+        return lastChildLine
+    }
+
     private createLine = (value: string, position: "yaml" | "inline", lineNumber: number, field?: Field) => {
         //will create a line at lineNumber
         //the current line at LineNumber and following lines will be shifted one line below
@@ -186,11 +197,9 @@ export class Note {
         if (field) newNode.createFieldNodeContent(field, value, position);
         newLine.renderLine()
     }
-    //TODO: remove field, in case of objectList items, it will be funny
 
 
     private insertField(indexedPath: string, payload: FieldPayload, lineNumber?: number): void {
-        //TODO: exclude insertion of object and objectlist items inline
         const upperPath = Field.upperIndexedPathObjectPath(indexedPath)
         const { id, index } = Field.getIdAndIndex(indexedPath.split("____").last())
         const { id: upperFieldId, index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
@@ -227,19 +236,18 @@ export class Note {
                     return
                 }
                 const field = this.getField(id)
-                const lastItemLineNumber = parentNode.line.objectListLines[i].last()?.number
-                if (lastItemLineNumber) {
-                    //if line is " .... - " it is a place holder for fields, let's add the line here
+                const lastItemLine = parentNode.line.objectListLines[i].last()
+                if (lastItemLine) {
+                    //if line is " .... - " it is a place holder for fields, let's replace the content of this line's node
                     if (/-(\s+)?$/.test(parentNode.line.objectListLines[i].last()?.rawContent || "") && field) {
-                        //FIXME try to replace the line
-                        //this.lines[lastItemLineNumber].removeLineFromNote()
-                        const node = this.lines[lastItemLineNumber].nodes[0]
+                        const node = lastItemLine.nodes[0]
                         node.createFieldNodeContent(field, payload.value, "yaml");
                         node.line.renderLine()
                     } else {
-                        this.createLine(payload.value, "yaml", lastItemLineNumber + 1, field)
+                        //lastItemLineNumber+1 doesn't work.... it can be an object of objectList and therefore have multiple sublists
+                        const lastChildLine = lastItemLine.getLastChildLine()
+                        this.createLine(payload.value, "yaml", lastChildLine ? lastChildLine.number + 1 : 1, field)
                     }
-
                 }
             } else {
                 const field = this.getField(id)
@@ -257,12 +265,20 @@ export class Note {
                     const node = this.getNodeForIndexedPath(upperPath)
                     if (node) {
                         const newItemLine = new Line(this.plugin, node.line.note, position, "", node.line.number! + 1)
-                        // FIXME if field is not in list, shift of 0, else shift 1
-                        new LineNode(this.plugin, newItemLine, node.buildIndentedListItem("", 1))
+                        // if field is not in a list, shift of 0, else shift 1
+                        const shift = /^(\s+)-(\s+)?(.*)/.test(node.rawContent) ? 1 : 0
+                        new LineNode(this.plugin, newItemLine, node.buildIndentedListItem("", shift))
                         newItemLine.renderLine()
                     }
                 } else {
-                    this.createLine(payload.value, position, insertLineNumber, field)
+                    const parentField = this.existingFields.find(eF => eF.indexedPath === upperPath)
+                    if (parentField?.field.type === FieldType.Object) {
+                        const parentLine = this.getNodeForIndexedPath(upperPath)?.line
+                        const lastChildLine = parentLine?.getLastChildLine()
+                        this.createLine(payload.value, "yaml", lastChildLine ? lastChildLine.number + 1 : 1, field)
+                    } else {
+                        this.createLine(payload.value, position, insertLineNumber, field)
+                    }
                 }
             }
         }

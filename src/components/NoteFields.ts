@@ -328,7 +328,6 @@ export class FieldsModal extends Modal {
                     )
                 ).open();
             } else {
-                //FIXME doesnt work for objectlistitem
                 const field = this.note.getExistingFieldForIndexedPath(this.indexedPath)?.field
                 const fileClass = field?.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
                 insertMissingFields(

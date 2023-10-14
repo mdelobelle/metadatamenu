@@ -7,6 +7,7 @@ export class Line {
     public nodes: LineNode[] = []
     public parentLine?: Line
     public objectListLines: Line[][] = []
+    public isNewListItem: boolean = false
 
     constructor(
         public plugin: MetadataMenu,
@@ -72,6 +73,20 @@ export class Line {
         }
         this.nodes = []
         this.note.lines.remove(this)
+    }
+
+    public getLastChildLine(): Line | undefined {
+        let lastChildLine: Line = this
+        console.log(this.note.lines.filter(_l => _l.number > this.number && _l.indentationLevel > 0))
+        for (const line of this.note.lines.filter(_l => _l.number > this.number)) {
+            if (line.indentationLevel === 0) break
+            if (line.indentationLevel > this.indentationLevel || (line.indentationLevel === this.indentationLevel && !line.isNewListItem)) {
+                lastChildLine = line
+            } else {
+                break
+            }
+        }
+        return lastChildLine
     }
 
     public insertLineInNote(): void {
