@@ -173,3 +173,12 @@ export const objectTypes = [
     FieldType.Object,
     FieldType.ObjectList
 ]
+
+export const singleOccurenceTypes = [
+    //TODO adapt compatible parents to those types: they can't have an objectList as an ancestor
+    FieldType.Canvas,
+    FieldType.CanvasGroup,
+    FieldType.CanvasGroupLink,
+    FieldType.Lookup,
+    FieldType.Formula
+]

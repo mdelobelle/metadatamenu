@@ -136,7 +136,7 @@ export class Note {
             const position = !!frontMatterEnd?.line && i <= frontMatterEnd?.line ? "yaml" : "inline"
             new Line(this.plugin, this, position, rawLine, i)
         })
-        console.log(this)
+        //console.log(this)
     }
 
     public getExistingFieldForIndexedPath(indexedPath?: string): ExistingField | undefined {

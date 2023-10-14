@@ -246,7 +246,7 @@ export async function updateCanvas(
             }
         })
         //update target files
-        // TODO tester
+        // TODO replacer le field.id par l'indexedPath
         currentFiles.forEach(async ({ cumulatedLinksFields, cumulatedGroupsFields, cumulatedGroupsLinksFields }, filePath) => {
             const file = app.vault.getAbstractFileByPath(filePath)
             if (file && file instanceof TFile) {

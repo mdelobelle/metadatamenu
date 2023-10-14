@@ -1,6 +1,6 @@
 import { DropdownComponent, Modal, TextComponent, ButtonComponent, Notice, ToggleComponent, setIcon } from "obsidian";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
-import { FieldTypeTooltip, FieldType, FieldTypeLabelMapping, FieldManager, MultiDisplayType, multiTypes } from "src/types/fieldTypes";
+import { FieldTypeTooltip, FieldType, FieldTypeLabelMapping, FieldManager, MultiDisplayType, multiTypes, singleOccurenceTypes } from "src/types/fieldTypes";
 import { FileClass } from "src/fileClass/fileClass";
 import MetadataMenu from "main";
 import Field, { FieldCommand } from "src/fields/Field";
@@ -23,7 +23,8 @@ class FileClassAttributeModal extends Modal {
     private frontmatterListDisplay?: MultiDisplayType;
     private frontmatterListDisplayContainer: HTMLDivElement;
     private path: string;
-    private parentSelect: DropdownComponent;
+    private parentSelectContainer: HTMLDivElement
+    private typeSelectContainer: HTMLDivElement
 
 
     constructor(
@@ -59,7 +60,11 @@ class FileClassAttributeModal extends Modal {
 
         /* Name */
         this.buildNameInputContainer();
-        this.createParentSelectContainer();
+
+        /* parent select */
+        this.parentSelectContainer = this.contentEl.createDiv({ cls: "field-container" })
+        this.buildParentSelectContainer();
+
         this.buildHeader();
         this.contentEl.createEl("hr");
 
@@ -73,7 +78,7 @@ class FileClassAttributeModal extends Modal {
         const styleContainer = this.contentEl.createDiv({ cls: "field-container" })
 
         /* Type */
-        const typeSelectContainer = this.contentEl.createDiv({ cls: "field-container" });
+        this.typeSelectContainer = this.contentEl.createDiv({ cls: "field-container" });
         this.contentEl.createEl("hr");
 
         /* Options */
@@ -89,7 +94,7 @@ class FileClassAttributeModal extends Modal {
 
         /* init state */
         this.buildStyleSelectorContainer(styleContainer)
-        this.buildTypeSelectContainer(typeSelectContainer);
+        this.buildTypeSelectContainer();
         this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.FileClassAttributeSettings);
 
     }
@@ -112,29 +117,27 @@ class FileClassAttributeModal extends Modal {
         this.nameInput = input
     }
 
-    private createParentSelectContainer(): void {
-        const compatibleParents = this.field.getCompatibleParents()
-        const container = this.contentEl.createDiv({ cls: "field-container" })
-        const parentSelectorContainerLabel = container.createDiv({ cls: "label" });
+
+    private buildParentSelectContainer(): void {
+
+        this.parentSelectContainer.replaceChildren()
+        const parentSelectorContainerLabel = this.parentSelectContainer.createDiv({ cls: "label" });
         parentSelectorContainerLabel.setText(`Parent:`);
-        container.createDiv({ cls: "spacer" })
-        this.parentSelect = new DropdownComponent(container);
-        this.parentSelect.addOption("none", "--None--")
+        this.parentSelectContainer.createDiv({ cls: "spacer" })
+        const compatibleParents = this.field.getCompatibleParents()
+        const parentSelect = new DropdownComponent(this.parentSelectContainer);
+        parentSelect.addOption("none", "--None--")
         compatibleParents.forEach(parent => {
             const path = parent.path ? parent.path + "____" + parent.id : parent.id
             const display = path.split("____").map(id => Field.getFieldFromId(this.plugin, id, this.fileClass.name)?.name || "").join(" > ")
-            this.parentSelect.addOption(path, display)
+            parentSelect.addOption(path, display)
         })
         if (this.field.path) {
-            this.parentSelect.setValue(this.field.path || "none")
+            parentSelect.setValue(this.field.path || "none")
         } else {
-            this.parentSelect.setValue("none")
+            parentSelect.setValue("none")
         }
-        if (this.field.type === FieldType.Lookup || this.field.type === FieldType.Formula) {
-            this.parentSelect.setDisabled(true)
-            this.path = ""
-        }
-        this.parentSelect.onChange((path: string) => {
+        parentSelect.onChange((path: string) => {
             if (path === "none") {
                 this.path = ""
                 this.field.path = ""
@@ -142,7 +145,9 @@ class FileClassAttributeModal extends Modal {
                 this.path = path
                 this.field.path = path
             }
+            this.buildTypeSelectContainer()
         })
+
     }
 
     private createFrontmatterListDisplayContainer(): void {
@@ -251,14 +256,25 @@ class FileClassAttributeModal extends Modal {
         })
     }
 
-    buildTypeSelectContainer(container: HTMLDivElement): void {
-
-        //dropdown
-        const typeSelectorContainerLabel = container.createDiv({ cls: "label" });
+    buildTypeSelectContainer(): void {
+        this.typeSelectContainer.replaceChildren()
+        const typeSelectorContainerLabel = this.typeSelectContainer.createDiv({ cls: "label" });
         typeSelectorContainerLabel.setText(`Field type:`);
-        container.createDiv({ cls: "spacer" })
-        const typeSelect = new DropdownComponent(container);
-        Object.keys(FieldTypeTooltip).forEach((key: keyof typeof FieldType) => typeSelect.addOption(key, FieldTypeTooltip[key]))
+        this.typeSelectContainer.createDiv({ cls: "spacer" })
+        const typeSelect = new DropdownComponent(this.typeSelectContainer);
+        Object.keys(FieldTypeTooltip).forEach((key: keyof typeof FieldType) => {
+            if (!singleOccurenceTypes.includes(key as FieldType)) {
+                typeSelect.addOption(key, FieldTypeTooltip[key])
+            } else {
+                const ancestors = this.path.split("____").map(id =>
+                    Field.getFieldFromId(this.plugin, id, this.fileClass.name)
+                )
+                if (ancestors.every(_a => _a?.type !== FieldType.ObjectList)) {
+                    typeSelect.addOption(key, FieldTypeTooltip[key])
+                }
+            }
+
+        })
         if (this.field.type) {
             typeSelect.setValue(this.field.type);
             if (multiTypes.includes(this.field.type)) {
@@ -267,8 +283,10 @@ class FileClassAttributeModal extends Modal {
                 this.frontmatterListDisplayContainer.hide()
             }
         }
+        if (this.field.id) { typeSelect.setDisabled(true); return }
         typeSelect.onChange((typeLabel: keyof typeof FieldType) => {
             this.field = new Field(this.plugin);
+            this.field.fileClassName = this.fileClass.name
             Field.copyProperty(this.field, this.initialField);
             this.field.name = this.nameInput.getValue()
             this.field.type = FieldTypeLabelMapping[typeLabel];
@@ -280,14 +298,7 @@ class FileClassAttributeModal extends Modal {
             ) {
                 this.field.options = {}
             }
-            if (this.field.type === FieldType.Lookup || this.field.type === FieldType.Formula) {
-                this.parentSelect.setDisabled(true)
-                this.parentSelect.setValue("none")
-                this.path = ""
-                this.field.path = ""
-            } else {
-                this.parentSelect.setDisabled(false)
-            }
+            this.buildParentSelectContainer()
             if (multiTypes.includes(this.field.type)) {
                 this.frontmatterListDisplayContainer.show()
             } else {

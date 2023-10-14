@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { LineNode } from "src/note/lineNode";
 import { Note } from "src/note/note";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
-import { FieldType, MultiDisplayType, multiTypes, objectTypes } from "../types/fieldTypes"
+import { FieldType, MultiDisplayType, multiTypes, objectTypes, singleOccurenceTypes } from "../types/fieldTypes"
 
 export interface FieldCommand {
     id: string,
@@ -78,14 +78,22 @@ class Field {
 
 
     public getCompatibleParents(): Field[] {
-        const otherObjectFields = this.getOtherObjectFields()
+        //Lookups, Formulas and Canvas can't accept objectList as parent
+        //because their value depends on outer change that can't know which
+        //index they would need to change
+        const otherObjectFields = this.getOtherObjectTypeFields()
         if (objectTypes.includes(this.type)) {
             return otherObjectFields
         } else {
-            return otherObjectFields.filter(_field => {
-                const field = Field.getFieldFromId(this.plugin, _field.id, this.fileClassName)
-                return !field?.hasIdAsAncestor(this.id)
-            })
+            const compatibleParents = otherObjectFields
+                .filter(_field => {
+                    const field = Field.getFieldFromId(this.plugin, _field.id, this.fileClassName)
+                    return !field?.hasIdAsAncestor(this.id)
+                }).filter(_f =>
+                    !singleOccurenceTypes.includes(this.type) ||
+                    [..._f.getAncestors(), _f].every(_a => _a.type !== FieldType.ObjectList)
+                )
+            return compatibleParents
         }
     }
 
@@ -124,7 +132,7 @@ class Field {
         return false
     }
 
-    public getOtherObjectFields(): Field[] {
+    public getOtherObjectTypeFields(): Field[] {
         let objectFields: Field[]
         if (this.fileClassName) {
             const index = this.plugin.fieldIndex
@@ -167,8 +175,6 @@ class Field {
 
     static existingFields(plugin: MetadataMenu, filePath: string, obj: any, depth: number = 0, path: string = ""): Field[] {
         const reservedKeys = ["file", "aliases", "tags"]
-        const fields = plugin.fieldIndex.filesFields.get(filePath)
-        const fieldsNames = fields?.map(field => field.name) || []
         let _obj: any
         if (depth === 0) {
             const dvApi = plugin.app.plugins.plugins.dataview?.api

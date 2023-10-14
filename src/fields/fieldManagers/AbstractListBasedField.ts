@@ -69,7 +69,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
         const valueRemoveButton = new ButtonComponent(valueContainer);
         valueRemoveButton.setIcon("trash")
             .onClick((evt: MouseEvent) => {
-                evt.preventDefault;
+                evt.preventDefault();
                 this.removePresetValue(key);
                 parentNode.removeChild(valueContainer);
                 this.valuesPromptComponents.remove(input);
@@ -175,8 +175,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
         addValue.type = 'button';
         addValue.textContent = 'Add a value';
         addValue.onClickEvent(async (evt: MouseEvent) => {
-            evt.preventDefault;
-
+            evt.preventDefault();
             let newKeyNumber = 1;
             Object.keys(this.field.options.valuesList).forEach(key => {
                 if (parseInt(key) && parseInt(key) >= newKeyNumber) {

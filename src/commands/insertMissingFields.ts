@@ -18,7 +18,6 @@ export async function insertMissingFields(
 ): Promise<void> {
     /*
     Insert "root" fields that are notre in the note.
-    TODO: insert missing fields of an objectFIeld
     */
     const file = getFileFromFileOrPath(plugin, fileOrFilePath)
     const note = new Note(plugin, file)
@@ -35,13 +34,8 @@ export async function insertMissingFields(
                 fieldsToInsert.push({ id: field.id, payload: { value: "" } })
             })
     } else {
-        //exclude objectList, inserting fields for object list means nothing
-        //TODO: insert fields that are children of this indexedPath but not present
-        //case 1: object
-        //case 2: objectListItem
         const { id, index } = Field.getIdAndIndex(indexedPath?.split("____").last())
         const existingFields = note.existingFields.filter(_f => {
-
             const upperIndexedIdsInPath = _f.indexedPath?.split("____")
             upperIndexedIdsInPath?.pop()
             return upperIndexedIdsInPath?.join("____") === indexedPath

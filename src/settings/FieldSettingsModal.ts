@@ -3,7 +3,7 @@ import { ButtonComponent, DropdownComponent, Modal, Notice, TextComponent, TextA
 import Field, { FieldCommand } from "src/fields/Field";
 import FieldSetting from "src/settings/FieldSetting";
 import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
-import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, multiTypes } from "src/types/fieldTypes";
+import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, multiTypes, singleOccurenceTypes } from "src/types/fieldTypes";
 import { FieldHTMLTagMap, FieldStyle, FieldStyleKey, FieldStyleLabel } from "src/types/dataviewTypes";
 import { cleanActions } from "src/utils/modals";
 
@@ -17,12 +17,12 @@ export default class FieldSettingsModal extends Modal {
     private fieldManager: F;
     private command: FieldCommand;
     private addCommand: boolean;
-    private autoSuggest?: boolean;
     private frontmatterListDisplay?: MultiDisplayType;
     private frontmatterListDisplayContainer: HTMLDivElement;
     private iconName: TextComponent;
     private path: string;
-    private parentSelect: DropdownComponent
+    private parentSelectContainer: HTMLDivElement
+    private typeSelectContainer: HTMLDivElement
 
     constructor(
         private plugin: MetadataMenu,
@@ -63,7 +63,11 @@ export default class FieldSettingsModal extends Modal {
 
         /* Name and parent */
         this.createnameInputContainer();
-        this.createParentSelectContainer();
+
+        /* parent select */
+        this.parentSelectContainer = this.contentEl.createDiv({ cls: "field-container" })
+        this.buildParentSelectContainer();
+
         this.contentEl.createEl("hr");
 
         /* Commands and display */
@@ -72,7 +76,7 @@ export default class FieldSettingsModal extends Modal {
         const styleContainer = this.contentEl.createDiv({ cls: "field-container" })
 
         /* Type */
-        const typeSelectContainer = this.contentEl.createDiv({ cls: "field-container" });
+        this.typeSelectContainer = this.contentEl.createDiv({ cls: "field-container" });
         this.contentEl.createEl("hr");
 
         /* Options */
@@ -87,7 +91,7 @@ export default class FieldSettingsModal extends Modal {
 
         /* init state */
         this.createStyleSelectorContainer(styleContainer)
-        this.createTypeSelectorContainer(typeSelectContainer)
+        this.buildTypeSelectContainer()
         this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, SettingLocation.PluginSettings)
     };
 
@@ -119,31 +123,25 @@ export default class FieldSettingsModal extends Modal {
         this.namePromptComponent = input;
     };
 
-    private createParentSelectContainer(): void {
+    private buildParentSelectContainer(): void {
+        this.parentSelectContainer.replaceChildren()
         const compatibleParents = this.field.getCompatibleParents()
-        const container = this.contentEl.createDiv({ cls: "field-container" })
-        const parentSelectorContainerLabel = container.createDiv({ cls: "label" });
+        const parentSelectorContainerLabel = this.parentSelectContainer.createDiv({ cls: "label" });
         parentSelectorContainerLabel.setText(`Parent:`);
-        container.createDiv({ cls: "spacer" })
-        this.parentSelect = new DropdownComponent(container);
-        this.parentSelect.addOption("none", "--None--")
+        this.parentSelectContainer.createDiv({ cls: "spacer" })
+        const parentSelect = new DropdownComponent(this.parentSelectContainer);
+        parentSelect.addOption("none", "--None--")
         compatibleParents.forEach(parent => {
             const path = parent.path ? parent.path + "____" + parent.id : parent.id
             const display = path.split("____").map(id => Field.getFieldFromId(this.plugin, id)?.name || "").join(" > ")
-            this.parentSelect.addOption(path, display)
+            parentSelect.addOption(path, display)
         })
         if (this.field.path) {
-            this.parentSelect.setValue(this.field.path || "none")
+            parentSelect.setValue(this.field.path || "none")
         } else {
-            this.parentSelect.setValue("none")
+            parentSelect.setValue("none")
         }
-
-        if (this.field.type === FieldType.Lookup || this.field.type === FieldType.Formula) {
-            this.parentSelect.setDisabled(true)
-            this.path = ""
-        }
-
-        this.parentSelect.onChange((path: string) => {
+        parentSelect.onChange((path: string) => {
             if (path === "none") {
                 this.path = ""
                 this.field.path = ""
@@ -151,6 +149,7 @@ export default class FieldSettingsModal extends Modal {
                 this.path = path
                 this.field.path = path
             }
+            this.buildTypeSelectContainer()
         })
     }
 
@@ -187,12 +186,25 @@ export default class FieldSettingsModal extends Modal {
         })
     }
 
-    private createTypeSelectorContainer(parentNode: HTMLDivElement): void {
-        const typeSelectorContainerLabel = parentNode.createDiv({ cls: "label" });
+    private buildTypeSelectContainer(): void {
+        this.typeSelectContainer.replaceChildren()
+        const typeSelectorContainerLabel = this.typeSelectContainer.createDiv({ cls: "label" });
         typeSelectorContainerLabel.setText(`Field type:`);
-        parentNode.createDiv({ cls: "spacer" })
-        const select = new DropdownComponent(parentNode);
-        Object.keys(FieldTypeLabelMapping).forEach((f: keyof typeof FieldType) => select.addOption(f, FieldTypeTooltip[f]))
+        this.typeSelectContainer.createDiv({ cls: "spacer" })
+        const select = new DropdownComponent(this.typeSelectContainer);
+        Object.keys(FieldTypeTooltip).forEach((key: keyof typeof FieldType) => {
+            if (!singleOccurenceTypes.includes(key as FieldType)) {
+                select.addOption(key, FieldTypeTooltip[key])
+            } else {
+                const ancestors = this.path.split("____").map(id =>
+                    Field.getFieldFromId(this.plugin, id)
+                )
+                if (ancestors.every(_a => _a?.type !== FieldType.ObjectList)) {
+                    select.addOption(key, FieldTypeTooltip[key])
+                }
+            }
+
+        })
         if (this.field.type) {
             select.setValue(this.field.type)
             if (multiTypes.includes(this.field.type)) {
@@ -201,7 +213,7 @@ export default class FieldSettingsModal extends Modal {
                 this.frontmatterListDisplayContainer.hide()
             }
         }
-
+        if (this.field.id) { select.setDisabled(true); return }
         select.onChange((typeLabel: keyof typeof FieldType) => {
             this.field = new Field(this.plugin);
             Field.copyProperty(this.field, this.initialField);
@@ -215,14 +227,7 @@ export default class FieldSettingsModal extends Modal {
             ) {
                 this.field.options = {}
             }
-            if (this.field.type === FieldType.Lookup || this.field.type === FieldType.Formula) {
-                this.parentSelect.setDisabled(true)
-                this.parentSelect.setValue("none")
-                this.path = ""
-                this.field.path = ""
-            } else {
-                this.parentSelect.setDisabled(false)
-            }
+            this.buildParentSelectContainer()
             if (multiTypes.includes(this.field.type)) {
                 this.frontmatterListDisplayContainer.show()
             } else {
