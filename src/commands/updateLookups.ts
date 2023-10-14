@@ -119,7 +119,6 @@ export async function updateLookups(
                 }// make sure that this is set at first indexing}
                 if (shouldCheckForUpdate && (valueHasChanged || formatHasChanged)) {
                     const previousValuesCount = plugin.fieldIndex.previousFileLookupFilesValues.get(lookupFileId) || 0
-                    // TODO replacer le field.id par l'indexedPath
                     payloads[filePath].push({ id: field.id, payload: { value: newValue, previousItemsCount: previousValuesCount } })
                     updatedFields.push(`${filePath}__${fieldName}`)
                 } else if (source !== "full Index") { // this case is for fileClass changes, no need for rewrite other lookups after cache update

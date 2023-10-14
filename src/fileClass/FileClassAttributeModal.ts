@@ -1,6 +1,6 @@
 import { DropdownComponent, Modal, TextComponent, ButtonComponent, Notice, ToggleComponent, setIcon } from "obsidian";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
-import { FieldTypeTooltip, FieldType, FieldTypeLabelMapping, FieldManager, MultiDisplayType, multiTypes, singleOccurenceTypes } from "src/types/fieldTypes";
+import { FieldTypeTooltip, FieldType, FieldTypeLabelMapping, FieldManager, MultiDisplayType, multiTypes, rootOnlyTypes } from "src/types/fieldTypes";
 import { FileClass } from "src/fileClass/fileClass";
 import MetadataMenu from "main";
 import Field, { FieldCommand } from "src/fields/Field";
@@ -263,15 +263,10 @@ class FileClassAttributeModal extends Modal {
         this.typeSelectContainer.createDiv({ cls: "spacer" })
         const typeSelect = new DropdownComponent(this.typeSelectContainer);
         Object.keys(FieldTypeTooltip).forEach((key: keyof typeof FieldType) => {
-            if (!singleOccurenceTypes.includes(key as FieldType)) {
+            if (!rootOnlyTypes.includes(key as FieldType)) {
                 typeSelect.addOption(key, FieldTypeTooltip[key])
             } else {
-                const ancestors = this.path.split("____").map(id =>
-                    Field.getFieldFromId(this.plugin, id, this.fileClass.name)
-                )
-                if (ancestors.every(_a => _a?.type !== FieldType.ObjectList)) {
-                    typeSelect.addOption(key, FieldTypeTooltip[key])
-                }
+                if (this.field.isRoot()) typeSelect.addOption(key, FieldTypeTooltip[key])
             }
 
         })

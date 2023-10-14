@@ -174,8 +174,7 @@ export const objectTypes = [
     FieldType.ObjectList
 ]
 
-export const singleOccurenceTypes = [
-    //TODO adapt compatible parents to those types: they can't have an objectList as an ancestor
+export const rootOnlyTypes = [
     FieldType.Canvas,
     FieldType.CanvasGroup,
     FieldType.CanvasGroupLink,

@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { LineNode } from "src/note/lineNode";
 import { Note } from "src/note/note";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
-import { FieldType, MultiDisplayType, multiTypes, objectTypes, singleOccurenceTypes } from "../types/fieldTypes"
+import { FieldType, MultiDisplayType, multiTypes, objectTypes, rootOnlyTypes } from "../types/fieldTypes"
 
 export interface FieldCommand {
     id: string,
@@ -90,8 +90,7 @@ class Field {
                     const field = Field.getFieldFromId(this.plugin, _field.id, this.fileClassName)
                     return !field?.hasIdAsAncestor(this.id)
                 }).filter(_f =>
-                    !singleOccurenceTypes.includes(this.type) ||
-                    [..._f.getAncestors(), _f].every(_a => _a.type !== FieldType.ObjectList)
+                    !rootOnlyTypes.includes(this.type)
                 )
             return compatibleParents
         }

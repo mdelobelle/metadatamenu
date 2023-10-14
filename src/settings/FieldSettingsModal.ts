@@ -3,7 +3,7 @@ import { ButtonComponent, DropdownComponent, Modal, Notice, TextComponent, TextA
 import Field, { FieldCommand } from "src/fields/Field";
 import FieldSetting from "src/settings/FieldSetting";
 import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
-import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, multiTypes, singleOccurenceTypes } from "src/types/fieldTypes";
+import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, multiTypes, rootOnlyTypes } from "src/types/fieldTypes";
 import { FieldHTMLTagMap, FieldStyle, FieldStyleKey, FieldStyleLabel } from "src/types/dataviewTypes";
 import { cleanActions } from "src/utils/modals";
 
@@ -193,15 +193,10 @@ export default class FieldSettingsModal extends Modal {
         this.typeSelectContainer.createDiv({ cls: "spacer" })
         const select = new DropdownComponent(this.typeSelectContainer);
         Object.keys(FieldTypeTooltip).forEach((key: keyof typeof FieldType) => {
-            if (!singleOccurenceTypes.includes(key as FieldType)) {
+            if (!rootOnlyTypes.includes(key as FieldType)) {
                 select.addOption(key, FieldTypeTooltip[key])
             } else {
-                const ancestors = this.path.split("____").map(id =>
-                    Field.getFieldFromId(this.plugin, id)
-                )
-                if (ancestors.every(_a => _a?.type !== FieldType.ObjectList)) {
-                    select.addOption(key, FieldTypeTooltip[key])
-                }
+                if (this.field.isRoot()) select.addOption(key, FieldTypeTooltip[key])
             }
 
         })
