@@ -24,7 +24,7 @@ export class MetadataMenuApi {
             fieldModifier: this.fieldModifier(),
             fileFields: this.fileFields(),
             insertMissingFields: this.insertMissingFields(),
-            postValues: this.postValues()
+            postValues: this.postValues(),
         };
     }
 

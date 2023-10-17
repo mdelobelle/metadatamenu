@@ -22,6 +22,7 @@ export function cleanRemovedFormulasFromIndex(
                     (field.fileClassName === fileClassName)
                 )
             )
+        //TODO: change dvPage with filesFieldsValues
         const dvPage = f.dv.api.page(filePath);
         if (dvPage === undefined || dvPage[fieldName] === undefined || !existingFormulaFieldWithNameAndFileClassName) {
             f.fileFormulaFieldLastValue.delete(id);

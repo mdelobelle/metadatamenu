@@ -13,6 +13,30 @@ import { Status as LookupStatus, Type as LookupType } from "src/types/lookupType
 import { updateCanvas } from "src/commands/updateCanvas";
 import { CanvasData } from "obsidian/canvas";
 import { V1FileClassMigration, V2FileClassMigration } from "src/fileClass/fileClassMigration";
+import { Note } from "src/note/note";
+import initDb from "src/db/index"
+import * as fieldsValues from "src/db/stores/fieldsValues"
+import * as updates from "src/db/stores/updates";
+
+/*
+on tente de se faire notre propre index
+1. stocker les valeurs dans indexedDB et les mettre à jour quand workspace.on("modify")
+2. verifier la persistance quand on redémarre le plugin: la réindexation ne doit pas se faire si le mtime du fichier n'a pas bougé
+3. remplacer les appels à dataview pour chopper les valeurs de ces fields
+*/
+
+export interface IndexedExistingField {
+    id: string,
+    filePath: string,
+    indexedPath: string,
+    value: any,
+    time: number
+}
+
+export interface cFileWithTags {
+    path: string,
+    tags: string[]
+}
 
 export default class FieldIndex extends Component {
 
@@ -49,6 +73,7 @@ export default class FieldIndex extends Component {
     public loadTime: number;
     public firstIndexingDone: boolean = false;
     private classFilesPath: string | null;
+    private changedFiles: TFile[] = []
 
     constructor(private plugin: MetadataMenu, public cacheVersion: string, public onChange: () => void) {
         super()
@@ -68,6 +93,9 @@ export default class FieldIndex extends Component {
     async onload(): Promise<void> {
 
         this.loadTime = Date.now();
+        initDb()
+
+
         await (async () => { })(); //only way to have metadata button to show up at reload !?!
 
         if (this.dv?.api.index.initialized) {
@@ -86,22 +114,53 @@ export default class FieldIndex extends Component {
             })
         )
 
+
         this.registerEvent(
             this.plugin.app.metadataCache.on('resolved', async () => {
-                //console.log("obsidian resolved")
+                console.log("metadata cache resolved")
                 if (this.plugin.app.metadataCache.inProgressTaskCount === 0) {
                     this.fileChanged = true;
                     await this.fullIndex("cache resolved", false, true);
+                    await this.indexFieldsValues(this.changedFiles)
+                    /*
                     this.lastRevision = this.dv?.api.index.revision || 0;
+                    */
                 }
             })
         )
 
         this.registerEvent(
             this.plugin.app.vault.on("modify", async (file) => {
-                //console.log(`file ${file.path} changed`)
-                if (file instanceof TFile && file.extension === "canvas") {
-                    await updateCanvas(this.plugin, { canvas: file });
+                console.log(`file ${file.path} changed`)
+                if (file instanceof TFile) {
+                    if (file.extension === "md") {
+                        this.changedFiles.push(file)
+                        //use this once we don't need dataview metadata cache updated anymore
+                        //resolveLookups and resolveFormulas have to use our own index
+                        /* 
+                        
+                        cleanRemovedFormulasFromIndex(this.plugin);
+                        this.getFilesLookupAndFormulaFieldsExists(file);
+                        if (this.classFilesPath && file.path.startsWith(this.classFilesPath)) {
+                            await this.fullIndex("fileClass changed")
+                            const fileClassName = this.fileClassesPath.get(file.path)?.name
+                            const canvasFields = (fileClassName && this.fileClassesFields.get(fileClassName)?.filter(field => field.type === FieldType.Canvas)) || []
+                            canvasFields.forEach(async field => {
+                                const canvasFile = this.plugin.app.vault.getAbstractFileByPath(field.options.canvasPath)
+                                if (canvasFile instanceof TFile && canvasFile.extension === "canvas") {
+                                    await updateCanvas(this.plugin, { canvas: canvasFile })
+                                }
+                            })
+                        } else {
+                            await this.updateFormulas(false);
+                            this.resolveLookups(false);
+                            const fileClassName = FileClass.getFileClassNameFromPath(this.plugin, file.path)
+                            await this.updateLookups(fileClassName, false, false);
+                        }
+                        */
+                    } else if (file.extension === "canvas") {
+                        await updateCanvas(this.plugin, { canvas: file });
+                    }
                 }
             })
         )
@@ -142,6 +201,7 @@ export default class FieldIndex extends Component {
                 }
             })
         )
+
         this.plugin.app.workspace.trigger("metadata-menu:indexed")
     }
 
@@ -184,7 +244,7 @@ export default class FieldIndex extends Component {
     }
 
     async fullIndex(event: string, force_update_all = false, without_lookups = false): Promise<void> {
-        //console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
+        console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
         let start = Date.now(), time = Date.now()
         this.plugin.indexStatus.setState("indexing")
         this.flushCache();
@@ -205,7 +265,51 @@ export default class FieldIndex extends Component {
         this.firstIndexingDone = true;
         await this.migrateFileClasses();
         this.plugin.app.workspace.trigger("metadata-menu:updated-index");
-        //console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
+        console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
+    }
+
+    public async indexFieldsValues(changedFiles?: TFile[]) {
+        console.log("start fetch values")
+        const lastUpdate: number | undefined = (await updates.get() as { id: number, value: number } || undefined)?.value
+        console.log("last update: ", lastUpdate)
+        let start = Date.now(), time = Date.now()
+        const putPayload: IndexedExistingField[] = []
+        const delPayload: string[] = []
+        const indexedEF: IndexedExistingField[] = await fieldsValues.getElement('all') //await db.getElement("fieldsValuesStore", 'all')
+        const files = this.plugin.app.vault.getMarkdownFiles()
+            .filter(_f => !lastUpdate || _f.stat.mtime >= lastUpdate)
+            .filter(_f => !changedFiles?.length || changedFiles.map(__f => __f.path).includes(_f.path))
+        await Promise.all(files.map(async f => {
+            const fileIndexedEF = indexedEF.filter(eF => eF.filePath === f.path)
+            const note = new Note(this.plugin, f)
+            await note.build()
+            //FIXME when file has changed remotely, the EF are not build at start :( ???
+            note.existingFields.forEach(eF => {
+                const id = `${f.path}_____${eF.indexedPath}`
+                putPayload.push({
+                    id: id,
+                    filePath: f.path,
+                    indexedPath: eF.indexedPath || eF.field.id,
+                    value: eF.value,
+                    time: f.stat.mtime
+                })
+            })
+            /* remove disappeared fields */
+            const noteEF = note.existingFields.map(_eF => _eF.indexedPath)
+            fileIndexedEF.forEach(eF => {
+                if (!noteEF.includes(eF.indexedPath)) {
+                    delPayload.push(`${f.path}_____${eF.indexedPath}`)
+                }
+            })
+        }))
+        console.log(`updating ${putPayload.length} items`)
+        await fieldsValues.bulkEditElements(putPayload)
+        console.log(`removing ${delPayload.length} items`)
+        fieldsValues.bulkRemoveElements(delPayload)
+        await updates.update()
+        this.changedFiles = []
+        //if (file) console.log(file.name, await fieldsValues.getElementsForFilePath(file.path))
+        console.log("end fetch values", `${(Date.now() - start)}ms`)
     }
 
     resolveLookups(without_lookups: boolean): void {
@@ -227,7 +331,6 @@ export default class FieldIndex extends Component {
             }
         }
     }
-
 
     async migrateV2FileClasses(): Promise<void> {
         if (
@@ -405,7 +508,7 @@ export default class FieldIndex extends Component {
                                 }
                             }
                         } catch (error) {
-                            //console.log(error)
+                            console.log(error)
                         }
                     }
                 })
@@ -426,16 +529,25 @@ export default class FieldIndex extends Component {
     resolveFileClassMatchingTags(): void {
         if (![...this.tagsMatchingFileClasses].length) return
         //Alternative way
-        const mappedTags = [...this.tagsMatchingFileClasses.keys()]
-        const filesWithMappedTagQuery = mappedTags.map(t => `#${t}`).join(" or ")
-        this.dv.api.pages(filesWithMappedTagQuery).forEach((dvFile: any) => {
-            dvFile.file.tags.forEach((_tag: string) => {
+        const mappedTags = [...this.tagsMatchingFileClasses.keys()].map(_t => `#${_t}`)
+        const filesWithMappedTag: cFileWithTags[] = [];
+        this.plugin.app.vault.getMarkdownFiles().forEach(_f => {
+            const cache = app.metadataCache.getFileCache(_f)
+            const filteredTags = cache?.tags?.filter(_t => mappedTags.includes(_t.tag))
+            if (filteredTags?.length) {
+                const fileWithTags: cFileWithTags = { path: _f.path, tags: [] }
+                filteredTags.forEach(_t => fileWithTags.tags.push(_t.tag))
+                filesWithMappedTag.push(fileWithTags)
+            }
+        })
+        filesWithMappedTag.forEach((cFile: cFileWithTags) => {
+            cFile.tags.forEach((_tag: string) => {
                 const tag = _tag.replace(/^\#/, "")
                 const fileClass = this.tagsMatchingFileClasses.get(tag);
-                const filePath = dvFile.file.path;
+                const filePath = cFile.path;
                 if (fileClass) {
                     this.filesFileClasses.set(filePath, [...new Set([...(this.filesFileClasses.get(filePath) || []), fileClass])])
-                    this.filesFileClassesNames.set(dvFile.file.path, [...new Set([...(this.filesFileClassesNames.get(filePath) || []), fileClass.name])])
+                    this.filesFileClassesNames.set(cFile.path, [...new Set([...(this.filesFileClassesNames.get(filePath) || []), fileClass.name])])
 
                     const fileFileClassesFieldsFromTag = this.fileClassesFields.get(fileClass.name)
                     const currentFields = this.filesFieldsFromTags.get(filePath)
@@ -567,6 +679,7 @@ export default class FieldIndex extends Component {
             const existingFields: Field[] = []
             fields.filter(f => [FieldType.Lookup, FieldType.Formula]
                 .includes(f.type)).forEach(field => {
+                    //TODO: change dvFile with filesFieldsValues
                     if (dvFile && dvFile[field.name] !== undefined) { existingFields.push(field) }
                 })
             if (existingFields.length) {

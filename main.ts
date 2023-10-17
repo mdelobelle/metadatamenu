@@ -91,6 +91,7 @@ export default class MetadataMenu extends Plugin {
 
 		//building palette commands
 		addCommands(this, this.app.workspace.getActiveViewOfType(MarkdownView));
+
 	};
 
 	/*

@@ -26,6 +26,7 @@ declare module "obsidian" {
     }
     interface MetadataCache {
         inProgressTaskCount: number;
+        initialized: boolean;
         on(
             name: "dataview:api-ready",
             //@ts-ignore
