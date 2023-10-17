@@ -566,6 +566,12 @@ export default class FieldIndex extends Component {
         })
     }
 
+    /*
+    //TODO: add a mapWithPath and mapWithBookmark
+    add
+    sometimes it can be mapped
+    */
+
     resolveFileClassQueries(): void {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         this.plugin.settings.fileClassQueries.forEach(sfcq => {

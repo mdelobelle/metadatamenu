@@ -135,6 +135,7 @@
         .settings-container{
             display: grid;
             grid-template-columns: auto auto auto 1fr;
+            align-items: center;;
             
             @media screen and (max-width: 400px) {
                 grid-template-columns: 1fr auto;

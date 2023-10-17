@@ -1973,6 +1973,7 @@ span.flatpickr-weekday {
 .metadata-menu.fileclass-view .fv-settings .settings-container {
   display: grid;
   grid-template-columns: auto auto auto 1fr;
+  align-items: center;
 }
 @media screen and (max-width: 400px) {
   .metadata-menu.fileclass-view .fv-settings .settings-container {

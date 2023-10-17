@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { ButtonComponent, MarkdownRenderer, setIcon, SuggestModal, TextComponent, ToggleComponent } from "obsidian";
+import { BookmarkItem } from "types";
 import { FileClass, FileClassOptions } from "./fileClass";
-
 
 class ParentSuggestModal extends SuggestModal<string> {
 
@@ -30,7 +30,6 @@ class ParentSuggestModal extends SuggestModal<string> {
         el.setText(value)
     }
 }
-
 
 class TagSuggestModal extends SuggestModal<string> {
 
@@ -86,6 +85,79 @@ class FieldSuggestModal extends SuggestModal<string> {
             options.excludes = excludedFields
             this.view.fileClass.updateOptions(options)
         }
+    }
+
+    renderSuggestion(value: string, el: HTMLElement) {
+        el.setText(value)
+    }
+}
+
+class PathSuggestModal extends SuggestModal<string> {
+    private plugin: MetadataMenu
+    constructor(private view: FileClassSettingsView) {
+        super(view.plugin.app)
+        this.plugin = view.plugin
+    }
+
+    getSuggestions(query: string): string[] {
+        //@ts-ignore
+        const paths = Array.from(
+            new Set(
+                this.plugin.app.vault.getMarkdownFiles().map(_f => _f.path.replace(/\/?([^\/]*)$/, ""))
+            )
+        )
+        paths.reverse()
+        paths[paths.indexOf("")] = "/"
+        return paths.filter(p => p.toLowerCase().includes(query.toLowerCase()))
+    }
+
+    onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
+        const options = this.view.fileClass.getFileClassOptions()
+        const filesPaths = options.filesPaths || []
+        filesPaths.push(item)
+        options.filesPaths = filesPaths
+        this.view.fileClass.updateOptions(options)
+
+    }
+
+    renderSuggestion(value: string, el: HTMLElement) {
+        el.setText(value)
+    }
+}
+
+class BookmarksGroupSuggestModal extends SuggestModal<string> {
+    private plugin: MetadataMenu
+    constructor(private view: FileClassSettingsView) {
+        super(view.plugin.app)
+        this.plugin = view.plugin
+    }
+
+    private getGroups = (items: BookmarkItem[], groups: string[] = [], path: string = "") => {
+        for (const item of items) {
+            if (item.type === "group") {
+                const subPath = `${path}${path ? "/" : ""}${item.title}`
+                groups.push(subPath)
+                if (item.items) this.getGroups(item.items, groups, subPath)
+            }
+        }
+    }
+
+    getSuggestions(query: string): string[] {
+        //@ts-ignore
+
+        const bookmarks = this.plugin.app.internalPlugins.getPluginById("bookmarks")
+        const groups: string[] = ["/"]
+        if (bookmarks.enabled) this.getGroups(bookmarks.instance.items, groups)
+        return groups
+    }
+
+    onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
+        const options = this.view.fileClass.getFileClassOptions()
+        const bookmarksGroups = options.bookmarksGroups || []
+        bookmarksGroups.push(item)
+        options.bookmarksGroups = bookmarksGroups
+        this.view.fileClass.updateOptions(options)
+
     }
 
     renderSuggestion(value: string, el: HTMLElement) {
@@ -165,7 +237,19 @@ export class FileClassSettingsView {
             settingsContainer,
             "Tag Names",
             `Names of tags to bind this ${this.plugin.settings.fileClassAlias} with`,
-            (action: HTMLDivElement) => this.buildTagNamesComponent(action)
+            (action: HTMLDivElement) => this.buildBindingComponent(action, this.fileClassOptions.tagNames, TagSuggestModal)
+        )
+        new FileClassSetting(
+            settingsContainer,
+            "Files paths",
+            `Paths of files to bind this ${this.plugin.settings.fileClassAlias} with`,
+            (action: HTMLDivElement) => this.buildBindingComponent(action, this.fileClassOptions.filesPaths, PathSuggestModal)
+        )
+        new FileClassSetting(
+            settingsContainer,
+            "Bookmarks groups",
+            `Names group of bookmarked files to bind this ${this.plugin.settings.fileClassAlias} with`,
+            (action: HTMLDivElement) => this.buildBindingComponent(action, this.fileClassOptions.bookmarksGroups, BookmarksGroupSuggestModal)
         )
         new FileClassSetting(
             settingsContainer,
@@ -224,22 +308,27 @@ export class FileClassSettingsView {
         })
     }
 
-    private buildTagNamesComponent(action: HTMLDivElement): void {
-        const tagsContainer = action.createDiv({ cls: "items" })
-        this.fileClassOptions.tagNames?.forEach(tagName => {
-            const tagContainer = tagsContainer.createDiv({ cls: "item chip", text: tagName })
-            new ButtonComponent(tagContainer)
+
+    private buildBindingComponent(
+        action: HTMLDivElement,
+        boundItemsNames: string[] | undefined,
+        suggestModal: typeof PathSuggestModal | typeof TagSuggestModal | typeof BookmarksGroupSuggestModal
+    ): void {
+        const itemsContainer = action.createDiv({ cls: "items" })
+        boundItemsNames?.forEach(item => {
+            const itemContainer = itemsContainer.createDiv({ cls: "item chip", text: item })
+            new ButtonComponent(itemContainer)
                 .setIcon("x-circle")
                 .setClass("item-remove")
                 .onClick(async () => {
-                    this.fileClassOptions.tagNames?.remove(tagName)
+                    boundItemsNames?.remove(item)
                     await this.fileClass.updateOptions(this.fileClassOptions);
                 })
         })
-        const tagAddBtn = tagsContainer.createEl('button', { cls: "item add" })
-        setIcon(tagAddBtn, "plus-circle")
-        tagAddBtn.onclick = () => {
-            new TagSuggestModal(this).open();
+        const addBtn = itemsContainer.createEl('button', { cls: "item add" })
+        setIcon(addBtn, "plus-circle")
+        addBtn.onclick = () => {
+            new suggestModal(this).open();
         }
     }
 

@@ -14,6 +14,8 @@ const options: Record<string, { name: string, toValue: (value: any) => any }> = 
     "mapWithTag": { name: "mapWithTag", toValue: (value: boolean) => value },
     "icon": { name: "icon", toValue: (value: any) => `${value || "file-spreadsheet"}` },
     "tagNames": { name: "tagNames", toValue: (values: string[]) => values.length ? values : null },
+    "filesPaths": { name: "filesPaths", toValue: (values: string[]) => values.length ? values : null },
+    "bookmarksGroups": { name: "bookmarksGroups", toValue: (values: string[]) => values.length ? values : null },
     "excludes": { name: "excludes", toValue: (values: FileClassAttribute[]) => values.length ? values.map(attr => attr.name) : null },
     "parent": { name: "extends", toValue: (value: FileClass) => value?.name || null }
 }
@@ -24,7 +26,9 @@ export interface FileClassOptions {
     parent?: FileClass;
     excludes?: Array<FileClassAttribute>;
     tagNames?: string[],
-    mapWithTag: boolean
+    mapWithTag: boolean,
+    filesPaths?: string[],
+    bookmarksGroups?: string[]
 }
 
 export class FileClassOptions {
@@ -35,7 +39,9 @@ export class FileClassOptions {
         public parent?: FileClass,
         public excludes?: Array<FileClassAttribute>,
         public tagNames?: string[],
-        public mapWithTag: boolean = false
+        public mapWithTag: boolean = false,
+        public filesPaths?: string[],
+        public bookmarksGroups?: string[]
     ) {
 
     }
@@ -93,6 +99,8 @@ class FileClass {
             excludes: _excludes,
             mapWithTag: _mapWithTag,
             tagNames: _tagNames,
+            filesPaths: _filesPaths,
+            bookmarksGroups: _bookmarksGroups,
             icon: _icon
         } = this.plugin.app.metadataCache.getFileCache(this.getClassFile())?.frontmatter as Record<string, any> || {}
         const index = this.plugin.fieldIndex
@@ -108,8 +116,10 @@ class FileClass {
         const limit = typeof (_limit) === 'number' ? _limit : this.plugin.settings.tableViewMaxRecords
         const mapWithTag = FieldManager.stringToBoolean(_mapWithTag);
         const tagNames = FileClass.getTagNamesFromFrontMatter(_tagNames);
+        const filesPaths = FileClass.getFilesPathsFromFrontMatter(_filesPaths);
+        const bookmarksGroups = FileClass.getBookmarksGroupsFromFrontMatter(_bookmarksGroups);
         const icon = typeof (_icon) === 'string' ? _icon : this.plugin.settings.buttonIcon
-        return new FileClassOptions(limit, icon, parent, excludes, tagNames, mapWithTag);
+        return new FileClassOptions(limit, icon, parent, excludes, tagNames, mapWithTag, filesPaths, bookmarksGroups);
     }
 
     public isMappedWithTag(): boolean {
@@ -195,6 +205,26 @@ class FileClass {
             return _tagNames;
         } else if (_tagNames) {
             return _tagNames.split(",")
+        } else {
+            return []
+        }
+    }
+
+    static getFilesPathsFromFrontMatter(_filesPaths: string[] | string | undefined): string[] {
+        if (Array.isArray(_filesPaths)) {
+            return _filesPaths;
+        } else if (_filesPaths) {
+            return _filesPaths.split(",")
+        } else {
+            return []
+        }
+    }
+
+    static getBookmarksGroupsFromFrontMatter(_bookmarksGroups: string[] | string | undefined): string[] {
+        if (Array.isArray(_bookmarksGroups)) {
+            return _bookmarksGroups;
+        } else if (_bookmarksGroups) {
+            return _bookmarksGroups.split(",")
         } else {
             return []
         }

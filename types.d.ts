@@ -2,6 +2,28 @@ import "obsidian";
 //@ts-ignore
 import { DataviewApi } from "obsidian-dataview";
 
+interface InternalPlugin {
+    enabled: boolean;
+}
+
+interface BookmarkItem {
+    ctime: number;
+    type: 'file' | 'folder' | 'group';
+    path: string;
+    title: string;
+    items?: BookmarkItem[];
+}
+
+interface BookmarkInternalPlugin extends InternalPlugin {
+    instance: {
+        items: BookmarkItem[];
+    };
+}
+
+interface InternalPlugins {
+    bookmarks: BookmarkInternalPlugin;
+}
+
 declare module "obsidian" {
     interface App {
         appId?: string;
@@ -13,6 +35,10 @@ declare module "obsidian" {
                     api?: DataviewApi;
                 };
             };
+        };
+        internalPlugins: {
+            plugins: InternalPlugins;
+            getPluginById<T extends keyof InternalPlugins>(id: T): InternalPlugins[T];
         };
         statusBar: {
             containerEl: HTMLDivElement;
