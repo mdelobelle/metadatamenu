@@ -92,6 +92,7 @@ export class FieldsModal extends Modal {
                 return upperIndexedIdsInPath?.join("____") === this.indexedPath
             }
         })
+        //FIXME: doesn't work for multi fileclasses
         this.missingFields = this.note?.fields
             .filter(_f => _f.getFirstAncestor()?.id === id)
             .filter(_f => !this.existingFields.map(eF => eF.field.id).includes(_f.id)) || []
@@ -366,6 +367,7 @@ export class FieldsModal extends Modal {
             })
             this.missingFields.forEach(_f => this.buildFieldContainer(fieldsContainer, _f, undefined))
             if (this.missingFields.length) {
+                //FIXME the button doesn't appear
                 this.buildInsertMissingFieldsBtn()
             }
         }

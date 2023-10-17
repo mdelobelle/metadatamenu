@@ -127,8 +127,8 @@ export default class OptionsList {
 			const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || []
 			fileClasses.forEach(fileClass => {
 				const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.plugin.app)
-				const fielClassOptionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), fieldCommandSuggestModal, this.file);
-				fielClassOptionsList.createExtraOptionList(false);
+				const fileClassOptionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), fieldCommandSuggestModal, this.file);
+				fileClassOptionsList.createExtraOptionList(false);
 				location.options.push({
 					id: "manage_fileClass_attributes",
 					actionLabel: `<span>Manage <b>${fileClass.name}</b> fileClass fields</span>`,
