@@ -77,7 +77,6 @@ export class Line {
 
     public getLastChildLine(): Line | undefined {
         let lastChildLine: Line = this
-        console.log(this.note.lines.filter(_l => _l.number > this.number && _l.indentationLevel > 0))
         for (const line of this.note.lines.filter(_l => _l.number > this.number)) {
             if (line.indentationLevel === 0) break
             if (line.indentationLevel > this.indentationLevel || (line.indentationLevel === this.indentationLevel && !line.isNewListItem)) {

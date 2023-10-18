@@ -92,9 +92,11 @@ export class FieldsModal extends Modal {
                 return upperIndexedIdsInPath?.join("____") === this.indexedPath
             }
         })
-        //FIXME: doesn't work for multi fileclasses
         this.missingFields = this.note?.fields
-            .filter(_f => _f.getFirstAncestor()?.id === id)
+            .filter(_f => {
+                if (this.indexedPath) return _f.getFirstAncestor()?.id === id
+                else return _f.isRoot()
+            })
             .filter(_f => !this.existingFields.map(eF => eF.field.id).includes(_f.id)) || []
         if (this.indexedPath) {
             this.buildNavigation()
@@ -149,9 +151,9 @@ export class FieldsModal extends Modal {
         fieldTypeContainer.createDiv({ text: field.type, cls: `chip field-type ${FieldType.FieldBackgroundColorClass[field.type]}` })
         const fieldValueWrapper = container.createDiv({ cls: "field-value-wrapper" })
         const fieldValueContainer = fieldValueWrapper.createDiv({
-            cls: value !== undefined && value !== null ? "field-item field-value" : "field-item field-value emptyfield"
+            cls: ![undefined, null, ""].includes(value) ? "field-item field-value" : "field-item field-value emptyfield"
         })
-        if (value === null) {
+        if (value === null || value === "") {
             fieldValueContainer.setText(field.type === FieldType.FieldType.Lookup ? "---auto---" : "<empty>");
         } else if (value === undefined) {
             fieldValueContainer.setText("<missing>");
@@ -318,9 +320,8 @@ export class FieldsModal extends Modal {
         insertMissingFieldsContainer.createDiv({ text: "Insert missing fields" });
         const insertMissingFieldsBtn = new ButtonComponent(insertMissingFieldsContainer)
         insertMissingFieldsBtn.setIcon("battery-full")
-
         insertMissingFieldsBtn.onClick(() => {
-            if (this.indexedPath === "") {
+            if (!this.indexedPath) {
                 new ChooseSectionModal(
                     this.plugin,
                     this.file,
@@ -334,7 +335,6 @@ export class FieldsModal extends Modal {
                 insertMissingFields(
                     this.plugin, this.file.path, -1, false, false, false, fileClass?.name, this.indexedPath
                 )
-
             }
         })
     }
@@ -366,10 +366,7 @@ export class FieldsModal extends Modal {
                 this.buildFieldContainer(fieldsContainer, eF.field, eF.value, eF.indexedPath)
             })
             this.missingFields.forEach(_f => this.buildFieldContainer(fieldsContainer, _f, undefined))
-            if (this.missingFields.length) {
-                //FIXME the button doesn't appear
-                this.buildInsertMissingFieldsBtn()
-            }
+            if (this.missingFields.length) this.buildInsertMissingFieldsBtn()
         }
     }
 }

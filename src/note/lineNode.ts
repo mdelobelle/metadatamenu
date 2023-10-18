@@ -65,10 +65,7 @@ export class LineNode {
         switch (this.line.position) {
             case "yaml":
                 {
-                    //console.log("=========== NEXT LINE ============")
-                    //console.log(this.rawContent)
                     const { attribute: yamlAttr, values: value } = frontMatterLineField(this.rawContent)
-                    //manage ObjectList empty item
                     if (!yamlAttr && this.line.isNewListItem) {
                         const parentLine = this.line.parentLine
                         const parentNode = parentLine?.nodes[0]
@@ -88,34 +85,21 @@ export class LineNode {
                         if (yamlAttr === field.name) {
                             this.indexedId = field.id
                             const existingField = new ExistingField(field, this.value, this.indexedId)
-                            //on cherche les fields qui ont le même nom
                             if (field.path) {
-                                //dans le cas de "object fields" plusieurs champs peuvent avoir le même nom: 
-                                //on regarde leur "path" pour déterminer le père
                                 const parentLine = this.line.parentLine
                                 const parentNode = parentLine?.nodes[0]
                                 const parentField = parentNode?.field
 
                                 if (parentField?.id === field.path.split("____").last()) {
                                     this.field = field
-                                    //la ligne "père" a un field dont l'id est bien l'id du parent_field de ce field -> on continue
-                                    // on crée l'indexedPath de ce champ pour pouvoir chercher sa valeur dans le "frontmatter"
                                     if (this.field && parentField?.type === FieldType.ObjectList) {
-                                        // dans le cas d'un père de type "objectlist" on va chercher la position de ce field dans la liste du père
                                         const objectListLines = parentLine!.objectListLines
                                         if (this.line.isNewListItem) {
-                                            // c'est un débute d'item: on crée une nouvelle liste de lignes (object item)
-                                            // et on l'ajoute à l'ensemble des listes de lignes de l'objectList
-                                            // et on rajoute également un existing field?
                                             objectListLines.push([this.line])
                                         } else {
-                                            // c'est un autre field qui appartient à un object item de la liste, 
-                                            // on l'ajoute au dernier object item de la liste de lignes
                                             const lastObject = objectListLines.last()
                                             lastObject?.push(this.line)
                                         }
-                                        // on crée un indexedID en rajoutant le rang de l'object item dans la liste d'objectList auquel il appartient
-                                        // ça servira à créer l'indexedPath dans la fonction Field.getValueFromIndexedPath
                                         const index = objectListLines.length - 1
                                         this.indexedId = `${this.field.id}`
                                         this.indexedPath = `${parentNode?.indexedPath}[${index}]____${this.field.id}`
@@ -123,7 +107,6 @@ export class LineNode {
                                         this.indexedId = `${this.field.id}`
                                         this.indexedPath = `${parentNode?.indexedPath}____${this.field.id}`
                                     }
-                                    // on récupère la valeur
                                     this.value = Field.getValueFromIndexedPath(this.field, this.line.note.cache!.frontmatter!, this.indexedPath)
                                     existingField.value = this.value
                                     existingField.indexedId = this.indexedId

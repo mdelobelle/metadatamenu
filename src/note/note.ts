@@ -44,6 +44,7 @@ export class Note {
     public fields: Field[] = []
     public existingFields: ExistingField[] = []
     public cache: CachedMetadata | null
+    private frontmatterEnd?: number
 
     constructor(
         public plugin: MetadataMenu,
@@ -131,9 +132,9 @@ export class Note {
 
     public async build() {
         const content = await app.vault.read(this.file)
-        const { end: frontMatterEnd } = getFrontmatterPosition(this.plugin, this.file)
+        const { end: frontmatterEnd } = getFrontmatterPosition(this.plugin, this.file)
         content.split("\n").forEach((rawLine, i) => {
-            const position = !!frontMatterEnd?.line && i <= frontMatterEnd?.line ? "yaml" : "inline"
+            const position = !!frontmatterEnd?.line && i <= frontmatterEnd?.line ? "yaml" : "inline"
             new Line(this.plugin, this, position, rawLine, i)
         })
         //console.log(this)
@@ -178,17 +179,6 @@ export class Note {
         return
     }
 
-    private getLastChildLineForIndexedPath(indexedPath: string): Line | undefined {
-
-        let lastChildLine: Line | undefined
-        this.lines.forEach(line => {
-            if (line.nodes[0]?.indexedPath?.startsWith(indexedPath) && (lastChildLine === undefined || lastChildLine.number < line.number)) {
-                lastChildLine = line
-            }
-        })
-        return lastChildLine
-    }
-
     private createLine = (value: string, position: "yaml" | "inline", lineNumber: number, field?: Field) => {
         //will create a line at lineNumber
         //the current line at LineNumber and following lines will be shifted one line below
@@ -203,9 +193,11 @@ export class Note {
         const upperPath = Field.upperIndexedPathObjectPath(indexedPath)
         const { id, index } = Field.getIdAndIndex(indexedPath.split("____").last())
         const { id: upperFieldId, index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
-        const frontMatterEnd = getFrontmatterPosition(this.plugin, this.file)?.end?.line
-        if (lineNumber === -1 && !frontMatterEnd) {
-            for (let i of [0, 1]) new Line(this.plugin, this, "yaml", "---", 0)
+        this.frontmatterEnd = this.frontmatterEnd || getFrontmatterPosition(this.plugin, this.file)?.end?.line
+        if (lineNumber === -1 && !this.frontmatterEnd) {
+            new Line(this.plugin, this, "yaml", "---", 0)
+            new Line(this.plugin, this, "yaml", "---", 0)
+            this.frontmatterEnd = 1
         }
         if (id.startsWith("fileclass-field")) {
             const fR = id.match(/fileclass-field-(?<fileClassAlias>.*)/)
@@ -216,7 +208,7 @@ export class Note {
 
             }
         } else if (id.startsWith("new-field-")) {
-            const position = frontMatterEnd && ((lineNumber || this.lines.length) <= frontMatterEnd) ? "yaml" : "inline"
+            const position = this.frontmatterEnd && ((lineNumber || this.lines.length) <= this.frontmatterEnd) ? "yaml" : "inline"
             const _ = position === "yaml" ? ":" : "::"
             const fR = id.match(/new-field-(?<fieldName>.*)/)
             if (fR?.groups?.fieldName) {
@@ -254,11 +246,11 @@ export class Note {
                 if (!field) return
                 let insertLineNumber =
                     (lineNumber ? Math.max(lineNumber, 0) : undefined) ||
-                    frontMatterEnd ||
+                    this.frontmatterEnd ||
                     this.lines.last()?.number ||
                     0
 
-                const position = frontMatterEnd && (insertLineNumber <= frontMatterEnd) ? "yaml" : "inline"
+                const position = this.frontmatterEnd && (insertLineNumber <= this.frontmatterEnd) ? "yaml" : "inline"
                 if (field.type === FieldType.ObjectList) {
                     //specific case where the field is object but the upperIndex is unknown
                     //it mean that we have to insert a new ObjectListItem

@@ -306,7 +306,6 @@ export default class FieldIndex extends FieldIndexBuilder {
             const fileIndexedEF = indexedEF.filter(eF => eF.filePath === f.path)
             const note = new Note(this.plugin, f)
             await note.build()
-            //FIXME when file has changed remotely, the EF are not build at start :( ???
             note.existingFields.forEach(eF => {
                 const id = `${f.path}_____${eF.indexedPath}`
                 putPayload.push({

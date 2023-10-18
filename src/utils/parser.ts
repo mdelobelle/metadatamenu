@@ -102,7 +102,7 @@ export const getLineFields = (line: string): parsedField[] => {
     const fR = line.match(fullLineRegex);
     if (fR?.groups) {
         const { attribute, inList, inQuote, preSpacer, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer, values } = fR.groups
-        fields.push({ attribute, values, index: 0, length: line.length, inList, inQuote, preSpacer, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer })
+        fields.push({ attribute, values: values || "", index: 0, length: line.length, inList, inQuote, preSpacer, startStyle, endStyle, beforeSeparatorSpacer, afterSeparatorSpacer })
     } else {
         const sRBk = encodeLink(line).matchAll(inSentenceRegexBrackets);
         let next = sRBk.next();
