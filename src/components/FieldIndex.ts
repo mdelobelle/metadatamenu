@@ -17,6 +17,7 @@ import { Note } from "src/note/note";
 import initDb from "src/db/index"
 import * as fieldsValues from "src/db/stores/fieldsValues"
 import * as updates from "src/db/stores/updates";
+import { BookmarkItem } from "types";
 
 /*
 on tente de se faire notre propre index
@@ -43,60 +44,92 @@ export interface cFileWithGroups {
     group: string
 }
 
-export default class FieldIndex extends Component {
-
-    public fileClassesFields: Map<string, Field[]>;
+abstract class FieldIndexBuilder extends Component {
+    public changedFiles: TFile[] = []
+    public classFilesPath: string | null;
+    public bookmarksGroupsMatchingFileClasses: Map<string, FileClass>;
+    public canvasLastFiles: Map<string, string[]>
+    public dv: any;
+    public dvReady: boolean = false;
     public fieldsFromGlobalFileClass: Field[];
-    public filesFieldsFromTags: Map<string, Field[]>;
-    public filesFieldsFromFilesPaths: Map<string, Field[]>;
+    public fileChanged: boolean = false;
+    public fileClassesAncestors: Map<string, string[]>
+    public fileClassesFields: Map<string, Field[]>;
+    public fileClassesName: Map<string, FileClass>;
+    public fileClassesPath: Map<string, FileClass>;
+    public fileFormulaFieldLastValue: Map<string, string>;
+    public fileFormulaFieldsStatus: Map<string, LookupStatus>;
+    public fileLookupFieldLastOutputType: Map<string, keyof typeof LookupType>;
+    public fileLookupFieldLastValue: Map<string, string>;
+    public fileLookupFieldsStatus: Map<string, LookupStatus>;
+    public fileLookupFiles: Map<string, any[]>;
+    public filesFields: Map<string, Field[]>;
     public filesFieldsFromBookmarksGroups: Map<string, Field[]>;
     public filesFieldsFromFileClassQueries: Map<string, Field[]>;
+    public filesFieldsFromFilesPaths: Map<string, Field[]>;
     public filesFieldsFromInnerFileClasses: Map<string, Field[]>;
-    public filesFields: Map<string, Field[]>;
-    public filesLookupsAndFormulasFields: Map<string, Field[]>;
-    public filesLookupAndFormulaFieldsExists: Map<string, Field[]>;
+    public filesFieldsFromTags: Map<string, Field[]>;
     public filesFileClasses: Map<string, FileClass[]>;
     public filesFileClassesNames: Map<string, string[] | undefined>;
-    public fileClassesAncestors: Map<string, string[]>
-    public fileClassesPath: Map<string, FileClass>;
+    public filesLookupAndFormulaFieldsExists: Map<string, Field[]>;
+    public filesLookupsAndFormulasFields: Map<string, Field[]>;
+    public filesPathsMatchingFileClasses: Map<string, FileClass>;
+    public firstIndexingDone: boolean = false;
+    public lastRevision: 0;
+    public loadTime: number;
+    public lookupQueries: Map<string, Field>;
+    public previousFileLookupFilesValues: Map<string, number>;
+    public tagsMatchingFileClasses: Map<string, FileClass>;
     public v1FileClassesPath: Map<string, FileClass>;
     public v2FileClassesPath: Map<string, FileClass>;
-    public fileClassesName: Map<string, FileClass>;
     public valuesListNotePathValues: Map<string, string[]>;
-    public tagsMatchingFileClasses: Map<string, FileClass>;
-    public filesPathsMatchingFileClasses: Map<string, FileClass>;
-    public bookmarksGroupsMatchingFileClasses: Map<string, FileClass>;
-    public fileLookupFiles: Map<string, any[]>;
-    public fileLookupFieldsStatus: Map<string, LookupStatus>;
-    public fileFormulaFieldsStatus: Map<string, LookupStatus>;
-    public previousFileLookupFilesValues: Map<string, number>;
-    public fileLookupFieldLastValue: Map<string, string>;
-    public fileLookupFieldLastOutputType: Map<string, keyof typeof LookupType>;
-    public fileFormulaFieldLastValue: Map<string, string>;
-    public canvasLastFiles: Map<string, string[]>
-    public lookupQueries: Map<string, Field>;
-    public dv: any;
-    public lastRevision: 0;
-    public fileChanged: boolean = false;
-    public dvReady: boolean = false;
-    public loadTime: number;
-    public firstIndexingDone: boolean = false;
-    private classFilesPath: string | null;
-    private changedFiles: TFile[] = []
 
-    constructor(private plugin: MetadataMenu, public cacheVersion: string, public onChange: () => void) {
+    constructor(public plugin: MetadataMenu, public cacheVersion: string, public onChange: () => void) {
         super()
         this.flushCache();
-        this.fileLookupFiles = new Map();
+        this.canvasLastFiles = new Map();
+        this.fileFormulaFieldLastValue = new Map();
+        this.fileFormulaFieldsStatus = new Map()
+        this.fileLookupFieldLastOutputType = new Map();
         this.fileLookupFieldLastValue = new Map();
         this.fileLookupFieldsStatus = new Map();
-        this.fileFormulaFieldsStatus = new Map()
+        this.fileLookupFiles = new Map();
         this.previousFileLookupFilesValues = new Map();
-        this.fileLookupFieldLastOutputType = new Map();
-        this.fileFormulaFieldLastValue = new Map();
-        this.canvasLastFiles = new Map();
         this.dv = this.plugin.app.plugins.plugins.dataview;
         this.classFilesPath = plugin.settings.classFilesPath;
+    }
+
+    public flushCache() {
+        this.filesFields = new Map();
+        this.filesLookupsAndFormulasFields = new Map();
+        this.filesLookupAndFormulaFieldsExists = new Map();
+        this.fileClassesFields = new Map();
+        this.fieldsFromGlobalFileClass = [];
+        this.filesFieldsFromTags = new Map();
+        this.filesFieldsFromFilesPaths = new Map();
+        this.filesFieldsFromBookmarksGroups = new Map();
+        this.filesFieldsFromFileClassQueries = new Map();
+        this.filesFieldsFromInnerFileClasses = new Map();
+        this.fileClassesPath = new Map();
+        this.v1FileClassesPath = new Map();
+        this.v2FileClassesPath = new Map();
+        this.fileClassesName = new Map();
+        this.fileClassesAncestors = new Map();
+        this.valuesListNotePathValues = new Map();
+        this.tagsMatchingFileClasses = new Map();
+        this.filesPathsMatchingFileClasses = new Map();
+        this.bookmarksGroupsMatchingFileClasses = new Map();
+        this.filesFileClasses = new Map();
+        this.filesFileClassesNames = new Map();
+        this.lookupQueries = new Map();
+    }
+
+}
+
+export default class FieldIndex extends FieldIndexBuilder {
+
+    constructor(public plugin: MetadataMenu, public cacheVersion: string, public onChange: () => void) {
+        super(plugin, cacheVersion, onChange)
     }
 
     async onload(): Promise<void> {
@@ -229,31 +262,6 @@ export default class FieldIndex extends Component {
             id = cryptoRandomString({ length: 6, type: "alphanumeric" })
         }
         return id
-    }
-
-    private flushCache() {
-        this.filesFields = new Map();
-        this.filesLookupsAndFormulasFields = new Map();
-        this.filesLookupAndFormulaFieldsExists = new Map();
-        this.fileClassesFields = new Map();
-        this.fieldsFromGlobalFileClass = [];
-        this.filesFieldsFromTags = new Map();
-        this.filesFieldsFromFilesPaths = new Map();
-        this.filesFieldsFromBookmarksGroups = new Map();
-        this.filesFieldsFromFileClassQueries = new Map();
-        this.filesFieldsFromInnerFileClasses = new Map();
-        this.fileClassesPath = new Map();
-        this.v1FileClassesPath = new Map();
-        this.v2FileClassesPath = new Map();
-        this.fileClassesName = new Map();
-        this.fileClassesAncestors = new Map();
-        this.valuesListNotePathValues = new Map();
-        this.tagsMatchingFileClasses = new Map();
-        this.filesPathsMatchingFileClasses = new Map();
-        this.bookmarksGroupsMatchingFileClasses = new Map();
-        this.filesFileClasses = new Map();
-        this.filesFileClassesNames = new Map();
-        this.lookupQueries = new Map();
     }
 
     async fullIndex(event: string, force_update_all = false, without_lookups = false): Promise<void> {
@@ -560,6 +568,33 @@ export default class FieldIndex extends Component {
         })
     }
 
+    private resolveFileClassBinding(
+        itemMatchingFileClasses: Map<string, FileClass>,
+        filesFieldsFromBinding: Map<string, Field[]>,
+        itemToMatch: string,
+        cFile: TFile | cFileWithTags | cFileWithGroups
+    ): void {
+        const fileClass = itemMatchingFileClasses.get(itemToMatch);
+        const filePath = cFile.path;
+        if (fileClass) {
+            this.filesFileClasses.set(filePath, [...new Set([...(this.filesFileClasses.get(filePath) || []), fileClass])])
+            this.filesFileClassesNames.set(cFile.path, [...new Set([...(this.filesFileClassesNames.get(filePath) || []), fileClass.name])])
+
+            const fileFileClassesFieldsFromBinding = this.fileClassesFields.get(fileClass.name)
+            const currentFields = filesFieldsFromBinding.get(filePath)
+
+            if (fileFileClassesFieldsFromBinding) {
+                const newFields = [...fileFileClassesFieldsFromBinding]
+                const filteredCurrentFields = currentFields?.filter(field =>
+                    !newFields.map(f => f.id).includes(field.id) &&
+                    !fileClass.options?.excludes?.map(attr => attr.id).includes(field.id)
+                ) || []
+                newFields.push(...filteredCurrentFields)
+                filesFieldsFromBinding.set(filePath, newFields)
+            }
+        }
+    }
+
     resolveFileClassMatchingTags(): void {
         if (![...this.tagsMatchingFileClasses].length) return
         const mappedTags = [...this.tagsMatchingFileClasses.keys()].map(_t => `#${_t}`)
@@ -576,26 +611,12 @@ export default class FieldIndex extends Component {
         filesWithMappedTag.forEach((cFile: cFileWithTags) => {
             cFile.tags.forEach((_tag: string) => {
                 const tag = _tag.replace(/^\#/, "")
-                //TODO this part can be factorized between tags, paths and groups
-                const fileClass = this.tagsMatchingFileClasses.get(tag);
-                const filePath = cFile.path;
-                if (fileClass) {
-                    this.filesFileClasses.set(filePath, [...new Set([...(this.filesFileClasses.get(filePath) || []), fileClass])])
-                    this.filesFileClassesNames.set(cFile.path, [...new Set([...(this.filesFileClassesNames.get(filePath) || []), fileClass.name])])
-
-                    const fileFileClassesFieldsFromTag = this.fileClassesFields.get(fileClass.name)
-                    const currentFields = this.filesFieldsFromTags.get(filePath)
-
-                    if (fileFileClassesFieldsFromTag) {
-                        const newFields = [...fileFileClassesFieldsFromTag]
-                        const filteredCurrentFields = currentFields?.filter(field =>
-                            !newFields.map(f => f.id).includes(field.id) &&
-                            !fileClass.options?.excludes?.map(attr => attr.id).includes(field.id)
-                        ) || []
-                        newFields.push(...filteredCurrentFields)
-                        this.filesFieldsFromTags.set(filePath, newFields)
-                    }
-                }
+                this.resolveFileClassBinding(
+                    this.tagsMatchingFileClasses,
+                    this.filesFieldsFromTags,
+                    tag,
+                    cFile
+                )
             })
         })
     }
@@ -606,26 +627,23 @@ export default class FieldIndex extends Component {
         const filesWithPath: TFile[] =
             this.plugin.app.vault.getMarkdownFiles().filter(_f => paths.includes(_f.parent.path))
         filesWithPath.forEach((file: TFile) => {
-            //TODO this part can be factorized between tags, paths and groups
-            const fileClass = this.filesPathsMatchingFileClasses.get(file.parent.path);
-            if (fileClass) {
-                this.filesFileClasses.set(file.path, [...new Set([...(this.filesFileClasses.get(file.path) || []), fileClass])])
-                this.filesFileClassesNames.set(file.path, [...new Set([...(this.filesFileClassesNames.get(file.path) || []), fileClass.name])])
-
-                const fileFileClassesFieldsFromPath = this.fileClassesFields.get(fileClass.name)
-                const currentFields = this.filesFieldsFromFilesPaths.get(file.path)
-
-                if (fileFileClassesFieldsFromPath) {
-                    const newFields = [...fileFileClassesFieldsFromPath]
-                    const filteredCurrentFields = currentFields?.filter(field =>
-                        !newFields.map(f => f.id).includes(field.id) &&
-                        !fileClass.options?.excludes?.map(attr => attr.id).includes(field.id)
-                    ) || []
-                    newFields.push(...filteredCurrentFields)
-                    this.filesFieldsFromFilesPaths.set(file.path, newFields)
-                }
-            }
+            this.resolveFileClassBinding(
+                this.filesPathsMatchingFileClasses,
+                this.filesFieldsFromFilesPaths,
+                file.parent.path,
+                file
+            )
         })
+    }
+
+    private getFilesForItems(items: BookmarkItem[], groups: string[], filesWithGroups: cFileWithGroups[], path: string = "") {
+        if (groups.includes(path || "/")) {
+            items.filter(_i => _i.type === "file").forEach(_i => filesWithGroups.push({ path: _i.path, group: path || "/" }))
+        }
+        for (const group of items.filter(_i => _i.type === "group")) {
+            const subPath = `${path}${path ? "/" : ""}${group.title}`
+            this.getFilesForItems(group.items || [], groups, filesWithGroups, subPath)
+        }
     }
 
     resolveFileClassMatchingBookmarksGroups(): void {
@@ -634,35 +652,15 @@ export default class FieldIndex extends Component {
         const bookmarks = this.plugin.app.internalPlugins.getPluginById("bookmarks")
         if (!bookmarks.enabled) return
         const filesWithGroups: cFileWithGroups[] = []
-        if (groups.includes("/")) {
-            bookmarks.instance.items.forEach(item => {
-                if (item.type === "file") {
-                    filesWithGroups.push({ path: item.path, group: "/" })
-                }
-            })
-        }
-        //TODO get groups recursively
+        this.getFilesForItems(bookmarks.instance.items || [], groups, filesWithGroups)
 
         filesWithGroups.forEach((cFile: cFileWithGroups) => {
-            //TODO this part can be factorized between tags, paths and groups
-            const fileClass = this.bookmarksGroupsMatchingFileClasses.get(cFile.group);
-            if (fileClass) {
-                this.filesFileClasses.set(cFile.path, [...new Set([...(this.filesFileClasses.get(cFile.path) || []), fileClass])])
-                this.filesFileClassesNames.set(cFile.path, [...new Set([...(this.filesFileClassesNames.get(cFile.path) || []), fileClass.name])])
-
-                const fileFileClassesFieldsFromGroup = this.fileClassesFields.get(fileClass.name)
-                const currentFields = this.filesFieldsFromBookmarksGroups.get(cFile.path)
-
-                if (fileFileClassesFieldsFromGroup) {
-                    const newFields = [...fileFileClassesFieldsFromGroup]
-                    const filteredCurrentFields = currentFields?.filter(field =>
-                        !newFields.map(f => f.id).includes(field.id) &&
-                        !fileClass.options?.excludes?.map(attr => attr.id).includes(field.id)
-                    ) || []
-                    newFields.push(...filteredCurrentFields)
-                    this.filesFieldsFromBookmarksGroups.set(cFile.path, newFields)
-                }
-            }
+            this.resolveFileClassBinding(
+                this.bookmarksGroupsMatchingFileClasses,
+                this.filesFieldsFromBookmarksGroups,
+                cFile.group,
+                cFile
+            )
         })
     }
 
