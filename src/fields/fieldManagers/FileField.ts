@@ -6,6 +6,8 @@ import AbstractFileBasedField from "./AbstractFileBasedField";
 import SingleFileModal from "src/modals/fields/SingleFileModal";
 import { getLink } from "src/utils/parser";
 import { ExistingField } from "../existingField";
+import ObjectModal from "src/modals/fields/ObjectModal";
+import ObjectListModal from "src/modals/fields/ObjectListModal";
 
 export default class FileField extends AbstractFileBasedField<SingleFileModal> {
 
@@ -23,9 +25,10 @@ export default class FileField extends AbstractFileBasedField<SingleFileModal> {
         lineNumber: number = -1,
         after: boolean = false,
         asList: boolean = false,
-        asComment: boolean = false
+        asComment: boolean = false,
+        previousModal?: ObjectModal | ObjectListModal
     ): SingleFileModal {
-        return new SingleFileModal(plugin, file, field, eF, indexedPath, lineNumber, after, asList, asComment);
+        return new SingleFileModal(plugin, file, field, eF, indexedPath, lineNumber, after, asList, asComment, previousModal);
     }
 
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked: () => {}): void {

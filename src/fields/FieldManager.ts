@@ -9,6 +9,8 @@ import { FieldManager as FM, FieldType } from "src/types/fieldTypes";
 import Field from "./Field";
 import { Note } from "src/note/note";
 import { ExistingField } from "./existingField";
+import ObjectModal from "src/modals/fields/ObjectModal";
+import ObjectListModal from "src/modals/fields/ObjectListModal";
 
 export const enum SettingLocation {
     "PluginSettings",
@@ -31,7 +33,7 @@ export abstract class FieldManager {
     ): void
     abstract getOptionsStr(): string;
     abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField, indexedPath?: string,
-        lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): void;
+        lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean, previousModal?: ObjectModal | ObjectListModal): void;
     public showModalOption: boolean = true;
 
     constructor(public plugin: MetadataMenu, public field: Field, public type: FieldType) {

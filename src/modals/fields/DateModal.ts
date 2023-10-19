@@ -10,6 +10,8 @@ import { postValues } from "src/commands/postValues";
 import BaseModal from "../baseModal";
 import { cleanActions } from "src/utils/modals";
 import { ExistingField } from "src/fields/existingField";
+import ObjectModal from "./ObjectModal";
+import ObjectListModal from "./ObjectListModal";
 
 export default class DateModal extends BaseModal {
 
@@ -35,7 +37,8 @@ export default class DateModal extends BaseModal {
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
-        private asComment: boolean = false
+        private asComment: boolean = false,
+        private previousModal?: ObjectModal | ObjectListModal
     ) {
         super(plugin);
         const initialValue = this.eF?.value || ""
@@ -46,10 +49,6 @@ export default class DateModal extends BaseModal {
         if (this.dvApi) this.dateManager = new FieldManager[this.field.type](this.plugin, this.field);
         this.value = this.initialValue;
 
-    };
-
-    onOpen() {
-        super.onOpen()
         this.containerEl.addClass("metadata-menu")
         cleanActions(this.contentEl, ".field-container");
         cleanActions(this.contentEl, ".field-error");
@@ -58,6 +57,14 @@ export default class DateModal extends BaseModal {
         this.errorField = this.contentEl.createEl("div", { cls: "field-error" });
         this.errorField.hide();
     };
+
+    onOpen() {
+        super.onOpen()
+    };
+
+    onClose(): void {
+        this.previousModal?.open()
+    }
 
     public async save(e: Event): Promise<void> {
         //e.preventDefault();

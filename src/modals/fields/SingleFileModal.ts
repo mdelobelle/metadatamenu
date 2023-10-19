@@ -6,6 +6,8 @@ import MetadataMenu from "main";
 import { postValues } from "src/commands/postValues";
 import { getLink } from "src/utils/parser";
 import { ExistingField } from "src/fields/existingField";
+import ObjectModal from "./ObjectModal";
+import ObjectListModal from "./ObjectListModal";
 
 export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
 
@@ -20,7 +22,8 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
-        private asComment: boolean = false
+        private asComment: boolean = false,
+        private previousModal?: ObjectModal | ObjectListModal
     ) {
         super(plugin.app);
         const initialValueObject: string = this.eF?.value || ""
@@ -30,6 +33,10 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
             if (file instanceof TFile) this.selectedFile = file
         }
         this.containerEl.addClass("metadata-menu");
+    }
+
+    onClose(): void {
+        this.previousModal?.open()
     }
 
     getItems(): TFile[] {
@@ -78,5 +85,6 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
         }
         const value = FileField.buildMarkDownLink(this.plugin, this.file, item.basename, undefined, alias)
         await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asComment)
+        this.previousModal?.open()
     }
 }

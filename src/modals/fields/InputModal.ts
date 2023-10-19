@@ -5,6 +5,8 @@ import { ExistingField } from "src/fields/existingField";
 import Field from "src/fields/Field";
 import { cleanActions } from "src/utils/modals";
 import BaseModal from "../baseModal";
+import ObjectListModal from "./ObjectListModal";
+import ObjectModal from "./ObjectModal";
 
 export default class InputModal extends BaseModal {
     private templateValues: Record<string, string> = {};
@@ -21,14 +23,11 @@ export default class InputModal extends BaseModal {
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
-        private asComment: boolean = false
+        private asComment: boolean = false,
+        private previousModal?: ObjectModal | ObjectListModal
     ) {
         super(plugin);
         this.value = this.eF?.value || ""
-    };
-
-    onOpen() {
-        super.onOpen()
         if (this.field.options.template) {
             const templateFieldRegex = new RegExp(`\\{\\{(?<field>[^\\}]+?)\\}\\}`, "gu");
             const tF = this.field.options.template.matchAll(templateFieldRegex)
@@ -56,6 +55,16 @@ export default class InputModal extends BaseModal {
         this.buildSaveBtn(this.contentEl.createDiv({ cls: "footer-actions" }));
         this.containerEl.addClass("metadata-menu")
     };
+
+    onOpen() {
+        super.onOpen()
+
+    };
+
+    onClose() {
+        console.log(this.previousModal)
+        this.previousModal?.open()
+    }
 
     private renderValue() {
         let renderedString = this.field.options.template.slice()

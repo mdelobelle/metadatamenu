@@ -9,6 +9,8 @@ import { FieldOptions } from "src/components/NoteFields";
 import { Link } from "src/types/dataviewTypes";
 import { ExistingField } from "../existingField";
 import * as fieldsValues from 'src/db/stores/fieldsValues'
+import ObjectModal from "src/modals/fields/ObjectModal";
+import ObjectListModal from "src/modals/fields/ObjectListModal";
 
 const convertDataviewArrayOfLinkToArrayOfPath = (arr: (Link | any)[]) => {
     return arr.reduce((acc, cur) => {
@@ -169,9 +171,10 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
-        asComment?: boolean
+        asComment?: boolean,
+        previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const fieldModal = this.modalFactory(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment)
+        const fieldModal = this.modalFactory(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment, previousModal)
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

@@ -8,6 +8,8 @@ import { FieldManager } from "../FieldManager";
 import { FieldOptions } from "src/components/NoteFields";
 import { ExistingField } from "../existingField";
 import * as fieldsValues from 'src/db/stores/fieldsValues'
+import ObjectListModal from "src/modals/fields/ObjectListModal";
+import ObjectModal from "src/modals/fields/ObjectModal";
 
 export default class InputField extends FieldManager {
 
@@ -68,9 +70,10 @@ export default class InputField extends FieldManager {
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
-        asComment?: boolean
+        asComment?: boolean,
+        previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const fieldModal = new InputModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment);
+        const fieldModal = new InputModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment, previousModal);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

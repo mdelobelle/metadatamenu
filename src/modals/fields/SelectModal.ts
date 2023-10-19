@@ -7,6 +7,8 @@ import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedFi
 import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
 import { ExistingField } from "src/fields/existingField";
+import ObjectModal from "./ObjectModal";
+import ObjectListModal from "./ObjectListModal";
 
 export default class ValueSuggestModal extends SuggestModal<string>{
 
@@ -22,15 +24,13 @@ export default class ValueSuggestModal extends SuggestModal<string>{
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
-        private asComment: boolean = false
+        private asComment: boolean = false,
+        private previousModal?: ObjectModal | ObjectListModal
+
     ) {
         super(plugin.app);
         this.value = this.eF?.value || ""
         this.containerEl.addClass("metadata-menu");
-    };
-
-    async onOpen(): Promise<void> {
-        super.onOpen()
         const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
         inputContainer.appendChild(this.inputEl)
         this.containerEl.find(".prompt").prepend(inputContainer)
@@ -61,6 +61,14 @@ export default class ValueSuggestModal extends SuggestModal<string>{
         clearButton.buttonEl.addClass("danger")
         clearButton.setTooltip("Clear the field value")
         this.modalEl.appendChild(buttonContainer);
+    };
+
+    async onOpen(): Promise<void> {
+        super.onOpen()
+    }
+
+    onClose(): void {
+        this.previousModal?.open()
     }
 
     async addNewValueToSettings(): Promise<void> {

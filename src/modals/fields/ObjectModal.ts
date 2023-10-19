@@ -1,11 +1,12 @@
 import MetadataMenu from "main";
-import { TFile, SuggestModal } from "obsidian";
+import { TFile, SuggestModal, ButtonComponent } from "obsidian";
 import Field from "src/fields/Field";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
 import CycleField from "src/fields/fieldManagers/CycleField";
 import { ExistingField } from "src/fields/ExistingField";
 import { FieldManager as F } from "src/fields/FieldManager";
 import { FieldManager, FieldType } from "src/types/fieldTypes";
+import ObjectListModal from "./ObjectListModal";
 
 export default class ObjectModal extends SuggestModal<ExistingField | Field> {
 
@@ -18,8 +19,10 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false,
+        private previousModal?: ObjectModal | ObjectListModal,
         private existingFields: ExistingField[] = [],
-        private missingFields: Field[] = [],
+        private missingFields: Field[] = []
+        //TODO: can be generalized?
     ) {
         super(plugin.app);
     };
@@ -30,15 +33,24 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
         this.containerEl.addClass("narrow")
     };
 
+    onClose(): void {
+        this.previousModal?.open()
+    }
+
     getSuggestions(query: string = ""): Array<ExistingField | Field> {
         return [...this.existingFields, ...this.missingFields]
     }
 
     renderSuggestion(item: ExistingField | Field, el: HTMLElement) {
+        const container = el.createDiv({ cls: "value-container" })
         if (item instanceof ExistingField) {
-            el.setText(`${item.field.name}: ` + item.value || "not found")
+            const label = container.createDiv({ text: `${item.field.name} :`, cls: "label-container" })
+            const fM = new FieldManager[item.field.type](this.plugin, item.field)
+            const valueContainer = container.createDiv()
+            fM.displayValue(valueContainer, this.file, item.value || "<empty>")
         } else {
-            el.setText(`${item.name}: missing`)
+            const label = container.createDiv({ text: `${item.name} :`, cls: "label-container" })
+            const valueContainer = container.createDiv({ text: "<missing>" })
         }
     }
 
@@ -56,13 +68,14 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
                     (fieldManager as CycleField).next(field.name, this.file)
                     break;
                 default:
-                    fieldManager.createAndOpenFieldModal(this.file, field.name, item, item.indexedPath, undefined, undefined, undefined, undefined)
+                    console.log(fieldManager)
+                    fieldManager.createAndOpenFieldModal(this.file, field.name, item, item.indexedPath, undefined, undefined, undefined, undefined, this)
                     break;
             }
         } else {
             //insert field
             const fieldManager = new FieldManager[item.type](this.plugin, item) as F
-            fieldManager.createAndOpenFieldModal(this.file, item.name, undefined, `${this.indexedPath}____${item.id}`, this.lineNumber, this.after, this.asList, this.asComment)
+            fieldManager.createAndOpenFieldModal(this.file, item.name, undefined, `${this.indexedPath}____${item.id}`, this.lineNumber, this.after, this.asList, this.asComment, this)
         }
     }
 };

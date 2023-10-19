@@ -61,8 +61,8 @@ export default class ObjectField extends FieldManager {
             .filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === indexedPath) || []
         const { id, index } = Field.getIdAndIndex(indexedPath?.split("____").last())
         const missingFields = this.plugin.fieldIndex.filesFields.get(file.path)?.filter(_f =>
-            _f.getFirstAncestor()?.id === id).filter(_f => !existingFields.map(eF => { console.log(eF.field); return eF.field.id }).includes(_f.id)) || []
-        const fieldModal = new ObjectModal(this.plugin, file, eF, indexedPath, lineNumber, after, asList, asComment, existingFields, missingFields)
+            _f.getFirstAncestor()?.id === id).filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
+        const fieldModal = new ObjectModal(this.plugin, file, eF, indexedPath, lineNumber, after, asList, asComment, undefined, existingFields, missingFields)
         fieldModal.open();
     }
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {

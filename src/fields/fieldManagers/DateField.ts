@@ -13,6 +13,8 @@ import { postValues } from "src/commands/postValues";
 import { getLink } from "src/utils/parser";
 import { ExistingField } from "../existingField";
 import * as fieldsValues from 'src/db/stores/fieldsValues'
+import ObjectModal from "src/modals/fields/ObjectModal";
+import ObjectListModal from "src/modals/fields/ObjectListModal";
 
 export default class DateField extends FieldManager {
 
@@ -69,9 +71,10 @@ export default class DateField extends FieldManager {
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
-        asComment?: boolean
+        asComment?: boolean,
+        previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const fieldModal = new DateModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment);
+        const fieldModal = new DateModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment, previousModal);
         fieldModal.titleEl.setText(`Enter date for ${selectedFieldName}`);
         fieldModal.open();
     }

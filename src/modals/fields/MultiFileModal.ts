@@ -7,6 +7,8 @@ import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
 import { extractLinks, getLink } from "src/utils/parser";
 import { ExistingField } from "src/fields/existingField";
+import ObjectModal from "./ObjectModal";
+import ObjectListModal from "./ObjectListModal";
 
 export default class MultiFileModal extends FuzzySuggestModal<TFile> {
 
@@ -21,7 +23,8 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
-        private asComment: boolean = false
+        private asComment: boolean = false,
+        private previousModal?: ObjectModal | ObjectListModal
     ) {
         super(plugin.app);
         const initialOptions: string | string[] = this.eF?.value || []
@@ -50,10 +53,6 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
             this.selectedFiles = [];
         }
         this.containerEl.addClass("metadata-menu")
-    }
-
-    onOpen() {
-        super.onOpen()
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter" && e.altKey) {
                 e.preventDefault();
@@ -87,6 +86,14 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
         clearButton.buttonEl.addClass("danger")
 
         this.modalEl.appendChild(buttonContainer)
+    }
+
+    onOpen() {
+        super.onOpen()
+    }
+
+    onClose(): void {
+        this.previousModal?.open()
     }
 
     getItems(): TFile[] {

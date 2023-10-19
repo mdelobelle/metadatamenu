@@ -9,6 +9,8 @@ import Field from "../Field";
 import { FieldManager } from "../FieldManager";
 import { ExistingField } from "../existingField";
 import * as fieldsValues from 'src/db/stores/fieldsValues'
+import ObjectModal from "src/modals/fields/ObjectModal";
+import ObjectListModal from "src/modals/fields/ObjectListModal";
 export default class BooleanField extends FieldManager {
 
     constructor(plugin: MetadataMenu, field: Field) {
@@ -72,9 +74,10 @@ export default class BooleanField extends FieldManager {
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
-        asComment?: boolean
+        asComment?: boolean,
+        previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const fieldModal = new BooleanModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment)
+        const fieldModal = new BooleanModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment, previousModal)
         fieldModal.titleEl.setText(`Set value for ${selectedFieldName}`);
         fieldModal.open();
     }

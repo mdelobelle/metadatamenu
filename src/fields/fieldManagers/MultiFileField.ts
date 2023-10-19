@@ -1,6 +1,8 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
 import MultiFileModal from "src/modals/fields/MultiFileModal";
+import ObjectListModal from "src/modals/fields/ObjectListModal";
+import ObjectModal from "src/modals/fields/ObjectModal";
 import { FieldType } from "src/types/fieldTypes";
 import { displayLinksOrText } from "src/utils/linksUtils";
 import { ExistingField } from "../existingField";
@@ -22,10 +24,11 @@ export default class MultiFileField extends AbstractFileBasedField<MultiFileModa
         lineNumber: number = -1,
         after: boolean = false,
         asList: boolean = false,
-        asComment: boolean = false
+        asComment: boolean = false,
+        previousModal?: ObjectModal | ObjectListModal
     ): MultiFileModal {
         //return new MultiFileModal(plugin, file, field, initialValueObject, lineNumber, after, asList, asComment);
-        return new MultiFileModal(plugin, file, field, eF, indexedPath, lineNumber, after, asList, asComment);
+        return new MultiFileModal(plugin, file, field, eF, indexedPath, lineNumber, after, asList, asComment, previousModal);
     }
 
 

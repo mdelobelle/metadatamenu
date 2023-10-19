@@ -7,6 +7,8 @@ import NumberField from "src/fields/fieldManagers/NumberField";
 import { FieldManager } from "src/types/fieldTypes";
 import { cleanActions } from "src/utils/modals";
 import BaseModal from "../baseModal";
+import ObjectListModal from "./ObjectListModal";
+import ObjectModal from "./ObjectModal";
 
 export default class NumberModal extends BaseModal {
 
@@ -24,19 +26,23 @@ export default class NumberModal extends BaseModal {
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
-        private asComment: boolean = false
+        private asComment: boolean = false,
+        private previousModal?: ObjectModal | ObjectListModal
     ) {
         super(plugin);
         this.value = this.eF?.value || ""
         this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
         this.containerEl.addClass("metadata-menu")
+        this.buildInputEl();
     };
 
     onOpen() {
         super.onOpen()
-        this.buildInputEl();
     };
 
+    onClose(): void {
+        this.previousModal?.open()
+    }
     private decrement(numberInput: TextComponent): void {
         const { step } = this.field.options;
         const fStep = parseFloat(step);

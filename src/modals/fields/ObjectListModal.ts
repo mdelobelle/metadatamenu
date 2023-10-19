@@ -21,13 +21,10 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false,
+        private previousModal?: ObjectModal | ObjectListModal,
         private objects: ObjectListItem[] = []
     ) {
         super(plugin.app);
-    };
-
-    onOpen() {
-        super.onOpen()
         this.containerEl.addClass("metadata-menu")
         this.containerEl.addClass("narrow")
         const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
@@ -51,6 +48,14 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
         this.addButton.setTooltip("Add a new item")
     };
 
+    onOpen() {
+        super.onOpen()
+    };
+
+    onClose(): void {
+        this.previousModal?.open()
+    }
+
     getSuggestions(query: string = ""): ObjectListItem[] {
         return this.objects
     }
@@ -62,7 +67,6 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
         const valueContainer = container.createDiv({})
         if (item.fields.length) {
             valueContainer.setText(item.fields.map(eF => {
-                console.log(eF)
                 if (Array.isArray(eF.value)) {
                     return `${eF.value.length} ${eF.field.name}`
                 } else if (typeof eF.value === 'object') {
@@ -92,9 +96,9 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
             const { id, index } = Field.getIdAndIndex(item.indexedPath?.split("____").last())
             const missingFields = this.plugin.fieldIndex.filesFields
                 .get(this.file.path)?.filter(_f => _f.getFirstAncestor()?.id === id)
-                .filter(_f => !existingFields.map(eF => { console.log(eF.field); return eF.field.id }).includes(_f.id)) || []
+                .filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
             const objectModal = new ObjectModal(this.plugin, this.file, eF, item.indexedPath,
-                undefined, undefined, undefined, undefined, existingFields, missingFields)
+                undefined, undefined, undefined, undefined, this, existingFields, missingFields)
             objectModal.open()
         }
     }

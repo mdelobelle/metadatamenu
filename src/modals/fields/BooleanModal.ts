@@ -4,6 +4,8 @@ import { postValues } from "src/commands/postValues";
 import { ExistingField } from "src/fields/existingField";
 import Field from "src/fields/Field";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
+import ObjectListModal from "./ObjectListModal";
+import ObjectModal from "./ObjectModal";
 
 export default class BooleanModal extends Modal {
     private value: boolean
@@ -16,18 +18,22 @@ export default class BooleanModal extends Modal {
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
-        private asComment: boolean = false
+        private asComment: boolean = false,
+        private previousModal?: ObjectModal | ObjectListModal
     ) {
         super(plugin.app);
         this.value = this.eF ? BooleanField.stringToBoolean(this.eF.value || "") : false;
-    };
-
-    onOpen() {
         this.containerEl.addClass("metadata-menu")
         this.containerEl.addClass("narrow")
         this.buildToggleEl();
     };
 
+    onOpen() {
+    };
+
+    onClose(): void {
+        this.previousModal?.open()
+    }
 
     private buildToggleEl(): void {
         const choicesContainer = this.contentEl.createDiv({ cls: "value-container" })

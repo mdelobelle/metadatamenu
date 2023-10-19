@@ -9,6 +9,8 @@ import { lintGutter } from "@codemirror/lint";
 import { StateField, EditorState } from "@codemirror/state"
 import { FieldManager } from "src/types/fieldTypes";
 import { ExistingField } from "src/fields/existingField";
+import ObjectModal from "./ObjectModal";
+import ObjectListModal from "./ObjectListModal";
 
 
 export default class RawObjectModal extends BaseModal {
@@ -26,14 +28,11 @@ export default class RawObjectModal extends BaseModal {
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
-        private asComment: boolean = false
+        private asComment: boolean = false,
+        private previousModal?: ObjectModal | ObjectListModal
     ) {
         super(plugin);
         this.value = this.eF?.value || ""
-    };
-
-    onOpen() {
-        super.onOpen()
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter") {
                 e.preventDefault()
@@ -46,6 +45,15 @@ export default class RawObjectModal extends BaseModal {
         this.buildSaveBtn(this.contentEl.createDiv({ cls: "footer-actions" }));
         this.containerEl.addClass("metadata-menu")
     };
+
+    onOpen() {
+        super.onOpen()
+    };
+
+    onClose(): void {
+        this.previousModal?.open()
+    }
+
     private buildPositionContainer() {
         this.positionContainer = this.contentEl.createDiv({ cls: "field-container" })
         this.positionContainer.textContent = "Position: "

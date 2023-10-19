@@ -10,6 +10,8 @@ import { LanguageSupport } from "@codemirror/language";
 import { Extension } from "@codemirror/state"
 import { ExistingField } from "../existingField";
 import * as fieldsValues from 'src/db/stores/fieldsValues'
+import ObjectModal from "src/modals/fields/ObjectModal";
+import ObjectListModal from "src/modals/fields/ObjectListModal";
 
 export default abstract class RawObjectField extends FieldManager {
 
@@ -62,9 +64,10 @@ export default abstract class RawObjectField extends FieldManager {
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
-        asComment?: boolean
+        asComment?: boolean,
+        previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const fieldModal = new RawObjectModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment);
+        const fieldModal = new RawObjectModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment, previousModal);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

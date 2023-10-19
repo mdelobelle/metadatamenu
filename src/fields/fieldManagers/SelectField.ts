@@ -8,6 +8,8 @@ import AbstractListBasedField from "./AbstractListBasedField";
 import { FieldOptions } from "src/components/NoteFields";
 import { ExistingField } from "../existingField";
 import * as fieldsValues from 'src/db/stores/fieldsValues'
+import ObjectModal from "src/modals/fields/ObjectModal";
+import ObjectListModal from "src/modals/fields/ObjectListModal";
 
 export default class SelectField extends AbstractListBasedField {
 
@@ -49,9 +51,10 @@ export default class SelectField extends AbstractListBasedField {
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
-        asComment?: boolean
+        asComment?: boolean,
+        previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const fieldModal = new SelectModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment);
+        const fieldModal = new SelectModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment, previousModal);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }

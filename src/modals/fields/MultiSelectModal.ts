@@ -9,6 +9,8 @@ import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
 import { getLink } from "src/utils/parser";
 import { ExistingField } from "src/fields/existingField";
+import ObjectModal from "./ObjectModal";
+import ObjectListModal from "./ObjectListModal";
 
 export default class MultiSuggestModal extends SuggestModal<string> {
 
@@ -25,7 +27,8 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
-        private asComment: boolean = false
+        private asComment: boolean = false,
+        private previousModal?: ObjectModal | ObjectListModal
     ) {
         super(plugin.app);
         const initialOptions: string | string[] = this.eF?.value || []
@@ -56,10 +59,6 @@ export default class MultiSuggestModal extends SuggestModal<string> {
             this.selectedOptions = [];
         }
         this.containerEl.addClass("metadata-menu");
-    };
-
-    async onOpen() {
-        super.onOpen()
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter" && e.altKey) {
                 await this.replaceValues();
@@ -125,6 +124,14 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         })
         clearButton.buttonEl.addClass("danger")
         this.modalEl.appendChild(buttonContainer)
+    };
+
+    async onOpen() {
+        super.onOpen()
+    }
+
+    onClose(): void {
+        this.previousModal?.open()
     }
 
     async addNewValueToSettings(): Promise<void> {
