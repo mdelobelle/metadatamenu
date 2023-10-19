@@ -8,8 +8,8 @@ import AbstractListBasedField from "./AbstractListBasedField";
 import { FieldOptions } from "src/components/NoteFields";
 import { postValues } from "src/commands/postValues";
 import { SettingLocation } from "../FieldManager";
-import { Note } from "src/note/note";
 import { ExistingField } from "../existingField";
+import * as fieldsValues from 'src/db/stores/fieldsValues'
 
 export default class CycleField extends AbstractListBasedField {
 
@@ -78,9 +78,8 @@ export default class CycleField extends AbstractListBasedField {
     }
 
     public async next(name: string, file: TFile, indexedPath?: string): Promise<void> {
-        const note = new Note(this.plugin, file)
-        await note.build()
-        const value = note.getExistingFieldForIndexedPath(indexedPath)?.value || ""
+        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const value = eF?.value || ""
         let matchedValue = this.getRawOptionFromDuration(value) || value;
         await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: this.nextOption(matchedValue).toString() } }], file)
     }

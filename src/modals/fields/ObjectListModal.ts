@@ -1,12 +1,10 @@
 import MetadataMenu from "main";
-import { Modal, TFile, ButtonComponent, SuggestModal, setIcon } from "obsidian";
-import { postValues } from "src/commands/postValues";
+import { TFile, ButtonComponent, SuggestModal, setIcon } from "obsidian";
 import { ExistingField } from "src/fields/existingField";
 import Field from "src/fields/Field";
 import ObjectListField, { ObjectListItem } from "src/fields/fieldManagers/ObjectListField";
 import { Note } from "src/note/note";
-import { FieldManager, FieldType } from "src/types/fieldTypes";
-import { cleanActions } from "src/utils/modals";
+import { FieldManager } from "src/types/fieldTypes";
 import ObjectModal from "./ObjectModal";
 import * as fieldsValues from 'src/db/stores/fieldsValues'
 
@@ -85,8 +83,7 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
 
     async onChooseSuggestion(item: ObjectListItem, evt: MouseEvent | KeyboardEvent) {
         if (this.toRemove) {
-            const note = new Note(this.plugin, this.file)
-            await note.build()
+            const note = await Note.buildNote(this.plugin, this.file)
             if (item.indexedPath) note.removeObject(item.indexedPath)
         } else {
             const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.file, item.indexedPath)

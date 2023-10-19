@@ -10,7 +10,6 @@ import * as Lookup from "src/types/lookupTypes";
 import { Status } from "src/types/lookupTypes";
 import { FieldOptions } from "src/components/NoteFields";
 import { updateLookups } from "src/commands/updateLookups";
-import { Note } from "src/note/note";
 import { extractLinks, getLink } from "src/utils/parser";
 import { displayLinksOrText } from "src/utils/linksUtils";
 import { ExistingField } from "../existingField";

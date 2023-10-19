@@ -28,7 +28,6 @@ export async function postValues(
     asComment: boolean = false
 ): Promise<void> {
     const file = getFileFromFileOrPath(plugin, fileOrFilePath);
-    const note = new Note(plugin, file)
-    await note.build()
+    const note = await Note.buildNote(plugin, file)
     note.createOrUpdateFields(payload, lineNumber)
 }

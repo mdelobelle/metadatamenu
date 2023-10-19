@@ -7,7 +7,6 @@ import * as selectValuesSource from "src/types/selectValuesSourceTypes"
 import FileField from "src/fields/fieldManagers/FileField";
 import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
-import { Note } from "src/note/note";
 import { getLink } from "src/utils/parser";
 import { ExistingField } from "src/fields/existingField";
 

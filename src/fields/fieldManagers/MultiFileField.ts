@@ -1,10 +1,8 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
 import MultiFileModal from "src/modals/fields/MultiFileModal";
-import { Note } from "src/note/note";
 import { FieldType } from "src/types/fieldTypes";
 import { displayLinksOrText } from "src/utils/linksUtils";
-import { getLink } from "src/utils/parser";
 import { ExistingField } from "../existingField";
 import Field from "../Field";
 import AbstractFileBasedField from "./AbstractFileBasedField";

@@ -4,7 +4,6 @@ import { postValues } from "src/commands/postValues";
 import { ExistingField } from "src/fields/existingField";
 import Field from "src/fields/Field";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
-import { Note } from "src/note/note";
 
 export default class BooleanModal extends Modal {
     private value: boolean

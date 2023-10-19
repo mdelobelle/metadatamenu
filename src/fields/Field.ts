@@ -1,6 +1,5 @@
 import MetadataMenu from "main";
 import { LineNode } from "src/note/lineNode";
-import { Note } from "src/note/note";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { FieldType, MultiDisplayType, multiTypes, objectTypes, rootOnlyTypes } from "../types/fieldTypes"
 

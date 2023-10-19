@@ -8,7 +8,6 @@ import { FieldManager } from "../FieldManager";
 import { FieldOptions } from "src/components/NoteFields";
 import { LanguageSupport } from "@codemirror/language";
 import { Extension } from "@codemirror/state"
-import { Note } from "src/note/note";
 import { ExistingField } from "../existingField";
 import * as fieldsValues from 'src/db/stores/fieldsValues'
 

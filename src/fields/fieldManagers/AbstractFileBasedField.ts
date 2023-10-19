@@ -7,9 +7,8 @@ import MetadataMenu from "main";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { FieldOptions } from "src/components/NoteFields";
 import { Link } from "src/types/dataviewTypes";
-import { Note } from "src/note/note";
 import { ExistingField } from "../existingField";
-
+import * as fieldsValues from 'src/db/stores/fieldsValues'
 
 const convertDataviewArrayOfLinkToArrayOfPath = (arr: (Link | any)[]) => {
     return arr.reduce((acc, cur) => {
@@ -73,9 +72,8 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
     public getFiles = (currentFile?: TFile): TFile[] => getFiles(this.plugin, this.field, this.field.options.dvQueryString, currentFile)
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
-        const note = new Note(this.plugin, file)
-        await note.build()
-        const modal = this.modalFactory(this.plugin, file, this.field, note, indexedPath)
+        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const modal = this.modalFactory(this.plugin, file, this.field, eF, indexedPath)
         modal.open()
     }
 

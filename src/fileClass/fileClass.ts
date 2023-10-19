@@ -164,8 +164,7 @@ class FileClass {
 
     public async missingFieldsForFileClass(file: TFile): Promise<boolean> {
 
-        const note = new Note(this.plugin, file)
-        await note.build()
+        const note = await Note.buildNote(this.plugin, file)
         const currentFieldsIds: string[] = note.existingFields.map(_f => _f.field.id)
 
         const missingFields = this && file ?

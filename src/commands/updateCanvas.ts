@@ -5,7 +5,6 @@ import { FieldType } from "src/types/fieldTypes";
 import { FieldsPayload, postValues } from "./postValues";
 import { FieldManager } from "src/fields/FieldManager";
 import Field from "src/fields/Field";
-import { Note } from "src/note/note";
 
 export async function updateCanvas(
     plugin: MetadataMenu,
@@ -249,21 +248,20 @@ export async function updateCanvas(
         currentFiles.forEach(async ({ cumulatedLinksFields, cumulatedGroupsFields, cumulatedGroupsLinksFields }, filePath) => {
             const file = app.vault.getAbstractFileByPath(filePath)
             if (file && file instanceof TFile) {
-                const note = new Note(plugin, file)
-                await note.build()
+                const fields = plugin.fieldIndex.filesFields.get(file.path) || []
                 const payload: FieldsPayload = []
                 cumulatedLinksFields.forEach((linkNodes, name) => {
-                    const field = note.fields.find(_f => _f.name === name)
+                    const field = fields.find(_f => _f.name === name)
                     const values = linkNodes.map((node: CanvasFileData) => FieldManager.buildMarkDownLink(plugin, file, node.file, node.subpath))
                     if (field) payload.push({ id: field.id, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
                 })
                 cumulatedGroupsFields.forEach((groupNodes, name) => {
-                    const field = note.fields.find(_f => _f.name === name)
+                    const field = fields.find(_f => _f.name === name)
                     const values = groupNodes.map((group: CanvasGroupData) => group.label)
                     if (field) payload.push({ id: field.id, payload: { value: values ? [...(new Set(values.filter(v => !!v)))].join(",") : "" } })
                 })
                 cumulatedGroupsLinksFields.forEach((linkNodes, name) => {
-                    const field = note.fields.find(_f => _f.name === name)
+                    const field = fields.find(_f => _f.name === name)
                     const values = linkNodes.map((node: CanvasFileData) => FieldManager.buildMarkDownLink(plugin, file, node.file, node.subpath))
                     if (field) payload.push({ id: field.id, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
                 })

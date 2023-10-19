@@ -8,7 +8,6 @@ import Field from "../Field";
 import { FieldManager } from "../FieldManager";
 import { FieldOptions } from "src/components/NoteFields";
 import { postValues } from "src/commands/postValues";
-import { Note } from "src/note/note";
 import { ExistingField } from "../existingField";
 import * as fieldsValues from 'src/db/stores/fieldsValues'
 
@@ -83,9 +82,8 @@ export default class NumberField extends FieldManager {
         const fMin = parseFloat(min)
         const fMax = parseFloat(max)
         const fStep = parseFloat(step)
-        const note = new Note(this.plugin, file)
-        await note.build()
-        const value = note.getExistingFieldForIndexedPath(indexedPath)?.value || ""
+        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const value = eF?.value || ""
         const fValue = parseFloat(value)
         if (!isNaN(fValue)) {
             switch (direction) {

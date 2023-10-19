@@ -6,7 +6,6 @@ import { FieldManager } from "src/types/fieldTypes";
 import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
 import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
-import { Note } from "src/note/note";
 import { ExistingField } from "src/fields/existingField";
 
 export default class ValueSuggestModal extends SuggestModal<string>{
@@ -26,7 +25,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
         private asComment: boolean = false
     ) {
         super(plugin.app);
-        this.value = eF?.value || ""
+        this.value = this.eF?.value || ""
         this.containerEl.addClass("metadata-menu");
     };
 

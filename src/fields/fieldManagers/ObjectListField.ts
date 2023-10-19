@@ -31,8 +31,7 @@ export default class ObjectListField extends FieldManager {
             const moveToObject = async () => await noteField.moveToObject(`${indexedPath}`);
             const removeObject = async () => {
                 if (indexedPath) {
-                    const note = new Note(this.plugin, file);
-                    await note.build()
+                    const note = await Note.buildNote(this.plugin, file)
                     note.removeObject(indexedPath)
                 }
             }
@@ -44,26 +43,12 @@ export default class ObjectListField extends FieldManager {
         } else {
 
             const moveToObject = async () => {
-                //no need to write, replace by indexFieldsValues
-
-                const note = new Note(this.plugin, file)
-                await note.build()
-                const eF = note.existingFields.find(eF => eF.indexedPath === indexedPath)
-                console.log("EF old method", eF)
-
                 const _eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, file, indexedPath)
                 if (_eF) this.createAndOpenFieldModal(file, _eF.field.name, _eF, _eF.indexedPath)
-                /*
-                if(_eF){
-                    const fieldManager = new F[_eF.field.type](this.plugin, _eF.field)
-                    fieldManager.createAndOpenFieldModal2()
-                }
-                */
             }
             const removeObject = async () => {
                 if (indexedPath) {
-                    const note = new Note(this.plugin, file)
-                    await note.build()
+                    const note = await Note.buildNote(this.plugin, file)
                     note.removeObject(indexedPath)
                 }
             }

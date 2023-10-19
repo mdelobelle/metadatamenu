@@ -310,8 +310,7 @@ export default class FieldIndex extends FieldIndexBuilder {
             .filter(_f => !changedFiles?.length || changedFiles.map(__f => __f.path).includes(_f.path))
         await Promise.all(files.map(async f => {
             const fileIndexedEF = indexedEF.filter(eF => eF.filePath === f.path)
-            const note = new Note(this.plugin, f)
-            await note.build()
+            const note = await Note.buildNote(this.plugin, f)
             note.existingFields.forEach(eF => {
                 const id = `${f.path}____${eF.indexedPath}`
                 putPayload.push({

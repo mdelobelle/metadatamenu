@@ -20,8 +20,7 @@ export async function insertMissingFields(
     Insert "root" fields that are notre in the note.
     */
     const file = getFileFromFileOrPath(plugin, fileOrFilePath)
-    const note = new Note(plugin, file)
-    await note.build()
+    const note = await Note.buildNote(plugin, file)
 
     const f = plugin.fieldIndex;
     const fields = f.filesFields.get(file.path)

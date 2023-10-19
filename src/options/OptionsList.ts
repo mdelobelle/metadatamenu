@@ -48,8 +48,7 @@ export default class OptionsList {
 	public async build(): Promise<void> {
 		const excludedFolders = this.plugin.settings.fileClassExcludedFolders
 		if (!excludedFolders.some(path => this.file.path.includes(path))) {
-			this.note = new Note(this.plugin, this.file)
-			await this.note.build()
+			this.note = await Note.buildNote(this.plugin, this.file)
 		}
 	}
 

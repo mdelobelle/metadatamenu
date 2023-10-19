@@ -271,4 +271,11 @@ export class Note {
     public renderNote(): string {
         return this.lines.map(line => line.rawContent).join("\n")
     }
+
+    static async buildNote(plugin: MetadataMenu, file: TFile): Promise<Note> {
+        const note = new Note(plugin, file)
+        await note.build()
+        return note
+
+    }
 }
