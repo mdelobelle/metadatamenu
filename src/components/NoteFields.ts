@@ -9,7 +9,8 @@ import { FieldManager as F, FieldManager } from "src/fields/FieldManager";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { FileClass } from "src/fileClass/fileClass";
 import { FileClassManager } from "./fileClassManager";
-import { ExistingField, Note } from "src/note/note";
+import { Note } from "src/note/note";
+import { ExistingField } from "src/fields/existingField";
 import ObjectListField from "src/fields/fieldManagers/ObjectListField";
 
 export class FieldOptions {
@@ -28,8 +29,6 @@ export class FieldOptions {
 
 export class FieldsModal extends Modal {
 
-    private fieldContainers: HTMLDivElement[] = [];
-    private navigationContainer: HTMLDivElement;
     private existingFields: ExistingField[] = []
     private missingFields: Field[] = [];
     private note: Note;
@@ -57,10 +56,6 @@ export class FieldsModal extends Modal {
         //console.log(this.note)
     }
 
-    public removeObject(indexedPath: string) {
-        this.note.removeObject(indexedPath)
-    }
-
     public build(): void {
         this.contentEl.replaceChildren();
         const indexedPath = this.indexedPath || ""
@@ -77,7 +72,6 @@ export class FieldsModal extends Modal {
                 const field = this.note.getExistingFieldForIndexedPath(indexedPath)
                 this.titleEl.setText(`${baseTitle} ${field?.name}`)
             }
-
         }
         this.existingFields = this.note.existingFields.filter(_f => {
             if (!this.indexedPath) {
@@ -394,11 +388,6 @@ export default class NoteFieldsComponent extends Component {
         await this.fieldsModal.buildNote();
         this.fieldsModal.indexedPath = indexedPath
         this.fieldsModal.build();
-    }
-
-    async removeObject(indexedPath: string) {
-        await this.fieldsModal.buildNote()
-        this.fieldsModal.removeObject(indexedPath)
     }
 
     onload(): void {

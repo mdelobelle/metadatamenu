@@ -9,35 +9,7 @@ import { LineNode } from "./lineNode";
 import * as Lookup from "src/types/lookupTypes";
 import YAMLField from "src/fields/fieldManagers/YAMLField";
 import { ObjectListItem } from "src/fields/fieldManagers/ObjectListField";
-
-
-export class ExistingField {
-    public name: string
-    constructor(
-        public field: Field,
-        public value?: any,
-        public indexedId?: string,
-        public indexedPath?: string
-    ) {
-        this.name = this.field.name
-        this.indexedId = this.indexedId || this.field.id
-        this.indexedPath = this.indexedPath || this.indexedId
-    }
-
-    public isRoot() {
-        return this.indexedId === this.indexedPath
-    }
-}
-
-export class IndexedPath {
-    constructor(
-        public note: Note,
-        public indexedPath: string,
-    ) {
-
-    }
-}
-
+import { ExistingField } from "src/fields/existingField";
 
 export class Note {
     public lines: Line[] = []

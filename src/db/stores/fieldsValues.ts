@@ -1,5 +1,6 @@
 
 import { IndexedExistingField } from "src/components/FieldIndex";
+import { FieldType } from "src/types/fieldTypes";
 
 let db: IDBDatabase;
 const dbName = "metadatamenu_cache"
@@ -54,7 +55,7 @@ export const getElementsBetweenKeys = <T>(keyStart: string, keyEnd: string) => {
     });
 };
 
-export const getElementsForFilePath = <T>(filePath: string,) => {
+export const getElementsForFilePath = <T>(filePath: string) => {
     const open = indexedDB.open(dbName);
     return new Promise<T>((resolve, reject) => {
         open.onsuccess = () => {
@@ -65,6 +66,28 @@ export const getElementsForFilePath = <T>(filePath: string,) => {
                 const objectStore = transaction.objectStore(store);
                 const filePathIndex = objectStore.index("filePath");
                 request = filePathIndex.getAll(filePath);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+                transaction.oncomplete = () => db.close();
+            } else {
+                console.error("store not found")
+                //indexedDB.deleteDatabase(dbName);
+            }
+        };
+    });
+};
+
+export const getElementsForType = <T>(type: keyof typeof FieldType): Promise<T> => {
+    const open = indexedDB.open(dbName);
+    return new Promise<T>((resolve, reject) => {
+        open.onsuccess = () => {
+            let request!: IDBRequest;
+            db = open.result;
+            if ([...db.objectStoreNames].find((name) => name === store)) {
+                const transaction = db.transaction(store);
+                const objectStore = transaction.objectStore(store);
+                const filePathIndex = objectStore.index("fieldType");
+                request = filePathIndex.getAll(type);
                 request.onerror = () => reject(request.error);
                 request.onsuccess = () => resolve(request.result);
                 transaction.oncomplete = () => db.close();

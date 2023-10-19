@@ -5,7 +5,7 @@ import { Line } from "./line";
 import { frontMatterLineField, parsedField } from "src/utils/parser";
 import { buildEndStyle, buildStartStyle } from "src/types/dataviewTypes";
 import * as Lookup from "src/types/lookupTypes";
-import { ExistingField } from "./note";
+import { ExistingField } from "src/fields/ExistingField"
 
 
 export const separator: Record<"yaml" | "inline", ":" | "::"> = {

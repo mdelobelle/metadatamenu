@@ -1,13 +1,13 @@
 import MetadataMenu from "main";
 import { FieldIcon, FieldType, FieldManager as F } from "src/types/fieldTypes";
-
 import { FieldManager, SettingLocation } from "../FieldManager";
 import Field from "../Field";
 import { TFile, Menu, DropdownComponent } from "obsidian";
 import NoteFieldsComponent, { FieldOptions } from "src/components/NoteFields";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { postValues } from "src/commands/postValues";
-import { ExistingField, Note } from "src/note/note";
+import { Note } from "src/note/note";
+import { ExistingField } from "../existingField";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 
 
@@ -29,7 +29,13 @@ export default class ObjectListField extends FieldManager {
         const name = this.field.name
         if (noteField) {
             const moveToObject = async () => await noteField.moveToObject(`${indexedPath}`);
-            const removeObject = async () => await noteField.removeObject(`${indexedPath}`)
+            const removeObject = async () => {
+                if (indexedPath) {
+                    const note = new Note(this.plugin, file);
+                    await note.build()
+                    note.removeObject(indexedPath)
+                }
+            }
             if (ObjectListField.isFieldOptions(location)) {
                 //location.addOption(FieldIcon[FieldType.ObjectList], action, `Go to ${this.field.name}'s fields`);
                 location.addOption(FieldIcon[FieldType.ObjectList], moveToObject, `Go to this ${name} item`);
@@ -38,15 +44,28 @@ export default class ObjectListField extends FieldManager {
         } else {
 
             const moveToObject = async () => {
+                //no need to write, replace by indexFieldsValues
+
                 const note = new Note(this.plugin, file)
                 await note.build()
                 const eF = note.existingFields.find(eF => eF.indexedPath === indexedPath)
-                if (eF) this.createAndOpenFieldModal(file, eF.field.name, note, eF.indexedPath)
+                console.log("EF old method", eF)
+
+                const _eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, file, indexedPath)
+                if (_eF) this.createAndOpenFieldModal(file, _eF.field.name, note, _eF.indexedPath)
+                /*
+                if(_eF){
+                    const fieldManager = new F[_eF.field.type](this.plugin, _eF.field)
+                    fieldManager.createAndOpenFieldModal2()
+                }
+                */
             }
             const removeObject = async () => {
-                const note = new Note(this.plugin, file)
-                await note.build()
-                if (indexedPath) note.removeObject(indexedPath)
+                if (indexedPath) {
+                    const note = new Note(this.plugin, file)
+                    await note.build()
+                    note.removeObject(indexedPath)
+                }
             }
             if (ObjectListField.isSuggest(location)) {
                 location.options.push({
@@ -103,6 +122,13 @@ export default class ObjectListField extends FieldManager {
         fieldModal.open();
     }
 
+
+    async createAndOpenFieldModal2(file: TFile, selectedFieldName: string, note?: Note, indexedPath?: string,
+        lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
+        const fieldModal = new ObjectListModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment)
+        fieldModal.open();
+    }
+
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {
         const fields = this.plugin.fieldIndex.filesFields.get(file.path)
         if (Array.isArray(value)) {
@@ -110,5 +136,4 @@ export default class ObjectListField extends FieldManager {
             container.setText(`${value.length} item${value.length !== 1 ? "(s)" : ""}: [${items.join(" | ")}]`)
         }
     }
-
 }

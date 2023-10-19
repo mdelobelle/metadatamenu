@@ -10,6 +10,7 @@ export default function () {
             { name: 'id', fields: 'id', unique: true },
             { name: 'time', fields: 'time', unique: false },
             { name: 'filePath', fields: 'filePath', unique: false },
+            { name: 'fieldType', fields: 'fieldType', unique: false },
             { name: 'indexedPath', fields: ['filePath', 'indexedPath'], unique: false }
         ]
     };

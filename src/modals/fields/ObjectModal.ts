@@ -1,14 +1,12 @@
 import MetadataMenu from "main";
-import { Modal, TFile, ButtonComponent, SuggestModal } from "obsidian";
-import { postValues } from "src/commands/postValues";
+import { TFile, ButtonComponent, SuggestModal } from "obsidian";
 import Field from "src/fields/Field";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
 import CycleField from "src/fields/fieldManagers/CycleField";
-import ObjectListField, { ObjectListItem } from "src/fields/fieldManagers/ObjectListField";
-import { ExistingField, Note } from "src/note/note";
+import { Note } from "src/note/note";
+import { ExistingField } from "src/fields/existingField";
 import { FieldManager as F } from "src/fields/FieldManager";
 import { FieldManager, FieldType } from "src/types/fieldTypes";
-import { cleanActions } from "src/utils/modals";
 
 export default class ObjectModal extends SuggestModal<ExistingField | Field> {
 
