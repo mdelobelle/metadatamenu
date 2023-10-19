@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { TFile, ButtonComponent, SuggestModal, setIcon } from "obsidian";
-import { ExistingField } from "src/fields/existingField";
+import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
 import ObjectListField, { ObjectListItem } from "src/fields/fieldManagers/ObjectListField";
 import { Note } from "src/note/note";

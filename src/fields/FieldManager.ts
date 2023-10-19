@@ -30,8 +30,8 @@ export abstract class FieldManager {
         }
     ): void
     abstract getOptionsStr(): string;
-    //TODO: replace note by existingField in the method.
-    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField, indexedPath?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): void;
+    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField, indexedPath?: string,
+        lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): void;
     public showModalOption: boolean = true;
 
     constructor(public plugin: MetadataMenu, public field: Field, public type: FieldType) {

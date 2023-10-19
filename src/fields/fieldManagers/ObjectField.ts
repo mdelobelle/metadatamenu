@@ -8,7 +8,7 @@ import NoteFieldsComponent, { FieldOptions } from "src/components/NoteFields";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import OptionsList from "src/options/OptionsList";
-import { ExistingField } from "../existingField";
+import { ExistingField } from "../ExistingField";
 import * as fieldsValues from 'src/db/stores/fieldsValues'
 
 export default class ObjectField extends FieldManager {

@@ -163,7 +163,7 @@ export default class FieldIndex extends FieldIndexBuilder {
 
         this.registerEvent(
             this.plugin.app.metadataCache.on('resolved', async () => {
-                console.log("metadata cache resolved")
+                //console.log("metadata cache resolved")
                 if (this.plugin.app.metadataCache.inProgressTaskCount === 0) {
                     this.fileChanged = true;
                     await this.fullIndex("cache resolved", false, true);
@@ -178,7 +178,7 @@ export default class FieldIndex extends FieldIndexBuilder {
 
         this.registerEvent(
             this.plugin.app.vault.on("modify", async (file) => {
-                console.log(`file ${file.path} changed`)
+                //console.log(`file ${file.path} changed`)
                 if (file instanceof TFile) {
                     if (file.extension === "md") {
                         this.changedFiles.push(file)
@@ -225,6 +225,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                     && this.fileChanged
                     && this.dvReady
                 ) {
+                    //TODO: review the lifecycle
                     //maybe fullIndex didn't catch new files that have to be updated: let's rebuild getFileFieldsExist for this file
                     cleanRemovedFormulasFromIndex(this.plugin);
                     await this.getFilesLookupAndFormulaFieldsExists(file);
@@ -270,7 +271,7 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     async fullIndex(event: string, force_update_all = false, without_lookups = false): Promise<void> {
-        console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
+        //console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
         let start = Date.now(), time = Date.now()
         //FIXME usefull?
         this.plugin.indexStatus.setState("indexing")
@@ -294,13 +295,13 @@ export default class FieldIndex extends FieldIndexBuilder {
         this.firstIndexingDone = true;
         await this.migrateFileClasses();
         this.plugin.app.workspace.trigger("metadata-menu:updated-index");
-        console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
+        //console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     }
 
     public async indexFieldsValues(changedFiles?: TFile[]) {
-        console.log("start indexing values")
+        //console.log("start indexing values")
         const lastUpdate: number | undefined = (await updates.get() as { id: number, value: number } || undefined)?.value
-        console.log("last update: ", lastUpdate)
+        //console.log("last update: ", lastUpdate)
         let start = Date.now(), time = Date.now()
         const putPayload: IndexedExistingField[] = []
         const delPayload: string[] = []
@@ -333,14 +334,14 @@ export default class FieldIndex extends FieldIndexBuilder {
                 }
             })
         }))
-        console.log(`updating ${putPayload.length} items`)
+        //console.log(`updating ${putPayload.length} items`)
         await fieldsValues.bulkEditElements(putPayload)
-        console.log(`removing ${delPayload.length} items`)
+        //console.log(`removing ${delPayload.length} items`)
         fieldsValues.bulkRemoveElements(delPayload)
         await updates.update()
         this.changedFiles = []
         //if (file) console.log(file.name, await fieldsValues.getElementsForFilePath(file.path))
-        console.log("end indexing values", `${(Date.now() - start)}ms`)
+        //console.log("end indexing values", `${(Date.now() - start)}ms`)
     }
 
     resolveLookups(without_lookups: boolean): void {
@@ -804,21 +805,5 @@ export default class FieldIndex extends FieldIndexBuilder {
 
             this.filesLookupAndFormulaFieldsExists.set(filePath, existingFields)
         })
-        /*
-        fileFields.forEach(([filePath, fields]) => {
-            const dvFile = this.dv.api.page(filePath)
-            const existingFields: Field[] = []
-            fields.filter(f => [FieldType.Lookup, FieldType.Formula]
-                .includes(f.type)).forEach(field => {
-                    //TODO: change dvFile with filesFieldsValues
-                    if (dvFile && dvFile[field.name] !== undefined) { existingFields.push(field) }
-                })
-            if (existingFields.length) {
-                this.filesLookupAndFormulaFieldsExists.set(filePath, existingFields)
-            } else {
-                this.filesLookupAndFormulaFieldsExists.delete(filePath)
-            }
-        })
-        */
     }
 }

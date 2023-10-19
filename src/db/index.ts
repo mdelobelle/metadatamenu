@@ -1,5 +1,5 @@
 export default function () {
-    console.log("create db")
+    //console.log("create db")
     const dbName = "metadatamenu_cache"
     const keys = {
         updates: [
