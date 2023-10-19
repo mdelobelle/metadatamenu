@@ -7,8 +7,8 @@ import BooleanModal from "src/modals/fields/BooleanModal";
 import { FieldType, FieldIcon } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
-import { Note } from "src/note/note";
-
+import { ExistingField } from "../existingField";
+import * as fieldsValues from 'src/db/stores/fieldsValues'
 export default class BooleanField extends FieldManager {
 
     constructor(plugin: MetadataMenu, field: Field) {
@@ -17,10 +17,10 @@ export default class BooleanField extends FieldManager {
     }
 
     public async toggle(file: TFile, indexedPath?: string): Promise<void> {
-        const note = new Note(this.plugin, file)
-        await note.build()
-        const value = note.existingFields.find(eF => eF.indexedPath === indexedPath)?.value || "false"
-        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: value === "false" ? "true" : "false" } }], file)
+        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const value = BooleanField.stringToBoolean(eF?.value)
+        const postValue = !value ? "true" : "false"
+        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: postValue } }], file)
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
@@ -67,14 +67,14 @@ export default class BooleanField extends FieldManager {
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        note?: Note,
+        eF?: ExistingField,
         indexedPath?: string,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new BooleanModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment)
+        const fieldModal = new BooleanModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment)
         fieldModal.titleEl.setText(`Set value for ${selectedFieldName}`);
         fieldModal.open();
     }

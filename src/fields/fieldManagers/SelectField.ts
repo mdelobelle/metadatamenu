@@ -6,7 +6,8 @@ import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
 import { FieldOptions } from "src/components/NoteFields";
-import { Note } from "src/note/note";
+import { ExistingField } from "../existingField";
+import * as fieldsValues from 'src/db/stores/fieldsValues'
 
 export default class SelectField extends AbstractListBasedField {
 
@@ -17,9 +18,8 @@ export default class SelectField extends AbstractListBasedField {
     }
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
-        const note = new Note(this.plugin, file)
-        await note.build()
-        const modal = new SelectModal(this.plugin, file, this.field, note, indexedPath);
+        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const modal = new SelectModal(this.plugin, file, this.field, eF, indexedPath);
         modal.titleEl.setText("Select value");
         modal.open()
     }
@@ -44,14 +44,14 @@ export default class SelectField extends AbstractListBasedField {
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        note?: Note,
+        eF?: ExistingField,
         indexedPath?: string,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new SelectModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment);
+        const fieldModal = new SelectModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }

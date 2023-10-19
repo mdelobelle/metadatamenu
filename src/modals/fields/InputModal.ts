@@ -1,8 +1,8 @@
 import MetadataMenu from "main";
 import { DropdownComponent, TextAreaComponent, TextComponent, TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
+import { ExistingField } from "src/fields/existingField";
 import Field from "src/fields/Field";
-import { Note } from "src/note/note";
 import { cleanActions } from "src/utils/modals";
 import BaseModal from "../baseModal";
 
@@ -16,7 +16,7 @@ export default class InputModal extends BaseModal {
         public plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        private note: Note | undefined,
+        private eF?: ExistingField,
         private indexedPath?: string,
         private lineNumber: number = -1,
         private after: boolean = false,
@@ -24,7 +24,7 @@ export default class InputModal extends BaseModal {
         private asComment: boolean = false
     ) {
         super(plugin);
-        this.value = this.note?.getExistingFieldForIndexedPath(this.indexedPath)?.value || ""
+        this.value = this.eF?.value || ""
     };
 
     onOpen() {

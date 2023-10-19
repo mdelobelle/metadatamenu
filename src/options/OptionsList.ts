@@ -64,13 +64,14 @@ export default class OptionsList {
 			const fieldManager = new FieldManager[managedField.type](this.plugin, managedField) as F;
 			switch (fieldManager.type) {
 				case FieldType.Boolean:
-					(fieldManager as BooleanField).toggle(this.file)
+					(fieldManager as BooleanField).toggle(this.file, indexedPath)
 					break;
 				case FieldType.Cycle:
-					(fieldManager as CycleField).next(managedField.name, this.file)
+					(fieldManager as CycleField).next(managedField.name, this.file, indexedPath)
 					break;
 				default:
-					fieldManager.createAndOpenFieldModal(this.file, managedField.name, node.line.note, indexedPath, undefined, undefined, undefined, undefined)
+					const eF = node.line.note.getExistingFieldForIndexedPath(indexedPath)
+					fieldManager.createAndOpenFieldModal(this.file, managedField.name, eF, indexedPath, undefined, undefined, undefined, undefined)
 					break;
 			}
 

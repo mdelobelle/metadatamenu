@@ -10,7 +10,7 @@ import { Status } from "src/types/lookupTypes";
 import { FieldOptions } from "src/components/NoteFields";
 import { updateFormulas } from "src/commands/updateFormulas";
 import { postValues } from "src/commands/postValues";
-import { Note } from "src/note/note";
+import { ExistingField } from "../existingField";
 
 export default class FormulaField extends FieldManager {
 
@@ -44,7 +44,7 @@ export default class FormulaField extends FieldManager {
     async createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        note?: Note,
+        eF?: ExistingField,
         indexedPath?: string,
         lineNumber?: number,
         after?: boolean,

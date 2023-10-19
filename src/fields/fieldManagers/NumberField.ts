@@ -9,6 +9,8 @@ import { FieldManager } from "../FieldManager";
 import { FieldOptions } from "src/components/NoteFields";
 import { postValues } from "src/commands/postValues";
 import { Note } from "src/note/note";
+import { ExistingField } from "../existingField";
+import * as fieldsValues from 'src/db/stores/fieldsValues'
 
 export default class NumberField extends FieldManager {
 
@@ -70,9 +72,8 @@ export default class NumberField extends FieldManager {
     }
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
-        const note = new Note(this.plugin, file)
-        await note.build()
-        const modal = new NumberModal(this.plugin, file, this.field, note, indexedPath);
+        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const modal = new NumberModal(this.plugin, file, this.field, eF, indexedPath);
         modal.titleEl.setText(`Change Value for <${name}>`);
         modal.open()
     }
@@ -198,14 +199,14 @@ export default class NumberField extends FieldManager {
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        note?: Note,
+        eF?: ExistingField,
         indexedPath?: string,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new NumberModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment);
+        const fieldModal = new NumberModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

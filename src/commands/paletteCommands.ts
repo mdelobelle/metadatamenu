@@ -9,7 +9,6 @@ import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import FileClassOptionsList from "src/options/FileClassOptionsList";
 import OptionsList from "src/options/OptionsList";
 import { genuineKeys } from "src/utils/dataviewUtils";
-import { frontMatterLineField, getLineFields } from "src/utils/parser";
 import { insertMissingFields } from "./insertMissingFields";
 import { FieldManager as F } from "src/fields/FieldManager";
 import { FileClassManager } from "src/components/fileClassManager";

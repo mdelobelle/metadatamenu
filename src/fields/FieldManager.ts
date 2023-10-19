@@ -8,6 +8,7 @@ import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldManager as FM, FieldType } from "src/types/fieldTypes";
 import Field from "./Field";
 import { Note } from "src/note/note";
+import { ExistingField } from "./existingField";
 
 export const enum SettingLocation {
     "PluginSettings",
@@ -29,7 +30,8 @@ export abstract class FieldManager {
         }
     ): void
     abstract getOptionsStr(): string;
-    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note, indexedPath?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): void;
+    //TODO: replace note by existingField in the method.
+    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField, indexedPath?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): void;
     public showModalOption: boolean = true;
 
     constructor(public plugin: MetadataMenu, public field: Field, public type: FieldType) {
@@ -115,7 +117,7 @@ export abstract class FieldManager {
         file: TFile,
         fieldName: string,
         field: Field | undefined,
-        note?: Note,
+        eF?: ExistingField,
         indexedPath?: string,
         lineNumber?: number,
         after?: boolean,
@@ -124,10 +126,10 @@ export abstract class FieldManager {
     ): void {
         if (field) {
             const fieldManager = new FM[field.type](plugin, field);
-            fieldManager.createAndOpenFieldModal(file, fieldName, note, indexedPath, lineNumber, after, asList, asComment);
+            fieldManager.createAndOpenFieldModal(file, fieldName, eF, indexedPath, lineNumber, after, asList, asComment);
         } else {
             const fieldManager = FieldManager.createDefault(plugin, fieldName!);
-            fieldManager.createAndOpenFieldModal(file, fieldName!, note, indexedPath, lineNumber, after, asList, asComment);
+            fieldManager.createAndOpenFieldModal(file, fieldName!, eF, indexedPath, lineNumber, after, asList, asComment);
         }
     }
 

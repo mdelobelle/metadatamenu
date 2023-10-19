@@ -1,25 +1,25 @@
 import MetadataMenu from "main";
-import { TFile, ButtonComponent, SuggestModal } from "obsidian";
+import { TFile, SuggestModal } from "obsidian";
 import Field from "src/fields/Field";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
 import CycleField from "src/fields/fieldManagers/CycleField";
-import { Note } from "src/note/note";
 import { ExistingField } from "src/fields/existingField";
 import { FieldManager as F } from "src/fields/FieldManager";
 import { FieldManager, FieldType } from "src/types/fieldTypes";
 
 export default class ObjectModal extends SuggestModal<ExistingField | Field> {
 
-    private addButton: ButtonComponent;
     constructor(
         private plugin: MetadataMenu,
         private file: TFile,
-        private note: Note | undefined,
+        private eF?: ExistingField,
         private indexedPath?: string,
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
-        private asComment: boolean = false
+        private asComment: boolean = false,
+        private existingFields: ExistingField[] = [],
+        private missingFields: Field[] = [],
     ) {
         super(plugin.app);
     };
@@ -31,10 +31,7 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
     };
 
     getSuggestions(query: string = ""): Array<ExistingField | Field> {
-        const existingFields = this.note?.existingFields?.filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === this.indexedPath) || []
-        const { id, index } = Field.getIdAndIndex(this.indexedPath?.split("____").last())
-        const missingFields = this.note?.fields.filter(_f => _f.getFirstAncestor()?.id === id).filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
-        return [...existingFields, ...missingFields]
+        return [...this.existingFields, ...this.missingFields]
     }
 
     renderSuggestion(item: ExistingField | Field, el: HTMLElement) {
@@ -59,13 +56,13 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
                     (fieldManager as CycleField).next(field.name, this.file)
                     break;
                 default:
-                    fieldManager.createAndOpenFieldModal(this.file, field.name, this.note, item.indexedPath, undefined, undefined, undefined, undefined)
+                    fieldManager.createAndOpenFieldModal(this.file, field.name, item, item.indexedPath, undefined, undefined, undefined, undefined)
                     break;
             }
         } else {
             //insert field
             const fieldManager = new FieldManager[item.type](this.plugin, item) as F
-            fieldManager.createAndOpenFieldModal(this.file, item.name, this.note, `${this.indexedPath}____${item.id}`, this.lineNumber, this.after, this.asList, this.asComment)
+            fieldManager.createAndOpenFieldModal(this.file, item.name, undefined, `${this.indexedPath}____${item.id}`, this.lineNumber, this.after, this.asList, this.asComment)
         }
     }
 };

@@ -52,7 +52,7 @@ export default class ObjectListField extends FieldManager {
                 console.log("EF old method", eF)
 
                 const _eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, file, indexedPath)
-                if (_eF) this.createAndOpenFieldModal(file, _eF.field.name, note, _eF.indexedPath)
+                if (_eF) this.createAndOpenFieldModal(file, _eF.field.name, _eF, _eF.indexedPath)
                 /*
                 if(_eF){
                     const fieldManager = new F[_eF.field.type](this.plugin, _eF.field)
@@ -109,23 +109,17 @@ export default class ObjectListField extends FieldManager {
         return ""
     }
 
-    public async addObjectListItem(note: Note, indexedPath?: string) {
+    public async addObjectListItem(file: TFile, eF?: ExistingField, indexedPath?: string) {
         //search for object's value in note
-        const value = note.getExistingFieldForIndexedPath(indexedPath)?.value
+        const value = eF?.value
         const indexForNew = !value || value.length === 0 ? 0 : value.length
-        if (indexedPath) await postValues(this.plugin, [{ id: `${indexedPath}[${indexForNew}]`, payload: { value: "" } }], note.file, -1)
+        if (indexedPath) await postValues(this.plugin, [{ id: `${indexedPath}[${indexForNew}]`, payload: { value: "" } }], file, -1)
     }
 
-    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note, indexedPath?: string,
+    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField, indexedPath?: string,
         lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
-        const fieldModal = new ObjectListModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment)
-        fieldModal.open();
-    }
-
-
-    async createAndOpenFieldModal2(file: TFile, selectedFieldName: string, note?: Note, indexedPath?: string,
-        lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
-        const fieldModal = new ObjectListModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment)
+        const objects = await eF?.getChildrenFields(this.plugin, file) || []
+        const fieldModal = new ObjectListModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment, objects)
         fieldModal.open();
     }
 

@@ -115,7 +115,7 @@ export class Note {
     public getExistingFieldForIndexedPath(indexedPath?: string): ExistingField | undefined {
         return this.existingFields.find(eF => eF.indexedPath === indexedPath)
     }
-
+    /*
     public getExistingChildrenForIndexedPath(indexedPath?: string): ObjectListItem[] {
         const parentField = this.getExistingFieldForIndexedPath(indexedPath)
         if (!indexedPath || !parentField || !Array.isArray(parentField.value)) return []
@@ -132,6 +132,7 @@ export class Note {
         })
         return items
     }
+    */
 
     public getNodeForIndexedPath(indexedPath: string) {
         for (const line of this.lines) {

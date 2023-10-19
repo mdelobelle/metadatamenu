@@ -1,6 +1,7 @@
 import MetadataMenu from "main";
 import { Modal, TextComponent, TFile, ButtonComponent } from "obsidian";
 import { postValues } from "src/commands/postValues";
+import { ExistingField } from "src/fields/existingField";
 import Field from "src/fields/Field";
 import NumberField from "src/fields/fieldManagers/NumberField";
 import { Note } from "src/note/note";
@@ -19,7 +20,7 @@ export default class NumberModal extends BaseModal {
         public plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        private note: Note | undefined,
+        private eF?: ExistingField,
         private indexedPath?: string,
         private lineNumber: number = -1,
         private after: boolean = false,
@@ -27,7 +28,7 @@ export default class NumberModal extends BaseModal {
         private asComment: boolean = false
     ) {
         super(plugin);
-        this.value = this.note ? this.note.getExistingFieldForIndexedPath(this.indexedPath)?.value || "" : ""
+        this.value = this.eF?.value || ""
         this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
         this.containerEl.addClass("metadata-menu")
     };

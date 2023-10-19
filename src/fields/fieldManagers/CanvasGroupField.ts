@@ -2,10 +2,10 @@ import MetadataMenu from "main"
 import { TFile, Menu, TextComponent } from "obsidian"
 import { postValues } from "src/commands/postValues"
 import { FieldOptions } from "src/components/NoteFields"
-import { Note } from "src/note/note"
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
 import FieldSettingsModal from "src/settings/FieldSettingsModal"
 import { FieldType } from "src/types/fieldTypes"
+import { ExistingField } from "../existingField"
 import Field from "../Field"
 import { SettingLocation } from "../FieldManager"
 import AbstractCanvasBasedField from "./AbstractCanvasBasedField"
@@ -22,7 +22,7 @@ export default class CanvasGroupField extends AbstractCanvasBasedField {
         //no field option to add for this field, it is automatically updated
     }
 
-    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note,
+    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField,
         indexedPath?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
         await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
     }

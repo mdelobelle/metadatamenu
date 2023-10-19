@@ -179,10 +179,10 @@ export class FieldsModal extends Modal {
                         this.file,
                         (lineNumber: number, after: boolean, asList: boolean, asComment: boolean
                         ) => FieldManager.createAndOpenModal(
-                            this.plugin, this.file, field.name, field, this.note, newIndexedPath, lineNumber, after, asList, asComment)
+                            this.plugin, this.file, field.name, field, undefined, newIndexedPath, lineNumber, after, asList, asComment)
                     ).open();
                 } else {
-                    FieldManager.createAndOpenModal(this.plugin, this.file, field.name, field, this.note, newIndexedPath, -1, false, false, false)
+                    FieldManager.createAndOpenModal(this.plugin, this.file, field.name, field, undefined, newIndexedPath, -1, false, false, false)
                 }
             })
         };
@@ -341,7 +341,7 @@ export class FieldsModal extends Modal {
 
         insertNewItemBtn.onClick(async () => {
             const fieldManager = new FieldType.FieldManager[field.type](this.plugin, field) as ObjectListField
-            if (this.note) fieldManager.addObjectListItem(this.note, this.indexedPath)
+            if (this.note) fieldManager.addObjectListItem(this.file, undefined, this.indexedPath)
             this.indexedPath = indexedPath
             this.close()
         })

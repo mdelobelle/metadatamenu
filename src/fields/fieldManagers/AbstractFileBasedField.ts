@@ -8,6 +8,7 @@ import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { FieldOptions } from "src/components/NoteFields";
 import { Link } from "src/types/dataviewTypes";
 import { Note } from "src/note/note";
+import { ExistingField } from "../existingField";
 
 
 const convertDataviewArrayOfLinkToArrayOfPath = (arr: (Link | any)[]) => {
@@ -165,14 +166,14 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        note?: Note,
+        eF?: ExistingField,
         indexedPath?: string,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = this.modalFactory(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment)
+        const fieldModal = this.modalFactory(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment)
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

@@ -1,6 +1,7 @@
 import MetadataMenu from "main";
 import { Modal, TFile, ButtonComponent } from "obsidian";
 import { postValues } from "src/commands/postValues";
+import { ExistingField } from "src/fields/existingField";
 import Field from "src/fields/Field";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
 import { Note } from "src/note/note";
@@ -11,7 +12,7 @@ export default class BooleanModal extends Modal {
         private plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        private note: Note | undefined,
+        private eF?: ExistingField,
         private indexedPath?: string,
         private lineNumber: number = -1,
         private after: boolean = false,
@@ -19,7 +20,7 @@ export default class BooleanModal extends Modal {
         private asComment: boolean = false
     ) {
         super(plugin.app);
-        this.value = this.note ? BooleanField.stringToBoolean(this.note.getExistingFieldForIndexedPath(this.indexedPath)?.value || "") : false;
+        this.value = this.eF ? BooleanField.stringToBoolean(this.eF.value || "") : false;
     };
 
     onOpen() {

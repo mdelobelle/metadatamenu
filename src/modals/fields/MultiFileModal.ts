@@ -5,8 +5,8 @@ import { FieldManager as FM } from "src/fields/FieldManager";
 import MetadataMenu from "main";
 import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
-import { Note } from "src/note/note";
 import { extractLinks, getLink } from "src/utils/parser";
+import { ExistingField } from "src/fields/existingField";
 
 export default class MultiFileModal extends FuzzySuggestModal<TFile> {
 
@@ -16,15 +16,15 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
         private plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        private note: Note | undefined,
-        private indexedPath: string | undefined,
+        private eF?: ExistingField,
+        private indexedPath?: string,
         private lineNumber: number = -1,
         private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false
     ) {
         super(plugin.app);
-        const initialOptions: string | string[] = this.note ? this.note.getExistingFieldForIndexedPath(this.indexedPath)?.value || [] : []
+        const initialOptions: string | string[] = this.eF?.value || []
         if (initialOptions) {
             if (Array.isArray(initialOptions)) {
                 // in frontmatter it can be a regular array

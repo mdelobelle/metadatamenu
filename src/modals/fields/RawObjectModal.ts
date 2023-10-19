@@ -8,7 +8,7 @@ import { EditorView, basicSetup } from "codemirror"
 import { lintGutter } from "@codemirror/lint";
 import { StateField, EditorState } from "@codemirror/state"
 import { FieldManager } from "src/types/fieldTypes";
-import { Note } from "src/note/note";
+import { ExistingField } from "src/fields/existingField";
 
 
 export default class RawObjectModal extends BaseModal {
@@ -21,7 +21,7 @@ export default class RawObjectModal extends BaseModal {
         public plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        private note: Note | undefined,
+        private eF?: ExistingField,
         private indexedPath?: string,
         private lineNumber: number = -1,
         private after: boolean = false,
@@ -29,7 +29,7 @@ export default class RawObjectModal extends BaseModal {
         private asComment: boolean = false
     ) {
         super(plugin);
-        this.value = this.note ? this.note.getExistingFieldForIndexedPath(this.indexedPath)?.value || "" : ""
+        this.value = this.eF?.value || ""
     };
 
     onOpen() {

@@ -9,7 +9,7 @@ import DateField from "src/fields/fieldManagers/DateField";
 import { postValues } from "src/commands/postValues";
 import BaseModal from "../baseModal";
 import { cleanActions } from "src/utils/modals";
-import { Note } from "src/note/note";
+import { ExistingField } from "src/fields/existingField";
 
 export default class DateModal extends BaseModal {
 
@@ -30,7 +30,7 @@ export default class DateModal extends BaseModal {
         public plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        private note: Note | undefined,
+        private eF?: ExistingField,
         private indexedPath?: string,
         private lineNumber: number = -1,
         private after: boolean = false,
@@ -38,7 +38,7 @@ export default class DateModal extends BaseModal {
         private asComment: boolean = false
     ) {
         super(plugin);
-        const initialValue = this.note?.getExistingFieldForIndexedPath(this.indexedPath)?.value || ""
+        const initialValue = this.eF?.value || ""
         this.initialValue = initialValue ? initialValue.toString().replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last() || "" : "";
         this.insertAsLink = FM.stringToBoolean(this.field.options.defaultInsertAsLink || "false") || false;
         this.format = this.field.options.dateFormat || this.field.options.defaultDateFormat;

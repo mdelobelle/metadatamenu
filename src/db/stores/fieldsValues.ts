@@ -1,5 +1,8 @@
 
+import { TFile } from "obsidian";
+import { resolve } from "path";
 import { IndexedExistingField } from "src/components/FieldIndex";
+import { ExistingField } from "src/fields/existingField";
 import { FieldType } from "src/types/fieldTypes";
 
 let db: IDBDatabase;
@@ -11,6 +14,31 @@ const store = "fieldsValuesStore"
 */
 
 export const getElement = <T>(key: string) => {
+    const open = indexedDB.open(dbName);
+    return new Promise<T>((resolve, reject) => {
+        open.onsuccess = () => {
+            let request!: IDBRequest;
+            db = open.result;
+            if ([...db.objectStoreNames].find((name) => name === store)) {
+                const transaction = db.transaction(store);
+                const objectStore = transaction.objectStore(store);
+                if (key === 'all') request = objectStore.getAll();
+                else request = objectStore.get(key);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+                transaction.oncomplete = () => db.close();
+            } else {
+                console.error("store not found")
+                //indexedDB.deleteDatabase(dbName);
+            }
+        };
+    });
+};
+
+
+export const getElementForIndexedPath = <T>(file: TFile, indexedPath?: string): Promise<T | undefined> => {
+    if (indexedPath === undefined) resolve()
+    const key = `${file.path}____${indexedPath}`
     const open = indexedDB.open(dbName);
     return new Promise<T>((resolve, reject) => {
         open.onsuccess = () => {

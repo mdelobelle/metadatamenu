@@ -3,6 +3,7 @@ import Field from "./Field"
 import * as fieldsValues from 'src/db/stores/fieldsValues'
 import { IndexedExistingField } from "src/components/FieldIndex"
 import MetadataMenu from "main"
+import { ObjectListItem } from "./fieldManagers/ObjectListField"
 
 export class ExistingField {
     public name: string
@@ -46,5 +47,22 @@ export class ExistingField {
             if (field) return new ExistingField(field, value, indexedId, indexedPath)
         }
         return
+    }
+
+    public async getChildrenFields(plugin: MetadataMenu, file: TFile): Promise<ObjectListItem[]> {
+        if (!Array.isArray(this.value)) return []
+        const items: ObjectListItem[] = []
+        await Promise.all(this.value.map(async (value, index) => {
+            //on crée les ObjectListItem
+            const upperPath = `${this.indexedPath}[${index}]`
+            const eFields = (await ExistingField.getExistingFieldsFromIndexForFilePath(plugin, file))?.filter(eF =>
+                eF.indexedPath && Field.upperPath(eF.indexedPath) === upperPath)
+            items.push({
+                fields: eFields,
+                indexInList: index,
+                indexedPath: upperPath
+            })
+        }))
+        return items
     }
 }

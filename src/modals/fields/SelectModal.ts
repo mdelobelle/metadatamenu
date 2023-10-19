@@ -7,6 +7,7 @@ import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedFi
 import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
 import { Note } from "src/note/note";
+import { ExistingField } from "src/fields/existingField";
 
 export default class ValueSuggestModal extends SuggestModal<string>{
 
@@ -17,7 +18,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
         private plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        private note: Note | undefined,
+        private eF?: ExistingField,
         private indexedPath?: string,
         private lineNumber: number = -1,
         private after: boolean = false,
@@ -25,7 +26,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
         private asComment: boolean = false
     ) {
         super(plugin.app);
-        this.value = this.note?.getExistingFieldForIndexedPath(this.indexedPath)?.value || ""
+        this.value = eF?.value || ""
         this.containerEl.addClass("metadata-menu");
     };
 

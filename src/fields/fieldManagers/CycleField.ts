@@ -9,6 +9,7 @@ import { FieldOptions } from "src/components/NoteFields";
 import { postValues } from "src/commands/postValues";
 import { SettingLocation } from "../FieldManager";
 import { Note } from "src/note/note";
+import { ExistingField } from "../existingField";
 
 export default class CycleField extends AbstractListBasedField {
 
@@ -103,14 +104,14 @@ export default class CycleField extends AbstractListBasedField {
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        note?: Note,
+        eF?: ExistingField,
         indexedPath?: string,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new SelectModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment);
+        const fieldModal = new SelectModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }

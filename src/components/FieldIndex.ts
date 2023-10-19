@@ -313,7 +313,7 @@ export default class FieldIndex extends FieldIndexBuilder {
             const note = new Note(this.plugin, f)
             await note.build()
             note.existingFields.forEach(eF => {
-                const id = `${f.path}_____${eF.indexedPath}`
+                const id = `${f.path}____${eF.indexedPath}`
                 putPayload.push({
                     id: id,
                     filePath: f.path,
@@ -330,7 +330,7 @@ export default class FieldIndex extends FieldIndexBuilder {
             const noteEF = note.existingFields.map(_eF => _eF.indexedPath)
             fileIndexedEF.forEach(eF => {
                 if (!noteEF.includes(eF.indexedPath)) {
-                    delPayload.push(`${f.path}_____${eF.indexedPath}`)
+                    delPayload.push(`${f.path}____${eF.indexedPath}`)
                 }
             })
         }))

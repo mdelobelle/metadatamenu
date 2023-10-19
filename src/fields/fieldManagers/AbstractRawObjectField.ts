@@ -9,6 +9,8 @@ import { FieldOptions } from "src/components/NoteFields";
 import { LanguageSupport } from "@codemirror/language";
 import { Extension } from "@codemirror/state"
 import { Note } from "src/note/note";
+import { ExistingField } from "../existingField";
+import * as fieldsValues from 'src/db/stores/fieldsValues'
 
 export default abstract class RawObjectField extends FieldManager {
 
@@ -25,9 +27,8 @@ export default abstract class RawObjectField extends FieldManager {
     }
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
-        const note = new Note(this.plugin, file)
-        await note.build()
-        const modal = new RawObjectModal(this.plugin, file, this.field, note, indexedPath);
+        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const modal = new RawObjectModal(this.plugin, file, this.field, eF, indexedPath);
         modal.open()
     }
 
@@ -57,14 +58,14 @@ export default abstract class RawObjectField extends FieldManager {
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        note?: Note,
+        eF?: ExistingField,
         indexedPath?: string,
         lineNumber?: number,
         after?: boolean,
         asList?: boolean,
         asComment?: boolean
     ): void {
-        const fieldModal = new RawObjectModal(this.plugin, file, this.field, note, indexedPath, lineNumber, after, asList, asComment);
+        const fieldModal = new RawObjectModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

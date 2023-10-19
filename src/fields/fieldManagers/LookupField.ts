@@ -13,6 +13,7 @@ import { updateLookups } from "src/commands/updateLookups";
 import { Note } from "src/note/note";
 import { extractLinks, getLink } from "src/utils/parser";
 import { displayLinksOrText } from "src/utils/linksUtils";
+import { ExistingField } from "../existingField";
 
 export default class LookupField extends FieldManager {
 
@@ -57,7 +58,7 @@ export default class LookupField extends FieldManager {
     async createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        note?: Note,
+        eF?: ExistingField,
         indexedPath?: string,
         lineNumber?: number,
         after?: boolean,

@@ -6,10 +6,10 @@ import Field from "../Field";
 import { TFile, Menu } from "obsidian";
 import NoteFieldsComponent, { FieldOptions } from "src/components/NoteFields";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
-import { postValues } from "src/commands/postValues";
-import { Note } from "src/note/note";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import OptionsList from "src/options/OptionsList";
+import { ExistingField } from "../existingField";
+import * as fieldsValues from 'src/db/stores/fieldsValues'
 
 export default class ObjectField extends FieldManager {
 
@@ -54,9 +54,15 @@ export default class ObjectField extends FieldManager {
     getOptionsStr(): string {
         return ""
     }
-    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, note?: Note,
+    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField,
         indexedPath?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
-        const fieldModal = new ObjectModal(this.plugin, file, note, indexedPath, lineNumber, after, asList, asComment)
+
+        const existingFields = (await ExistingField.getExistingFieldsFromIndexForFilePath(this.plugin, file))
+            .filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === indexedPath) || []
+        const { id, index } = Field.getIdAndIndex(indexedPath?.split("____").last())
+        const missingFields = this.plugin.fieldIndex.filesFields.get(file.path)?.filter(_f =>
+            _f.getFirstAncestor()?.id === id).filter(_f => !existingFields.map(eF => { console.log(eF.field); return eF.field.id }).includes(_f.id)) || []
+        const fieldModal = new ObjectModal(this.plugin, file, eF, indexedPath, lineNumber, after, asList, asComment, existingFields, missingFields)
         fieldModal.open();
     }
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {
