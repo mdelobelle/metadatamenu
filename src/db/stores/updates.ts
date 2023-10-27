@@ -1,10 +1,10 @@
+import MetadataMenu from "main";
 
 let db: IDBDatabase;
-const dbName = "metadatamenu_cache"
 const store = "updateStore"
 
-export const get = <T>(id: string) => {
-    const open = indexedDB.open(dbName);
+export const get = <T>(plugin: MetadataMenu, id: string) => {
+    const open = indexedDB.open(plugin.indexName);
     return new Promise<T | undefined>((resolve, reject) => {
         open.onsuccess = () => {
             let request!: IDBRequest;
@@ -22,8 +22,8 @@ export const get = <T>(id: string) => {
     })
 }
 
-export const update = <T>(id: string) => {
-    const open = indexedDB.open(dbName);
+export const update = <T>(plugin: MetadataMenu, id: string) => {
+    const open = indexedDB.open(plugin.indexName);
     return new Promise<T>((resolve, reject) => {
         open.onsuccess = () => {
             let request: IDBRequest;
@@ -47,8 +47,8 @@ export const update = <T>(id: string) => {
 };
 
 
-export const removeElement = (key: string) => {
-    const open = indexedDB.open(dbName);
+export const removeElement = (plugin: MetadataMenu, key: string) => {
+    const open = indexedDB.open(plugin.indexName);
     open.onsuccess = () => {
         let request: IDBRequest;
         db = open.result;
@@ -61,7 +61,7 @@ export const removeElement = (key: string) => {
             transaction.oncomplete = () => db.close();
         } else {
             console.error("store not found")
-            //indexedDB.deleteDatabase(dbName);
+            //indexedDB.deleteDatabase(plugin.indexName);
         }
     };
 };

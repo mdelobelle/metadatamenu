@@ -26,9 +26,11 @@ export default class MetadataMenu extends Plugin {
 	public extraButton: ExtraButton;
 	public contextMenu: ContextMenu;
 	public indexStatus: IndexStatus;
+	public indexName: string;
 
 	async onload(): Promise<void> {
 		console.log('+------ Metadata Menu loaded --------+');
+		this.indexName = `metadata_menu_${this.app.vault.adapter.basePath || this.app.vault.getName()}`
 		if (!this.app.plugins.enabledPlugins.has("dataview") || (
 			//@ts-ignore
 			this.app.plugins.plugins["dataview"] && !this.app.plugins.plugins["dataview"].settings.enableDataviewJs)
@@ -94,7 +96,7 @@ export default class MetadataMenu extends Plugin {
 		addCommands(this, this.app.workspace.getActiveViewOfType(MarkdownView));
 
 		//indexing
-		initDb();
+		initDb(this);
 		await this.fieldIndex.fullIndex(true)
 		this.app.workspace.trigger("metadata-menu:indexed");
 

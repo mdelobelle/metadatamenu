@@ -26,7 +26,7 @@ export class ExistingField {
 
     static async getExistingFieldsFromIndexForFilePath(plugin: MetadataMenu, file: TFile, indexedPath?: string): Promise<ExistingField[]> {
         const existingFields: ExistingField[] = [];
-        const iEFields = await fieldsValues.getElementsForFilePath<IndexedExistingField[]>(file.path)
+        const iEFields = await fieldsValues.getElementsForFilePath<IndexedExistingField[]>(plugin, file.path)
         iEFields.forEach(iEF => {
             const field = Field.getFieldFromId(plugin, iEF.fieldId, iEF.fileClassName)
             const value = iEF.value
@@ -38,7 +38,7 @@ export class ExistingField {
     }
 
     static async getExistingFieldFromIndexForIndexedPath(plugin: MetadataMenu, file: TFile, indexedPath?: string): Promise<ExistingField | undefined> {
-        const iEFields = await fieldsValues.getElementsForFilePath<IndexedExistingField[]>(file.path)
+        const iEFields = await fieldsValues.getElementsForFilePath<IndexedExistingField[]>(plugin, file.path)
         const iEF = iEFields.find(iEF => !indexedPath || iEF.indexedPath === indexedPath)
         if (iEF) {
             const field = Field.getFieldFromId(plugin, iEF.fieldId, iEF.fileClassName)
@@ -96,9 +96,9 @@ export class ExistingField {
     static async indexFieldsValues(plugin: MetadataMenu, changedFiles: TFile[] = []): Promise<void> {
         const putPayload: IndexedExistingField[] = []
         const delPayload: string[] = []
-        const lastUpdate: number | undefined = (await updates.get("fieldsValues") as { id: string, value: number } || undefined)?.value
+        const lastUpdate: number | undefined = (await updates.get(plugin, "fieldsValues") as { id: string, value: number } || undefined)?.value
 
-        const indexedEF: IndexedExistingField[] = await fieldsValues.getElement('all')
+        const indexedEF: IndexedExistingField[] = await fieldsValues.getElement(plugin, 'all')
         const files = plugin.app.vault.getMarkdownFiles()
             .filter(_f => !lastUpdate || _f.stat.mtime >= lastUpdate)
             .filter(_f => !changedFiles.length || changedFiles.map(cF => cF.path).includes(_f.path))
@@ -106,8 +106,8 @@ export class ExistingField {
             const note = await Note.buildNote(plugin, f)
             await ExistingField.buildPayload(note, indexedEF, putPayload, delPayload)
         }))
-        await fieldsValues.bulkEditElements(putPayload)
-        fieldsValues.bulkRemoveElements(delPayload)
-        await updates.update("fieldsValues")
+        await fieldsValues.bulkEditElements(plugin, putPayload)
+        fieldsValues.bulkRemoveElements(plugin, delPayload)
+        await updates.update(plugin, "fieldsValues")
     }
 }

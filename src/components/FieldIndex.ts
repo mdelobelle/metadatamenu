@@ -625,8 +625,8 @@ export default class FieldIndex extends FieldIndexBuilder {
 
     private async getFilesLookupAndFormulaFieldsExists(file?: TFile): Promise<void> {
 
-        const lookups = await fieldsValues.getElementsForType<IndexedExistingField[]>("Lookup")
-        const formulas = await fieldsValues.getElementsForType<IndexedExistingField[]>("Formula")
+        const lookups = await fieldsValues.getElementsForType<IndexedExistingField[]>(this.plugin, "Lookup")
+        const formulas = await fieldsValues.getElementsForType<IndexedExistingField[]>(this.plugin, "Formula")
         const filesExistingFields: Record<string, IndexedExistingField[]> = {};
         [...lookups, ...formulas].forEach(iF => {
             filesExistingFields[iF.filePath] = [...(filesExistingFields[iF.filePath] || []), iF]

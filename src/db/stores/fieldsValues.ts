@@ -1,20 +1,19 @@
 
+import MetadataMenu from "main";
 import { TFile } from "obsidian";
 import { resolve } from "path";
 import { IndexedExistingField } from "src/components/FieldIndex";
-import { ExistingField } from "src/fields/existingField";
 import { FieldType } from "src/types/fieldTypes";
 
 let db: IDBDatabase;
-const dbName = "metadatamenu_cache"
 const store = "fieldsValuesStore"
 
 /* 
 **  get methods 
 */
 
-export const getElement = <T>(key: string) => {
-    const open = indexedDB.open(dbName);
+export const getElement = <T>(plugin: MetadataMenu, key: string) => {
+    const open = indexedDB.open(plugin.indexName);
     return new Promise<T>((resolve, reject) => {
         open.onsuccess = () => {
             let request!: IDBRequest;
@@ -29,17 +28,17 @@ export const getElement = <T>(key: string) => {
                 transaction.oncomplete = () => db.close();
             } else {
                 console.error("store not found")
-                //indexedDB.deleteDatabase(dbName);
+                //indexedDB.deleteDatabase(plugin.indexName);
             }
         };
     });
 };
 
 
-export const getElementForIndexedPath = <T>(file: TFile, indexedPath?: string): Promise<T | undefined> => {
+export const getElementForIndexedPath = <T>(plugin: MetadataMenu, file: TFile, indexedPath?: string): Promise<T | undefined> => {
     if (indexedPath === undefined) resolve()
     const key = `${file.path}____${indexedPath}`
-    const open = indexedDB.open(dbName);
+    const open = indexedDB.open(plugin.indexName);
     return new Promise<T>((resolve, reject) => {
         open.onsuccess = () => {
             let request!: IDBRequest;
@@ -54,14 +53,14 @@ export const getElementForIndexedPath = <T>(file: TFile, indexedPath?: string): 
                 transaction.oncomplete = () => db.close();
             } else {
                 console.error("store not found")
-                //indexedDB.deleteDatabase(dbName);
+                //indexedDB.deleteDatabase(plugin.indexName);
             }
         };
     });
 };
 
-export const getElementsBetweenKeys = <T>(keyStart: string, keyEnd: string) => {
-    const open = indexedDB.open(dbName);
+export const getElementsBetweenKeys = <T>(plugin: MetadataMenu, keyStart: string, keyEnd: string) => {
+    const open = indexedDB.open(plugin.indexName);
     return new Promise<T>((resolve, reject) => {
         open.onsuccess = () => {
             let request!: IDBRequest;
@@ -77,14 +76,14 @@ export const getElementsBetweenKeys = <T>(keyStart: string, keyEnd: string) => {
                 transaction.oncomplete = () => db.close();
             } else {
                 console.error("store not found")
-                //indexedDB.deleteDatabase(dbName);
+                //indexedDB.deleteDatabase(plugin.indexName);
             }
         };
     });
 };
 
-export const getElementsForFilePath = <T>(filePath: string) => {
-    const open = indexedDB.open(dbName);
+export const getElementsForFilePath = <T>(plugin: MetadataMenu, filePath: string) => {
+    const open = indexedDB.open(plugin.indexName);
     return new Promise<T>((resolve, reject) => {
         open.onsuccess = () => {
             let request!: IDBRequest;
@@ -99,14 +98,14 @@ export const getElementsForFilePath = <T>(filePath: string) => {
                 transaction.oncomplete = () => db.close();
             } else {
                 console.error("store not found")
-                //indexedDB.deleteDatabase(dbName);
+                //indexedDB.deleteDatabase(plugin.indexName);
             }
         };
     });
 };
 
-export const getElementsForType = <T>(type: keyof typeof FieldType): Promise<T> => {
-    const open = indexedDB.open(dbName);
+export const getElementsForType = <T>(plugin: MetadataMenu, type: keyof typeof FieldType): Promise<T> => {
+    const open = indexedDB.open(plugin.indexName);
     return new Promise<T>((resolve, reject) => {
         open.onsuccess = () => {
             let request!: IDBRequest;
@@ -121,7 +120,7 @@ export const getElementsForType = <T>(type: keyof typeof FieldType): Promise<T> 
                 transaction.oncomplete = () => db.close();
             } else {
                 console.error("store not found")
-                //indexedDB.deleteDatabase(dbName);
+                //indexedDB.deleteDatabase(plugin.indexName);
             }
         };
     });
@@ -132,8 +131,8 @@ export const getElementsForType = <T>(type: keyof typeof FieldType): Promise<T> 
 */
 
 
-export const editElement = <T>(key: string, payload: object) => {
-    const open = indexedDB.open(dbName);
+export const editElement = <T>(plugin: MetadataMenu, key: string, payload: object) => {
+    const open = indexedDB.open(plugin.indexName);
     return new Promise<T>((resolve, reject) => {
         open.onsuccess = () => {
             let request: IDBRequest;
@@ -152,14 +151,14 @@ export const editElement = <T>(key: string, payload: object) => {
                 transaction.oncomplete = () => db.close();
             } else {
                 console.error("store not found")
-                //indexedDB.deleteDatabase(dbName);
+                //indexedDB.deleteDatabase(plugin.indexName);
             }
         };
     });
 };
 
-export const bulkEditElements = <T>(payload: IndexedExistingField[]) => {
-    const open = indexedDB.open(dbName);
+export const bulkEditElements = <T>(plugin: MetadataMenu, payload: IndexedExistingField[]) => {
+    const open = indexedDB.open(plugin.indexName);
     return new Promise<T | void>((resolve, reject) => {
         open.onsuccess = () => {
             let request: IDBRequest;
@@ -186,7 +185,7 @@ export const bulkEditElements = <T>(payload: IndexedExistingField[]) => {
                 transaction.oncomplete = () => db.close();
             } else {
                 console.error("store not found")
-                //indexedDB.deleteDatabase(dbName);
+                //indexedDB.deleteDatabase(plugin.indexName);
             }
         };
     });
@@ -197,8 +196,8 @@ export const bulkEditElements = <T>(payload: IndexedExistingField[]) => {
 */
 
 
-export const removeElement = (key: string) => {
-    const open = indexedDB.open(dbName);
+export const removeElement = (plugin: MetadataMenu, key: string) => {
+    const open = indexedDB.open(plugin.indexName);
     open.onsuccess = () => {
         let request: IDBRequest;
         db = open.result;
@@ -211,13 +210,13 @@ export const removeElement = (key: string) => {
             transaction.oncomplete = () => db.close();
         } else {
             console.error("store not found")
-            //indexedDB.deleteDatabase(dbName);
+            //indexedDB.deleteDatabase(plugin.indexName);
         }
     };
 };
 
-export const bulkRemoveElements = (keys: string[]) => {
-    const open = indexedDB.open(dbName);
+export const bulkRemoveElements = (plugin: MetadataMenu, keys: string[]) => {
+    const open = indexedDB.open(plugin.indexName);
     open.onsuccess = () => {
         let request: IDBRequest;
         db = open.result;
@@ -234,7 +233,7 @@ export const bulkRemoveElements = (keys: string[]) => {
 
         } else {
             console.error("store not found")
-            //indexedDB.deleteDatabase(dbName);
+            //indexedDB.deleteDatabase(plugin.indexName);
         }
     };
 };

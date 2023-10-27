@@ -50,6 +50,9 @@ declare module "obsidian" {
             start: { line: number, col: number, offset: number }
         }
     }
+    interface DataAdapter {
+        basePath: string
+    }
     interface MetadataCache {
         fileCache: Record<string, { mtime: number }>
         inProgressTaskCount: number;

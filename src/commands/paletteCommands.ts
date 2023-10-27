@@ -339,7 +339,7 @@ function forceIndexFieldsValues(plugin: MetadataMenu) {
         icon: "refresh-ccw",
         checkCallback: (checking: boolean) => {
             if (checking) return true
-            updates.removeElement("fieldsValues")
+            updates.removeElement(plugin, "fieldsValues")
             plugin.fieldIndex.init()
             plugin.fieldIndex.fullIndex(true)
         }

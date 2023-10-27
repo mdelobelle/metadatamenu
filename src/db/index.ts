@@ -1,6 +1,8 @@
-export default function () {
+import MetadataMenu from "main";
+
+export default function (plugin: MetadataMenu) {
     //console.log("create db")
-    const dbName = "metadatamenu_cache"
+    const dbName = plugin.indexName
     const keys = {
         updates: [
             { name: 'id', fields: 'id', unique: true }
@@ -24,4 +26,3 @@ export default function () {
         keys.fieldsValues.forEach((key) => fieldsValuesStore.createIndex(key.name, key.fields, { unique: key.unique }));
     };
 }
-
