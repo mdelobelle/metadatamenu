@@ -3,15 +3,12 @@ export default function () {
     const dbName = "metadatamenu_cache"
     const keys = {
         updates: [
-            { name: 'id', fields: 'id', unique: true },
-            { name: 'time', fields: 'time', unique: false }
+            { name: 'id', fields: 'id', unique: true }
         ],
         fieldsValues: [
             { name: 'id', fields: 'id', unique: true },
-            { name: 'time', fields: 'time', unique: false },
             { name: 'filePath', fields: 'filePath', unique: false },
-            { name: 'fieldType', fields: 'fieldType', unique: false },
-            { name: 'indexedPath', fields: ['filePath', 'indexedPath'], unique: false }
+            { name: 'fieldType', fields: 'fieldType', unique: false }
         ]
     };
 

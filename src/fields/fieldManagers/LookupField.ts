@@ -35,7 +35,10 @@ export default class LookupField extends FieldManager {
                 this.field.options.outputType
             ) status = Status.changed
             const icon = status === Status.changed ? "refresh-ccw" : "file-check"
-            const action = () => { updateLookups(this.plugin, "single_command", { file: file, fieldName: this.field.name }) }
+            const action = async () => {
+                await updateLookups(this.plugin, { file: file, fieldName: this.field.name })
+                f.applyUpdates()
+            }
             if (LookupField.isSuggest(location) && status === Status.changed) {
                 location.options.push({
                     id: `update_${name}`,

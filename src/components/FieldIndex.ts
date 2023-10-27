@@ -7,24 +7,18 @@ import FieldSetting from "src/settings/FieldSetting";
 import { resolveLookups } from "src/commands/resolveLookups";
 import { updateLookups } from "src/commands/updateLookups";
 import { updateFormulas, cleanRemovedFormulasFromIndex } from "src/commands/updateFormulas";
-import cryptoRandomString from "crypto-random-string";
 import { FieldType } from "src/types/fieldTypes";
 import { Status as LookupStatus, Type as LookupType } from "src/types/lookupTypes";
-import { updateCanvas } from "src/commands/updateCanvas";
+import { updateCanvas, updateCanvasAfterFileClass } from "src/commands/updateCanvas";
 import { CanvasData } from "obsidian/canvas";
 import { V1FileClassMigration, V2FileClassMigration } from "src/fileClass/fileClassMigration";
-import { Note } from "src/note/note";
-import initDb from "src/db/index"
+
 import * as fieldsValues from "src/db/stores/fieldsValues"
 import * as updates from "src/db/stores/updates";
 import { BookmarkItem } from "types";
+import { ExistingField } from "src/fields/ExistingField";
+import { FieldPayload, FieldsPayload, postValues } from "src/commands/postValues";
 
-/*
-on tente de se faire notre propre index
-1. stocker les valeurs dans indexedDB et les mettre à jour quand workspace.on("modify")
-2. verifier la persistance quand on redémarre le plugin: la réindexation ne doit pas se faire si le mtime du fichier n'a pas bougé
-3. remplacer les appels à dataview pour chopper les valeurs de ces fields
-*/
 
 export interface IndexedExistingField {
     id: string,
@@ -48,6 +42,11 @@ export interface cFileWithGroups {
     group: string
 }
 
+interface FieldsPayloadToProcess {
+    status: "toProcess" | "processed",
+    fieldsPayload: FieldsPayload
+}
+
 abstract class FieldIndexBuilder extends Component {
     public changedFiles: TFile[] = []
     public classFilesPath: string | null;
@@ -56,7 +55,6 @@ abstract class FieldIndexBuilder extends Component {
     public dv: any;
     public dvReady: boolean = false;
     public fieldsFromGlobalFileClass: Field[];
-    public fileChanged: boolean = false;
     public fileClassesAncestors: Map<string, string[]>
     public fileClassesFields: Map<string, Field[]>;
     public fileClassesName: Map<string, FileClass>;
@@ -78,7 +76,6 @@ abstract class FieldIndexBuilder extends Component {
     public filesLookupAndFormulaFieldsExists: Map<string, Field[]>;
     public filesLookupsAndFormulasFields: Map<string, Field[]>;
     public filesPathsMatchingFileClasses: Map<string, FileClass>;
-    public firstIndexingDone: boolean = false;
     public lastRevision: 0;
     public loadTime: number;
     public lookupQueries: Map<string, Field>;
@@ -87,10 +84,19 @@ abstract class FieldIndexBuilder extends Component {
     public v1FileClassesPath: Map<string, FileClass>;
     public v2FileClassesPath: Map<string, FileClass>;
     public valuesListNotePathValues: Map<string, string[]>;
+    public dVRelatedFieldsToUpdate: Map<string, FieldsPayloadToProcess>
+    public remainingLegacyFileClasses: boolean
 
     constructor(public plugin: MetadataMenu, public cacheVersion: string, public onChange: () => void) {
         super()
+        this.init();
+    }
+
+    public init() {
+        //console.log("init index")
         this.flushCache();
+        //TODO following sets will persist at each indexing.
+        this.remainingLegacyFileClasses = false
         this.canvasLastFiles = new Map();
         this.fileFormulaFieldLastValue = new Map();
         this.fileFormulaFieldsStatus = new Map()
@@ -100,10 +106,13 @@ abstract class FieldIndexBuilder extends Component {
         this.fileLookupFiles = new Map();
         this.previousFileLookupFilesValues = new Map();
         this.dv = this.plugin.app.plugins.plugins.dataview;
-        this.classFilesPath = plugin.settings.classFilesPath;
+        this.dvReady = !!this.dv
+        this.classFilesPath = this.plugin.settings.classFilesPath;
+        this.dVRelatedFieldsToUpdate = new Map()
     }
 
     public flushCache() {
+        //console.log("flush cache")
         //these maps are rebuilt at each indexing
         this.filesFields = new Map();
         this.filesLookupsAndFormulasFields = new Map();
@@ -138,73 +147,12 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     async onload(): Promise<void> {
-
         this.loadTime = Date.now();
-        initDb()
-
-        await (async () => { })(); //only way to have metadata button to show up at reload !?!
-
-        if (this.dv?.api.index.initialized) {
-            this.dv = this.plugin.app.plugins.plugins.dataview;
-            this.lastRevision = this.dv.api.index.revision;
-            this.dvReady = true;
-            await this.fullIndex("dv is running", false);
-        }
-
-        this.registerEvent(
-            this.plugin.app.metadataCache.on("dataview:index-ready", async () => {
-                this.dv = this.plugin.app.plugins.plugins.dataview;
-                this.dvReady = true;
-                await this.fullIndex("dv index", false);
-                this.lastRevision = this.dv.api.index.revision;
-            })
-        )
-
-
-        this.registerEvent(
-            this.plugin.app.metadataCache.on('resolved', async () => {
-                //console.log("metadata cache resolved")
-                if (this.plugin.app.metadataCache.inProgressTaskCount === 0) {
-                    this.fileChanged = true;
-                    await this.fullIndex("cache resolved", false, true);
-                    await this.indexFieldsValues(this.changedFiles)
-                    await this.getFilesLookupAndFormulaFieldsExists();
-                    /*
-                    this.lastRevision = this.dv?.api.index.revision || 0;
-                    */
-                }
-            })
-        )
-
         this.registerEvent(
             this.plugin.app.vault.on("modify", async (file) => {
-                //console.log(`file ${file.path} changed`)
                 if (file instanceof TFile) {
                     if (file.extension === "md") {
                         this.changedFiles.push(file)
-                        //use this once we don't need dataview metadata cache updated anymore
-                        //resolveLookups and resolveFormulas have to use our own index
-                        /* 
-                        
-                        cleanRemovedFormulasFromIndex(this.plugin);
-                        this.getFilesLookupAndFormulaFieldsExists(file);
-                        if (this.classFilesPath && file.path.startsWith(this.classFilesPath)) {
-                            await this.fullIndex("fileClass changed")
-                            const fileClassName = this.fileClassesPath.get(file.path)?.name
-                            const canvasFields = (fileClassName && this.fileClassesFields.get(fileClassName)?.filter(field => field.type === FieldType.Canvas)) || []
-                            canvasFields.forEach(async field => {
-                                const canvasFile = this.plugin.app.vault.getAbstractFileByPath(field.options.canvasPath)
-                                if (canvasFile instanceof TFile && canvasFile.extension === "canvas") {
-                                    await updateCanvas(this.plugin, { canvas: canvasFile })
-                                }
-                            })
-                        } else {
-                            await this.updateFormulas(false);
-                            this.resolveLookups(false);
-                            const fileClassName = FileClass.getFileClassNameFromPath(this.plugin, file.path)
-                            await this.updateLookups(fileClassName, false, false);
-                        }
-                        */
                     } else if (file.extension === "canvas") {
                         await updateCanvas(this.plugin, { canvas: file });
                     }
@@ -213,68 +161,61 @@ export default class FieldIndex extends FieldIndexBuilder {
         )
 
         this.registerEvent(
-            this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
-                //console.log("some file changed", this.fileChanged);
-                //console.log("new revision", this.dv?.api.index.revision)
-                if (op === "update"
-                    //dataview is triggering "update" on metadatacache.on("resolve") even if no change in the file. It occurs at app launch
-                    //check if the file mtime is older that plugin load -> in this case no file has change, no need to upldate lookups
-                    //@ts-ignore
-                    && this.plugin.app.metadataCache.fileCache[file.path].mtime >= this.loadTime
-                    && this.dv?.api.index.revision !== this.lastRevision
-                    && this.fileChanged
-                    && this.dvReady
-                ) {
-                    //TODO: review the lifecycle
-                    //maybe fullIndex didn't catch new files that have to be updated: let's rebuild getFileFieldsExist for this file
-                    cleanRemovedFormulasFromIndex(this.plugin);
-                    await this.getFilesLookupAndFormulaFieldsExists(file);
-                    if (this.classFilesPath && file.path.startsWith(this.classFilesPath)) {
-                        await this.fullIndex("fileClass changed")
-                        const fileClassName = this.fileClassesPath.get(file.path)?.name
-                        const canvasFields = (fileClassName && this.fileClassesFields.get(fileClassName)?.filter(field => field.type === FieldType.Canvas)) || []
-                        canvasFields.forEach(async field => {
-                            const canvasFile = this.plugin.app.vault.getAbstractFileByPath(field.options.canvasPath)
-                            if (canvasFile instanceof TFile && canvasFile.extension === "canvas") {
-                                await updateCanvas(this.plugin, { canvas: canvasFile })
-                            }
-                        })
+            this.plugin.app.metadataCache.on('resolved', async () => {
+                if (this.plugin.app.metadataCache.inProgressTaskCount === 0) {
+                    if (this.changedFiles.some(file => this.classFilesPath && file.path.startsWith(this.classFilesPath))) {
+                        await this.indexFields();
+                        await updateCanvasAfterFileClass(this.plugin, this.changedFiles)
                     } else {
-                        await this.updateFormulas(false);
-                        this.resolveLookups(false);
-                        const fileClassName = FileClass.getFileClassNameFromPath(this.plugin, file.path)
-                        await this.updateLookups(fileClassName, false, false);
+                        await this.indexFields();
+                        await ExistingField.indexFieldsValues(this.plugin)
                     }
-                    this.lastRevision = this.dv.api.index.revision
+                    this.changedFiles = []
                 }
             })
         )
 
-        this.plugin.app.workspace.trigger("metadata-menu:indexed")
+
+        this.registerEvent(
+            this.plugin.app.metadataCache.on("dataview:index-ready", async () => {
+                this.dv = this.plugin.app.plugins.plugins.dataview;
+                this.dvReady = true;
+                await this.resolveAndUpdateDVQueriesBasedFields(true)
+                //TODO relancer les fileClassQueries et si le resultats est différent de l'index, relancer une indexation
+            })
+        )
+
+
+        this.registerEvent(
+            this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
+                if (op === "update" && this.dvReady
+                ) {
+                    const filePayloadToProcess = this.dVRelatedFieldsToUpdate.get(file.path)
+                    if (![...this.dVRelatedFieldsToUpdate.keys()].includes(file.path)) {
+                        await this.resolveAndUpdateDVQueriesBasedFields(false)
+                    } else if (filePayloadToProcess) {
+                        filePayloadToProcess.status = "processed"
+                    }
+                    if ([...this.dVRelatedFieldsToUpdate.values()].every(item => item.status === "processed")) this.dVRelatedFieldsToUpdate = new Map()
+                }
+            })
+        )
     }
 
-    public getNewFieldId(): string {
-        const ids: string[] = [];
-        for (const fileClassFields of this.fileClassesFields.values()) {
-            for (const field of fileClassFields) {
-                ids.push(field.id)
-            }
-        }
-        for (const field of this.plugin.presetFields) {
-            ids.push(field.id)
-        }
-        let id = cryptoRandomString({ length: 6, type: "alphanumeric" })
-        while (ids.includes(id)) {
-            id = cryptoRandomString({ length: 6, type: "alphanumeric" })
-        }
-        return id
+    public async wake() {
+        await (async () => { })()
     }
 
-    async fullIndex(event: string, force_update_all = false, without_lookups = false): Promise<void> {
-        //console.log("start index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision)
-        let start = Date.now(), time = Date.now()
-        //FIXME usefull?
-        this.plugin.indexStatus.setState("indexing")
+    public async fullIndex(force_update_all = false): Promise<void> {
+        await this.indexFields();
+        await ExistingField.indexFieldsValues(this.plugin)
+        await this.resolveAndUpdateDVQueriesBasedFields(force_update_all);
+        if (this.remainingLegacyFileClasses) await this.migrateFileClasses();
+        this.plugin.app.workspace.trigger("metadata-menu:updated-index");
+
+    }
+
+    public async indexFields(): Promise<void> {
         this.flushCache();
         this.getFileClassesAncestors();
         this.getGlobalFileClass();
@@ -286,96 +227,50 @@ export default class FieldIndex extends FieldIndexBuilder {
         this.resolveFileClassQueries();
         this.getFilesFieldsFromFileClass();
         this.getFilesFields();
-        //await this.getFilesLookupAndFormulaFieldsExists();
         await this.getCanvasesFiles();
         await this.getValuesListNotePathValues();
-        this.resolveLookups(without_lookups);
-        await this.updateLookups("full Index", without_lookups, force_update_all);
-        if (force_update_all || !this.firstIndexingDone) await this.updateFormulas(force_update_all); //calculate formulas at start of with force update
-        this.firstIndexingDone = true;
-        await this.migrateFileClasses();
-        this.plugin.app.workspace.trigger("metadata-menu:updated-index");
-        //console.log("end index [", event, "]", this.lastRevision, "->", this.dv?.api.index.revision, `${(Date.now() - start)}ms`)
+        this.getFilesLookupAndFormulaFieldsExists();
     }
 
-    public async indexFieldsValues(changedFiles?: TFile[]) {
-        //console.log("start indexing values")
-        const lastUpdate: number | undefined = (await updates.get() as { id: number, value: number } || undefined)?.value
-        //console.log("last update: ", lastUpdate)
-        let start = Date.now(), time = Date.now()
-        const putPayload: IndexedExistingField[] = []
-        const delPayload: string[] = []
-        const indexedEF: IndexedExistingField[] = await fieldsValues.getElement('all') //await db.getElement("fieldsValuesStore", 'all')
-        const files = this.plugin.app.vault.getMarkdownFiles()
-            .filter(_f => !lastUpdate || _f.stat.mtime >= lastUpdate)
-            .filter(_f => !changedFiles?.length || changedFiles.map(__f => __f.path).includes(_f.path))
-        await Promise.all(files.map(async f => {
-            const fileIndexedEF = indexedEF.filter(eF => eF.filePath === f.path)
-            const note = await Note.buildNote(this.plugin, f)
-            note.existingFields.forEach(eF => {
-                const id = `${f.path}____${eF.indexedPath}`
-                putPayload.push({
-                    id: id,
-                    filePath: f.path,
-                    fieldType: eF.field.type,
-                    fieldId: eF.field.id,
-                    fileClassName: eF.field.fileClassName,
-                    indexedPath: eF.indexedPath || eF.field.id,
-                    indexedId: eF.indexedId,
-                    value: eF.value,
-                    time: f.stat.mtime
+    public pushPayloadToUpdate(filePath: string, fieldsPayloadToUpdate: FieldsPayload) {
+        const currentFieldsPayloadToUpdate: FieldsPayloadToProcess = this.dVRelatedFieldsToUpdate.get(filePath) || { status: "toProcess", fieldsPayload: [] }
+        for (const fieldPayload of fieldsPayloadToUpdate) {
+            currentFieldsPayloadToUpdate.status = "toProcess"
+            const { id, payload } = fieldPayload
+            const currentField = currentFieldsPayloadToUpdate?.fieldsPayload.find(item => item.id === id)
+            if (currentField) currentField.payload = payload;
+            else currentFieldsPayloadToUpdate.fieldsPayload.push(fieldPayload)
+            this.dVRelatedFieldsToUpdate.set(filePath, currentFieldsPayloadToUpdate)
+        }
+    }
+
+
+    public async applyUpdates(): Promise<void> {
+        await Promise.all(
+            [...(this.dVRelatedFieldsToUpdate.keys())].map(
+                async filePath => {
+                    const fieldsPayload = this.dVRelatedFieldsToUpdate.get(filePath)?.fieldsPayload
+                    console.log("APPLYING", filePath, fieldsPayload)
+                    if (fieldsPayload) {
+                        await postValues(this.plugin, fieldsPayload, filePath)
+                    }
                 })
-            })
-            /* remove disappeared fields */
-            const noteEF = note.existingFields.map(_eF => _eF.indexedPath)
-            fileIndexedEF.forEach(eF => {
-                if (!noteEF.includes(eF.indexedPath)) {
-                    delPayload.push(`${f.path}____${eF.indexedPath}`)
-                }
-            })
-        }))
-        //console.log(`updating ${putPayload.length} items`)
-        await fieldsValues.bulkEditElements(putPayload)
-        //console.log(`removing ${delPayload.length} items`)
-        fieldsValues.bulkRemoveElements(delPayload)
-        await updates.update()
-        this.changedFiles = []
-        //if (file) console.log(file.name, await fieldsValues.getElementsForFilePath(file.path))
-        //console.log("end indexing values", `${(Date.now() - start)}ms`)
+        )
     }
 
-    resolveLookups(without_lookups: boolean): void {
-        if (!without_lookups) resolveLookups(this.plugin);
+    private async resolveAndUpdateDVQueriesBasedFields(force_update_all = false, forceUpdateOne?: { file: TFile, fieldName: string }): Promise<void> {
+        cleanRemovedFormulasFromIndex(this.plugin);
+        await this.getFilesLookupAndFormulaFieldsExists();
+
+        resolveLookups(this.plugin);
+        await updateLookups(this.plugin, forceUpdateOne, force_update_all)
+        await updateFormulas(this.plugin, forceUpdateOne, force_update_all);
+        await this.applyUpdates()
     }
 
     async migrateFileClasses(): Promise<void> {
-        await this.migrateV1FileClasses();
-        //await this.migrateV2FileClasses();
-    }
-
-    async migrateV1FileClasses(): Promise<void> {
-        if ([...this.v1FileClassesPath.keys()].length) {
-            const remainingV1FileClass = this.v1FileClassesPath.values().next().value
-            if (remainingV1FileClass) {
-                const migration = new V1FileClassMigration(this.plugin)
-                await migration.migrate(remainingV1FileClass)
-                //console.log("migrated ", remainingV1FileClass.name, "to v2")
-            }
-        }
-    }
-
-    async migrateV2FileClasses(): Promise<void> {
-        if (
-            [...this.v2FileClassesPath.keys()].length &&
-            ![...this.v1FileClassesPath.keys()].length
-        ) {
-            const remainingV2FileClass = this.v2FileClassesPath.values().next().value
-            if (remainingV2FileClass) {
-                const migration = new V2FileClassMigration(this.plugin)
-                await migration.migrate(remainingV2FileClass)
-                //console.log("migrated ", remainingV2FileClass.name, "to v3")
-            }
-        }
+        await V1FileClassMigration.migrateV1FileClasses(this.plugin);
+        this.remainingLegacyFileClasses = false;
     }
 
     async getCanvasesFiles(): Promise<void> {
@@ -390,7 +285,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                     nodes = canvasContent.nodes;
                     edges = canvasContent.edges
                 } catch (error) {
-                    //console.log(error)
+                    ////console.log(error)
                     new Notice(`Couldn't read ${canvas.path}`)
                 }
             }
@@ -402,20 +297,6 @@ export default class FieldIndex extends FieldIndexBuilder {
             })
             this.canvasLastFiles.set(canvas.path, currentFilesPaths)
         })
-    }
-
-    async updateLookups(source: string = "", without_lookups: boolean, force_update_all: boolean): Promise<void> {
-        if (!without_lookups) {
-            if (force_update_all) {
-                await updateLookups(this.plugin, source, undefined, true)
-            } else {
-                await updateLookups(this.plugin, source);
-            }
-        }
-    }
-
-    async updateFormulas(force_update_all: boolean): Promise<void> {
-        await updateFormulas(this.plugin, undefined, force_update_all);
     }
 
     async getValuesListNotePathValues(): Promise<void> {
@@ -445,14 +326,15 @@ export default class FieldIndex extends FieldIndexBuilder {
         })
     }
 
-    getFileClassesAncestors(): void {
+    private getFileClassesAncestors(): void {
+
         const classFilesPath = this.plugin.settings.classFilesPath
         //1. iterate over fileClasses to init fileClassesAncestors
         if (classFilesPath) {
             this.plugin.app.vault.getMarkdownFiles()
                 .filter(f => f.path.includes(classFilesPath))
                 .forEach(f => {
-                    const fileClassName = FileClass.getFileClassNameFromPath(this.plugin, f.path)
+                    const fileClassName = FileClass.getFileClassNameFromPath(this.plugin.settings, f.path)
                     if (fileClassName) {
                         const parent = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.extends
                         if (parent) {
@@ -476,8 +358,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         })
     }
 
-
-    getAncestorsRecursively(fileClassName: string) {
+    private getAncestorsRecursively(fileClassName: string) {
         const ancestors = this.fileClassesAncestors.get(fileClassName)
         if (ancestors && ancestors.length) {
             const lastAncestor = ancestors.last();
@@ -489,7 +370,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         }
     }
 
-    getGlobalFileClass(): void {
+    private getGlobalFileClass(): void {
         const globalFileClass = this.plugin.settings.globalFileClass
         if (!globalFileClass) {
             this.fieldsFromGlobalFileClass = []
@@ -504,69 +385,17 @@ export default class FieldIndex extends FieldIndexBuilder {
         }
     }
 
-    getFileClasses(): void {
+    private getFileClasses(): void {
         const classFilesPath = this.classFilesPath
         if (classFilesPath) {
             this.plugin.app.vault.getMarkdownFiles()
                 .filter(f => f.path.includes(classFilesPath))
-                .forEach(f => {
-                    const fileClassName = FileClass.getFileClassNameFromPath(this.plugin, f.path)
-                    if (fileClassName) {
-                        try {
-                            const fileClass = FileClass.createFileClass(this.plugin, fileClassName)
-                            this.fileClassesFields.set(
-                                fileClassName,
-                                fileClass.attributes.map(attr => attr.getField())
-                            )
-                            this.fileClassesPath.set(f.path, fileClass)
-                            this.fileClassesName.set(fileClass.name, fileClass)
-                            const cache = this.plugin.app.metadataCache.getFileCache(f);
-                            if (fileClass.getMajorVersion() === undefined || fileClass.getMajorVersion() as number < 2) {
-                                this.v1FileClassesPath.set(f.path, fileClass)
-                            } else if (fileClass.getMajorVersion() === 2) {
-                                this.v2FileClassesPath.set(f.path, fileClass)
-                            }
-                            /*
-                            ** Map with tags
-                            */
-                            if (cache?.frontmatter?.mapWithTag) {
-                                if (cache?.frontmatter?.tagNames) {
-                                    const _tagNames = cache?.frontmatter?.tagNames as string | string[];
-                                    const tagNames = Array.isArray(_tagNames) ? [..._tagNames] : _tagNames.split(",").map(t => t.trim())
-                                    tagNames.forEach(tag => {
-                                        if (!tag.includes(" ")) {
-                                            this.tagsMatchingFileClasses.set(tag, fileClass)
-                                        }
-                                    })
-                                } else if (!fileClassName.includes(" ")) {
-                                    this.tagsMatchingFileClasses.set(fileClassName, fileClass)
-                                }
-                            }
-                            /*
-                            ** Map with files paths
-                            */
-                            if (cache?.frontmatter?.filesPaths) {
-                                const _filesPaths = cache?.frontmatter?.filesPaths as string | string[];
-                                const filesPaths = Array.isArray(_filesPaths) ? [..._filesPaths] : _filesPaths.split(",").map(f => f.trim())
-                                filesPaths.forEach(path => this.filesPathsMatchingFileClasses.set(path, fileClass))
-                            }
-                            /*
-                            ** Map with bookmarks groups
-                            */
-                            if (cache?.frontmatter?.bookmarksGroups) {
-                                const _bookmarksGroups = cache?.frontmatter?.bookmarksGroups as string | string[];
-                                const bookmarksGroups = Array.isArray(_bookmarksGroups) ? [..._bookmarksGroups] : _bookmarksGroups.split(",").map(g => g.trim())
-                                bookmarksGroups.forEach(group => this.bookmarksGroupsMatchingFileClasses.set(group, fileClass))
-                            }
-                        } catch (error) {
-                            console.error(error)
-                        }
-                    }
-                })
+                .forEach(f => FileClass.indexFileClass(this, f))
         }
     }
 
-    getLookupQueries(): void {
+    private getLookupQueries(): void {
+
         this.plugin.presetFields.filter(field => field.type === FieldType.Lookup).forEach(field => {
             this.lookupQueries.set(`presetField___${field.name}`, field)
         });
@@ -583,6 +412,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         itemToMatch: string,
         cFile: TFile | cFileWithTags | cFileWithGroups
     ): void {
+
         const fileClass = itemMatchingFileClasses.get(itemToMatch);
         const filePath = cFile.path;
         if (fileClass) {
@@ -604,7 +434,8 @@ export default class FieldIndex extends FieldIndexBuilder {
         }
     }
 
-    resolveFileClassMatchingTags(): void {
+    private resolveFileClassMatchingTags(): void {
+
         if (![...this.tagsMatchingFileClasses].length) return
         const mappedTags = [...this.tagsMatchingFileClasses.keys()].map(_t => `#${_t}`)
         const filesWithMappedTag: cFileWithTags[] = [];
@@ -630,7 +461,8 @@ export default class FieldIndex extends FieldIndexBuilder {
         })
     }
 
-    resolveFileClassMatchingFilesPaths(): void {
+    private resolveFileClassMatchingFilesPaths(): void {
+
         if (![...this.filesPathsMatchingFileClasses].length) return
         const paths = [...this.filesPathsMatchingFileClasses.keys()]
         const filesWithPath: TFile[] =
@@ -646,6 +478,7 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     private getFilesForItems(items: BookmarkItem[], groups: string[], filesWithGroups: cFileWithGroups[], path: string = "") {
+
         if (groups.includes(path || "/")) {
             items.filter(_i => _i.type === "file").forEach(_i => filesWithGroups.push({ path: _i.path, group: path || "/" }))
         }
@@ -655,7 +488,8 @@ export default class FieldIndex extends FieldIndexBuilder {
         }
     }
 
-    resolveFileClassMatchingBookmarksGroups(): void {
+    private resolveFileClassMatchingBookmarksGroups(): void {
+
         if (![...this.bookmarksGroupsMatchingFileClasses].length) return
         const groups = [...this.bookmarksGroupsMatchingFileClasses.keys()]
         const bookmarks = this.plugin.app.internalPlugins.getPluginById("bookmarks")
@@ -673,7 +507,8 @@ export default class FieldIndex extends FieldIndexBuilder {
         })
     }
 
-    resolveFileClassQueries(): void {
+    private resolveFileClassQueries(): void {
+
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (!dvApi) return
         this.plugin.settings.fileClassQueries.forEach(sfcq => {
@@ -691,7 +526,8 @@ export default class FieldIndex extends FieldIndexBuilder {
         })
     }
 
-    getFilesFieldsFromFileClass(): void {
+    private getFilesFieldsFromFileClass(): void {
+
         this.plugin.app.vault.getMarkdownFiles()
             .filter(f => !this.classFilesPath
                 || !f.path.includes(this.classFilesPath)
@@ -710,6 +546,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                             this.filesFileClassesNames.set(f.path, [...new Set([...(this.filesFileClassesNames.get(f.path) || []), fileClass.name])])
                             const fileClassesFieldsFromFile = this.fileClassesFields.get(fileFileClassName)
                             const currentFields = this.filesFieldsFromInnerFileClasses.get(f.path)
+
                             if (fileClassesFieldsFromFile) {
                                 const newFields = [...fileClassesFieldsFromFile]
                                 const filteredCurrentFields = currentFields?.filter(field =>
@@ -725,11 +562,11 @@ export default class FieldIndex extends FieldIndexBuilder {
             })
     }
 
-    isLookupOrFormula(field: Field): boolean {
+    private isLookupOrFormula(field: Field): boolean {
         return [FieldType.Lookup, FieldType.Formula].includes(field.type)
     }
 
-    getFilesFields(): void {
+    private getFilesFields(): void {
         /*
         Priority order:
         1. Inner fileClass
@@ -739,6 +576,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         4. Global fileClass
         5. settings preset fields
         */
+
         this.plugin.app.vault.getMarkdownFiles()
             .filter(f => !this.classFilesPath || !f.path.includes(this.classFilesPath))
             .forEach(f => {
@@ -786,21 +624,20 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     private async getFilesLookupAndFormulaFieldsExists(file?: TFile): Promise<void> {
-        let fileFields: Array<[string, Field[]]>
-        if (file) {
-            fileFields = [[file.path, this.filesLookupsAndFormulasFields.get(file.path) || []]]
-        } else {
-            fileFields = [...this.filesLookupsAndFormulasFields]
-        }
+
         const lookups = await fieldsValues.getElementsForType<IndexedExistingField[]>("Lookup")
         const formulas = await fieldsValues.getElementsForType<IndexedExistingField[]>("Formula")
         const filesExistingFields: Record<string, IndexedExistingField[]> = {};
         [...lookups, ...formulas].forEach(iF => {
             filesExistingFields[iF.filePath] = [...(filesExistingFields[iF.filePath] || []), iF]
         });
+
         Object.keys(filesExistingFields).forEach(filePath => {
             const existingFields = filesExistingFields[filePath]
-                .map(_f => Field.getFieldFromId(this.plugin, _f.fieldId, _f.fileClassName))
+                .map(_f => {
+                    const field = Field.getFieldFromId(this.plugin, _f.fieldId, _f.fileClassName)
+                    return field
+                })
                 .filter(_f => !!_f) as Field[]
 
             this.filesLookupAndFormulaFieldsExists.set(filePath, existingFields)

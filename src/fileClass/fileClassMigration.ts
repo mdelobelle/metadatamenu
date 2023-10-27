@@ -1,4 +1,6 @@
 import MetadataMenu from "main";
+import { ExistingField } from "src/fields/ExistingField";
+import Field from "src/fields/Field";
 import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 import { legacyGenuineKeys } from "src/utils/dataviewUtils";
 import { getFrontmatterPosition } from "src/utils/fileUtils";
@@ -52,11 +54,13 @@ export class V1FileClassMigration {
         const file = fileClass.getClassFile();
         if (!fileClass.getMajorVersion() || fileClass.getMajorVersion() as number < 2) {
             const fields: any[] = []
+            console.log(fileClass)
+
             await this.plugin.app.fileManager.processFrontMatter(file, async (fm) => {
                 const attributes = V1FileClassMigration.getInlineFileClassAttributes(this.plugin, fileClass)
                 attributes.forEach(attr => {
                     fields.push({
-                        id: this.plugin.fieldIndex.getNewFieldId(),
+                        id: Field.getNewFieldId(this.plugin),
                         command: attr.command,
                         display: attr.display,
                         name: attr.name,
@@ -70,6 +74,18 @@ export class V1FileClassMigration {
                 fm.version = "2.0"
             })
         }
+    }
+
+    static async migrateV1FileClasses(plugin: MetadataMenu): Promise<void> {
+        const index = plugin.fieldIndex
+        await Promise.all(
+            [...index.v1FileClassesPath.values()].map(async remainingV1FileClass => {
+                const migration = new V1FileClassMigration(plugin)
+                await migration.migrate(remainingV1FileClass)
+            })
+        )
+        await index.indexFields();
+        await ExistingField.indexFieldsValues(plugin)
     }
 
 }
@@ -92,7 +108,7 @@ export class V2FileClassMigration {
             const content = await app.vault.read(file)
             const end = getFrontmatterPosition(this.plugin, file).end!
             const newContent = content.split("\n").slice(0, end.line + 1).join("\n")
-            await this.plugin.fileTaskManager.pushTask(() => app.vault.modify(file, newContent))
+            await app.vault.modify(file, newContent)
         }
     }
 }

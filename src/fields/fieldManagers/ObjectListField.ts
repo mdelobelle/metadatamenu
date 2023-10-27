@@ -33,7 +33,7 @@ export default class ObjectListField extends FieldManager {
             const removeObject = async () => {
                 if (indexedPath) {
                     const note = await Note.buildNote(this.plugin, file)
-                    note.removeObject(indexedPath)
+                    await note.removeObject(indexedPath)
                 }
             }
             if (ObjectListField.isFieldOptions(location)) {
@@ -51,7 +51,7 @@ export default class ObjectListField extends FieldManager {
             const removeObject = async () => {
                 if (indexedPath) {
                     const note = await Note.buildNote(this.plugin, file)
-                    note.removeObject(indexedPath)
+                    await note.removeObject(indexedPath)
                 }
             }
             if (ObjectListField.isSuggest(location)) {

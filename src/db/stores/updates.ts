@@ -3,7 +3,7 @@ let db: IDBDatabase;
 const dbName = "metadatamenu_cache"
 const store = "updateStore"
 
-export const get = <T>() => {
+export const get = <T>(id: string) => {
     const open = indexedDB.open(dbName);
     return new Promise<T | undefined>((resolve, reject) => {
         open.onsuccess = () => {
@@ -12,7 +12,7 @@ export const get = <T>() => {
             if ([...db.objectStoreNames].find((name) => name === store)) {
                 const transaction = db.transaction(store);
                 const objectStore = transaction.objectStore(store);
-                request = objectStore.get(1)
+                request = objectStore.get(id)
                 request.onerror = () => reject(request.error)
                 request.onsuccess = () => resolve(request.result)
             } else {
@@ -22,7 +22,7 @@ export const get = <T>() => {
     })
 }
 
-export const update = <T>() => {
+export const update = <T>(id: string) => {
     const open = indexedDB.open(dbName);
     return new Promise<T>((resolve, reject) => {
         open.onsuccess = () => {
@@ -34,7 +34,7 @@ export const update = <T>() => {
                 request = objectStore.get(1);
                 request.onerror = () => reject(request.error);
                 request.onsuccess = () => {
-                    const serialized = JSON.parse(JSON.stringify({ id: 1, value: Date.now() }));
+                    const serialized = JSON.parse(JSON.stringify({ id: id, value: Date.now() }));
                     const updateRequest = objectStore.put(serialized);
                     updateRequest.onsuccess = () => resolve(request.result);
                 };
@@ -44,4 +44,24 @@ export const update = <T>() => {
             }
         };
     });
+};
+
+
+export const removeElement = (key: string) => {
+    const open = indexedDB.open(dbName);
+    open.onsuccess = () => {
+        let request: IDBRequest;
+        db = open.result;
+        if ([...db.objectStoreNames].find((name) => name === store)) {
+            const transaction = db.transaction(store, 'readwrite');
+            const objectStore = transaction.objectStore(store);
+            if (key === 'all') request = objectStore.clear();
+            else request = objectStore.delete(key);
+            request.onerror = () => console.error(request.error);
+            transaction.oncomplete = () => db.close();
+        } else {
+            console.error("store not found")
+            //indexedDB.deleteDatabase(dbName);
+        }
+    };
 };

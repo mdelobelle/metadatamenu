@@ -88,7 +88,7 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
     async onChooseSuggestion(item: ObjectListItem, evt: MouseEvent | KeyboardEvent) {
         if (this.toRemove) {
             const note = await Note.buildNote(this.plugin, this.file)
-            if (item.indexedPath) note.removeObject(item.indexedPath)
+            if (item.indexedPath) await note.removeObject(item.indexedPath)
         } else {
             const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.file, item.indexedPath)
             const existingFields = (await ExistingField.getExistingFieldsFromIndexForFilePath(this.plugin, this.file))

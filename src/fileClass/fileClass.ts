@@ -3,11 +3,13 @@ import MetadataMenu from "main";
 import { SuggestModal, TFile } from "obsidian";
 import { FieldType, FieldTypeLabelMapping, MultiDisplayType } from "src/types/fieldTypes";
 import { capitalize } from "src/utils/textUtils";
-import { FieldCommand } from "src/fields/Field";
+import Field, { FieldCommand } from "src/fields/Field";
 import { FieldManager } from "src/fields/FieldManager";
 import { postValues } from "src/commands/postValues";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { Note } from "src/note/note";
+import FieldIndex from "src/components/FieldIndex";
+import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
 
 const options: Record<string, { name: string, toValue: (value: any) => any }> = {
     "limit": { name: "limit", toValue: (value: any) => value },
@@ -104,7 +106,7 @@ class FileClass {
             icon: _icon
         } = this.plugin.app.metadataCache.getFileCache(this.getClassFile())?.frontmatter as Record<string, any> || {}
         const index = this.plugin.fieldIndex
-        const parent = this.plugin.fieldIndex.fileClassesName.get(_parent);
+        const parent = index.fileClassesName.get(_parent);
         const excludedNames = FileClass.getExcludedFieldsFromFrontmatter(_excludes);
 
         const excludes: FileClassAttribute[] = []
@@ -327,7 +329,7 @@ class FileClass {
                     display: newDisplay,
                     style: newStyle,
                     path: newPath,
-                    id: this.plugin.fieldIndex.getNewFieldId()
+                    id: Field.getNewFieldId(this.plugin)
                 })
             }
         })
@@ -348,9 +350,66 @@ class FileClass {
         return fileClass
     }
 
-    static getFileClassNameFromPath(plugin: MetadataMenu, path: string): string | undefined {
-        const fileClassNameRegex = new RegExp(`${plugin.settings.classFilesPath}(?<fileClassName>.*).md`);
+    static getFileClassNameFromPath(settings: MetadataMenuSettings, path: string): string | undefined {
+        const fileClassNameRegex = new RegExp(`${settings.classFilesPath}(?<fileClassName>.*).md`);
         return path.match(fileClassNameRegex)?.groups?.fileClassName
+    }
+
+    static indexFileClass(index: FieldIndex, file: TFile): void {
+        const fileClassName = FileClass.getFileClassNameFromPath(index.plugin.settings, file.path)
+        if (fileClassName) {
+            try {
+                const fileClass = FileClass.createFileClass(index.plugin, fileClassName)
+                index.fileClassesFields.set(
+                    fileClassName,
+                    fileClass.attributes.map(attr => attr.getField())
+                )
+                index.fileClassesPath.set(file.path, fileClass)
+                index.fileClassesName.set(fileClass.name, fileClass)
+                const cache = index.plugin.app.metadataCache.getFileCache(file);
+                if (fileClass.getMajorVersion() === undefined || fileClass.getMajorVersion() as number < 2) {
+                    index.v1FileClassesPath.set(file.path, fileClass)
+                    index.remainingLegacyFileClasses = true
+                } else if (fileClass.getMajorVersion() === 2) {
+                    index.v2FileClassesPath.set(file.path, fileClass)
+                    index.remainingLegacyFileClasses = true
+                }
+                /*
+                ** Map with tags
+                */
+                if (cache?.frontmatter?.mapWithTag) {
+                    if (cache?.frontmatter?.tagNames) {
+                        const _tagNames = cache?.frontmatter?.tagNames as string | string[];
+                        const tagNames = Array.isArray(_tagNames) ? [..._tagNames] : _tagNames.split(",").map(t => t.trim())
+                        tagNames.forEach(tag => {
+                            if (!tag.includes(" ")) {
+                                index.tagsMatchingFileClasses.set(tag, fileClass)
+                            }
+                        })
+                    } else if (!fileClassName.includes(" ")) {
+                        index.tagsMatchingFileClasses.set(fileClassName, fileClass)
+                    }
+                }
+                /*
+                ** Map with files paths
+                */
+                if (cache?.frontmatter?.filesPaths) {
+                    const _filesPaths = cache?.frontmatter?.filesPaths as string | string[];
+                    const filesPaths = Array.isArray(_filesPaths) ? [..._filesPaths] : _filesPaths.split(",").map(f => f.trim())
+                    filesPaths.forEach(path => index.filesPathsMatchingFileClasses.set(path, fileClass))
+                }
+                /*
+                ** Map with bookmarks groups
+                */
+                if (cache?.frontmatter?.bookmarksGroups) {
+                    const _bookmarksGroups = cache?.frontmatter?.bookmarksGroups as string | string[];
+                    const bookmarksGroups = Array.isArray(_bookmarksGroups) ? [..._bookmarksGroups] : _bookmarksGroups.split(",").map(g => g.trim())
+                    bookmarksGroups.forEach(group => index.bookmarksGroupsMatchingFileClasses.set(group, fileClass))
+                }
+            } catch (error) {
+                console.error(error)
+            }
+        }
     }
 }
 

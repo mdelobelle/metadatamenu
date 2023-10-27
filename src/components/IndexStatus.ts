@@ -69,13 +69,19 @@ export default class IndexStatus extends Component {
         this.statusBtn.setClass("status-item-btn")
         this.statusIcon = this.statusBtn.buttonEl.createEl("span", { cls: "status-bar-item-icon sync-status-icon" })
         this.setState("indexed")
-        this.statusBtn.onClick(() => {
+        this.statusBtn.onClick(async () => {
+            let updatesToApply = false
             if (this.state === "update") {
                 const lookupFields = this.getLookupFieldsToUpdate()
-                lookupFields.forEach(field => {
-                    if (this.file) updateLookups(this.plugin, "", { file: this.file, fieldName: field.name })
+                await Promise.all(lookupFields.map(async field => {
+                    if (this.file) {
+                        await updateLookups(this.plugin, { file: this.file, fieldName: field.name });
+                        updatesToApply = true
+                    }
                 })
+                )
             }
+            if (updatesToApply) this.plugin.fieldIndex.applyUpdates()
         })
     }
 

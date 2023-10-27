@@ -179,7 +179,7 @@ export default class MultiSuggestModal extends SuggestModal<string> {
                 this.plugin.saveSettings();
             }
         }
-        await this.plugin.fieldIndex.fullIndex("valueAdd");
+        await this.plugin.fieldIndex.fullIndex("valueAdd", false, false);
         this.selectedOptions.push(newValue)
     }
 

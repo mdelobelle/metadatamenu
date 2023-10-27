@@ -4,6 +4,8 @@ import * as fieldsValues from 'src/db/stores/fieldsValues'
 import { IndexedExistingField } from "src/components/FieldIndex"
 import MetadataMenu from "main"
 import { ObjectListItem } from "./fieldManagers/ObjectListField"
+import * as updates from "src/db/stores/updates";
+import { Note } from "src/note/note"
 
 export class ExistingField {
     public name: string
@@ -36,7 +38,6 @@ export class ExistingField {
     }
 
     static async getExistingFieldFromIndexForIndexedPath(plugin: MetadataMenu, file: TFile, indexedPath?: string): Promise<ExistingField | undefined> {
-        const existingFields: ExistingField[] = [];
         const iEFields = await fieldsValues.getElementsForFilePath<IndexedExistingField[]>(file.path)
         const iEF = iEFields.find(iEF => !indexedPath || iEF.indexedPath === indexedPath)
         if (iEF) {
@@ -64,5 +65,49 @@ export class ExistingField {
             })
         }))
         return items
+    }
+
+    static async buildPayload(note: Note, indexedEF: IndexedExistingField[], putPayload: IndexedExistingField[], delPayload: string[]): Promise<void> {
+        const f = note.file
+        note.existingFields.forEach(eF => {
+            const id = `${f.path}____${eF.indexedPath}`
+            putPayload.push({
+                id: id,
+                filePath: f.path,
+                fieldType: eF.field.type,
+                fieldId: eF.field.id,
+                fileClassName: eF.field.fileClassName,
+                indexedPath: eF.indexedPath || eF.field.id,
+                indexedId: eF.indexedId,
+                value: eF.value,
+                time: f.stat.mtime
+            })
+        })
+        /* remove disappeared fields */
+        const noteEF = note.existingFields.map(_eF => _eF.indexedPath)
+        const fileIndexedEF = indexedEF.filter(eF => eF.filePath === f.path)
+        fileIndexedEF.forEach(eF => {
+            if (!noteEF.includes(eF.indexedPath)) {
+                delPayload.push(`${f.path}____${eF.indexedPath}`)
+            }
+        })
+    }
+
+    static async indexFieldsValues(plugin: MetadataMenu, changedFiles: TFile[] = []): Promise<void> {
+        const putPayload: IndexedExistingField[] = []
+        const delPayload: string[] = []
+        const lastUpdate: number | undefined = (await updates.get("fieldsValues") as { id: string, value: number } || undefined)?.value
+
+        const indexedEF: IndexedExistingField[] = await fieldsValues.getElement('all')
+        const files = plugin.app.vault.getMarkdownFiles()
+            .filter(_f => !lastUpdate || _f.stat.mtime >= lastUpdate)
+            .filter(_f => !changedFiles.length || changedFiles.map(cF => cF.path).includes(_f.path))
+        await Promise.all(files.map(async f => {
+            const note = await Note.buildNote(plugin, f)
+            await ExistingField.buildPayload(note, indexedEF, putPayload, delPayload)
+        }))
+        await fieldsValues.bulkEditElements(putPayload)
+        fieldsValues.bulkRemoveElements(delPayload)
+        await updates.update("fieldsValues")
     }
 }

@@ -114,6 +114,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		enableAutoComplete.controlEl.addClass("full-width");
 
 		/* Indexing Status icon*/
+		/*
 		const showIndexingStatus = new Setting(globalSettings)
 			.setName('Fields Indexing Status')
 			.setDesc('Show fields indexing status icon in status toolbar')
@@ -131,7 +132,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			})
 		showIndexingStatus.settingEl.addClass("no-border");
 		showIndexingStatus.controlEl.addClass("full-width");
-
+		*/
 
 		/* lists display in frontmatter*/
 		const frontmatterListDisplay = new Setting(globalSettings)

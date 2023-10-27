@@ -15,8 +15,8 @@ import { FileClassManager } from "src/components/fileClassManager";
 import { FieldType } from "src/types/fieldTypes";
 import { updateLookups } from "./updateLookups";
 import { updateFormulas } from "./updateFormulas";
-import { getFrontmatterPosition } from "src/utils/fileUtils";
 import { Note } from "src/note/note";
+import * as updates from "src/db/stores/updates"
 
 function addFileClassAttributeOptions(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
@@ -53,7 +53,7 @@ function addInsertFileClassAttribute(plugin: MetadataMenu) {
             }
             if (inFileClass) {
                 try {
-                    const fileClassName = FileClass.getFileClassNameFromPath(plugin, view!.file.path)
+                    const fileClassName = FileClass.getFileClassNameFromPath(plugin.settings, view!.file.path)
                     if (fileClassName) {
                         const fileClassAttributeModal = new FileClassAttributeModal(plugin, FileClass.createFileClass(plugin, fileClassName))
                         fileClassAttributeModal.open()
@@ -275,7 +275,7 @@ function addUpdateLookupsAndFormulas(plugin: MetadataMenu) {
         icon: "file-search",
         checkCallback: (checking: boolean) => {
             if (checking) return true;
-            plugin.fieldIndex.fullIndex("command", true);
+            plugin.fieldIndex.fullIndex();
         }
     })
 }
@@ -297,7 +297,8 @@ function addUpdateFileLookupsCommand(plugin: MetadataMenu) {
                 if (inFile && file instanceof TFile && file.extension === "md") {
                     const lookupFields = plugin.fieldIndex.filesFields.get(file.path)?.filter(field => field.type === FieldType.Lookup)
                     lookupFields?.forEach(async (field) => {
-                        await updateLookups(plugin, "single_command", { file: file, fieldName: field.name })
+                        await updateLookups(plugin, { file: file, fieldName: field.name })
+                        await plugin.fieldIndex.applyUpdates()
                     })
                 }
             }
@@ -323,9 +324,24 @@ function addUpdateFileFormulasCommand(plugin: MetadataMenu) {
                     const formulaFields = plugin.fieldIndex.filesFields.get(file.path)?.filter(field => field.type === FieldType.Formula)
                     formulaFields?.forEach(async (field) => {
                         await updateFormulas(plugin, { file: file, fieldName: field.name })
+                        await plugin.fieldIndex.applyUpdates()
                     })
                 }
             }
+        }
+    })
+}
+
+function forceIndexFieldsValues(plugin: MetadataMenu) {
+    plugin.addCommand({
+        id: "force_index_metadatamenu",
+        name: "Index MetadataMenu fields",
+        icon: "refresh-ccw",
+        checkCallback: (checking: boolean) => {
+            if (checking) return true
+            updates.removeElement("fieldsValues")
+            plugin.fieldIndex.init()
+            plugin.fieldIndex.fullIndex(true)
         }
     })
 }
@@ -352,4 +368,5 @@ export function addCommands(plugin: MetadataMenu, view: View | undefined | null)
     }
     addFileClassTableViewCommand(plugin)
     addUpdateLookupsAndFormulas(plugin)
+    forceIndexFieldsValues(plugin)
 }

@@ -81,7 +81,7 @@ export default class FileClassQuerySettingsModal extends Modal {
             .reverse();
         select.addOption("--Select a fileClass--", "--Select a fileClass--")
         fileClasses.forEach(fileClass => {
-            const fileClassName = FileClass.getFileClassNameFromPath(this.plugin, fileClass.path);
+            const fileClassName = FileClass.getFileClassNameFromPath(this.plugin.settings, fileClass.path);
             if (fileClassName) select.addOption(fileClassName, fileClassName);
         })
         if (this.fileClassQuery.fileClassName) {

@@ -84,10 +84,10 @@
     }
 
     &.value-checked{
-        background-color: var(--interactive-accent);
+        background-color: var(--background-modifier-hover);
 
         &.is-selected{
-            background-color: var(--background-modifier-hover);
+            background-color: var(--interactive-accent);
         }
     }
 

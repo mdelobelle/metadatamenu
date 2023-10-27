@@ -1800,10 +1800,10 @@ span.flatpickr-weekday {
   vertical-align: text-bottom;
 }
 .value-container.value-checked {
-  background-color: var(--interactive-accent);
+  background-color: var(--background-modifier-hover);
 }
 .value-container.value-checked.is-selected {
-  background-color: var(--background-modifier-hover);
+  background-color: var(--interactive-accent);
 }
 .value-container .item-with-add-on {
   display: flex;

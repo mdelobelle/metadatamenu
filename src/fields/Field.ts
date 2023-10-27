@@ -1,3 +1,4 @@
+import cryptoRandomString from "crypto-random-string";
 import MetadataMenu from "main";
 import { LineNode } from "src/note/lineNode";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
@@ -297,6 +298,24 @@ class Field {
         } catch (e) {
             return ""
         }
+    }
+
+    static getNewFieldId(plugin: MetadataMenu) {
+        const index = plugin.fieldIndex
+        const ids: string[] = [];
+        for (const fileClassFields of index.fileClassesFields.values()) {
+            for (const field of fileClassFields) {
+                ids.push(field.id)
+            }
+        }
+        for (const field of plugin.presetFields) {
+            ids.push(field.id)
+        }
+        let id = cryptoRandomString({ length: 6, type: "alphanumeric" })
+        while (ids.includes(id)) {
+            id = cryptoRandomString({ length: 6, type: "alphanumeric" })
+        }
+        return id
     }
 };
 

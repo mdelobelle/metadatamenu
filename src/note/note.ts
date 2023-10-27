@@ -3,27 +3,34 @@ import { CachedMetadata, EditorPosition, Notice, parseYaml, TFile } from "obsidi
 import { FieldPayload, FieldsPayload } from "src/commands/postValues";
 import Field from "src/fields/Field";
 import { rawObjectTypes, FieldType, ReservedMultiAttributes, FieldManager } from "src/types/fieldTypes";
-import { getFrontmatterPosition } from "src/utils/fileUtils";
 import { Line } from "./line";
 import { LineNode } from "./lineNode";
 import * as Lookup from "src/types/lookupTypes";
 import YAMLField from "src/fields/fieldManagers/YAMLField";
-import { ObjectListItem } from "src/fields/fieldManagers/ObjectListField";
-import { ExistingField } from "src/fields/existingField";
+import { ExistingField } from "src/fields/ExistingField";
+import { IndexedExistingField } from "src/components/FieldIndex";
+import * as fieldsValues from "src/db/stores/fieldsValues"
+import * as updates from "src/db/stores/updates";
 
 export class Note {
     public lines: Line[] = []
     public fields: Field[] = []
     public existingFields: ExistingField[] = []
-    public cache: CachedMetadata | null
-    private frontmatterEnd?: number
+    public frontmatter?: Object
+    public frontmatterPosition?: {
+        end: {
+            line: number;
+        };
+        start: {
+            line: number;
+        };
+    }
 
     constructor(
         public plugin: MetadataMenu,
         public file: TFile,
     ) {
         this.fields = this.plugin.fieldIndex.filesFields.get(this.file.path) || []
-        this.cache = this.plugin.app.metadataCache.getFileCache(file)
     }
 
     private getField(id: string): Field | undefined {
@@ -102,37 +109,60 @@ export class Note {
         }
     }
 
+    public buildFrontmatter(content: string) {
+        //build the frontmatter object to avoid obsidian's metadataCache not being updated soon enough
+        const yamlLines: string[] = []
+        let inFrontmatter = false
+        let inStartingBlankLines = false
+        let frontmatterStart: { line: number } | undefined
+        let frontmatterEnd: { line: number } | undefined
+        let startsWithText = false
+        content.split("\n").forEach((rawLine, i) => {
+            if (!inFrontmatter) {
+                if (rawLine.trim() === "") inStartingBlankLines = true
+                else if (!this.frontmatterPosition?.end.line && rawLine !== "---") startsWithText = true
+            }
+            if (!startsWithText) {
+                if (!inFrontmatter && !this.frontmatterPosition?.end.line && rawLine === "---" && (inStartingBlankLines || i === 0)) {
+                    inFrontmatter = true
+                    inStartingBlankLines = false
+                    frontmatterStart = { line: i }
+                }
+                else if (inFrontmatter) {
+                    if (rawLine === "---") {
+                        inFrontmatter = false
+                        frontmatterEnd = { line: i }
+                    } else {
+                        yamlLines.push(rawLine)
+                    }
+                }
+            }
+        })
+
+        try {
+            this.frontmatter = yamlLines.length ? parseYaml(yamlLines.join("\n")) : undefined
+            if (frontmatterStart && frontmatterEnd) this.frontmatterPosition = {
+                start: frontmatterStart,
+                end: frontmatterEnd
+            }
+        } catch (error) {
+            this.frontmatterPosition = undefined
+        }
+    }
+
     public async build() {
         const content = await app.vault.read(this.file)
-        const { end: frontmatterEnd } = getFrontmatterPosition(this.plugin, this.file)
+        this.buildFrontmatter(content)
+        const frontmatterEnd = this.frontmatterEnd()
         content.split("\n").forEach((rawLine, i) => {
-            const position = !!frontmatterEnd?.line && i <= frontmatterEnd?.line ? "yaml" : "inline"
+            const position = !!frontmatterEnd && i <= frontmatterEnd ? "yaml" : "inline"
             new Line(this.plugin, this, position, rawLine, i)
         })
-        //console.log(this)
     }
 
     public getExistingFieldForIndexedPath(indexedPath?: string): ExistingField | undefined {
         return this.existingFields.find(eF => eF.indexedPath === indexedPath)
     }
-    /*
-    public getExistingChildrenForIndexedPath(indexedPath?: string): ObjectListItem[] {
-        const parentField = this.getExistingFieldForIndexedPath(indexedPath)
-        if (!indexedPath || !parentField || !Array.isArray(parentField.value)) return []
-        const items: ObjectListItem[] = []
-        parentField.value.forEach((value, index) => {
-            //on crée les ObjectListItem
-            const upperPath = `${indexedPath}[${index}]`
-            const eFields = this.existingFields.filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === upperPath)
-            items.push({
-                fields: eFields,
-                indexInList: index,
-                indexedPath: upperPath
-            })
-        })
-        return items
-    }
-    */
 
     public getNodeForIndexedPath(indexedPath: string) {
         for (const line of this.lines) {
@@ -152,6 +182,10 @@ export class Note {
         return
     }
 
+    private frontmatterEnd() {
+        return this.frontmatterPosition?.end.line
+    }
+
     private createLine = (value: string, position: "yaml" | "inline", lineNumber: number, field?: Field) => {
         //will create a line at lineNumber
         //the current line at LineNumber and following lines will be shifted one line below
@@ -166,11 +200,11 @@ export class Note {
         const upperPath = Field.upperIndexedPathObjectPath(indexedPath)
         const { id, index } = Field.getIdAndIndex(indexedPath.split("____").last())
         const { id: upperFieldId, index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
-        this.frontmatterEnd = this.frontmatterEnd || getFrontmatterPosition(this.plugin, this.file)?.end?.line
-        if (lineNumber === -1 && !this.frontmatterEnd) {
+        if (lineNumber === -1 && !this.frontmatter) {
             new Line(this.plugin, this, "yaml", "---", 0)
             new Line(this.plugin, this, "yaml", "---", 0)
-            this.frontmatterEnd = 1
+            this.frontmatter = {}
+            this.frontmatterPosition = { start: { line: 0 }, end: { line: 1 } }
         }
         if (id.startsWith("fileclass-field")) {
             const fR = id.match(/fileclass-field-(?<fileClassAlias>.*)/)
@@ -181,7 +215,8 @@ export class Note {
 
             }
         } else if (id.startsWith("new-field-")) {
-            const position = this.frontmatterEnd && ((lineNumber || this.lines.length) <= this.frontmatterEnd) ? "yaml" : "inline"
+            const frontmatterEnd = this.frontmatterEnd()
+            const position = frontmatterEnd && ((lineNumber || this.lines.length) <= frontmatterEnd) ? "yaml" : "inline"
             const _ = position === "yaml" ? ":" : "::"
             const fR = id.match(/new-field-(?<fieldName>.*)/)
             if (fR?.groups?.fieldName) {
@@ -217,13 +252,14 @@ export class Note {
             } else {
                 const field = this.getField(id)
                 if (!field) return
+                const frontmatterEnd = this.frontmatterEnd()
                 let insertLineNumber =
                     (lineNumber ? Math.max(lineNumber, 0) : undefined) ||
-                    this.frontmatterEnd ||
+                    frontmatterEnd ||
                     this.lines.last()?.number ||
                     0
 
-                const position = this.frontmatterEnd && (insertLineNumber <= this.frontmatterEnd) ? "yaml" : "inline"
+                const position = frontmatterEnd && (insertLineNumber <= frontmatterEnd) ? "yaml" : "inline"
                 if (field.type === FieldType.ObjectList) {
                     //specific case where the field is object but the upperIndex is unknown
                     //it mean that we have to insert a new ObjectListItem
@@ -249,13 +285,23 @@ export class Note {
         }
     }
 
-    public removeObject(indexedPath: string): void {
+    public async removeObject(indexedPath: string): Promise<void> {
         const nodes = this.lines.map(_l => _l.nodes.filter(_n => _n.indexedPath?.startsWith(indexedPath))).flat(Infinity) as LineNode[]
         nodes.map(_n => _n.line.removeLineFromNote())
-        this.plugin.fileTaskManager.pushTask(async () => { await this.plugin.app.vault.modify(this.file, this.renderNote()) })
+        await this.plugin.app.vault.modify(this.file, this.renderNote())
     }
 
-    public createOrUpdateFields(fields: FieldsPayload, lineNumber?: number): void {
+    public async indexNoteFieldsValues(): Promise<void> {
+        const putPayload: IndexedExistingField[] = []
+        const delPayload: string[] = []
+        const indexedEF: IndexedExistingField[] = await fieldsValues.getElement('all')
+        await ExistingField.buildPayload(this, indexedEF, putPayload, delPayload)
+        await fieldsValues.bulkEditElements(putPayload)
+        fieldsValues.bulkRemoveElements(delPayload)
+        await updates.update("fieldsValues")
+    }
+
+    public async createOrUpdateFields(fields: FieldsPayload, lineNumber?: number): Promise<void> {
         fields.forEach(field => {
             const node = this.getNodeForIndexedPath(field.id)
             if (node && node.field) {
@@ -265,7 +311,13 @@ export class Note {
                 this.insertField(field.id, field.payload, lineNumber)
             }
         })
-        this.plugin.fileTaskManager.pushTask(async () => { await this.plugin.app.vault.modify(this.file, this.renderNote()) })
+        await this.plugin.app.vault.modify(this.file, this.renderNote())
+        //TODO: improve, we rebuild the note because exsitingFields aren't updated when insertField or createFieldNOdeContent
+        //if this is done we should have to rebuild the note
+        const note = new Note(this.plugin, this.file)
+        await note.build()
+        await note.indexNoteFieldsValues()
+
     }
 
     public renderNote(): string {
@@ -276,6 +328,5 @@ export class Note {
         const note = new Note(plugin, file)
         await note.build()
         return note
-
     }
 }

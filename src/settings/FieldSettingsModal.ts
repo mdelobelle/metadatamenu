@@ -37,7 +37,7 @@ export default class FieldSettingsModal extends Modal {
             this.field = field;
             Field.copyProperty(this.initialField, this.field)
         } else {
-            const id = this.plugin.fieldIndex.getNewFieldId()
+            const id = Field.getNewFieldId(this.plugin)
             this.field = new Field(plugin);
             this.field.id = id;
             this.initialField.id = id;

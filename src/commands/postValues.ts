@@ -29,5 +29,5 @@ export async function postValues(
 ): Promise<void> {
     const file = getFileFromFileOrPath(plugin, fileOrFilePath);
     const note = await Note.buildNote(plugin, file)
-    note.createOrUpdateFields(payload, lineNumber)
+    await note.createOrUpdateFields(payload, lineNumber)
 }

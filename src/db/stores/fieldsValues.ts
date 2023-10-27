@@ -170,7 +170,9 @@ export const bulkEditElements = <T>(payload: IndexedExistingField[]) => {
                 if (payload.length) {
                     payload.forEach(item => {
                         request = objectStore.get(item.id);
-                        request.onerror = () => reject(request.error);
+                        request.onerror = () => {
+                            reject(request.error)
+                        };
                         request.onsuccess = () => {
                             const serialized = JSON.parse(JSON.stringify(item));
                             const updateRequest = objectStore.put(serialized);
@@ -178,6 +180,7 @@ export const bulkEditElements = <T>(payload: IndexedExistingField[]) => {
                         };
                     })
                 } else {
+
                     resolve()
                 }
                 transaction.oncomplete = () => db.close();

@@ -41,7 +41,7 @@ export class LineNode {
     ) {
         //try to get field from content if not provided
 
-        const frontmatter = this.line.note.cache?.frontmatter!
+        const frontmatter: any = this.line.note.frontmatter || {}
         let indentationLevel: number = 0;
         const indentRegex = new RegExp(/(?<indentation>\s*)(?<list>-\s)?(?<value>.*)/)
         const fR = this.rawContent.match(indentRegex);
@@ -107,7 +107,7 @@ export class LineNode {
                                         this.indexedId = `${this.field.id}`
                                         this.indexedPath = `${parentNode?.indexedPath}____${this.field.id}`
                                     }
-                                    this.value = Field.getValueFromIndexedPath(this.field, this.line.note.cache!.frontmatter!, this.indexedPath)
+                                    this.value = Field.getValueFromIndexedPath(this.field, this.line.note.frontmatter!, this.indexedPath)
                                     existingField.value = this.value
                                     existingField.indexedId = this.indexedId
                                     existingField.indexedPath = this.indexedPath

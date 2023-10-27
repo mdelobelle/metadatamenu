@@ -12,6 +12,10 @@ export class Task {
     }
 }
 
+/*
+DEPRECATED
+*/
+
 export default class FileTaskManager extends Component {
 
     public queue: Map<string, Task>;
@@ -23,6 +27,8 @@ export default class FileTaskManager extends Component {
     }
 
     async onload(): Promise<void> {
+
+        /*
         this.plugin.registerEvent(this.plugin.app.metadataCache.on('resolved', async () => {
             //console.log("obsidian resolved");
             this.busy = false;
@@ -36,13 +42,15 @@ export default class FileTaskManager extends Component {
                 }
             })
         )
+        */
     }
 
 
     public async pushTask(fn: () => any) {
         const task = new Task(fn);
         this.queue.set(task.id, task);
-        if (!this.busy) await this.executeNext();
+        //if (!this.busy) await this.executeNext();
+        await this.executeNext();
     }
 
     public async executeNext() {
@@ -50,18 +58,19 @@ export default class FileTaskManager extends Component {
         if (firstTaskInQueue && !this.plugin.app.metadataCache.inProgressTaskCount) {
             this.busy = true;
             firstTaskInQueue.status = "ongoing"
+            this.queue.delete(firstTaskInQueueId)
             await firstTaskInQueue.fn()
             firstTaskInQueue.status = "done"
-            this.queue.delete(firstTaskInQueueId)
-            //console.log("done: ", firstTaskInQueueId)
-            //console.log("remaining", [...this.queue].length)
+
+            console.log("........ done: ", firstTaskInQueueId)
+            console.log("........ remaining", [...this.queue].length)
             // in case nothing has changed in frontmatter, processFrontmatter wont trigger metadatacache resolve 
             // and no task will be in progress so we can execute next
             if (!this.plugin.app.metadataCache.inProgressTaskCount) await this.executeNext();
         } else if (this.plugin.app.metadataCache.inProgressTaskCount) {
-            //console.log(`wait ... ${this.plugin.app.metadataCache.inProgressTaskCount} tasks in progress`)
+            console.log(`........ wait ... ${this.plugin.app.metadataCache.inProgressTaskCount} tasks in progress`)
         } else {
-            //console.log("nothing else to do")
+            console.log("........ nothing else to do")
         }
     }
 }

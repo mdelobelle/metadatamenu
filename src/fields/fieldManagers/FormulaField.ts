@@ -20,24 +20,31 @@ export default class FormulaField extends FieldManager {
     }
 
     addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
+        const name = this.field.name;
         const f = this.plugin.fieldIndex;
-        const id = `${file.path}__${this.field.name}`;
-        let status: Status;
-        status = f.fileFormulaFieldsStatus.get(id) || Status.changed
-        const icon = status === Status.changed ? "refresh-ccw" : "file-check"
-        const action = () => { updateFormulas(this.plugin, { file: file, fieldName: this.field.name }) };
-        const name = this.field.name
-        if (FormulaField.isSuggest(location) && status === Status.changed) {
-            location.options.push({
-                id: `update_${name}`,
-                actionLabel: `<span>Update <b>${name}</b></span>`,
-                action: action,
-                icon: icon
-            });
-        } else if (FormulaField.isFieldOptions(location) && status === Status.changed) {
-            location.addOption(icon, action, `Update ${name}'s value`);
-        } else if (FormulaField.isFieldOptions(location) && status === Status.upToDate) {
-            location.addOption(icon, () => { }, `${name} is up to date`);
+        const id = `${file.path}__${name}`;
+        if (!this.field.options.autoUpdate && this.field.options.autoUpdate !== undefined) {
+            let status: Status;
+            status = f.fileFormulaFieldsStatus.get(id) || Status.changed
+            const icon = status === Status.changed ? "refresh-ccw" : "file-check"
+            const action = async () => {
+                await updateFormulas(this.plugin, { file: file, fieldName: name })
+                f.applyUpdates()
+            };
+            if (FormulaField.isSuggest(location) && status === Status.changed) {
+                location.options.push({
+                    id: `update_${name}`,
+                    actionLabel: `<span>Update <b>${name}</b></span>`,
+                    action: action,
+                    icon: icon
+                });
+            } else if (FormulaField.isFieldOptions(location) && status === Status.changed) {
+                location.addOption(icon, action, `Update ${name}'s value`);
+            } else if (FormulaField.isFieldOptions(location) && status === Status.upToDate) {
+                location.addOption(icon, () => { }, `${name} is up to date`);
+            }
+        } else if (FormulaField.isFieldOptions(location)) {
+            location.addOption("server-cog", () => { }, `${name} is auto-updated`, "disabled");
         }
     }
 

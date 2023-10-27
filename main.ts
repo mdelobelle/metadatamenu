@@ -13,6 +13,7 @@ import { DEFAULT_SETTINGS, MetadataMenuSettings } from "src/settings/MetadataMen
 import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
+import initDb from "src/db/index"
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -45,11 +46,13 @@ export default class MetadataMenu extends Plugin {
 		if (this.settings.settingsVersion === 3) await SettingsMigration.migrateSettingsV3toV4(this)
 
 		//loading components
+		/*
 		this.indexStatus = this.addChild(new IndexStatus(this))
 		if (this.settings.showIndexingStatusInStatusBar) this.indexStatus.load()
+		*/
 		this.fieldIndex = this.addChild(new FieldIndex(this, "1", () => { }))
 		this.fileTaskManager = this.addChild(new FileTaskManager(this, "1", () => { }))
-		this.extraButton = this.addChild(new ExtraButton(this, "1", () => { }))
+
 		this.contextMenu = this.addChild(new ContextMenu(this))
 
 		//building settings tab
@@ -76,21 +79,24 @@ export default class MetadataMenu extends Plugin {
 			this.app.workspace.on('active-leaf-change', (leaf) => {
 				const view = leaf?.view
 				addCommands(this, view);
-				this.indexStatus.checkForUpdate(view)
+				//this.indexStatus.checkForUpdate(view)
 			})
 		)
 		this.registerEvent(
 			this.app.workspace.on('metadata-menu:indexed', () => {
-				this.indexStatus.setState("indexed")
+				this.extraButton = this.addChild(new ExtraButton(this, "1", () => { }))
+				//this.indexStatus.setState("indexed")
 				addCommands(this, undefined);
 			})
 		)
-		this.registerEvent(this.app.workspace.on("metadata-menu:updated-index", () => {
-			this.indexStatus.setState("indexed")
-		}));
 
 		//building palette commands
 		addCommands(this, this.app.workspace.getActiveViewOfType(MarkdownView));
+
+		//indexing
+		initDb();
+		await this.fieldIndex.fullIndex(true)
+		this.app.workspace.trigger("metadata-menu:indexed");
 
 	};
 
@@ -110,7 +116,8 @@ export default class MetadataMenu extends Plugin {
 		this.settings.presetFields = this.presetFields.map(_field => { const { plugin, ...field } = _field; return field });
 		this.settings.fileClassQueries = this.initialFileClassQueries;
 		await this.saveData(this.settings);
-		await this.fieldIndex.fullIndex("setting", true, false);
+		//TODO limit index trigerring only for some fields changes: fileClassQueries, presetFields, fileClassAlias, globallyIgnoredFields...
+		await this.fieldIndex.fullIndex();
 		this.extraButton.reloadObservers();
 	};
 

@@ -51,6 +51,7 @@ declare module "obsidian" {
         }
     }
     interface MetadataCache {
+        fileCache: Record<string, { mtime: number }>
         inProgressTaskCount: number;
         initialized: boolean;
         on(
@@ -79,5 +80,8 @@ declare module "obsidian" {
         /** Sent to rendered dataview components to tell them to possibly refresh */
         on(name: "metadata-menu:indexed", callback: () => void, ctx?: any): EventRef;
         on(name: "metadata-menu:updated-index", callback: () => void, ctx?: any): EventRef;
+    }
+    interface Menu {
+        setSectionSubmenu: (label: string, options: { title: string, icon: string }) => any
     }
 }

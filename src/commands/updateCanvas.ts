@@ -298,3 +298,20 @@ export async function updateCanvas(
         plugin.fieldIndex.canvasLastFiles.set(canvas.path, currentFilesPaths)
     })
 }
+
+
+export async function updateCanvasAfterFileClass(plugin: MetadataMenu, files: TFile[] = []): Promise<void> {
+    for (const file of files) {
+        const index = plugin.fieldIndex
+        if (index.classFilesPath && file.path.startsWith(this.classFilesPath)) {
+            const fileClassName = index.fileClassesPath.get(file.path)?.name
+            const canvasFields = (fileClassName && index.fileClassesFields.get(fileClassName)?.filter(field => field.type === FieldType.Canvas)) || []
+            canvasFields.forEach(async field => {
+                const canvasFile = this.plugin.app.vault.getAbstractFileByPath(field.options.canvasPath)
+                if (canvasFile instanceof TFile && canvasFile.extension === "canvas") {
+                    await updateCanvas(this.plugin, { canvas: canvasFile })
+                }
+            })
+        }
+    }
+}
