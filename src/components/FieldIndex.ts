@@ -15,7 +15,7 @@ import { V1FileClassMigration, V2FileClassMigration } from "src/fileClass/fileCl
 
 import * as fieldsValues from "src/db/stores/fieldsValues"
 import * as updates from "src/db/stores/updates";
-import { BookmarkItem } from "types";
+import { BookmarkInternalPlugin, BookmarkItem } from "types";
 import { ExistingField } from "src/fields/ExistingField";
 import { FieldPayload, FieldsPayload, postValues } from "src/commands/postValues";
 
@@ -86,16 +86,17 @@ abstract class FieldIndexBuilder extends Component {
     public valuesListNotePathValues: Map<string, string[]>;
     public dVRelatedFieldsToUpdate: Map<string, FieldsPayloadToProcess>
     public remainingLegacyFileClasses: boolean
+    public lastBookmarkChange: number
+    public bookmarks: BookmarkInternalPlugin
 
-    constructor(public plugin: MetadataMenu, public cacheVersion: string, public onChange: () => void) {
+    constructor(public plugin: MetadataMenu) {
         super()
         this.init();
     }
 
     public init() {
-        //console.log("init index")
         this.flushCache();
-        //TODO following sets will persist at each indexing.
+        //following props will persist at each indexing.
         this.remainingLegacyFileClasses = false
         this.canvasLastFiles = new Map();
         this.fileFormulaFieldLastValue = new Map();
@@ -109,11 +110,11 @@ abstract class FieldIndexBuilder extends Component {
         this.dvReady = !!this.dv
         this.classFilesPath = this.plugin.settings.classFilesPath;
         this.dVRelatedFieldsToUpdate = new Map()
+        this.bookmarks = this.plugin.app.internalPlugins.getPluginById("bookmarks")
     }
 
     public flushCache() {
-        //console.log("flush cache")
-        //these maps are rebuilt at each indexing
+        //these props are rebuilt at each indexing
         this.filesFields = new Map();
         this.filesLookupsAndFormulasFields = new Map();
         this.filesLookupAndFormulaFieldsExists = new Map();
@@ -137,17 +138,33 @@ abstract class FieldIndexBuilder extends Component {
         this.filesFileClassesNames = new Map();
         this.lookupQueries = new Map();
     }
-
 }
 
 export default class FieldIndex extends FieldIndexBuilder {
 
-    constructor(public plugin: MetadataMenu, public cacheVersion: string, public onChange: () => void) {
-        super(plugin, cacheVersion, onChange)
+    constructor(public plugin: MetadataMenu) {
+        super(plugin)
     }
 
     async onload(): Promise<void> {
         this.loadTime = Date.now();
+
+        //check if there are changes on the bookmarks
+
+        this.registerInterval(window.setInterval(async () => {
+            const bookmarks = this.bookmarks
+            if (bookmarks.enabled) {
+                const updateTime = bookmarks.lastSave
+                if (this.lastBookmarkChange === undefined || updateTime > this.lastBookmarkChange) {
+                    await this.indexFields();
+                    await ExistingField.indexFieldsValues(this.plugin)
+                    this.lastBookmarkChange = updateTime
+                    this.plugin.app.workspace.trigger("metadata-menu:indexed"); //to rebuild the button
+                }
+            }
+        }, 1500))
+
+
         this.registerEvent(
             this.plugin.app.vault.on("modify", async (file) => {
                 if (file instanceof TFile) {
@@ -170,6 +187,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                         await this.indexFields();
                         await ExistingField.indexFieldsValues(this.plugin)
                     }
+                    this.plugin.app.workspace.trigger("metadata-menu:indexed");
                     this.changedFiles = []
                 }
             })
@@ -180,8 +198,7 @@ export default class FieldIndex extends FieldIndexBuilder {
             this.plugin.app.metadataCache.on("dataview:index-ready", async () => {
                 this.dv = this.plugin.app.plugins.plugins.dataview;
                 this.dvReady = true;
-                await this.resolveAndUpdateDVQueriesBasedFields(true)
-                //TODO relancer les fileClassQueries et si le resultats est différent de l'index, relancer une indexation
+                await this.fullIndex(true)
             })
         )
 
@@ -202,8 +219,19 @@ export default class FieldIndex extends FieldIndexBuilder {
         )
     }
 
-    public async wake() {
-        await (async () => { })()
+    public indexableFiles() {
+        return this.plugin.app.vault.getMarkdownFiles()
+            .filter(f => !this.classFilesPath
+                || !f.path.includes(this.classFilesPath))
+    }
+
+    public indexableFileClasses() {
+        const classFilesPath = this.classFilesPath
+        if (classFilesPath) {
+            return this.plugin.app.vault.getMarkdownFiles()
+                .filter(f => f.path.includes(classFilesPath))
+        }
+        return []
     }
 
     public async fullIndex(force_update_all = false): Promise<void> {
@@ -211,7 +239,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         await ExistingField.indexFieldsValues(this.plugin)
         await this.resolveAndUpdateDVQueriesBasedFields(force_update_all);
         if (this.remainingLegacyFileClasses) await this.migrateFileClasses();
-        this.plugin.app.workspace.trigger("metadata-menu:updated-index");
+        this.plugin.app.workspace.trigger("metadata-menu:indexed");
 
     }
 
@@ -250,7 +278,6 @@ export default class FieldIndex extends FieldIndexBuilder {
             [...(this.dVRelatedFieldsToUpdate.keys())].map(
                 async filePath => {
                     const fieldsPayload = this.dVRelatedFieldsToUpdate.get(filePath)?.fieldsPayload
-                    console.log("APPLYING", filePath, fieldsPayload)
                     if (fieldsPayload) {
                         await postValues(this.plugin, fieldsPayload, filePath)
                     }
@@ -327,29 +354,24 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     private getFileClassesAncestors(): void {
-
-        const classFilesPath = this.plugin.settings.classFilesPath
         //1. iterate over fileClasses to init fileClassesAncestors
-        if (classFilesPath) {
-            this.plugin.app.vault.getMarkdownFiles()
-                .filter(f => f.path.includes(classFilesPath))
-                .forEach(f => {
-                    const fileClassName = FileClass.getFileClassNameFromPath(this.plugin.settings, f.path)
-                    if (fileClassName) {
-                        const parent = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.extends
-                        if (parent) {
-                            const parentFile = this.plugin.app.vault.getAbstractFileByPath(`${classFilesPath}${parent}.md`)
-                            if (parentFile) {
-                                this.fileClassesAncestors.set(fileClassName, [parent])
-                            } else {
-                                this.fileClassesAncestors.set(fileClassName, [])
-                            }
-                        } else {
-                            this.fileClassesAncestors.set(fileClassName, [])
-                        }
+        this.indexableFileClasses().forEach(f => {
+            const fileClassName = FileClass.getFileClassNameFromPath(this.plugin.settings, f.path)
+            if (fileClassName) {
+                const parent = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.extends
+                if (parent) {
+                    const parentFile = this.plugin.app.vault.getAbstractFileByPath(`${this.classFilesPath || ""}${parent}.md`)
+                    if (parentFile) {
+                        this.fileClassesAncestors.set(fileClassName, [parent])
+                    } else {
+                        this.fileClassesAncestors.set(fileClassName, [])
                     }
-                })
-        }
+                } else {
+                    this.fileClassesAncestors.set(fileClassName, [])
+                }
+            }
+        });
+
         //2. for each fileClass get ancestors recursively - stop when an ancestor is the fileClass
         [...this.fileClassesAncestors].forEach(([fileClassName, ancestors]) => {
             if (ancestors.length > 0) {
@@ -386,12 +408,7 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     private getFileClasses(): void {
-        const classFilesPath = this.classFilesPath
-        if (classFilesPath) {
-            this.plugin.app.vault.getMarkdownFiles()
-                .filter(f => f.path.includes(classFilesPath))
-                .forEach(f => FileClass.indexFileClass(this, f))
-        }
+        this.indexableFileClasses().forEach(f => FileClass.indexFileClass(this, f))
     }
 
     private getLookupQueries(): void {
@@ -439,7 +456,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         if (![...this.tagsMatchingFileClasses].length) return
         const mappedTags = [...this.tagsMatchingFileClasses.keys()].map(_t => `#${_t}`)
         const filesWithMappedTag: cFileWithTags[] = [];
-        this.plugin.app.vault.getMarkdownFiles().forEach(_f => {
+        this.indexableFiles().forEach(_f => {
             const cache = app.metadataCache.getFileCache(_f)
             const filteredTags = cache?.tags?.filter(_t => mappedTags.includes(_t.tag))
             if (filteredTags?.length) {
@@ -466,7 +483,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         if (![...this.filesPathsMatchingFileClasses].length) return
         const paths = [...this.filesPathsMatchingFileClasses.keys()]
         const filesWithPath: TFile[] =
-            this.plugin.app.vault.getMarkdownFiles().filter(_f => paths.includes(_f.parent.path))
+            this.indexableFiles().filter(_f => paths.includes(_f.parent.path))
         filesWithPath.forEach((file: TFile) => {
             this.resolveFileClassBinding(
                 this.filesPathsMatchingFileClasses,
@@ -492,7 +509,7 @@ export default class FieldIndex extends FieldIndexBuilder {
 
         if (![...this.bookmarksGroupsMatchingFileClasses].length) return
         const groups = [...this.bookmarksGroupsMatchingFileClasses.keys()]
-        const bookmarks = this.plugin.app.internalPlugins.getPluginById("bookmarks")
+        const bookmarks = this.bookmarks
         if (!bookmarks.enabled) return
         const filesWithGroups: cFileWithGroups[] = []
         this.getFilesForItems(bookmarks.instance.items || [], groups, filesWithGroups)
@@ -528,38 +545,34 @@ export default class FieldIndex extends FieldIndexBuilder {
 
     private getFilesFieldsFromFileClass(): void {
 
-        this.plugin.app.vault.getMarkdownFiles()
-            .filter(f => !this.classFilesPath
-                || !f.path.includes(this.classFilesPath)
-            )
-            .forEach(f => {
-                const fileFileClassesNames = [];
-                const fileClassesCache: string[] | string = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.[this.plugin.settings.fileClassAlias]
-                if (fileClassesCache) {
-                    Array.isArray(fileClassesCache) ?
-                        fileFileClassesNames.push(...fileClassesCache) :
-                        fileFileClassesNames.push(...fileClassesCache.split(',').map(fcn => fcn.trim()))
-                    fileFileClassesNames.forEach(fileFileClassName => {
-                        const fileClass = this.fileClassesName.get(fileFileClassName)
-                        if (fileClass) {
-                            this.filesFileClasses.set(f.path, [...new Set([...(this.filesFileClasses.get(f.path) || []), fileClass])])
-                            this.filesFileClassesNames.set(f.path, [...new Set([...(this.filesFileClassesNames.get(f.path) || []), fileClass.name])])
-                            const fileClassesFieldsFromFile = this.fileClassesFields.get(fileFileClassName)
-                            const currentFields = this.filesFieldsFromInnerFileClasses.get(f.path)
+        this.indexableFiles().forEach(f => {
+            const fileFileClassesNames = [];
+            const fileClassesCache: string[] | string = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.[this.plugin.settings.fileClassAlias]
+            if (fileClassesCache) {
+                Array.isArray(fileClassesCache) ?
+                    fileFileClassesNames.push(...fileClassesCache) :
+                    fileFileClassesNames.push(...fileClassesCache.split(',').map(fcn => fcn.trim()))
+                fileFileClassesNames.forEach(fileFileClassName => {
+                    const fileClass = this.fileClassesName.get(fileFileClassName)
+                    if (fileClass) {
+                        this.filesFileClasses.set(f.path, [...new Set([...(this.filesFileClasses.get(f.path) || []), fileClass])])
+                        this.filesFileClassesNames.set(f.path, [...new Set([...(this.filesFileClassesNames.get(f.path) || []), fileClass.name])])
+                        const fileClassesFieldsFromFile = this.fileClassesFields.get(fileFileClassName)
+                        const currentFields = this.filesFieldsFromInnerFileClasses.get(f.path)
 
-                            if (fileClassesFieldsFromFile) {
-                                const newFields = [...fileClassesFieldsFromFile]
-                                const filteredCurrentFields = currentFields?.filter(field =>
-                                    !newFields.map(f => f.id).includes(field.id) &&
-                                    !fileClass.options?.excludes?.map(attr => attr.id).includes(field.id)
-                                ) || []
-                                newFields.push(...filteredCurrentFields)
-                                this.filesFieldsFromInnerFileClasses.set(f.path, newFields)
-                            } else { this.filesFieldsFromInnerFileClasses.set(f.path, []); }
+                        if (fileClassesFieldsFromFile) {
+                            const newFields = [...fileClassesFieldsFromFile]
+                            const filteredCurrentFields = currentFields?.filter(field =>
+                                !newFields.map(f => f.id).includes(field.id) &&
+                                !fileClass.options?.excludes?.map(attr => attr.id).includes(field.id)
+                            ) || []
+                            newFields.push(...filteredCurrentFields)
+                            this.filesFieldsFromInnerFileClasses.set(f.path, newFields)
                         } else { this.filesFieldsFromInnerFileClasses.set(f.path, []); }
-                    })
-                } else { this.filesFieldsFromInnerFileClasses.set(f.path, []); }
-            })
+                    } else { this.filesFieldsFromInnerFileClasses.set(f.path, []); }
+                })
+            } else { this.filesFieldsFromInnerFileClasses.set(f.path, []); }
+        })
     }
 
     private isLookupOrFormula(field: Field): boolean {
@@ -577,50 +590,48 @@ export default class FieldIndex extends FieldIndexBuilder {
         5. settings preset fields
         */
 
-        this.plugin.app.vault.getMarkdownFiles()
-            .filter(f => !this.classFilesPath || !f.path.includes(this.classFilesPath))
-            .forEach(f => {
-                const fileFieldsFromInnerFileClasses = this.filesFieldsFromInnerFileClasses.get(f.path)
-                const fileFieldsFromQuery = this.filesFieldsFromFileClassQueries.get(f.path);
-                const fileFieldsFromTag = this.filesFieldsFromTags.get(f.path);
-                const fileFieldsFromPath = this.filesFieldsFromFilesPaths.get(f.path)
-                const fileFieldsFromGroup = this.filesFieldsFromBookmarksGroups.get(f.path)
+        this.indexableFiles().forEach(f => {
+            const fileFieldsFromInnerFileClasses = this.filesFieldsFromInnerFileClasses.get(f.path)
+            const fileFieldsFromQuery = this.filesFieldsFromFileClassQueries.get(f.path);
+            const fileFieldsFromTag = this.filesFieldsFromTags.get(f.path);
+            const fileFieldsFromPath = this.filesFieldsFromFilesPaths.get(f.path)
+            const fileFieldsFromGroup = this.filesFieldsFromBookmarksGroups.get(f.path)
 
-                if (
-                    fileFieldsFromInnerFileClasses?.length ||
-                    fileFieldsFromQuery?.length ||
-                    fileFieldsFromTag?.length ||
-                    fileFieldsFromPath?.length ||
-                    fileFieldsFromGroup?.length
-                ) {
-                    const filesFields: Field[] = fileFieldsFromInnerFileClasses || [];
-                    filesFields.push(...(fileFieldsFromTag || []).filter(field => !filesFields.map(f => f.id).includes(field.id)))
-                    filesFields.push(...(fileFieldsFromPath || []).filter(field => !filesFields.map(f => f.id).includes(field.id)))
-                    filesFields.push(...(fileFieldsFromGroup || []).filter(field => !filesFields.map(f => f.id).includes(field.id)))
-                    filesFields.push(...(fileFieldsFromQuery || []).filter(field => !filesFields.map(f => f.id).includes(field.id)))
-                    this.filesFields.set(f.path, filesFields);
-                    const filesLookupAndFormulasFields: Field[] = filesFields.filter(f => this.isLookupOrFormula(f))
-                    filesLookupAndFormulasFields.push(...(fileFieldsFromTag || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
-                    filesLookupAndFormulasFields.push(...(fileFieldsFromPath || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
-                    filesLookupAndFormulasFields.push(...(fileFieldsFromGroup || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
-                    filesLookupAndFormulasFields.push(...(fileFieldsFromQuery || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
-                    if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, filesLookupAndFormulasFields)
-                } else if (this.fieldsFromGlobalFileClass.length) {
-                    this.filesFields.set(f.path, this.fieldsFromGlobalFileClass)
-                    const filesLookupAndFormulasFields = this.fieldsFromGlobalFileClass.filter(f => this.isLookupOrFormula(f))
-                    if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, this.fieldsFromGlobalFileClass.filter(f => this.isLookupOrFormula(f)))
-                    this.filesFileClasses.set(f.path, [this.fileClassesName.get(this.plugin.settings.globalFileClass!)!])
-                    this.filesFileClassesNames.set(f.path, [this.plugin.settings.globalFileClass!])
-                } else {
-                    const fields = this.plugin.presetFields.map(prop => {
-                        const property = new Field(this.plugin);
-                        return Object.assign(property, prop);
-                    });
-                    this.filesFields.set(f.path, fields)
-                    const filesLookupAndFormulasFields = fields.filter(f => this.isLookupOrFormula(f))
-                    if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, fields.filter(f => this.isLookupOrFormula(f)))
-                }
-            })
+            if (
+                fileFieldsFromInnerFileClasses?.length ||
+                fileFieldsFromQuery?.length ||
+                fileFieldsFromTag?.length ||
+                fileFieldsFromPath?.length ||
+                fileFieldsFromGroup?.length
+            ) {
+                const filesFields: Field[] = fileFieldsFromInnerFileClasses || [];
+                filesFields.push(...(fileFieldsFromTag || []).filter(field => !filesFields.map(f => f.id).includes(field.id)))
+                filesFields.push(...(fileFieldsFromPath || []).filter(field => !filesFields.map(f => f.id).includes(field.id)))
+                filesFields.push(...(fileFieldsFromGroup || []).filter(field => !filesFields.map(f => f.id).includes(field.id)))
+                filesFields.push(...(fileFieldsFromQuery || []).filter(field => !filesFields.map(f => f.id).includes(field.id)))
+                this.filesFields.set(f.path, filesFields);
+                const filesLookupAndFormulasFields: Field[] = filesFields.filter(f => this.isLookupOrFormula(f))
+                filesLookupAndFormulasFields.push(...(fileFieldsFromTag || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
+                filesLookupAndFormulasFields.push(...(fileFieldsFromPath || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
+                filesLookupAndFormulasFields.push(...(fileFieldsFromGroup || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
+                filesLookupAndFormulasFields.push(...(fileFieldsFromQuery || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
+                if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, filesLookupAndFormulasFields)
+            } else if (this.fieldsFromGlobalFileClass.length) {
+                this.filesFields.set(f.path, this.fieldsFromGlobalFileClass)
+                const filesLookupAndFormulasFields = this.fieldsFromGlobalFileClass.filter(f => this.isLookupOrFormula(f))
+                if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, this.fieldsFromGlobalFileClass.filter(f => this.isLookupOrFormula(f)))
+                this.filesFileClasses.set(f.path, [this.fileClassesName.get(this.plugin.settings.globalFileClass!)!])
+                this.filesFileClassesNames.set(f.path, [this.plugin.settings.globalFileClass!])
+            } else {
+                const fields = this.plugin.presetFields.map(prop => {
+                    const property = new Field(this.plugin);
+                    return Object.assign(property, prop);
+                });
+                this.filesFields.set(f.path, fields)
+                const filesLookupAndFormulasFields = fields.filter(f => this.isLookupOrFormula(f))
+                if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, fields.filter(f => this.isLookupOrFormula(f)))
+            }
+        })
     }
 
     private async getFilesLookupAndFormulaFieldsExists(file?: TFile): Promise<void> {

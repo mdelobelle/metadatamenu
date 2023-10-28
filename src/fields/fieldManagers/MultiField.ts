@@ -20,7 +20,7 @@ export default class MultiField extends AbstractListBasedField {
     }
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
-        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, file, indexedPath)
         const modal = new MultiSelectModal(this.plugin, file, this.field, eF, indexedPath);
         modal.titleEl.setText("Select values");
         modal.open()

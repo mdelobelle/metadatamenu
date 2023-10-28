@@ -27,6 +27,7 @@ export class FileClassManager extends Component {
             this.name = this.fileClass.name;
             this.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + this.fileClass.name
             await this.openFileClassView();
+            this.registerIndexingDone()
         } else {
             const tagsAndFileClasses = this.getActiveFileTagsAndFileClasses();
             if (tagsAndFileClasses.length === 1) {
@@ -38,6 +39,7 @@ export class FileClassManager extends Component {
                     this.fileClass = fileClass;
                     this.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + fileClass.name
                     await this.openFileClassView();
+                    this.registerIndexingDone()
                 } else {
                     this.plugin.removeChild(this)
                     this.unload()
@@ -61,6 +63,16 @@ export class FileClassManager extends Component {
         this.plugin.app.viewRegistry.unregisterView(this.fileClassViewType);
     }
 
+    private registerIndexingDone() {
+        this.registerEvent(this.plugin.app.workspace.on("metadata-menu:updated-index", () => {
+            const view = this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType)[0]?.view as FileClassView | undefined
+            if (view) {
+                view.updateFieldsView();
+                view.updateSettingsView();
+            }
+        }));
+    }
+
     public async openFileClassView(): Promise<void> {
         if (this.fileClass) {
             const fileClass = this.fileClass
@@ -82,14 +94,6 @@ export class FileClassManager extends Component {
             this.plugin.app.workspace.revealLeaf(
                 this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType).last()!
             );
-
-            this.registerEvent(this.plugin.app.workspace.on("metadata-menu:updated-index", () => {
-                const view = this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType)[0]?.view as FileClassView | undefined
-                if (view) {
-                    view.updateFieldsView();
-                    view.updateSettingsView();
-                }
-            }));
         }
     }
 

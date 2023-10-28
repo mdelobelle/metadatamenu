@@ -9,7 +9,7 @@ import DateField from "src/fields/fieldManagers/DateField";
 import { postValues } from "src/commands/postValues";
 import BaseModal from "../baseModal";
 import { cleanActions } from "src/utils/modals";
-import { ExistingField } from "src/fields/existingField";
+import { ExistingField } from "src/fields/ExistingField";
 import ObjectModal from "./ObjectModal";
 import ObjectListModal from "./ObjectListModal";
 

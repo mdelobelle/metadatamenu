@@ -19,7 +19,7 @@ export default class BooleanField extends FieldManager {
     }
 
     public async toggle(file: TFile, indexedPath?: string): Promise<void> {
-        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, file, indexedPath)
         const value = BooleanField.stringToBoolean(eF?.value)
         const postValue = !value ? "true" : "false"
         await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: postValue } }], file)

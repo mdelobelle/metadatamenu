@@ -60,7 +60,6 @@ export default abstract class AbstractListBasedField extends FieldManager {
         const valueContainer = parentNode.createDiv({ cls: 'field-container', });
         const input = new TextComponent(valueContainer);
         input.inputEl.addClass("full-width");
-        this.valuesPromptComponents.push(input)
         input.setValue(presetValue);
         input.onChange(value => {
             this.field.options.valuesList[key] = value;
@@ -70,6 +69,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
         valueRemoveButton.setIcon("trash")
             .onClick((evt: MouseEvent) => {
                 evt.preventDefault();
+                FieldSettingsModal.removeValidationError(input);
                 this.removePresetValue(key);
                 parentNode.removeChild(valueContainer);
                 this.valuesPromptComponents.remove(input);
@@ -150,7 +150,22 @@ export default abstract class AbstractListBasedField extends FieldManager {
 
     public validateOptions(): boolean {
         let error = false;
-        this.valuesPromptComponents.forEach(input => {
+        let prevComponent: TextComponent
+        const vPC = this.valuesPromptComponents
+        vPC.forEach((input, i) => {
+            if (vPC.length > 1) {
+                if (i === 0) {
+                    prevComponent = vPC[vPC.length - 1]
+                }
+                if (prevComponent.inputEl.value === input.inputEl.value) {
+                    FieldSettingsModal.setValidationError(
+                        input,
+                        "Two adjacent values can't be equal"
+                    );
+                    error = true;
+                }
+                prevComponent = input
+            }
             if (/[,]/gu.test(input.inputEl.value) && input.inputEl.parentElement?.lastElementChild) {
                 FieldSettingsModal.setValidationError(
                     input,
@@ -184,7 +199,7 @@ export default abstract class AbstractListBasedField extends FieldManager {
             });
             const newKey = newKeyNumber.toString();
             this.field.options.valuesList[newKey] = "";
-            this.createValueContainer(valuesListBody, newKey)
+            this.valuesPromptComponents.push(this.createValueContainer(valuesListBody, newKey))
         });
         valuesList.createEl("hr");
     }

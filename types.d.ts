@@ -18,6 +18,7 @@ interface BookmarkInternalPlugin extends InternalPlugin {
     instance: {
         items: BookmarkItem[];
     };
+    lastSave: number;
 }
 
 interface InternalPlugins {
@@ -80,9 +81,9 @@ declare module "obsidian" {
         ): EventRef;
     }
     interface Workspace {
-        /** Sent to rendered dataview components to tell them to possibly refresh */
         on(name: "metadata-menu:indexed", callback: () => void, ctx?: any): EventRef;
         on(name: "metadata-menu:updated-index", callback: () => void, ctx?: any): EventRef;
+        on(name: "layout-change", callback: Debouncer<[_file: TFile], void>, ctx?: any): EventRef;
     }
     interface Menu {
         setSectionSubmenu: (label: string, options: { title: string, icon: string }) => any

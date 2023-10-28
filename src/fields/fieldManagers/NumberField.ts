@@ -73,7 +73,7 @@ export default class NumberField extends FieldManager {
     }
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
-        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, file, indexedPath)
         const modal = new NumberModal(this.plugin, file, this.field, eF, indexedPath);
         modal.titleEl.setText(`Change Value for <${name}>`);
         modal.open()
@@ -84,7 +84,7 @@ export default class NumberField extends FieldManager {
         const fMin = parseFloat(min)
         const fMax = parseFloat(max)
         const fStep = parseFloat(step)
-        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, file, indexedPath)
         const value = eF?.value || ""
         const fValue = parseFloat(value)
         if (!isNaN(fValue)) {

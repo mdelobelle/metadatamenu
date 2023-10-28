@@ -1,9 +1,8 @@
-import { MarkdownView, Notice, Plugin } from 'obsidian';
+import { debounce, MarkdownView, Notice, Plugin } from 'obsidian';
 import { addCommands } from 'src/commands/paletteCommands';
 import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
 import FieldIndex from 'src/components/FieldIndex';
-import FileTaskManager from 'src/components/FileTaskManager';
 import IndexStatus from 'src/components/IndexStatus';
 import Field from 'src/fields/Field';
 import FileClassQuery from 'src/fileClass/FileClassQuery';
@@ -14,6 +13,7 @@ import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import initDb from "src/db/index"
+import { updateVisibleLinks } from 'src/options/linkAttributes';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -22,7 +22,6 @@ export default class MetadataMenu extends Plugin {
 	public initialFileClassQueries: Array<FileClassQuery> = [];
 	public settingTab: MetadataMenuSettingTab;
 	public fieldIndex: FieldIndex;
-	public fileTaskManager: FileTaskManager;
 	public extraButton: ExtraButton;
 	public contextMenu: ContextMenu;
 	public indexStatus: IndexStatus;
@@ -52,9 +51,7 @@ export default class MetadataMenu extends Plugin {
 		this.indexStatus = this.addChild(new IndexStatus(this))
 		if (this.settings.showIndexingStatusInStatusBar) this.indexStatus.load()
 		*/
-		this.fieldIndex = this.addChild(new FieldIndex(this, "1", () => { }))
-		this.fileTaskManager = this.addChild(new FileTaskManager(this, "1", () => { }))
-
+		this.fieldIndex = this.addChild(new FieldIndex(this))
 		this.contextMenu = this.addChild(new ContextMenu(this))
 
 		//building settings tab
@@ -76,30 +73,25 @@ export default class MetadataMenu extends Plugin {
 		this.registerEditorSuggest(new ValueSuggest(this));
 		this.api = new MetadataMenuApi(this).make();
 
-		//registering palette command re-build on leaf change
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', (leaf) => {
-				const view = leaf?.view
-				addCommands(this, view);
 				//this.indexStatus.checkForUpdate(view)
 			})
 		)
 		this.registerEvent(
 			this.app.workspace.on('metadata-menu:indexed', () => {
-				this.extraButton = this.addChild(new ExtraButton(this, "1", () => { }))
+
 				//this.indexStatus.setState("indexed")
-				addCommands(this, undefined);
 			})
 		)
 
 		//building palette commands
-		addCommands(this, this.app.workspace.getActiveViewOfType(MarkdownView));
+		addCommands(this)
 
 		//indexing
 		initDb(this);
 		await this.fieldIndex.fullIndex(true)
-		this.app.workspace.trigger("metadata-menu:indexed");
-
+		this.extraButton = this.addChild(new ExtraButton(this))
 	};
 
 	/*
@@ -118,12 +110,14 @@ export default class MetadataMenu extends Plugin {
 		this.settings.presetFields = this.presetFields.map(_field => { const { plugin, ...field } = _field; return field });
 		this.settings.fileClassQueries = this.initialFileClassQueries;
 		await this.saveData(this.settings);
-		//TODO limit index trigerring only for some fields changes: fileClassQueries, presetFields, fileClassAlias, globallyIgnoredFields...
-		await this.fieldIndex.fullIndex();
-		this.extraButton.reloadObservers();
+		await this.fieldIndex.fullIndex(true);
 	};
 
 	onunload() {
 		console.log('x------ Metadata Menu unloaded ------x');
 	};
 }
+function updateLinks(updateLinks: any, arg1: number, arg2: boolean) {
+	throw new Error('Function not implemented.');
+}
+

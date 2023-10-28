@@ -225,8 +225,9 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					.onChange((new_folder) => {
 						const newPath = new_folder.endsWith("/") || !new_folder ? new_folder : new_folder + "/";
 						this.plugin.settings.classFilesPath = newPath || null;
-						this.plugin.saveSettings();
-					});
+
+					})
+				cfs.onChanged = () => { this.plugin.saveSettings(); }
 			});
 		path.settingEl.addClass("no-border");
 		path.settingEl.addClass("narrow-title");

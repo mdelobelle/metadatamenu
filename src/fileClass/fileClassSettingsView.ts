@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { ButtonComponent, MarkdownRenderer, setIcon, SuggestModal, TextComponent, ToggleComponent } from "obsidian";
+import { ButtonComponent, MarkdownRenderer, setIcon, SuggestModal, TAbstractFile, TextComponent, TFolder, ToggleComponent } from "obsidian";
 import { BookmarkItem } from "types";
 import { FileClass, FileClassOptions } from "./fileClass";
 
@@ -100,15 +100,20 @@ class PathSuggestModal extends SuggestModal<string> {
     }
 
     getSuggestions(query: string): string[] {
-        //@ts-ignore
-        const paths = Array.from(
-            new Set(
-                this.plugin.app.vault.getMarkdownFiles().map(_f => _f.path.replace(/\/?([^\/]*)$/, ""))
-            )
-        )
-        paths.reverse()
-        paths[paths.indexOf("")] = "/"
-        return paths.filter(p => p.toLowerCase().includes(query.toLowerCase()))
+        const abstractFiles = this.plugin.app.vault.getAllLoadedFiles();
+        const folders: TFolder[] = [];
+        const lowerCaseInputStr = query.toLowerCase();
+
+        abstractFiles.forEach((folder: TAbstractFile) => {
+            if (
+                folder instanceof TFolder &&
+                folder.path.toLowerCase().contains(lowerCaseInputStr)
+            ) {
+                folders.push(folder);
+            }
+        });
+
+        return folders.map(f => f.path);
     }
 
     onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
@@ -145,7 +150,7 @@ class BookmarksGroupSuggestModal extends SuggestModal<string> {
     getSuggestions(query: string): string[] {
         //@ts-ignore
 
-        const bookmarks = this.plugin.app.internalPlugins.getPluginById("bookmarks")
+        const bookmarks = this.plugin.fieldIndex.bookmarks
         const groups: string[] = ["/"]
         if (bookmarks.enabled) this.getGroups(bookmarks.instance.items, groups)
         return groups

@@ -28,7 +28,7 @@ export default abstract class RawObjectField extends FieldManager {
     }
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
-        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, file, indexedPath)
         const modal = new RawObjectModal(this.plugin, file, this.field, eF, indexedPath);
         modal.open()
     }

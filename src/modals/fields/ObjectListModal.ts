@@ -90,7 +90,7 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
             const note = await Note.buildNote(this.plugin, this.file)
             if (item.indexedPath) await note.removeObject(item.indexedPath)
         } else {
-            const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.file, item.indexedPath)
+            const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, this.file, item.indexedPath)
             const existingFields = (await ExistingField.getExistingFieldsFromIndexForFilePath(this.plugin, this.file))
                 .filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === item.indexedPath) || []
             const { id, index } = Field.getIdAndIndex(item.indexedPath?.split("____").last())

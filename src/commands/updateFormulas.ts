@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { Notice, TFile } from "obsidian";
-import { ExistingField } from "src/fields/existingField";
+import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
 import { FieldType } from "src/types/fieldTypes";
 import { Status } from "src/types/lookupTypes";
@@ -23,7 +23,6 @@ export function cleanRemovedFormulasFromIndex(
                     (field.fileClassName === fileClassName)
                 )
             )
-        //TODO: change dvPage with filesFieldsValues
         const dvPage = f.dv.api.page(filePath);
         if (dvPage === undefined || dvPage[fieldName] === undefined || !existingFormulaFieldWithNameAndFileClassName) {
             f.fileFormulaFieldLastValue.delete(id);

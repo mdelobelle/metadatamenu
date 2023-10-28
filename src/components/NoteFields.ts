@@ -10,7 +10,7 @@ import { insertMissingFields } from "src/commands/insertMissingFields";
 import { FileClass } from "src/fileClass/fileClass";
 import { FileClassManager } from "./fileClassManager";
 import { Note } from "src/note/note";
-import { ExistingField } from "src/fields/existingField";
+import { ExistingField } from "src/fields/ExistingField";
 import ObjectListField from "src/fields/fieldManagers/ObjectListField";
 
 export class FieldOptions {
@@ -390,11 +390,10 @@ export default class NoteFieldsComponent extends Component {
     }
 
     onload(): void {
-        this.plugin.registerEvent(this.plugin.app.metadataCache.on('dataview:metadata-change', async () => {
+        this.plugin.app.workspace.on('metadata-menu:indexed', async () => {
             await this.fieldsModal.buildNote();
             this.fieldsModal.build();
-        }))
+        })
         this.fieldsModal.open()
-
     }
 }

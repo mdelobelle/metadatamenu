@@ -6,7 +6,7 @@ import { FieldManager } from "src/types/fieldTypes";
 import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
 import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
-import { ExistingField } from "src/fields/existingField";
+import { ExistingField } from "src/fields/ExistingField";
 import ObjectModal from "./ObjectModal";
 import ObjectListModal from "./ObjectListModal";
 

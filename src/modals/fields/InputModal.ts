@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { DropdownComponent, TextAreaComponent, TextComponent, TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
-import { ExistingField } from "src/fields/existingField";
+import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
 import { cleanActions } from "src/utils/modals";
 import BaseModal from "../baseModal";

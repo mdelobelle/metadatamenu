@@ -8,7 +8,7 @@ import { EditorView, basicSetup } from "codemirror"
 import { lintGutter } from "@codemirror/lint";
 import { StateField, EditorState } from "@codemirror/state"
 import { FieldManager } from "src/types/fieldTypes";
-import { ExistingField } from "src/fields/existingField";
+import { ExistingField } from "src/fields/ExistingField";
 import ObjectModal from "./ObjectModal";
 import ObjectListModal from "./ObjectListModal";
 

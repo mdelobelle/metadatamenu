@@ -294,11 +294,11 @@ export class Note {
     public async indexNoteFieldsValues(): Promise<void> {
         const putPayload: IndexedExistingField[] = []
         const delPayload: string[] = []
-        const indexedEF: IndexedExistingField[] = await fieldsValues.getElement('all')
+        const indexedEF: IndexedExistingField[] = await fieldsValues.getElement(this.plugin, 'all')
         await ExistingField.buildPayload(this, indexedEF, putPayload, delPayload)
-        await fieldsValues.bulkEditElements(putPayload)
-        fieldsValues.bulkRemoveElements(delPayload)
-        await updates.update("fieldsValues")
+        await fieldsValues.bulkEditElements(this.plugin, putPayload)
+        fieldsValues.bulkRemoveElements(this.plugin, delPayload)
+        await updates.update(this.plugin, "fieldsValues")
     }
 
     public async createOrUpdateFields(fields: FieldsPayload, lineNumber?: number): Promise<void> {

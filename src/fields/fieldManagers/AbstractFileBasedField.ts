@@ -74,7 +74,7 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
     public getFiles = (currentFile?: TFile): TFile[] => getFiles(this.plugin, this.field, this.field.options.dvQueryString, currentFile)
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
-        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, file, indexedPath)
         const modal = this.modalFactory(this.plugin, file, this.field, eF, indexedPath)
         modal.open()
     }

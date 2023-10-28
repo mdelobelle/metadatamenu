@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { Modal, TFile, ButtonComponent } from "obsidian";
 import { postValues } from "src/commands/postValues";
-import { ExistingField } from "src/fields/existingField";
+import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
 import ObjectListModal from "./ObjectListModal";

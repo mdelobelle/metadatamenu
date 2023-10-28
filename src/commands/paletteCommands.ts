@@ -346,26 +346,17 @@ function forceIndexFieldsValues(plugin: MetadataMenu) {
     })
 }
 
-export function addCommands(plugin: MetadataMenu, view: View | undefined | null) {
-    const classFilesPath = plugin.settings.classFilesPath
-    if (view && view instanceof FileView) {
-        const file = plugin.app.vault.getAbstractFileByPath(view.file.path)
-        if (file instanceof TFile && file.extension === 'md') {
-            if (classFilesPath && file.path.startsWith(classFilesPath)) {
-                addFileClassAttributeOptions(plugin);
-                addInsertFileClassAttribute(plugin);
-            } else {
-                addFieldOptionsCommand(plugin);
-                addInsertFieldAtPositionCommand(plugin);
-                addManageFieldAtCursorCommand(plugin);
-                insertMissingFieldsCommand(plugin);
-                addOpenFieldsModalCommand(plugin)
-                addInsertFieldCommand(plugin)
-                addUpdateFileLookupsCommand(plugin);
-                addUpdateFileFormulasCommand(plugin)
-            }
-        }
-    }
+export function addCommands(plugin: MetadataMenu) {
+    addFileClassAttributeOptions(plugin);
+    addInsertFileClassAttribute(plugin);
+    addFieldOptionsCommand(plugin);
+    addInsertFieldAtPositionCommand(plugin);
+    addManageFieldAtCursorCommand(plugin);
+    insertMissingFieldsCommand(plugin);
+    addOpenFieldsModalCommand(plugin)
+    addInsertFieldCommand(plugin)
+    addUpdateFileLookupsCommand(plugin);
+    addUpdateFileFormulasCommand(plugin)
     addFileClassTableViewCommand(plugin)
     addUpdateLookupsAndFormulas(plugin)
     forceIndexFieldsValues(plugin)
