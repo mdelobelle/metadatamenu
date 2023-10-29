@@ -23,8 +23,8 @@ export default class CanvasGroupLinkField extends AbstractCanvasBasedField {
     }
 
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField,
-        indexedPath?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
-        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
+        indexedPath?: string, lineNumber?: number, asList?: boolean, asComment?: boolean): Promise<void> {
+        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file, lineNumber, asList, asComment)
     }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined }): void {

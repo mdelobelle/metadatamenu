@@ -94,15 +94,18 @@ export class ExistingField {
     }
 
     static async indexFieldsValues(plugin: MetadataMenu, changedFiles: TFile[] = []): Promise<void> {
-        console.log("indexing")
         const putPayload: IndexedExistingField[] = []
         const delPayload: string[] = []
         const lastUpdate: number | undefined = (await updates.get(plugin, "fieldsValues") as { id: string, value: number } || undefined)?.value
-
         const indexedEF: IndexedExistingField[] = await fieldsValues.getElement(plugin, 'all')
         const files = plugin.app.vault.getMarkdownFiles()
-            .filter(_f => !lastUpdate || _f.stat.mtime >= lastUpdate)
+            .filter(_f => !plugin.settings.classFilesPath || !_f.path.startsWith(plugin.settings.classFilesPath))
+            .filter(_f => {
+                const lastChangeInFields = plugin.fieldIndex.filesFieldsLastChange.get(_f.path)
+                return !lastChangeInFields || !lastUpdate || lastChangeInFields >= lastUpdate || _f.stat.mtime > lastUpdate
+            })
             .filter(_f => !changedFiles.length || changedFiles.map(cF => cF.path).includes(_f.path))
+        console.log("indexing", files.length, "files")
         await Promise.all(files.map(async f => {
             const note = await Note.buildNote(plugin, f)
             await ExistingField.buildPayload(note, indexedEF, putPayload, delPayload)

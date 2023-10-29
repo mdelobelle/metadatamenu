@@ -46,7 +46,7 @@ export default class ObjectListField extends FieldManager {
             const moveToObject = async () => {
                 const _eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, file, indexedPath)
                 //FIXME on devrait pas mettre un previousLodal là?
-                if (_eF) this.createAndOpenFieldModal(file, _eF.field.name, _eF, _eF.indexedPath, undefined, undefined, undefined, undefined, undefined)
+                if (_eF) this.createAndOpenFieldModal(file, _eF.field.name, _eF, _eF.indexedPath, undefined, undefined, undefined, undefined)
             }
             const removeObject = async () => {
                 if (indexedPath) {
@@ -104,9 +104,9 @@ export default class ObjectListField extends FieldManager {
     }
 
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField, indexedPath?: string,
-        lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean, previousModal?: ObjectModal | ObjectListModal): Promise<void> {
+        lineNumber?: number, asList?: boolean, asComment?: boolean, previousModal?: ObjectModal | ObjectListModal): Promise<void> {
         const objects = await eF?.getChildrenFields(this.plugin, file) || []
-        const fieldModal = new ObjectListModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment, previousModal, objects)
+        const fieldModal = new ObjectListModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asComment, previousModal, objects)
         fieldModal.open();
     }
 

@@ -22,7 +22,6 @@ export default class ValueSuggestModal extends SuggestModal<string>{
         private eF?: ExistingField,
         private indexedPath?: string,
         private lineNumber: number = -1,
-        private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false,
         private previousModal?: ObjectModal | ObjectListModal
@@ -120,7 +119,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
     }
 
     async clearValues() {
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.asList, this.asComment)
 
     }
 
@@ -145,7 +144,7 @@ export default class ValueSuggestModal extends SuggestModal<string>{
     }
 
     private async saveItem(item: string): Promise<void> {
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: item.toString() } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: item.toString() } }], this.file, this.lineNumber, this.asList, this.asComment)
     }
 
     async onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {

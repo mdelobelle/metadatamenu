@@ -16,7 +16,6 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
         private plugin: MetadataMenu,
         private file: TFile,
         private lineNumber: number,
-        private after: boolean,
     ) {
         super(plugin.app);
         this.containerEl.addClass("metadata-menu")
@@ -61,14 +60,14 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
 
     onChooseItem(item: Option, evt: MouseEvent | KeyboardEvent): void {
         if (item.actionLabel === "++New++") {
-            const newFieldModal = new addNewFieldModal(this.plugin, this.lineNumber, this.file, this.after);
+            const newFieldModal = new addNewFieldModal(this.plugin, this.lineNumber, this.file);
             newFieldModal.open();
             this.close();
         } else {
             const field = this.plugin.fieldIndex.filesFields.get(this.file.path)?.find(field => field.name === item.actionLabel)
             if (field) {
                 const fieldManager = new FieldManager[field.type](this.plugin, field);
-                fieldManager.createAndOpenFieldModal(this.file, item.actionLabel, undefined, undefined, this.lineNumber, this.after, false, false);
+                fieldManager.createAndOpenFieldModal(this.file, item.actionLabel, undefined, undefined, this.lineNumber, false, false);
             }
         }
     }

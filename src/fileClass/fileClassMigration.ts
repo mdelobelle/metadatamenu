@@ -84,31 +84,7 @@ export class V1FileClassMigration {
                 await migration.migrate(remainingV1FileClass)
             })
         )
-        await index.indexFields();
-        await ExistingField.indexFieldsValues(plugin)
+        if ([...index.v1FileClassesPath.values()].length) await index.indexFieldsAndValues()
     }
 
-}
-
-
-export class V2FileClassMigration {
-    /*
-    removing inline fields definitions
-    */
-    constructor(public plugin: MetadataMenu) {
-
-    }
-
-    public async migrate(fileClass: FileClass): Promise<void> {
-        const file = fileClass.getClassFile();
-        if (!fileClass.getMajorVersion() || fileClass.getMajorVersion() as number === 2) {
-            this.plugin.app.fileManager.processFrontMatter(file, async (fm) => {
-                fm.version = "3.0"
-            })
-            const content = await app.vault.read(file)
-            const end = getFrontmatterPosition(this.plugin, file).end!
-            const newContent = content.split("\n").slice(0, end.line + 1).join("\n")
-            await app.vault.modify(file, newContent)
-        }
-    }
 }

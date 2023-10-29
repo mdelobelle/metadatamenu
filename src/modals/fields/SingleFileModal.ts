@@ -20,7 +20,6 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
         private eF?: ExistingField,
         private indexedPath?: string,
         private lineNumber: number = -1,
-        private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false,
         private previousModal?: ObjectModal | ObjectListModal

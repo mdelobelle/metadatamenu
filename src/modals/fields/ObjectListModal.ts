@@ -18,7 +18,6 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
         private eF?: ExistingField,
         private indexedPath?: string,
         private lineNumber: number = -1,
-        private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false,
         private previousModal?: ObjectModal | ObjectListModal,
@@ -98,7 +97,7 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
                 .get(this.file.path)?.filter(_f => _f.getFirstAncestor()?.id === id)
                 .filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
             const objectModal = new ObjectModal(this.plugin, this.file, eF, item.indexedPath,
-                undefined, undefined, undefined, undefined, this, existingFields, missingFields)
+                undefined, undefined, undefined, this, existingFields, missingFields)
             objectModal.open()
         }
     }

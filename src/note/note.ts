@@ -196,7 +196,14 @@ export class Note {
     }
 
 
-    private insertField(indexedPath: string, payload: FieldPayload, lineNumber?: number): void {
+    private insertField(
+        indexedPath: string,
+        payload: FieldPayload,
+        lineNumber?: number,
+        asList: boolean = false,
+        asComment: boolean = false
+    ): void {
+        console.log(payload)
         const upperPath = Field.upperIndexedPathObjectPath(indexedPath)
         const { id, index } = Field.getIdAndIndex(indexedPath.split("____").last())
         const { id: upperFieldId, index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
@@ -301,14 +308,19 @@ export class Note {
         await updates.update(this.plugin, "fieldsValues")
     }
 
-    public async createOrUpdateFields(fields: FieldsPayload, lineNumber?: number): Promise<void> {
+    public async createOrUpdateFields(
+        fields: FieldsPayload,
+        lineNumber?: number,
+        asList: boolean = false,
+        asComment: boolean = false
+    ): Promise<void> {
         fields.forEach(field => {
             const node = this.getNodeForIndexedPath(field.id)
             if (node && node.field) {
-                node.createFieldNodeContent(node.field, field.payload.value, node.line.position)
+                node.createFieldNodeContent(node.field, field.payload.value, node.line.position, asList, asComment)
                 node.line.renderLine()
             } else {
-                this.insertField(field.id, field.payload, lineNumber)
+                this.insertField(field.id, field.payload, lineNumber, asList, asComment)
             }
         })
         await this.plugin.app.vault.modify(this.file, this.renderNote())

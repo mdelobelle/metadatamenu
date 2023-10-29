@@ -26,7 +26,6 @@ export default class RawObjectModal extends BaseModal {
         private eF?: ExistingField,
         private indexedPath?: string,
         private lineNumber: number = -1,
-        private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false,
         private previousModal?: ObjectModal | ObjectListModal
@@ -90,7 +89,7 @@ export default class RawObjectModal extends BaseModal {
 
     public async save(): Promise<void> {
         const newContent = this.editor.state.doc.toString().trim()
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: newContent } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: newContent } }], this.file, this.lineNumber, this.asList, this.asComment)
         this.close();
     }
 };

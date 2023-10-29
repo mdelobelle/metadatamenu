@@ -10,7 +10,6 @@ export async function insertMissingFields(
     plugin: MetadataMenu,
     fileOrFilePath: string | TFile,
     lineNumber: number,
-    after: boolean = false,
     asList: boolean = false,
     asComment: boolean = false,
     fileClassName?: string,
@@ -48,5 +47,5 @@ export async function insertMissingFields(
         })
     }
 
-    if (fieldsToInsert.length) await postValues(plugin, fieldsToInsert, file, lineNumber, after, asList, asComment);
+    if (fieldsToInsert.length) await postValues(plugin, fieldsToInsert, file, lineNumber, asList, asComment);
 }

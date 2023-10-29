@@ -1,4 +1,5 @@
 import "obsidian";
+import { EventRef } from "obsidian";
 //@ts-ignore
 import { DataviewApi } from "obsidian-dataview";
 
@@ -17,6 +18,7 @@ interface BookmarkItem {
 interface BookmarkInternalPlugin extends InternalPlugin {
     instance: {
         items: BookmarkItem[];
+        on(name: "changed", callback: () => void, ctx?: any): EventRef;
     };
     lastSave: number;
 }

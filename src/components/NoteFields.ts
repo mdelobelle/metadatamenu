@@ -176,12 +176,12 @@ export class FieldsModal extends Modal {
                     new ChooseSectionModal(
                         this.plugin,
                         this.file,
-                        (lineNumber: number, after: boolean, asList: boolean, asComment: boolean
+                        (lineNumber: number, asList: boolean, asComment: boolean
                         ) => FieldManager.createAndOpenModal(
-                            this.plugin, this.file, field.name, field, undefined, newIndexedPath, lineNumber, after, asList, asComment)
+                            this.plugin, this.file, field.name, field, undefined, newIndexedPath, lineNumber, asList, asComment)
                     ).open();
                 } else {
-                    FieldManager.createAndOpenModal(this.plugin, this.file, field.name, field, undefined, newIndexedPath, -1, false, false, false)
+                    FieldManager.createAndOpenModal(this.plugin, this.file, field.name, field, undefined, newIndexedPath, -1, false, false)
                 }
             })
         };
@@ -237,8 +237,8 @@ export class FieldsModal extends Modal {
         const modal = new ChooseSectionModal(
             this.plugin,
             this.file,
-            (lineNumber: number, after: boolean, asList: boolean, asComment: boolean) => insertMissingFields(
-                this.plugin, this.file.path, lineNumber, after, asList, asComment, fileClass.name
+            (lineNumber: number, asList: boolean, asComment: boolean) => insertMissingFields(
+                this.plugin, this.file.path, lineNumber, asList, asComment, fileClass.name
             )
         );
         modal.open()
@@ -318,15 +318,15 @@ export class FieldsModal extends Modal {
                 new ChooseSectionModal(
                     this.plugin,
                     this.file,
-                    (lineNumber: number, after: boolean, asList: boolean, asComment: boolean) => insertMissingFields(
-                        this.plugin, this.file.path, lineNumber, after, asList, asComment
+                    (lineNumber: number, asList: boolean, asComment: boolean) => insertMissingFields(
+                        this.plugin, this.file.path, lineNumber, asList, asComment
                     )
                 ).open();
             } else {
                 const field = this.note.getExistingFieldForIndexedPath(this.indexedPath)?.field
                 const fileClass = field?.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
                 insertMissingFields(
-                    this.plugin, this.file.path, -1, false, false, false, fileClass?.name, this.indexedPath
+                    this.plugin, this.file.path, -1, false, false, fileClass?.name, this.indexedPath
                 )
             }
         })

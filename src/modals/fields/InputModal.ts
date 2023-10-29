@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { DropdownComponent, TextAreaComponent, TextComponent, TFile } from "obsidian";
+import { DropdownComponent, Notice, TextAreaComponent, TextComponent, TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
@@ -21,7 +21,6 @@ export default class InputModal extends BaseModal {
         private eF?: ExistingField,
         private indexedPath?: string,
         private lineNumber: number = -1,
-        private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false,
         private previousModal?: ObjectModal | ObjectListModal
@@ -38,8 +37,14 @@ export default class InputModal extends BaseModal {
                     const [name, optionsString] = value.split(/:(.*)/s).map((v: string) => v.trim())
                     this.templateValues[name] = "";
                     if (optionsString) {
-                        const options = JSON.parse(optionsString);
-                        this.buildTemplateSelectItem(this.contentEl.createDiv({ cls: "field-container" }), name, options);
+                        try {
+                            const options = JSON.parse(optionsString);
+                            this.buildTemplateSelectItem(this.contentEl.createDiv({ cls: "field-container" }), name, options);
+                        } catch ({ name: errorName, message }) {
+                            const notice = `{{${name}}} field definition is not a valid JSON \n` +
+                                `in <${this.field.name}> ${this.field.fileClassName ? this.field.fileClassName : "Metadata Menu"} settings`
+                            if (errorName === "SyntaxError") new Notice(notice, 5000)
+                        }
                     } else {
                         this.buildTemplateInputItem(this.contentEl.createDiv({ cls: "field-container" }), name);
                     }
@@ -118,7 +123,7 @@ export default class InputModal extends BaseModal {
     };
 
     public async save(): Promise<void> {
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: this.newValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: this.newValue } }], this.file, this.lineNumber, this.asList, this.asComment)
         this.close();
     }
 };

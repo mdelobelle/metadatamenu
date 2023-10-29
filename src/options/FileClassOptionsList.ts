@@ -58,14 +58,12 @@ export default class FileClassOptionsList {
                         this.fromFile,
                         (
                             lineNumber: number,
-                            after: boolean,
                             asList: boolean,
                             asComment: boolean
                         ) => insertMissingFields(
                             this.plugin,
                             dvFile.file.path,
                             lineNumber,
-                            after,
                             asList,
                             asComment,
                             fileClass?.name

@@ -227,11 +227,18 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 						this.plugin.settings.classFilesPath = newPath || null;
 
 					})
-				cfs.onChanged = () => { this.plugin.saveSettings(); }
+				cfs.onChanged = () => { }
 			});
 		path.settingEl.addClass("no-border");
 		path.settingEl.addClass("narrow-title");
 		path.controlEl.addClass("full-width");
+
+		const aliasSaveButton = new ButtonComponent(classFilesSettings)
+		aliasSaveButton.setIcon("save")
+		aliasSaveButton.onClick(async () => {
+			await this.plugin.saveSettings()
+			aliasSaveButton.removeCta()
+		})
 
 		const alias = new Setting(classFilesSettings)
 			.setName('fileClass field alias')
@@ -241,12 +248,14 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.fileClassAlias)
 					.onChange(async (value) => {
 						this.plugin.settings.fileClassAlias = value || "fileClass";
-						await this.plugin.saveSettings();
+						aliasSaveButton.setCta()
 					});
+				text.onChanged = () => { this.plugin.saveSettings(); }
 			})
 		alias.settingEl.addClass("no-border");
 		alias.settingEl.addClass("narrow-title");
 		alias.controlEl.addClass("full-width");
+		alias.settingEl.appendChild(aliasSaveButton.buttonEl)
 
 		/* 
 

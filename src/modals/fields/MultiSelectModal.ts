@@ -25,7 +25,6 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         private eF?: ExistingField,
         private indexedPath?: string,
         private lineNumber: number = -1,
-        private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false,
         private previousModal?: ObjectModal | ObjectListModal
@@ -179,18 +178,18 @@ export default class MultiSuggestModal extends SuggestModal<string> {
                 this.plugin.saveSettings();
             }
         }
-        await this.plugin.fieldIndex.fullIndex("valueAdd", false, false);
+        await this.plugin.fieldIndex.indexFields();
         this.selectedOptions.push(newValue)
     }
 
     async replaceValues() {
         const options = this.selectedOptions;
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: options.join(", ") } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: options.join(", ") } }], this.file, this.lineNumber, this.asList, this.asComment)
         this.close();
     }
 
     async clearValues() {
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.asList, this.asComment)
     }
 
     renderSelected() {

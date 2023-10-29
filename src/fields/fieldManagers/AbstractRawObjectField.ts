@@ -62,12 +62,11 @@ export default abstract class RawObjectField extends FieldManager {
         eF?: ExistingField,
         indexedPath?: string,
         lineNumber?: number,
-        after?: boolean,
         asList?: boolean,
         asComment?: boolean,
         previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const fieldModal = new RawObjectModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment, previousModal);
+        const fieldModal = new RawObjectModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asComment, previousModal);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

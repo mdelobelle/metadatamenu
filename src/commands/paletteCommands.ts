@@ -158,14 +158,12 @@ function insertMissingFieldsCommand(plugin: MetadataMenu) {
                         file,
                         (
                             lineNumber: number,
-                            after: boolean,
                             asList: boolean,
                             asComment: boolean
                         ) => insertMissingFields(
                             plugin,
                             file.path,
                             lineNumber,
-                            after,
                             asList,
                             asComment
                         )
@@ -230,7 +228,6 @@ function addInsertFieldCommand(plugin: MetadataMenu): void {
                             view.file,
                             (
                                 lineNumber: number,
-                                after: boolean,
                                 asList: boolean,
                                 asComment: boolean
                             ) => F.openFieldModal(
@@ -238,7 +235,6 @@ function addInsertFieldCommand(plugin: MetadataMenu): void {
                                 view.file,
                                 fieldName,
                                 lineNumber,
-                                after,
                                 asList,
                                 asComment
                             )

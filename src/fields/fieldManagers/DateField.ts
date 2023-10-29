@@ -69,12 +69,11 @@ export default class DateField extends FieldManager {
         eF?: ExistingField,
         indexedPath?: string,
         lineNumber?: number,
-        after?: boolean,
         asList?: boolean,
         asComment?: boolean,
         previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const fieldModal = new DateModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment, previousModal);
+        const fieldModal = new DateModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asComment, previousModal);
         fieldModal.titleEl.setText(`Enter date for ${selectedFieldName}`);
         fieldModal.open();
     }

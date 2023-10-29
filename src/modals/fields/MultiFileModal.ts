@@ -21,7 +21,6 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
         private eF?: ExistingField,
         private indexedPath?: string,
         private lineNumber: number = -1,
-        private after: boolean = false,
         private asList: boolean = false,
         private asComment: boolean = false,
         private previousModal?: ObjectModal | ObjectListModal
@@ -120,7 +119,7 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
             }
             return FM.buildMarkDownLink(this.plugin, this.file, file.basename, undefined, alias)
         })
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.asList, this.asComment);
     }
 
     async clearValues() {

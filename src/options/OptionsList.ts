@@ -203,7 +203,6 @@ export default class OptionsList {
 			this.file,
 			(
 				lineNumber: number,
-				after: boolean,
 				asList: boolean,
 				asComment: boolean
 			) => F.openFieldModal(
@@ -211,7 +210,6 @@ export default class OptionsList {
 				this.file,
 				undefined,
 				lineNumber,
-				after,
 				asList,
 				asComment
 			)
@@ -241,14 +239,12 @@ export default class OptionsList {
 			this.file,
 			(
 				lineNumber: number,
-				after: boolean,
 				asList: boolean,
 				asComment: boolean
 			) => insertMissingFields(
 				this.plugin,
 				this.file.path,
 				lineNumber,
-				after,
 				asList,
 				asComment
 			)
@@ -279,7 +275,7 @@ export default class OptionsList {
 					item.setIcon("pin");
 					item.setTitle("Add field in frontmatter");
 					item.onClick(async (evt: MouseEvent) => {
-						F.openFieldModal(this.plugin, this.file, undefined, -1, false, false, false)
+						F.openFieldModal(this.plugin, this.file, undefined, -1, false, false)
 					});
 					item.setSection("metadata-menu");
 				});
@@ -288,7 +284,7 @@ export default class OptionsList {
 					id: "add_field_in_frontmatter",
 					actionLabel: "Add a field in frontmatter...",
 					action: () => F.openFieldModal(
-						this.plugin, this.file, undefined, -1, false, false, false),
+						this.plugin, this.file, undefined, -1, false, false),
 					icon: "pin"
 				})
 			}
@@ -311,19 +307,19 @@ export default class OptionsList {
 					item.setTitle("Add field at cursor");
 					item.onClick((evt: MouseEvent) => {
 						F.openFieldModal(
-							this.plugin, this.file, undefined, lineNumber, false, false, false)
+							this.plugin, this.file, undefined, lineNumber, false, false)
 					});
 					item.setSection("metadata-menu");
 				});
 			} else if (isInsertFieldCommand(this.location)) {
 				F.openFieldModal(
-					this.plugin, this.file, undefined, lineNumber, false, false, false);
+					this.plugin, this.file, undefined, lineNumber, false, false);
 			} else if (isSuggest(this.location)) {
 				this.location.options.push({
 					id: "add_field_at_cursor",
 					actionLabel: "Add field at cursor...",
 					action: () => F.openFieldModal(
-						this.plugin, this.file, undefined, lineNumber, false, false, false),
+						this.plugin, this.file, undefined, lineNumber, false, false),
 					icon: "pin"
 				})
 			};

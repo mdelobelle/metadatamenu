@@ -12,14 +12,13 @@ function buildAndOpenModal(
 ): void {
     if (attrs?.options?.inFrontmatter) {
         const lineNumber = - 1
-        F.openFieldModal(plugin, file, fieldName, lineNumber, false, false, false)
+        F.openFieldModal(plugin, file, fieldName, lineNumber, false, false)
     } else {
         new chooseSectionModal(
             plugin,
             file,
             (
                 lineNumber: number,
-                after: boolean,
                 asList: boolean,
                 asComment: boolean
             ) => F.openFieldModal(
@@ -27,7 +26,6 @@ function buildAndOpenModal(
                 file,
                 fieldName,
                 lineNumber,
-                after,
                 asList,
                 asComment
             )
@@ -93,7 +91,6 @@ export function fieldModifier(
                             file,
                             (
                                 lineNumber: number,
-                                after: boolean,
                                 asList: boolean,
                                 asComment: boolean
                             ) => F.openFieldModal(
@@ -101,7 +98,6 @@ export function fieldModifier(
                                 file,
                                 undefined,
                                 lineNumber,
-                                after,
                                 asList,
                                 asComment
                             ),

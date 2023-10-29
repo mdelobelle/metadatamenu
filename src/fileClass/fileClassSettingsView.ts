@@ -279,6 +279,7 @@ export class FileClassSettingsView {
         setIcon(this.saveBtn, "save")
         this.saveBtn.onclick = async () => {
             await this.fileClass.updateOptions(this.fileClassOptions);
+            this.saveBtn.removeClass("active")
         }
     }
 

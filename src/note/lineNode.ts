@@ -230,7 +230,13 @@ export class LineNode {
         return content
     }
 
-    public createFieldNodeContent(field: Field, value: string, location: "yaml" | "inline") {
+    public createFieldNodeContent(
+        field: Field,
+        value: string,
+        location: "yaml" | "inline",
+        asList: boolean = false,
+        asComment: boolean = false
+    ) {
         const _ = separator[location]
         this.field = field
         let content: string
