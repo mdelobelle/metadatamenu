@@ -187,6 +187,7 @@ export default class FieldSettingsModal extends Modal {
     }
 
     private buildTypeSelectContainer(): void {
+        console.log(this.field)
         this.typeSelectContainer.replaceChildren()
         const typeSelectorContainerLabel = this.typeSelectContainer.createDiv({ cls: "label" });
         typeSelectorContainerLabel.setText(`Field type:`);
@@ -208,7 +209,7 @@ export default class FieldSettingsModal extends Modal {
                 this.frontmatterListDisplayContainer.hide()
             }
         }
-        if (this.field.id) { select.setDisabled(true); return }
+        if (!this.new) { select.setDisabled(true); return }
         select.onChange((typeLabel: keyof typeof FieldType) => {
             this.field = new Field(this.plugin);
             Field.copyProperty(this.field, this.initialField);

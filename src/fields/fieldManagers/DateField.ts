@@ -135,17 +135,23 @@ export default class DateField extends FieldManager {
         nextShiftIntervalFieldContainer.createDiv({ cls: "spacer" })
         const nextShiftIntervalField = new DropdownComponent(nextShiftIntervalFieldContainer);
         nextShiftIntervalField.addOption("none", "---None---")
-        const fileClassRootFields = this.plugin.fieldIndex.fileClassesFields
-            .get(this.field.fileClassName || "")?.filter(_f => _f.isRoot() && _f.name !== this.field.name) || []
+        let rootFields: Field[] = []
+        if (this.field.fileClassName) {
+            rootFields = this.plugin.fieldIndex.fileClassesFields
+                .get(this.field.fileClassName || "")?.filter(_f => _f.isRoot() && _f.name !== this.field.name && _f.type === FieldType.Cycle) || []
+
+        } else {
+            rootFields = this.plugin.presetFields.filter(_f => _f.name !== this.field.name && _f.type === FieldType.Cycle)
+        }
         // limit choices to root fields
-        fileClassRootFields.forEach(_f => nextShiftIntervalField.addOption(_f.id, _f.name))
-        const currentField = fileClassRootFields.find(_f => _f.name === this.field.options.nextShiftIntervalField)?.id || "none"
+        rootFields.forEach(_f => nextShiftIntervalField.addOption(_f.id, _f.name))
+        const currentField = rootFields.find(_f => _f.name === this.field.options.nextShiftIntervalField)?.id || "none"
         nextShiftIntervalField.setValue(currentField)
         nextShiftIntervalField.onChange(value => {
             if (value === "none") {
                 delete this.field.options.nextShiftIntervalField;
             } else {
-                this.field.options.nextShiftIntervalField = fileClassRootFields.find(_f => _f.id === value)?.name.toString();
+                this.field.options.nextShiftIntervalField = rootFields.find(_f => _f.id === value)?.name.toString();
             }
         })
     }
