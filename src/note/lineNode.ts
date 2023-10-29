@@ -257,7 +257,7 @@ export class LineNode {
                     newValue.filter(v => !!v).reverse().forEach((item, i) => {
                         const newItemLine = new Line(this.plugin, this.line.note, location, "", this.line.number! + 1)
                         new LineNode(this.plugin, newItemLine, this.buildIndentedListItem(item))
-                        newItemLine.renderLine()
+                        newItemLine.renderLine(asList, asComment)
                     });
                 } else {
                     content = `${fieldHeader}${_} [${newValue.join(", ")}]`;
@@ -267,7 +267,7 @@ export class LineNode {
                 if (this.field.type === FieldType.ObjectList) {
                     const newItemLine = new Line(this.plugin, this.line.note, location, "", this.line.number! + 1)
                     new LineNode(this.plugin, newItemLine, this.buildIndentedListItem("", 1))
-                    newItemLine.renderLine()
+                    newItemLine.renderLine(asList, asComment)
                 }
             }
         } else {

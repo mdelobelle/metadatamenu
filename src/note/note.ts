@@ -186,13 +186,20 @@ export class Note {
         return this.frontmatterPosition?.end.line
     }
 
-    private createLine = (value: string, position: "yaml" | "inline", lineNumber: number, field?: Field) => {
+    private createLine = (
+        value: string,
+        position: "yaml" | "inline",
+        lineNumber: number,
+        field?: Field,
+        asList: boolean = false,
+        asComment: boolean = false
+    ) => {
         //will create a line at lineNumber
         //the current line at LineNumber and following lines will be shifted one line below
         const newLine = new Line(this.plugin, this, position, "", lineNumber)
         const newNode = new LineNode(this.plugin, newLine)
         if (field) newNode.createFieldNodeContent(field, value, position);
-        newLine.renderLine()
+        newLine.renderLine(asList, asComment)
     }
 
 
@@ -203,7 +210,6 @@ export class Note {
         asList: boolean = false,
         asComment: boolean = false
     ): void {
-        console.log(payload)
         const upperPath = Field.upperIndexedPathObjectPath(indexedPath)
         const { id, index } = Field.getIdAndIndex(indexedPath.split("____").last())
         const { id: upperFieldId, index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
@@ -218,7 +224,7 @@ export class Note {
             if (fR?.groups?.fileClassAlias) {
                 const content = `${fR.groups.fileClassAlias}: ${payload.value}`
                 const newLine = new Line(this.plugin, this, "yaml", content, 1)
-                newLine.renderLine()
+                newLine.renderLine(asList, asComment)
 
             }
         } else if (id.startsWith("new-field-")) {
@@ -229,7 +235,7 @@ export class Note {
             if (fR?.groups?.fieldName) {
                 const content = `${fR.groups.fieldName}${_} ${payload.value}`
                 const newLine = new Line(this.plugin, this, position, content, lineNumber || this.lines.length)
-                newLine.renderLine()
+                newLine.renderLine(asList, asComment)
             }
         } else {
             if (upperFieldIndex) {
@@ -249,11 +255,11 @@ export class Note {
                     if (/-(\s+)?$/.test(parentNode.line.objectListLines[i].last()?.rawContent || "") && field) {
                         const node = lastItemLine.nodes[0]
                         node.createFieldNodeContent(field, payload.value, "yaml");
-                        node.line.renderLine()
+                        node.line.renderLine(asList, asComment)
                     } else {
                         //lastItemLineNumber+1 doesn't work.... it can be an object of objectList and therefore have multiple sublists
                         const lastChildLine = lastItemLine.getLastChildLine()
-                        this.createLine(payload.value, "yaml", lastChildLine ? lastChildLine.number + 1 : 1, field)
+                        this.createLine(payload.value, "yaml", lastChildLine ? lastChildLine.number + 1 : 1, field, asList, asComment)
                     }
                 }
             } else {
@@ -276,16 +282,16 @@ export class Note {
                         // if field is not in a list, shift of 0, else shift 1
                         const shift = /^(\s+)-(\s+)?(.*)/.test(node.rawContent) ? 1 : 0
                         new LineNode(this.plugin, newItemLine, node.buildIndentedListItem("", shift))
-                        newItemLine.renderLine()
+                        newItemLine.renderLine(asList, asComment)
                     }
                 } else {
                     const parentField = this.existingFields.find(eF => eF.indexedPath === upperPath)
                     if (parentField?.field.type === FieldType.Object) {
                         const parentLine = this.getNodeForIndexedPath(upperPath)?.line
                         const lastChildLine = parentLine?.getLastChildLine()
-                        this.createLine(payload.value, "yaml", lastChildLine ? lastChildLine.number + 1 : 1, field)
+                        this.createLine(payload.value, "yaml", lastChildLine ? lastChildLine.number + 1 : 1, field, asList, asComment)
                     } else {
-                        this.createLine(payload.value, position, insertLineNumber, field)
+                        this.createLine(payload.value, position, insertLineNumber, field, asList, asComment)
                     }
                 }
             }
@@ -318,7 +324,7 @@ export class Note {
             const node = this.getNodeForIndexedPath(field.id)
             if (node && node.field) {
                 node.createFieldNodeContent(node.field, field.payload.value, node.line.position, asList, asComment)
-                node.line.renderLine()
+                node.line.renderLine(asList, asComment)
             } else {
                 this.insertField(field.id, field.payload, lineNumber, asList, asComment)
             }

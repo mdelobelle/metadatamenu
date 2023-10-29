@@ -63,11 +63,9 @@ export default class InputModal extends BaseModal {
 
     onOpen() {
         super.onOpen()
-
     };
 
     onClose() {
-        console.log(this.previousModal)
         this.previousModal?.open()
     }
 

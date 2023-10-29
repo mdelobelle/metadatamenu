@@ -97,7 +97,8 @@ export class Line {
         this.note.lines.splice(this.number, 0, this)
     }
 
-    public renderLine(): void {
-        this.rawContent = this.nodes.map(node => node.rawContent).join("")
+    public renderLine(asList: boolean = false, asComment: boolean = false): void {
+        const rawContent = this.nodes.map(node => node.rawContent).join("")
+        this.rawContent = `${asComment ? ">" : ""}${asList ? "- " : ""}${rawContent}`
     }
 }

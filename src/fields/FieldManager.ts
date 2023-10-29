@@ -143,7 +143,7 @@ export abstract class FieldManager {
         asComment: boolean
     ) {
         if (!fieldName) {
-            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber);
+            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, asList, asComment);
             modal.open();
         } else {
             const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
