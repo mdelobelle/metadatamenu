@@ -57,7 +57,8 @@ export default class InputModal extends BaseModal {
             this.buildInputEl(this.contentEl.createDiv({ cls: "field-container" }));
         }
         cleanActions(this.contentEl, ".footer-actions")
-        this.buildSaveBtn(this.contentEl.createDiv({ cls: "footer-actions" }));
+        //this.buildSaveBtn(this.contentEl.createDiv({ cls: "footer-actions" }));
+        this.buildFooterBtn()
         this.containerEl.addClass("metadata-menu")
     };
 
