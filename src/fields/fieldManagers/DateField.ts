@@ -196,7 +196,6 @@ export default class DateField extends FieldManager {
         const fieldValue = dv.el('span', p[this.field.name], attrs);
         const dateBtn = fieldContainer.createEl("button")
         setIcon(dateBtn, FieldIcon[FieldType.Date])
-
         const spacer = fieldContainer.createDiv({ cls: "spacer-1" })
         if (this.field.options.dateShiftInterval || this.field.options.nextShiftIntervalField) {
             this.shiftBtn = fieldContainer.createEl("button")
@@ -211,8 +210,7 @@ export default class DateField extends FieldManager {
 
         if (file instanceof TFile && file.extension == "md") {
             dateBtn.onclick = async () => await this.buildAndOpenModal(file, this.field.id)
-        } else {
-            dateBtn.onclick = async () => { }
+            this.shiftBtn.onclick = () => { if (file) this.shiftDate(file, this.field.id) }
         }
 
         if (!attrs?.options?.alwaysOn) {

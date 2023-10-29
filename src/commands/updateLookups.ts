@@ -107,7 +107,7 @@ export async function updateLookups(
                     forceUpdateOne?.file.path === tFile.path &&
                     forceUpdateOne?.fieldName === field.name
                 )
-            const valueHasChanged = (!currentValue && newValue !== "") || !arraysAsStringAreEqual(currentValue, newValue)
+            const valueHasChanged = (!currentValue && newValue !== "") || !arraysAsStringAreEqual(currentValue || "", newValue)
             const formatHasChanged = outputType !== f.fileLookupFieldLastOutputType.get(lookupFileId)
             if (shouldCheckForUpdate) {
                 f.fileLookupFieldLastValue.set(lookupFileId, newValue);

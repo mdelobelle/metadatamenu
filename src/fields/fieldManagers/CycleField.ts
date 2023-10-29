@@ -75,15 +75,16 @@ export default class CycleField extends AbstractListBasedField {
             case 0: valueText = "0"; break;
             default: valueText = value.toString() || "";
         }
-
-        container.createDiv({ text: this.getRawOptionFromDuration(valueText) || valueText })
+        container.createDiv({ text: valueText })
+        //container.createDiv({ text: this.getRawOptionFromDuration(valueText) || valueText })
     }
 
     public async next(name: string, file: TFile, indexedPath?: string): Promise<void> {
         const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, file, indexedPath)
         const value = eF?.value || ""
-        let matchedValue = this.getRawOptionFromDuration(value) || value;
-        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: this.nextOption(matchedValue).toString() } }], file)
+        console.log("NEXTVALUE", value)
+        //let matchedValue = this.getRawOptionFromDuration(value) || value;
+        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: this.nextOption(value).toString() } }], file)
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
@@ -125,7 +126,6 @@ export default class CycleField extends AbstractListBasedField {
     ): void {
         attrs.cls = "value-container"
         fieldContainer.appendChild(dv.el('span', p[this.field.name], attrs))
-        const nextOption = this.nextOption(p[this.field.name])
         const spacer = fieldContainer.createEl("div", { cls: "spacer" })
         /* button to display input */
         const cycleBtn = fieldContainer.createEl("button")
@@ -142,10 +142,14 @@ export default class CycleField extends AbstractListBasedField {
                 spacer.show();
             }
         }
-
+        const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
         /* button on click : go to next version*/
-        cycleBtn.onclick = (e) => {
-            CycleField.replaceValues(this.plugin, p.file.path, this.field.id, nextOption);
+        cycleBtn.onclick = async (e) => {
+            if (!(file instanceof TFile)) return
+            const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, file, this.field.id)
+            const value = eF?.value || ""
+            const nextOption = this.nextOption(value)
+            CycleField.replaceValues(this.plugin, file.path, this.field.id, nextOption);
             if (!attrs?.options?.alwaysOn) {
                 cycleBtn.hide();
                 spacer.show();
