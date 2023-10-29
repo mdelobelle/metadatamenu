@@ -24,8 +24,7 @@ export default class DateModal extends BaseModal {
     private pushNextInterval: boolean = false;
     private currentShift?: string
     private nextShift?: string
-    private dateManager?: DateField
-    private dvApi?: any
+    private dateManager: DateField
     private initialValue: string
 
     constructor(
@@ -44,21 +43,19 @@ export default class DateModal extends BaseModal {
         this.initialValue = initialValue ? initialValue.toString().replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last() || "" : "";
         this.insertAsLink = FM.stringToBoolean(this.field.options.defaultInsertAsLink || "false") || false;
         this.format = this.field.options.dateFormat || this.field.options.defaultDateFormat;
-        this.dvApi = this.plugin.app.plugins.plugins["dataview"]?.api
-        if (this.dvApi) this.dateManager = new FieldManager[this.field.type](this.plugin, this.field);
+        this.dateManager = new FieldManager[this.field.type](this.plugin, this.field);
         this.value = this.initialValue;
+    };
 
+    async onOpen() {
+        super.onOpen()
         this.containerEl.addClass("metadata-menu")
         cleanActions(this.contentEl, ".field-container");
         cleanActions(this.contentEl, ".field-error");
         const fieldContainer = this.contentEl.createDiv({ cls: "field-container" });
-        this.buildFields(fieldContainer);
+        await this.buildFields(fieldContainer);
         this.errorField = this.contentEl.createEl("div", { cls: "field-error" });
         this.errorField.hide();
-    };
-
-    onOpen() {
-        super.onOpen()
     };
 
     onClose(): void {
@@ -100,9 +97,9 @@ export default class DateModal extends BaseModal {
         }
     }
 
-    private buildFields(dateFieldsContainer: HTMLDivElement) {
+    private async buildFields(dateFieldsContainer: HTMLDivElement): Promise<void> {
 
-        this.buildInputEl(dateFieldsContainer);
+        await this.buildInputEl(dateFieldsContainer);
         this.buildInsertAsLinkButton(dateFieldsContainer);
         this.buildSaveBtn(dateFieldsContainer);
     }
@@ -133,10 +130,8 @@ export default class DateModal extends BaseModal {
         }
     }
 
-    private buildInputEl(container: HTMLDivElement): void {
-
-        if (this.dateManager) [this.currentShift, this.nextIntervalField, this.nextShift] = this.dateManager.shiftDuration(this.file);
-
+    private async buildInputEl(container: HTMLDivElement): Promise<void> {
+        [this.currentShift, this.nextIntervalField, this.nextShift] = await this.dateManager.shiftDuration(this.file);
         this.inputEl = new TextComponent(container);
         this.inputEl.inputEl.focus();
 
@@ -180,18 +175,11 @@ export default class DateModal extends BaseModal {
         })
 
         shiftFromTodayBtn.onClick(async (e: MouseEvent) => {
-            const currentDvDate = this.dvApi.date(moment(this.initialValue, this.format).toISOString());
-            const newDate = currentDvDate.plus(this.dvApi.duration(this.currentShift || "1 day"));
-            const newValue = moment(newDate.toString()).format(this.format)
+            const newValue = await this.dateManager.getNewDateValue(this.currentShift, this.file, this.indexedPath)
             this.inputEl.setValue(newValue);
             this.value = newValue;
             this.pushNextInterval = true;
             this.toggleButton(shiftFromTodayBtn, this.inputEl.getValue())
         })
-
-        if (!this.dvApi) {
-            shiftFromTodayBtn.buttonEl.hide();
-            shiftFromTodayBtn.setDisabled(true);
-        }
     };
 };

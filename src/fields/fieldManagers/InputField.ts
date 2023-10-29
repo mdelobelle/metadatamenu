@@ -144,7 +144,7 @@ export default class InputField extends FieldManager {
             if (this.field.options.template) {
                 const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path);
                 if (file instanceof TFile && file.extension === 'md') {
-                    await this.buildAndOpenModal(file)
+                    await this.buildAndOpenModal(file, this.field.id)
                 }
             } else {
                 inputContainer.show();

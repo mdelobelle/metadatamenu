@@ -7,7 +7,6 @@ import Field from "../Field";
 import { FieldManager, SettingLocation } from "../FieldManager";
 import CycleField from "./CycleField";
 import { FieldManager as FM } from "src/types/fieldTypes";
-import { compareDuration } from "src/utils/dataviewUtils";
 import { FieldOptions } from "src/components/NoteFields";
 import { postValues } from "src/commands/postValues";
 import { getLink } from "src/utils/parser";
@@ -15,6 +14,9 @@ import { ExistingField } from "../existingField";
 import * as fieldsValues from 'src/db/stores/fieldsValues'
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
+//import { unitOfTime } from "moment";
+
+
 
 export default class DateField extends FieldManager {
 
@@ -35,13 +37,9 @@ export default class DateField extends FieldManager {
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         const name = this.field.name
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api;
         const dateIconName = FieldIcon[FieldType.Date];
         const dateModalAction = async () => await this.buildAndOpenModal(file, indexedPath);
-        const p = dvApi.page(file.path)
-        const shiftDateAction = () => this.shiftDate(dvApi, p, file);
-        const fieldManager: DateField = new FM[this.field.type](this.plugin, this.field);
-        const [currentShift]: [string | undefined, Field | undefined, string | undefined] = fieldManager.shiftDuration(file);
+        const shiftDateAction = async () => await this.shiftDate(file, indexedPath);
         if (DateField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
@@ -49,16 +47,16 @@ export default class DateField extends FieldManager {
                 action: dateModalAction,
                 icon: dateIconName
             })
-            if (this.field.options.dateShiftInterval || this.field.options.nextShiftIntervalField && dvApi) {
+            if (this.field.options.dateShiftInterval || this.field.options.nextShiftIntervalField) {
                 location.options.push({
                     id: `update_${name}`,
-                    actionLabel: `<span>Shift <b>${name}</b> ${currentShift} ahead</span>`,
+                    actionLabel: `<span>Shift <b>${name}</b> ahead</span>`,
                     action: shiftDateAction,
                     icon: "skip-forward"
                 })
             }
         } else if (DateField.isFieldOptions(location)) {
-            location.addOption("skip-forward", shiftDateAction, `Shift ${name} ahead by ${currentShift}`);
+            location.addOption("skip-forward", shiftDateAction, `Shift ${name} ahead`);
             location.addOption(dateIconName, dateModalAction, `Set ${name}'s date`);
         };
     }
@@ -78,7 +76,7 @@ export default class DateField extends FieldManager {
         fieldModal.open();
     }
 
-    private createDateContainer(container: HTMLDivElement): void {
+    public createSettingContainer(container: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
         if (!this.field.options.dateFormat) this.field.options.dateFormat = this.defaultDateFormat
         if (!this.field.options.defaultInsertAsLink) this.field.options.defaultInsertAsLink = "false"
         const dateFormatContainer = container.createDiv({ cls: "field-container" });
@@ -150,27 +148,33 @@ export default class DateField extends FieldManager {
                 this.field.options.nextShiftIntervalField = fileClassRootFields.find(_f => _f.id === value)?.name.toString();
             }
         })
-
     }
 
-    public createSettingContainer(container: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
-        this.createDateContainer(container);
+    public async getMomentDate(file: TFile, indexedPath?: string): Promise<moment.Moment> {
+        const { dateFormat } = this.field.options
+        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, file, indexedPath)
+        const _date = eF?.value
+        const _dateLink = getLink(_date, file)
+        const _dateText = _dateLink ? _dateLink.path.split("/").last()?.replace(/(.*).md/, "$1") : _date
+        return moment(_dateText, dateFormat)
     }
 
-    public async shiftDate(dv: any, p: any, file: TFile): Promise<void> {
+    public async getNewDateValue(currentShift: string | undefined, file: TFile, indexedPath?: string) {
+        const { dateFormat } = this.field.options
+        const momentDate = await this.getMomentDate(file, indexedPath)
+        const [_shiftNumber, shiftPeriod] = currentShift?.split(" ") || ["1", "days"]
+        const shiftNumber = parseInt(_shiftNumber) || 1
+        const _newDate = momentDate.isValid() ? momentDate.add(shiftNumber, shiftPeriod as moment.unitOfTime.DurationConstructor).format(dateFormat) : undefined
+        return _newDate || moment().format(dateFormat)
+    }
+
+    public async shiftDate(file: TFile, indexedPath?: string): Promise<void> {
+        if (!indexedPath) return
         const { dateFormat, defaultInsertAsLink, linkPath } = this.field.options
         const fieldManager: DateField = new FM[this.field.type](this.plugin, this.field);
-        const [currentShift, nextIntervalField, nextShift]: [string | undefined, Field | undefined, string | undefined] = fieldManager.shiftDuration(file);
-        const dvDate = p[this.field.name]
-        //dataview is converting dates to links or datetimes, let's normalize
-        const currentDateValue = dv.value.isLink(dvDate) ?
-            dvDate.path.split("/").last() :
-            dv.value.isDate(dvDate) ?
-                moment(dvDate.toJSDate()).format(dateFormat) :
-                dvDate
-        const currentDvDate = dv.date(moment(currentDateValue, dateFormat).toISOString());
-        const newDate = currentDvDate.plus(dv.duration(currentShift || "1 day"));
-        const newValue = moment(newDate.toString()).format(dateFormat)
+        const [currentShift, nextIntervalField, nextShift]: [string | undefined, Field | undefined, string | undefined] = await fieldManager.shiftDuration(file);
+        const newValue = await this.getNewDateValue(currentShift, file, indexedPath)
+        //Since nextIntervalField path are limited to root, we can pass the field id as an argument for post values
         if (nextIntervalField && nextShift) {
             await postValues(this.plugin, [{ id: nextIntervalField.id, payload: { value: nextShift } }], file.path)
         }
@@ -178,8 +182,7 @@ export default class DateField extends FieldManager {
         const formattedValue = DateField.stringToBoolean(defaultInsertAsLink) ?
             `[[${linkPath || ""}${newValue}${linkFile ? "|" + linkFile.basename : ""}]]` :
             newValue
-        //Since nextIntervalField path are limited to root, we can pass the field id as an argument for post values
-        await postValues(this.plugin, [{ id: this.field.id, payload: { value: formattedValue } }], file)
+        await postValues(this.plugin, [{ id: indexedPath, payload: { value: formattedValue } }], file)
 
     }
 
@@ -207,7 +210,7 @@ export default class DateField extends FieldManager {
         const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
 
         if (file instanceof TFile && file.extension == "md") {
-            dateBtn.onclick = async () => await this.buildAndOpenModal(file)
+            dateBtn.onclick = async () => await this.buildAndOpenModal(file, this.field.id)
         } else {
             dateBtn.onclick = async () => { }
         }
@@ -290,39 +293,42 @@ export default class DateField extends FieldManager {
                     this.field.options.dateFormat
                 ).isValid()
             }
+
         }
     }
 
-    public shiftDuration(file: TFile): [string | undefined, Field | undefined, string | undefined] {
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        if (dvApi) {
-            const interval = this.field.options.dateShiftInterval
-            const cycleIntervalField = this.field.options.nextShiftIntervalField
-            const cycle = this.plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === cycleIntervalField)
-            if (cycle) {
-                //cycle field exists
-                const cycleManager: CycleField = new FM[cycle.type](this.plugin, cycle)
-                const options = cycleManager.getOptionsList();
-                const currentValue = dvApi.page(file.path)[cycle.name]
-                if (currentValue) {
-                    //current value is not null
-                    const currentValueString = options
-                        .filter(o => dvApi.duration(o) !== null)
-                        .find(o => compareDuration(dvApi.duration(o), currentValue))
-                    if (currentValueString) {
-                        //current value has a match in cycle options
-                        const nextValue = cycleManager.nextOption(currentValueString)
-                        return [currentValueString, cycle, nextValue]
-                    }
-                }
-                //current value is not found or : fall back on first value
-                return [options[0], cycle, options[1] || options[0]]
-            } else if (interval && dvApi.duration(interval)) {
-                //no cycle field: fall back on interval if exists
-                return [interval, undefined, undefined]
+    public async shiftDuration(file: TFile): Promise<[string | undefined, Field | undefined, string | undefined]> {
+
+        const interval = this.field.options.dateShiftInterval
+        const cycleIntervalField = this.field.options.nextShiftIntervalField
+        const cycle = this.plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === cycleIntervalField)
+        let currentValue: string | undefined
+        let nextValue: string | undefined
+        if (cycle) {
+            //cycle field exists
+            const cycleManager: CycleField = new FM[cycle.type](this.plugin, cycle)
+            const options = cycleManager.getOptionsList();
+            currentValue = (await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, file, cycle.id))?.value
+            if (currentValue) {
+                //current value has a match in cycle options
+                nextValue = cycleManager.nextOption(currentValue)
+
+            } else {
+                currentValue = options[0]
+                nextValue = options[1]
             }
+            //current value is not found or : fall back on first value
+        } else if (interval) {
+            //no cycle field: fall back on interval if exists
+            currentValue = interval
         }
-        // dv not available => return undefined cycle values
-        return [undefined, undefined, undefined]
+        const [_nextShiftNumber, nextShiftPeriod] = currentValue?.split(" ") || ["1", "days"]
+        const nextShiftNumber = parseInt(_nextShiftNumber) || 1
+        if (moment.isDuration(moment.duration(nextShiftNumber, nextShiftPeriod as moment.unitOfTime.DurationConstructor))) {
+            return [currentValue, cycle, nextValue]
+        } else {
+            return [currentValue, cycle, interval]
+        }
     }
 }
+
