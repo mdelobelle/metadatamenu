@@ -19,7 +19,7 @@ export default class JSONField extends RawObjectField {
     public loadValue(value: any): any {
         try {
             //handle inline fields where JSON are not parsed by dataview
-            return JSON.parse(value)
+            return JSON.parse(value || "{}")
         } catch (e) {
             return value;
         }

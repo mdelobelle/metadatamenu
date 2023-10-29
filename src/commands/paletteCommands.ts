@@ -17,6 +17,7 @@ import { updateLookups } from "./updateLookups";
 import { updateFormulas } from "./updateFormulas";
 import { Note } from "src/note/note";
 import * as updates from "src/db/stores/updates"
+import { ExistingField } from "src/fields/ExistingField";
 
 function addFileClassAttributeOptions(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
@@ -148,6 +149,34 @@ function insertMissingFieldsCommand(plugin: MetadataMenu) {
             if (checking) {
                 return inFile
             }
+            if (inFile) {
+                (async function () {
+                    console.log("INSERTING MISSING FIELDS")
+                    const file = view.file;
+                    const existingFields = await ExistingField.getExistingFieldsFromIndexForFilePath(plugin, file)
+                    const existingFieldsNames = existingFields.map(eF => eF.field.name)
+                    if (![...plugin.fieldIndex.filesFields.get(file.path) || []]
+                        .map(field => field.name)
+                        .every(fieldName => existingFieldsNames.includes(fieldName))) {
+                        new chooseSectionModal(
+                            plugin,
+                            file,
+                            (
+                                lineNumber: number,
+                                asList: boolean,
+                                asComment: boolean
+                            ) => insertMissingFields(
+                                plugin,
+                                file.path,
+                                lineNumber,
+                                asList,
+                                asComment
+                            )
+                        ).open();
+                    }
+                })()
+            }
+            /*
             const dvApi = plugin.app.plugins.plugins.dataview?.api;
             if (dvApi && inFile) {
                 const file = view.file;
@@ -170,6 +199,7 @@ function insertMissingFieldsCommand(plugin: MetadataMenu) {
                     ).open();
                 }
             }
+            */
         }
     })
 }

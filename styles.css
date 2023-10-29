@@ -1232,13 +1232,14 @@ span.flatpickr-weekday {
 .metadata-menu.modal-container .footer-actions {
   display: flex;
   padding: var(--size-4-3);
+  align-items: center;
 }
 .metadata-menu.modal-container .footer-actions .spacer {
   width: 100%;
 }
 .metadata-menu.modal-container .footer-actions .info {
   white-space: nowrap;
-  margin: 30px 12px 12px 0;
+  margin-right: 1em;
   font-size: x-small;
   font-style: italic;
   color: var(--color-accent);
@@ -1670,13 +1671,14 @@ span.flatpickr-weekday {
 .metadata-menu.modal-container .footer-actions {
   display: flex;
   padding: var(--size-4-3);
+  align-items: center;
 }
 .metadata-menu.modal-container .footer-actions .spacer {
   width: 100%;
 }
 .metadata-menu.modal-container .footer-actions .info {
   white-space: nowrap;
-  margin: 30px 12px 12px 0;
+  margin-right: 1em;
   font-size: x-small;
   font-style: italic;
   color: var(--color-accent);

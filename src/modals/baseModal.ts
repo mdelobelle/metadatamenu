@@ -11,7 +11,9 @@ export default class BaseModal extends Modal {
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter") {
                 e.preventDefault()
-                await this.save();
+                if (e.altKey) {
+                    await this.save()
+                }
             }
         }
     }
@@ -28,5 +30,24 @@ export default class BaseModal extends Modal {
         saveBtn.onClick(async (e: Event) => {
             await this.save(e);
         })
+    }
+
+    public buildFooterBtn() {
+        const buttonContainer = this.containerEl.createDiv({ cls: "footer-actions" })
+        buttonContainer.createDiv({ cls: "spacer" })
+        const infoContainer = buttonContainer.createDiv({ cls: "info" })
+        infoContainer.setText("Alt+Enter to save")
+        //confirm button
+        const confirmButton = new ButtonComponent(buttonContainer)
+        confirmButton.setIcon("checkmark")
+        confirmButton.onClick(async () => {
+            await this.save();
+            this.close()
+        })
+        //cancel button
+        const cancelButton = new ButtonComponent(buttonContainer)
+        cancelButton.setIcon("cross")
+        cancelButton.onClick(() => { this.close(); })
+        this.modalEl.appendChild(buttonContainer)
     }
 }

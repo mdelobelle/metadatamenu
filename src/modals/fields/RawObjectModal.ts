@@ -32,16 +32,12 @@ export default class RawObjectModal extends BaseModal {
     ) {
         super(plugin);
         this.value = this.eF?.value || ""
-        this.containerEl.onkeydown = async (e) => {
-            if (e.key == "Enter") {
-                e.preventDefault()
-            }
-        }
 
         this.buildPositionContainer();
         this.buildInputEl(this.contentEl.createDiv({ cls: "field-container" }));
         cleanActions(this.contentEl, ".footer-actions")
-        this.buildSaveBtn(this.contentEl.createDiv({ cls: "footer-actions" }));
+        //this.buildSaveBtn(this.contentEl.createDiv({ cls: "footer-actions" }));
+        this.buildFooterBtn()
         this.containerEl.addClass("metadata-menu")
     };
 

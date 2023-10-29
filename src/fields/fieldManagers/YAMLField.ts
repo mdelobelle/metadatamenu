@@ -14,6 +14,7 @@ export default class YAMLField extends RawObjectField {
     }
 
     public dumpValue(value: any): string {
+        //TODO stringify on one line
         return `${stringify(value, { lineWidth: 50 }) || ""}`
     }
 
