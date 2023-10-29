@@ -74,6 +74,7 @@ export class ExistingField {
             putPayload.push({
                 id: id,
                 filePath: f.path,
+                fieldName: eF.field.name,
                 fieldType: eF.field.type,
                 fieldId: eF.field.id,
                 fileClassName: eF.field.fileClassName,

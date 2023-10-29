@@ -21,6 +21,7 @@ import { FieldsPayload, postValues } from "src/commands/postValues";
 export interface IndexedExistingField {
     id: string,
     filePath: string,
+    fieldName: string,
     fieldType: string,
     fieldId: string,
     fileClassName: string | undefined
@@ -167,7 +168,6 @@ export default class FieldIndex extends FieldIndexBuilder {
             })
         )
 
-
         this.registerEvent(
             this.plugin.app.vault.on("modify", async (file) => {
                 if (file instanceof TFile) {
@@ -203,7 +203,6 @@ export default class FieldIndex extends FieldIndexBuilder {
                 await this.fullIndex(true)
             })
         )
-
 
         this.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {

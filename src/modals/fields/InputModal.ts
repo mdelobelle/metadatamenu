@@ -76,8 +76,8 @@ export default class InputModal extends BaseModal {
             renderedString = renderedString.replace(fieldRegex, this.templateValues[k])
         })
 
-        this.renderedValue.setValue(renderedString)
-        this.newValue = renderedString
+        this.renderedValue.setValue(renderedString.replaceAll("\n", ", "))
+        this.newValue = renderedString.replaceAll("\n", ", ")
     }
 
     private buildTemplateInputItem(fieldContainer: HTMLDivElement, name: string) {
