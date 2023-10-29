@@ -49,12 +49,11 @@ export default class SelectField extends AbstractListBasedField {
         eF?: ExistingField,
         indexedPath?: string,
         lineNumber?: number,
-        after?: boolean,
         asList?: boolean,
         asComment?: boolean,
         previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const fieldModal = new SelectModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, after, asList, asComment, previousModal);
+        const fieldModal = new SelectModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asComment, previousModal);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }
