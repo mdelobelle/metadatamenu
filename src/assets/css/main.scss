@@ -5,6 +5,10 @@
         margin-left: 0.2em;
         cursor:context-menu;
         
+        &.field-status-changed{
+            color: var(--text-warning);
+        }
+
         svg{
             vertical-align: calc(var(--font-text-size) * -0.15);
         }

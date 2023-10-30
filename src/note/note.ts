@@ -210,9 +210,12 @@ export class Note {
         asList: boolean = false,
         asBlockquote: boolean = false
     ): void {
+        console.log("INSERT", indexedPath, payload)
         const upperPath = Field.upperIndexedPathObjectPath(indexedPath)
+
         const { id, index } = Field.getIdAndIndex(indexedPath.split("____").last())
         const { id: upperFieldId, index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
+        console.log("UPPERPATH", upperPath, upperFieldIndex)
         if (lineNumber === -1 && !this.frontmatter) {
             new Line(this.plugin, this, "yaml", "---", 0)
             new Line(this.plugin, this, "yaml", "---", 0)
@@ -264,6 +267,7 @@ export class Note {
                 }
             } else {
                 const field = this.getField(id)
+                console.log("FIELD", field)
                 if (!field) return
                 const frontmatterEnd = this.frontmatterEnd()
                 let insertLineNumber =
@@ -271,18 +275,22 @@ export class Note {
                     frontmatterEnd ||
                     this.lines.last()?.number ||
                     0
-
                 const position = frontmatterEnd && (insertLineNumber <= frontmatterEnd) ? "yaml" : "inline"
                 if (field.type === FieldType.ObjectList) {
                     //specific case where the field is object but the upperIndex is unknown
                     //it mean that we have to insert a new ObjectListItem
                     const node = this.getNodeForIndexedPath(upperPath)
+                    console.log("NODE", node)
                     if (node) {
                         const newItemLine = new Line(this.plugin, node.line.note, position, "", node.line.number! + 1)
                         // if field is not in a list, shift of 0, else shift 1
                         const shift = /^(\s+)-(\s+)?(.*)/.test(node.rawContent) ? 1 : 0
                         new LineNode(this.plugin, newItemLine, node.buildIndentedListItem("", shift))
                         newItemLine.renderLine(asList, asBlockquote)
+                    } else {
+                        //creer le node pour initaliser la liste
+                        const parentField = this.existingFields.find(eF => eF.indexedPath === upperPath)
+                        console.log(parentField)
                     }
                 } else {
                     const parentField = this.existingFields.find(eF => eF.indexedPath === upperPath)

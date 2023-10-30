@@ -7,6 +7,7 @@ import { Note } from "src/note/note";
 import { FieldManager } from "src/types/fieldTypes";
 import ObjectModal from "./ObjectModal";
 import * as fieldsValues from 'src/db/stores/fieldsValues'
+import { postValues } from "src/commands/postValues";
 //FIXME can't add a new item for an empty list
 export default class ObjectListModal extends SuggestModal<ObjectListItem> {
     private addButton: ButtonComponent;
@@ -40,6 +41,10 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
             const fieldManager = new FieldManager[this.field.type](this.plugin, this.field) as ObjectListField
             if (this.eF) {
                 await fieldManager.addObjectListItem(this.file, this.eF, this.indexedPath);
+                this.close()
+            } else if (this.indexedPath) {
+                //first insert the empty object list
+                await postValues(this.plugin, [{ id: this.indexedPath, payload: { value: "" } }], this.file)
                 this.close()
             }
         })

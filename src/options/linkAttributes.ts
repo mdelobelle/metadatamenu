@@ -2,6 +2,8 @@ import { App, getLinkpath, LinkCache, MarkdownPostProcessorContext, MarkdownView
 import MetadataMenu from "main";
 import NoteFieldsComponent from "../components/NoteFields";
 import { FileClassManager } from "src/components/fileClassManager";
+import { Status } from "src/types/lookupTypes";
+import { FieldType } from "src/types/fieldTypes";
 
 export function clearExtraAttributes(link: HTMLElement) {
     Object.values(link.attributes).forEach(attr => {
@@ -16,6 +18,20 @@ export function clearExtraAttributes(link: HTMLElement) {
 }
 
 function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, destPath: string, viewTypeName: string | null, fileClassName?: string) {
+    const setStatusChanged = (el: Element) => {
+        const path = destPath + ".md"
+        el.removeClass("field-status-changed")
+        const index = plugin.fieldIndex
+        let changed: boolean = false
+        index.filesLookupAndFormulaFieldsExists.get(path)?.forEach(field => {
+            if (field.type === FieldType.Lookup) {
+                changed = changed || index.fileLookupFieldsStatus.get(path + "__" + field.name) === Status.changed
+            } else if (field.type === FieldType.Formula) {
+                changed = changed || index.fileFormulaFieldsStatus.get(path + "__" + field.name) === Status.changed
+            }
+        })
+        if (changed) el.addClass("field-status-changed")
+    }
     if (link.classList.contains("metadata-menu-button-hidden")) return; //so that snippets can prevent the button from being added
     switch (viewTypeName) {
         case "a.internal-link": if (!plugin.settings.enableLinks) return; break;
@@ -46,6 +62,7 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
         const el = link.nextElementSibling
         if (!el?.hasClass("fileclass-icon")) {
             const metadataMenuBtn = plugin.app.workspace.containerEl.createEl('a', { cls: "metadata-menu fileclass-icon" })
+            setStatusChanged(metadataMenuBtn)
             if (metadataMenuBtn) {
                 setIcon(metadataMenuBtn, icon)
                 link.parentElement?.insertBefore(metadataMenuBtn, link.nextSibling)
@@ -54,6 +71,8 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
                     event.stopPropagation();
                 }
             }
+        } else {
+            setStatusChanged(el)
         }
 
     }
@@ -65,6 +84,7 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
             const el = link.nextElementSibling
             if (!el?.hasClass("fileclass-icon")) {
                 const metadataMenuBtn = plugin.app.workspace.containerEl.createEl('a', { cls: "metadata-menu fileclass-icon" })
+                setStatusChanged(metadataMenuBtn)
                 if (metadataMenuBtn) {
                     setIcon(metadataMenuBtn, icon || plugin.settings.buttonIcon)
                     link.parentElement?.insertBefore(metadataMenuBtn, link.nextSibling)
@@ -77,6 +97,8 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
                         event.stopPropagation();
                     }
                 }
+            } else {
+                setStatusChanged(el)
             }
         }
     }

@@ -45,7 +45,6 @@ export class LineNode {
         const frontmatter: any = this.line.note.frontmatter || {}
         const indentRegex = new RegExp(/(?<blockquote>\>*)(?<indentation>\s*)(?<list>-\s)?(?<value>.*)/)
         const fR = this.rawContent.match(indentRegex);
-        if (rawContent?.includes("Difficulty")) console.log(fR?.groups)
         if (fR?.groups) {
             if (fR.groups.indentation) {
 
@@ -178,14 +177,12 @@ export class LineNode {
                 }
                 break;
         }
-        if (this.field?.name === "Difficulty") console.log(this)
         this.line.nodes.push(this)
     }
 
     private buildDecoratedFieldName = (): string => {
         if (!this.field) return ""
         let level = this.field.getIndentationLevel(this)
-        if (this.field.name === "Difficulty") console.log(this.line)
         switch (this.line.position) {
             case "yaml":
                 const _ = this.field.isFirstItemOfObjectList(this) ? "- " : ""
