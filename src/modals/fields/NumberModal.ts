@@ -99,11 +99,8 @@ export default class NumberModal extends BaseModal {
 
         fieldContainer.createDiv({ cls: "spacer" })
 
-        const validateBtn = new ButtonComponent(fieldContainer);
-        validateBtn.setIcon("checkmark");
+        this.buildSimpleSaveBtn(fieldContainer)
 
-        const cancelBtn = new ButtonComponent(fieldContainer);
-        cancelBtn.setIcon("cross");
         cleanActions(this.contentEl, ".field-error")
         this.errorField = this.contentEl.createEl("div", { cls: "field-error" })
         this.errorField.hide()
@@ -128,15 +125,6 @@ export default class NumberModal extends BaseModal {
             e.preventDefault();
             this.decrement(numberInput);
             this.toggleButtonsState(minusBtn, plusBtn, numberInput);
-        })
-
-        cancelBtn.onClick((e) => {
-            e.preventDefault();
-            this.close()
-        })
-
-        validateBtn.onClick(async () => {
-            this.save();
         })
     };
 

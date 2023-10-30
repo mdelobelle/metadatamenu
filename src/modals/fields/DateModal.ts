@@ -101,7 +101,7 @@ export default class DateModal extends BaseModal {
 
         await this.buildInputEl(dateFieldsContainer);
         this.buildInsertAsLinkButton(dateFieldsContainer);
-        this.buildSaveBtn(dateFieldsContainer);
+        this.buildSimpleSaveBtn(dateFieldsContainer);
     }
 
     private buildInsertAsLinkButton(container: HTMLDivElement) {

@@ -53,7 +53,15 @@
         display: flex;
         align-items: center;
         margin: 1em 0;
-
+        
+        .info {
+            white-space: nowrap;
+            margin-right: 1em;
+            font-size: x-small;
+            font-style: italic;
+            color: var(--color-accent);
+        }
+        
         .label {
             white-space: nowrap;
 

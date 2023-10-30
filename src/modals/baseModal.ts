@@ -17,14 +17,24 @@ export default class BaseModal extends Modal {
             }
         }
     }
+    //TODO review navigation
+    /*
+    Alt+Enter or check button to save and go back or close
+    Alt+Shift+Enter to save and force close
+    remove cancel button
+    Esc to go back or close
+    Alt+Esc to force close
 
+    */
     public async save(e?: Event): Promise<void> {
         //to be implemented in subclasses
         throw Error("Subclass should implement a save method")
     }
 
-    public buildSaveBtn(fieldContainer: HTMLDivElement) {
+    public buildSimpleSaveBtn(fieldContainer: HTMLDivElement) {
         fieldContainer.createDiv({ cls: "spacer" })
+        const infoContainer = fieldContainer.createDiv({ cls: "info" })
+        infoContainer.setText("Alt+Enter to save")
         const saveBtn = new ButtonComponent(fieldContainer);
         saveBtn.setIcon("checkmark");
         saveBtn.onClick(async (e: Event) => {

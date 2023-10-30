@@ -183,7 +183,6 @@ export default class FieldIndex extends FieldIndexBuilder {
         this.registerEvent(
             this.plugin.app.metadataCache.on('resolved', async () => {
                 if (this.plugin.app.metadataCache.inProgressTaskCount === 0) {
-                    console.log(this.changedFiles)
                     if (this.changedFiles.every(file => this.classFilesPath && file.path.startsWith(this.classFilesPath))) {
                         await this.indexFields()
                         await updateCanvasAfterFileClass(this.plugin, this.changedFiles)
@@ -208,7 +207,6 @@ export default class FieldIndex extends FieldIndexBuilder {
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
                 if (op === "update" && this.dvReady
                 ) {
-                    console.log("FROM DV")
                     const filePayloadToProcess = this.dVRelatedFieldsToUpdate.get(file.path)
                     if (![...this.dVRelatedFieldsToUpdate.keys()].includes(file.path)) {
                         await this.resolveAndUpdateDVQueriesBasedFields(false)
