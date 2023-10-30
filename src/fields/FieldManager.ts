@@ -33,7 +33,7 @@ export abstract class FieldManager {
     ): void
     abstract getOptionsStr(): string;
     abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField, indexedPath?: string,
-        lineNumber?: number, asList?: boolean, asComment?: boolean, previousModal?: ObjectModal | ObjectListModal): void;
+        lineNumber?: number, asList?: boolean, asBlockquote?: boolean, previousModal?: ObjectModal | ObjectListModal): void;
     public showModalOption: boolean = true;
 
     constructor(public plugin: MetadataMenu, public field: Field, public type: FieldType) {
@@ -123,14 +123,14 @@ export abstract class FieldManager {
         indexedPath?: string,
         lineNumber?: number,
         asList?: boolean,
-        asComment?: boolean
+        asBlockquote?: boolean
     ): void {
         if (field) {
             const fieldManager = new FM[field.type](plugin, field);
-            fieldManager.createAndOpenFieldModal(file, fieldName, eF, indexedPath, lineNumber, asList, asComment);
+            fieldManager.createAndOpenFieldModal(file, fieldName, eF, indexedPath, lineNumber, asList, asBlockquote);
         } else {
             const fieldManager = FieldManager.createDefault(plugin, fieldName!);
-            fieldManager.createAndOpenFieldModal(file, fieldName!, eF, indexedPath, lineNumber, asList, asComment);
+            fieldManager.createAndOpenFieldModal(file, fieldName!, eF, indexedPath, lineNumber, asList, asBlockquote);
         }
     }
 
@@ -140,14 +140,14 @@ export abstract class FieldManager {
         fieldName: string | undefined,
         lineNumber: number,
         asList: boolean,
-        asComment: boolean
+        asBlockquote: boolean
     ) {
         if (!fieldName) {
-            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, asList, asComment);
+            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, asList, asBlockquote);
             modal.open();
         } else {
             const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
-            if (field) this.createAndOpenModal(plugin, file, fieldName, field, undefined, undefined, lineNumber, asList, asComment);
+            if (field) this.createAndOpenModal(plugin, file, fieldName, field, undefined, undefined, lineNumber, asList, asBlockquote);
         }
     }
 

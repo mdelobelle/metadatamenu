@@ -204,14 +204,14 @@ export default class OptionsList {
 			(
 				lineNumber: number,
 				asList: boolean,
-				asComment: boolean
+				asBlockquote: boolean
 			) => F.openFieldModal(
 				this.plugin,
 				this.file,
 				undefined,
 				lineNumber,
 				asList,
-				asComment
+				asBlockquote
 			)
 		);
 		if (isMenu(this.location)) {
@@ -240,13 +240,13 @@ export default class OptionsList {
 			(
 				lineNumber: number,
 				asList: boolean,
-				asComment: boolean
+				asBlockquote: boolean
 			) => insertMissingFields(
 				this.plugin,
 				this.file.path,
 				lineNumber,
 				asList,
-				asComment
+				asBlockquote
 			)
 		);
 		if (isMenu(this.location)) {

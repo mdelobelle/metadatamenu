@@ -21,7 +21,7 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
         private indexedPath?: string,
         private lineNumber: number = -1,
         private asList: boolean = false,
-        private asComment: boolean = false,
+        private asBlockquote: boolean = false,
         private previousModal?: ObjectModal | ObjectListModal
     ) {
         super(plugin.app);
@@ -83,7 +83,7 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
             alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(item.path))
         }
         const value = FileField.buildMarkDownLink(this.plugin, this.file, item.basename, undefined, alias)
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
         this.previousModal?.open()
     }
 }

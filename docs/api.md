@@ -14,7 +14,7 @@ This is an asynchronous function, so you should await it.
 
 ### postValues
 creates or updates fields with values in the target note
-`postValues(fileOrFilePath: TFile | string, payload: FieldsPayload, lineNumber?: number, after?: boolean, asList?: boolean, asComment?:boolean)`
+`postValues(fileOrFilePath: TFile | string, payload: FieldsPayload, lineNumber?: number, after?: boolean, asList?: boolean, asBlockquote?:boolean)`
 
 #### parameters:
 
@@ -23,7 +23,7 @@ creates or updates fields with values in the target note
 - `lineNumber?: number` : optional line number where to create fields if it doesn't exist. If the field already exists, this attribute won't do anything. If line number is undefined and the field doesn't exist yet, it will be included in frontmatter
 - `after?: boolean` : optional parameter to create new fields after or before the line number. Defaults to `true`
 - `asList?: boolean`: optional parameter to create new fields as list (insert a `- ` before the field's name) . Defaults to `false`
-- `asComment?: boolean`: optional parameter to create new fields as comment (insert a `>` before the field's name) . Defaults to `false`
+- `asBlockquote?: boolean`: optional parameter to create new fields as comment (insert a `>` before the field's name) . Defaults to `false`
 
 #### `FieldsPayload` and `FieldPayload`
 
@@ -87,7 +87,7 @@ Takes a TFile or e filePath and returns all the fields in the document, both fro
 ```
 
 ### insertMissingFields
-`insertMissingFields: (fileOrFilePath: string | TFile, lineNumber: number, boolean, asList: boolean, asComment: boolean, fileClassName?: string)`
+`insertMissingFields: (fileOrFilePath: string | TFile, lineNumber: number, boolean, asList: boolean, asBlockquote: boolean, fileClassName?: string)`
 
 Takes:
 - a TFile or its path, 

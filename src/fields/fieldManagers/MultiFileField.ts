@@ -23,10 +23,10 @@ export default class MultiFileField extends AbstractFileBasedField<MultiFileModa
         indexedPath?: string,
         lineNumber: number = -1,
         asList: boolean = false,
-        asComment: boolean = false,
+        asBlockquote: boolean = false,
         previousModal?: ObjectModal | ObjectListModal
     ): MultiFileModal {
-        return new MultiFileModal(plugin, file, field, eF, indexedPath, lineNumber, asList, asComment, previousModal);
+        return new MultiFileModal(plugin, file, field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal);
     }
 
 

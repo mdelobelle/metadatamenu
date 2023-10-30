@@ -164,13 +164,13 @@ function insertMissingFieldsCommand(plugin: MetadataMenu) {
                             (
                                 lineNumber: number,
                                 asList: boolean,
-                                asComment: boolean
+                                asBlockquote: boolean
                             ) => insertMissingFields(
                                 plugin,
                                 file.path,
                                 lineNumber,
                                 asList,
-                                asComment
+                                asBlockquote
                             )
                         ).open();
                     }
@@ -188,13 +188,13 @@ function insertMissingFieldsCommand(plugin: MetadataMenu) {
                         (
                             lineNumber: number,
                             asList: boolean,
-                            asComment: boolean
+                            asBlockquote: boolean
                         ) => insertMissingFields(
                             plugin,
                             file.path,
                             lineNumber,
                             asList,
-                            asComment
+                            asBlockquote
                         )
                     ).open();
                 }
@@ -259,14 +259,14 @@ function addInsertFieldCommand(plugin: MetadataMenu): void {
                             (
                                 lineNumber: number,
                                 asList: boolean,
-                                asComment: boolean
+                                asBlockquote: boolean
                             ) => F.openFieldModal(
                                 plugin,
                                 view.file,
                                 fieldName,
                                 lineNumber,
                                 asList,
-                                asComment
+                                asBlockquote
                             )
                         ).open();
                     }

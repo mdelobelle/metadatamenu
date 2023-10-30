@@ -192,14 +192,14 @@ export class Note {
         lineNumber: number,
         field?: Field,
         asList: boolean = false,
-        asComment: boolean = false
+        asBlockquote: boolean = false
     ) => {
         //will create a line at lineNumber
         //the current line at LineNumber and following lines will be shifted one line below
         const newLine = new Line(this.plugin, this, position, "", lineNumber)
         const newNode = new LineNode(this.plugin, newLine)
         if (field) newNode.createFieldNodeContent(field, value, position);
-        newLine.renderLine(asList, asComment)
+        newLine.renderLine(asList, asBlockquote)
     }
 
 
@@ -208,7 +208,7 @@ export class Note {
         payload: FieldPayload,
         lineNumber?: number,
         asList: boolean = false,
-        asComment: boolean = false
+        asBlockquote: boolean = false
     ): void {
         const upperPath = Field.upperIndexedPathObjectPath(indexedPath)
         const { id, index } = Field.getIdAndIndex(indexedPath.split("____").last())
@@ -224,7 +224,7 @@ export class Note {
             if (fR?.groups?.fileClassAlias) {
                 const content = `${fR.groups.fileClassAlias}: ${payload.value}`
                 const newLine = new Line(this.plugin, this, "yaml", content, 1)
-                newLine.renderLine(asList, asComment)
+                newLine.renderLine(asList, asBlockquote)
 
             }
         } else if (id.startsWith("new-field-")) {
@@ -235,7 +235,7 @@ export class Note {
             if (fR?.groups?.fieldName) {
                 const content = `${fR.groups.fieldName}${_} ${payload.value}`
                 const newLine = new Line(this.plugin, this, position, content, lineNumber || this.lines.length)
-                newLine.renderLine(asList, asComment)
+                newLine.renderLine(asList, asBlockquote)
             }
         } else {
             if (upperFieldIndex) {
@@ -255,11 +255,11 @@ export class Note {
                     if (/-(\s+)?$/.test(parentNode.line.objectListLines[i].last()?.rawContent || "") && field) {
                         const node = lastItemLine.nodes[0]
                         node.createFieldNodeContent(field, payload.value, "yaml");
-                        node.line.renderLine(asList, asComment)
+                        node.line.renderLine(asList, asBlockquote)
                     } else {
                         //lastItemLineNumber+1 doesn't work.... it can be an object of objectList and therefore have multiple sublists
                         const lastChildLine = lastItemLine.getLastChildLine()
-                        this.createLine(payload.value, "yaml", lastChildLine ? lastChildLine.number + 1 : 1, field, asList, asComment)
+                        this.createLine(payload.value, "yaml", lastChildLine ? lastChildLine.number + 1 : 1, field, asList, asBlockquote)
                     }
                 }
             } else {
@@ -282,16 +282,16 @@ export class Note {
                         // if field is not in a list, shift of 0, else shift 1
                         const shift = /^(\s+)-(\s+)?(.*)/.test(node.rawContent) ? 1 : 0
                         new LineNode(this.plugin, newItemLine, node.buildIndentedListItem("", shift))
-                        newItemLine.renderLine(asList, asComment)
+                        newItemLine.renderLine(asList, asBlockquote)
                     }
                 } else {
                     const parentField = this.existingFields.find(eF => eF.indexedPath === upperPath)
                     if (parentField?.field.type === FieldType.Object) {
                         const parentLine = this.getNodeForIndexedPath(upperPath)?.line
                         const lastChildLine = parentLine?.getLastChildLine()
-                        this.createLine(payload.value, "yaml", lastChildLine ? lastChildLine.number + 1 : 1, field, asList, asComment)
+                        this.createLine(payload.value, "yaml", lastChildLine ? lastChildLine.number + 1 : 1, field, asList, asBlockquote)
                     } else {
-                        this.createLine(payload.value, position, insertLineNumber, field, asList, asComment)
+                        this.createLine(payload.value, position, insertLineNumber, field, asList, asBlockquote)
                     }
                 }
             }
@@ -318,15 +318,15 @@ export class Note {
         fields: FieldsPayload,
         lineNumber?: number,
         asList: boolean = false,
-        asComment: boolean = false
+        asBlockquote: boolean = false
     ): Promise<void> {
         fields.forEach(field => {
             const node = this.getNodeForIndexedPath(field.id)
             if (node && node.field) {
-                node.createFieldNodeContent(node.field, field.payload.value, node.line.position, asList, asComment)
-                node.line.renderLine(asList, asComment)
+                node.createFieldNodeContent(node.field, field.payload.value, node.line.position, asList, asBlockquote)
+                node.line.renderLine(asList, asBlockquote)
             } else {
-                this.insertField(field.id, field.payload, lineNumber, asList, asComment)
+                this.insertField(field.id, field.payload, lineNumber, asList, asBlockquote)
             }
         })
         await this.plugin.app.vault.modify(this.file, this.renderNote())

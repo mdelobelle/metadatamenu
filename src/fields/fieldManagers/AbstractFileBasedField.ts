@@ -170,10 +170,10 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
         indexedPath?: string,
         lineNumber?: number,
         asList?: boolean,
-        asComment?: boolean,
+        asBlockquote?: boolean,
         previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const fieldModal = this.modalFactory(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asComment, previousModal)
+        const fieldModal = this.modalFactory(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal)
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }

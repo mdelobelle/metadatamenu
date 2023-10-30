@@ -17,7 +17,7 @@ export default class BooleanModal extends Modal {
         private indexedPath?: string,
         private lineNumber: number = -1,
         private asList: boolean = false,
-        private asComment: boolean = false,
+        private asBlockquote: boolean = false,
         private previousModal?: ObjectModal | ObjectListModal
     ) {
         super(plugin.app);
@@ -66,7 +66,7 @@ export default class BooleanModal extends Modal {
         saveButton.setIcon("checkmark");
         saveButton.onClick(async () => {
             const value = this.value.toString()
-            await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asComment);
+            await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
             this.close();
         });
     };

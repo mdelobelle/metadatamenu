@@ -176,9 +176,9 @@ export class FieldsModal extends Modal {
                     new ChooseSectionModal(
                         this.plugin,
                         this.file,
-                        (lineNumber: number, asList: boolean, asComment: boolean
+                        (lineNumber: number, asList: boolean, asBlockquote: boolean
                         ) => FieldManager.createAndOpenModal(
-                            this.plugin, this.file, field.name, field, undefined, newIndexedPath, lineNumber, asList, asComment)
+                            this.plugin, this.file, field.name, field, undefined, newIndexedPath, lineNumber, asList, asBlockquote)
                     ).open();
                 } else {
                     FieldManager.createAndOpenModal(this.plugin, this.file, field.name, field, undefined, newIndexedPath, -1, false, false)
@@ -237,8 +237,8 @@ export class FieldsModal extends Modal {
         const modal = new ChooseSectionModal(
             this.plugin,
             this.file,
-            (lineNumber: number, asList: boolean, asComment: boolean) => insertMissingFields(
-                this.plugin, this.file.path, lineNumber, asList, asComment, fileClass.name
+            (lineNumber: number, asList: boolean, asBlockquote: boolean) => insertMissingFields(
+                this.plugin, this.file.path, lineNumber, asList, asBlockquote, fileClass.name
             )
         );
         modal.open()
@@ -318,8 +318,8 @@ export class FieldsModal extends Modal {
                 new ChooseSectionModal(
                     this.plugin,
                     this.file,
-                    (lineNumber: number, asList: boolean, asComment: boolean) => insertMissingFields(
-                        this.plugin, this.file.path, lineNumber, asList, asComment
+                    (lineNumber: number, asList: boolean, asBlockquote: boolean) => insertMissingFields(
+                        this.plugin, this.file.path, lineNumber, asList, asBlockquote
                     )
                 ).open();
             } else {

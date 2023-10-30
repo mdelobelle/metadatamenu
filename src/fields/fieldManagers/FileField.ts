@@ -24,10 +24,10 @@ export default class FileField extends AbstractFileBasedField<SingleFileModal> {
         indexedPath?: string,
         lineNumber: number = -1,
         asList: boolean = false,
-        asComment: boolean = false,
+        asBlockquote: boolean = false,
         previousModal?: ObjectModal | ObjectListModal
     ): SingleFileModal {
-        return new SingleFileModal(plugin, file, field, eF, indexedPath, lineNumber, asList, asComment, previousModal);
+        return new SingleFileModal(plugin, file, field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal);
     }
 
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked: () => {}): void {

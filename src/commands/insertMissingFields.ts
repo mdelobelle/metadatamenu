@@ -11,7 +11,7 @@ export async function insertMissingFields(
     fileOrFilePath: string | TFile,
     lineNumber: number,
     asList: boolean = false,
-    asComment: boolean = false,
+    asBlockquote: boolean = false,
     fileClassName?: string,
     indexedPath?: string
 ): Promise<void> {
@@ -47,5 +47,5 @@ export async function insertMissingFields(
         })
     }
 
-    if (fieldsToInsert.length) await postValues(plugin, fieldsToInsert, file, lineNumber, asList, asComment);
+    if (fieldsToInsert.length) await postValues(plugin, fieldsToInsert, file, lineNumber, asList, asBlockquote);
 }

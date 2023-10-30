@@ -10,8 +10,8 @@ export interface IMetadataMenuApi {
     getValues: (fileOrFilePath: TFile | string, attribute: string) => Promise<string[]>;
     fileFields: (fileOrFilePath: TFile | string) => Promise<Record<string, FieldInfo>>;
     fieldModifier: (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => HTMLElement;
-    insertMissingFields: (fileOrFilePath: string | TFile, lineNumber: number, asList: boolean, asComment: boolean, fileClassName?: string) => Promise<void>;
-    postValues: (fileOrFilePath: TFile | string, payload: FieldsPayload, lineNumber?: number, asList?: boolean, asComment?: boolean) => Promise<void>;
+    insertMissingFields: (fileOrFilePath: string | TFile, lineNumber: number, asList: boolean, asBlockquote: boolean, fileClassName?: string) => Promise<void>;
+    postValues: (fileOrFilePath: TFile | string, payload: FieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => Promise<void>;
 }
 
 export class MetadataMenuApi {
@@ -40,11 +40,11 @@ export class MetadataMenuApi {
         return async (fileOrFilePath: TFile | string) => fileFields(this.plugin, fileOrFilePath)
     }
 
-    private insertMissingFields(): (fileOrFilePath: string | TFile, lineNumber: number, asList: boolean, asComment: boolean, fileClassName?: string) => Promise<void> {
-        return async (fileOrFilePath: string | TFile, lineNumber: number, asList: boolean, asComment: boolean, fileClassName?: string) => insertMissingFields(this.plugin, fileOrFilePath, lineNumber, asList, asComment, fileClassName)
+    private insertMissingFields(): (fileOrFilePath: string | TFile, lineNumber: number, asList: boolean, asBlockquote: boolean, fileClassName?: string) => Promise<void> {
+        return async (fileOrFilePath: string | TFile, lineNumber: number, asList: boolean, asBlockquote: boolean, fileClassName?: string) => insertMissingFields(this.plugin, fileOrFilePath, lineNumber, asList, asBlockquote, fileClassName)
     }
 
-    private postValues(): (fileOrFilePath: string | TFile, payload: FieldsPayload, lineNumber?: number, asList?: boolean, asComment?: boolean) => Promise<void> {
-        return async (fileOrFilePath: string | TFile, payload: FieldsPayload, lineNumber?: number, asList?: boolean, asComment?: boolean) => postValues(this.plugin, payload, fileOrFilePath, lineNumber, asList, asComment)
+    private postValues(): (fileOrFilePath: string | TFile, payload: FieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => Promise<void> {
+        return async (fileOrFilePath: string | TFile, payload: FieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => postValues(this.plugin, payload, fileOrFilePath, lineNumber, asList, asBlockquote)
     }
 }

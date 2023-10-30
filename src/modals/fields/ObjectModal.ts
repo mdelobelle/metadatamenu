@@ -17,7 +17,7 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
         private indexedPath?: string,
         private lineNumber: number = -1,
         private asList: boolean = false,
-        private asComment: boolean = false,
+        private asBlockquote: boolean = false,
         private previousModal?: ObjectModal | ObjectListModal,
         private existingFields: ExistingField[] = [],
         private missingFields: Field[] = []
@@ -74,7 +74,7 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
         } else {
             //insert field
             const fieldManager = new FieldManager[item.type](this.plugin, item) as F
-            fieldManager.createAndOpenFieldModal(this.file, item.name, undefined, `${this.indexedPath}____${item.id}`, this.lineNumber, this.asList, this.asComment, this)
+            fieldManager.createAndOpenFieldModal(this.file, item.name, undefined, `${this.indexedPath}____${item.id}`, this.lineNumber, this.asList, this.asBlockquote, this)
         }
     }
 };

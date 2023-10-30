@@ -24,9 +24,9 @@ export async function postValues(
     fileOrFilePath: TFile | string,
     lineNumber?: number,
     asList: boolean = false,
-    asComment: boolean = false
+    asBlockquote: boolean = false
 ): Promise<void> {
     const file = getFileFromFileOrPath(plugin, fileOrFilePath);
     const note = await Note.buildNote(plugin, file)
-    await note.createOrUpdateFields(payload, lineNumber, asList, asComment)
+    await note.createOrUpdateFields(payload, lineNumber, asList, asBlockquote)
 }

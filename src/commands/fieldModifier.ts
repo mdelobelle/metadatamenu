@@ -20,14 +20,14 @@ function buildAndOpenModal(
             (
                 lineNumber: number,
                 asList: boolean,
-                asComment: boolean
+                asBlockquote: boolean
             ) => F.openFieldModal(
                 plugin,
                 file,
                 fieldName,
                 lineNumber,
                 asList,
-                asComment
+                asBlockquote
             )
         ).open();
     }
@@ -92,14 +92,14 @@ export function fieldModifier(
                             (
                                 lineNumber: number,
                                 asList: boolean,
-                                asComment: boolean
+                                asBlockquote: boolean
                             ) => F.openFieldModal(
                                 plugin,
                                 file,
                                 undefined,
                                 lineNumber,
                                 asList,
-                                asComment
+                                asBlockquote
                             ),
                         ).open();
                     }

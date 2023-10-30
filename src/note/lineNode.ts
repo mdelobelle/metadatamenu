@@ -33,29 +33,34 @@ export class LineNode {
         public plugin: MetadataMenu,
         public line: Line,
         public rawContent: string = "",
-        public level: number = 0,
+        public indentationLevel: number = 0,
         public index: number = 0,
         public field?: Field,
         public value?: string,
-        public parsedField?: parsedField
+        public parsedField?: parsedField,
+        public blockquote: string = ""
     ) {
         //try to get field from content if not provided
 
         const frontmatter: any = this.line.note.frontmatter || {}
-        let indentationLevel: number = 0;
-        const indentRegex = new RegExp(/(?<indentation>\s*)(?<list>-\s)?(?<value>.*)/)
+        const indentRegex = new RegExp(/(?<blockquote>\>*)(?<indentation>\s*)(?<list>-\s)?(?<value>.*)/)
         const fR = this.rawContent.match(indentRegex);
-        if (fR?.groups && fR.groups.indentation) {
-            indentationLevel = fR.groups.indentation.length / 2
-            if (fR.groups.list) {
-                // list nous sert à déterminer que cette ligne correspond à l'item d'une liste
-                // ça va servir dans le cas des objectList fields plus bas
-                indentationLevel += 1;
-                this.line.isNewListItem = true
+        if (rawContent?.includes("Difficulty")) console.log(fR?.groups)
+        if (fR?.groups) {
+            if (fR.groups.indentation) {
+
+                this.indentationLevel = fR.groups.indentation.length / 2
+                if (fR.groups.list) {
+                    // list nous sert à déterminer que cette ligne correspond à l'item d'une liste
+                    // ça va servir dans le cas des objectList fields plus bas
+                    this.indentationLevel += 1;
+                }
             }
+            this.line.isNewListItem = !!fR.groups.list
+            this.blockquote = fR.groups.blockquote || ""
         }
-        this.line.indentationLevel = indentationLevel
-        if (indentationLevel) {
+        this.line.indentationLevel = this.indentationLevel
+        if (this.indentationLevel) {
             const parentLine = this.line.note.lines.filter(line =>
                 line.number < this.line.number &&
                 line.indentationLevel < this.line.indentationLevel
@@ -173,12 +178,14 @@ export class LineNode {
                 }
                 break;
         }
+        if (this.field?.name === "Difficulty") console.log(this)
         this.line.nodes.push(this)
     }
 
     private buildDecoratedFieldName = (): string => {
         if (!this.field) return ""
         let level = this.field.getIndentationLevel(this)
+        if (this.field.name === "Difficulty") console.log(this.line)
         switch (this.line.position) {
             case "yaml":
                 const _ = this.field.isFirstItemOfObjectList(this) ? "- " : ""
@@ -187,7 +194,7 @@ export class LineNode {
                 {
                     const targetStartStyle = buildStartStyle(this.field.style || {})
                     const targetEndStyle = buildEndStyle(this.field.style || {})
-                    return `${targetStartStyle}${this.field.name}${targetEndStyle}`
+                    return `${this.blockquote}${"  ".repeat(this.indentationLevel)}${this.line.isNewListItem ? "- " : ""}${targetStartStyle}${this.field.name}${targetEndStyle}`
                 }
         }
 
@@ -235,7 +242,7 @@ export class LineNode {
         value: string,
         location: "yaml" | "inline",
         asList: boolean = false,
-        asComment: boolean = false
+        asBlockquote: boolean = false
     ) {
         const _ = separator[location]
         this.field = field
@@ -257,7 +264,7 @@ export class LineNode {
                     newValue.filter(v => !!v).reverse().forEach((item, i) => {
                         const newItemLine = new Line(this.plugin, this.line.note, location, "", this.line.number! + 1)
                         new LineNode(this.plugin, newItemLine, this.buildIndentedListItem(item))
-                        newItemLine.renderLine(asList, asComment)
+                        newItemLine.renderLine(asList, asBlockquote)
                     });
                 } else {
                     content = `${fieldHeader}${_} [${newValue.join(", ")}]`;
@@ -267,7 +274,7 @@ export class LineNode {
                 if (this.field.type === FieldType.ObjectList) {
                     const newItemLine = new Line(this.plugin, this.line.note, location, "", this.line.number! + 1)
                     new LineNode(this.plugin, newItemLine, this.buildIndentedListItem("", 1))
-                    newItemLine.renderLine(asList, asComment)
+                    newItemLine.renderLine(asList, asBlockquote)
                 }
             }
         } else {

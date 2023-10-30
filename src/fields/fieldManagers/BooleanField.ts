@@ -73,10 +73,10 @@ export default class BooleanField extends FieldManager {
         indexedPath?: string,
         lineNumber?: number,
         asList?: boolean,
-        asComment?: boolean,
+        asBlockquote?: boolean,
         previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const fieldModal = new BooleanModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asComment, previousModal)
+        const fieldModal = new BooleanModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal)
         fieldModal.titleEl.setText(`Set value for ${selectedFieldName}`);
         fieldModal.open();
     }

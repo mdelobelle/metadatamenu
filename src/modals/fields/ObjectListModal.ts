@@ -7,7 +7,7 @@ import { Note } from "src/note/note";
 import { FieldManager } from "src/types/fieldTypes";
 import ObjectModal from "./ObjectModal";
 import * as fieldsValues from 'src/db/stores/fieldsValues'
-
+//FIXME can't add a new item for an empty list
 export default class ObjectListModal extends SuggestModal<ObjectListItem> {
     private addButton: ButtonComponent;
     private toRemove?: ObjectListItem
@@ -19,7 +19,7 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
         private indexedPath?: string,
         private lineNumber: number = -1,
         private asList: boolean = false,
-        private asComment: boolean = false,
+        private asBlockquote: boolean = false,
         private previousModal?: ObjectModal | ObjectListModal,
         private objects: ObjectListItem[] = []
     ) {

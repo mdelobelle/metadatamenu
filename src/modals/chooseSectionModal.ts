@@ -15,7 +15,7 @@ export default class chooseSectionModal extends SuggestModal<Line> {
     constructor(
         private plugin: MetadataMenu,
         private file: TFile,
-        private onSelect: (lineNumber: number, asList: boolean, asComment: boolean) => void,
+        private onSelect: (lineNumber: number, asList: boolean, asBlockquote: boolean) => void,
     ) {
         super(plugin.app);
         this.onSelect = onSelect

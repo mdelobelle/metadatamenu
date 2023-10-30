@@ -110,10 +110,10 @@ export default class CycleField extends AbstractListBasedField {
         indexedPath?: string,
         lineNumber?: number,
         asList?: boolean,
-        asComment?: boolean,
+        asBlockquote?: boolean,
         previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const fieldModal = new SelectModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asComment, previousModal);
+        const fieldModal = new SelectModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }

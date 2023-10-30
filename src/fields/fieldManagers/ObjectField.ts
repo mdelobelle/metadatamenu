@@ -55,7 +55,7 @@ export default class ObjectField extends FieldManager {
         return ""
     }
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField,
-        indexedPath?: string, lineNumber?: number, asList?: boolean, asComment?: boolean,
+        indexedPath?: string, lineNumber?: number, asList?: boolean, asBlockquote?: boolean,
         previousModal?: ObjectModal | ObjectListModal): Promise<void> {
 
         const existingFields = (await ExistingField.getExistingFieldsFromIndexForFilePath(this.plugin, file))
@@ -63,7 +63,7 @@ export default class ObjectField extends FieldManager {
         const { id, index } = Field.getIdAndIndex(indexedPath?.split("____").last())
         const missingFields = this.plugin.fieldIndex.filesFields.get(file.path)?.filter(_f =>
             _f.getFirstAncestor()?.id === id).filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
-        const fieldModal = new ObjectModal(this.plugin, file, eF, indexedPath, lineNumber, asList, asComment, previousModal, existingFields, missingFields)
+        const fieldModal = new ObjectModal(this.plugin, file, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal, existingFields, missingFields)
         fieldModal.open();
     }
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {

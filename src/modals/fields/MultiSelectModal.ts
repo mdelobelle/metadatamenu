@@ -26,7 +26,7 @@ export default class MultiSuggestModal extends SuggestModal<string> {
         private indexedPath?: string,
         private lineNumber: number = -1,
         private asList: boolean = false,
-        private asComment: boolean = false,
+        private asBlockquote: boolean = false,
         private previousModal?: ObjectModal | ObjectListModal
     ) {
         super(plugin.app);
@@ -184,12 +184,12 @@ export default class MultiSuggestModal extends SuggestModal<string> {
 
     async replaceValues() {
         const options = this.selectedOptions;
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: options.join(", ") } }], this.file, this.lineNumber, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: options.join(", ") } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
         this.close();
     }
 
     async clearValues() {
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
     }
 
     renderSelected() {
