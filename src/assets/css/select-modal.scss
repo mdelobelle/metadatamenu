@@ -20,8 +20,12 @@
     display: flex;
     align-items: center;
     border-bottom: 1px solid var(--background-secondary-alt);
+    margin-top: 0.25em;
 
-
+    .suggester-title{
+        margin-left: 1em;
+        white-space: nowrap;
+    }
 
     .info {
         white-space: nowrap;

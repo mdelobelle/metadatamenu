@@ -29,9 +29,10 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
         this.containerEl.addClass("narrow")
         const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
         if (!this.field.isRoot()) this.buildBackButton(inputContainer)
+        const title = inputContainer.createDiv({ cls: "suggester-title" })
+        title.innerHTML = `<b>${this.field.name}</b> items`
         inputContainer.appendChild(this.inputEl)
         this.inputEl.disabled = true
-        this.inputEl.value = `${this.field.name} items`
         this.inputEl.addClass("input-as-title")
         this.containerEl.find(".prompt").prepend(inputContainer)
         this.buildAddButton(inputContainer)
@@ -42,7 +43,7 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
         backButton.setIcon("left-arrow")
         backButton.onClick(async () => console.log("GO BACK"))
         backButton.setCta();
-        backButton.setTooltip("Add a new item")
+        backButton.setTooltip("Go to parent field")
         const infoContainer = container.createDiv({ cls: "info" })
         infoContainer.setText("Alt+Esc to go back")
     }
@@ -72,6 +73,7 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
     }
 
     async onOpen() {
+        await ExistingField.indexFieldsValues
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter") {
                 e.preventDefault()

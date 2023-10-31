@@ -29,9 +29,19 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
         this.containerEl.addClass("narrow")
         const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
         if (!this.eF?.field.isRoot()) this.buildBackButton(inputContainer)
+        let title: string = ""
+        if (this.eF) {
+            title = this.eF.field.name
+        } else if (this.indexedPath) {
+            //indexedPath of form aaaaa[n]
+            const { id: objectId, index: objectIndex } = Field.getIdAndIndex(this.indexedPath.split("____").last())
+            const upperObject = this.plugin.fieldIndex.filesFields.get(this.file.path)?.find(_f => _f.id === objectId)
+            title = `${upperObject?.name}${objectIndex ? " [" + objectIndex + "]" : ""}` || "unknown field"
+        }
+        const titleContainer = inputContainer.createDiv({ cls: "suggester-title" })
+        titleContainer.innerHTML = `<b>${title}</b> fields`
         inputContainer.appendChild(this.inputEl)
         this.inputEl.disabled = true
-        this.inputEl.value = `${this.eF?.field.name || ""} items`
         this.inputEl.addClass("input-as-title")
         this.containerEl.find(".prompt").prepend(inputContainer)
     };
@@ -41,12 +51,13 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
         backButton.setIcon("left-arrow")
         backButton.onClick(async () => console.log("GO BACK"))
         backButton.setCta();
-        backButton.setTooltip("Add a new item")
+        backButton.setTooltip("Go to parent field")
         const infoContainer = container.createDiv({ cls: "info" })
         infoContainer.setText("Alt+Esc to go back")
     }
 
     async onOpen() {
+        await ExistingField.indexFieldsValues(this.plugin)
         if (this.indexedPath) {
             const upperPath = Field.upperIndexedPathObjectPath(this.indexedPath)
             const { index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
