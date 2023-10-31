@@ -11,18 +11,19 @@ import { postValues } from "src/commands/postValues";
 //FIXME can't add a new item for an empty list
 export default class ObjectListModal extends SuggestModal<ObjectListItem> {
     private addButton: ButtonComponent;
-    private toRemove?: ObjectListItem
+    private toRemove?: ObjectListItem;
+
     constructor(
-        private plugin: MetadataMenu,
-        private file: TFile,
-        private field: Field,
-        private eF?: ExistingField,
-        private indexedPath?: string,
-        private lineNumber: number = -1,
-        private asList: boolean = false,
-        private asBlockquote: boolean = false,
-        private previousModal?: ObjectModal | ObjectListModal,
-        private objects: ObjectListItem[] = []
+        public plugin: MetadataMenu,
+        public file: TFile,
+        public field: Field,
+        public eF?: ExistingField,
+        public indexedPath?: string,
+        public lineNumber: number = -1,
+        public asList: boolean = false,
+        public asBlockquote: boolean = false,
+        public previousModal?: ObjectModal | ObjectListModal,
+        public objects: ObjectListItem[] = []
     ) {
         super(plugin.app);
         this.containerEl.addClass("metadata-menu")
@@ -53,12 +54,17 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
     };
 
     onOpen() {
+        //this.previousModal?.close(true)
         super.onOpen()
+        console.log(this)
     };
 
-    onClose(): void {
-        this.previousModal?.open()
+    /*
+    close(fromChildOpening: boolean = false): void {
+        //if (!fromChildOpening) this.previousModal?.open()
+        super.close()
     }
+    */
 
     getSuggestions(query: string = ""): ObjectListItem[] {
         return this.objects
@@ -90,18 +96,30 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
     }
 
     async onChooseSuggestion(item: ObjectListItem, evt: MouseEvent | KeyboardEvent) {
+        const reOpen = async () => {
+
+            // because vault.on("modify") is not triggered fast enough
+            await ExistingField.indexFieldsValues(this.plugin)
+            const eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, this.file, this.indexedPath)
+            if (eF) {
+                const thisFieldManager = new FieldManager[eF.field.type](this.plugin, eF.field)
+                thisFieldManager.createAndOpenFieldModal(this.file, eF.field.name, eF, eF.indexedPath, undefined, undefined, undefined, this.previousModal)
+            }
+        }
         if (this.toRemove) {
             const note = await Note.buildNote(this.plugin, this.file)
-            if (item.indexedPath) await note.removeObject(item.indexedPath)
+            if (item.indexedPath) {
+                await note.removeObject(item.indexedPath)
+                await reOpen()
+            }
         } else {
-            const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, this.file, item.indexedPath)
             const existingFields = (await ExistingField.getExistingFieldsFromIndexForFilePath(this.plugin, this.file))
                 .filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === item.indexedPath) || []
             const { id, index } = Field.getIdAndIndex(item.indexedPath?.split("____").last())
             const missingFields = this.plugin.fieldIndex.filesFields
                 .get(this.file.path)?.filter(_f => _f.getFirstAncestor()?.id === id)
                 .filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
-            const objectModal = new ObjectModal(this.plugin, this.file, eF, item.indexedPath,
+            const objectModal = new ObjectModal(this.plugin, this.file, undefined, item.indexedPath,
                 undefined, undefined, undefined, this, existingFields, missingFields)
             objectModal.open()
         }

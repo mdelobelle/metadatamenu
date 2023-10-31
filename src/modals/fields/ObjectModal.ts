@@ -11,64 +11,91 @@ import ObjectListModal from "./ObjectListModal";
 export default class ObjectModal extends SuggestModal<ExistingField | Field> {
 
     constructor(
-        private plugin: MetadataMenu,
-        private file: TFile,
-        private eF?: ExistingField,
-        private indexedPath?: string,
-        private lineNumber: number = -1,
-        private asList: boolean = false,
-        private asBlockquote: boolean = false,
-        private previousModal?: ObjectModal | ObjectListModal,
-        private existingFields: ExistingField[] = [],
-        private missingFields: Field[] = []
+        public plugin: MetadataMenu,
+        public file: TFile,
+        public eF?: ExistingField,
+        public indexedPath?: string,
+        public lineNumber: number = -1,
+        public asList: boolean = false,
+        public asBlockquote: boolean = false,
+        public previousModal?: ObjectModal | ObjectListModal,
+        public existingFields: ExistingField[] = [],
+        public missingFields: Field[] = []
         //TODO: can be generalized?
     ) {
         super(plugin.app);
     };
 
     onOpen() {
+        //this.previousModal?.close(true)
         super.onOpen()
         this.containerEl.addClass("metadata-menu")
         this.containerEl.addClass("narrow")
+        console.log(this)
     };
 
+    /*
+    close(fromChildOpening: boolean = false): void {
+        //if (!fromChildOpening) this.previousModal?.open()
+        super.close()
+    }
+    */
     onClose(): void {
-        this.previousModal?.open()
+        //@ts-ignore
+        console.log("SELECTED", this.selectedItem)
     }
 
     getSuggestions(query: string = ""): Array<ExistingField | Field> {
-        return [...this.existingFields, ...this.missingFields]
+        return [...this.existingFields, ...this.missingFields].filter(f => {
+            if (f instanceof ExistingField) {
+                return f.field.name.toLocaleLowerCase().includes(query.toLocaleLowerCase())
+            } else {
+                return f.name.toLocaleLowerCase().includes(query.toLocaleLowerCase())
+            }
+        })
     }
 
     renderSuggestion(item: ExistingField | Field, el: HTMLElement) {
         const container = el.createDiv({ cls: "value-container" })
         if (item instanceof ExistingField) {
-            const label = container.createDiv({ text: `${item.field.name} :`, cls: "label-container" })
+            container.createDiv({ text: `${item.field.name} :`, cls: "label-container" })
             const fM = new FieldManager[item.field.type](this.plugin, item.field)
             const valueContainer = container.createDiv()
-            fM.displayValue(valueContainer, this.file, item.value || "<empty>")
+            fM.displayValue(valueContainer, this.file, item.value !== undefined ? item.value : "<empty>")
         } else {
-            const label = container.createDiv({ text: `${item.name} :`, cls: "label-container" })
-            const valueContainer = container.createDiv({ text: "<missing>" })
+            container.createDiv({ text: `${item.name} :`, cls: "label-container" })
+            container.createDiv({ text: "<missing>" })
         }
+
     }
 
 
     async onChooseSuggestion(item: ExistingField | Field, evt: MouseEvent | KeyboardEvent) {
+        const reOpen = async () => {
+            // because vault.on("modify") is not triggered fast enough
+            await ExistingField.indexFieldsValues(this.plugin)
+            const eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, this.file, this.indexedPath)
+            if (eF) {
+                const thisFieldManager = new FieldManager[eF.field.type](this.plugin, eF.field)
+                thisFieldManager.createAndOpenFieldModal(this.file, eF.field.name, eF, eF.indexedPath, undefined, undefined, undefined, this.previousModal)
+                this.close()
+            }
+        }
         if (item instanceof ExistingField) {
             //open field modal
             const field = item.field
             const fieldManager = new FieldManager[field.type](this.plugin, field)
             switch (fieldManager.type) {
                 case FieldType.Boolean:
-                    (fieldManager as BooleanField).toggle(this.file)
+                    await (fieldManager as BooleanField).toggle(this.file, item.indexedPath)
+                    await reOpen()
                     break;
                 case FieldType.Cycle:
-                    (fieldManager as CycleField).next(field.name, this.file)
+                    await (fieldManager as CycleField).next(field.name, this.file, item.indexedPath)
+                    await reOpen()
                     break;
                 default:
-                    console.log(fieldManager)
-                    fieldManager.createAndOpenFieldModal(this.file, field.name, item, item.indexedPath, undefined, undefined, undefined, undefined, this)
+                    fieldManager.createAndOpenFieldModal(this.file, field.name, item, item.indexedPath, undefined, undefined, undefined, this)
                     break;
             }
         } else {

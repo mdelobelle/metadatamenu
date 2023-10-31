@@ -280,7 +280,6 @@ export class Note {
                     //specific case where the field is object but the upperIndex is unknown
                     //it mean that we have to insert a new ObjectListItem
                     const node = this.getNodeForIndexedPath(upperPath)
-                    console.log("NODE", node)
                     if (node) {
                         const newItemLine = new Line(this.plugin, node.line.note, position, "", node.line.number! + 1)
                         // if field is not in a list, shift of 0, else shift 1
@@ -318,7 +317,7 @@ export class Note {
         const indexedEF: IndexedExistingField[] = await fieldsValues.getElement(this.plugin, 'all')
         await ExistingField.buildPayload(this, indexedEF, putPayload, delPayload)
         await fieldsValues.bulkEditElements(this.plugin, putPayload)
-        fieldsValues.bulkRemoveElements(this.plugin, delPayload)
+        await fieldsValues.bulkRemoveElements(this.plugin, delPayload)
         await updates.update(this.plugin, "fieldsValues")
     }
 

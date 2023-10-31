@@ -112,7 +112,7 @@ export class ExistingField {
             await ExistingField.buildPayload(note, indexedEF, putPayload, delPayload)
         }))
         await fieldsValues.bulkEditElements(plugin, putPayload)
-        fieldsValues.bulkRemoveElements(plugin, delPayload)
+        await fieldsValues.bulkRemoveElements(plugin, delPayload)
         await updates.update(plugin, "fieldsValues")
     }
 }

@@ -1,9 +1,20 @@
 import MetadataMenu from "main";
-import { ButtonComponent, Modal } from "obsidian"
+import { ButtonComponent, Modal, TFile } from "obsidian"
+import { ExistingField } from "src/fields/ExistingField";
+import Field from "src/fields/Field";
+import { FieldManager } from "src/types/fieldTypes";
+import ObjectListModal from "./fields/ObjectListModal";
+import ObjectModal from "./fields/ObjectModal";
 
 export default class BaseModal extends Modal {
+
+    public saved: boolean = false
+
     constructor(
-        public plugin: MetadataMenu
+        public plugin: MetadataMenu,
+        public file: TFile,
+        public previousModal?: ObjectModal | ObjectListModal,
+        public indexedPath?: string,
     ) {
         super(plugin.app)
     }
@@ -59,5 +70,49 @@ export default class BaseModal extends Modal {
         cancelButton.setIcon("cross")
         cancelButton.onClick(() => { this.close(); })
         this.modalEl.appendChild(buttonContainer)
+    }
+
+    public async goToPreviousModal() {
+        await ExistingField.indexFieldsValues(this.plugin)
+        const pM = this.previousModal
+
+
+        if (pM && this.indexedPath) {
+            const upperPath = Field.upperIndexedPathObjectPath(this.indexedPath)
+            const { index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
+
+            const eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, pM.file, pM.indexedPath)
+
+            const pField = pM.eF?.field
+            const pFile = pM.file
+            const pIndexedPath = pM.indexedPath
+            if (upperFieldIndex) {
+                pM.close()
+                const existingFields = (await ExistingField.getExistingFieldsFromIndexForFilePath(this.plugin, this.file))
+                    .filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === upperPath) || []
+                const { id } = Field.getIdAndIndex(upperPath?.split("____").last())
+                const missingFields = this.plugin.fieldIndex.filesFields
+                    .get(this.file.path)?.filter(_f => _f.getFirstAncestor()?.id === id)
+                    .filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
+                const objectModal = new ObjectModal(this.plugin, this.file, undefined, upperPath,
+                    undefined, undefined, undefined, pM.previousModal, existingFields, missingFields)
+                objectModal.open()
+            } else if (pField && pFile) {
+                pM.close()
+
+                const fM = new FieldManager[pField.type](this.plugin, pField)
+                fM.createAndOpenFieldModal(pFile, pField.name, eF,
+                    pIndexedPath, pM.lineNumber, pM.asList, pM.asBlockquote,
+                    pM.previousModal)
+
+            } else {
+                pM.open()
+            }
+        }
+    }
+
+    async onClose() {
+        if (!this.saved) this.previousModal?.open()
+        this.saved = false
     }
 }

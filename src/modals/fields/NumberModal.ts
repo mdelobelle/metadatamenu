@@ -19,16 +19,16 @@ export default class NumberModal extends BaseModal {
 
     constructor(
         public plugin: MetadataMenu,
-        private file: TFile,
+        public file: TFile,
         private field: Field,
         private eF?: ExistingField,
-        private indexedPath?: string,
+        public indexedPath?: string,
         private lineNumber: number = -1,
         private asList: boolean = false,
         private asBlockquote: boolean = false,
-        private previousModal?: ObjectModal | ObjectListModal
+        public previousModal?: ObjectModal | ObjectListModal
     ) {
-        super(plugin);
+        super(plugin, file, previousModal, indexedPath);
         this.value = this.eF?.value || ""
         this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
         this.containerEl.addClass("metadata-menu")
@@ -39,9 +39,6 @@ export default class NumberModal extends BaseModal {
         super.onOpen()
     };
 
-    onClose(): void {
-        this.previousModal?.open()
-    }
     private decrement(numberInput: TextComponent): void {
         const { step } = this.field.options;
         const fStep = parseFloat(step);
@@ -139,6 +136,8 @@ export default class NumberModal extends BaseModal {
             return
         }
         await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: inputValue } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
-        this.close();
+        this.saved = true
+        if (this.previousModal) await this.goToPreviousModal()
+        this.close()
     }
 };

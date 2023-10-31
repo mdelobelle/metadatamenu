@@ -179,7 +179,6 @@ export const bulkEditElements = <T>(plugin: MetadataMenu, payload: IndexedExisti
                         };
                     })
                 } else {
-
                     resolve()
                 }
                 transaction.oncomplete = () => db.close();
@@ -217,23 +216,34 @@ export const removeElement = (plugin: MetadataMenu, key: string) => {
 
 export const bulkRemoveElements = (plugin: MetadataMenu, keys: string[]) => {
     const open = indexedDB.open(plugin.indexName);
-    open.onsuccess = () => {
-        let request: IDBRequest;
-        db = open.result;
-        if ([...db.objectStoreNames].find((name) => name === store)) {
-            const transaction = db.transaction(store, 'readwrite');
-            const objectStore = transaction.objectStore(store);
-            if (keys.length) {
-                keys.forEach(key => {
-                    request = objectStore.delete(key);
-                    request.onerror = () => console.error(request.error);
-                })
-            }
-            transaction.oncomplete = () => db.close();
+    return new Promise<void>((resolve, reject) => {
+        open.onsuccess = () => {
+            let request: IDBRequest;
+            db = open.result;
+            if ([...db.objectStoreNames].find((name) => name === store)) {
+                const transaction = db.transaction(store, 'readwrite');
+                const objectStore = transaction.objectStore(store);
+                if (keys.length) {
+                    keys.forEach(key => {
+                        request = objectStore.get(key);
+                        request.onerror = () => {
+                            reject(request.error)
+                        };
+                        request.onsuccess = () => {
+                            const delRequest = objectStore.delete(key);
+                            delRequest.onsuccess = () => resolve();
+                        };
+                    })
+                } else {
+                    resolve()
+                }
+                transaction.oncomplete = () => db.close();
 
-        } else {
-            console.error("store not found")
-            //indexedDB.deleteDatabase(plugin.indexName);
-        }
-    };
+            } else {
+                console.error("store not found")
+                //indexedDB.deleteDatabase(plugin.indexName);
+            }
+        };
+    })
+
 };

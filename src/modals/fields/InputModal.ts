@@ -16,16 +16,16 @@ export default class InputModal extends BaseModal {
 
     constructor(
         public plugin: MetadataMenu,
-        private file: TFile,
+        public file: TFile,
         private field: Field,
         private eF?: ExistingField,
-        private indexedPath?: string,
+        public indexedPath?: string,
         private lineNumber: number = -1,
         private asList: boolean = false,
         private asBlockquote: boolean = false,
-        private previousModal?: ObjectModal | ObjectListModal
+        public previousModal?: ObjectModal | ObjectListModal
     ) {
-        super(plugin);
+        super(plugin, file, previousModal, indexedPath);
         this.value = this.eF?.value || ""
         if (this.field.options.template) {
             const templateFieldRegex = new RegExp(`\\{\\{(?<field>[^\\}]+?)\\}\\}`, "gu");
@@ -65,10 +65,6 @@ export default class InputModal extends BaseModal {
     onOpen() {
         super.onOpen()
     };
-
-    onClose() {
-        this.previousModal?.open()
-    }
 
     private renderValue() {
         let renderedString = this.field.options.template.slice()
@@ -123,6 +119,10 @@ export default class InputModal extends BaseModal {
 
     public async save(): Promise<void> {
         await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: this.newValue } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
-        this.close();
+        this.saved = true
+        if (this.previousModal) await this.goToPreviousModal()
+        this.close()
     }
+
+
 };

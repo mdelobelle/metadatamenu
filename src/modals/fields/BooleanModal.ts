@@ -4,35 +4,29 @@ import { postValues } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
+import BaseModal from "../baseModal";
 import ObjectListModal from "./ObjectListModal";
 import ObjectModal from "./ObjectModal";
 
-export default class BooleanModal extends Modal {
+export default class BooleanModal extends BaseModal {
     private value: boolean
     constructor(
-        private plugin: MetadataMenu,
-        private file: TFile,
+        public plugin: MetadataMenu,
+        public file: TFile,
         private field: Field,
         private eF?: ExistingField,
-        private indexedPath?: string,
+        public indexedPath?: string,
         private lineNumber: number = -1,
         private asList: boolean = false,
         private asBlockquote: boolean = false,
-        private previousModal?: ObjectModal | ObjectListModal
+        public previousModal?: ObjectModal | ObjectListModal
     ) {
-        super(plugin.app);
+        super(plugin, file, previousModal, indexedPath);
         this.value = this.eF ? BooleanField.stringToBoolean(this.eF.value || "") : false;
         this.containerEl.addClass("metadata-menu")
         this.containerEl.addClass("narrow")
         this.buildToggleEl();
     };
-
-    onOpen() {
-    };
-
-    onClose(): void {
-        this.previousModal?.open()
-    }
 
     private buildToggleEl(): void {
         const choicesContainer = this.contentEl.createDiv({ cls: "value-container" })
@@ -61,13 +55,14 @@ export default class BooleanModal extends Modal {
             trueButton.setCta();
             falseButton.removeCta();
         })
-        const saveButton = new ButtonComponent(choicesContainer);
-        saveButton.setClass("right")
-        saveButton.setIcon("checkmark");
-        saveButton.onClick(async () => {
-            const value = this.value.toString()
-            await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
-            this.close();
-        });
+        this.buildSimpleSaveBtn(choicesContainer)
     };
+
+    public async save(e: Event | undefined): Promise<void> {
+        const value = this.value.toString()
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
+        this.saved = true
+        if (this.previousModal) await this.goToPreviousModal()
+        this.close();
+    }
 };

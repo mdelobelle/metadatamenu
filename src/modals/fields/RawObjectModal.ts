@@ -21,16 +21,16 @@ export default class RawObjectModal extends BaseModal {
 
     constructor(
         public plugin: MetadataMenu,
-        private file: TFile,
+        public file: TFile,
         private field: Field,
         private eF?: ExistingField,
-        private indexedPath?: string,
+        public indexedPath?: string,
         private lineNumber: number = -1,
         private asList: boolean = false,
         private asBlockquote: boolean = false,
-        private previousModal?: ObjectModal | ObjectListModal
+        public previousModal?: ObjectModal | ObjectListModal
     ) {
-        super(plugin);
+        super(plugin, file, previousModal, indexedPath);
         this.value = this.eF?.value || ""
 
         this.buildPositionContainer();
@@ -44,10 +44,6 @@ export default class RawObjectModal extends BaseModal {
     onOpen() {
         super.onOpen()
     };
-
-    onClose(): void {
-        this.previousModal?.open()
-    }
 
     private buildPositionContainer() {
         this.positionContainer = this.contentEl.createDiv({ cls: "field-container" })
@@ -86,6 +82,8 @@ export default class RawObjectModal extends BaseModal {
     public async save(): Promise<void> {
         const newContent = this.editor.state.doc.toString().trim()
         await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: newContent } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
+        this.saved = true
+        if (this.previousModal) await this.goToPreviousModal()
         this.close();
     }
 };

@@ -57,9 +57,10 @@ export default class ObjectField extends FieldManager {
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField,
         indexedPath?: string, lineNumber?: number, asList?: boolean, asBlockquote?: boolean,
         previousModal?: ObjectModal | ObjectListModal): Promise<void> {
-
+        console.log("OBJECT EF", eF)
         const existingFields = (await ExistingField.getExistingFieldsFromIndexForFilePath(this.plugin, file))
             .filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === indexedPath) || []
+        console.log("EXISTING FIELDS", existingFields)
         const { id, index } = Field.getIdAndIndex(indexedPath?.split("____").last())
         const missingFields = this.plugin.fieldIndex.filesFields.get(file.path)?.filter(_f =>
             _f.getFirstAncestor()?.id === id).filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []

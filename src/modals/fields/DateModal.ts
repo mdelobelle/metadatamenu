@@ -29,16 +29,16 @@ export default class DateModal extends BaseModal {
 
     constructor(
         public plugin: MetadataMenu,
-        private file: TFile,
+        public file: TFile,
         private field: Field,
         private eF?: ExistingField,
-        private indexedPath?: string,
+        public indexedPath?: string,
         private lineNumber: number = -1,
         private asList: boolean = false,
         private asBlockquote: boolean = false,
-        private previousModal?: ObjectModal | ObjectListModal
+        public previousModal?: ObjectModal | ObjectListModal
     ) {
-        super(plugin);
+        super(plugin, file, previousModal);
         const initialValue = this.eF?.value || ""
         this.initialValue = initialValue ? initialValue.toString().replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last() || "" : "";
         this.insertAsLink = FM.stringToBoolean(this.field.options.defaultInsertAsLink || "false") || false;
@@ -57,10 +57,6 @@ export default class DateModal extends BaseModal {
         this.errorField = this.contentEl.createEl("div", { cls: "field-error" });
         this.errorField.hide();
     };
-
-    onClose(): void {
-        this.previousModal?.open()
-    }
 
     public async save(e: Event): Promise<void> {
         //e.preventDefault();
@@ -81,6 +77,8 @@ export default class DateModal extends BaseModal {
             const linkPath = this.plugin.app.metadataCache.getFirstLinkpathDest(this.field.options.linkPath || "" + newValue.format(this.format), this.file.path)
             const formattedValue = this.insertAsLink ? `[[${this.field.options.linkPath || ""}${newValue.format(this.format)}${linkPath ? "|" + linkPath.basename : ""}]]` : newValue.format(this.format)
             await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: formattedValue } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
+            this.saved = true
+            if (this.previousModal) await this.goToPreviousModal()
             if (this.nextIntervalField && this.pushNextInterval && this.nextShift) {
                 await postValues(this.plugin, [{ id: this.nextIntervalField!.id, payload: { value: this.nextShift! } }], this.file.path)
                 this.close()
@@ -88,6 +86,8 @@ export default class DateModal extends BaseModal {
             this.close();
         } else if (!this.value) {
             await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
+            this.saved = true
+            if (this.previousModal) await this.goToPreviousModal()
             this.close()
         } else {
             this.errorField.show();
