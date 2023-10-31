@@ -25,7 +25,7 @@ export class Note {
             line: number;
         };
     }
-
+    //FIXME when first item is empty, all following items are store as empty in indexedDb - but not always
     constructor(
         public plugin: MetadataMenu,
         public file: TFile,
@@ -252,6 +252,7 @@ export class Note {
                     return
                 }
                 const field = this.getField(id)
+                console.log("THIS WILL ADD A", field, "WITH ID", id)
                 const lastItemLine = parentNode.line.objectListLines[i].last()
                 if (lastItemLine) {
                     //if line is " .... - " it is a place holder for fields, let's replace the content of this line's node
@@ -280,6 +281,7 @@ export class Note {
                     //specific case where the field is object but the upperIndex is unknown
                     //it mean that we have to insert a new ObjectListItem
                     const node = this.getNodeForIndexedPath(upperPath)
+                    console.log("UPPERNODE", node, upperPath)
                     if (node) {
                         const newItemLine = new Line(this.plugin, node.line.note, position, "", node.line.number! + 1)
                         // if field is not in a list, shift of 0, else shift 1
@@ -287,9 +289,11 @@ export class Note {
                         new LineNode(this.plugin, newItemLine, node.buildIndentedListItem("", shift))
                         newItemLine.renderLine(asList, asBlockquote)
                     } else {
-                        //creer le node pour initaliser la liste
+                        //TODO creer le node @root pour initaliser la liste
                         const parentField = this.existingFields.find(eF => eF.indexedPath === upperPath)
-                        console.log(parentField)
+                        console.log("PARENT FIELD", parentField, insertLineNumber)
+                        const objectListHeaderLine = new Line(this.plugin, this, position, `${field.name}:`, insertLineNumber)
+                        objectListHeaderLine.renderLine()
                     }
                 } else {
                     const parentField = this.existingFields.find(eF => eF.indexedPath === upperPath)

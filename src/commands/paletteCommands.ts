@@ -176,30 +176,6 @@ function insertMissingFieldsCommand(plugin: MetadataMenu) {
                     }
                 })()
             }
-            /*
-            const dvApi = plugin.app.plugins.plugins.dataview?.api;
-            if (dvApi && inFile) {
-                const file = view.file;
-                const currentFieldsNames = genuineKeys(dvApi.page(file.path))
-                if (![...plugin.fieldIndex.filesFields.get(file.path) || []].map(field => field.name).every(fieldName => currentFieldsNames.includes(fieldName))) {
-                    new chooseSectionModal(
-                        plugin,
-                        file,
-                        (
-                            lineNumber: number,
-                            asList: boolean,
-                            asBlockquote: boolean
-                        ) => insertMissingFields(
-                            plugin,
-                            file.path,
-                            lineNumber,
-                            asList,
-                            asBlockquote
-                        )
-                    ).open();
-                }
-            }
-            */
         }
     })
 }

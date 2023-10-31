@@ -98,6 +98,7 @@ export class ExistingField {
         const putPayload: IndexedExistingField[] = []
         const delPayload: string[] = []
         const lastUpdate: number | undefined = (await updates.get(plugin, "fieldsValues") as { id: string, value: number } || undefined)?.value
+        //TODO optimize with an index on time and a IDBRange?
         const indexedEF: IndexedExistingField[] = await fieldsValues.getElement(plugin, 'all')
         const files = plugin.app.vault.getMarkdownFiles()
             .filter(_f => !plugin.settings.classFilesPath || !_f.path.startsWith(plugin.settings.classFilesPath))

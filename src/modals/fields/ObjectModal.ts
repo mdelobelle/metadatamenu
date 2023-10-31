@@ -7,9 +7,12 @@ import { ExistingField } from "src/fields/ExistingField";
 import { FieldManager as F } from "src/fields/FieldManager";
 import { FieldManager, FieldType } from "src/types/fieldTypes";
 import ObjectListModal from "./ObjectListModal";
+import ObjectField from "src/fields/fieldManagers/ObjectField";
+import { postValues } from "src/commands/postValues";
 
 export default class ObjectModal extends SuggestModal<ExistingField | Field> {
-
+    public existingFields: ExistingField[] = []
+    public missingFields: Field[] = []
     constructor(
         public plugin: MetadataMenu,
         public file: TFile,
@@ -18,32 +21,55 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
         public lineNumber: number = -1,
         public asList: boolean = false,
         public asBlockquote: boolean = false,
-        public previousModal?: ObjectModal | ObjectListModal,
-        public existingFields: ExistingField[] = [],
-        public missingFields: Field[] = []
+        public previousModal?: ObjectModal | ObjectListModal
         //TODO: can be generalized?
     ) {
         super(plugin.app);
+        this.containerEl.addClass("metadata-menu")
+        this.containerEl.addClass("narrow")
+        const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
+        if (!this.eF?.field.isRoot()) this.buildBackButton(inputContainer)
+        inputContainer.appendChild(this.inputEl)
+        this.inputEl.disabled = true
+        this.inputEl.value = `${this.eF?.field.name || ""} items`
+        this.inputEl.addClass("input-as-title")
+        this.containerEl.find(".prompt").prepend(inputContainer)
     };
 
-    onOpen() {
-        //this.previousModal?.close(true)
+    private buildBackButton(container: HTMLDivElement) {
+        const backButton = new ButtonComponent(container)
+        backButton.setIcon("left-arrow")
+        backButton.onClick(async () => console.log("GO BACK"))
+        backButton.setCta();
+        backButton.setTooltip("Add a new item")
+        const infoContainer = container.createDiv({ cls: "info" })
+        infoContainer.setText("Alt+Esc to go back")
+    }
+
+    async onOpen() {
+        if (this.indexedPath) {
+            const upperPath = Field.upperIndexedPathObjectPath(this.indexedPath)
+            const { index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
+            const { existingFields, missingFields } = await ObjectField.getExistingAndMissingFields(
+                this.plugin, this.file, upperFieldIndex !== undefined ? upperPath : this.indexedPath)
+            this.existingFields = existingFields
+            this.missingFields = missingFields
+        }
+
+        this.containerEl.onkeydown = async (e) => {
+            if (e.key == "Escape") {
+                e.preventDefault()
+                if (e.altKey) {
+                    this.previousModal?.open()
+                    this.close()
+                }
+            }
+        }
         super.onOpen()
         this.containerEl.addClass("metadata-menu")
         this.containerEl.addClass("narrow")
-        console.log(this)
     };
 
-    /*
-    close(fromChildOpening: boolean = false): void {
-        //if (!fromChildOpening) this.previousModal?.open()
-        super.close()
-    }
-    */
-    onClose(): void {
-        //@ts-ignore
-        console.log("SELECTED", this.selectedItem)
-    }
 
     getSuggestions(query: string = ""): Array<ExistingField | Field> {
         return [...this.existingFields, ...this.missingFields].filter(f => {
@@ -69,6 +95,14 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
 
     }
 
+    onNoSuggestion(): void {
+        console.log("PREVIOUS MODAL", this.previousModal)
+        this.previousModal?.open()
+    }
+
+    onClose(): void {
+        super.onClose()
+    }
 
     async onChooseSuggestion(item: ExistingField | Field, evt: MouseEvent | KeyboardEvent) {
         const reOpen = async () => {
@@ -100,8 +134,13 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
             }
         } else {
             //insert field
-            const fieldManager = new FieldManager[item.type](this.plugin, item) as F
-            fieldManager.createAndOpenFieldModal(this.file, item.name, undefined, `${this.indexedPath}____${item.id}`, this.lineNumber, this.asList, this.asBlockquote, this)
+            if (item.type === FieldType.ObjectList) {
+                await postValues(this.plugin, [{ id: `${this.indexedPath}____${item.id}`, payload: { value: "" } }], this.file)
+                this.open()
+            } else {
+                const fieldManager = new FieldManager[item.type](this.plugin, item) as F
+                fieldManager.createAndOpenFieldModal(this.file, item.name, undefined, `${this.indexedPath}____${item.id}`, this.lineNumber, this.asList, this.asBlockquote, this)
+            }
         }
     }
 };

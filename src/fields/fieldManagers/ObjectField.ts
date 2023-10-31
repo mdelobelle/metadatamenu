@@ -10,6 +10,7 @@ import ObjectModal from "src/modals/fields/ObjectModal";
 import OptionsList from "src/options/OptionsList";
 import { ExistingField } from "../ExistingField";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
+import { string } from "yaml/dist/schema/common/string";
 
 export default class ObjectField extends FieldManager {
 
@@ -54,17 +55,23 @@ export default class ObjectField extends FieldManager {
     getOptionsStr(): string {
         return ""
     }
+
+    static async getExistingAndMissingFields(plugin: MetadataMenu, file: TFile, indexedPath?: string): Promise<{
+        existingFields: ExistingField[],
+        missingFields: Field[]
+    }> {
+        const existingFields = (await ExistingField.getExistingFieldsFromIndexForFilePath(plugin, file))
+            .filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === indexedPath) || []
+        const { id, index } = Field.getIdAndIndex(indexedPath?.split("____").last())
+        const missingFields = plugin.fieldIndex.filesFields.get(file.path)?.filter(_f =>
+            _f.getFirstAncestor()?.id === id).filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
+        return { existingFields, missingFields }
+    }
+
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField,
         indexedPath?: string, lineNumber?: number, asList?: boolean, asBlockquote?: boolean,
         previousModal?: ObjectModal | ObjectListModal): Promise<void> {
-        console.log("OBJECT EF", eF)
-        const existingFields = (await ExistingField.getExistingFieldsFromIndexForFilePath(this.plugin, file))
-            .filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === indexedPath) || []
-        console.log("EXISTING FIELDS", existingFields)
-        const { id, index } = Field.getIdAndIndex(indexedPath?.split("____").last())
-        const missingFields = this.plugin.fieldIndex.filesFields.get(file.path)?.filter(_f =>
-            _f.getFirstAncestor()?.id === id).filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
-        const fieldModal = new ObjectModal(this.plugin, file, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal, existingFields, missingFields)
+        const fieldModal = new ObjectModal(this.plugin, file, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal)
         fieldModal.open();
     }
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {

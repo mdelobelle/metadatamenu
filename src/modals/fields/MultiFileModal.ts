@@ -178,6 +178,8 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
         this.renderSelected()
     }
 
-    async onChooseItem(item: TFile): Promise<void> { }
+    async onChooseItem(item: TFile): Promise<void> {
+
+    }
 
 }

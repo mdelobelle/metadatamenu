@@ -1757,6 +1757,13 @@ span.flatpickr-weekday {
   align-items: center;
   border-bottom: 1px solid var(--background-secondary-alt);
 }
+.suggester-input .info {
+  white-space: nowrap;
+  margin-right: 1em;
+  font-size: x-small;
+  font-style: italic;
+  color: var(--color-accent);
+}
 .suggester-input .prompt-input {
   border: none;
 }
@@ -1772,6 +1779,9 @@ span.flatpickr-weekday {
 }
 .suggester-input button:last-child {
   margin-right: 0;
+}
+.suggester-input button:first-child {
+  margin-left: 1em;
 }
 .suggester-input button:last-child {
   margin-right: 1em;

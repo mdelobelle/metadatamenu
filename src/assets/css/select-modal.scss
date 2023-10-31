@@ -21,11 +21,25 @@
     align-items: center;
     border-bottom: 1px solid var(--background-secondary-alt);
 
+
+
+    .info {
+        white-space: nowrap;
+        margin-right: 1em;
+        font-size: x-small;
+        font-style: italic;
+        color: var(--color-accent);
+    }
+
     .prompt-input{
         border: none;
     }
 
     @include action-button();
+
+    button:first-child{
+            margin-left: 1em;
+    }
 
     button:last-child{
             margin-right: 1em;

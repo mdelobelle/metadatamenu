@@ -76,30 +76,22 @@ export default class BaseModal extends Modal {
         await ExistingField.indexFieldsValues(this.plugin)
         const pM = this.previousModal
 
+        //TODO test for object in object
 
         if (pM && this.indexedPath) {
             const upperPath = Field.upperIndexedPathObjectPath(this.indexedPath)
             const { index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
-
             const eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, pM.file, pM.indexedPath)
-
             const pField = pM.eF?.field
             const pFile = pM.file
             const pIndexedPath = pM.indexedPath
             if (upperFieldIndex) {
                 pM.close()
-                const existingFields = (await ExistingField.getExistingFieldsFromIndexForFilePath(this.plugin, this.file))
-                    .filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === upperPath) || []
-                const { id } = Field.getIdAndIndex(upperPath?.split("____").last())
-                const missingFields = this.plugin.fieldIndex.filesFields
-                    .get(this.file.path)?.filter(_f => _f.getFirstAncestor()?.id === id)
-                    .filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
                 const objectModal = new ObjectModal(this.plugin, this.file, undefined, upperPath,
-                    undefined, undefined, undefined, pM.previousModal, existingFields, missingFields)
+                    undefined, undefined, undefined, pM.previousModal)
                 objectModal.open()
             } else if (pField && pFile) {
                 pM.close()
-
                 const fM = new FieldManager[pField.type](this.plugin, pField)
                 fM.createAndOpenFieldModal(pFile, pField.name, eF,
                     pIndexedPath, pM.lineNumber, pM.asList, pM.asBlockquote,

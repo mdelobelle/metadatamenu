@@ -105,8 +105,7 @@ export default class ObjectListField extends FieldManager {
 
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField, indexedPath?: string,
         lineNumber?: number, asList?: boolean, asBlockquote?: boolean, previousModal?: ObjectModal | ObjectListModal): Promise<void> {
-        const objects = await eF?.getChildrenFields(this.plugin, file) || []
-        const fieldModal = new ObjectListModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal, objects)
+        const fieldModal = new ObjectListModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal)
         fieldModal.open();
     }
 

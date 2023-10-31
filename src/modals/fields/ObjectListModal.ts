@@ -6,12 +6,12 @@ import ObjectListField, { ObjectListItem } from "src/fields/fieldManagers/Object
 import { Note } from "src/note/note";
 import { FieldManager } from "src/types/fieldTypes";
 import ObjectModal from "./ObjectModal";
-import * as fieldsValues from 'src/db/stores/fieldsValues'
 import { postValues } from "src/commands/postValues";
 //FIXME can't add a new item for an empty list
 export default class ObjectListModal extends SuggestModal<ObjectListItem> {
     private addButton: ButtonComponent;
     private toRemove?: ObjectListItem;
+    private objects: ObjectListItem[] = []
 
     constructor(
         public plugin: MetadataMenu,
@@ -23,48 +23,75 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
         public asList: boolean = false,
         public asBlockquote: boolean = false,
         public previousModal?: ObjectModal | ObjectListModal,
-        public objects: ObjectListItem[] = []
     ) {
         super(plugin.app);
         this.containerEl.addClass("metadata-menu")
         this.containerEl.addClass("narrow")
         const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
+        if (!this.field.isRoot()) this.buildBackButton(inputContainer)
         inputContainer.appendChild(this.inputEl)
         this.inputEl.disabled = true
         this.inputEl.value = `${this.field.name} items`
         this.inputEl.addClass("input-as-title")
         this.containerEl.find(".prompt").prepend(inputContainer)
-
-        // addButton
-        this.addButton = new ButtonComponent(inputContainer)
-        this.addButton.setIcon("plus")
-        this.addButton.onClick(async () => {
-            const fieldManager = new FieldManager[this.field.type](this.plugin, this.field) as ObjectListField
-            if (this.eF) {
-                await fieldManager.addObjectListItem(this.file, this.eF, this.indexedPath);
-                this.close()
-            } else if (this.indexedPath) {
-                //first insert the empty object list
-                await postValues(this.plugin, [{ id: this.indexedPath, payload: { value: "" } }], this.file)
-                this.close()
-            }
-        })
-        this.addButton.setCta();
-        this.addButton.setTooltip("Add a new item")
+        this.buildAddButton(inputContainer)
     };
 
-    onOpen() {
-        //this.previousModal?.close(true)
-        super.onOpen()
-        console.log(this)
-    };
-
-    /*
-    close(fromChildOpening: boolean = false): void {
-        //if (!fromChildOpening) this.previousModal?.open()
-        super.close()
+    private buildBackButton(container: HTMLDivElement) {
+        const backButton = new ButtonComponent(container)
+        backButton.setIcon("left-arrow")
+        backButton.onClick(async () => console.log("GO BACK"))
+        backButton.setCta();
+        backButton.setTooltip("Add a new item")
+        const infoContainer = container.createDiv({ cls: "info" })
+        infoContainer.setText("Alt+Esc to go back")
     }
-    */
+    private buildAddButton(container: HTMLDivElement) {
+        const infoContainer = container.createDiv({ cls: "info" })
+        infoContainer.setText("Alt+Enter to Add")
+        const addButton = new ButtonComponent(container)
+        addButton.setIcon("plus")
+        addButton.onClick(async () => this.addNew())
+        addButton.setCta();
+        addButton.setTooltip("Add a new item")
+    }
+
+
+    private async addNew() {
+        const fieldManager = new FieldManager[this.field.type](this.plugin, this.field) as ObjectListField
+        if (this.eF) {
+            await fieldManager.addObjectListItem(this.file, this.eF, this.indexedPath);
+            this.close()
+            this.open()
+        } else if (this.indexedPath) {
+            //first insert the empty object list
+            await postValues(this.plugin, [{ id: this.indexedPath, payload: { value: "" } }], this.file)
+            this.close()
+            this.open()
+        }
+    }
+
+    async onOpen() {
+        this.containerEl.onkeydown = async (e) => {
+            if (e.key == "Enter") {
+                e.preventDefault()
+                if (e.altKey) {
+                    await this.addNew()
+                }
+            }
+            if (e.key == "Escape") {
+                e.preventDefault()
+                if (e.altKey) {
+                    this.previousModal?.open()
+                    this.close()
+                }
+            }
+        }
+        const _eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, this.file, this.indexedPath)
+        this.objects = await _eF?.getChildrenFields(this.plugin, this.file) || []
+        super.onOpen()
+    };
+
 
     getSuggestions(query: string = ""): ObjectListItem[] {
         return this.objects
@@ -96,6 +123,7 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
     }
 
     async onChooseSuggestion(item: ObjectListItem, evt: MouseEvent | KeyboardEvent) {
+        this.previousModal?.close() // it is triggered at close by enter
         const reOpen = async () => {
 
             // because vault.on("modify") is not triggered fast enough
@@ -113,14 +141,8 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
                 await reOpen()
             }
         } else {
-            const existingFields = (await ExistingField.getExistingFieldsFromIndexForFilePath(this.plugin, this.file))
-                .filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === item.indexedPath) || []
-            const { id, index } = Field.getIdAndIndex(item.indexedPath?.split("____").last())
-            const missingFields = this.plugin.fieldIndex.filesFields
-                .get(this.file.path)?.filter(_f => _f.getFirstAncestor()?.id === id)
-                .filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
             const objectModal = new ObjectModal(this.plugin, this.file, undefined, item.indexedPath,
-                undefined, undefined, undefined, this, existingFields, missingFields)
+                undefined, undefined, undefined, this)
             objectModal.open()
         }
     }

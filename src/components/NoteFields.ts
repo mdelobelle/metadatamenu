@@ -12,6 +12,7 @@ import { FileClassManager } from "./fileClassManager";
 import { Note } from "src/note/note";
 import { ExistingField } from "src/fields/ExistingField";
 import ObjectListField from "src/fields/fieldManagers/ObjectListField";
+import { postValues } from "src/commands/postValues";
 
 export class FieldOptions {
 
@@ -170,7 +171,7 @@ export class FieldsModal extends Modal {
             const fieldBtn = new ButtonComponent(fieldBtnContainer)
             fieldBtn.setIcon("list-plus")
             fieldBtn.setTooltip("Add field at section")
-            fieldBtn.onClick(() => {
+            fieldBtn.onClick(async () => {
                 //in case of objectField grand-child, don't ask for chooseSection
                 if (field.path === "") {
                     new ChooseSectionModal(
@@ -180,6 +181,12 @@ export class FieldsModal extends Modal {
                         ) => FieldManager.createAndOpenModal(
                             this.plugin, this.file, field.name, field, undefined, newIndexedPath, lineNumber, asList, asBlockquote)
                     ).open();
+                } else if (field.type === FieldType.FieldType.ObjectList) {
+                    //first create the objectList item
+                    if (this.note) await postValues(this.plugin, [{ id: `${this.indexedPath}____${field.id}`, payload: { value: "" } }], this.file)
+                    // then add a first item to this ObjectList and go to it
+                    //if (this.note) await (fieldManager as ObjectListField).addObjectListItem(this.file, undefined, `${this.indexedPath}____${field.id}`)
+                    this.indexedPath = `${this.indexedPath}____${field.id}`
                 } else {
                     FieldManager.createAndOpenModal(this.plugin, this.file, field.name, field, undefined, newIndexedPath, -1, false, false)
                 }
@@ -341,8 +348,8 @@ export class FieldsModal extends Modal {
         insertNewItemBtn.onClick(async () => {
             const fieldManager = new FieldType.FieldManager[field.type](this.plugin, field) as ObjectListField
             if (this.note) fieldManager.addObjectListItem(this.file, undefined, this.indexedPath)
+            console.log("ADD ITEM @", `${this.indexedPath}`)
             this.indexedPath = indexedPath
-            this.close()
         })
     }
 
@@ -351,7 +358,7 @@ export class FieldsModal extends Modal {
         const { id, index } = Field.getIdAndIndex(this.indexedPath?.split("____").last())
         if (this.indexedPath && this.note.fields.find(_f => _f.id === id)?.type === FieldType.FieldType.ObjectList && index === undefined) {
             const field = this.note.fields.find(_f => _f.id === id)!
-            const items = this.note.existingFields.find(eF => eF.indexedPath === this.indexedPath)?.value
+            const items = this.note.existingFields.find(eF => eF.indexedPath === this.indexedPath)?.value || []
             items.forEach((item: any, index: number) => this.buildObjectListItemContainer(fieldsContainer, field, item, `${this.indexedPath}[${index}]`))
             this.buildInsertNewItem(field, this.indexedPath)
         } else {
@@ -363,6 +370,7 @@ export class FieldsModal extends Modal {
         }
     }
 }
+
 
 export default class NoteFieldsComponent extends Component {
 
