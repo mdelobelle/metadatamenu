@@ -7,7 +7,7 @@ import { FieldManager as F } from "src/fields/FieldManager";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
 import CycleField from "src/fields/fieldManagers/CycleField";
 import { AddFileClassToFileModal } from "src/fileClass/fileClass";
-import AddNewFileClassModal from "src/modals/addNewFileClassModal";
+import AddNewFileClassModal from "src/modals/AddNewFileClassModal";
 import { LineNode } from "src/note/lineNode";
 import { Note } from "src/note/note";
 import { FieldManager, FieldType } from "src/types/fieldTypes";

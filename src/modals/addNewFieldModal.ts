@@ -3,7 +3,7 @@ import MetadataMenu from "main";
 import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
 
-export default class addNewFieldModal extends Modal {
+export default class AddNewFieldModal extends Modal {
 
     constructor(
         private plugin: MetadataMenu,

@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { FuzzyMatch, FuzzySuggestModal, setIcon, TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import { FieldIcon, FieldManager, FieldType, FieldTypeTagClass, objectTypes } from "src/types/fieldTypes";
-import addNewFieldModal from "./addNewFieldModal";
+import AddNewFieldModal from "./AddNewFieldModal";
 
 
 interface Option {
@@ -62,7 +62,7 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
 
     async onChooseItem(item: Option, evt: MouseEvent | KeyboardEvent): Promise<void> {
         if (item.actionLabel === "++New++") {
-            const newFieldModal = new addNewFieldModal(this.plugin, this.lineNumber, this.file);
+            const newFieldModal = new AddNewFieldModal(this.plugin, this.lineNumber, this.file);
             newFieldModal.open();
             this.close();
         } else {

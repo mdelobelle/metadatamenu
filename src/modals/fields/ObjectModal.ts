@@ -9,8 +9,9 @@ import { FieldManager, FieldType } from "src/types/fieldTypes";
 import ObjectListModal from "./ObjectListModal";
 import ObjectField from "src/fields/fieldManagers/ObjectField";
 import { postValues } from "src/commands/postValues";
+import BaseSuggestModal from "../BaseSuggestModal";
 
-export default class ObjectModal extends SuggestModal<ExistingField | Field> {
+export default class ObjectModal extends BaseSuggestModal<ExistingField | Field> {
     public existingFields: ExistingField[] = []
     public missingFields: Field[] = []
     constructor(
@@ -22,39 +23,9 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
         public asList: boolean = false,
         public asBlockquote: boolean = false,
         public previousModal?: ObjectModal | ObjectListModal
-        //TODO: can be generalized?
     ) {
-        super(plugin.app);
-        this.containerEl.addClass("metadata-menu")
-        this.containerEl.addClass("narrow")
-        const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
-        if (!this.eF?.field.isRoot()) this.buildBackButton(inputContainer)
-        let title: string = ""
-        if (this.eF) {
-            title = this.eF.field.name
-        } else if (this.indexedPath) {
-            //indexedPath of form aaaaa[n]
-            const { id: objectId, index: objectIndex } = Field.getIdAndIndex(this.indexedPath.split("____").last())
-            const upperObject = this.plugin.fieldIndex.filesFields.get(this.file.path)?.find(_f => _f.id === objectId)
-            title = `${upperObject?.name}${objectIndex ? " [" + objectIndex + "]" : ""}` || "unknown field"
-        }
-        const titleContainer = inputContainer.createDiv({ cls: "suggester-title" })
-        titleContainer.innerHTML = `<b>${title}</b> fields`
-        inputContainer.appendChild(this.inputEl)
-        this.inputEl.disabled = true
-        this.inputEl.addClass("input-as-title")
-        this.containerEl.find(".prompt").prepend(inputContainer)
+        super(plugin, file, eF, indexedPath, previousModal, "navigation");
     };
-
-    private buildBackButton(container: HTMLDivElement) {
-        const backButton = new ButtonComponent(container)
-        backButton.setIcon("left-arrow")
-        backButton.onClick(async () => console.log("GO BACK"))
-        backButton.setCta();
-        backButton.setTooltip("Go to parent field")
-        const infoContainer = container.createDiv({ cls: "info" })
-        infoContainer.setText("Alt+Esc to go back")
-    }
 
     async onOpen() {
         await ExistingField.indexFieldsValues(this.plugin)
@@ -66,19 +37,7 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
             this.existingFields = existingFields
             this.missingFields = missingFields
         }
-
-        this.containerEl.onkeydown = async (e) => {
-            if (e.key == "Escape") {
-                e.preventDefault()
-                if (e.altKey) {
-                    this.previousModal?.open()
-                    this.close()
-                }
-            }
-        }
         super.onOpen()
-        this.containerEl.addClass("metadata-menu")
-        this.containerEl.addClass("narrow")
     };
 
 
@@ -104,15 +63,6 @@ export default class ObjectModal extends SuggestModal<ExistingField | Field> {
             container.createDiv({ text: "<missing>" })
         }
 
-    }
-
-    onNoSuggestion(): void {
-        console.log("PREVIOUS MODAL", this.previousModal)
-        this.previousModal?.open()
-    }
-
-    onClose(): void {
-        super.onClose()
     }
 
     async onChooseSuggestion(item: ExistingField | Field, evt: MouseEvent | KeyboardEvent) {

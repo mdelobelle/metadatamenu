@@ -7,8 +7,9 @@ import { Note } from "src/note/note";
 import { FieldManager } from "src/types/fieldTypes";
 import ObjectModal from "./ObjectModal";
 import { postValues } from "src/commands/postValues";
+import BaseSuggestModal from "../BaseSuggestModal";
 //FIXME can't add a new item for an empty list
-export default class ObjectListModal extends SuggestModal<ObjectListItem> {
+export default class ObjectListModal extends BaseSuggestModal<ObjectListItem> {
     private addButton: ButtonComponent;
     private toRemove?: ObjectListItem;
     private objects: ObjectListItem[] = []
@@ -24,41 +25,10 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
         public asBlockquote: boolean = false,
         public previousModal?: ObjectModal | ObjectListModal,
     ) {
-        super(plugin.app);
-        this.containerEl.addClass("metadata-menu")
-        this.containerEl.addClass("narrow")
-        const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
-        if (!this.field.isRoot()) this.buildBackButton(inputContainer)
-        const title = inputContainer.createDiv({ cls: "suggester-title" })
-        title.innerHTML = `<b>${this.field.name}</b> items`
-        inputContainer.appendChild(this.inputEl)
-        this.inputEl.disabled = true
-        this.inputEl.addClass("input-as-title")
-        this.containerEl.find(".prompt").prepend(inputContainer)
-        this.buildAddButton(inputContainer)
+        super(plugin, file, eF, indexedPath, previousModal, "navigation");
     };
 
-    private buildBackButton(container: HTMLDivElement) {
-        const backButton = new ButtonComponent(container)
-        backButton.setIcon("left-arrow")
-        backButton.onClick(async () => console.log("GO BACK"))
-        backButton.setCta();
-        backButton.setTooltip("Go to parent field")
-        const infoContainer = container.createDiv({ cls: "info" })
-        infoContainer.setText("Alt+Esc to go back")
-    }
-    private buildAddButton(container: HTMLDivElement) {
-        const infoContainer = container.createDiv({ cls: "info" })
-        infoContainer.setText("Alt+Enter to Add")
-        const addButton = new ButtonComponent(container)
-        addButton.setIcon("plus")
-        addButton.onClick(async () => this.addNew())
-        addButton.setCta();
-        addButton.setTooltip("Add a new item")
-    }
-
-
-    private async addNew() {
+    public async onAdd() {
         const fieldManager = new FieldManager[this.field.type](this.plugin, this.field) as ObjectListField
         if (this.eF) {
             await fieldManager.addObjectListItem(this.file, this.eF, this.indexedPath);
@@ -73,22 +43,7 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
     }
 
     async onOpen() {
-        await ExistingField.indexFieldsValues
-        this.containerEl.onkeydown = async (e) => {
-            if (e.key == "Enter") {
-                e.preventDefault()
-                if (e.altKey) {
-                    await this.addNew()
-                }
-            }
-            if (e.key == "Escape") {
-                e.preventDefault()
-                if (e.altKey) {
-                    this.previousModal?.open()
-                    this.close()
-                }
-            }
-        }
+        await ExistingField.indexFieldsValues(this.plugin)
         const _eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, this.file, this.indexedPath)
         this.objects = await _eF?.getChildrenFields(this.plugin, this.file) || []
         super.onOpen()
@@ -125,7 +80,6 @@ export default class ObjectListModal extends SuggestModal<ObjectListItem> {
     }
 
     async onChooseSuggestion(item: ObjectListItem, evt: MouseEvent | KeyboardEvent) {
-        this.previousModal?.close() // it is triggered at close by enter
         const reOpen = async () => {
 
             // because vault.on("modify") is not triggered fast enough

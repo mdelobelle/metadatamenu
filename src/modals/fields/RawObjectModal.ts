@@ -3,7 +3,7 @@ import { TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import Field from "src/fields/Field";
 import { cleanActions } from "src/utils/modals";
-import BaseModal from "../baseModal";
+import BaseModal from "../BaseModal";
 import { EditorView, basicSetup } from "codemirror"
 import { lintGutter } from "@codemirror/lint";
 import { StateField, EditorState } from "@codemirror/state"

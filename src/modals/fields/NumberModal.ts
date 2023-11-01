@@ -6,7 +6,7 @@ import Field from "src/fields/Field";
 import NumberField from "src/fields/fieldManagers/NumberField";
 import { FieldManager } from "src/types/fieldTypes";
 import { cleanActions } from "src/utils/modals";
-import BaseModal from "../baseModal";
+import BaseModal from "../BaseModal";
 import ObjectListModal from "./ObjectListModal";
 import ObjectModal from "./ObjectModal";
 

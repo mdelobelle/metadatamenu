@@ -21,6 +21,8 @@
     align-items: center;
     border-bottom: 1px solid var(--background-secondary-alt);
     margin-top: 0.25em;
+    border-color: rgba(var(--mono-rgb-100),.05);
+        border-bottom: 1px solid var(--background-secondary);
 
     .suggester-title{
         margin-left: 1em;
@@ -35,9 +37,11 @@
         color: var(--color-accent);
     }
 
+    
     .prompt-input{
         border: none;
     }
+    
 
     @include action-button();
 
