@@ -21,15 +21,7 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
     const setStatusChanged = (el: Element) => {
         const path = destPath + ".md"
         el.removeClass("field-status-changed")
-        const index = plugin.fieldIndex
-        let changed: boolean = false
-        index.filesLookupAndFormulaFieldsExists.get(path)?.forEach(field => {
-            if (field.type === FieldType.Lookup) {
-                changed = changed || index.fileLookupFieldsStatus.get(path + "__" + field.name) === Status.changed
-            } else if (field.type === FieldType.Formula) {
-                changed = changed || index.fileFormulaFieldsStatus.get(path + "__" + field.name) === Status.changed
-            }
-        })
+        const changed = plugin.fieldIndex.dvQFieldChanged(path)
         if (changed) el.addClass("field-status-changed")
     }
     if (link.classList.contains("metadata-menu-button-hidden")) return; //so that snippets can prevent the button from being added

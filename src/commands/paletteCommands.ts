@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { FileView, MarkdownView, Notice, TFile, View } from "obsidian";
+import { MarkdownView, Notice, TFile } from "obsidian";
 import NoteFieldsComponent from "src/components/NoteFields";
 import Field from "src/fields/Field";
 import { FileClass } from "src/fileClass/fileClass";
@@ -8,7 +8,6 @@ import chooseSectionModal from "src/modals/chooseSectionModal";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import FileClassOptionsList from "src/options/FileClassOptionsList";
 import OptionsList from "src/options/OptionsList";
-import { genuineKeys } from "src/utils/dataviewUtils";
 import { insertMissingFields } from "./insertMissingFields";
 import { FieldManager as F } from "src/fields/FieldManager";
 import { FileClassManager } from "src/components/fileClassManager";
@@ -33,7 +32,7 @@ function addFileClassAttributeOptions(plugin: MetadataMenu) {
             }
             if (inFileClass) {
                 const fieldCommandSuggestModal = new FieldCommandSuggestModal(plugin.app)
-                const fileClassOptionsList = new FileClassOptionsList(plugin, view!.file, fieldCommandSuggestModal);
+                const fileClassOptionsList = new FileClassOptionsList(plugin, view!.file!, fieldCommandSuggestModal);
                 fileClassOptionsList.createExtraOptionList();
             }
         },
@@ -54,7 +53,7 @@ function addInsertFileClassAttribute(plugin: MetadataMenu) {
             }
             if (inFileClass) {
                 try {
-                    const fileClassName = FileClass.getFileClassNameFromPath(plugin.settings, view!.file.path)
+                    const fileClassName = FileClass.getFileClassNameFromPath(plugin.settings, view!.file!.path)
                     if (fileClassName) {
                         const fileClassAttributeModal = new FileClassAttributeModal(plugin, FileClass.createFileClass(plugin, fileClassName))
                         fileClassAttributeModal.open()
@@ -80,7 +79,7 @@ function addInsertFieldAtPositionCommand(plugin: MetadataMenu) {
                 return inFile
             }
             if (inFile) {
-                const optionsList = new OptionsList(plugin, view!.file, "InsertFieldCommand");
+                const optionsList = new OptionsList(plugin, view!.file!, "InsertFieldCommand");
                 (async () => await optionsList.createExtraOptionList())()
             }
         }
@@ -101,7 +100,7 @@ function addFieldOptionsCommand(plugin: MetadataMenu) {
             }
             if (inFile) {
                 const fieldCommandSuggestModal = new FieldCommandSuggestModal(plugin.app)
-                const optionsList = new OptionsList(plugin, view!.file, fieldCommandSuggestModal);
+                const optionsList = new OptionsList(plugin, view!.file!, fieldCommandSuggestModal);
                 (async () => await optionsList.createExtraOptionList())()
 
             }
@@ -124,10 +123,10 @@ function addManageFieldAtCursorCommand(plugin: MetadataMenu) {
             }
             if (inFile && editor !== undefined) {
 
-                const optionsList = new OptionsList(plugin, view!.file, "ManageAtCursorCommand");
+                const optionsList = new OptionsList(plugin, view!.file!, "ManageAtCursorCommand");
 
                 (async function () {
-                    const note = await Note.buildNote(plugin, view!.file)
+                    const note = await Note.buildNote(plugin, view!.file!)
                     const node = note.getNodeAtPosition(editor.getCursor())
                     if (node) optionsList.createAndOpenFieldModal(node)
                     else new Notice("No field with definition at this position", 2000)
@@ -151,8 +150,7 @@ function insertMissingFieldsCommand(plugin: MetadataMenu) {
             }
             if (inFile) {
                 (async function () {
-                    console.log("INSERTING MISSING FIELDS")
-                    const file = view.file;
+                    const file = view.file!;
                     const existingFields = await ExistingField.getExistingFieldsFromIndexForFilePath(plugin, file)
                     const existingFieldsNames = existingFields.map(eF => eF.field.name)
                     if (![...plugin.fieldIndex.filesFields.get(file.path) || []]
@@ -216,16 +214,17 @@ function addInsertFieldCommand(plugin: MetadataMenu): void {
                 id: command.id,
                 name: command.label,
                 icon: command.icon,
-                checkCallback: (checking: boolean) => {
+                checkCallback: (checking: boolean): boolean | void => {
                     const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
                     const fR = command.id.match(/insert__(?<fileClassName>.*)__(?<fieldName>.*)/)
                     if (checking) {
                         const fileClasses = view?.file ? plugin.fieldIndex.filesFileClasses.get(view?.file.path) : undefined
-                        return view?.file &&
+                        const isFileClass = !!view?.file &&
                             (
-                                fileClasses && fileClasses.some(fileClass => fileClass.name === fR?.groups?.fileClassName) ||
+                                !!fileClasses && fileClasses.some(fileClass => fileClass.name === fR?.groups?.fileClassName) ||
                                 !fileClasses && fR?.groups?.fileClassName === "presetField"
                             )
+                        return isFileClass
                     }
                     if (fR?.groups && view?.file) {
                         const fieldName = fR.groups.fieldName
@@ -238,7 +237,7 @@ function addInsertFieldCommand(plugin: MetadataMenu): void {
                                 asBlockquote: boolean
                             ) => F.openFieldModal(
                                 plugin,
-                                view.file,
+                                view.file!,
                                 fieldName,
                                 lineNumber,
                                 asList,
@@ -246,7 +245,6 @@ function addInsertFieldCommand(plugin: MetadataMenu): void {
                             )
                         ).open();
                     }
-
                 }
             })
         }

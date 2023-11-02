@@ -82,7 +82,6 @@ export default class CycleField extends AbstractListBasedField {
     public async next(name: string, file: TFile, indexedPath?: string): Promise<void> {
         const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, file, indexedPath)
         const value = eF?.value || ""
-        console.log("NEXTVALUE", value)
         //let matchedValue = this.getRawOptionFromDuration(value) || value;
         await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: this.nextOption(value).toString() } }], file)
     }

@@ -49,9 +49,10 @@ export default class MultiField extends AbstractListBasedField {
         lineNumber?: number,
         asList?: boolean,
         asBlockquote?: boolean,
-        previousModal?: ObjectModal | ObjectListModal
+        previousModal?: ObjectModal | ObjectListModal,
+        preSelectedOptions?: Array<string>
     ): void {
-        const fieldModal = new MultiSelectModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal);
+        const fieldModal = new MultiSelectModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal, preSelectedOptions);
         fieldModal.titleEl.setText(`Select options for ${selectedFieldName}`);
         fieldModal.open();
     }

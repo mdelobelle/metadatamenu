@@ -1,5 +1,6 @@
 import MetadataMenu from "main";
 import { ButtonComponent, Component, FileView, MarkdownEditView, TFile, View } from "obsidian";
+import { updateFormulas } from "src/commands/updateFormulas";
 import { updateLookups } from "src/commands/updateLookups";
 import { FieldType } from "src/types/fieldTypes";
 import { Status } from "src/types/lookupTypes";
@@ -72,11 +73,15 @@ export default class IndexStatus extends Component {
         this.statusBtn.onClick(async () => {
             let updatesToApply = false
             if (this.state === "update") {
-                const lookupFields = this.getLookupFieldsToUpdate()
-                await Promise.all(lookupFields.map(async field => {
+                const dvQFields = this.getdvQFieldsToUpdate()
+                await Promise.all(dvQFields.map(async field => {
                     if (this.file) {
-                        await updateLookups(this.plugin, { file: this.file, fieldName: field.name });
-                        updatesToApply = true
+                        if (field.type === FieldType.Lookup) {
+                            await updateLookups(this.plugin, { file: this.file, fieldName: field.name });
+                            updatesToApply = true
+                        } else if (field.type === FieldType.Formula) {
+                            await updateFormulas(this.plugin, { file: this.file, fieldName: field.name })
+                        }
                     }
                 })
                 )
@@ -90,23 +95,25 @@ export default class IndexStatus extends Component {
         if (indexStatusEl) this.plugin.app.statusBar.containerEl.removeChild(indexStatusEl)
     }
 
-    public getLookupFieldsToUpdate() {
+    public getdvQFieldsToUpdate() {
         if (this.file) {
             const index = this.plugin.fieldIndex
-            const fileLookUpFields = index.filesLookupsAndFormulasFields.get(this.file.path) || []
-            return fileLookUpFields.filter(field => field.type === FieldType.Lookup)
+            const fileDVQFields = index.filesLookupsAndFormulasFields.get(this.file.path) || []
+            return fileDVQFields.filter(field => [FieldType.Lookup, FieldType.Formula].includes(field.type))
         }
         return []
     }
 
     public checkForUpdate(view: View | undefined) {
         if (view && view instanceof FileView) {
-            const file = this.plugin.app.vault.getAbstractFileByPath(view.file.path)
+            const file = this.plugin.app.vault.getAbstractFileByPath(view!.file!.path)
             if (file instanceof TFile && file.extension === 'md') {
                 this.file = file
-                const index = this.plugin.fieldIndex
-                const lookupFields = this.getLookupFieldsToUpdate()
-                if (lookupFields.some(field => index.fileLookupFieldsStatus.get(`${file.path}__${field.name}`) === Status.changed)) this.setState("update")
+                if (this.plugin.fieldIndex.dvQFieldChanged(file.path)) {
+                    this.setState("update")
+                } else {
+                    this.setState("indexed")
+                }
             } else {
                 this.file = undefined
             }

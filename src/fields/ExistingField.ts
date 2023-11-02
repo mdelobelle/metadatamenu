@@ -95,10 +95,11 @@ export class ExistingField {
     }
 
     static async indexFieldsValues(plugin: MetadataMenu, changedFiles: TFile[] = []): Promise<void> {
+        let start = Date.now()
+        plugin.indexStatus.setState("indexing")
         const putPayload: IndexedExistingField[] = []
         const delPayload: string[] = []
         const lastUpdate: number | undefined = (await updates.get(plugin, "fieldsValues") as { id: string, value: number } || undefined)?.value
-        //TODO optimize with an index on time and a IDBRange?
         const indexedEF: IndexedExistingField[] = await fieldsValues.getElement(plugin, 'all')
         const files = plugin.app.vault.getMarkdownFiles()
             .filter(_f => !plugin.settings.classFilesPath || !_f.path.startsWith(plugin.settings.classFilesPath))
@@ -107,7 +108,8 @@ export class ExistingField {
                 return !lastChangeInFields || !lastUpdate || lastChangeInFields >= lastUpdate || _f.stat.mtime > lastUpdate
             })
             .filter(_f => !changedFiles.length || changedFiles.map(cF => cF.path).includes(_f.path))
-        console.log("indexing", files.length, "files")
+        console.log("filtered", files.length, "files in ", (Date.now() - start) / 1000, "s")
+        start = Date.now()
         await Promise.all(files.map(async f => {
             const note = await Note.buildNote(plugin, f)
             await ExistingField.buildPayload(note, indexedEF, putPayload, delPayload)
@@ -115,5 +117,7 @@ export class ExistingField {
         await fieldsValues.bulkEditElements(plugin, putPayload)
         await fieldsValues.bulkRemoveElements(plugin, delPayload)
         await updates.update(plugin, "fieldsValues")
+        console.log("indexed", files.length, "files in ", (Date.now() - start) / 1000, "s")
+        plugin.indexStatus.setState("indexed")
     }
 }

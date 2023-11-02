@@ -36,6 +36,9 @@ declare module "obsidian" {
                 [id: string]: any;
                 dataview?: {
                     api?: DataviewApi;
+                    index: {
+                        initialized: boolean
+                    }
                 };
             };
         };

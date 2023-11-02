@@ -7,10 +7,8 @@ import { Note } from "src/note/note";
 import { FieldManager } from "src/types/fieldTypes";
 import ObjectModal from "./ObjectModal";
 import { postValues } from "src/commands/postValues";
-import BaseSuggestModal from "../BaseSuggestModal";
-//FIXME can't add a new item for an empty list
+import BaseSuggestModal from "../BaseObjectModal";
 export default class ObjectListModal extends BaseSuggestModal<ObjectListItem> {
-    private addButton: ButtonComponent;
     private toRemove?: ObjectListItem;
     private objects: ObjectListItem[] = []
 
@@ -25,8 +23,19 @@ export default class ObjectListModal extends BaseSuggestModal<ObjectListItem> {
         public asBlockquote: boolean = false,
         public previousModal?: ObjectModal | ObjectListModal,
     ) {
-        super(plugin, file, eF, indexedPath, previousModal, "navigation");
+        super(plugin, file, eF, indexedPath, previousModal);
     };
+
+    public buildAddButton(container: HTMLDivElement) {
+        const infoContainer = container.createDiv({ cls: "info" })
+        infoContainer.setText("Alt+Enter to Add")
+        const addButton = new ButtonComponent(container)
+        addButton.setIcon("plus")
+        addButton.onClick(async () => { this.onAdd() })
+        addButton.setCta();
+        addButton.setTooltip("Add a new item")
+    }
+
 
     public async onAdd() {
         const fieldManager = new FieldManager[this.field.type](this.plugin, this.field) as ObjectListField

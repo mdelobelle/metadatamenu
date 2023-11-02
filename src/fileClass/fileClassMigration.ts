@@ -54,7 +54,6 @@ export class V1FileClassMigration {
         const file = fileClass.getClassFile();
         if (!fileClass.getMajorVersion() || fileClass.getMajorVersion() as number < 2) {
             const fields: any[] = []
-            console.log(fileClass)
 
             await this.plugin.app.fileManager.processFrontMatter(file, async (fm) => {
                 const attributes = V1FileClassMigration.getInlineFileClassAttributes(this.plugin, fileClass)

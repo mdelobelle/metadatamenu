@@ -18,26 +18,20 @@ export default class BaseModal extends Modal {
     ) {
         super(plugin.app)
     }
+
     onOpen(): void {
         this.containerEl.onkeydown = async (e) => {
-            if (e.key == "Enter") {
+            if (e.key == "Enter" && e.altKey) {
                 e.preventDefault()
-                if (e.altKey) {
-                    await this.save()
-                }
+                await this.save()
+            }
+            if (e.key === "Escape" && e.altKey) {
+                this.close()
             }
         }
     }
-    //TODO review navigation
-    /*
-    Alt+Enter or check button to save and go back or close
-    Alt+Shift+Enter to save and force close
-    remove cancel button
-    Esc to go back or close
-    Alt+Esc to force close
 
-    */
-    public async save(e?: Event): Promise<void> {
+    public async save(): Promise<void> {
         //to be implemented in subclasses
         throw Error("Subclass should implement a save method")
     }
@@ -48,9 +42,7 @@ export default class BaseModal extends Modal {
         infoContainer.setText("Alt+Enter to save")
         const saveBtn = new ButtonComponent(fieldContainer);
         saveBtn.setIcon("checkmark");
-        saveBtn.onClick(async (e: Event) => {
-            await this.save(e);
-        })
+        saveBtn.onClick(async () => { await this.save(); })
     }
 
     public buildFooterBtn() {
@@ -75,8 +67,6 @@ export default class BaseModal extends Modal {
     public async goToPreviousModal() {
         await ExistingField.indexFieldsValues(this.plugin)
         const pM = this.previousModal
-
-        //TODO test for object in object
 
         if (pM && this.indexedPath) {
             const upperPath = Field.upperIndexedPathObjectPath(this.indexedPath)

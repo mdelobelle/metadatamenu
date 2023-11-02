@@ -2,7 +2,6 @@ import MetadataMenu from "main";
 import { ButtonComponent, SuggestModal, TFile } from "obsidian";
 import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
-import { objectTypes } from "src/types/fieldTypes";
 import ObjectListModal from "./fields/ObjectListModal";
 import ObjectModal from "./fields/ObjectModal";
 
@@ -13,32 +12,27 @@ export default abstract class BaseSuggestModal<T> extends SuggestModal<T>{
         public eF?: ExistingField,
         public indexedPath?: string,
         public previousModal?: ObjectModal | ObjectListModal,
-        public type?: "input" | "navigation"
-        //TODO: can be generalized?
     ) {
         super(plugin.app);
-        this.type = type || "input"
         this.containerEl.addClass("metadata-menu")
         this.containerEl.addClass("narrow")
         const headerContainer = this.containerEl.createDiv({ cls: "suggester-input" })
         const { id, index } = Field.getIdAndIndex(indexedPath)
-        if ((id?.includes("____") || index !== undefined) && type === "navigation") this.buildBackButton(headerContainer)
-        if (this.type === "navigation") {
-            this.buildTitle(headerContainer)
-            this.inputEl.disabled = true
-            this.inputEl.addClass("input-as-title")
-        }
+        if (id?.includes("____") || index !== undefined) this.buildBackButton(headerContainer)
+        this.buildTitle(headerContainer)
+        this.inputEl.disabled = true
+        this.inputEl.addClass("input-as-title")
         this.containerEl.find(".prompt").prepend(headerContainer)
         headerContainer.appendChild(this.inputEl)
         this.buildAddButton(headerContainer)
         this.containerEl.onkeydown = async (e) => {
-            if (e.key == "Enter") {
+            if (e.key == "Enter" && e.altKey) {
                 e.preventDefault()
-                if (e.altKey) { await this.onAdd() }
+                await this.onAdd()
             }
-            if (e.key == "Escape") {
+            if (e.key == "Escape" && e.altKey) {
                 e.preventDefault()
-                if (e.altKey) { this.onEscape() }
+                this.onEscape()
             }
         }
     }
@@ -53,19 +47,9 @@ export default abstract class BaseSuggestModal<T> extends SuggestModal<T>{
         infoContainer.setText("Alt+Esc to go back")
     }
 
-    public buildAddButton(container: HTMLDivElement) {
-        const infoContainer = container.createDiv({ cls: "info" })
-        infoContainer.setText("Alt+Enter to Add")
-        const addButton = new ButtonComponent(container)
-        addButton.setIcon("plus")
-        addButton.onClick(async () => { this.onAdd() })
-        addButton.setCta();
-        addButton.setTooltip("Add a new item")
-    }
+    public buildAddButton(container: HTMLDivElement) { }
 
-    public async onAdd() {
-
-    }
+    public async onAdd() { }
 
     public onEscape() {
         this.previousModal?.open()

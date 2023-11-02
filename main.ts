@@ -26,6 +26,7 @@ export default class MetadataMenu extends Plugin {
 	public contextMenu: ContextMenu;
 	public indexStatus: IndexStatus;
 	public indexName: string;
+	public launched: boolean = false;
 
 	async onload(): Promise<void> {
 		console.log('+------ Metadata Menu loaded --------+');
@@ -47,10 +48,10 @@ export default class MetadataMenu extends Plugin {
 		if (this.settings.settingsVersion === 3) await SettingsMigration.migrateSettingsV3toV4(this)
 
 		//loading components
-		/*
+
 		this.indexStatus = this.addChild(new IndexStatus(this))
 		if (this.settings.showIndexingStatusInStatusBar) this.indexStatus.load()
-		*/
+
 		this.fieldIndex = this.addChild(new FieldIndex(this))
 		this.contextMenu = this.addChild(new ContextMenu(this))
 
@@ -75,13 +76,14 @@ export default class MetadataMenu extends Plugin {
 
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', (leaf) => {
-				//this.indexStatus.checkForUpdate(view)
+				if (leaf) this.indexStatus.checkForUpdate(leaf.view)
 			})
 		)
 		this.registerEvent(
 			this.app.workspace.on('metadata-menu:indexed', () => {
-
-				//this.indexStatus.setState("indexed")
+				this.indexStatus.setState("indexed")
+				const currentView = this.app.workspace.getActiveViewOfType(MarkdownView)
+				if (currentView) this.indexStatus.checkForUpdate(currentView)
 			})
 		)
 
@@ -89,9 +91,11 @@ export default class MetadataMenu extends Plugin {
 		addCommands(this)
 
 		//indexing
+		console.log("DATAVIEW LAUNCHED", this.app.plugins.plugins.dataview?.index?.initialized)
 		initDb(this);
 		await this.fieldIndex.fullIndex(true)
 		this.extraButton = this.addChild(new ExtraButton(this))
+		this.launched = true
 	};
 
 	/*

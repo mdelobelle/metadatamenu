@@ -37,7 +37,6 @@ export default class ObjectListField extends FieldManager {
                 }
             }
             if (ObjectListField.isFieldOptions(location)) {
-                //location.addOption(FieldIcon[FieldType.ObjectList], action, `Go to ${this.field.name}'s fields`);
                 location.addOption(FieldIcon[FieldType.ObjectList], moveToObject, `Go to this ${name} item`);
                 location.addOption("trash", removeObject, `Remove this ${name} item`)
             }
@@ -45,7 +44,6 @@ export default class ObjectListField extends FieldManager {
 
             const moveToObject = async () => {
                 const _eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, file, indexedPath)
-                //FIXME on devrait pas mettre un previousLodal là?
                 if (_eF) this.createAndOpenFieldModal(file, _eF.field.name, _eF, _eF.indexedPath, undefined, undefined, undefined, undefined)
             }
             const removeObject = async () => {
@@ -73,21 +71,8 @@ export default class ObjectListField extends FieldManager {
     validateOptions(): boolean {
         return true
     }
-    createSettingContainer(container: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
-        /*
-        const displaySelector = container.createDiv({ cls: "field-container" });
-        displaySelector.createDiv({ text: "Items Display", cls: "label" })
-        displaySelector.createDiv({ cls: "spacer" });
-        const display = new DropdownComponent(displaySelector);
-        display.addOption("compact", "compact")
-        display.addOption("indented", "indented")
-        display.setValue(this.field.options.display || "indented")
+    createSettingContainer(container: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void { }
 
-        display.onChange((value: "compact" | "indented") => {
-            this.field.options.display = value;
-        })
-        */
-    }
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }): void {
         const fieldValue = dv.el('span', "{...}", attrs);
         fieldContainer.appendChild(fieldValue);

@@ -27,7 +27,6 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
     getItems(): Option[] {
         const { start, end } = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatterPosition || {}
         if (start && end && start.line <= this.lineNumber && end.line >= this.lineNumber || this.lineNumber === -1) {
-            console.log("ici")
             return [{ actionLabel: '++New++' }]
                 .concat(this.plugin.fieldIndex.filesFields
                     .get(this.file.path)?.filter(_f => _f.isRoot()).map(field => {

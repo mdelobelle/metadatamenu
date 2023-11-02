@@ -294,7 +294,7 @@ export default class OptionsList {
 	private addFieldAtCurrentPositionOption(): void {
 		const currentView = this.plugin.app.workspace.getActiveViewOfType(MarkdownView)
 		const currentLineNumber = currentView?.editor.getCursor().line;
-		if (currentLineNumber !== undefined && this.file.path == currentView?.file.path) {
+		if (currentLineNumber !== undefined && this.file.path == currentView?.file!.path) {
 			const frontmatter = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatter
 			let lineNumber = currentLineNumber
 			if (frontmatter) {
@@ -368,3 +368,4 @@ export default class OptionsList {
 		}
 	}
 };
+

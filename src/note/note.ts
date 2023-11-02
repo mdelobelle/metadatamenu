@@ -1,16 +1,13 @@
 import MetadataMenu from "main";
-import { CachedMetadata, EditorPosition, Notice, parseYaml, TFile } from "obsidian";
+import { EditorPosition, Notice, parseYaml, TFile } from "obsidian";
 import { FieldPayload, FieldsPayload } from "src/commands/postValues";
+import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
-import { rawObjectTypes, FieldType, ReservedMultiAttributes, FieldManager } from "src/types/fieldTypes";
+import YAMLField from "src/fields/fieldManagers/YAMLField";
+import { FieldManager, FieldType, rawObjectTypes, ReservedMultiAttributes } from "src/types/fieldTypes";
+import * as Lookup from "src/types/lookupTypes";
 import { Line } from "./line";
 import { LineNode } from "./lineNode";
-import * as Lookup from "src/types/lookupTypes";
-import YAMLField from "src/fields/fieldManagers/YAMLField";
-import { ExistingField } from "src/fields/ExistingField";
-import { IndexedExistingField } from "src/components/FieldIndex";
-import * as fieldsValues from "src/db/stores/fieldsValues"
-import * as updates from "src/db/stores/updates";
 
 export class Note {
     public lines: Line[] = []
@@ -25,7 +22,6 @@ export class Note {
             line: number;
         };
     }
-    //FIXME when first item is empty, all following items are store as empty in indexedDb - but not always
     constructor(
         public plugin: MetadataMenu,
         public file: TFile,
@@ -210,12 +206,10 @@ export class Note {
         asList: boolean = false,
         asBlockquote: boolean = false
     ): void {
-        console.log("INSERT", indexedPath, payload)
         const upperPath = Field.upperIndexedPathObjectPath(indexedPath)
 
         const { id, index } = Field.getIdAndIndex(indexedPath.split("____").last())
         const { id: upperFieldId, index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
-        console.log("UPPERPATH", upperPath, upperFieldIndex)
         if (lineNumber === -1 && !this.frontmatter) {
             new Line(this.plugin, this, "yaml", "---", 0)
             new Line(this.plugin, this, "yaml", "---", 0)
@@ -252,7 +246,6 @@ export class Note {
                     return
                 }
                 const field = this.getField(id)
-                console.log("THIS WILL ADD A", field, "WITH ID", id)
                 const lastItemLine = parentNode.line.objectListLines[i].last()
                 if (lastItemLine) {
                     //if line is " .... - " it is a place holder for fields, let's replace the content of this line's node
@@ -268,7 +261,6 @@ export class Note {
                 }
             } else {
                 const field = this.getField(id)
-                console.log("FIELD", field)
                 if (!field) return
                 const frontmatterEnd = this.frontmatterEnd()
                 let insertLineNumber =
@@ -281,7 +273,6 @@ export class Note {
                     //specific case where the field is object but the upperIndex is unknown
                     //it mean that we have to insert a new ObjectListItem
                     const node = this.getNodeForIndexedPath(upperPath)
-                    console.log("UPPERNODE", node, upperPath)
                     if (node) {
                         const newItemLine = new Line(this.plugin, node.line.note, position, "", node.line.number! + 1)
                         // if field is not in a list, shift of 0, else shift 1
@@ -289,9 +280,6 @@ export class Note {
                         new LineNode(this.plugin, newItemLine, node.buildIndentedListItem("", shift))
                         newItemLine.renderLine(asList, asBlockquote)
                     } else {
-                        //TODO creer le node @root pour initaliser la liste
-                        const parentField = this.existingFields.find(eF => eF.indexedPath === upperPath)
-                        console.log("PARENT FIELD", parentField, insertLineNumber)
                         const objectListHeaderLine = new Line(this.plugin, this, position, `${field.name}:`, insertLineNumber)
                         objectListHeaderLine.renderLine()
                     }
@@ -315,16 +303,6 @@ export class Note {
         await this.plugin.app.vault.modify(this.file, this.renderNote())
     }
 
-    public async indexNoteFieldsValues(): Promise<void> {
-        const putPayload: IndexedExistingField[] = []
-        const delPayload: string[] = []
-        const indexedEF: IndexedExistingField[] = await fieldsValues.getElement(this.plugin, 'all')
-        await ExistingField.buildPayload(this, indexedEF, putPayload, delPayload)
-        await fieldsValues.bulkEditElements(this.plugin, putPayload)
-        await fieldsValues.bulkRemoveElements(this.plugin, delPayload)
-        await updates.update(this.plugin, "fieldsValues")
-    }
-
     public async createOrUpdateFields(
         fields: FieldsPayload,
         lineNumber?: number,
@@ -341,12 +319,7 @@ export class Note {
             }
         })
         await this.plugin.app.vault.modify(this.file, this.renderNote())
-        //TODO: improve, we rebuild the note because exsitingFields aren't updated when insertField or createFieldNOdeContent
-        //if this is done we should have to rebuild the note
-        const note = new Note(this.plugin, this.file)
-        await note.build()
-        await note.indexNoteFieldsValues()
-
+        await ExistingField.indexFieldsValues(this.plugin, [this.file])
     }
 
     public renderNote(): string {

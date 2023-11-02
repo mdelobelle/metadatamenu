@@ -187,7 +187,6 @@ export default class FieldSettingsModal extends Modal {
     }
 
     private buildTypeSelectContainer(): void {
-        console.log(this.field)
         this.typeSelectContainer.replaceChildren()
         const typeSelectorContainerLabel = this.typeSelectContainer.createDiv({ cls: "label" });
         typeSelectorContainerLabel.setText(`Field type:`);

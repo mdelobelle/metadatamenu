@@ -9,7 +9,7 @@ import { FieldManager, FieldType } from "src/types/fieldTypes";
 import ObjectListModal from "./ObjectListModal";
 import ObjectField from "src/fields/fieldManagers/ObjectField";
 import { postValues } from "src/commands/postValues";
-import BaseSuggestModal from "../BaseSuggestModal";
+import BaseSuggestModal from "../BaseObjectModal";
 
 export default class ObjectModal extends BaseSuggestModal<ExistingField | Field> {
     public existingFields: ExistingField[] = []
@@ -24,7 +24,7 @@ export default class ObjectModal extends BaseSuggestModal<ExistingField | Field>
         public asBlockquote: boolean = false,
         public previousModal?: ObjectModal | ObjectListModal
     ) {
-        super(plugin, file, eF, indexedPath, previousModal, "navigation");
+        super(plugin, file, eF, indexedPath, previousModal);
     };
 
     async onOpen() {
@@ -98,6 +98,12 @@ export default class ObjectModal extends BaseSuggestModal<ExistingField | Field>
             if (item.type === FieldType.ObjectList) {
                 await postValues(this.plugin, [{ id: `${this.indexedPath}____${item.id}`, payload: { value: "" } }], this.file)
                 this.open()
+            } else if (item.type === FieldType.Object) {
+                await postValues(this.plugin, [{ id: `${this.indexedPath}____${item.id}`, payload: { value: "" } }], this.file)
+                await this.plugin.fieldIndex.indexFields()
+                await ExistingField.indexFieldsValues(this.plugin, [this.file])
+                const fieldManager = new FieldManager[item.type](this.plugin, item) as F
+                fieldManager.createAndOpenFieldModal(this.file, item.name, undefined, `${this.indexedPath}____${item.id}`, this.lineNumber, this.asList, this.asBlockquote, this)
             } else {
                 const fieldManager = new FieldManager[item.type](this.plugin, item) as F
                 fieldManager.createAndOpenFieldModal(this.file, item.name, undefined, `${this.indexedPath}____${item.id}`, this.lineNumber, this.asList, this.asBlockquote, this)

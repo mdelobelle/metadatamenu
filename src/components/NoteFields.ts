@@ -348,7 +348,6 @@ export class FieldsModal extends Modal {
         insertNewItemBtn.onClick(async () => {
             const fieldManager = new FieldType.FieldManager[field.type](this.plugin, field) as ObjectListField
             if (this.note) fieldManager.addObjectListItem(this.file, undefined, this.indexedPath)
-            console.log("ADD ITEM @", `${this.indexedPath}`)
             this.indexedPath = indexedPath
         })
     }

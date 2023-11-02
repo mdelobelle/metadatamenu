@@ -10,7 +10,6 @@ import ObjectModal from "src/modals/fields/ObjectModal";
 import OptionsList from "src/options/OptionsList";
 import { ExistingField } from "../ExistingField";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
-import { string } from "yaml/dist/schema/common/string";
 
 export default class ObjectField extends FieldManager {
 
@@ -76,7 +75,7 @@ export default class ObjectField extends FieldManager {
     }
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {
         const fields = this.plugin.fieldIndex.filesFields.get(file.path)
-        container.setText(`${fields?.filter(_f => _f.path === this.field.id).map(_f => _f.name)}`)
+        container.setText(`${fields?.filter(_f => _f.path.endsWith(this.field.id)).map(_f => _f.name)}`)
     }
 
 }
