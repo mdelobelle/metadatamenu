@@ -1906,6 +1906,9 @@ span.flatpickr-weekday {
 .metadata-menu.settings .setting-item.narrow-title .setting-item-control {
   flex: 2;
 }
+.metadata-menu.settings .setting-item .save {
+  margin-left: 1em;
+}
 
 .metadata-menu.suggester .item-with-alias {
   display: flex;

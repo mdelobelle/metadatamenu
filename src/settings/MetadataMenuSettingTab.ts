@@ -234,6 +234,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		path.controlEl.addClass("full-width");
 
 		const aliasSaveButton = new ButtonComponent(classFilesSettings)
+		aliasSaveButton.buttonEl.addClass("save")
 		aliasSaveButton.setIcon("save")
 		aliasSaveButton.onClick(async () => {
 			await this.plugin.saveSettings()
