@@ -54,6 +54,20 @@
         align-items: center;
         margin: 1em 0;
         
+        .tooltip-btn{
+
+
+            .tooltip-button{
+                background: none;
+                box-shadow: none;
+                border: none;
+                vertical-align: middle;
+                color: var(--text-warning);
+                padding-right: 1em;
+            }
+            
+        }  
+
         .info {
             white-space: nowrap;
             margin-right: 1em;

@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import Field from "src/fields/Field";
-import { FieldType, MultiDisplayType, objectTypes } from "src/types/fieldTypes";
+import { FieldType, frontmatterOnlyTypes, MultiDisplayType, objectTypes } from "src/types/fieldTypes";
 import { Line } from "./line";
 import { frontMatterLineField, parsedField } from "src/utils/parser";
 import { buildEndStyle, buildStartStyle } from "src/types/dataviewTypes";
@@ -151,7 +151,7 @@ export class LineNode {
                 break;
             case "inline":
                 {
-                    if (field) {
+                    if (field && !frontmatterOnlyTypes.includes(field.type)) {
                         const existingField = new ExistingField(field, this.value, field.id)
                         this.indexedId = field.id
                         this.indexedPath = field.getIndexedPath(this)
@@ -211,6 +211,8 @@ export class LineNode {
                 this.field.type === FieldType.YAML ||
                 this.field.type === FieldType.Lookup)
         ) return
+        //limit inline indented line removal for lookup fields. it could be done for other multi types
+        if (this.line.position === "inline" && this.field.type !== FieldType.Lookup) return
         const indentLevel = this.field.getAncestors().length
         const nextLines = this.line.note.lines.filter(_line => _line.number > this.line.number)
         for (const line of nextLines) {

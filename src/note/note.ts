@@ -4,7 +4,7 @@ import { FieldPayload, FieldsPayload } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
 import YAMLField from "src/fields/fieldManagers/YAMLField";
-import { FieldManager, FieldType, rawObjectTypes, ReservedMultiAttributes } from "src/types/fieldTypes";
+import { FieldManager, FieldType, frontmatterOnlyTypes, rawObjectTypes, ReservedMultiAttributes } from "src/types/fieldTypes";
 import * as Lookup from "src/types/lookupTypes";
 import { Line } from "./line";
 import { LineNode } from "./lineNode";
@@ -147,7 +147,7 @@ export class Note {
     }
 
     public async build() {
-        const content = await app.vault.read(this.file)
+        const content = await this.plugin.app.vault.read(this.file)
         this.buildFrontmatter(content)
         const frontmatterEnd = this.frontmatterEnd()
         content.split("\n").forEach((rawLine, i) => {
@@ -198,6 +198,12 @@ export class Note {
         newLine.renderLine(asList, asBlockquote)
     }
 
+    private initFrontmatter() {
+        new Line(this.plugin, this, "yaml", "---", 0)
+        new Line(this.plugin, this, "yaml", "---", 0)
+        this.frontmatter = {}
+        this.frontmatterPosition = { start: { line: 0 }, end: { line: 1 } }
+    }
 
     private insertField(
         indexedPath: string,
@@ -210,12 +216,7 @@ export class Note {
 
         const { id, index } = Field.getIdAndIndex(indexedPath.split("____").last())
         const { id: upperFieldId, index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
-        if (lineNumber === -1 && !this.frontmatter) {
-            new Line(this.plugin, this, "yaml", "---", 0)
-            new Line(this.plugin, this, "yaml", "---", 0)
-            this.frontmatter = {}
-            this.frontmatterPosition = { start: { line: 0 }, end: { line: 1 } }
-        }
+        if (lineNumber === -1 && !this.frontmatter) this.initFrontmatter()
         if (id.startsWith("fileclass-field")) {
             const fR = id.match(/fileclass-field-(?<fileClassAlias>.*)/)
             if (fR?.groups?.fileClassAlias) {
@@ -262,12 +263,14 @@ export class Note {
             } else {
                 const field = this.getField(id)
                 if (!field) return
+                if (frontmatterOnlyTypes.includes(field.type) && !this.frontmatter) this.initFrontmatter()
                 const frontmatterEnd = this.frontmatterEnd()
                 let insertLineNumber =
                     (lineNumber ? Math.max(lineNumber, 0) : undefined) ||
                     frontmatterEnd ||
                     this.lines.last()?.number ||
                     0
+                if (frontmatterOnlyTypes.includes(field.type)) insertLineNumber = frontmatterEnd!
                 const position = frontmatterEnd && (insertLineNumber <= frontmatterEnd) ? "yaml" : "inline"
                 if (field.type === FieldType.ObjectList) {
                     //specific case where the field is object but the upperIndex is unknown

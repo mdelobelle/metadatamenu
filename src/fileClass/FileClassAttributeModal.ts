@@ -1,6 +1,6 @@
 import { DropdownComponent, Modal, TextComponent, ButtonComponent, Notice, ToggleComponent, setIcon } from "obsidian";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
-import { FieldTypeTooltip, FieldType, FieldTypeLabelMapping, FieldManager, MultiDisplayType, multiTypes, rootOnlyTypes } from "src/types/fieldTypes";
+import { FieldTypeTooltip, FieldType, FieldTypeLabelMapping, FieldManager, MultiDisplayType, multiTypes, rootOnlyTypes, frontmatterOnlyTypes } from "src/types/fieldTypes";
 import { FileClass } from "src/fileClass/fileClass";
 import MetadataMenu from "main";
 import Field, { FieldCommand } from "src/fields/Field";
@@ -22,6 +22,7 @@ class FileClassAttributeModal extends Modal {
     private iconName: TextComponent;
     private frontmatterListDisplay?: MultiDisplayType;
     private frontmatterListDisplayContainer: HTMLDivElement;
+    private frontmatterOnlyTypeInfoContainer: HTMLDivElement;
     private path: string;
     private parentSelectContainer: HTMLDivElement
     private typeSelectContainer: HTMLDivElement
@@ -256,12 +257,24 @@ class FileClassAttributeModal extends Modal {
         })
     }
 
+    private setTypeInfo(): void {
+        this.frontmatterOnlyTypeInfoContainer.replaceChildren()
+        if (frontmatterOnlyTypes.includes(this.field.type)) {
+            const info = new ButtonComponent(this.frontmatterOnlyTypeInfoContainer)
+            info.setClass("tooltip-button")
+            setIcon(info.buttonEl, "info")
+            info.setTooltip(`${this.field.type} field type \nare only available\nin the frontmatter section`)
+        }
+    }
+
     buildTypeSelectContainer(): void {
         this.typeSelectContainer.replaceChildren()
         const typeSelectorContainerLabel = this.typeSelectContainer.createDiv({ cls: "label" });
         typeSelectorContainerLabel.setText(`Field type:`);
         this.typeSelectContainer.createDiv({ cls: "spacer" })
         const typeSelect = new DropdownComponent(this.typeSelectContainer);
+        this.frontmatterOnlyTypeInfoContainer = this.typeSelectContainer.createDiv({ cls: "tooltip-btn" });
+        this.setTypeInfo()
         Object.keys(FieldTypeTooltip).forEach((key: keyof typeof FieldType) => {
             if (!rootOnlyTypes.includes(key as FieldType)) {
                 typeSelect.addOption(key, FieldTypeTooltip[key])
@@ -294,6 +307,7 @@ class FileClassAttributeModal extends Modal {
                 this.field.options = {}
             }
             this.buildParentSelectContainer()
+            this.setTypeInfo()
             if (multiTypes.includes(this.field.type)) {
                 this.frontmatterListDisplayContainer.show()
             } else {

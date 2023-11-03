@@ -3,7 +3,7 @@ import { ButtonComponent, DropdownComponent, Modal, Notice, TextComponent, TextA
 import Field, { FieldCommand } from "src/fields/Field";
 import FieldSetting from "src/settings/FieldSetting";
 import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
-import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, multiTypes, rootOnlyTypes } from "src/types/fieldTypes";
+import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, multiTypes, rootOnlyTypes, frontmatterOnlyTypes } from "src/types/fieldTypes";
 import { FieldHTMLTagMap, FieldStyle, FieldStyleKey, FieldStyleLabel } from "src/types/dataviewTypes";
 import { cleanActions } from "src/utils/modals";
 
@@ -19,6 +19,7 @@ export default class FieldSettingsModal extends Modal {
     private addCommand: boolean;
     private frontmatterListDisplay?: MultiDisplayType;
     private frontmatterListDisplayContainer: HTMLDivElement;
+    private frontmatterOnlyTypeInfoContainer: HTMLDivElement;
     private iconName: TextComponent;
     private path: string;
     private parentSelectContainer: HTMLDivElement
@@ -77,6 +78,7 @@ export default class FieldSettingsModal extends Modal {
 
         /* Type */
         this.typeSelectContainer = this.contentEl.createDiv({ cls: "field-container" });
+        console.log(this.frontmatterOnlyTypeInfoContainer)
         this.contentEl.createEl("hr");
 
         /* Options */
@@ -186,12 +188,24 @@ export default class FieldSettingsModal extends Modal {
         })
     }
 
+    private setTypeInfo(): void {
+        this.frontmatterOnlyTypeInfoContainer.replaceChildren()
+        if (frontmatterOnlyTypes.includes(this.field.type)) {
+            const info = new ButtonComponent(this.frontmatterOnlyTypeInfoContainer)
+            info.setClass("tooltip-button")
+            setIcon(info.buttonEl, "info")
+            info.setTooltip(`${this.field.type} field type \nare only available\nin the frontmatter section`)
+        }
+    }
+
     private buildTypeSelectContainer(): void {
         this.typeSelectContainer.replaceChildren()
         const typeSelectorContainerLabel = this.typeSelectContainer.createDiv({ cls: "label" });
         typeSelectorContainerLabel.setText(`Field type:`);
         this.typeSelectContainer.createDiv({ cls: "spacer" })
         const select = new DropdownComponent(this.typeSelectContainer);
+        this.frontmatterOnlyTypeInfoContainer = this.typeSelectContainer.createDiv({ cls: "tooltip-btn" });
+        this.setTypeInfo()
         Object.keys(FieldTypeTooltip).forEach((key: keyof typeof FieldType) => {
             if (!rootOnlyTypes.includes(key as FieldType)) {
                 select.addOption(key, FieldTypeTooltip[key])
@@ -223,6 +237,7 @@ export default class FieldSettingsModal extends Modal {
                 this.field.options = {}
             }
             this.buildParentSelectContainer()
+            this.setTypeInfo()
             if (multiTypes.includes(this.field.type)) {
                 this.frontmatterListDisplayContainer.show()
             } else {

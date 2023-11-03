@@ -97,6 +97,7 @@ export class ExistingField {
     static async indexFieldsValues(plugin: MetadataMenu, changedFiles: TFile[] = []): Promise<void> {
         let start = Date.now()
         plugin.indexStatus.setState("indexing")
+
         const putPayload: IndexedExistingField[] = []
         const delPayload: string[] = []
         const lastUpdate: number | undefined = (await updates.get(plugin, "fieldsValues") as { id: string, value: number } || undefined)?.value

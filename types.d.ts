@@ -50,12 +50,6 @@ declare module "obsidian" {
             containerEl: HTMLDivElement;
         }
     }
-    interface CachedMetadata {
-        frontmatterPosition: {
-            end: { line: number, col: number, offset: number },
-            start: { line: number, col: number, offset: number }
-        }
-    }
     interface DataAdapter {
         basePath: string
     }
@@ -87,7 +81,6 @@ declare module "obsidian" {
     }
     interface Workspace {
         on(name: "metadata-menu:indexed", callback: () => void, ctx?: any): EventRef;
-        on(name: "metadata-menu:updated-index", callback: () => void, ctx?: any): EventRef;
         on(name: "layout-change", callback: Debouncer<[_file: TFile], void>, ctx?: any): EventRef;
     }
     interface Menu {

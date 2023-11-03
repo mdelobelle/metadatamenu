@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { FuzzyMatch, FuzzySuggestModal, setIcon, TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
-import { FieldIcon, FieldManager, FieldType, FieldTypeTagClass, objectTypes } from "src/types/fieldTypes";
+import { FieldIcon, FieldManager, FieldType, FieldTypeTagClass, frontmatterOnlyTypes, objectTypes } from "src/types/fieldTypes";
 import AddNewFieldModal from "./AddNewFieldModal";
 
 
@@ -36,7 +36,7 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
         } else {
             return [{ actionLabel: '++New++' }]
                 .concat(this.plugin.fieldIndex.filesFields
-                    .get(this.file.path)?.filter(_f => _f.isRoot())
+                    .get(this.file.path)?.filter(_f => _f.isRoot() && !frontmatterOnlyTypes.includes(_f.type))
                     .filter(_f => !objectTypes.includes(_f.type))
                     .map(field => {
                         return { actionLabel: field.name, type: field.type }

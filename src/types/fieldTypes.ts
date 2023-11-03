@@ -181,3 +181,10 @@ export const rootOnlyTypes = [
     FieldType.Lookup,
     FieldType.Formula
 ]
+
+export const frontmatterOnlyTypes = [
+    FieldType.YAML,
+    FieldType.Object,
+    FieldType.ObjectList
+
+]

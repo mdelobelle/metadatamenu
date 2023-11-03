@@ -3,6 +3,7 @@ import { TFile } from "obsidian";
 import Field from "src/fields/Field";
 import ObjectListField from "src/fields/fieldManagers/ObjectListField";
 import { Note } from "src/note/note";
+import { frontmatterOnlyTypes } from "src/types/fieldTypes";
 import { getFileFromFileOrPath } from "src/utils/fileUtils";
 import { FieldsPayload, postValues } from "./postValues";
 
@@ -42,6 +43,7 @@ export async function insertMissingFields(
         const missingFields = note?.fields
             .filter(_f => _f.getFirstAncestor()?.id === id)
             .filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
+        //FIXME inserting is done in a  strange way when mixing frontmatter and inline insertion
         missingFields.forEach(field => {
             fieldsToInsert.push({ id: `${indexedPath}____${field.id}`, payload: { value: "" } })
         })

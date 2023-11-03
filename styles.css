@@ -1005,6 +1005,14 @@ span.flatpickr-weekday {
   align-items: center;
   margin: 1em 0;
 }
+.metadata-menu.modal-container .field-container .tooltip-btn .tooltip-button {
+  background: none;
+  box-shadow: none;
+  border: none;
+  vertical-align: middle;
+  color: var(--text-warning);
+  padding-right: 1em;
+}
 .metadata-menu.modal-container .field-container .info {
   white-space: nowrap;
   margin-right: 1em;
@@ -1450,6 +1458,14 @@ span.flatpickr-weekday {
   display: flex;
   align-items: center;
   margin: 1em 0;
+}
+.metadata-menu.modal-container .field-container .tooltip-btn .tooltip-button {
+  background: none;
+  box-shadow: none;
+  border: none;
+  vertical-align: middle;
+  color: var(--text-warning);
+  padding-right: 1em;
 }
 .metadata-menu.modal-container .field-container .info {
   white-space: nowrap;

@@ -2,6 +2,7 @@ import MetadataMenu from "main";
 import { Note } from "./note"
 import { LineNode } from "./lineNode";
 import { getLineFields } from "src/utils/parser";
+import { frontmatterOnlyTypes } from "src/types/fieldTypes";
 
 export class Line {
     public nodes: LineNode[] = []
@@ -40,7 +41,8 @@ export class Line {
                     if (parsedField) {
                         const start = parsedField.index
                         const end = start + parsedField.length
-                        const field = this.note.getFieldFromNameAndPath(parsedField.attribute)
+                        const _field = this.note.getFieldFromNameAndPath(parsedField.attribute)
+                        const field = _field && !frontmatterOnlyTypes.includes(_field.type) ? _field : undefined
                         new LineNode(this.plugin, this, this.rawContent.slice(start, end), 0, index, field, parsedField.values, parsedField)
                     } else {
                         //no field, just text
