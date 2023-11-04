@@ -178,7 +178,7 @@ export async function updateCanvas(
                 nodes = canvasContent.nodes;
                 edges = canvasContent.edges
             } catch (error) {
-                console.log(error)
+                //console.log(error)
                 new Notice(`Couldn't read ${canvas.path}`)
             }
         }

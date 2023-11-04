@@ -115,7 +115,7 @@ export class ExistingField {
         await fieldsValues.bulkEditElements(plugin, putPayload)
         await fieldsValues.bulkRemoveElements(plugin, delPayload)
         await updates.update(plugin, "fieldsValues")
-        console.log("indexed", files.length, "files in ", (Date.now() - start) / 1000, "s")
+        //console.log("indexed", files.length, "files in ", (Date.now() - start) / 1000, "s")
         plugin.indexStatus.setState("indexed")
     }
 }

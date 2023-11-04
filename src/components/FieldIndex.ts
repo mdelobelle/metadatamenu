@@ -197,7 +197,7 @@ export default class FieldIndex extends FieldIndexBuilder {
 
         this.registerEvent(
             this.plugin.app.metadataCache.on("dataview:index-ready", async () => {
-                console.log("dataview index ready")
+                //console.log("dataview index ready")
                 this.dv = this.plugin.app.plugins.plugins.dataview;
                 this.dvReady = true;
                 await this.fullIndex(true)
@@ -306,7 +306,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         await updateLookups(this.plugin, forceUpdateOne, force_update_all)
         await updateFormulas(this.plugin, forceUpdateOne, force_update_all);
         await this.applyUpdates()
-        console.log("Resolved dvQ in ", (Date.now() - start) / 1000, "s")
+        //console.log("Resolved dvQ in ", (Date.now() - start) / 1000, "s")
     }
 
     async migrateFileClasses(): Promise<void> {
