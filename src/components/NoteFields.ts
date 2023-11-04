@@ -174,13 +174,18 @@ export class FieldsModal extends Modal {
             fieldBtn.onClick(async () => {
                 //in case of objectField grand-child, don't ask for chooseSection
                 if (field.path === "") {
-                    new ChooseSectionModal(
-                        this.plugin,
-                        this.file,
-                        (lineNumber: number, asList: boolean, asBlockquote: boolean
-                        ) => FieldManager.createAndOpenModal(
-                            this.plugin, this.file, field.name, field, undefined, newIndexedPath, lineNumber, asList, asBlockquote)
-                    ).open();
+                    if (FieldType.objectTypes.includes(field.type) && this.note) {
+                        await postValues(this.plugin, [{ id: `${this.indexedPath}____${field.id}`, payload: { value: "" } }], this.file)
+                        this.indexedPath = `${this.indexedPath}____${field.id}`
+                    } else {
+                        new ChooseSectionModal(
+                            this.plugin,
+                            this.file,
+                            (lineNumber: number, asList: boolean, asBlockquote: boolean
+                            ) => FieldManager.createAndOpenModal(
+                                this.plugin, this.file, field.name, field, undefined, newIndexedPath, lineNumber, asList, asBlockquote)
+                        ).open();
+                    }
                 } else if (field.type === FieldType.FieldType.ObjectList) {
                     //first create the objectList item
                     if (this.note) await postValues(this.plugin, [{ id: `${this.indexedPath}____${field.id}`, payload: { value: "" } }], this.file)

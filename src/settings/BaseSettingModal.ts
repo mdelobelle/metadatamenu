@@ -250,6 +250,11 @@ export abstract class BaseSettingModal extends Modal {
         const typeSelectorContainerLabel = this.typeSelectContainer.createDiv({ cls: "label" });
         typeSelectorContainerLabel.setText(`Field type:`);
         this.typeSelectContainer.createDiv({ cls: "spacer" })
+        const infoBtnContainer = this.typeSelectContainer.createDiv({ cls: "tooltip-btn" })
+        const info = new ButtonComponent(infoBtnContainer)
+        info.setClass("tooltip-button")
+        setIcon(info.buttonEl, !(this.field.id && !this.isNew()) ? "shield-alert" : "lock")
+        info.setTooltip(`The field type \ncan't be modified once saved`)
         const typeSelect = new DropdownComponent(this.typeSelectContainer);
         this.frontmatterOnlyTypeInfoContainer = this.typeSelectContainer.createDiv({ cls: "tooltip-btn" });
         this.setTypeInfo()

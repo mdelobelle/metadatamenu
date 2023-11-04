@@ -40,7 +40,6 @@ export default class ObjectModal extends BaseSuggestModal<ExistingField | Field>
         super.onOpen()
     };
 
-
     getSuggestions(query: string = ""): Array<ExistingField | Field> {
         return [...this.existingFields, ...this.missingFields].filter(f => {
             if (f instanceof ExistingField) {

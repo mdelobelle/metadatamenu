@@ -320,7 +320,7 @@ class FileClass {
                 if (newDisplay) field.display = newDisplay;
                 if (newStyle) field.style = newStyle;
                 if (newName) field.name = newName;
-                if (newPath) field.path = newPath
+                if (newPath !== undefined) field.path = newPath
             } else {
                 fm.fields.push({
                     name: newName,
