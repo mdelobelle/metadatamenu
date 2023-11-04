@@ -12,10 +12,13 @@ import { MultiDisplayType } from "src/types/fieldTypes";
 
 export default class MetadataMenuSettingTab extends PluginSettingTab {
 	private plugin: MetadataMenu;
-
+	private newFileClassesPath: string | null;
+	private newFileClassAlias: string
 	constructor(plugin: MetadataMenu) {
-		super(app, plugin);
+		super(plugin.app, plugin);
 		this.plugin = plugin;
+		this.newFileClassAlias = this.plugin.settings.fileClassAlias
+		this.newFileClassesPath = this.plugin.settings.classFilesPath
 		this.containerEl.addClass("metadata-menu")
 		this.containerEl.addClass("settings")
 	};
@@ -243,6 +246,14 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			true
 		)
 
+		const fileClassesFolderSaveButton = new ButtonComponent(classFilesSettings)
+		fileClassesFolderSaveButton.buttonEl.addClass("save")
+		fileClassesFolderSaveButton.setIcon("save")
+		fileClassesFolderSaveButton.onClick(async () => {
+			this.plugin.settings.classFilesPath = this.newFileClassesPath
+			await this.plugin.saveSettings()
+			fileClassesFolderSaveButton.removeCta()
+		})
 		const path = new Setting(classFilesSettings)
 			.setName('class Files path')
 			.setDesc('Path to the files containing the authorized fields for a type of note')
@@ -252,19 +263,20 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.classFilesPath || "")
 					.onChange((new_folder) => {
 						const newPath = new_folder.endsWith("/") || !new_folder ? new_folder : new_folder + "/";
-						this.plugin.settings.classFilesPath = newPath || null;
-
+						this.newFileClassesPath = newPath || null
+						fileClassesFolderSaveButton.setCta()
 					})
-				cfs.onChanged = () => { }
 			});
 		path.settingEl.addClass("no-border");
 		path.settingEl.addClass("narrow-title");
 		path.controlEl.addClass("full-width");
+		path.settingEl.appendChild(fileClassesFolderSaveButton.buttonEl)
 
 		const aliasSaveButton = new ButtonComponent(classFilesSettings)
 		aliasSaveButton.buttonEl.addClass("save")
 		aliasSaveButton.setIcon("save")
 		aliasSaveButton.onClick(async () => {
+			this.plugin.settings.fileClassAlias = this.newFileClassAlias
 			await this.plugin.saveSettings()
 			aliasSaveButton.removeCta()
 		})
@@ -276,10 +288,9 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				text
 					.setValue(this.plugin.settings.fileClassAlias)
 					.onChange(async (value) => {
-						this.plugin.settings.fileClassAlias = value || "fileClass";
+						this.newFileClassAlias = value || "fileClass";
 						aliasSaveButton.setCta()
 					});
-				text.onChanged = () => { this.plugin.saveSettings(); }
 			})
 		alias.settingEl.addClass("no-border");
 		alias.settingEl.addClass("narrow-title");

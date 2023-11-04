@@ -978,9 +978,6 @@ span.flatpickr-weekday {
   stroke: var(--color-green);
 }
 
-.metadata-menu.modal-container .modal {
-  overflow: auto;
-}
 .metadata-menu.modal-container.narrow .modal {
   width: initial;
 }
@@ -1432,9 +1429,6 @@ span.flatpickr-weekday {
   margin: 0 0.5em;
 }
 
-.metadata-menu.modal-container .modal {
-  overflow: auto;
-}
 .metadata-menu.modal-container.narrow .modal {
   width: initial;
 }

@@ -91,7 +91,6 @@ export default class MetadataMenu extends Plugin {
 		addCommands(this)
 
 		//indexing
-		console.log("DATAVIEW LAUNCHED", this.app.plugins.plugins.dataview?.index?.initialized)
 		initDb(this);
 		await this.fieldIndex.fullIndex(true)
 		this.extraButton = this.addChild(new ExtraButton(this))

@@ -17,9 +17,10 @@ export default class ContextMenu extends Component {
 				this.fileContextMenuOpened = true
 				const file = this.plugin.app.vault.getAbstractFileByPath(abstractFile.path);
 				this.buildOptions(file, menu);
-				menu.onunload = () => {
+				menu.onHide = () => {
 					this.fileContextMenuOpened = false
 				}
+
 			})
 		);
 
@@ -34,6 +35,7 @@ export default class ContextMenu extends Component {
 	}
 
 	private buildOptions(file: TFile | TAbstractFile | null, menu: Menu): void {
+
 		const classFilesPath = this.plugin.settings.classFilesPath
 		if (file instanceof TFile && file.extension === 'md') {
 			if (!Platform.isMobile && requireApiVersion("0.16.0")) {
@@ -74,5 +76,6 @@ export default class ContextMenu extends Component {
 				})
 			}
 		};
+
 	}
 };
