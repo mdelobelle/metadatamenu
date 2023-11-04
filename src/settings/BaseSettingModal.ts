@@ -36,6 +36,7 @@ export abstract class BaseSettingModal extends Modal {
     public abstract onCancel(): void
     public abstract onSave(): void
     public abstract removeField(): void
+    public abstract isNew(): boolean
 
     public initFieldManagerAndCommand() {
         this.path = this.field.path
@@ -268,7 +269,7 @@ export abstract class BaseSettingModal extends Modal {
                 this.frontmatterListDisplayContainer.hide()
             }
         }
-        if (this.field.id) { typeSelect.setDisabled(true); return }
+        if (this.field.id && !this.isNew()) { typeSelect.setDisabled(true); return }
         //if (!this.new) { typeSelect.setDisabled(true); return }
         typeSelect.onChange((typeLabel: keyof typeof FieldType) => {
             this.field = new Field(this.plugin);

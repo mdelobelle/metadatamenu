@@ -20,6 +20,10 @@ export default class FieldSettingsModal extends BaseSettingModal {
         this.initFieldManagerAndCommand()
     }
 
+    public isNew(): boolean {
+        return this.new
+    }
+
     public initFieldAndLocation(field?: Field) {
         if (field) {
             this.new = false;

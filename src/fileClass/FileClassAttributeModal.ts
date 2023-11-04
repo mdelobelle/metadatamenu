@@ -17,6 +17,9 @@ export class FileClassAttributeModal extends BaseSettingModal {
         this.initFieldManagerAndCommand()
     }
 
+    public isNew(): boolean {
+        return !this.field.id
+    }
     public initFieldAndLocation(field?: Field) {
         if (this.attr) {
             this.field = this.attr.getField()
