@@ -264,24 +264,21 @@ export class FileClassTableView {
     }
 
     private buildDvJSQuery(): string {
+
         const tagsMappedToFileClass: string[] = []
         this.plugin.fieldIndex.tagsMatchingFileClasses.forEach((cls, tag) => {
             if (this.fileClass.name === cls.name) {
                 tagsMappedToFileClass.push('#' + tag)
             }
         })
-
+        const fFC = this.plugin.fieldIndex.filesFileClasses
         let dvQuery = "";
-        const fileClassAlias = this.plugin.settings.fileClassAlias
         const classFilesPath = this.plugin.settings.classFilesPath
         const templatesFolder = this.plugin.app.plugins.plugins["templater-obsidian"]?.settings["templates_folder"];
+        const fileClassFiles = [...fFC.keys()].filter(path => fFC.get(path)?.some(fileClass => fileClass.name === this.fileClass.name))
+        const fileClassFilesPaths = `"${fileClassFiles.join('", "')}"`
         dvQuery += `dv.pages()\n`;
-        dvQuery += `    .where(p =>\n
-        (\n
-            (typeof(p['${fileClassAlias}']) === 'string' && p['${fileClassAlias}'] === '${this.fileClass.name}')\n
-            || (Array.isArray(p['${fileClassAlias}']) && p['${fileClassAlias}'].includes('${this.fileClass.name}'))\n
-            || p.file.etags.values.some(et => ${JSON.stringify(tagsMappedToFileClass)}.some(t => et.startsWith(t)))\n
-        )\n
+        dvQuery += `    .where(p => [${fileClassFilesPaths}].includes(p.file.path)
         ${!!classFilesPath ? "        && !p.file.path.includes('" + classFilesPath + "')\n" : ""}
         ${templatesFolder ? "        && !p.file.path.includes('" + templatesFolder + "')\n" : ""}
         )\n`;
@@ -290,7 +287,7 @@ export class FileClassTableView {
     }
 
     private buildDvJSRendering(): string {
-        const fields = this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name) || []
+        const fields = this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.filter(_f => _f.isRoot()) || []
         let dvJS = "const {fieldModifier: f} = this.app.plugins.plugins[\"metadata-menu\"].api;\n" +
             "dv.table([\"File\",";
         dvJS += fields.map(field => `"${field.name}"`).join(",");

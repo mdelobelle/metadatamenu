@@ -203,14 +203,10 @@ export default class DateField extends FieldManager {
         const dateBtn = fieldContainer.createEl("button")
         setIcon(dateBtn, FieldIcon[FieldType.Date])
         const spacer = fieldContainer.createDiv({ cls: "spacer-1" })
-        if (this.field.options.dateShiftInterval || this.field.options.nextShiftIntervalField) {
-            this.shiftBtn = fieldContainer.createEl("button")
-            setIcon(this.shiftBtn, "skip-forward")
-            spacer.setAttr("class", "spacer-2")
 
-        } else {
-            spacer.setAttr("class", "spacer-1")
-        }
+        this.shiftBtn = fieldContainer.createEl("button")
+        setIcon(this.shiftBtn, "skip-forward")
+        spacer.setAttr("class", "spacer-2")
 
         const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
 

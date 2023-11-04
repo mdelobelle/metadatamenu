@@ -281,6 +281,9 @@
                 
                 span{
                     display: inline-flex;
+                    a {
+                        white-space: nowrap;
+                    }
                 }
             }
 

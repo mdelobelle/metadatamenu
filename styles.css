@@ -2170,6 +2170,9 @@ span.flatpickr-weekday {
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] .field-name span {
   display: inline-flex;
 }
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] .field-name span a {
+  white-space: nowrap;
+}
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th {
   position: sticky;
   top: 0;
