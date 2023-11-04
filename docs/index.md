@@ -7,9 +7,9 @@ This plugin is made for data quality enthusiasts!
 
 !!! info "Metadata"
     
-    In Obsidian, metadatas are information defined in Yaml syntax in the [front matter](https://help.obsidian.md/Advanced+topics/YAML+front+matter) section of a note. Metadata are very convenient to categorize notes and make queries to find them. Some plugins have leveraged metadata to make advanced queries against your vault, such as [Dataview](https://blacksmithgu.github.io/obsidian-dataview/). Dataview has also introduce a new syntax to define metadata anywhere in a note (not only in frontmatter but also in the body of the note) with the syntax `fieldName::value`
+    In Obsidian, metadatas are information defined in Yaml syntax in the [front matter](https://help.obsidian.md/Advanced+topics/YAML+front+matter) section of a note, those metadata are named `properties`. Metadata are very convenient to categorize notes and make queries to find them. Some plugins have leveraged metadata to make advanced queries against your vault, such as [Dataview](https://blacksmithgu.github.io/obsidian-dataview/). Dataview has also introduce a new syntax to define metadata anywhere in a note (not only in frontmatter but also in the body of the note) with the syntax `fieldName::value`
 
-Metadata Menu adds context menu items to modifiy target note's frontmatter fields and "inline fields" ([dataview](https://blacksmithgu.github.io/obsidian-dataview/) syntax) by right-clicking on the link, accessing options in the command palette, or within dataview tables.
+Metadata Menu adds context menu items to modifiy target note's frontmatter fields and "inline fields" ([dataview](https://blacksmithgu.github.io/obsidian-dataview/) syntax) by right-clicking on the link, accessing options in the command palette, clicking a dedicated button appearing next to the note in several places or within dataview tables.
 
 You can define preset types and values for those fields globally in the plugin's settings or on a file-by-file basis thanks to fileClass definition
 

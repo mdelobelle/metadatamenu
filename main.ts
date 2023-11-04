@@ -37,8 +37,8 @@ export default class MetadataMenu extends Plugin {
 		) {
 			new Notice(
 				`------------------------------------------\n` +
-				`/!\\ INFO /!\\ \n` +
-				`Please install and enable dataview and dataviewJS to use Metadata Menu\n` +
+				`(!) INFO (!) \n` +
+				`Install and enable dataview and dataviewJS for extra Metadata Menu features\n` +
 				`------------------------------------------`, 60000)
 		}
 		//loading and migrating settings

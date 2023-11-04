@@ -11,7 +11,6 @@ export async function updateCanvas(
     forceUpdateOne?: { canvas: TFile }
 ): Promise<void> {
     const start = Date.now()
-    //console.log("start update canvas", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
     const f = plugin.fieldIndex;
     const dvApi = plugin.app.plugins.plugins.dataview?.api
     const canvases = forceUpdateOne ? [forceUpdateOne.canvas] : plugin.app.vault.getFiles().filter(t => t.extension === "canvas")
@@ -67,7 +66,7 @@ export async function updateCanvas(
     ) => {
         const { nodeColors, edgeColors, edgeFromSides, edgeToSides, edgeLabels, filesFromDVQuery, direction } = field.options
 
-        const matchingFiles: string[] | undefined = filesFromDVQuery ?
+        const matchingFiles: string[] | undefined = filesFromDVQuery && dvApi ?
             new Function("dv", "current", `return ${filesFromDVQuery}`)(dvApi, dvApi.page(targetFilePath)) :
             undefined;
         const matchingEdges = orientedEdges(direction, edges, node)

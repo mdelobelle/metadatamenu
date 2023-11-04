@@ -20,9 +20,16 @@ Available types are:
 - `Canvas`: a field that will `Update with links in a canvas`
 - `Canvas Group`: a field that will `Update with groups in a canvas`
 - `Canvas Group Link`: a field that will `Update with groups links in a canvas`
+- `JSON`: a field that will `Accept a JSON object`
+- `YAML`: a field that will `Accept a YAML object`
+- `Object`: a field that will `Accept a collection of fields`
+- `Object List`: a field that will `Accept a list of collection of fields`
+
+!!! warning "Restrictions"
+    `YAML`, `Object` and `Object list` field types are only available in the frontmatter section
+
 
 ## Field settings
-By default each field is an `Input`
 
 You can define a `field setting` for each field.
 
@@ -35,7 +42,7 @@ A field setting is composed of:
 A field setting can defined in:
 
 - Metadata Menu settings (see # Metadata Menu Settings)
-- in a fileClass note (see # Fileclass , Dataview plugin is required)
+- in a fileClass note (see # Fileclass)
 
 !!! info "Priority management"
 
@@ -49,5 +56,6 @@ a Field can be modified or added from several locations:
 - autocompletion within the editor mode
 - Obsidian and plugins menus : file explorer, note, calendar, context menu of a link, many other plugins not fully tested ...
 - dataview table if you have dataview plugin installed
+- the [Metadata Menu button](#metadata-menu-button--metadata-menu-modal) appearing next to each note's name (file explorer, tab header, link....)
 
 See detailed section [controls](controls.md)

@@ -209,7 +209,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                 this.dvReady = this.dv?._loaded && !!this.plugin.app.plugins.plugins.dataview?.index.initialized
                 if (op === "update" && this.dvReady
                 ) {
-                    console.log("dv trigerring resolve")
+                    //console.log("dv trigerring resolve")
                     const filePayloadToProcess = this.dVRelatedFieldsToUpdate.get(file.path)
                     if (![...this.dVRelatedFieldsToUpdate.keys()].includes(file.path)) {
                         await this.resolveAndUpdateDVQueriesBasedFields(false)
@@ -246,7 +246,7 @@ export default class FieldIndex extends FieldIndexBuilder {
     public async fullIndex(forceUpdateAll = false): Promise<void> {
         this.plugin.indexStatus.setState("indexing")
         await this.indexFieldsAndValues(forceUpdateAll)
-        await this.resolveAndUpdateDVQueriesBasedFields(forceUpdateAll);
+        if (this.dvReady) await this.resolveAndUpdateDVQueriesBasedFields(forceUpdateAll);
         if (this.remainingLegacyFileClasses) await this.migrateFileClasses();
         this.plugin.app.workspace.trigger("metadata-menu:indexed");
 

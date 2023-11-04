@@ -1,7 +1,7 @@
 # Controls
 
 ## Control field with autocompletion
-In Editor mode, type ":" after a field in frontmatter, or "::" after an inline-field to trigger the autocompletion for `Select` and `Multi` fields
+In Editor mode, type ":" after a field in frontmatter, or "::" after an inline-field to trigger the autocompletion for `Select`, `Multi`, `File` and `Multi File` fields
 
 ## Control field from links, file and plugin options
 Right click in the live preview, on a link, a file in explorer, or opening a file's or plugin's context menu will automatically display an item per target note's frontmatter field and "inline fields" (dataview syntax)
@@ -16,74 +16,13 @@ these options are accessible from:
 - the command palette "Cmd+P" : Metadata Menu - field options or insert field at cursor or manage field at cursor
 - other context menu (not tested)
 
-### Update free value field (type: `Input`)
+### Open fields modal
 
-1. Right-click on the link (or context menu, ...)
-2. Click on "Update .... " to change the field's value
-3. Change the value in the modal's prompt
-4. Type `enter` to save or click X or `esc` to cancel
+Will open a modal to manage the fields and fileclasses of this note with a compact UI
 
-> NB: if you have the `natural language dates` plugin installed, you can type the target date in natural langage and toggle the 📆 selector to automatically convert the input into a link towards the daily note
+### Fields Options / Manage Fields
 
-### Update multiple free values field (type: `Input`)
-
-1. Right-click on the link (or context menu, ...)
-2. Click on "Update .... " to change the field's value
-1. Change values comma-separated
-1. Press `enter`, the values will be displayed as an array of values in the target note's frontmatter field; or as a list of values comma separated in an inline field
-
-**this doesn't work with indented lists YAML format**
-
-### Update boolean field (type: `Boolean`)
-
-1. Right-click on the link (or context menu, ...)
-1. Click on `✅ ▷ ❌` or `❌ ▷ ✅` depending on the value of the boolean to change the value by its opposite
-
-### Select a value for the field (type: `Select`)
-
-1. Right-click on the link (or context menu, ...)
-2. Click on "🔽 .... " to change the field's value
-3. The modal will display a dropdown list with preset values
-4. Change the value in the modal's dropdown
-5. Click on the save button to save or click X or `esc` to cancel
-
-### Multi select preset values for field (type: `Multi`)
-
-1. Right-click on the link (or context menu, ...)
-2. Click on "🟰 .... " to change the field's value
-3. The modal will display a list for preset values
-4. Change the values by clicking on the values in the list
-5. Click on the save button to save or click X or `esc` to cancel, or click the trash button to empty the field
-
-### Cycle through preset values (type: `Cycle`)
-
-1. Right-click on the link (or context menu, ...)
-2. Click on " .. > .. " to change the field's value for the next one in the settings list
-
-### Update a link to a file (type: `File`)
-
-1. Right-click on the link (or context menu, ...)
-2. Click on " 🔎 Update ... "
-3. Type or select the link within the modal
-
-
-### Update a list of links to files (type: `MultiFile`)
-
-1. Right-click on the link (or context menu, ...)
-2. Click on " 🔎 Update ... "
-3. Click on the chosen links within the list
-4. Click on the save button to save or click X or `esc` to cancel, or click the trash button to empty the field
-
-
-### Update a date (type: `Date`)
-
-1. Right-click on the link (or context menu, ...)
-2. Click on " 📅 Update ... "
-3. Type the date or select the date thanks to the date picker by clicking the "📅" button in the modal. If you have `Natural Language Dates` plugin installed, you can also type your date in natural language and have it parsed automatically
-3bis. Click on "⏭" to shift the date in the future according to the interval set
-4. Toggle `on` the `insert as link` option if you want your date to be included as a link
-
-
+Will open a native Obsidian suggest modal with options available to modify a field or execute the actions mentionned hereafter
 
 ### Add a new field at section
 
@@ -92,6 +31,8 @@ these options are accessible from:
 3. Select the line in the target file where you want to insert the new field
 4. Select the field
 5. Select/input the value for this field (if the field has preset values, you will be prompted to choose one)
+
+NB: if the field type is restricted to the frontmatter section, it will be added at the end of the frontmatter whatever the line chosen
 
 ### Add a new field at cursor
 

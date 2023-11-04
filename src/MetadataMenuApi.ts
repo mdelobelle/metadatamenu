@@ -1,14 +1,15 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
 import { fieldModifier } from "./commands/fieldModifier";
-import { FieldInfo, fileFields } from "./commands/fileFields";
-import { getValues } from "./commands/getValues";
+import { IFieldInfo, fileFields } from "./commands/fileFields";
+import { getValues, getValuesForIndexedPath } from "./commands/getValues";
 import { insertMissingFields } from "./commands/insertMissingFields";
 import { FieldsPayload, postValues } from "./commands/postValues";
 
 export interface IMetadataMenuApi {
     getValues: (fileOrFilePath: TFile | string, attribute: string) => Promise<string[]>;
-    fileFields: (fileOrFilePath: TFile | string) => Promise<Record<string, FieldInfo>>;
+    getValuesForIndexedPath: (fileOrFilePath: TFile | string, indexedPath: string) => Promise<string>;
+    fileFields: (fileOrFilePath: TFile | string) => Promise<Record<string, IFieldInfo>>;
     fieldModifier: (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => HTMLElement;
     insertMissingFields: (fileOrFilePath: string | TFile, lineNumber: number, asList: boolean, asBlockquote: boolean, fileClassName?: string) => Promise<void>;
     postValues: (fileOrFilePath: TFile | string, payload: FieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => Promise<void>;
@@ -21,6 +22,7 @@ export class MetadataMenuApi {
     public make(): IMetadataMenuApi {
         return {
             getValues: this.getValues(),
+            getValuesForIndexedPath: this.getValuesForIndexedPath(),
             fieldModifier: this.fieldModifier(),
             fileFields: this.fileFields(),
             insertMissingFields: this.insertMissingFields(),
@@ -32,11 +34,16 @@ export class MetadataMenuApi {
         return async (fileOrFilePath: TFile | string, attribute: string) => getValues(this.plugin, fileOrFilePath, attribute)
     }
 
+
+    private getValuesForIndexedPath(): (fileOrFilePath: TFile | string, indexedPath: string) => Promise<string> {
+        return async (fileOrFilePath: TFile | string, indexedPath: string) => getValuesForIndexedPath(this.plugin, fileOrFilePath, indexedPath)
+    }
+
     private fieldModifier(): (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => HTMLElement {
         return (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => fieldModifier(this.plugin, dv, p, fieldName, attrs)
     }
 
-    private fileFields(): (fileOrFilePath: TFile | string) => Promise<Record<string, FieldInfo>> {
+    private fileFields(): (fileOrFilePath: TFile | string) => Promise<Record<string, IFieldInfo>> {
         return async (fileOrFilePath: TFile | string) => fileFields(this.plugin, fileOrFilePath)
     }
 

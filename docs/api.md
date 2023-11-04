@@ -7,8 +7,17 @@ API is accessible with `app.plugins.plugins["metadata-menu"].api`
 `getValues(fileOrFilePath: TFile | string, attribute: string)`
 
 Takes a TFile containing the field and a string for the related field name
+Returns an array with the values of the field. If there are several fields with the same name (in object list fields for example, see [Settings](settings#object-listoptions)), this function will return an array with all the exisiting values
 
-Returns an array with the values of the field
+This is an asynchronous function, so you should await it.
+
+### getValuesForIndexedPath
+
+`getValuesForIndexedPath(fileOrFilePath: TFile | string, indexedPath: string)`
+
+Takes a TFile containing the field and a string for the related field's [indexedPath](fileclasses#id-and-indexedpath)
+
+Returns the value of the field for this indexedPath
 
 This is an asynchronous function, so you should await it.
 
@@ -34,7 +43,7 @@ export type FieldPayload = {
 }
 
 export type FieldsPayload = Array<{
-    name: string, //the name of the field
+    id: string, //the indexedPath of the field
     payload: FieldPayload
 }>
 ```
@@ -51,19 +60,12 @@ Takes a TFile or e filePath and returns all the fields in the document, both fro
 
 ```typescript
 {
-    (fieldName: string): {
+    (indexedPath: string): {
         /* the value of the field in the file */
         value: string | undefined, 
 
-        /* unicity of the field in the note: if false it means that this field appears more than once in the file */
-        unique: boolean,
-
         /* the fileClass name applied to this field if there is a fileClass AND if the field is set in the fileClass or the fileClass it's inheriting from */
-        fileClass: string | undefined,
-
-        /* the fileClass query applied to this field if there is a fileClass
-        AND if the file matches the query attached to this fileClass in the settings AND if the field is set in the fileClass or the fileClass it's inheriting from */
-        fileClassQuery: string | undefined
+        fileClassName: string | undefined,
 
         /* true if this fieldName is in "Globally ignored fields" in the plugin settings */
         ignoreInMenu: boolean | undefined,
@@ -78,10 +80,13 @@ Takes a TFile or e filePath and returns all the fields in the document, both fro
         sourceType: "fileClass" | "settings" | undefined,
 
         /* the type of the field according to the plugin settings or the fileClass  */
-        type: "Input" | "Select" | "Multi" | "Cycle" | "Boolean" | "Number" | undefined
+        type: "Input" | "Select" | "Multi" | "Cycle" | "Boolean" | "Number" | "File" | "MultiFile" | "Date" | "Lookup" | "Formula" | "Canvas" | "CanvasGroup" | "CanvasGroupLink" | "YAML" | "JSON" | "Object" | "ObjectList"
 
-        /* the note containing the values for multi, cycle or select types when defined in the plugin settings  */
-        valuesListNotePath: string | undefined
+        /* the unique identifier of the field definition in the vault */
+        id: string
+
+        /* the unique idenfier of the path of this field in this file*/
+        indexedPath: string | undefined
     }
 }
 ```
