@@ -222,10 +222,11 @@ export default class FieldIndex extends FieldIndexBuilder {
         )
     }
 
-    private indexableFiles() {
+    public indexableFiles() {
         return this.plugin.app.vault.getMarkdownFiles()
             .filter(f => !this.classFilesPath
                 || !f.path.startsWith(this.classFilesPath))
+            .filter(f => !this.plugin.settings.fileClassExcludedFolders.some(path => f.path.startsWith(path)))
     }
 
     private indexableFileClasses() {
@@ -267,7 +268,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         await this.getCanvasesFiles();
         await this.getValuesListNotePathValues();
         this.getFilesLookupAndFormulaFieldsExists();
-        console.log("indexed ", this.filesFields.size, " fields in ", (Date.now() - start) / 1000, "s")
+        //console.log("indexed ", this.filesFields.size, " fields in ", (Date.now() - start) / 1000, "s")
     }
 
     public pushPayloadToUpdate(filePath: string, fieldsPayloadToUpdate: FieldsPayload) {

@@ -80,6 +80,34 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings()
 				});
 			}).settingEl.addClass("no-border");
+
+
+
+		/* Exclude Folders from indexing*/
+		const excludedFolders = new Setting(globalSettings)
+			.setName('Excluded folders')
+			.setDesc('Folders where preset fields and fileClass options won\'t be applied. ' +
+				'Useful for templates folders ' +
+				'or to speedup indexing when you exclude large md files such as excalidraw files')
+			.addTextArea((text) => {
+				text
+					.setPlaceholder('Enter/folders/paths/, comma/separated/')
+					.setValue(this.plugin.settings.fileClassExcludedFolders.join(', '))
+					.onChange(async (value) => {
+						const values = value.split(",")
+						const paths: Array<string> = []
+						values.forEach(path => { if (path.trim()) paths.push(path.trim().replace(/\/?$/, '/')) })
+						this.plugin.settings.fileClassExcludedFolders = paths;
+						await this.plugin.saveSettings();
+					});
+				text.inputEl.rows = 6;
+				text.inputEl.cols = 25;
+			})
+		excludedFolders.settingEl.addClass("vstacked");
+		excludedFolders.settingEl.addClass("no-border");
+		excludedFolders.controlEl.addClass("full-width");
+
+
 		/* Exclude Fields from context menu*/
 		const globallyIgnoredFieldsSetting = new Setting(globalSettings)
 			.setName('Globally ignored fields')
@@ -288,29 +316,6 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		global.settingEl.addClass("no-border");
 		global.settingEl.addClass("narrow-title");
 		global.controlEl.addClass("full-width");
-
-
-		/* Exclude Fields from context menu*/
-		const excludedFolders = new Setting(classFilesSettings)
-			.setName('Excluded folders')
-			.setDesc('Folders where fileClass options won\'t be applied (useful for templates folders)')
-			.addTextArea((text) => {
-				text
-					.setPlaceholder('Enter/folders/paths/, comma/separated/')
-					.setValue(this.plugin.settings.fileClassExcludedFolders.join(', '))
-					.onChange(async (value) => {
-						const values = value.split(",")
-						const paths: Array<string> = []
-						values.forEach(path => { if (path.trim()) paths.push(path.trim().replace(/\/?$/, '/')) })
-						this.plugin.settings.fileClassExcludedFolders = paths;
-						await this.plugin.saveSettings();
-					});
-				text.inputEl.rows = 6;
-				text.inputEl.cols = 25;
-			})
-		excludedFolders.settingEl.addClass("vstacked");
-		excludedFolders.settingEl.addClass("no-border");
-		excludedFolders.controlEl.addClass("full-width");
 
 		/* 
 		--------------------------------------------------

@@ -6,6 +6,7 @@ import MetadataMenu from "main"
 import { ObjectListItem } from "./fieldManagers/ObjectListField"
 import * as updates from "src/db/stores/updates";
 import { Note } from "src/note/note"
+import pLimit from "p-limit"
 
 export class ExistingField {
     public name: string
@@ -67,7 +68,7 @@ export class ExistingField {
         return items
     }
 
-    static async buildPayload(note: Note, indexedEF: IndexedExistingField[], putPayload: IndexedExistingField[], delPayload: string[]): Promise<void> {
+    static buildPayload(note: Note, indexedEF: IndexedExistingField[], putPayload: IndexedExistingField[], delPayload: string[]): void {
         const f = note.file
         note.existingFields.forEach(eF => {
             const id = `${f.path}____${eF.indexedPath}`
@@ -95,25 +96,21 @@ export class ExistingField {
     }
 
     static async indexFieldsValues(plugin: MetadataMenu, changedFiles: TFile[] = []): Promise<void> {
-        let start = Date.now()
         plugin.indexStatus.setState("indexing")
-
         const putPayload: IndexedExistingField[] = []
         const delPayload: string[] = []
         const lastUpdate: number | undefined = (await updates.get(plugin, "fieldsValues") as { id: string, value: number } || undefined)?.value
         const indexedEF: IndexedExistingField[] = await fieldsValues.getElement(plugin, 'all')
-        const files = plugin.app.vault.getMarkdownFiles()
-            .filter(_f => !plugin.settings.classFilesPath || !_f.path.startsWith(plugin.settings.classFilesPath))
+        const files = plugin.fieldIndex.indexableFiles()
             .filter(_f => {
                 const lastChangeInFields = plugin.fieldIndex.filesFieldsLastChange.get(_f.path)
                 return !lastChangeInFields || !lastUpdate || lastChangeInFields >= lastUpdate || _f.stat.mtime > lastUpdate
             })
             .filter(_f => !changedFiles.length || changedFiles.map(cF => cF.path).includes(_f.path))
-        console.log("filtered", files.length, "files in ", (Date.now() - start) / 1000, "s")
-        start = Date.now()
+        let start = Date.now()
         await Promise.all(files.map(async f => {
             const note = await Note.buildNote(plugin, f)
-            await ExistingField.buildPayload(note, indexedEF, putPayload, delPayload)
+            ExistingField.buildPayload(note, indexedEF, putPayload, delPayload)
         }))
         await fieldsValues.bulkEditElements(plugin, putPayload)
         await fieldsValues.bulkRemoveElements(plugin, delPayload)
