@@ -58,7 +58,7 @@ export default class BooleanModal extends BaseModal {
         this.buildSimpleSaveBtn(choicesContainer)
     };
 
-    public async save(e: Event | undefined): Promise<void> {
+    public async save(): Promise<void> {
         const value = this.value.toString()
         await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
         this.saved = true

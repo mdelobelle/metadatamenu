@@ -58,7 +58,7 @@ export default class DateModal extends BaseModal {
         this.errorField.hide();
     };
 
-    public async save(e: Event): Promise<void> {
+    public async save(): Promise<void> {
         //e.preventDefault();
         let newValue: moment.Moment;
         //try natural language date
