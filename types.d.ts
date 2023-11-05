@@ -27,6 +27,8 @@ interface InternalPlugins {
     bookmarks: BookmarkInternalPlugin;
 }
 
+
+
 declare module "obsidian" {
     interface App {
         appId?: string;
@@ -53,6 +55,14 @@ declare module "obsidian" {
     interface DataAdapter {
         basePath: string
     }
+    interface FrontMatterCache {
+        /**
+         * @public
+         */
+        [key: string]: any;
+        tags?: string | string[]
+    }
+
     interface MetadataCache {
         fileCache: Record<string, { mtime: number }>
         inProgressTaskCount: number;

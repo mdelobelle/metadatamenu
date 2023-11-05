@@ -21,7 +21,7 @@ export function genuineKeys(obj: any, depth: number = 0): string[] {
 
 export function legacyGenuineKeys(dvFile: any): string[] {
     const genuineKeys: string[] = []
-    Object.keys(dvFile).forEach(key => {
+    if (dvFile) Object.keys(dvFile).forEach(key => {
         if (!genuineKeys.map(k => k.toLowerCase().replace(/\s/g, "-")).includes(key.toLowerCase().replace(/\s/g, "-"))) {
             genuineKeys.push(key)
         } else {

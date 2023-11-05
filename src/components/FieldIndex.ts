@@ -471,10 +471,17 @@ export default class FieldIndex extends FieldIndexBuilder {
         const filesWithMappedTag: cFileWithTags[] = [];
         this.indexableFiles().forEach(_f => {
             const cache = this.plugin.app.metadataCache.getFileCache(_f)
-            const filteredTags = cache?.tags?.filter(_t => mappedTags.includes(_t.tag))
+            const cachedTags = cache?.frontmatter?.tags
+            let fileTags: string[] = []
+            if (Array.isArray(cachedTags)) {
+                fileTags = cachedTags
+            } else if (typeof cachedTags === "string") {
+                fileTags = cachedTags.split(",").map(_t => _t.trim())
+            }
+            const filteredTags = fileTags.filter(_t => mappedTags.includes(`#${_t}`))
             if (filteredTags?.length) {
                 const fileWithTags: cFileWithTags = { path: _f.path, tags: [] }
-                filteredTags.forEach(_t => fileWithTags.tags.push(_t.tag))
+                filteredTags.forEach(_t => fileWithTags.tags.push(_t))
                 filesWithMappedTag.push(fileWithTags)
             }
         })
