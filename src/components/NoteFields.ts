@@ -48,7 +48,6 @@ export class FieldsModal extends Modal {
     async onOpen() {
         await this.buildNote();
         this.build();
-
     };
 
     public async buildNote(): Promise<void> {
@@ -159,25 +158,27 @@ export class FieldsModal extends Modal {
         const fieldOptions = new FieldOptions(fieldOptionsWrapper)
         if (this.existingFields.map(_f => _f.field.id).includes(field.id)) {
             if (FieldType.objectTypes.includes(field.type)) {
-                fieldManager.addFieldOption(this.file, fieldOptions, indexedPath, this.noteFields, indexedPath);
+                fieldManager.addFieldOption(this.file, fieldOptions, indexedPath, this.noteFields);
             } else {
                 fieldManager.addFieldOption(this.file, fieldOptions, indexedPath);
             }
 
         } else {
             //missing field, let's build and indexed path and a button to insert it
-            const newIndexedPath = `${this.indexedPath}____${field.id}`
+            const newIndexedPath = `${this.indexedPath ? this.indexedPath + "____" : ""}${field.id}`
             const fieldBtnContainer = fieldOptionsWrapper.createDiv({ cls: "field-item field-option" })
             const fieldBtn = new ButtonComponent(fieldBtnContainer)
             fieldBtn.setIcon("list-plus")
             fieldBtn.setTooltip("Add field at section")
             fieldBtn.onClick(async () => {
-                //in case of objectField grand-child, don't ask for chooseSection
-                if (field.path === "") {
-                    if (FieldType.objectTypes.includes(field.type) && this.note) {
-                        await postValues(this.plugin, [{ id: `${this.indexedPath}____${field.id}`, payload: { value: "" } }], this.file)
-                        this.indexedPath = `${this.indexedPath}____${field.id}`
-                    } else {
+                //Object and ObjectList go straight to frontmatter
+                if (FieldType.objectTypes.includes(field.type) && this.note) {
+                    await postValues(this.plugin, [{ id: `${newIndexedPath}`, payload: { value: "" } }], this.file)
+                    this.indexedPath = `${newIndexedPath}`
+                    //Other fields go straight to frontmatter if their path is not emplty
+                } else {
+                    if (field.path === "") {
+
                         new ChooseSectionModal(
                             this.plugin,
                             this.file,
@@ -185,15 +186,9 @@ export class FieldsModal extends Modal {
                             ) => FieldManager.createAndOpenModal(
                                 this.plugin, this.file, field.name, field, undefined, newIndexedPath, lineNumber, asList, asBlockquote)
                         ).open();
+                    } else {
+                        FieldManager.createAndOpenModal(this.plugin, this.file, field.name, field, undefined, newIndexedPath, -1, false, false)
                     }
-                } else if (field.type === FieldType.FieldType.ObjectList) {
-                    //first create the objectList item
-                    if (this.note) await postValues(this.plugin, [{ id: `${this.indexedPath}____${field.id}`, payload: { value: "" } }], this.file)
-                    // then add a first item to this ObjectList and go to it
-                    //if (this.note) await (fieldManager as ObjectListField).addObjectListItem(this.file, undefined, `${this.indexedPath}____${field.id}`)
-                    this.indexedPath = `${this.indexedPath}____${field.id}`
-                } else {
-                    FieldManager.createAndOpenModal(this.plugin, this.file, field.name, field, undefined, newIndexedPath, -1, false, false)
                 }
             })
         };

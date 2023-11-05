@@ -1880,6 +1880,27 @@ span.flatpickr-weekday {
 .metadata-menu.settings .header-container .text-container .setting-item-description {
   margin-bottom: 1.33em;
 }
+.metadata-menu.settings .fields-container {
+  display: grid;
+  padding-top: 0.5em;
+}
+.metadata-menu.settings .fields-container .setting-item .setting-item-info .name {
+  font-weight: 500;
+  white-space: nowrap;
+  display: inline-flex;
+}
+.metadata-menu.settings .fields-container .setting-item .setting-item-info .name .indentation {
+  width: 1em;
+  color: var(--text-faint);
+  margin-right: 0.3em;
+}
+.metadata-menu.settings .fields-container .setting-item .setting-item-info .spacer {
+  width: 100%;
+}
+.metadata-menu.settings .setting-item .setting-item-info .name {
+  font-weight: 500;
+  white-space: nowrap;
+}
 .metadata-menu.settings .setting-item.vstacked {
   display: grid;
   margin: 1em 0;
@@ -1889,10 +1910,6 @@ span.flatpickr-weekday {
 }
 .metadata-menu.settings .setting-item.no-border {
   border: none;
-}
-.metadata-menu.settings .setting-item .name {
-  font-weight: 500;
-  white-space: nowrap;
 }
 .metadata-menu.settings .setting-item.narrow-title .setting-item-info {
   flex: 2;
@@ -1948,11 +1965,17 @@ span.flatpickr-weekday {
   margin: 0.2em 1.3em 0.2em 0;
   white-space: nowrap;
   font-weight: 500;
+  display: inline-flex;
 }
 @media screen and (max-width: 400px) {
   .metadata-menu.fileclass-view .fv-fields .fields-container .name-container {
     margin-top: 1em;
   }
+}
+.metadata-menu.fileclass-view .fv-fields .fields-container .name-container .indentation {
+  width: 1em;
+  color: var(--text-faint);
+  margin-right: 0.3em;
 }
 .metadata-menu.fileclass-view .fv-fields .fields-container .type-container {
   grid-column: 2;

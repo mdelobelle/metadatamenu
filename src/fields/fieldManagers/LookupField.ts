@@ -20,6 +20,20 @@ export default class LookupField extends FieldManager {
         super(plugin, field, FieldType.Lookup)
         this.showModalOption = false
     }
+    /*
+    FIXME
+    Juste quand j'essaie d'ajouter un <missing> Lookup avec un clic sur Add field to section, rien se passe (pas de warning/error en console non plus)
+    */
+
+    /*
+    FIXME Aussi les fields lookup font crash le plugin. J'ai cette erreur en console quand j'essaie de les toucher manuellement (déplacer, modifier, ...):
+
+    updateLookups.ts:10 Uncaught (in promise) TypeError: a.split is not a function
+        at arraysAsStringAreEqual (updateLookups.ts:10:24)
+        at eval (updateLookups.ts:110:76)
+        at Generator.next (<anonymous>)
+        at fulfilled (plugin:metadata-menu:59:24)
+    */
 
     addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         const name = this.field.name

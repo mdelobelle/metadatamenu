@@ -1,4 +1,4 @@
-import { Setting, TFile } from "obsidian";
+import { setIcon, Setting, TFile } from "obsidian";
 import MetadataMenu from "main";
 import Field from "src/fields/Field";
 import { FieldManager, FieldTypeTagClass } from "src/types/fieldTypes";
@@ -6,7 +6,7 @@ import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldManager as F } from "src/fields/FieldManager";
 
 export default class FieldSetting extends Setting {
-    private fieldNameContainer: HTMLSpanElement;
+    private fieldNameContainer: HTMLDivElement;
     private typeContainer: HTMLSpanElement;
     private fieldOptionsContainer: HTMLSpanElement;
 
@@ -27,8 +27,14 @@ export default class FieldSetting extends Setting {
         const manager = new FieldManager[this.field.type](this.plugin, this.field) as F;
         this.infoEl.textContent = "";
         this.infoEl.addClass("setting-item")
-        this.fieldNameContainer = this.infoEl.createEl("div", "name")
-        this.fieldNameContainer.setText(this.field.name)
+        this.fieldNameContainer = this.infoEl.createDiv({ cls: "name" })
+
+        const level = !this.field.path ? 0 : this.field.path.split("____").length
+        for (let i = 0; i < level; i++) {
+            const indentation = this.fieldNameContainer.createDiv({ cls: "indentation" })
+            if (i === level - 1) { setIcon(indentation, "corner-down-right") }
+        }
+        this.fieldNameContainer.createDiv({ text: `${this.field.name}` })
         this.typeContainer = this.infoEl.createEl("div")
         this.typeContainer.setAttr("class", `chip ${FieldTypeTagClass[this.field.type]}`)
         this.typeContainer.setText(this.field.type)

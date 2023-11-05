@@ -7,8 +7,8 @@ import { FieldsPayload, postValues } from "./postValues";
 import { ExistingField } from "src/fields/ExistingField";
 
 export function arraysAsStringAreEqual(a: string, b: string) {
-    const aAsArray = a.split(",").map(v => v.trim())
-    const bAsArray = b.split(",").map(v => v.trim())
+    const aAsArray = typeof a === "string" ? a.split(",").map(v => v.trim()) : []
+    const bAsArray = typeof b === "string" ? b.split(",").map(v => v.trim()) : []
     return aAsArray.every(item => bAsArray.includes(item)) && bAsArray.every(item => aAsArray.includes(item))
 }
 

@@ -21,6 +21,8 @@ export interface ObjectListItem {
 export default class ObjectListField extends FieldManager {
     /*
     this object contains a list of objects.
+    //TODO insert listItem at position
+    //TODO reorder listItems
     */
     constructor(plugin: MetadataMenu, field: Field) {
         super(plugin, field, FieldType.ObjectList)
@@ -41,7 +43,6 @@ export default class ObjectListField extends FieldManager {
                 location.addOption("trash", removeObject, `Remove this ${name} item`)
             }
         } else {
-
             const moveToObject = async () => {
                 const _eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, file, indexedPath)
                 if (_eF) this.createAndOpenFieldModal(file, _eF.field.name, _eF, _eF.indexedPath, undefined, undefined, undefined, undefined)
