@@ -478,7 +478,9 @@ export default class FieldIndex extends FieldIndexBuilder {
             } else if (typeof cachedTags === "string") {
                 fileTags = cachedTags.split(",").map(_t => _t.trim())
             }
-            const filteredTags = fileTags.filter(_t => mappedTags.includes(`#${_t}`))
+            const filteredTagsFromFrontmatter = fileTags.filter(_t => mappedTags.includes(`#${_t}`))
+            const filteredTagsFromFile = cache?.tags?.filter(_t => mappedTags.includes(_t.tag)).map(_t => _t.tag) || []
+            const filteredTags = filteredTagsFromFrontmatter.concat(filteredTagsFromFile)
             if (filteredTags?.length) {
                 const fileWithTags: cFileWithTags = { path: _f.path, tags: [] }
                 filteredTags.forEach(_t => fileWithTags.tags.push(_t))
