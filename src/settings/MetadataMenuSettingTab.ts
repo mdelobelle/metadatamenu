@@ -224,7 +224,11 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			}).settingEl.addClass("no-border");
 		const fieldsContainer = presetFieldsSettings.createDiv({ cls: "fields-container" })
 		/* Managed properties that currently have preset options */
-		this.plugin.presetFields.sort((a, b) => (a.path || a.id) < (b.path || b.id) ? -1 : 1).forEach(prop => {
+		this.plugin.presetFields.sort((a, b) => {
+			const _a = a.path ? a.path + "_" : a.id
+			const _b = b.path ? b.path + "_" : b.id
+			return _a < _b ? -1 : 1
+		}).forEach(prop => {
 			const property = new Field(this.plugin);
 			Object.assign(property, prop);
 			new FieldSetting(fieldsContainer, property, this.plugin);

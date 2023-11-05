@@ -93,7 +93,11 @@ export class FileClassFieldsView {
         this.container.replaceChildren();
         const fieldsContainer = this.container.createDiv({ cls: "fields-container" })
         const attributes = FileClass.getFileClassAttributes(this.plugin, this.fileClass);
-        attributes.sort((a, b) => (a.path || a.id) < (b.path || b.id) ? -1 : 1).forEach(attribute => {
+        attributes.sort((a, b) => {
+            const _a = a.path ? a.path + "_" : a.id
+            const _b = b.path ? b.path + "_" : b.id
+            return _a < _b ? -1 : 1
+        }).forEach(attribute => {
             //const settingContainer = this.container.createDiv({ cls: "setting" })
             new FileClassFieldSetting(fieldsContainer, this.fileClass, attribute, this.plugin);
         });
