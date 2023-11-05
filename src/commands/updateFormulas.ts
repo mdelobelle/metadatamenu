@@ -58,12 +58,12 @@ export async function updateFormulas(
         const _file = plugin.app.vault.getAbstractFileByPath(filePath)
         if (!_file || !(_file instanceof TFile)) return
         const eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(plugin, _file, field.id)
-        const currentValue = (eF?.value || "").toString() || ""
+        const currentValue = (eF?.value !== undefined ? eF.value.toString() : "")
         f.fileFormulaFieldLastValue.set(id, currentValue);
         try {
             const dvFile = f.dv.api.page(filePath)
             const newValue = (new Function("current, dv", `return ${field.options.formula}`))(dvFile, f.dv.api).toString();
-            const valueHasChanged = (!currentValue && newValue !== "") || !arraysAsStringAreEqual(currentValue, newValue) || currentValue !== newValue
+            const valueHasChanged = (currentValue === undefined && newValue !== "") || !arraysAsStringAreEqual(currentValue, newValue) || currentValue !== newValue
             if (!valueHasChanged) {
                 f.fileFormulaFieldsStatus.set(`${filePath}__${fieldName}`, Status.upToDate);
                 return;

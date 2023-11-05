@@ -176,6 +176,6 @@ export abstract class FieldManager {
             case 0: valueText = "0"; break;
             default: valueText = value.toString() || "";
         }
-        container.createDiv({ text: valueText })
+        container.createDiv({ text: `${valueText}` })
     }
 }

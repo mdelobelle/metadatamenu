@@ -275,7 +275,7 @@ function addUpdateLookupsAndFormulas(plugin: MetadataMenu) {
         icon: "file-search",
         checkCallback: (checking: boolean) => {
             if (checking) return true;
-            plugin.fieldIndex.fullIndex();
+            plugin.fieldIndex.fullIndex(true);
         }
     })
 }
