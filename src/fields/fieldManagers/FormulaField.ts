@@ -62,6 +62,7 @@ export default class FormulaField extends FieldManager {
         asBlockquote?: boolean
     ): Promise<void> {
         await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file, lineNumber, asList, asBlockquote)
+        await this.plugin.fieldIndex.fullIndex()
     }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }): void {

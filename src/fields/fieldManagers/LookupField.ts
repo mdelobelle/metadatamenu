@@ -13,6 +13,7 @@ import { updateLookups } from "src/commands/updateLookups";
 import { extractLinks, getLink } from "src/utils/parser";
 import { displayLinksOrText } from "src/utils/linksUtils";
 import { ExistingField } from "../existingField";
+import { postValues } from "src/commands/postValues";
 
 export default class LookupField extends FieldManager {
 
@@ -71,7 +72,8 @@ export default class LookupField extends FieldManager {
         asList?: boolean,
         asBlockquote?: boolean
     ): Promise<void> {
-        //await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file, lineNumber, asList, asBlockquote)
+        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file, lineNumber, asList, asBlockquote)
+        await this.plugin.fieldIndex.fullIndex()
     }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }): void {

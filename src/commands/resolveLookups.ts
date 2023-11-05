@@ -3,7 +3,7 @@ import { TFile } from "obsidian";
 import { FieldType } from "src/types/fieldTypes";
 import { Status } from "src/types/lookupTypes";
 
-export function resolveLookups(plugin: MetadataMenu, source: string = ""): void {
+export function resolveLookups(plugin: MetadataMenu): void {
     /*
     1. first resolve all existing lookup queries from their definitions in fileClasses and settings
     -> lookupQueryResults
