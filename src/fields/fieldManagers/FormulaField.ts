@@ -20,8 +20,12 @@ export default class FormulaField extends FieldManager {
     }
     /*
     FIXME
-    Pour l'exemple, je me suis créé un champs nb_episodes de type Formula qui se contente de return current.episodes.length. ça détecte bien qu'une update doit être faite quand je retire ou ajoute un item soit via la modal soit manuellement directement dans le frontmatter. Le hic c'est que uniquement le bouton Update nb_episode's value à l'intérieur de la modale du fichier courant update la valeur du champ.
-    Les commandes Metadata Menu: Update active file formulas fields et Metadata Menu: Update lookups and formulas ne font rien dans ce cas précis
+    Pour l'exemple, je me suis créé un champs nb_episodes de type Formula qui se contente de return current.episodes.length. 
+    ça détecte bien qu'une update doit être faite quand je retire ou ajoute un item 
+    soit via la modal soit manuellement directement dans le frontmatter. 
+    Le hic c'est que uniquement le bouton Update nb_episode's value à l'intérieur de la modale du fichier courant update la valeur du champ.
+    Les commandes Metadata Menu: Update active file formulas fields et 
+    Metadata Menu: Update lookups and formulas ne font rien dans ce cas précis
     */
     addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         const name = this.field.name;

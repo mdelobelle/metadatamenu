@@ -236,7 +236,6 @@ export default class FieldIndex extends FieldIndexBuilder {
                 }
             })
         )
-        //TODO: on delete remove entry in indexed db
     }
 
     public indexableFiles() {

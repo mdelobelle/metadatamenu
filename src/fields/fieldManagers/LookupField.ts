@@ -21,11 +21,6 @@ export default class LookupField extends FieldManager {
         super(plugin, field, FieldType.Lookup)
         this.showModalOption = false
     }
-    /*
-    FIXME
-    Juste quand j'essaie d'ajouter un <missing> Lookup avec un clic sur Add field to section, rien se passe (pas de warning/error en console non plus)
-    J'ai juste toujours le problème du <missing> Lookup qui ne veut pas s'ajouter quand je clique sur add field at section
-    */
 
     addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         const name = this.field.name

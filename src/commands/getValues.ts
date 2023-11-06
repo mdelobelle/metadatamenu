@@ -1,10 +1,7 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian"
 import { ExistingField } from "src/fields/ExistingField";
-import { getFrontmatterPosition } from "src/utils/fileUtils";
-import { inlineFieldRegex, encodeLink, decodeLink } from "src/utils/parser";
 
-//TODO rewrite with note.build & existingFields
 export async function getValues(plugin: MetadataMenu, fileOrfilePath: TFile | string, attribute: string): Promise<string[]> {
     let file: TFile;
     if (fileOrfilePath instanceof TFile) {
