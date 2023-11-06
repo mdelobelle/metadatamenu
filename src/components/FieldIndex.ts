@@ -170,7 +170,6 @@ export default class FieldIndex extends FieldIndexBuilder {
 
         this.registerEvent(
             this.plugin.app.vault.on("modify", async (file) => {
-                console.log("MODIFIED", file.path)
                 if (file instanceof TFile) {
                     if (file.extension === "md") {
                         this.changedFiles.push(file)
