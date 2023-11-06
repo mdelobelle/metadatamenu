@@ -190,6 +190,37 @@ export const bulkEditElements = <T>(plugin: MetadataMenu, payload: IndexedExisti
     });
 }
 
+export const updateItemsAfterFileRename = (plugin: MetadataMenu, oldPath: string, filePath: string) => {
+    const open = indexedDB.open(plugin.indexName);
+    return new Promise<void>((resolve, reject) => {
+        open.onsuccess = () => {
+            let request!: IDBRequest;
+            db = open.result;
+            if ([...db.objectStoreNames].find((name) => name === store)) {
+                const transaction = db.transaction(store, 'readwrite');
+                const objectStore = transaction.objectStore(store);
+                const filePathIndex = objectStore.index("filePath");
+                request = filePathIndex.getAll(oldPath);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    for (const iEF of request.result) {
+                        iEF.id = iEF.id.replace(oldPath, filePath)
+                        iEF.filePath = filePath
+                        const serialized = JSON.parse(JSON.stringify(iEF));
+                        const updateRequest = objectStore.put(serialized);
+                        updateRequest.onsuccess = () => resolve();
+                    }
+                }
+                transaction.oncomplete = () => db.close();
+            } else {
+                console.error("store not found")
+                //indexedDB.deleteDatabase(plugin.indexName);
+            }
+        };
+    });
+}
+
+
 /* 
 **  delete methods
 */
@@ -213,6 +244,34 @@ export const removeElement = (plugin: MetadataMenu, key: string) => {
         }
     };
 };
+
+export const bulkRemoveElementsForFile = (plugin: MetadataMenu, filePath: string) => {
+    const open = indexedDB.open(plugin.indexName);
+    return new Promise<void>((resolve, reject) => {
+        open.onsuccess = () => {
+            let request!: IDBRequest;
+            db = open.result;
+            if ([...db.objectStoreNames].find((name) => name === store)) {
+                const transaction = db.transaction(store, 'readwrite');
+                const objectStore = transaction.objectStore(store);
+                const filePathIndex = objectStore.index("filePath");
+                request = filePathIndex.getAll(filePath);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    for (const iEF of request.result) {
+                        const delRequest = objectStore.delete(iEF.id)
+                        delRequest.onsuccess = () => resolve()
+                    }
+                }
+                transaction.oncomplete = () => db.close();
+            } else {
+                console.error("store not found")
+                //indexedDB.deleteDatabase(plugin.indexName);
+            }
+        };
+    });
+}
+
 
 export const bulkRemoveElements = (plugin: MetadataMenu, keys: string[]) => {
     const open = indexedDB.open(plugin.indexName);

@@ -170,6 +170,7 @@ export default class FieldIndex extends FieldIndexBuilder {
 
         this.registerEvent(
             this.plugin.app.vault.on("modify", async (file) => {
+                console.log("MODIFIED", file.path)
                 if (file instanceof TFile) {
                     if (file.extension === "md") {
                         this.changedFiles.push(file)
@@ -178,6 +179,21 @@ export default class FieldIndex extends FieldIndexBuilder {
                         await updateCanvas(this.plugin, { canvas: file });
                     }
                 }
+            })
+        )
+
+        this.registerEvent(
+            this.plugin.app.vault.on("delete", async (file) => {
+                await fieldsValues.bulkRemoveElementsForFile(this.plugin, file.path)
+                await this.fullIndex()
+            })
+        )
+
+        this.registerEvent(
+            this.plugin.app.vault.on("rename", async (file, oldPath) => {
+                await fieldsValues.updateItemsAfterFileRename(this.plugin, oldPath, file.path)
+                await fieldsValues.bulkRemoveElementsForFile(this.plugin, oldPath)
+                await this.fullIndex()
             })
         )
 

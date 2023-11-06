@@ -6,7 +6,6 @@ import MetadataMenu from "main"
 import { ObjectListItem } from "./fieldManagers/ObjectListField"
 import * as updates from "src/db/stores/updates";
 import { Note } from "src/note/note"
-import pLimit from "p-limit"
 
 export class ExistingField {
     public name: string
