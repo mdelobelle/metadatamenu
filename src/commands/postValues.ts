@@ -7,7 +7,6 @@ import { getFileFromFileOrPath } from "src/utils/fileUtils";
 
 export type FieldPayload = {
     value: string,
-    previousItemsCount?: number,
     addToCurrentValues?: boolean,
     style?: Record<keyof typeof FieldStyleLabel, boolean>
 }
