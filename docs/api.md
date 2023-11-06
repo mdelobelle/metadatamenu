@@ -39,7 +39,6 @@ creates or updates fields with values in the target note
 ```typescript
 export type FieldPayload = {
     value: string, // the field's value as string
-    previousItemsCount?: number // optional, not usefull for api 
 }
 
 export type FieldsPayload = Array<{

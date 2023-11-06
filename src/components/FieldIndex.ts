@@ -80,7 +80,6 @@ abstract class FieldIndexBuilder extends Component {
     public lastRevision: 0;
     public loadTime: number;
     public lookupQueries: Map<string, Field>;
-    public previousFileLookupFilesValues: Map<string, number>;
     public tagsMatchingFileClasses: Map<string, FileClass>;
     public v1FileClassesPath: Map<string, FileClass>;
     public v2FileClassesPath: Map<string, FileClass>;
@@ -89,6 +88,8 @@ abstract class FieldIndexBuilder extends Component {
     public remainingLegacyFileClasses: boolean
     public lastBookmarkChange: number
     public bookmarks: BookmarkInternalPlugin
+    public lastDVUpdatingTime: number
+    public lastTimeBeforeResolving: number
 
     constructor(public plugin: MetadataMenu) {
         super()
@@ -108,7 +109,6 @@ abstract class FieldIndexBuilder extends Component {
         this.fileLookupFieldLastValue = new Map();
         this.fileLookupFieldsStatus = new Map();
         this.fileLookupFiles = new Map();
-        this.previousFileLookupFilesValues = new Map();
         this.dv = this.plugin.app.plugins.plugins.dataview;
         this.dvReady = this.dv?._loaded && !!this.plugin.app.plugins.plugins.dataview?.index.initialized
         this.classFilesPath = this.plugin.settings.classFilesPath;
@@ -173,6 +173,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                 if (file instanceof TFile) {
                     if (file.extension === "md") {
                         this.changedFiles.push(file)
+                        this.lastTimeBeforeResolving = Date.now()
                     } else if (file.extension === "canvas") {
                         await updateCanvas(this.plugin, { canvas: file });
                     }
@@ -209,7 +210,6 @@ export default class FieldIndex extends FieldIndexBuilder {
                 this.dvReady = this.dv?._loaded && !!this.plugin.app.plugins.plugins.dataview?.index.initialized
                 if (op === "update" && this.dvReady
                 ) {
-                    //console.log("dv trigerring resolve")
                     const filePayloadToProcess = this.dVRelatedFieldsToUpdate.get(file.path)
                     if (![...this.dVRelatedFieldsToUpdate.keys()].includes(file.path)) {
                         await this.resolveAndUpdateDVQueriesBasedFields(false)
@@ -220,6 +220,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                 }
             })
         )
+        //TODO: on delete remove entry in indexed db
     }
 
     public indexableFiles() {
@@ -272,7 +273,8 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     public pushPayloadToUpdate(filePath: string, fieldsPayloadToUpdate: FieldsPayload) {
-        const currentFieldsPayloadToUpdate: FieldsPayloadToProcess = this.dVRelatedFieldsToUpdate.get(filePath) || { status: "toProcess", fieldsPayload: [] }
+        const currentFieldsPayloadToUpdate: FieldsPayloadToProcess = this.dVRelatedFieldsToUpdate
+            .get(filePath) || { status: "toProcess", fieldsPayload: [] }
         for (const fieldPayload of fieldsPayloadToUpdate) {
             currentFieldsPayloadToUpdate.status = "toProcess"
             const { id, payload } = fieldPayload
@@ -283,7 +285,6 @@ export default class FieldIndex extends FieldIndexBuilder {
         }
     }
 
-
     public async applyUpdates(): Promise<void> {
         await Promise.all(
             [...(this.dVRelatedFieldsToUpdate.keys())].map(
@@ -291,12 +292,22 @@ export default class FieldIndex extends FieldIndexBuilder {
                     const fieldsPayload = this.dVRelatedFieldsToUpdate.get(filePath)?.fieldsPayload
                     if (fieldsPayload) {
                         await postValues(this.plugin, fieldsPayload, filePath)
+                        fieldsPayload.forEach(fieldPayload => {
+                            const field = this.filesFields
+                                .get(filePath)?.find(_f => _f.isRoot() && _f.id === fieldPayload.id)
+                            if (field) this.fileLookupFieldsStatus
+                                .set(`${filePath}__${field.name}`, LookupStatus.upToDate)
+                        })
                     }
                 })
         )
+        this.lastDVUpdatingTime = Date.now()
     }
 
-    private async resolveAndUpdateDVQueriesBasedFields(force_update_all = false, forceUpdateOne?: { file: TFile, fieldName: string }): Promise<void> {
+    private async resolveAndUpdateDVQueriesBasedFields(
+        force_update_all = false,
+        forceUpdateOne?: { file: TFile, fieldName: string }
+    ): Promise<void> {
         const start = Date.now()
         this.plugin.indexStatus.setState("indexing")
         cleanRemovedFormulasFromIndex(this.plugin);

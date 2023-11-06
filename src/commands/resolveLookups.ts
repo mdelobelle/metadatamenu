@@ -17,8 +17,6 @@ export function resolveLookups(plugin: MetadataMenu): void {
     const lookupQueryResults: Map<string, any[]> = new Map();
     [...index.lookupQueries].forEach(([lookupName, field]) => {
         const queryRelatedDVFiles = (new Function("dv", `return ${field.options.dvQueryString}`))(index.dv.api).values as Array<any>;
-        //console.log(lookupName, queryRelatedDVFiles)
-        //console.log("NEW LOOKUP FILES", lookupName, queryRelatedDVFiles)
         lookupQueryResults.set(lookupName, queryRelatedDVFiles);
 
     });
@@ -39,15 +37,7 @@ export function resolveLookups(plugin: MetadataMenu): void {
             })
             //3. assign those results to fileLookupFiles
             const relatedFieldName = `${filePath}__related__${lookupField.fileClassName || "presetField"}___${lookupField.name}`
-            const existingFileLookupFields = index.fileLookupFiles.get(relatedFieldName)
             index.fileLookupFiles.set(relatedFieldName, fileRelatedDVFiles)
-            //console.log(existingFileLookupFields, relatedFieldName, fileRelatedDVFiles)
-            //4. reset Previous results count to current value
-            if (!(index.fileLookupFieldsStatus.get(`${filePath}__${lookupField.name}`) === Status.changed)) {
-                index.previousFileLookupFilesValues.set(relatedFieldName, (existingFileLookupFields || fileRelatedDVFiles).length)
-            }
-            //5. change the status of this lookup field
-            index.fileLookupFieldsStatus.set(`${filePath}__${lookupField.name}`, Status.changed)
         })
     })
     //remove non existing lookup fields from index, since those indexes aren't flushed each time
@@ -67,7 +57,6 @@ export function resolveLookups(plugin: MetadataMenu): void {
             index.fileLookupFiles.delete(id);
             index.fileLookupFieldLastValue.delete(id);
             index.fileLookupFieldLastOutputType.delete(id);
-            index.previousFileLookupFilesValues.delete(id);
             index.fileLookupFieldsStatus.delete(`${filePath}__${fieldName}`)
         }
     }

@@ -7,8 +7,8 @@ import { FieldsPayload, postValues } from "./postValues";
 import { ExistingField } from "src/fields/ExistingField";
 
 export function arraysAsStringAreEqual(a: string, b: string) {
-    const aAsArray = typeof a === "string" ? a.split(",").map(v => v.trim()) : []
-    const bAsArray = typeof b === "string" ? b.split(",").map(v => v.trim()) : []
+    const aAsArray = typeof a === "string" ? a.split(",").map(v => v.trim()) : (Array.isArray(a) ? a : [])
+    const bAsArray = typeof b === "string" ? b.split(",").map(v => v.trim()) : (Array.isArray(b) ? b : [])
     return aAsArray.every(item => bAsArray.includes(item)) && bAsArray.every(item => aAsArray.includes(item))
 }
 
@@ -87,8 +87,9 @@ export async function updateLookups(
     await Promise.all([...f.fileLookupFiles.keys()].map(async lookupFileId => {
         const matchRegex = /(?<filePath>.*)__related__(?<fileClassName>.*)___(?<fieldName>.*)/
         const { filePath, fieldName } = lookupFileId.match(matchRegex)?.groups || {}
-        const tFile = plugin.app.vault.getAbstractFileByPath(filePath) as TFile
-        if (!tFile) return
+        const file = plugin.app.vault.getAbstractFileByPath(filePath)
+        if (!file || !(file instanceof TFile)) return
+
         payloads[filePath] = payloads[filePath] || []
         let newValue = "";
         const pages = f.fileLookupFiles.get(lookupFileId)
@@ -96,26 +97,37 @@ export async function updateLookups(
         if (field) {
             const outputType = field.options.outputType
             if (!f.fileLookupFieldLastOutputType.get(lookupFileId)) f.fileLookupFieldLastOutputType.set(lookupFileId, outputType)
-            newValue = renderValue(field, pages, plugin, tFile, renderingErrors)
+            newValue = renderValue(field, pages, plugin, file, renderingErrors)
             //check if value has changed in order not to create an infinite loop
-            const currentValue = (await ExistingField.getExistingFieldFromIndexForIndexedPath(plugin, tFile, field.id))?.value
+            const currentValue = (await ExistingField.getExistingFieldFromIndexForIndexedPath(plugin, file, field.id))?.value
             const shouldCheckForUpdate =
                 field.options.autoUpdate ||
                 field.options.autoUpdate === undefined ||
                 forceUpdateAll ||//field is autoUpdated OR
                 ( //field is not autoupdated and we have to check for request to update this one
-                    forceUpdateOne?.file.path === tFile.path &&
+                    forceUpdateOne?.file.path === file.path &&
                     forceUpdateOne?.fieldName === field.name
                 )
             const valueHasChanged = (!currentValue && newValue !== "") || !arraysAsStringAreEqual(currentValue || "", newValue)
             const formatHasChanged = outputType !== f.fileLookupFieldLastOutputType.get(lookupFileId)
+            if (
+                f.lastTimeBeforeResolving &&
+                file.stat.mtime < f.lastTimeBeforeResolving &&
+                file.stat.mtime > (f.lastDVUpdatingTime || 0)
+            ) {
+                console.log("BUT MANUALLY THEREFORE SKIP")
+                return
+            }
+            if (valueHasChanged || formatHasChanged) {
+                //change the status of this lookup field
+                f.fileLookupFieldsStatus.set(`${filePath}__${fieldName}`, Lookup.Status.changed)
+            }
             if (shouldCheckForUpdate) {
                 f.fileLookupFieldLastValue.set(lookupFileId, newValue);
                 f.fileLookupFieldLastOutputType.set(lookupFileId, outputType);
             }// make sure that this is set at first indexing}
             if (shouldCheckForUpdate && (valueHasChanged || formatHasChanged)) {
-                const previousValuesCount = plugin.fieldIndex.previousFileLookupFilesValues.get(lookupFileId) || 0
-                payloads[filePath].push({ id: field.id, payload: { value: newValue, previousItemsCount: previousValuesCount } })
+                payloads[filePath].push({ id: field.id, payload: { value: newValue } })
                 updatedFields.push(`${filePath}__${fieldName}`)
             }
             if (!valueHasChanged && !formatHasChanged) {
@@ -127,6 +139,5 @@ export async function updateLookups(
     Object.entries(payloads).forEach(async ([filePath, fieldsPayload]) => {
         f.pushPayloadToUpdate(filePath, fieldsPayload)
     })
-    updatedFields.forEach(field => f.fileLookupFieldsStatus.set(field, Lookup.Status.upToDate))
     if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`)
 }
