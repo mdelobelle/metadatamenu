@@ -115,7 +115,6 @@ export async function updateLookups(
                 file.stat.mtime < f.lastTimeBeforeResolving &&
                 file.stat.mtime > (f.lastDVUpdatingTime || 0)
             ) {
-                console.log("BUT MANUALLY THEREFORE SKIP")
                 return
             }
             if (valueHasChanged || formatHasChanged) {
