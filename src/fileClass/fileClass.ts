@@ -63,7 +63,6 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
     ) {
         super(plugin.app)
     }
-
     getSuggestions(query: string): string[] | Promise<string[]> {
         return [...this.plugin.fieldIndex.fileClassesName.keys()]
             .filter(fileClassName => !this.plugin.fieldIndex.filesFileClasses
@@ -379,17 +378,18 @@ class FileClass {
                 ** Map with tags
                 */
                 if (cache?.frontmatter?.mapWithTag) {
-                    if (cache?.frontmatter?.tagNames) {
-                        const _tagNames = cache?.frontmatter?.tagNames as string | string[];
-                        const tagNames = Array.isArray(_tagNames) ? [..._tagNames] : _tagNames.split(",").map(t => t.trim())
-                        tagNames.forEach(tag => {
-                            if (!tag.includes(" ")) {
-                                index.tagsMatchingFileClasses.set(tag, fileClass)
-                            }
-                        })
-                    } else if (!fileClassName.includes(" ")) {
+                    if (!fileClassName.includes(" ")) {
                         index.tagsMatchingFileClasses.set(fileClassName, fileClass)
                     }
+                }
+                if (cache?.frontmatter?.tagNames) {
+                    const _tagNames = cache?.frontmatter?.tagNames as string | string[];
+                    const tagNames = Array.isArray(_tagNames) ? [..._tagNames] : _tagNames.split(",").map(t => t.trim())
+                    tagNames.forEach(tag => {
+                        if (!tag.includes(" ")) {
+                            index.tagsMatchingFileClasses.set(tag, fileClass)
+                        }
+                    })
                 }
                 /*
                 ** Map with files paths

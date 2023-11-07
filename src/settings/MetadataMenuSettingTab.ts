@@ -14,6 +14,10 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 	private plugin: MetadataMenu;
 	private newFileClassesPath: string | null;
 	private newFileClassAlias: string
+	private newFileIndexingExcludedFolders: string[] = []
+	private newFileIndexingExcludedExtensions: string[] = []
+	private newFileIndexingExcludedRegexs: string[] = []
+
 	constructor(plugin: MetadataMenu) {
 		super(plugin.app, plugin);
 		this.plugin = plugin;
@@ -87,21 +91,28 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 
 		/* Exclude Folders from indexing*/
+		const excludedFolderSaveButton = new ButtonComponent(globalSettings)
+		excludedFolderSaveButton.buttonEl.addClass("save")
+		excludedFolderSaveButton.setIcon("save")
+		excludedFolderSaveButton.onClick(async () => {
+			this.plugin.settings.fileIndexingExcludedFolders = this.newFileIndexingExcludedFolders
+			await this.plugin.saveSettings()
+			excludedFolderSaveButton.removeCta()
+		})
 		const excludedFolders = new Setting(globalSettings)
 			.setName('Excluded folders')
 			.setDesc('Folders where preset fields and fileClass options won\'t be applied. ' +
-				'Useful for templates folders ' +
-				'or to speedup indexing when you exclude large md files such as excalidraw files')
+				'Useful for templates or settings folders. ' +
+				'Comma separated')
 			.addTextArea((text) => {
 				text
 					.setPlaceholder('Enter/folders/paths/, comma/separated/')
-					.setValue(this.plugin.settings.fileClassExcludedFolders.join(', '))
+					.setValue(this.plugin.settings.fileIndexingExcludedFolders.join(', '))
 					.onChange(async (value) => {
 						const values = value.split(",")
 						const paths: Array<string> = []
 						values.forEach(path => { if (path.trim()) paths.push(path.trim().replace(/\/?$/, '/')) })
-						this.plugin.settings.fileClassExcludedFolders = paths;
-						await this.plugin.saveSettings();
+						this.newFileIndexingExcludedFolders = paths
 					});
 				text.inputEl.rows = 6;
 				text.inputEl.cols = 25;
@@ -109,12 +120,76 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		excludedFolders.settingEl.addClass("vstacked");
 		excludedFolders.settingEl.addClass("no-border");
 		excludedFolders.controlEl.addClass("full-width");
+		excludedFolders.settingEl.appendChild(excludedFolderSaveButton.buttonEl)
+
+		/* Exclude extensions from indexing*/
+
+		const excludedExtensionsSaveButton = new ButtonComponent(globalSettings)
+		excludedExtensionsSaveButton.buttonEl.addClass("save")
+		excludedExtensionsSaveButton.setIcon("save")
+		excludedExtensionsSaveButton.onClick(async () => {
+			this.plugin.settings.fileIndexingExcludedExtensions = this.newFileIndexingExcludedExtensions
+			await this.plugin.saveSettings()
+			excludedExtensionsSaveButton.removeCta()
+		})
+		const excludedExtensions = new Setting(globalSettings)
+			.setName('Excluded extensions')
+			.setDesc('Files with these extensions won\'t be indexed' +
+				'Useful for big files that don\'t contain metadata. Comma separated')
+			.addTextArea((text) => {
+				text
+					.setValue(this.plugin.settings.fileIndexingExcludedExtensions.join(', '))
+					.onChange(async (value) => {
+						const values = value.split(",")
+						const extensions: Array<string> = []
+						values.forEach(extension => { if (extension.trim()) extensions.push(extension.trim()) })
+						this.newFileIndexingExcludedExtensions = extensions
+
+					});
+				text.inputEl.rows = 6;
+				text.inputEl.cols = 25;
+			})
+		excludedExtensions.settingEl.addClass("vstacked");
+		excludedExtensions.settingEl.addClass("no-border");
+		excludedExtensions.controlEl.addClass("full-width");
+		excludedExtensions.settingEl.appendChild(excludedExtensionsSaveButton.buttonEl)
+
+		/* Exclude Folders from indexing*/
+		const excludedRegexSaveButton = new ButtonComponent(globalSettings)
+		excludedRegexSaveButton.buttonEl.addClass("save")
+		excludedRegexSaveButton.setIcon("save")
+		excludedRegexSaveButton.onClick(async () => {
+			this.plugin.settings.fileIndexingExcludedRegex = this.newFileIndexingExcludedRegexs
+			await this.plugin.saveSettings()
+			excludedRegexSaveButton.removeCta()
+		})
+		const excludedRegex = new Setting(globalSettings)
+			.setName('Excluded regex')
+			.setDesc('files with names matching those regex won\'t be indexed. ' +
+				'Useful for very specific usecases. Comma separated ')
+			.addTextArea((text) => {
+				text
+					.setPlaceholder('foo*, .md$')
+					.setValue(this.plugin.settings.fileIndexingExcludedRegex.join(', '))
+					.onChange(async (value) => {
+						const values = value.split(",")
+						const regexs: Array<string> = []
+						values.forEach(regex => { if (regex.trim()) regexs.push(regex.trim()) })
+						this.newFileIndexingExcludedRegexs = regexs
+					});
+				text.inputEl.rows = 6;
+				text.inputEl.cols = 25;
+			})
+		excludedRegex.settingEl.addClass("vstacked");
+		excludedRegex.settingEl.addClass("no-border");
+		excludedRegex.controlEl.addClass("full-width");
+		excludedRegex.settingEl.appendChild(excludedRegexSaveButton.buttonEl)
 
 
 		/* Exclude Fields from context menu*/
 		const globallyIgnoredFieldsSetting = new Setting(globalSettings)
 			.setName('Globally ignored fields')
-			.setDesc('Fields to be ignored by the plugin when adding options to the context menu')
+			.setDesc('Fields to be ignored by the plugin')
 			.addTextArea((text) => {
 				text
 					.setPlaceholder('Enter fields as string, comma separated')
@@ -145,7 +220,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		enableAutoComplete.controlEl.addClass("full-width");
 
 		/* Indexing Status icon*/
-		/*
+
 		const showIndexingStatus = new Setting(globalSettings)
 			.setName('Fields Indexing Status')
 			.setDesc('Show fields indexing status icon in status toolbar')
@@ -163,7 +238,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			})
 		showIndexingStatus.settingEl.addClass("no-border");
 		showIndexingStatus.controlEl.addClass("full-width");
-		*/
+
 
 		/* lists display in frontmatter*/
 		const frontmatterListDisplay = new Setting(globalSettings)

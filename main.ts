@@ -1,4 +1,5 @@
-import { debounce, MarkdownView, Notice, Plugin } from 'obsidian';
+import './env'
+import { MarkdownView, Notice, Plugin } from 'obsidian';
 import { addCommands } from 'src/commands/paletteCommands';
 import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
@@ -6,14 +7,13 @@ import FieldIndex from 'src/components/FieldIndex';
 import IndexStatus from 'src/components/IndexStatus';
 import Field from 'src/fields/Field';
 import FileClassQuery from 'src/fileClass/FileClassQuery';
-import type { IMetadataMenuApi } from 'src/MetadataMenuApi';
+import { IMetadataMenuApi } from 'src/MetadataMenuApi';
 import { MetadataMenuApi } from 'src/MetadataMenuApi';
 import { DEFAULT_SETTINGS, MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
 import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import initDb from "src/db/index"
-import { updateVisibleLinks } from 'src/options/linkAttributes';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -30,6 +30,10 @@ export default class MetadataMenu extends Plugin {
 
 	async onload(): Promise<void> {
 		console.log('+------ Metadata Menu loaded --------+');
+		this.register(() => delete window.DEBUG);
+		(window["MetadataMenuAPI"] = this.api) && this.register(() => delete window["MetadataMenuAPI"]);
+		(window["MetadataMenu"] = this) && this.register(() => delete window["MetadataMenu"]);
+
 		this.indexName = `metadata_menu_${this.app.vault.adapter.basePath || this.app.vault.getName()}`
 		if (!this.app.plugins.enabledPlugins.has("dataview") || (
 			//@ts-ignore
@@ -73,6 +77,7 @@ export default class MetadataMenu extends Plugin {
 		//registering Metadata Menu suggestor for live preview
 		this.registerEditorSuggest(new ValueSuggest(this));
 		this.api = new MetadataMenuApi(this).make();
+
 
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', (leaf) => {
@@ -120,7 +125,3 @@ export default class MetadataMenu extends Plugin {
 		console.log('x------ Metadata Menu unloaded ------x');
 	};
 }
-function updateLinks(updateLinks: any, arg1: number, arg2: boolean) {
-	throw new Error('Function not implemented.');
-}
-

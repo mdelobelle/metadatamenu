@@ -178,7 +178,7 @@ export async function updateCanvas(
                 nodes = canvasContent.nodes;
                 edges = canvasContent.edges
             } catch (error) {
-                //console.log(error)
+                DEBUG && console.log(error)
                 new Notice(`Couldn't read ${canvas.path}`)
             }
         }
@@ -305,12 +305,12 @@ export async function updateCanvasAfterFileClass(plugin: MetadataMenu, files: TF
         if (index.classFilesPath && file.path.startsWith(this.classFilesPath)) {
             const fileClassName = index.fileClassesPath.get(file.path)?.name
             const canvasFields = (fileClassName && index.fileClassesFields.get(fileClassName)?.filter(field => field.type === FieldType.Canvas)) || []
-            canvasFields.forEach(async field => {
+            await Promise.all(canvasFields.map(async field => {
                 const canvasFile = this.plugin.app.vault.getAbstractFileByPath(field.options.canvasPath)
                 if (canvasFile instanceof TFile && canvasFile.extension === "canvas") {
                     await updateCanvas(this.plugin, { canvas: canvasFile })
                 }
-            })
+            }))
         }
     }
 }

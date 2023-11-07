@@ -39,7 +39,10 @@ export interface MetadataMenuSettings {
 	tableViewMaxRecords: number;
 	frontmatterListDisplay: MultiDisplayType;
 	fileClassExcludedFolders: Array<string>;
-	showIndexingStatusInStatusBar: boolean
+	showIndexingStatusInStatusBar: boolean;
+	fileIndexingExcludedFolders: Array<string>;
+	fileIndexingExcludedExtensions: Array<string>;
+	fileIndexingExcludedRegex: Array<string>;
 }
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
@@ -64,5 +67,8 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	tableViewMaxRecords: 100,
 	frontmatterListDisplay: MultiDisplayType.asArray,
 	fileClassExcludedFolders: [],
-	showIndexingStatusInStatusBar: true
+	showIndexingStatusInStatusBar: true,
+	fileIndexingExcludedFolders: [],
+	fileIndexingExcludedExtensions: [".excalidraw.md"],
+	fileIndexingExcludedRegex: []
 };

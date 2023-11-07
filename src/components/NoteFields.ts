@@ -52,7 +52,7 @@ export class FieldsModal extends Modal {
 
     public async buildNote(): Promise<void> {
         this.note = await Note.buildNote(this.plugin, this.file)
-        //console.log(this.note)
+        DEBUG && console.log(this.note)
     }
 
     public build(): void {

@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 
 export default function (plugin: MetadataMenu) {
-    //console.log("create db")
+    DEBUG && console.log("create db")
     const dbName = plugin.indexName
     const keys = {
         updates: [

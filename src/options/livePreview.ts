@@ -130,11 +130,11 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
                                         iconDecoAfterWhere = null;
                                     }
                                 }
-                                if (isLink && !isAlias && !isPipe || isMDUrl) {
+                                if (mdView.file && isLink && !isAlias && !isPipe || isMDUrl) {
 
                                     let linkText = view.state.doc.sliceString(node.from, node.to);
                                     linkText = linkText.split("#")[0];
-                                    let file = plugin.app.metadataCache.getFirstLinkpathDest(linkText, mdView.file.basename);
+                                    let file = plugin.app.metadataCache.getFirstLinkpathDest(linkText, mdView!.file!.basename);
                                     if (isMDUrl && !file) {
                                         try {
                                             file = plugin.app.vault.getAbstractFileByPath(decodeURIComponent(linkText)) as TFile;

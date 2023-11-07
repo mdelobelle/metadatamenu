@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { ButtonComponent, MarkdownRenderer, setIcon, SuggestModal, TAbstractFile, TextComponent, TFolder, ToggleComponent } from "obsidian";
-import { BookmarkItem } from "types";
+import { BookmarkItem } from "src/typings/types";
 import { FileClass, FileClassOptions } from "./fileClass";
 
 class ParentSuggestModal extends SuggestModal<string> {

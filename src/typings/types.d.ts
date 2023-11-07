@@ -1,7 +1,9 @@
+import MetadataMenu from "main";
 import "obsidian";
 import { EventRef } from "obsidian";
 //@ts-ignore
 import { DataviewApi } from "obsidian-dataview";
+import { IMetadataMenuApi } from "src/MetadataMenuApi";
 
 interface InternalPlugin {
     enabled: boolean;
@@ -26,8 +28,6 @@ interface BookmarkInternalPlugin extends InternalPlugin {
 interface InternalPlugins {
     bookmarks: BookmarkInternalPlugin;
 }
-
-
 
 declare module "obsidian" {
     interface App {
@@ -95,5 +95,14 @@ declare module "obsidian" {
     }
     interface Menu {
         setSectionSubmenu: (label: string, options: { title: string, icon: string }) => any
+    }
+}
+
+declare global {
+
+    interface Window {
+        MetadataMenuAPI?: IMetadataMenuApi;
+        MetadataMenu?: MetadataMenu;
+        DEBUG?: boolean
     }
 }
