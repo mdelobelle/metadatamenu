@@ -46,8 +46,7 @@ export default class OptionsList {
 	};
 
 	public async build(): Promise<void> {
-		const excludedFolders = this.plugin.settings.fileClassExcludedFolders
-		if (!excludedFolders.some(path => this.file.path.includes(path))) {
+		if (this.plugin.fieldIndex.isIndexed(this.file)) {
 			this.note = await Note.buildNote(this.plugin, this.file)
 		}
 	}
@@ -83,7 +82,7 @@ export default class OptionsList {
 		const location = this.location
 		if (isMenu(location)) {
 			location.addSeparator();
-			if (!this.plugin.settings.fileClassExcludedFolders.some(path => this.file.path.includes(path))) {
+			if (this.plugin.fieldIndex.isIndexed(this.file)) {
 				this.openNoteFieldModalOption();
 				this.buildFieldOptionsForMenu();
 				this.addSectionSelectModalOption();
@@ -109,7 +108,7 @@ export default class OptionsList {
 		if (isInsertFieldCommand(location)) {
 			this.addFieldAtCurrentPositionOption();
 		} else if (isSuggest(location)) {
-			if (!this.plugin.settings.fileClassExcludedFolders.some(path => this.file.path.includes(path))) {
+			if (this.plugin.fieldIndex.isIndexed(this.file)) {
 				this.openNoteFieldModalOption();
 				this.buildFieldOptions();
 				this.addFieldAtCurrentPositionOption();

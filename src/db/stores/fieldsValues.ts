@@ -306,3 +306,39 @@ export const bulkRemoveElements = (plugin: MetadataMenu, keys: string[]) => {
     })
 
 };
+
+export const cleanUnindexedFiles = (plugin: MetadataMenu) => {
+    const open = indexedDB.open(plugin.indexName);
+    return new Promise<IndexedExistingField[]>((resolve, reject) => {
+        open.onsuccess = () => {
+            let request: IDBRequest<IndexedExistingField[]>;
+            db = open.result;
+            if ([...db.objectStoreNames].find((name) => name === store)) {
+                const transaction = db.transaction(store, 'readwrite');
+                const objectStore = transaction.objectStore(store);
+                const indexedFilesPaths = plugin.fieldIndex.indexableFiles()
+                    .map(f => f.path)
+                request = objectStore.getAll();
+                request.onerror = () => {
+                    reject(request.error)
+                };
+                request.onsuccess = () => {
+                    const deleted: IndexedExistingField[] = []
+                    const toDelete = request.result.filter(iEF => iEF.filePath)
+                    for (const iEF of toDelete) {
+                        if (!(indexedFilesPaths).includes(iEF.filePath)) {
+                            deleted.push(iEF)
+                            const delRequest = objectStore.delete(iEF.id);
+                            delRequest.onsuccess = () => { };
+                        }
+                    }
+                    resolve(deleted)
+                };
+                transaction.oncomplete = () => db.close();
+            } else {
+                console.error("store not found")
+                //indexedDB.deleteDatabase(plugin.indexName);
+            }
+        };
+    });
+}

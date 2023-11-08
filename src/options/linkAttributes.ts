@@ -45,7 +45,7 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
             }
         }
     }
-    if (plugin.settings.fileClassExcludedFolders.some(path => destPath.includes(path))) return
+    if (!plugin.fieldIndex.indexableFiles().map(f => f.path).includes(destPath)) return
     const classFilessPath = plugin.settings.classFilesPath
     const fileClass = plugin.fieldIndex.fileClassesPath.get(destPath + ".md")
     if (classFilessPath && fileClass) {

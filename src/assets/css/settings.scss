@@ -51,8 +51,18 @@
 
     .setting-item{
         .setting-item-info{
-
-            .name{
+            &.with-button{
+                display: inline-flex;
+                width: 100%;
+                .spacer{
+                    width: 100%;
+                }
+            }
+            .setting-item-description{
+                font-weight: 500;
+                white-space: nowrap;
+            }
+            .setting-item-name{
                 font-weight: 500;
                 white-space: nowrap;
             }

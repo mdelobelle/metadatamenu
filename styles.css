@@ -1897,7 +1897,18 @@ span.flatpickr-weekday {
 .metadata-menu.settings .fields-container .setting-item .setting-item-info .spacer {
   width: 100%;
 }
-.metadata-menu.settings .setting-item .setting-item-info .name {
+.metadata-menu.settings .setting-item .setting-item-info.with-button {
+  display: inline-flex;
+  width: 100%;
+}
+.metadata-menu.settings .setting-item .setting-item-info.with-button .spacer {
+  width: 100%;
+}
+.metadata-menu.settings .setting-item .setting-item-info .setting-item-description {
+  font-weight: 500;
+  white-space: nowrap;
+}
+.metadata-menu.settings .setting-item .setting-item-info .setting-item-name {
   font-weight: 500;
   white-space: nowrap;
 }

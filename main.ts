@@ -113,7 +113,6 @@ export default class MetadataMenu extends Plugin {
 	};
 
 	async saveSettings() {
-
 		//remove the 'plugin' attribute from the Field object before writing the field to the settings
 		this.settings.presetFields = this.presetFields.map(_field => { const { plugin, ...field } = _field; return field });
 		this.settings.fileClassQueries = this.initialFileClassQueries;

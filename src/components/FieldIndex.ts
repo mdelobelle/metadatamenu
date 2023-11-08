@@ -734,4 +734,9 @@ export default class FieldIndex extends FieldIndexBuilder {
         })
         return changed
     }
+
+    public isIndexed(file: TFile): boolean {
+        this.indexableFiles().map(f => f.path).includes(file.path)
+        return true
+    }
 }

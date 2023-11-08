@@ -10,13 +10,96 @@ import FileClassQuerySettingsModal from "./FileClassQuerySettingModal";
 import FileClassQuerySetting from "./FileClassQuerySetting";
 import { MultiDisplayType } from "src/types/fieldTypes";
 
+class SettingTextWithButtonComponent extends Setting {
+	private newValues: string[] = []
+	constructor(
+		private plugin: MetadataMenu,
+		private containerEl: HTMLElement,
+		private name: string,
+		private description: string,
+		private placeholder: string,
+		private currentValues:
+			"fileIndexingExcludedFolders" |
+			"fileIndexingExcludedExtensions" |
+			"globallyIgnoredFields" |
+			"fileIndexingExcludedRegex" |
+			"fileClassExcludedFolders",
+		private normalizeValue: (item: string) => string
+	) {
+		super(containerEl)
+		const saveButton = new ButtonComponent(this.containerEl)
+		saveButton.buttonEl.addClass("save")
+		saveButton.setIcon("save")
+		saveButton.onClick(async () => {
+			this.plugin.settings[this.currentValues] = this.newValues
+			console.log(this.plugin.settings)
+			await this.plugin.saveSettings()
+			saveButton.removeCta()
+		})
+		this
+			.setName(this.name)
+			.setDesc(this.description)
+			.addTextArea((text) => {
+				text
+					.setPlaceholder(this.placeholder)
+					.setValue(this.plugin.settings[this.currentValues].join(', '))
+					.onChange(async (value) => {
+						saveButton.setCta()
+						const values = value.split(",")
+						this.newValues = []
+						values.forEach(_value => { if (value.trim()) this.newValues.push(this.normalizeValue(_value.trim())) })
+					});
+				text.inputEl.rows = 2;
+				text.inputEl.cols = 25;
+			})
+		this.settingEl.addClass("vstacked");
+		this.settingEl.addClass("no-border");
+		this.controlEl.addClass("full-width");
+		this.infoEl.addClass("with-button")
+		const infoTextContainer = this.infoEl.createDiv({ cls: "setting-item-info-text" })
+		while (infoTextContainer.previousElementSibling) {
+			infoTextContainer.prepend(this.infoEl.removeChild(infoTextContainer.previousElementSibling))
+		}
+		this.infoEl.createDiv({ cls: "spacer" })
+		this.infoEl.appendChild(saveButton.buttonEl)
+	}
+}
+
+class ButtonDisplaySetting extends Setting {
+	constructor(
+		public plugin: MetadataMenu,
+		private containerEl: HTMLElement,
+		private name: string,
+		private description: string,
+		private value:
+			"enableLinks" |
+			"enableEditor" |
+			"enableTabHeader" |
+			"enableBacklinks" |
+			"enableSearch" |
+			"enableFileExplorer" |
+			"enableStarred"
+	) {
+		super(containerEl)
+		this
+			.setName(this.name)
+			.setDesc(this.description)
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings[this.value]);
+				cb.onChange(value => {
+					this.plugin.settings[this.value] = value;
+					this.plugin.saveSettings();
+				})
+			}).settingEl.addClass("no-border");
+
+	}
+}
+
+
 export default class MetadataMenuSettingTab extends PluginSettingTab {
 	private plugin: MetadataMenu;
 	private newFileClassesPath: string | null;
 	private newFileClassAlias: string
-	private newFileIndexingExcludedFolders: string[] = []
-	private newFileIndexingExcludedExtensions: string[] = []
-	private newFileIndexingExcludedRegexs: string[] = []
 
 	constructor(plugin: MetadataMenu) {
 		super(plugin.app, plugin);
@@ -26,6 +109,10 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		this.containerEl.addClass("metadata-menu")
 		this.containerEl.addClass("settings")
 	};
+
+	private setStyle(container: HTMLElement): void {
+
+	}
 
 	private createSettingGroup(title: string, subTitle?: string, withButton: boolean = false): HTMLDivElement {
 		const settingHeader = this.containerEl.createEl('div')
@@ -91,119 +178,40 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 
 		/* Exclude Folders from indexing*/
-		const excludedFolderSaveButton = new ButtonComponent(globalSettings)
-		excludedFolderSaveButton.buttonEl.addClass("save")
-		excludedFolderSaveButton.setIcon("save")
-		excludedFolderSaveButton.onClick(async () => {
-			this.plugin.settings.fileIndexingExcludedFolders = this.newFileIndexingExcludedFolders
-			await this.plugin.saveSettings()
-			excludedFolderSaveButton.removeCta()
-		})
-		const excludedFolders = new Setting(globalSettings)
-			.setName('Excluded folders')
-			.setDesc('Folders where preset fields and fileClass options won\'t be applied. ' +
-				'Useful for templates or settings folders. ' +
-				'Comma separated')
-			.addTextArea((text) => {
-				text
-					.setPlaceholder('Enter/folders/paths/, comma/separated/')
-					.setValue(this.plugin.settings.fileIndexingExcludedFolders.join(', '))
-					.onChange(async (value) => {
-						const values = value.split(",")
-						const paths: Array<string> = []
-						values.forEach(path => { if (path.trim()) paths.push(path.trim().replace(/\/?$/, '/')) })
-						this.newFileIndexingExcludedFolders = paths
-					});
-				text.inputEl.rows = 6;
-				text.inputEl.cols = 25;
-			})
-		excludedFolders.settingEl.addClass("vstacked");
-		excludedFolders.settingEl.addClass("no-border");
-		excludedFolders.controlEl.addClass("full-width");
-		excludedFolders.settingEl.appendChild(excludedFolderSaveButton.buttonEl)
-
+		new SettingTextWithButtonComponent(
+			this.plugin, globalSettings, 'Excluded folders',
+			'Folders where preset fields and fileClass options won\'t be applied. ' +
+			'Useful for templates or settings folders. ' +
+			'Comma separated', 'Enter/folders/paths/, comma/separated/',
+			"fileIndexingExcludedFolders",
+			(item) => item.replace(/\/?$/, '/')
+		)
+		/*
 		/* Exclude extensions from indexing*/
-
-		const excludedExtensionsSaveButton = new ButtonComponent(globalSettings)
-		excludedExtensionsSaveButton.buttonEl.addClass("save")
-		excludedExtensionsSaveButton.setIcon("save")
-		excludedExtensionsSaveButton.onClick(async () => {
-			this.plugin.settings.fileIndexingExcludedExtensions = this.newFileIndexingExcludedExtensions
-			await this.plugin.saveSettings()
-			excludedExtensionsSaveButton.removeCta()
-		})
-		const excludedExtensions = new Setting(globalSettings)
-			.setName('Excluded extensions')
-			.setDesc('Files with these extensions won\'t be indexed' +
-				'Useful for big files that don\'t contain metadata. Comma separated')
-			.addTextArea((text) => {
-				text
-					.setValue(this.plugin.settings.fileIndexingExcludedExtensions.join(', '))
-					.onChange(async (value) => {
-						const values = value.split(",")
-						const extensions: Array<string> = []
-						values.forEach(extension => { if (extension.trim()) extensions.push(extension.trim()) })
-						this.newFileIndexingExcludedExtensions = extensions
-
-					});
-				text.inputEl.rows = 6;
-				text.inputEl.cols = 25;
-			})
-		excludedExtensions.settingEl.addClass("vstacked");
-		excludedExtensions.settingEl.addClass("no-border");
-		excludedExtensions.controlEl.addClass("full-width");
-		excludedExtensions.settingEl.appendChild(excludedExtensionsSaveButton.buttonEl)
+		new SettingTextWithButtonComponent(
+			this.plugin, globalSettings, 'Excluded regex',
+			'Files with these extensions won\'t be indexed' +
+			'Useful for big files that don\'t contain metadata. Comma separated', "",
+			"fileIndexingExcludedExtensions",
+			(item) => item
+		)
 
 		/* Exclude Folders from indexing*/
-		const excludedRegexSaveButton = new ButtonComponent(globalSettings)
-		excludedRegexSaveButton.buttonEl.addClass("save")
-		excludedRegexSaveButton.setIcon("save")
-		excludedRegexSaveButton.onClick(async () => {
-			this.plugin.settings.fileIndexingExcludedRegex = this.newFileIndexingExcludedRegexs
-			await this.plugin.saveSettings()
-			excludedRegexSaveButton.removeCta()
-		})
-		const excludedRegex = new Setting(globalSettings)
-			.setName('Excluded regex')
-			.setDesc('files with names matching those regex won\'t be indexed. ' +
-				'Useful for very specific usecases. Comma separated ')
-			.addTextArea((text) => {
-				text
-					.setPlaceholder('foo*, .md$')
-					.setValue(this.plugin.settings.fileIndexingExcludedRegex.join(', '))
-					.onChange(async (value) => {
-						const values = value.split(",")
-						const regexs: Array<string> = []
-						values.forEach(regex => { if (regex.trim()) regexs.push(regex.trim()) })
-						this.newFileIndexingExcludedRegexs = regexs
-					});
-				text.inputEl.rows = 6;
-				text.inputEl.cols = 25;
-			})
-		excludedRegex.settingEl.addClass("vstacked");
-		excludedRegex.settingEl.addClass("no-border");
-		excludedRegex.controlEl.addClass("full-width");
-		excludedRegex.settingEl.appendChild(excludedRegexSaveButton.buttonEl)
+		new SettingTextWithButtonComponent(
+			this.plugin, globalSettings, 'Excluded extensions',
+			'files with names matching those regex won\'t be indexed. ' +
+			'Useful for very specific usecases. Comma separated ', 'foo*, .md$',
+			"fileIndexingExcludedRegex",
+			(item) => item
+		)
 
-
-		/* Exclude Fields from context menu*/
-		const globallyIgnoredFieldsSetting = new Setting(globalSettings)
-			.setName('Globally ignored fields')
-			.setDesc('Fields to be ignored by the plugin')
-			.addTextArea((text) => {
-				text
-					.setPlaceholder('Enter fields as string, comma separated')
-					.setValue(this.plugin.settings.globallyIgnoredFields.join(', '))
-					.onChange(async (value) => {
-						this.plugin.settings.globallyIgnoredFields = value.split(',').map(item => item.trim());
-						await this.plugin.saveSettings();
-					});
-				text.inputEl.rows = 6;
-				text.inputEl.cols = 25;
-			})
-		globallyIgnoredFieldsSetting.settingEl.addClass("vstacked");
-		globallyIgnoredFieldsSetting.settingEl.addClass("no-border");
-		globallyIgnoredFieldsSetting.controlEl.addClass("full-width");
+		/* Exclude Fields from indexing*/
+		new SettingTextWithButtonComponent(
+			this.plugin, globalSettings, 'Globally ignored fields',
+			'Fields to be ignored by the plugin. Comma separated ', '',
+			"globallyIgnoredFields",
+			(item) => item
+		)
 
 		/* Autocomplete*/
 		const enableAutoComplete = new Setting(globalSettings)
@@ -407,6 +415,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		global.settingEl.addClass("narrow-title");
 		global.controlEl.addClass("full-width");
 
+
 		/* 
 		--------------------------------------------------
 		Managing extra button display options
@@ -416,7 +425,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		const metadataMenuBtnSettings = this.createSettingGroup(
 			'Metadata Menu button',
 			'Show extra button to access metadata menu modal of fields',
-			true)
+			true);
 
 		new Setting(metadataMenuBtnSettings)
 			.setName("Metadata Menu button icon")
@@ -430,82 +439,56 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					});
 			}).settingEl.addClass("no-border");
 
-		new Setting(metadataMenuBtnSettings)
-			.setName("Reading mode links")
-			.setDesc("Display an extra button to access metadata menu form after a link in reading mode")
-			.addToggle(cb => {
-				cb.setValue(this.plugin.settings.enableLinks);
-				cb.onChange(value => {
-					this.plugin.settings.enableLinks = value;
-					this.plugin.saveSettings();
-				})
-			}).settingEl.addClass("no-border");
 
-		new Setting(metadataMenuBtnSettings)
-			.setName("Live preview mode")
-			.setDesc("Display an extra button to access metadata menu form after a link in live preview")
-			.addToggle(cb => {
-				cb.setValue(this.plugin.settings.enableEditor);
-				cb.onChange(value => {
-					this.plugin.settings.enableEditor = value;
-					this.plugin.saveSettings();
-				})
-			}).settingEl.addClass("no-border");
+		([
+			{
+				name: "Reading mode links",
+				description: "Display an extra button to access metadata menu form after a link in reading mode",
+				value: "enableLinks"
+			},
+			{
+				name: "Live preview mode",
+				description: "Display an extra button to access metadata menu form after a link in live preview",
+				value: "enableEditor"
+			},
+			{
+				name: "Tab header",
+				description: "Display an extra button to access metadata menu form in the tab header",
+				value: "enableTabHeader"
+			},
+			{
+				name: "Backlinks",
+				description: "Display an extra button to access metadata menu form in the backlinks panel",
+				value: "enableBacklinks"
+			},
+			{
+				name: "Search",
+				description: "Display an extra button to access metadata menu form in the search panel",
+				value: "enableSearch"
+			},
+			{
+				name: "File explorer",
+				description: "Display an extra button to access metadata menu form in the file explorer",
+				value: "enableFileExplorer"
+			},
+			{
+				name: "Starred",
+				description: "Display an extra button to access metadata menu form in the starred panel",
+				value: "enableStarred"
+			},
 
-		new Setting(metadataMenuBtnSettings)
-			.setName("Tab header")
-			.setDesc("Display an extra button to access metadata menu form in the tab header")
-			.addToggle(cb => {
-				cb.setValue(this.plugin.settings.enableTabHeader);
-				cb.onChange(value => {
-					this.plugin.settings.enableTabHeader = value;
-					this.plugin.saveSettings();
-				})
-			}).settingEl.addClass("no-border");
-
-		new Setting(metadataMenuBtnSettings)
-			.setName("Backlinks")
-			.setDesc("Display an extra button to access metadata menu form in the backlinks panel")
-			.addToggle(cb => {
-				cb.setValue(this.plugin.settings.enableBacklinks);
-				cb.onChange(value => {
-					this.plugin.settings.enableBacklinks = value;
-					this.plugin.saveSettings();
-				})
-			}).settingEl.addClass("no-border");
-
-		new Setting(metadataMenuBtnSettings)
-			.setName("Search")
-			.setDesc("Display an extra button to access metadata menu form in the search panel")
-			.addToggle(cb => {
-				cb.setValue(this.plugin.settings.enableSearch);
-				cb.onChange(value => {
-					this.plugin.settings.enableSearch = value;
-					this.plugin.saveSettings();
-				})
-			}).settingEl.addClass("no-border");
-
-		new Setting(metadataMenuBtnSettings)
-			.setName("File explorer")
-			.setDesc("Display an extra button to access metadata menu form in the file explorer")
-			.addToggle(cb => {
-				cb.setValue(this.plugin.settings.enableFileExplorer);
-				cb.onChange(value => {
-					this.plugin.settings.enableFileExplorer = value;
-					this.plugin.saveSettings();
-				})
-			}).settingEl.addClass("no-border");
-
-		new Setting(metadataMenuBtnSettings)
-			.setName("Starred")
-			.setDesc("Display an extra button to access metadata menu form in the starred panel")
-			.addToggle(cb => {
-				cb.setValue(this.plugin.settings.enableStarred);
-				cb.onChange(value => {
-					this.plugin.settings.enableStarred = value;
-					this.plugin.saveSettings();
-				})
-			}).settingEl.addClass("no-border");
+		] as {
+			name: string,
+			description: string,
+			value:
+			"enableLinks" |
+			"enableEditor" |
+			"enableTabHeader" |
+			"enableBacklinks" |
+			"enableSearch" |
+			"enableFileExplorer" |
+			"enableStarred"
+		}[]).forEach(s => new ButtonDisplaySetting(this.plugin, metadataMenuBtnSettings, s.name, s.description, s.value))
 
 		/* 
 		--------------------------------------------------
