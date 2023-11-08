@@ -114,8 +114,6 @@ export class ExistingField {
         await fieldsValues.bulkEditElements(plugin, putPayload)
         await fieldsValues.bulkRemoveElements(plugin, delPayload)
         await updates.update(plugin, "fieldsValues")
-        const deleted = await fieldsValues.cleanUnindexedFiles(plugin)
-        deleted.forEach(iEF => plugin.fieldIndex.filesFieldsLastChange.set(iEF.filePath, Date.now()))
         DEBUG && console.log("indexed VALUES for ", files.length, "files in ", (Date.now() - start) / 1000, "s")
         plugin.indexStatus.setState("indexed")
     }

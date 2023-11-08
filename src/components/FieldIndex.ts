@@ -274,8 +274,14 @@ export default class FieldIndex extends FieldIndexBuilder {
         await this.indexFieldsAndValues(forceUpdateAll)
         if (this.dvReady) await this.resolveAndUpdateDVQueriesBasedFields(forceUpdateAll);
         if (this.remainingLegacyFileClasses) await this.migrateFileClasses();
+        await this.cleanIndex()
         this.plugin.app.workspace.trigger("metadata-menu:indexed");
 
+    }
+
+    public async cleanIndex() {
+        const deleted = await fieldsValues.cleanUnindexedFiles(this.plugin)
+        deleted.forEach(iEF => this.plugin.fieldIndex.filesFieldsLastChange.set(iEF.filePath, Date.now()))
     }
 
     public async indexFields(forceUpdateAll = false): Promise<void> {
