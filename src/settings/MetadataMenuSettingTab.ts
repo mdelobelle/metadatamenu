@@ -32,7 +32,6 @@ class SettingTextWithButtonComponent extends Setting {
 		saveButton.setIcon("save")
 		saveButton.onClick(async () => {
 			this.plugin.settings[this.currentValues] = this.newValues
-			console.log(this.plugin.settings)
 			await this.plugin.saveSettings()
 			saveButton.removeCta()
 		})
@@ -180,9 +179,8 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		/* Exclude Folders from indexing*/
 		new SettingTextWithButtonComponent(
 			this.plugin, globalSettings, 'Excluded folders',
-			'Folders where preset fields and fileClass options won\'t be applied. ' +
-			'Useful for templates or settings folders. ' +
-			'Comma separated', 'Enter/folders/paths/, comma/separated/',
+			'Folders where preset fields and fileClass options won\'t be applied. \n' +
+			'Useful for templates or settings folders.', 'Enter/folders/paths/, comma/separated/',
 			"fileIndexingExcludedFolders",
 			(item) => item.replace(/\/?$/, '/')
 		)
