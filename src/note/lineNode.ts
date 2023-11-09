@@ -38,25 +38,29 @@ export class LineNode {
         public field?: Field,
         public value?: string,
         public parsedField?: parsedField,
-        public blockquote: string = ""
+        public blockquote: string = "",
     ) {
-        //try to get field from content if not provided
+        if (this.line.shouldParse) {
+            const nodeRegex = new RegExp(/(?<blockquote>\>*)(?<indentation>\s*)(?<list>-\s)?(?<value>.*)/)
+            const parsedContent = this.rawContent.match(nodeRegex);
+            this.defineLinePrefixAttributes(parsedContent)
+            this.defineExistingFieldsAndValues(parsedContent)
+        }
+        this.line.nodes.push(this)
+    }
 
-        const frontmatter: any = this.line.note.frontmatter || {}
-        const indentRegex = new RegExp(/(?<blockquote>\>*)(?<indentation>\s*)(?<list>-\s)?(?<value>.*)/)
-        const fR = this.rawContent.match(indentRegex);
-        if (fR?.groups) {
-            if (fR.groups.indentation) {
 
-                this.indentationLevel = fR.groups.indentation.length / 2
-                if (fR.groups.list) {
-                    // list nous sert à déterminer que cette ligne correspond à l'item d'une liste
-                    // ça va servir dans le cas des objectList fields plus bas
+    private defineLinePrefixAttributes(parsedContent: RegExpMatchArray | null) {
+        if (parsedContent?.groups) {
+            if (parsedContent.groups.indentation) {
+
+                this.indentationLevel = parsedContent.groups.indentation.length / 2
+                if (parsedContent.groups.list) {
                     this.indentationLevel += 1;
                 }
             }
-            this.line.isNewListItem = !!fR.groups.list
-            this.blockquote = fR.groups.blockquote || ""
+            this.line.isNewListItem = !!parsedContent.groups.list
+            this.blockquote = parsedContent.groups.blockquote || ""
         }
         this.line.indentationLevel = this.indentationLevel
         if (this.indentationLevel) {
@@ -66,6 +70,11 @@ export class LineNode {
             ).last()
             this.line.parentLine = parentLine
         }
+    }
+
+    private defineExistingFieldsAndValues(parsedContent: RegExpMatchArray | null) {
+        const frontmatter: any = this.line.note.frontmatter || {}
+        const field = this.field
         switch (this.line.position) {
             case "yaml":
                 {
@@ -168,8 +177,8 @@ export class LineNode {
                             this.value = ""
                             const eF = parentLine!.note.getExistingFieldForIndexedPath(parentField.id)
                             if (eF) {
-                                if (fR?.groups && fR.groups.value) {
-                                    eF.value = [...(eF.value || []), fR.groups.value]
+                                if (parsedContent?.groups && parsedContent.groups.value) {
+                                    eF.value = [...(eF.value || []), parsedContent.groups.value]
                                 }
                             }
                         }
@@ -177,7 +186,6 @@ export class LineNode {
                 }
                 break;
         }
-        this.line.nodes.push(this)
     }
 
     private buildDecoratedFieldName = (): string => {

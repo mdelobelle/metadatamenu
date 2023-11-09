@@ -16,13 +16,25 @@ export class Line {
         public position: "yaml" | "inline",
         public rawContent: string = "",
         public number: number,
-        public indentationLevel: number = 0
+        public indentationLevel: number = 0,
+        public shouldParse: boolean = true
     ) {
         this.buildNodes()
         this.insertLineInNote()
     }
 
     public buildNodes() {
+
+        if (this.note.codeBlocksLines.includes(this.number)) this.shouldParse = false
+        if (!(this.position === "yaml") &&
+            !this.note.prefixedLines.includes(this.number) &&
+            !this.note.inlineFieldsLines.includes(this.number)
+        ) this.shouldParse = false
+
+        if (!this.shouldParse) {
+            new LineNode(this.plugin, this, this.rawContent)
+            return
+        }
         switch (this.position) {
             case "yaml":
                 new LineNode(this.plugin, this, this.rawContent)

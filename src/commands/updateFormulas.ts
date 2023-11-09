@@ -78,6 +78,7 @@ export async function updateFormulas(
                 }
             }
         } catch {
+            console.log("FORMULA", _file.path, field.name)
             if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
         }
     }))

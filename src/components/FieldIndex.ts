@@ -255,7 +255,7 @@ export default class FieldIndex extends FieldIndexBuilder {
             }))
     }
 
-    private indexableFileClasses() {
+    public indexableFileClasses() {
         const classFilesPath = this.classFilesPath
         if (classFilesPath) {
             return this.plugin.app.vault.getMarkdownFiles()

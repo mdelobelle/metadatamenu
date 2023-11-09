@@ -179,7 +179,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		/* Exclude Folders from indexing*/
 		new SettingTextWithButtonComponent(
 			this.plugin, globalSettings, 'Excluded folders',
-			'Folders where preset fields and fileClass options won\'t be applied. \n' +
+			'Folders where preset fields and fileClass options won\'t be applied. ' +
 			'Useful for templates or settings folders.', 'Enter/folders/paths/, comma/separated/',
 			"fileIndexingExcludedFolders",
 			(item) => item.replace(/\/?$/, '/')
@@ -187,8 +187,8 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		/*
 		/* Exclude extensions from indexing*/
 		new SettingTextWithButtonComponent(
-			this.plugin, globalSettings, 'Excluded regex',
-			'Files with these extensions won\'t be indexed' +
+			this.plugin, globalSettings, 'Excluded extensions',
+			'Files with these extensions won\'t be indexed ' +
 			'Useful for big files that don\'t contain metadata. Comma separated', "",
 			"fileIndexingExcludedExtensions",
 			(item) => item
@@ -196,7 +196,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		/* Exclude Folders from indexing*/
 		new SettingTextWithButtonComponent(
-			this.plugin, globalSettings, 'Excluded extensions',
+			this.plugin, globalSettings, 'Excluded file name patterns',
 			'files with names matching those regex won\'t be indexed. ' +
 			'Useful for very specific usecases. Comma separated ', 'foo*, .md$',
 			"fileIndexingExcludedRegex",

@@ -1898,15 +1898,23 @@ span.flatpickr-weekday {
   width: 100%;
 }
 .metadata-menu.settings .setting-item .setting-item-info.with-button {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   width: 100%;
 }
+.metadata-menu.settings .setting-item .setting-item-info.with-button .setting-item-info-text {
+  grid: 1;
+}
 .metadata-menu.settings .setting-item .setting-item-info.with-button .spacer {
+  grid: 2;
   width: 100%;
+}
+.metadata-menu.settings .setting-item .setting-item-info.with-button button {
+  grid: 3;
+  max-width: 3.25em;
 }
 .metadata-menu.settings .setting-item .setting-item-info .setting-item-description {
   font-weight: 500;
-  white-space: nowrap;
 }
 .metadata-menu.settings .setting-item .setting-item-info .setting-item-name {
   font-weight: 500;

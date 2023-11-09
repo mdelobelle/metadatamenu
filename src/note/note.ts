@@ -17,11 +17,14 @@ export class Note {
     public frontmatterPosition?: {
         end: {
             line: number;
-        };
+        },
         start: {
             line: number;
-        };
+        }
     }
+    public codeBlocksLines: number[] = []
+    public inlineFieldsLines: number[] = []
+    public prefixedLines: number[] = []
     constructor(
         public plugin: MetadataMenu,
         public file: TFile,
@@ -105,7 +108,7 @@ export class Note {
         }
     }
 
-    public buildFrontmatter(content: string) {
+    private buildSections(content: string) {
         //build the frontmatter object to avoid obsidian's metadataCache not being updated soon enough
         const yamlLines: string[] = []
         let inFrontmatter = false
@@ -113,28 +116,41 @@ export class Note {
         let frontmatterStart: { line: number } | undefined
         let frontmatterEnd: { line: number } | undefined
         let startsWithText = false
-        content.split("\n").forEach((rawLine, i) => {
-            if (!inFrontmatter) {
-                if (rawLine.trim() === "") inStartingBlankLines = true
-                else if (!this.frontmatterPosition?.end.line && rawLine !== "---") startsWithText = true
-            }
-            if (!startsWithText) {
-                if (!inFrontmatter && !this.frontmatterPosition?.end.line && rawLine === "---" && (inStartingBlankLines || i === 0)) {
-                    inFrontmatter = true
-                    inStartingBlankLines = false
-                    frontmatterStart = { line: i }
+        let previousLineIsCode: boolean = false
+        for (const [i, rawLine] of content.split("\n").entries()) {
+            if (frontmatterEnd === undefined) {
+                if (!inFrontmatter) {
+                    if (rawLine.trim() === "") inStartingBlankLines = true
+                    else if (!this.frontmatterPosition?.end.line && rawLine !== "---") startsWithText = true
                 }
-                else if (inFrontmatter) {
-                    if (rawLine === "---") {
-                        inFrontmatter = false
-                        frontmatterEnd = { line: i }
-                    } else {
-                        yamlLines.push(rawLine)
+                if (!startsWithText) {
+                    if (!inFrontmatter && !this.frontmatterPosition?.end.line && rawLine === "---" && (inStartingBlankLines || i === 0)) {
+                        inFrontmatter = true
+                        inStartingBlankLines = false
+                        frontmatterStart = { line: i }
+                    }
+                    else if (inFrontmatter) {
+                        if (rawLine === "---") {
+                            inFrontmatter = false
+                            frontmatterEnd = { line: i }
+                        } else {
+                            yamlLines.push(rawLine)
+                        }
                     }
                 }
             }
-        })
-
+            if (!inFrontmatter) {
+                if (rawLine.startsWith("```")) {
+                    this.codeBlocksLines.push(i)
+                    previousLineIsCode = !previousLineIsCode
+                } else if (previousLineIsCode) {
+                    this.codeBlocksLines.push(i)
+                } else {
+                    if (rawLine.includes("::")) this.inlineFieldsLines.push(i)
+                    if ([" ", "-", ">", "*", "~", "_", "`"].some(prefix => rawLine.startsWith(prefix))) this.prefixedLines.push(i)
+                }
+            }
+        }
         try {
             this.frontmatter = yamlLines.length ? parseYaml(yamlLines.join("\n")) : undefined
             if (frontmatterStart && frontmatterEnd) this.frontmatterPosition = {
@@ -148,12 +164,15 @@ export class Note {
 
     public async build() {
         const content = await this.plugin.app.vault.read(this.file)
-        this.buildFrontmatter(content)
+        const lines = content.split("\n")
+
+        this.buildSections(content)
+        //if (this.file.stat.size > 100000) return
         const frontmatterEnd = this.frontmatterEnd()
-        content.split("\n").forEach((rawLine, i) => {
+        for (const [i, rawLine] of lines.entries()) {
             const position = !!frontmatterEnd && i <= frontmatterEnd ? "yaml" : "inline"
             new Line(this.plugin, this, position, rawLine, i)
-        })
+        }
     }
 
     public getExistingFieldForIndexedPath(indexedPath?: string): ExistingField | undefined {

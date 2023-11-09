@@ -45,7 +45,10 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
             }
         }
     }
-    if (!(plugin.fieldIndex.indexableFiles().map(f => f.path).includes(`${destPath}.md`))) return
+    if (
+        !(plugin.fieldIndex.indexableFiles().map(f => f.path).includes(`${destPath}.md`)) &&
+        !(plugin.fieldIndex.indexableFileClasses().map(f => f.path).includes(`${destPath}.md`))
+    ) return
     const classFilessPath = plugin.settings.classFilesPath
     const fileClass = plugin.fieldIndex.fileClassesPath.get(destPath + ".md")
     if (classFilessPath && fileClass) {
@@ -66,7 +69,6 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
         } else {
             setStatusChanged(el)
         }
-
     }
     else if (fileClassName) {
         const fileClass = plugin.fieldIndex.fileClassesName.get(fileClassName)
