@@ -1,4 +1,4 @@
-import { Component, Notice, TFile } from "obsidian"
+import { Notice, TFile } from "obsidian"
 import MetadataMenu from "main"
 import Field from "../fields/Field";
 import { FileClass } from "src/fileClass/fileClass";
@@ -8,144 +8,15 @@ import { resolveLookups } from "src/commands/resolveLookups";
 import { updateLookups } from "src/commands/updateLookups";
 import { updateFormulas, cleanRemovedFormulasFromIndex } from "src/commands/updateFormulas";
 import { FieldType } from "src/types/fieldTypes";
-import { Status as LookupStatus, Status, Type as LookupType } from "src/types/lookupTypes";
+import { Status as LookupStatus, Status } from "src/types/lookupTypes";
 import { updateCanvas, updateCanvasAfterFileClass } from "src/commands/updateCanvas";
 import { CanvasData } from "obsidian/canvas";
 import { V1FileClassMigration } from "src/fileClass/fileClassMigration";
-import * as fieldsValues from "src/db/stores/fieldsValues"
-import { BookmarkInternalPlugin, BookmarkItem } from "src/typings/types";
+import { BookmarkItem } from "src/typings/types";
 import { ExistingField } from "src/fields/ExistingField";
 import { FieldsPayload, postValues } from "src/commands/postValues";
-import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
+import { cFileWithGroups, cFileWithTags, FieldIndexBuilder, FieldsPayloadToProcess, IndexedExistingField } from "./FieldIndexBuilder";
 
-
-export interface IndexedExistingField {
-    id: string,
-    filePath: string,
-    fieldName: string,
-    fieldType: string,
-    fieldId: string,
-    fileClassName: string | undefined
-    indexedPath: string,
-    indexedId: string | undefined,
-    value: any,
-    time: number
-}
-
-export interface cFileWithTags {
-    path: string,
-    tags: string[]
-}
-
-export interface cFileWithGroups {
-    path: string,
-    group: string
-}
-
-interface FieldsPayloadToProcess {
-    status: "toProcess" | "processed",
-    fieldsPayload: FieldsPayload
-}
-
-abstract class FieldIndexBuilder extends Component {
-    public changedFiles: TFile[] = []
-    public classFilesPath: string | null;
-    public bookmarksGroupsMatchingFileClasses: Map<string, FileClass>;
-    public canvasLastFiles: Map<string, string[]>
-    public dv: any;
-    public dvReady: boolean = false;
-    public fieldsFromGlobalFileClass: Field[];
-    public fileClassesAncestors: Map<string, string[]>
-    public fileClassesFields: Map<string, Field[]>;
-    public fileClassesName: Map<string, FileClass>;
-    public fileClassesPath: Map<string, FileClass>;
-    public fileFormulaFieldLastValue: Map<string, string>;
-    public fileFormulaFieldsStatus: Map<string, LookupStatus>;
-    public fileLookupFieldLastOutputType: Map<string, keyof typeof LookupType>;
-    public fileLookupFieldLastValue: Map<string, string>;
-    public fileLookupFieldsStatus: Map<string, LookupStatus>;
-    public fileLookupFiles: Map<string, any[]>;
-    public filesFields: Map<string, Field[]>;
-    public filesFieldsLastChange: Map<string, number>;
-    public previousFilesFields: Map<string, Field[]>
-    public filesFieldsFromBookmarksGroups: Map<string, Field[]>;
-    public filesFieldsFromFileClassQueries: Map<string, Field[]>;
-    public filesFieldsFromFilesPaths: Map<string, Field[]>;
-    public filesFieldsFromInnerFileClasses: Map<string, Field[]>;
-    public filesFieldsFromTags: Map<string, Field[]>;
-    public filesFileClasses: Map<string, FileClass[]>;
-    public filesFileClassesNames: Map<string, string[] | undefined>;
-    public filesLookupAndFormulaFieldsExists: Map<string, Field[]>;
-    public filesLookupsAndFormulasFields: Map<string, Field[]>;
-    public filesPathsMatchingFileClasses: Map<string, FileClass>;
-    public lastRevision: 0;
-    public loadTime: number;
-    public lookupQueries: Map<string, Field>;
-    public tagsMatchingFileClasses: Map<string, FileClass>;
-    public v1FileClassesPath: Map<string, FileClass>;
-    public v2FileClassesPath: Map<string, FileClass>;
-    public valuesListNotePathValues: Map<string, string[]>;
-    public dVRelatedFieldsToUpdate: Map<string, FieldsPayloadToProcess>
-    public remainingLegacyFileClasses: boolean
-    public lastBookmarkChange: number
-    public bookmarks: BookmarkInternalPlugin
-    public lastDVUpdatingTime: number
-    public lastTimeBeforeResolving: number
-    public settings: MetadataMenuSettings
-
-    constructor(public plugin: MetadataMenu) {
-        super()
-        this.settings = this.plugin.settings
-        this.init();
-    }
-
-    public init() {
-        this.flushCache();
-        //following props will persist at each indexing.
-        this.previousFilesFields = new Map();
-        this.filesFieldsLastChange = new Map();
-        this.remainingLegacyFileClasses = false
-        this.canvasLastFiles = new Map();
-        this.fileFormulaFieldLastValue = new Map();
-        this.fileFormulaFieldsStatus = new Map()
-        this.fileLookupFieldLastOutputType = new Map();
-        this.fileLookupFieldLastValue = new Map();
-        this.fileLookupFieldsStatus = new Map();
-        this.fileLookupFiles = new Map();
-        this.dv = this.plugin.app.plugins.plugins.dataview;
-        this.dvReady = this.dv?._loaded && !!this.plugin.app.plugins.plugins.dataview?.index.initialized
-        this.classFilesPath = this.settings.classFilesPath;
-        this.dVRelatedFieldsToUpdate = new Map()
-        this.bookmarks = this.plugin.app.internalPlugins.getPluginById("bookmarks")
-    }
-
-    public flushCache() {
-        //these props are rebuilt at each indexing
-        this.dvReady = this.dv && !!this.plugin.app.plugins.plugins.dataview?.index.initialized
-        this.filesFields = new Map();
-        this.filesLookupsAndFormulasFields = new Map();
-        this.filesLookupAndFormulaFieldsExists = new Map();
-        this.fileClassesFields = new Map();
-        this.fieldsFromGlobalFileClass = [];
-        this.filesFieldsFromTags = new Map();
-        this.filesFieldsFromFilesPaths = new Map();
-        this.filesFieldsFromBookmarksGroups = new Map();
-        this.filesFieldsFromFileClassQueries = new Map();
-        this.filesFieldsFromInnerFileClasses = new Map();
-        this.fileClassesPath = new Map();
-        this.v1FileClassesPath = new Map();
-        this.v2FileClassesPath = new Map();
-        this.fileClassesName = new Map();
-        this.fileClassesAncestors = new Map();
-        this.valuesListNotePathValues = new Map();
-        this.tagsMatchingFileClasses = new Map();
-        this.filesPathsMatchingFileClasses = new Map();
-        this.bookmarksGroupsMatchingFileClasses = new Map();
-        this.filesFileClasses = new Map();
-        this.filesFileClassesNames = new Map();
-        this.lookupQueries = new Map();
-    }
-}
 
 export default class FieldIndex extends FieldIndexBuilder {
     constructor(public plugin: MetadataMenu) {
@@ -153,9 +24,6 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     async onload(): Promise<void> {
-        this.loadTime = Date.now();
-
-        //check if there are changes on the bookmarks
 
         this.registerEvent(
             this.bookmarks.instance.on("changed", async () => {
@@ -185,15 +53,15 @@ export default class FieldIndex extends FieldIndexBuilder {
 
         this.registerEvent(
             this.plugin.app.vault.on("delete", async (file) => {
-                await fieldsValues.bulkRemoveElementsForFile(this.plugin, file.path)
+                await this.plugin.indexDB.fieldsValues.bulkRemoveElementsForFile(file.path)
                 await this.fullIndex()
             })
         )
 
         this.registerEvent(
             this.plugin.app.vault.on("rename", async (file, oldPath) => {
-                await fieldsValues.updateItemsAfterFileRename(this.plugin, oldPath, file.path)
-                await fieldsValues.bulkRemoveElementsForFile(this.plugin, oldPath)
+                await this.plugin.indexDB.fieldsValues.updateItemsAfterFileRename(oldPath, file.path)
+                await this.plugin.indexDB.fieldsValues.bulkRemoveElementsForFile(oldPath)
                 await this.fullIndex()
             })
         )
@@ -217,16 +85,14 @@ export default class FieldIndex extends FieldIndexBuilder {
             this.plugin.app.metadataCache.on("dataview:index-ready", async () => {
                 DEBUG && console.log("dataview index ready")
                 this.dv = this.plugin.app.plugins.plugins.dataview;
-                this.dvReady = true;
                 await this.fullIndex(true)
             })
         )
 
         this.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
-                this.dvReady = this.dv?._loaded && !!this.plugin.app.plugins.plugins.dataview?.index.initialized
-                if (op === "update" && this.dvReady
-                ) {
+
+                if (op === "update" && this.dvReady()) {
                     const filePayloadToProcess = this.dVRelatedFieldsToUpdate.get(file.path)
                     if (![...this.dVRelatedFieldsToUpdate.keys()].includes(file.path)) {
                         await this.resolveAndUpdateDVQueriesBasedFields(false)
@@ -272,7 +138,7 @@ export default class FieldIndex extends FieldIndexBuilder {
     public async fullIndex(forceUpdateAll = false): Promise<void> {
         this.plugin.indexStatus.setState("indexing")
         await this.indexFieldsAndValues(forceUpdateAll)
-        if (this.dvReady) await this.resolveAndUpdateDVQueriesBasedFields(forceUpdateAll);
+        if (this.dvReady()) await this.resolveAndUpdateDVQueriesBasedFields(forceUpdateAll);
         if (this.remainingLegacyFileClasses) await this.migrateFileClasses();
         await this.cleanIndex()
         this.plugin.app.workspace.trigger("metadata-menu:indexed");
@@ -280,7 +146,7 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     public async cleanIndex() {
-        const deleted = await fieldsValues.cleanUnindexedFiles(this.plugin)
+        const deleted = await this.plugin.indexDB.fieldsValues.cleanUnindexedFiles(this.plugin) as IndexedExistingField[]
         deleted.forEach(iEF => this.plugin.fieldIndex.filesFieldsLastChange.set(iEF.filePath, Date.now()))
     }
 
@@ -655,6 +521,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         */
 
         this.indexableFiles().forEach(f => {
+            const fileFileClassesVersions: Record<string, string> = {}
             const fileFieldsFromInnerFileClasses = this.filesFieldsFromInnerFileClasses.get(f.path)
             const fileFieldsFromQuery = this.filesFieldsFromFileClassQueries.get(f.path);
             const fileFieldsFromTag = this.filesFieldsFromTags.get(f.path);
@@ -697,7 +564,17 @@ export default class FieldIndex extends FieldIndexBuilder {
                 const filesLookupAndFormulasFields = fileFields.filter(f => this.isLookupOrFormula(f))
                 if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, fileFields.filter(f => this.isLookupOrFormula(f)))
             }
+            fileFields.forEach(field => {
+                const fileClassName = field.fileClassName
+                if (fileClassName) {
+                    fileFileClassesVersions[fileClassName] = this.fileClassesName.get(fileClassName)?.getVersion() || "0"
+                } else {
+                    fileFileClassesVersions[`${this.plugin.indexName}_settings`] = this.plugin.settings.settingsVersion as string
+                }
+            })
+            if (f.path.startsWith("Untitled")) console.log(f.path, fileFileClassesVersions)
             if (
+                //TODO remove forceUpdateAll, replace by hasNewFileClassVersion
                 forceUpdateAll ||
                 fileFields.some(f => !previousFileFields.includes(f.id)) ||
                 previousFileFields?.some(fId => !fileFields.map(_f => _f.id).includes(fId))
@@ -710,8 +587,8 @@ export default class FieldIndex extends FieldIndexBuilder {
 
     private async getFilesLookupAndFormulaFieldsExists(file?: TFile): Promise<void> {
 
-        const lookups = await fieldsValues.getElementsForType<IndexedExistingField[]>(this.plugin, "Lookup")
-        const formulas = await fieldsValues.getElementsForType<IndexedExistingField[]>(this.plugin, "Formula")
+        const lookups = await this.plugin.indexDB.fieldsValues.getElementsForType("Lookup") as IndexedExistingField[]
+        const formulas = await this.plugin.indexDB.fieldsValues.getElementsForType("Formula") as IndexedExistingField[]
         const filesExistingFields: Record<string, IndexedExistingField[]> = {};
         [...lookups, ...formulas].forEach(iF => {
             filesExistingFields[iF.filePath] = [...(filesExistingFields[iF.filePath] || []), iF]

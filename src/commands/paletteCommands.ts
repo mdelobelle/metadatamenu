@@ -15,7 +15,6 @@ import { FieldType } from "src/types/fieldTypes";
 import { updateLookups } from "./updateLookups";
 import { updateFormulas } from "./updateFormulas";
 import { Note } from "src/note/note";
-import * as updates from "src/db/stores/updates"
 import { ExistingField } from "src/fields/ExistingField";
 
 function addFileClassAttributeOptions(plugin: MetadataMenu) {
@@ -338,10 +337,12 @@ function forceIndexFieldsValues(plugin: MetadataMenu) {
         name: "Index MetadataMenu fields",
         icon: "refresh-ccw",
         checkCallback: (checking: boolean) => {
-            if (checking) return true
-            updates.removeElement(plugin, "fieldsValues")
-            plugin.fieldIndex.init()
-            plugin.fieldIndex.fullIndex(true)
+            if (checking) return true;
+            (async function () {
+                await plugin.indexDB.updates.removeElement("fieldsValues")
+                plugin.fieldIndex.init()
+                plugin.fieldIndex.fullIndex(true)
+            })()
         }
     })
 }

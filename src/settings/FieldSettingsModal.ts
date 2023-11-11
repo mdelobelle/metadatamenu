@@ -3,6 +3,7 @@ import Field from "src/fields/Field";
 import { SettingLocation } from "src/fields/FieldManager";
 import FieldSetting from "src/settings/FieldSetting";
 import { BaseSettingModal } from "./BaseSettingModal";
+import { incrementVersion } from "./MetadataMenuSettings";
 
 export default class FieldSettingsModal extends BaseSettingModal {
     private saved: boolean = false;
@@ -49,6 +50,7 @@ export default class FieldSettingsModal extends BaseSettingModal {
         Field.copyProperty(this.initialField, this.field)
         if (this.parentSetting) Field.copyProperty(this.parentSetting.field, this.field);
         this.parentSetting?.setTextContentWithname()
+        incrementVersion(this.plugin)
         await this.plugin.saveSettings();
     }
 

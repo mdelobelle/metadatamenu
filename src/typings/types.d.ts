@@ -67,6 +67,9 @@ declare module "obsidian" {
         fileCache: Record<string, { mtime: number }>
         inProgressTaskCount: number;
         initialized: boolean;
+        db: {
+            name: string
+        }
         on(
             name: "dataview:api-ready",
             //@ts-ignore
@@ -90,6 +93,7 @@ declare module "obsidian" {
         ): EventRef;
     }
     interface Workspace {
+        on(name: "metadata-menu:db-ready", callback: () => void, ctx?: any): EventRef;
         on(name: "metadata-menu:indexed", callback: () => void, ctx?: any): EventRef;
         on(name: "layout-change", callback: Debouncer<[_file: TFile], void>, ctx?: any): EventRef;
     }

@@ -9,7 +9,6 @@ import { FieldOptions } from "src/components/NoteFields";
 import { postValues } from "src/commands/postValues";
 import { SettingLocation } from "../FieldManager";
 import { ExistingField } from "../existingField";
-import * as fieldsValues from 'src/db/stores/fieldsValues'
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 
@@ -80,7 +79,7 @@ export default class CycleField extends AbstractListBasedField {
     }
 
     public async next(name: string, file: TFile, indexedPath?: string): Promise<void> {
-        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, file, indexedPath)
+        const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
         const value = eF?.value || ""
         //let matchedValue = this.getRawOptionFromDuration(value) || value;
         await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: this.nextOption(value).toString() } }], file)
@@ -145,7 +144,7 @@ export default class CycleField extends AbstractListBasedField {
         /* button on click : go to next version*/
         cycleBtn.onclick = async (e) => {
             if (!(file instanceof TFile)) return
-            const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, file, this.field.id)
+            const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, this.field.id)
             const value = eF?.value || ""
             const nextOption = this.nextOption(value)
             CycleField.replaceValues(this.plugin, file.path, this.field.id, nextOption);

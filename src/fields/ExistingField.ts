@@ -1,10 +1,8 @@
 import { TFile } from "obsidian"
 import Field from "./Field"
-import * as fieldsValues from 'src/db/stores/fieldsValues'
-import { IndexedExistingField } from "src/components/FieldIndex"
+import { IndexedExistingField } from "src/index/FieldIndexBuilder"
 import MetadataMenu from "main"
 import { ObjectListItem } from "./fieldManagers/ObjectListField"
-import * as updates from "src/db/stores/updates";
 import { Note } from "src/note/note"
 
 export class ExistingField {
@@ -26,7 +24,7 @@ export class ExistingField {
 
     static async getExistingFieldsFromIndexForFilePath(plugin: MetadataMenu, file: TFile, indexedPath?: string): Promise<ExistingField[]> {
         const existingFields: ExistingField[] = [];
-        const iEFields = await fieldsValues.getElementsForFilePath<IndexedExistingField[]>(plugin, file.path)
+        const iEFields = await plugin.indexDB.fieldsValues.getElementsForFilePath<IndexedExistingField[]>(file.path) as IndexedExistingField[]
         iEFields.forEach(iEF => {
             const field = Field.getFieldFromId(plugin, iEF.fieldId, iEF.fileClassName)
             const value = iEF.value
@@ -38,8 +36,8 @@ export class ExistingField {
     }
 
     static async getExistingFieldFromIndexForIndexedPath(plugin: MetadataMenu, file: TFile, indexedPath?: string): Promise<ExistingField | undefined> {
-        const iEFields = await fieldsValues.getElementsForFilePath<IndexedExistingField[]>(plugin, file.path)
-        const iEF = iEFields.find(iEF => !indexedPath || iEF.indexedPath === indexedPath)
+        const iEFields = await plugin.indexDB.fieldsValues.getElementsForFilePath<IndexedExistingField[]>(file.path) as IndexedExistingField[]
+        const iEF = iEFields?.find(iEF => !indexedPath || iEF.indexedPath === indexedPath)
         if (iEF) {
             const field = Field.getFieldFromId(plugin, iEF.fieldId, iEF.fileClassName)
             const value = iEF.value
@@ -98,10 +96,11 @@ export class ExistingField {
         plugin.indexStatus.setState("indexing")
         const putPayload: IndexedExistingField[] = []
         const delPayload: string[] = []
-        const lastUpdate: number | undefined = (await updates.get(plugin, "fieldsValues") as { id: string, value: number } || undefined)?.value
-        const indexedEF: IndexedExistingField[] = await fieldsValues.getElement(plugin, 'all')
+        const lastUpdate: number | undefined = (await plugin.indexDB.updates.getElement("fieldsValues") as { id: string, value: number } || undefined)?.value
+        const indexedEF: IndexedExistingField[] = (await plugin.indexDB.fieldsValues.getElement('all') as IndexedExistingField[] | undefined) || []
         const files = plugin.fieldIndex.indexableFiles()
             .filter(_f => {
+                //TODO replace by hasNewFileClassVersion
                 const lastChangeInFields = plugin.fieldIndex.filesFieldsLastChange.get(_f.path)
                 return !lastChangeInFields || !lastUpdate || lastChangeInFields >= lastUpdate || _f.stat.mtime > lastUpdate
             })
@@ -111,9 +110,9 @@ export class ExistingField {
             const note = await Note.buildNote(plugin, f)
             ExistingField.buildPayload(note, indexedEF, putPayload, delPayload)
         }))
-        await fieldsValues.bulkEditElements(plugin, putPayload)
-        await fieldsValues.bulkRemoveElements(plugin, delPayload)
-        await updates.update(plugin, "fieldsValues")
+        await plugin.indexDB.fieldsValues.bulkEditElements(putPayload)
+        await plugin.indexDB.fieldsValues.bulkRemoveElements(delPayload)
+        await plugin.indexDB.updates?.update("fieldsValues")
         DEBUG && console.log("indexed VALUES for ", files.length, "files in ", (Date.now() - start) / 1000, "s")
         plugin.indexStatus.setState("indexed")
     }

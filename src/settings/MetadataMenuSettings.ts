@@ -25,7 +25,7 @@ export interface MetadataMenuSettings {
 	classFilesPath: string | null;
 	isAutosuggestEnabled: boolean;
 	fileClassAlias: string;
-	settingsVersion?: number;
+	settingsVersion?: string | number;
 	globalFileClass?: string;
 	firstDayOfWeek: number;
 	enableLinks: boolean;
@@ -72,3 +72,13 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	fileIndexingExcludedExtensions: [".excalidraw.md"],
 	fileIndexingExcludedRegex: []
 };
+
+export const incrementVersion = (plugin: MetadataMenu) => {
+	const currentVersion = plugin.settings.settingsVersion
+	if (currentVersion && typeof currentVersion === "string") {
+		const [x, y] = currentVersion.split(".");
+		plugin.settings.settingsVersion = `${x}.${parseInt(y) + 1}`
+	} else {
+		plugin.settings.settingsVersion = "5.0"
+	}
+}

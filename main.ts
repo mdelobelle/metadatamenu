@@ -3,7 +3,7 @@ import { MarkdownView, Notice, Plugin } from 'obsidian';
 import { addCommands } from 'src/commands/paletteCommands';
 import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
-import FieldIndex from 'src/components/FieldIndex';
+import FieldIndex from 'src/index/FieldIndex';
 import IndexStatus from 'src/components/IndexStatus';
 import Field from 'src/fields/Field';
 import FileClassQuery from 'src/fileClass/FileClassQuery';
@@ -13,7 +13,8 @@ import { DEFAULT_SETTINGS, MetadataMenuSettings } from "src/settings/MetadataMen
 import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
-import initDb from "src/db/index"
+import { IndexDatabase } from 'src/db/DatabaseManager';
+import { UpdatesStore } from 'src/db/stores/updates';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -25,16 +26,19 @@ export default class MetadataMenu extends Plugin {
 	public extraButton: ExtraButton;
 	public contextMenu: ContextMenu;
 	public indexStatus: IndexStatus;
+	public indexDB: IndexDatabase;
 	public indexName: string;
 	public launched: boolean = false;
 
 	async onload(): Promise<void> {
 		console.log('+------ Metadata Menu loaded --------+');
 		this.register(() => delete window.DEBUG);
+		this.indexName = `metadata_menu_${this.app.appId ||
+			this.app.vault.adapter.basePath ||
+			this.app.vault.getName()}`;
 		(window["MetadataMenuAPI"] = this.api) && this.register(() => delete window["MetadataMenuAPI"]);
 		(window["MetadataMenu"] = this) && this.register(() => delete window["MetadataMenu"]);
 
-		this.indexName = `metadata_menu_${this.app.vault.adapter.basePath || this.app.vault.getName()}`
 		if (!this.app.plugins.enabledPlugins.has("dataview") || (
 			//@ts-ignore
 			this.app.plugins.plugins["dataview"] && !this.app.plugins.plugins["dataview"].settings.enableDataviewJs)
@@ -47,9 +51,7 @@ export default class MetadataMenu extends Plugin {
 		}
 		//loading and migrating settings
 		await this.loadSettings();
-		if (this.settings.settingsVersion === undefined) await SettingsMigration.migrateSettingsV1toV2(this)
-		if (this.settings.settingsVersion === 2) await SettingsMigration.migrateSettingsV2toV3(this)
-		if (this.settings.settingsVersion === 3) await SettingsMigration.migrateSettingsV3toV4(this)
+		await SettingsMigration.migrateSettings(this)
 
 		//loading components
 
@@ -95,11 +97,12 @@ export default class MetadataMenu extends Plugin {
 		//building palette commands
 		addCommands(this)
 
-		//indexing
-		initDb(this);
+		//buildind index
+		this.indexDB = this.addChild(new IndexDatabase(this))
 		await this.fieldIndex.fullIndex(true)
 		this.extraButton = this.addChild(new ExtraButton(this))
 		this.launched = true
+
 	};
 
 	/*

@@ -9,7 +9,6 @@ import { FieldOptions } from "src/components/NoteFields";
 import { LanguageSupport } from "@codemirror/language";
 import { Extension } from "@codemirror/state"
 import { ExistingField } from "../existingField";
-import * as fieldsValues from 'src/db/stores/fieldsValues'
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 
@@ -28,7 +27,7 @@ export default abstract class RawObjectField extends FieldManager {
     }
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
-        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, file, indexedPath)
+        const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
         const modal = new RawObjectModal(this.plugin, file, this.field, eF, indexedPath);
         modal.open()
     }

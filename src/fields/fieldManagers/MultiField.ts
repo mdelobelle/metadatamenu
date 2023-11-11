@@ -7,7 +7,6 @@ import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
 import { FieldOptions } from "src/components/NoteFields";
 import { ExistingField } from "../existingField";
-import * as fieldsValues from 'src/db/stores/fieldsValues'
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 
@@ -20,7 +19,7 @@ export default class MultiField extends AbstractListBasedField {
     }
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
-        const eF = await fieldsValues.getElementForIndexedPath<ExistingField>(this.plugin, file, indexedPath)
+        const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
         const modal = new MultiSelectModal(this.plugin, file, this.field, eF, indexedPath);
         modal.titleEl.setText("Select values");
         modal.open()
