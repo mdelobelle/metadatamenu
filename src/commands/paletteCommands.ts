@@ -126,9 +126,32 @@ function addManageFieldAtCursorCommand(plugin: MetadataMenu) {
 
                 (async function () {
                     const note = await Note.buildNote(plugin, view!.file!)
-                    const node = note.getNodeAtPosition(editor.getCursor())
-                    if (node) optionsList.createAndOpenFieldModal(node)
-                    else new Notice("No field with definition at this position", 2000)
+                    switch (view.getMode()) {
+                        case "source": {
+                            const node = note.getNodeAtPosition(editor.getCursor())
+                            if (node) optionsList.createAndOpenFieldModal(node)
+                            else new Notice("No field with definition at this position", 2000)
+                        }
+                            break;
+                        case "preview": {
+                            const focusedElement = document.querySelector(".metadata-property:focus-within")
+                            if (focusedElement instanceof HTMLElement) {
+                                const key = focusedElement.dataset.propertyKey
+                                const field = key && plugin.fieldIndex.filesFields.get(view.file!.path)?.find(_f => _f.isRoot() && _f.name === key)
+                                if (field) {
+                                    const node = note.getNodeForIndexedPath(field.id)
+                                    if (node) optionsList.createAndOpenFieldModal(node)
+                                    else new Notice("No field with definition at this position", 2000)
+                                } else if (key === plugin.settings.fileClassAlias) {
+                                    const node = note.getNodeForIndexedPath(`fileclass-field-${plugin.settings.fileClassAlias}`)
+                                    if (node) optionsList.createAndOpenFieldModal(node)
+                                    else new Notice("No field with definition at this position", 2000)
+                                }
+                            }
+                            break;
+                        }
+                    }
+
                 })()
             }
         }
