@@ -30,9 +30,11 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
         case "properties": if (!plugin.settings.enableLinks) return; break;
         case "tabHeader": if (!plugin.settings.enableTabHeader) return; break;
         case "starred": if (!plugin.settings.enableStarred) return; break;
+        case "bookmarks": if (!plugin.settings.enableStarred) return; break;
         case "file-explorer": if (!plugin.settings.enableFileExplorer) return; break;
         case "backlink": if (!plugin.settings.enableBacklinks) return; break;
         case "search": if (!plugin.settings.enableSearch) return; break;
+        case "outgoing-link": if (!plugin.settings.enableBacklinks) return; break;
         default: return;
     }
     // @ts-ignore
@@ -98,6 +100,7 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
     }
 }
 
+
 function updateLinkMetadataMenuFormButton(app: App, plugin: MetadataMenu, link: HTMLElement, viewTypeName: string | null, source: string) {
     const linkHref = link.getAttribute('href')?.split('#')[0];
     const dest = linkHref && app.metadataCache.getFirstLinkpathDest(linkHref, source);
@@ -109,11 +112,40 @@ function updateLinkMetadataMenuFormButton(app: App, plugin: MetadataMenu, link: 
 }
 
 export function updateDivExtraAttributes(app: App, plugin: MetadataMenu, link: HTMLElement, viewTypeName: string | null, sourceName: string, _linkName?: string) {
-    const linkName = _linkName || link.textContent
-    const dest = linkName && app.metadataCache.getFirstLinkpathDest(getLinkpath(linkName), sourceName)
-    if (dest) {
-        const fileClassName = plugin.fieldIndex.filesFileClassesNames.get(dest.path)?.last()
-        setLinkMetadataFormButton(plugin, link, dest.path.replace(/(.*).md/, "$1"), viewTypeName, fileClassName);
+    //console.log(viewTypeName, "|", link, "|", sourceName, "|", _linkName)
+    switch (viewTypeName) {
+        case "file-explorer": {
+            const dataPath = link?.parentElement?.dataset.path
+            if (dataPath) {
+                const fileClassName = plugin.fieldIndex.filesFileClassesNames.get(dataPath)?.last()
+                setLinkMetadataFormButton(plugin, link, dataPath.replace(/(.*).md/, "$1"), viewTypeName, fileClassName);
+            }
+        }
+            break;
+        case "tabHeader": {
+            if (sourceName) {
+                const fileClassName = plugin.fieldIndex.filesFileClassesNames.get(sourceName)?.last()
+                setLinkMetadataFormButton(plugin, link, sourceName.replace(/(.*).md/, "$1"), viewTypeName, fileClassName);
+            }
+        }
+            break;
+        case "outgoing-link": {
+            const dest = link.innerText.split("\n")[0]
+            if (dest) {
+                const fileClassName = plugin.fieldIndex.filesFileClassesNames.get(`${dest}.md`)?.last()
+                setLinkMetadataFormButton(plugin, link, dest, viewTypeName, fileClassName);
+            }
+        }
+            break;
+        default: {
+            const linkName = _linkName || link.textContent
+            const dest = linkName && app.metadataCache.getFirstLinkpathDest(getLinkpath(linkName), sourceName)
+            if (dest) {
+                const fileClassName = plugin.fieldIndex.filesFileClassesNames.get(dest.path)?.last()
+                setLinkMetadataFormButton(plugin, link, dest.path.replace(/(.*).md/, "$1"), viewTypeName, fileClassName);
+            }
+        }
+            break;
     }
 }
 
@@ -205,7 +237,7 @@ export function updateVisibleLinks(app: App, plugin: MetadataMenu) {
             const tabHeader: HTMLElement = leaf.tabHeaderInnerTitleEl;
             if (settings.enableTabHeader) {
                 // Supercharge tab headers
-                updateDivExtraAttributes(app, plugin, tabHeader, 'tabHeader', fileName);
+                updateDivExtraAttributes(app, plugin, tabHeader, 'tabHeader', leaf.view.file.path);
             }
             else {
                 clearExtraAttributes(tabHeader);

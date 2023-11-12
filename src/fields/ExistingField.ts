@@ -93,6 +93,32 @@ export class ExistingField {
     }
 
     static async indexFieldsValues(plugin: MetadataMenu, changedFiles: TFile[] = []): Promise<void> {
+        /*
+        updates the fieldsValues store with the current values
+        of each indexed fields for each indexable file
+
+        this operation is cost intensive because it eventually 
+        - reads a lot of files and 
+        - builds a lot of notes objects
+
+        therefore we try to identify which files need to be indexed:
+        1. the one that have changed while the vault is closed 
+        app.vault.on("modifiy") isn't triggered
+        we look at stat.mtime
+        if it is after lastUpdate (of fieldsValues) we need to index this file's fields values
+        
+        
+        2. the one that have changed (one of the fields values can have changed) when the vault is opened: 
+        triggered by app.vault.on("modify") -> included in changedFiles
+        
+        3. the ones for which the fields definition have changed:
+        nothing has changed in the file but 
+        lines that were not identified as containing indexable fields may now contain indexable fields, 
+        and fields that were preivously indexable may not be indexable anymore -> they have to be removed from fielsValues
+        for that we compare the current version of the file's fields definition by checking filesFieldsLastChange
+        if it has changed -> we need to index fields values 
+
+        */
         plugin.indexStatus.setState("indexing")
         const putPayload: IndexedExistingField[] = []
         const delPayload: string[] = []
@@ -100,7 +126,6 @@ export class ExistingField {
         const indexedEF: IndexedExistingField[] = (await plugin.indexDB.fieldsValues.getElement('all') as IndexedExistingField[] | undefined) || []
         const files = plugin.fieldIndex.indexableFiles()
             .filter(_f => {
-                //TODO replace by hasNewFileClassVersion
                 const lastChangeInFields = plugin.fieldIndex.filesFieldsLastChange.get(_f.path)
                 return !lastChangeInFields || !lastUpdate || lastChangeInFields >= lastUpdate || _f.stat.mtime > lastUpdate
             })

@@ -341,7 +341,7 @@ export class Note {
             }
         })
         await this.plugin.app.vault.modify(this.file, this.renderNote())
-        await ExistingField.indexFieldsValues(this.plugin, [this.file])
+        //await ExistingField.indexFieldsValues(this.plugin, [this.file]) //not necessary? modify will trigger fieldIndex on.modify and on.resolved
     }
 
     public renderNote(): string {

@@ -61,7 +61,6 @@ export abstract class StoreManager extends Component {
 
     public bulkEditElements = <T extends Payload>(payload: Array<T>) => this.executeRequest(
         (store: IDBObjectStore) => new Promise<T | void>((resolve, reject) => {
-            console.log("EDITING ", payload.length, " ITEMS")
             let request!: IDBRequest<T>
             if (payload.length) {
                 payload.forEach(item => {
@@ -86,7 +85,7 @@ export abstract class StoreManager extends Component {
             if (key === 'all') request = store.clear();
             else request = store.delete(key);
             request.onerror = () => reject(request.error)
-            request.onsuccess = () => { console.log("remove", key); resolve() }
+            request.onsuccess = () => resolve()
         })
     )
 

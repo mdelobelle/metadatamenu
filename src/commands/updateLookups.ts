@@ -32,7 +32,6 @@ function renderValue(field: Field, pages: any, plugin: MetadataMenu, tFile: TFil
                     try {
                         return renderingFunction(dvFile)
                     } catch {
-                        console.log("FORMULA", tFile.path, field.name)
                         if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
                         return ""
                     }
@@ -50,7 +49,6 @@ function renderValue(field: Field, pages: any, plugin: MetadataMenu, tFile: TFil
                 try {
                     newValue = summarizingFunction(pages).toString();
                 } catch {
-                    console.log("FORMULA", tFile.path, field.name)
                     if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
                     newValue = ""
                 }
@@ -65,7 +63,6 @@ function renderValue(field: Field, pages: any, plugin: MetadataMenu, tFile: TFil
                 try {
                     newValue = summarizingFunction(pages).toString();
                 } catch {
-                    console.log("FORMULA", tFile.path, field.name)
                     if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
                     newValue = ""
                 }

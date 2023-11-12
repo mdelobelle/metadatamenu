@@ -33,11 +33,11 @@ export default class ExtraButton extends Component {
         });
 
         // Initialization
-        this.registerEvent(this.plugin.app.metadataCache.on('changed', debounce(this.updateLinks, 500, true)));
+        this.registerEvent(this.plugin.app.workspace.on('metadata-menu:indexed', debounce(this.updateLinks, 500, true)));
         this.registerEvent(this.plugin.app.workspace.on("layout-change", debounce(this.updateLinks, 10, true)));
         this.registerEvent(this.plugin.app.workspace.on("window-open", (window, win) => this.initModalObservers(window.getContainer()!.doc)));
         this.registerEvent(this.plugin.app.workspace.on("layout-change", () => this.initViewObservers()));
-        //this.registerEvent(this.plugin.app.workspace.on("metadata-menu:indexed", () => this.initViewObservers()));
+        this.registerEvent(this.plugin.app.internalPlugins.getPluginById("bookmarks").instance.on("changed", debounce(this.updateLinks, 500, true)))
     }
 
     public updateLinks = () => {
@@ -48,6 +48,7 @@ export default class ExtraButton extends Component {
                 this.updateContainer(leaf.view.containerEl, own_class, type);
             })
         });
+
     }
 
 
@@ -139,6 +140,7 @@ export default class ExtraButton extends Component {
             const el = nodes[i] as HTMLElement;
             const isCanvasFileLink = el.parentElement?.getAttr("data-path")?.includes(".canvas")
             if (!isCanvasFileLink) {
+                //HERE
                 updateDivExtraAttributes(this.plugin.app, this.plugin, el, viewTypeName, "");
             }
         }

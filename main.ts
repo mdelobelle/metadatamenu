@@ -14,7 +14,6 @@ import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import { IndexDatabase } from 'src/db/DatabaseManager';
-import { UpdatesStore } from 'src/db/stores/updates';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;

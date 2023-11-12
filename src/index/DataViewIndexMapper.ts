@@ -22,7 +22,6 @@ export class MappedIndex extends Component {
 
     async build() {
         const dvFiles = await this.getDVFiles()
-        console.log(dvFiles.length)
     }
 
     private getDVFiles() {

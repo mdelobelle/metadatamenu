@@ -264,7 +264,6 @@ export class FieldsModal extends Modal {
                     const fileClassOptionsContainer = fileClassManagerContainer.createDiv({ cls: "fileclass-manager-container" })
                     const fileClassNameContainer = fileClassOptionsContainer.createDiv({ cls: "name", text: _fileClass.name })
                     fileClassNameContainer.setAttr("id", `fileClass__${_fileClass.name.replace("/", "___").replace(" ", "_")}`)
-
                     if (await _fileClass.missingFieldsForFileClass(this.file)) {
                         const fileClassInsertMissingFieldsBtn = new ButtonComponent(fileClassOptionsContainer)
                         fileClassInsertMissingFieldsBtn.setIcon("battery-full")
@@ -282,7 +281,7 @@ export class FieldsModal extends Modal {
                         fileClassAttributeModal.open()
                     })
                     if (i < ancestors.length - 1) {
-                        fileClassManagerContainer.createDiv({ text: ">", cls: "separator" })
+                        fileClassOptionsContainer.createDiv({ text: ">", cls: "separator" })
                     }
 
                     const fileClassFieldsContainers = this.containerEl.querySelectorAll(`[class*="fileClassField__${fileClassName.replace("/", "___").replace(" ", "_")}"]`)
@@ -396,10 +395,12 @@ export default class NoteFieldsComponent extends Component {
     }
 
     onload(): void {
-        this.plugin.app.workspace.on('metadata-menu:indexed', async () => {
-            await this.fieldsModal.buildNote();
-            this.fieldsModal.build();
-        })
+        this.registerEvent(
+            this.plugin.app.workspace.on('metadata-menu:indexed', async () => {
+                await this.fieldsModal.buildNote();
+                this.fieldsModal.build();
+            })
+        )
         this.fieldsModal.open()
     }
 }

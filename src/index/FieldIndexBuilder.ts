@@ -92,6 +92,7 @@ export abstract class FieldIndexBuilder extends Component {
     public init() {
         this.flushCache();
         //following props will persist at each indexing.
+        this.filesFields = new Map();
         this.previousFilesFields = new Map();
         this.filesFieldsLastChange = new Map();
         this.remainingLegacyFileClasses = false
@@ -110,7 +111,7 @@ export abstract class FieldIndexBuilder extends Component {
 
     public flushCache() {
         //these props are rebuilt at each indexing
-        this.filesFields = new Map();
+        //this.filesFields = new Map();
         this.filesLookupsAndFormulasFields = new Map();
         this.filesLookupAndFormulaFieldsExists = new Map();
         this.fileClassesFields = new Map();

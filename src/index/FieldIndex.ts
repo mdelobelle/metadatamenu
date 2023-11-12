@@ -54,6 +54,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         this.registerEvent(
             this.plugin.app.vault.on("delete", async (file) => {
                 await this.plugin.indexDB.fieldsValues.bulkRemoveElementsForFile(file.path)
+                this.filesFields.delete(file.path)
                 await this.fullIndex()
             })
         )
@@ -62,6 +63,7 @@ export default class FieldIndex extends FieldIndexBuilder {
             this.plugin.app.vault.on("rename", async (file, oldPath) => {
                 await this.plugin.indexDB.fieldsValues.updateItemsAfterFileRename(oldPath, file.path)
                 await this.plugin.indexDB.fieldsValues.bulkRemoveElementsForFile(oldPath)
+                this.filesFields.delete(oldPath)
                 await this.fullIndex()
             })
         )
@@ -70,7 +72,7 @@ export default class FieldIndex extends FieldIndexBuilder {
             this.plugin.app.metadataCache.on('resolved', async () => {
                 if (this.plugin.app.metadataCache.inProgressTaskCount === 0 && this.plugin.launched) {
                     if (this.changedFiles.every(file => this.classFilesPath && file.path.startsWith(this.classFilesPath))) {
-                        await this.indexFields()
+                        await this.indexFieldsAndValues()
                         await updateCanvasAfterFileClass(this.plugin, this.changedFiles)
                     } else {
                         await this.indexFieldsAndValues()
@@ -130,14 +132,14 @@ export default class FieldIndex extends FieldIndexBuilder {
         return []
     }
 
-    public async indexFieldsAndValues(forceUpdateAll = false): Promise<void> {
-        await this.indexFields(forceUpdateAll);
+    public async indexFieldsAndValues(): Promise<void> {
+        await this.indexFields();
         await ExistingField.indexFieldsValues(this.plugin)
     }
 
     public async fullIndex(forceUpdateAll = false): Promise<void> {
         this.plugin.indexStatus.setState("indexing")
-        await this.indexFieldsAndValues(forceUpdateAll)
+        await this.indexFieldsAndValues()
         if (this.dvReady()) await this.resolveAndUpdateDVQueriesBasedFields(forceUpdateAll);
         if (this.remainingLegacyFileClasses) await this.migrateFileClasses();
         await this.cleanIndex()
@@ -150,7 +152,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         deleted.forEach(iEF => this.plugin.fieldIndex.filesFieldsLastChange.set(iEF.filePath, Date.now()))
     }
 
-    public async indexFields(forceUpdateAll = false): Promise<void> {
+    public async indexFields(): Promise<void> {
         let start = Date.now()
         this.flushCache();
         this.getFileClassesAncestors();
@@ -162,11 +164,11 @@ export default class FieldIndex extends FieldIndexBuilder {
         this.resolveFileClassMatchingBookmarksGroups();
         this.resolveFileClassQueries();
         this.getFilesFieldsFromFileClass();
-        this.getFilesFields(forceUpdateAll = false);
+        const indexedFiles = this.getFilesFields();
         await this.getCanvasesFiles();
         await this.getValuesListNotePathValues();
         this.getFilesLookupAndFormulaFieldsExists();
-        DEBUG && console.log("indexed FIELDS for ", this.filesFields.size, " files in ", (Date.now() - start) / 1000, "s")
+        DEBUG && console.log("indexed FIELDS for ", indexedFiles, " files in ", (Date.now() - start) / 1000, "s")
     }
 
     public pushPayloadToUpdate(filePath: string, fieldsPayloadToUpdate: FieldsPayload) {
@@ -425,7 +427,6 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     private getFilesForItems(items: BookmarkItem[], groups: string[], filesWithGroups: cFileWithGroups[], path: string = "") {
-
         if (groups.includes(path || "/")) {
             items.filter(_i => _i.type === "file").forEach(_i => filesWithGroups.push({ path: _i.path, group: path || "/" }))
         }
@@ -443,7 +444,6 @@ export default class FieldIndex extends FieldIndexBuilder {
         if (!bookmarks.enabled) return
         const filesWithGroups: cFileWithGroups[] = []
         this.getFilesForItems(bookmarks.instance.items || [], groups, filesWithGroups)
-
         filesWithGroups.forEach((cFile: cFileWithGroups) => {
             this.resolveFileClassBinding(
                 this.bookmarksGroupsMatchingFileClasses,
@@ -509,8 +509,10 @@ export default class FieldIndex extends FieldIndexBuilder {
         return [FieldType.Lookup, FieldType.Formula].includes(field.type)
     }
 
-    private getFilesFields(forceUpdateAll = false): void {
+    private getFilesFields(): number {
         /*
+        associates fields to each indexable files according to the mapping
+        between the file and the fileClasses
         Priority order:
         1. Inner fileClass
         2.1 Tag match
@@ -518,10 +520,19 @@ export default class FieldIndex extends FieldIndexBuilder {
         3. fileClassQuery match
         4. Global fileClass
         5. settings preset fields
+
+        compares the fieldSet of the file and updates filesFieldsLastChange accordingly
+        this is used by ExistingField.indexFieldsValues as one of the conditions to trigger an update of a file's exisiting fields values
         */
 
-        this.indexableFiles().forEach(f => {
-            const fileFileClassesVersions: Record<string, string> = {}
+        const filesToIndex = this.indexableFiles()
+            .filter(_f => !this.changedFiles.length || //forceupdateAll
+                this.changedFiles.filter(file => this.classFilesPath && file.path.startsWith(this.classFilesPath)).length || // a fileclass has changed forceupdate all
+                this.changedFiles.includes(_f)
+            )
+
+        filesToIndex.forEach(f => {
+            //const fileFileClassesVersions: Record<string, string> = {}
             const fileFieldsFromInnerFileClasses = this.filesFieldsFromInnerFileClasses.get(f.path)
             const fileFieldsFromQuery = this.filesFieldsFromFileClassQueries.get(f.path);
             const fileFieldsFromTag = this.filesFieldsFromTags.get(f.path);
@@ -564,25 +575,16 @@ export default class FieldIndex extends FieldIndexBuilder {
                 const filesLookupAndFormulasFields = fileFields.filter(f => this.isLookupOrFormula(f))
                 if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, fileFields.filter(f => this.isLookupOrFormula(f)))
             }
-            fileFields.forEach(field => {
-                const fileClassName = field.fileClassName
-                if (fileClassName) {
-                    fileFileClassesVersions[fileClassName] = this.fileClassesName.get(fileClassName)?.getVersion() || "0"
-                } else {
-                    fileFileClassesVersions[`${this.plugin.indexName}_settings`] = this.plugin.settings.settingsVersion as string
-                }
-            })
-            if (f.path.startsWith("Untitled")) console.log(f.path, fileFileClassesVersions)
             if (
-                //TODO remove forceUpdateAll, replace by hasNewFileClassVersion
-                forceUpdateAll ||
-                fileFields.some(f => !previousFileFields.includes(f.id)) ||
+                fileFields.some(f => !previousFileFields?.includes(f.id)) ||
                 previousFileFields?.some(fId => !fileFields.map(_f => _f.id).includes(fId))
             ) {
                 this.filesFieldsLastChange.set(f.path, Date.now())
+
             }
             this.previousFilesFields.set(f.path, fileFields)
         })
+        return filesToIndex.length
     }
 
     private async getFilesLookupAndFormulaFieldsExists(file?: TFile): Promise<void> {
