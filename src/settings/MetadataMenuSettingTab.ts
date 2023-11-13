@@ -470,9 +470,9 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				value: "enableFileExplorer"
 			},
 			{
-				name: "Starred",
-				description: "Display an extra button to access metadata menu form in the starred panel",
-				value: "enableStarred"
+				name: "Properties",
+				description: "Display fields buttons to access metadata forms in the property section",
+				value: "enableProperties"
 			},
 
 		] as {

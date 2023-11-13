@@ -29,7 +29,29 @@ interface InternalPlugins {
     bookmarks: BookmarkInternalPlugin;
 }
 
+interface Property {
+    key: string,
+    type: string,
+    value: string
+}
+
 declare module "obsidian" {
+    interface MarkdownView {
+        metadataEditor: {
+            rendered: Array<{
+                iconEl: HTMLElement,
+                containerEl: HTMLDivElement,
+                keyEl: HTMLDivElement,
+                valueEl: HTMLDivElement,
+                entry: {
+                    key: string
+                }
+            }>,
+            properties: Array<Property>,
+            addPropertyButtonEl: HTMLDivElement,
+            contentEl: HTMLDivElement
+        }
+    }
     interface App {
         appId?: string;
         plugins: {

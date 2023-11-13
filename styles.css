@@ -978,6 +978,9 @@ span.flatpickr-weekday {
   stroke: var(--color-green);
 }
 
+.metadata-menu.modal-container {
+  z-index: 100;
+}
 .metadata-menu.modal-container.narrow .modal {
   width: initial;
 }
@@ -1429,6 +1432,9 @@ span.flatpickr-weekday {
   margin: 0 0.5em;
 }
 
+.metadata-menu.modal-container {
+  z-index: 100;
+}
 .metadata-menu.modal-container.narrow .modal {
   width: initial;
 }
@@ -2303,4 +2309,28 @@ span.flatpickr-weekday {
   background-color: var(--color-accent);
   border-bottom: 3px solid var(--text-accent);
   color: var(--text-on-accent);
+}
+
+button.property-metadata-menu {
+  margin: 0;
+  border: none;
+  color: var(--text-accent);
+  box-shadow: none;
+  padding: 0 0.5em;
+}
+
+.metadata-content .action-container {
+  display: flex;
+  align-items: flex-end;
+}
+.metadata-content .action-container .fileclass-btn-container {
+  display: flex;
+  align-items: flex-end;
+}
+.metadata-content .action-container .fileclass-btn-container .add-field-button {
+  margin: 0;
+  border: none;
+  color: var(--text-accent);
+  box-shadow: none;
+  padding: 0 0.5em;
 }

@@ -214,10 +214,13 @@ export class LineNode {
 
     private removeIndentedListItems = () => {
         if (!this.field ||
-            !(this.field.getDisplay() === MultiDisplayType.asList ||
-                this.field.type === FieldType.JSON ||
-                this.field.type === FieldType.YAML ||
-                this.field.type === FieldType.Lookup)
+            !(
+                this.field.type === FieldType.JSON
+                || this.field.type === FieldType.YAML
+                || this.field.type === FieldType.Lookup
+                || this.field.type === FieldType.Multi
+                || this.field.type === FieldType.MultiFile
+            )
         ) return
         //limit inline indented line removal for lookup fields. it could be done for other multi types
         if (this.line.position === "inline" && this.field.type !== FieldType.Lookup) return

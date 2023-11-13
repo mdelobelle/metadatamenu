@@ -35,6 +35,7 @@ export interface MetadataMenuSettings {
 	enableStarred: boolean;
 	enableFileExplorer: boolean;
 	enableSearch: boolean;
+	enableProperties: boolean;
 	buttonIcon: string;
 	tableViewMaxRecords: number;
 	frontmatterListDisplay: MultiDisplayType;
@@ -63,6 +64,7 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	enableStarred: true,
 	enableFileExplorer: true,
 	enableSearch: true,
+	enableProperties: true,
 	buttonIcon: "clipboard-list",
 	tableViewMaxRecords: 100,
 	frontmatterListDisplay: MultiDisplayType.asArray,

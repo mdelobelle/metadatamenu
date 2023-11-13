@@ -1,5 +1,5 @@
 import './env'
-import { MarkdownView, Notice, Plugin } from 'obsidian';
+import { Notice, Plugin } from 'obsidian';
 import { addCommands } from 'src/commands/paletteCommands';
 import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
@@ -14,6 +14,7 @@ import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import { IndexDatabase } from 'src/db/DatabaseManager';
+import { updatePropertiesSection } from 'src/options/updateProps';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -75,6 +76,9 @@ export default class MetadataMenu extends Plugin {
 
 		this.addSettingTab(new MetadataMenuSettingTab(this));
 
+
+
+
 		//registering Metadata Menu suggestor for live preview
 		this.registerEditorSuggest(new ValueSuggest(this));
 		this.api = new MetadataMenuApi(this).make();
@@ -85,11 +89,17 @@ export default class MetadataMenu extends Plugin {
 				if (leaf) this.indexStatus.checkForUpdate(leaf.view)
 			})
 		)
+
 		this.registerEvent(
 			this.app.workspace.on('metadata-menu:indexed', () => {
 				this.indexStatus.setState("indexed")
-				const currentView = this.app.workspace.getActiveViewOfType(MarkdownView)
-				if (currentView) this.indexStatus.checkForUpdate(currentView)
+				updatePropertiesSection(this)
+			})
+		)
+
+		this.registerEvent(
+			this.app.workspace.on("file-open", (file) => {
+				updatePropertiesSection(this)
 			})
 		)
 

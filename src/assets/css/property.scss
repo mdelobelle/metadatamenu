@@ -1,0 +1,26 @@
+button.property-metadata-menu{
+    margin: 0;
+    border: none;
+    color: var(--text-accent);
+    box-shadow: none;
+    padding: 0 0.5em;
+}
+
+.metadata-content{
+    .action-container{
+        display: flex;
+        align-items: flex-end;
+        .fileclass-btn-container{
+
+            display: flex;
+            align-items: flex-end;
+            .add-field-button{
+                margin: 0;
+                border: none;
+                color: var(--text-accent);
+                box-shadow: none;
+                padding: 0 0.5em;
+            }
+        }
+    }
+}
