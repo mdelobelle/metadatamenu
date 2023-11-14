@@ -44,7 +44,7 @@ export const migrateSettingsV1toV2 = async (plugin: MetadataMenu) => {
     })
     plugin.settings.settingsVersion = 2
     await plugin.saveData(plugin.settings)
-    console.log("Metadata menu settings migrated to version 2")
+    DEBUG && console.log("Metadata menu settings migrated to version 2")
 }
 
 export const migrateSettingsV2toV3 = async (plugin: MetadataMenu) => {
@@ -74,14 +74,14 @@ export const migrateSettingsV2toV3 = async (plugin: MetadataMenu) => {
     })
     plugin.settings.settingsVersion = 3
     await plugin.saveData(plugin.settings)
-    console.log("Metadata menu settings migrated to version 3")
+    DEBUG && console.log("Metadata menu settings migrated to version 3")
 }
 
 export const migrateSettingsV3toV4 = async (plugin: MetadataMenu) => {
     plugin.settings.fileClassExcludedFolders = []
     plugin.settings.settingsVersion = 4
     await plugin.saveData(plugin.settings)
-    console.log("Metadata menu settings migrated to version 4")
+    DEBUG && console.log("Metadata menu settings migrated to version 4")
 }
 
 
@@ -89,5 +89,5 @@ export const migrateSettingsV4toV5 = async (plugin: MetadataMenu) => {
     plugin.settings.fileClassExcludedFolders = []
     plugin.settings.settingsVersion = "5.0"
     await plugin.saveData(plugin.settings)
-    console.log("Metadata menu settings migrated to version 5")
+    DEBUG && console.log("Metadata menu settings migrated to version 5")
 }

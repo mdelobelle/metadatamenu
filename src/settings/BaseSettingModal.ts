@@ -140,6 +140,7 @@ export abstract class BaseSettingModal extends Modal {
             }
             this.buildTypeSelectContainer()
         })
+        if (!compatibleParents.length) this.parentSelectContainer.hide()
     }
 
     private createFrontmatterListDisplayContainer(): void {

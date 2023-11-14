@@ -99,71 +99,9 @@ dv.table(["file", "Masterization", "Tune"],
 
 Controls will be added to the dataview's table depending on the type of the field.
 
-### `Input`
-when hovering the field you will get a 🖍 button
-
-when clicking the button, an input field will replace the value. you can type a new value
-- type escape or click the ❌ button : the input will be replaced by the initial value
-- type enter or click the ✅ button: the initial value will be replaced by the input value in the target note and the input field will be replaced by the value
-
-### `Boolean`
-the value will be replaced by a checkbox: click on the checkbox to modify the value
-
-### `Number`
-when hovering the field you will get 3 buttons: ◀️, 🖍 and ▶️
-
-when clicking 🖍, an input field will replace the value. you can type a new value
-
-- type escape or click the ❌ button : the input will be replaced by the initial value
-- type enter or click the ✅ button: the initial value will be replaced by the input value in the target note and the input field will be replaced by the value
-
-when clicking on ◀️, you will decrement the value by `1` or by the value of `step` if defined
-
-when clicking on ▶️, you will increment the value by `1` or by the value of `step` if defined
-
-### `Cycle`
-when hovering the field you will a ▶️ button
-
-when clicking on ▶️, you will replace the value of the field by the new option defined in field options
-
-### `Select`
-Click to the arrow next to the value.
-
-The value of the field will then be replaced by a select field. 
-
-Select another value to change the value
-
-### `Multi`
-The values of this field are displayed as a chip component
-
-When hovering the value, a "➕" button will be added at the end of the list.
-
-When hovering a chip, a "❌" button will be added after the value
-
-When clicking on "❌", the value will be removed from the list of the values in the target field.
-
-When clicking on "➕", the values will be replaced by a select field in the table with the remaining values available (not already selected). Select the new value that you want to add: it will be added at the end of the list in the target field.
-
-### `File`
-The values of this field are displayed as a link
-
-Click the "🔎" button next to the link to display a suggester modal.
-
-Select a choice to replace the link in the target field.
-
-
-### `Date`
-The values of this field are displayed as a date string or a as link
-
-Click the "📆" button next to the link to display a date select modal.
-
-type a new date (or select thanks to the datepicker) to replace the link in the target field.
-
-Click the "⏭" button to shift the date in the future according to the interval set
-
 ## Globally update lookup fields
 
-Lookup fields automatically update themselves. Even if you shouldn't modify a lookup field , if that happens the lookup field won't be automatically updated until one of its related notes is updated.
+Lookup fields automatically update themselves unless you untoggle their "Auto-update" option
 
 If you want to force-update this lookup field you can use the command palette command `Metadata Menu: Update lookup fields`
 

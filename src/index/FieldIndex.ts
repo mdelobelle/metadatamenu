@@ -139,12 +139,12 @@ export default class FieldIndex extends FieldIndexBuilder {
 
     public async fullIndex(forceUpdateAll = false): Promise<void> {
         this.plugin.indexStatus.setState("indexing")
+        this.classFilesPath = this.plugin.settings.classFilesPath
         await this.indexFieldsAndValues()
         if (this.dvReady()) await this.resolveAndUpdateDVQueriesBasedFields(forceUpdateAll);
         if (this.remainingLegacyFileClasses) await this.migrateFileClasses();
         await this.cleanIndex()
         this.plugin.app.workspace.trigger("metadata-menu:indexed");
-
     }
 
     public async cleanIndex() {

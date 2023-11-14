@@ -1,5 +1,5 @@
 import './env'
-import { Notice, Plugin } from 'obsidian';
+import { MarkdownView, Notice, Plugin } from 'obsidian';
 import { addCommands } from 'src/commands/paletteCommands';
 import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
@@ -93,6 +93,8 @@ export default class MetadataMenu extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on('metadata-menu:indexed', () => {
 				this.indexStatus.setState("indexed")
+				const currentView = this.app.workspace.getActiveViewOfType(MarkdownView)
+				if (currentView) this.indexStatus.checkForUpdate(currentView)
 				updatePropertiesSection(this)
 			})
 		)

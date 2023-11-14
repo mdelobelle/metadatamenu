@@ -328,16 +328,9 @@ When a note has one or more fileClass (or [supercharged tags](/fileClasses/#mapw
 - links in reading mode
 - links in live preview
 - file in file explorer
-- reference in star panel
 - reference in search panel
 - reference in backlinks panel
 - tab header
+- properties
 
 each option has its own toggler
-
-## Migrate
-Historically most of this plugin's features were available in `Supercharged links` plugin.
-
-In order to better scale, those features have been removed from `Supercharged links`. By clicking the `Copy` button, you can import the settings from `Supercharged links` to avoid setting everything again from the ground up.
-
-> Warning: this will replace your whole settings, so be cautious not to override your work.
