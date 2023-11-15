@@ -264,13 +264,6 @@ export class FileClassTableView {
     }
 
     private buildDvJSQuery(): string {
-
-        const tagsMappedToFileClass: string[] = []
-        this.plugin.fieldIndex.tagsMatchingFileClasses.forEach((cls, tag) => {
-            if (this.fileClass.name === cls.name) {
-                tagsMappedToFileClass.push('#' + tag)
-            }
-        })
         const fFC = this.plugin.fieldIndex.filesFileClasses
         let dvQuery = "";
         const classFilesPath = this.plugin.settings.classFilesPath

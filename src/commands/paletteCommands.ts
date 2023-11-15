@@ -224,32 +224,30 @@ function addOpenFieldsModalCommand(plugin: MetadataMenu) {
 }
 
 function addInsertFieldCommand(plugin: MetadataMenu): void {
-    const fields: Field[] = [];
-    plugin.presetFields.forEach(f => { if (f.command && f.isRoot()) fields.push(f) });
+    const fields: { field: Field, fileClassName: string | undefined }[] = [];
+    plugin.presetFields.forEach(f => { if (f.command && f.isRoot()) fields.push({ field: f, fileClassName: undefined }) });
     [...plugin.fieldIndex.fileClassesFields].forEach(([fileClassName, _fields]) => {
-        _fields.forEach(field => { if (field.command && field.isRoot()) { fields.push(field) } })
+        _fields.forEach(field => { if (field.command && field.isRoot()) { fields.push({ field: field, fileClassName: fileClassName }) } })
     });
-    fields.forEach(field => {
-        if (field.command) {
-            const command = field.command
+    fields.forEach(_field => {
+        if (_field.field.command) {
+            const { field, fileClassName } = _field
+            const command = field.command!
             plugin.addCommand({
                 id: command.id,
                 name: command.label,
                 icon: command.icon,
                 checkCallback: (checking: boolean): boolean | void => {
                     const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
-                    const fR = command.id.match(/insert__(?<fileClassName>.*)__(?<fieldName>.*)/)
-                    if (checking) {
-                        const fileClasses = view?.file ? plugin.fieldIndex.filesFileClasses.get(view?.file.path) : undefined
-                        const isFileClass = !!view?.file &&
-                            (
-                                !!fileClasses && fileClasses.some(fileClass => fileClass.name === fR?.groups?.fileClassName) ||
-                                !fileClasses && fR?.groups?.fileClassName === "presetField"
-                            )
-                        return isFileClass
-                    }
-                    if (fR?.groups && view?.file) {
-                        const fieldName = fR.groups.fieldName
+                    const fR = command.id.match(/insert__(?<fieldId>.*)/)
+                    const fileClasses = view?.file ? plugin.fieldIndex.filesFileClasses.get(view?.file.path) : undefined
+                    const belongsToView = field !== undefined && !!view?.file &&
+                        (
+                            !!fileClasses && fileClasses.some(fileClass => fileClass.name === fileClassName) ||
+                            (!fileClasses && !fileClassName)
+                        )
+                    if (checking) return belongsToView
+                    if (view?.file && field) {
                         new chooseSectionModal(
                             plugin,
                             view.file,
@@ -260,7 +258,7 @@ function addInsertFieldCommand(plugin: MetadataMenu): void {
                             ) => F.openFieldModal(
                                 plugin,
                                 view.file!,
-                                fieldName,
+                                field.name,
                                 lineNumber,
                                 asList,
                                 asBlockquote

@@ -11,6 +11,8 @@ if toggled `off` : Metadata Menu will display a "Field Options" item in the cont
 ### `Globally ignored fields`
 the fields listed here (comma separated) won't be available in context menus
 
+//TODO doc for ignored extensions, patterns, folders....
+
 ### `First day of week`
 For `Date` fields' datepicker, select the day the week should start with (default `Monday`)
 

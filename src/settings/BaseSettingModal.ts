@@ -43,7 +43,7 @@ export abstract class BaseSettingModal extends Modal {
         this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field);
         this.addCommand = this.field.command !== undefined;
         this.command = this.field.command || {
-            id: this.field ? `insert__${this.field.fileClassName || "presetField"}__${this.field.name}` : "",
+            id: this.field ? `insert__${this.field.id}` : "",
             icon: "list-plus",
             label: this.field ? `Insert ${this.field.name} field` : "",
             hotkey: undefined

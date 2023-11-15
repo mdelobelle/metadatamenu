@@ -3,50 +3,106 @@
 Manage preset values based on the context of a file (fileClass)
 
 
-## Define a class for a file and authorized fields for this class
+## What is a fileClass
 
-a class file is basically a simple note
+A fileClass is basically a simple file located in the folder defined in the [plugin's settings](settings.md#fileclass-files-folder)
 
-the name of the file will be the name of the class
+The name of the file will be the name of the class. 
 
-the frontmatter section of the file contains the settings and fields definition for this fileClass
+To map a file of your vault with a fileClass you have [several options](fileclasses.md#file-mapping)
 
-1. Define the folder where you want to store your class files (see settings above)
+You can sort your fileClasses in sub-folders. Then if you want to use them in a note, just type their sub-path in the frontmatter of the note: `fileClass: <sub-folder>/<sub-sub-folder>/<fileClass name>`
+
+the frontmatter section of this file contains the [Fileclass settings](fileclasses.md#fileclass-settings) and [fields definition]() for this fileClass. The body of this file is not used by the plugin, you can write anything you want in there.
+
+## setup
+1. Define the folder where you want to store your class files in the [plugin's settings](settings.md#fileclass-files-folder)
 2. Create a note in this folder, let's say `music.md`
-3. A button will appear in the tab header of this note. click on it to add fields definition for this fileClass
+3. A button will appear in the tab header of this note. click on it to access the "fileClass view" composed of 3 tabs
+    - A table view listing all files that inherit this fileClass
+    - A Fileclass Fields views where you can add/change/remove fields definitions for this fileclass
+    - A [Fileclass Settings](fileclasses.md#fileclass-settings) view where you can change the settings of the fileclass
 
-### Nested fileClasses
+## File mapping
 
-You can sort your fileClasses in sub-folders. Then if you want to use them in a note, just type their sub-path `fileClass: <sub-folder>/<sub-sub-folder>/<fileClass name>`
+You have several options to map a file with a fileClass. Those options can be combined to associate multiple fileclasses to a given file. In case 2 fileclasses mapped with the same file have fields with the same name, the field will be mapped according to this priority order:
+1. fileClass value in the [frontmatter](fileclasses.md#basic-mapping)
+2. [Tag](fileclasses.md#map-with-tag) match
+3. [Path](fileclasses.md#files-paths-option) match
+4. [Bookmark group](fileclasses.md#bookmark-group-option) match
+5. [fileClassQuery](fileclasses.md#map-with-a-query) match
+6. [Global fileClass](fileclasses.md#global-fileclass-mapping)
+7. settings [preset fields](settings.md#preset-field-settings)
 
-## field settings syntax
+### Basic mapping
 
-You can specify the type of a field in a fileClass, and its options. Type and Options are called "field settings"
+include the name of the fileclass in the frontmatter of a note:
 
-Type can be one of the types defined above (see ## Field Types)
+```
+Bob Dylan.md
+===============================
+---
+fileClass: music
+---
 
-Options can be an array of options, or an object <key, value>
+some cool stuff about Bob Dylan
+```
 
-> NB 1: Arrays will be converted in Objects <key, value> after the first modification of the field through `Manage <fileClass> Fields` action in context menu (see below)
+`Bob Dylan.md` will be mapped with the fileClass `music`
+
+you can set multiple fileClass for a file:
+
+```
+Obsidian.md
+==============================
+---
+fileClass:
+  - company 
+  - pkm
+---
+
+some cool stuff about Obsidian
+```
+
+### Map with tag
+
+Include a tag that matches the fileclass and set [mapWithTag](fileclasses.md#map-with-tag) as true:
+
+```
+Bob Dylan.md
+===============================
+#music
+
+some cool stuff about Bob Dylan
+```
+`Bob Dylan.md` will be mapped with the fileClass `music`
+
+Or choose any other tag defined in the [tag names](fileclasses.md#tagnames-option)
+
+### Map with folder's path
+
+Put your file in a folder that matches one the options defined in [Files paths option](fileclasses.md#files-paths-option)
+
+For example if "Resources/Music" is defined in [Files paths option](fileclasses.md#files-paths-option), and if Bob Dylan.md is in `<Your Vault>/Resources/Music/` then it will be mapped with the fileClass `music`
 
 
-> NB 2: "input" type attributes dont need a setting, leaving the name of the attribute only will categorize this attribute automatically as an "input" type.
+### Map with bookmark groups
 
-A field settings is written in YAML (using double-quote only `"` )and must be written as a value of and "inline (dataview) field"
+Bookmark your file with a bookmark group that matches one the options defined in [Bookmark groups options](fileclasses.md#bookmark-group-option)
 
-### id and indexedPath
-Each field will be given an id (`string`) and an indexedPath(`string`). The `id` uniquely identifies a field with a type and a name in a given tree of fields. The `indexedPath`uniquely identifies an instance of a field in an object list (because the same field with name/type can appear multiple times at the same level of the nested fields)
 
-## fileClass settings forms
-You can manage "type" and "options" for each fields from:
-- the context menu of a note that has this fileClass as a frontmatter's fileClass attribute : click on [`⚙️ Manage <music> fields`] for `music.md` from any file with `fileClass: music` set in frontmatter
-- the more-options menu of a fileClass file
-- a command within a fileClass file (`alt+P`) -> `Metadata Menu: fileClass attributes options`
-- the "Fileclass Fields" tab in the fileClass view (accessible by clicking the metadata menu button in the tab header of the fileClass note)
+### Map with a query
 
-You will be asked to choose the field that you want to modify or if you want to add a new one. After having selected a field, you will acces to a form to modify the type and options of the field (same form as in the plugin's [settings](settings.md#preset-field-settings))
+Set a [Fileclass query](settings.md#fileclass-queries) in the plugin settings and all files included in this query's result will be mapped with the related fileclass
 
-## fileClass inheritance
+
+### Global fileclass mapping
+
+If the file isn't mapped with a fileclass thanks to the previous options, and if there is a [Global Fileclass](settings.md#global-fileclass) defined, then the file will be mapped with this global fileclass
+
+## FileClass Settings
+
+All fileclass settings are easily configurable in a dedicated view named `Fileclass Setting`. This view is accessible by clicking the button next to the fileclass name (in the file explorer, in the tab header of the fileclass file, next to the internal link to this file etc...).
 
 ### `extends` field
 
@@ -160,7 +216,7 @@ extends: course
 the `type` field in `physics` will override the one in `course`. notes with `fileClass: physics` will have `at school` and `online` options for `type` but not `personal teacher at home`
 
 
-### `excludes` field
+### `excludes` option
 
 when defined with an array of values, the field in the array won't be inherited from the parent fileClass
 
@@ -178,30 +234,54 @@ lecture:: {"type": "Select", "options": {"0": "Mecanics", "1": "Optics", "2": "E
 
 notes with `fileClass: physics` will inherit `teacher` and `type` from `course` fileClass but not `grade`
 
-### `mapWithTag` field : Supercharged Tag
+### `mapWithTag` option
+*Supercharged Tag*
 
 when this is set to `true` all notes including a tag with the same name will benefit from the fields' definitions of this fileclass
 
-you can also map a fileclass with his tag from the context menu of the fileclass
-
 This works with nested tags as well
 
-### `tagNames`field: aliases for your fileClasses
+### `tagNames` option
+*aliases for your fileClasses*
 
 when not empty (string or array of string), the tags will be mapped with this fileClass
 
 
-### `Files Paths`field: match path with your fileClasses
+### `Files Paths` option
+*map path with your fileClasses*
 
 when not empty (string or array of string), the file with those paths will be mapped with this fileClass
 
 
-### `Bookmark groupr`field: match bookmark with your fileClasses
+### `Bookmark group` option 
+*map bookmark with your fileClasses*
 
 when not empty (string or array of string), the files bookmarked with those bookmark groups will be mapped with this fileClass
 
-### `button icon`field
+### `button icon` option
 
 you can customize the icon of the metadata button that gives access to a modal containing all available fields for a note bound with this fileclass
 
 the icon names are available from https://lucide.dev
+
+### `max records per page` attribute
+
+number of rows per page in the [fileclass's table view](fileclasses.md#table-view). 
+
+### `version` attribute
+
+Managed by the system
+
+## Fileclass Fields
+
+In this view, as in the [preset fields](settings.md#preset-field-settings) settings, you can add, edit and remove [fields definition](fields.md) for this fileclass:
+- click the "list plus" button to add a new field
+- click the "pencil" button to edit a field's definition
+- click the "trash" button to remove a field
+
+## Table view
+This view shows all files mapped with the fileclass. you can modify the fields directly from the table.
+
+- click on the "collapse filter" button to access more options: sort the table, filter the results...
+- click on the "eraser" button to erase the filters and sorting
+- click on the "counter-clockwise-arrow" to apply the filters and sorters

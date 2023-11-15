@@ -87,6 +87,7 @@ export default class MetadataMenu extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', (leaf) => {
 				if (leaf) this.indexStatus.checkForUpdate(leaf.view)
+				addCommands(this)
 			})
 		)
 
@@ -96,23 +97,25 @@ export default class MetadataMenu extends Plugin {
 				const currentView = this.app.workspace.getActiveViewOfType(MarkdownView)
 				if (currentView) this.indexStatus.checkForUpdate(currentView)
 				updatePropertiesSection(this)
+				addCommands(this)
 			})
 		)
 
 		this.registerEvent(
 			this.app.workspace.on("file-open", (file) => {
 				updatePropertiesSection(this)
+				addCommands(this)
 			})
 		)
-
-		//building palette commands
-		addCommands(this)
 
 		//buildind index
 		this.indexDB = this.addChild(new IndexDatabase(this))
 		await this.fieldIndex.fullIndex(true)
 		this.extraButton = this.addChild(new ExtraButton(this))
 		this.launched = true
+
+		//building palette commands
+		addCommands(this)
 
 	};
 
