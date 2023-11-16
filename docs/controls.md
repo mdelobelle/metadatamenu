@@ -1,10 +1,16 @@
 # Controls
 
+With Metadata Menu, you have several options to control a field:
+- [Autocompletion](#control-field-with-autocompletion)
+- [Context Menu and command palette](#context-menu-and-command-palette)
+- Metadata menu button opening the [note's fields modal](#open-fields-modal)
+- [Api](api.md)
+
 ## Control field with autocompletion
 In Editor mode, type ":" after a field in frontmatter, or "::" after an inline-field to trigger the autocompletion for `Select`, `Multi`, `File` and `Multi File` fields
 
-## Control field from links, file and plugin options
-Right click in the live preview, on a link, a file in explorer, or opening a file's or plugin's context menu will automatically display an item per target note's frontmatter field and "inline fields" (dataview syntax)
+## Context Menu and Command palette
+Right click in the live preview, on a link, a file in explorer, or opening a file's or plugin's context menu will display options to manage the note's fields
 
 these options are accessible from:
 
@@ -20,7 +26,7 @@ these options are accessible from:
 
 Will open a modal to manage the fields and fileclasses of this note with a compact UI
 
-### Fields Options / Manage Fields
+### Manage Fields
 
 Will open a native Obsidian suggest modal with options available to modify a field or execute the actions mentionned hereafter
 
@@ -30,7 +36,7 @@ Will open a native Obsidian suggest modal with options available to modify a fie
 2. Click on "Add field at section"
 3. Select the line in the target file where you want to insert the new field
 4. Select the field
-5. Select/input the value for this field (if the field has preset values, you will be prompted to choose one)
+5. Use the field's modal to manage the value
 
 NB: if the field type is restricted to the frontmatter section, it will be added at the end of the frontmatter whatever the line chosen
 
@@ -40,7 +46,7 @@ In live preview, you can add a field at cursor without having to choose the sect
 
 ### Insert all missing fields
 
-When fileClasses or Supercharged Tags are defined for a note, you can bulk insert all fields defined in those fileClasses that aren't yet included in the note
+When fileClasses are defined for a note, you can bulk insert all fields defined in those fileClasses that aren't yet included in the note
 
 You can also insert missing fields on a fileClass per fileClass mode : this option is also available in fileClass sub-menu, or next to fileClasses in the Metadata Menu modal (see [Metadata Menu button](#metadata-menu-button--metadata-menu-modal))
 
@@ -118,3 +124,5 @@ From there you can
 - bulk insert missing fields (for all fileClasses, or or one fileClass in particular)
 
 The icon of the button can be customized in the fileClass with the higher priority (see [icon](/fileclasses/#iconfield) )
+
+The visibility of the button can be managed in the plugin [settings](settings.md#show-extra-button-to-access-metadata-menu-form)

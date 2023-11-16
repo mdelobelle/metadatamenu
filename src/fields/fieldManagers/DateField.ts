@@ -115,7 +115,7 @@ export default class DateField extends FieldManager {
         dateShiftIntervalContainer.createEl("span", { text: "Define a shift interval", cls: 'label' });
         dateShiftIntervalContainer.createDiv({ cls: "spacer" })
         const dateShiftInterval = new TextComponent(dateShiftIntervalContainer);
-        dateShiftInterval.setPlaceholder("ex: 1 month 2 days")
+        dateShiftInterval.setPlaceholder("ex: 1 month, 2 days")
         dateShiftInterval.setValue(this.field.options.dateShiftInterval)
         dateShiftInterval.onChange((value: string) => {
             if (!value) {

@@ -984,6 +984,14 @@ span.flatpickr-weekday {
 .metadata-menu.modal-container.narrow .modal {
   width: initial;
 }
+.metadata-menu.modal-container .cm-gutter {
+  color: var(--text-code);
+  background-color: var(--background-primary);
+}
+.metadata-menu.modal-container .cm-activeLineGutter, .metadata-menu.modal-container .cm-activeLine {
+  background-color: var(--text-accent);
+  color: var(--text-on-accent);
+}
 .metadata-menu.modal-container .vstacked {
   display: grid;
   margin: 1em 0;
@@ -1437,6 +1445,14 @@ span.flatpickr-weekday {
 }
 .metadata-menu.modal-container.narrow .modal {
   width: initial;
+}
+.metadata-menu.modal-container .cm-gutter {
+  color: var(--text-code);
+  background-color: var(--background-primary);
+}
+.metadata-menu.modal-container .cm-activeLineGutter, .metadata-menu.modal-container .cm-activeLine {
+  background-color: var(--text-accent);
+  color: var(--text-on-accent);
 }
 .metadata-menu.modal-container .vstacked {
   display: grid;

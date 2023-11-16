@@ -2,7 +2,7 @@
 
 API is accessible with `app.plugins.plugins["metadata-menu"].api`
 
-### getValues
+### getValues (deprecated)
 
 `getValues(fileOrFilePath: TFile | string, attribute: string)`
 

@@ -47,22 +47,6 @@ export default class CycleField extends AbstractListBasedField {
         return this.field.options.allowNull ? ["", ...super.getOptionsList()] : super.getOptionsList();
     }
 
-    private getRawOptionFromDuration(duration: any): string | undefined {
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        let matchedValue: string | undefined = undefined;
-        if (dvApi && dvApi.value.isDuration(duration)) {
-            this.getOptionsList().forEach(option => {
-                const dvOption = dvApi.duration(option);
-                if (Object.keys(duration.values).every(j =>
-                    (!duration.values[j] && !dvOption.values[j]) || (duration.values[j] === dvOption.values[j])
-                )) {
-                    matchedValue = option
-                }
-            })
-        }
-        return matchedValue
-    }
-
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {
 
         let valueText: string;
@@ -75,13 +59,11 @@ export default class CycleField extends AbstractListBasedField {
             default: valueText = value.toString() || "";
         }
         container.createDiv({ text: valueText })
-        //container.createDiv({ text: this.getRawOptionFromDuration(valueText) || valueText })
     }
 
     public async next(name: string, file: TFile, indexedPath?: string): Promise<void> {
         const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
         const value = eF?.value || ""
-        //let matchedValue = this.getRawOptionFromDuration(value) || value;
         await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: this.nextOption(value).toString() } }], file)
     }
 

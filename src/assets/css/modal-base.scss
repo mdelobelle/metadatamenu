@@ -28,6 +28,16 @@
 
     }
 
+    .cm-gutter{
+        color: var(--text-code);
+        background-color: var(--background-primary);
+    }
+    
+    .cm-activeLineGutter, .cm-activeLine {
+        background-color: var(--text-accent);
+        color: var(--text-on-accent);
+    }
+
     .vstacked{
         display: grid;
         margin: 1em 0;
