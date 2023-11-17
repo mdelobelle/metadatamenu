@@ -29,6 +29,11 @@ function isSuggest(location: Menu | "InsertFieldCommand" | FieldCommandSuggestMo
 	return (location as FieldCommandSuggestModal).getItems !== undefined;
 };
 
+
+function isEditor(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal | "ManageAtCursorCommand"): location is FieldCommandSuggestModal {
+	return (location as FieldCommandSuggestModal).getItems !== undefined;
+};
+
 export default class OptionsList {
 
 	// adds options to context menu or to a dropdown modal trigger with "Field: Options" command in command pallette
@@ -104,13 +109,20 @@ export default class OptionsList {
 		await this.build()
 		const dvApi = this.plugin.app.plugins.plugins.dataview?.api
 		const location = this.location
-
+		const separator = {
+			id: `__optionSeparator`,
+			actionLabel: ``,
+			action: () => { },
+			icon: undefined
+		}
 		if (isInsertFieldCommand(location)) {
 			this.addFieldAtCurrentPositionOption();
 		} else if (isSuggest(location)) {
 			if (this.plugin.fieldIndex.isIndexed(this.file)) {
 				this.openNoteFieldModalOption();
+				location.options.push(separator)
 				this.buildFieldOptions();
+				location.options.push(separator)
 				this.addFieldAtCurrentPositionOption();
 				this.addSectionSelectModalOption();
 				this.addFieldAtTheEndOfFrontmatterOption();
@@ -122,6 +134,7 @@ export default class OptionsList {
 				}
 			}
 			const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || []
+			if (fileClasses.length) location.options.push(separator)
 			fileClasses.forEach(fileClass => {
 				const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.plugin.app)
 				const fileClassOptionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), fieldCommandSuggestModal, this.file);
@@ -170,10 +183,11 @@ export default class OptionsList {
 
 
 	private buildFieldOptionsForMenu(): void {
+
 		if (isMenu(this.location)) {
 			this.location.addItem((item) => {
-				item.setIcon("pencil");
-				item.setTitle("Manage fields");
+				item.setIcon("clipboard-list");
+				item.setTitle("Manage all fields");
 				item.onClick(async (evt: MouseEvent) => {
 					const fieldCommandSuggestModal = new FieldCommandSuggestModal(this.plugin.app)
 					const optionsList = new OptionsList(this.plugin, this.file, fieldCommandSuggestModal);
@@ -181,6 +195,23 @@ export default class OptionsList {
 				});
 				item.setSection("metadata-menu");
 			});
+			const view = this.plugin.app.workspace.getActiveViewOfType(MarkdownView)
+			if (view?.editor) {
+				const action = async () => {
+					if (!view.file || !(view.file instanceof TFile)) return
+					const optionsList = new OptionsList(this.plugin, view.file, "ManageAtCursorCommand")
+					const note = await Note.buildNote(this.plugin, view!.file!)
+					const node = note.getNodeAtPosition(view.editor.getCursor())
+					if (node) optionsList.createAndOpenFieldModal(node)
+					else new Notice("No field with definition at this position", 2000)
+				}
+				this.location.addItem((item) => {
+					item.setIcon("map-pin");
+					item.setTitle("Manage field at cursor");
+					item.onClick(async () => await action());
+					item.setSection("metadata-menu");
+				});
+			}
 		}
 	}
 
@@ -271,7 +302,7 @@ export default class OptionsList {
 		if (this.plugin.app.metadataCache.getCache(this.file.path)?.frontmatter) {
 			if (isMenu(this.location)) {
 				this.location.addItem((item) => {
-					item.setIcon("pin");
+					item.setIcon("align-vertical-space-around");
 					item.setTitle("Add field in frontmatter");
 					item.onClick(async (evt: MouseEvent) => {
 						F.openFieldModal(this.plugin, this.file, undefined, -1, false, false)
@@ -284,7 +315,7 @@ export default class OptionsList {
 					actionLabel: "Add a field in frontmatter...",
 					action: () => F.openFieldModal(
 						this.plugin, this.file, undefined, -1, false, false),
-					icon: "pin"
+					icon: "align-vertical-space-around"
 				})
 			}
 		}
@@ -302,7 +333,7 @@ export default class OptionsList {
 			}
 			if (isMenu(this.location)) {
 				this.location.addItem((item) => {
-					item.setIcon("pin");
+					item.setIcon("list-plus");
 					item.setTitle("Add field at cursor");
 					item.onClick((evt: MouseEvent) => {
 						F.openFieldModal(
@@ -319,7 +350,7 @@ export default class OptionsList {
 					actionLabel: "Add field at cursor...",
 					action: () => F.openFieldModal(
 						this.plugin, this.file, undefined, lineNumber, false, false),
-					icon: "pin"
+					icon: "list-plus"
 				})
 			};
 		}
@@ -340,7 +371,7 @@ export default class OptionsList {
 				id: "add_fileclass_to_file",
 				actionLabel: `Add ${this.plugin.settings.fileClassAlias} to ${this.file.basename}`,
 				action: action,
-				icon: "plus-square"
+				icon: "package-plus"
 			})
 		};
 	}

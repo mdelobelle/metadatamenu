@@ -160,7 +160,7 @@ class FileClass {
                 };
             }
         })
-        return icon
+        return icon || "package"
     }
 
     public async missingFieldsForFileClass(file: TFile): Promise<boolean> {

@@ -98,7 +98,11 @@ export default class ObjectListField extends FieldManager {
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {
         const fields = this.plugin.fieldIndex.filesFields.get(file.path)
         if (Array.isArray(value)) {
-            const items = fields?.filter(_f => Field.upperPath(_f.path) === this.field.path && _f.path !== "").map(_f => _f.name) || []
+            const items = fields?.filter(_f => (
+                (this.field.isRoot() && _f.path === this.field.id) ||
+                (!this.field.isRoot() && Field.upperPath(_f.path) === this.field.path)
+            ) && _f.path !== ""
+            ).map(_f => _f.name) || []
             container.setText(`${value.length} item${value.length !== 1 ? "(s)" : ""}: [${items.join(" | ")}]`)
         }
     }

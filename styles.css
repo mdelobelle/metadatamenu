@@ -1886,6 +1886,12 @@ span.flatpickr-weekday {
   color: var(--text-faint);
 }
 
+.suggestion-item.suggest-separator {
+  border-bottom: 1px solid var(--divider-color);
+  border-radius: 0px;
+  padding: 1px;
+}
+
 .metadata-menu.settings .setting-divider {
   padding: 0.75em 0;
   border-bottom: 1px solid var(--background-modifier-border);
