@@ -17,6 +17,7 @@ import { ExistingField } from "src/fields/ExistingField";
 import { FieldsPayload, postValues } from "src/commands/postValues";
 import { cFileWithGroups, cFileWithTags, FieldIndexBuilder, FieldsPayloadToProcess, IndexedExistingField } from "./FieldIndexBuilder";
 
+//TODO prevent fileClass with no attribute resulting in indexing preset fields instaead of nothing
 
 export default class FieldIndex extends FieldIndexBuilder {
     constructor(public plugin: MetadataMenu) {
