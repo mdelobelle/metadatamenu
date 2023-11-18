@@ -11,13 +11,22 @@
         }
 
         svg{
-            vertical-align: calc(var(--font-text-size) * 0.15);
             height: calc(var(--icon-size)*0.935);
             width: calc(var(--icon-size)*0.935);
         }
     }
 }
 
+
+.workspace-tab-header-inner{
+    .metadata-menu{
+        &.fileclass-icon{
+            svg{
+                vertical-align: calc(var(--icon-size)*0.15);
+            }
+        }
+    }
+}
 .plugin-metadata-menu{
     padding: 0 var(--size-2-2);
 

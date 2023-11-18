@@ -10,6 +10,7 @@ import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { Note } from "src/note/note";
 import FieldIndex from "src/index/FieldIndex";
 import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
+import { SavedView } from "./createSavedViewModal";
 
 const options: Record<string, { name: string, toValue: (value: any) => any }> = {
     "limit": { name: "limit", toValue: (value: any) => value },
@@ -19,7 +20,9 @@ const options: Record<string, { name: string, toValue: (value: any) => any }> = 
     "filesPaths": { name: "filesPaths", toValue: (values: string[]) => values.length ? values : null },
     "bookmarksGroups": { name: "bookmarksGroups", toValue: (values: string[]) => values.length ? values : null },
     "excludes": { name: "excludes", toValue: (values: FileClassAttribute[]) => values.length ? values.map(attr => attr.name) : null },
-    "parent": { name: "extends", toValue: (value: FileClass) => value?.name || null }
+    "parent": { name: "extends", toValue: (value: FileClass) => value?.name || null },
+    "savedViews": { name: "savedViews", toValue: (value: SavedView[]) => value },
+    "favoriteView": { name: "favoriteView", toValue: (value?: string) => value || null }
 }
 
 export interface FileClassOptions {
@@ -30,7 +33,9 @@ export interface FileClassOptions {
     tagNames?: string[],
     mapWithTag: boolean,
     filesPaths?: string[],
-    bookmarksGroups?: string[]
+    bookmarksGroups?: string[],
+    saveViews?: SavedView[],
+    favoriteView?: string | null
 }
 
 export class FileClassOptions {
@@ -43,7 +48,9 @@ export class FileClassOptions {
         public tagNames?: string[],
         public mapWithTag: boolean = false,
         public filesPaths?: string[],
-        public bookmarksGroups?: string[]
+        public bookmarksGroups?: string[],
+        public savedViews?: SavedView[],
+        public favoriteView?: string | null
     ) {
 
     }
@@ -102,7 +109,9 @@ class FileClass {
             tagNames: _tagNames,
             filesPaths: _filesPaths,
             bookmarksGroups: _bookmarksGroups,
-            icon: _icon
+            icon: _icon,
+            savedViews: _savedViews,
+            favoriteView: _favoriteView
         } = this.plugin.app.metadataCache.getFileCache(this.getClassFile())?.frontmatter as Record<string, any> || {}
         const index = this.plugin.fieldIndex
         const parent = index.fileClassesName.get(_parent);
@@ -120,7 +129,9 @@ class FileClass {
         const filesPaths = FileClass.getFilesPathsFromFrontMatter(_filesPaths);
         const bookmarksGroups = FileClass.getBookmarksGroupsFromFrontMatter(_bookmarksGroups);
         const icon = typeof (_icon) === 'string' ? _icon : this.plugin.settings.buttonIcon
-        return new FileClassOptions(limit, icon, parent, excludes, tagNames, mapWithTag, filesPaths, bookmarksGroups);
+        const savedViews: SavedView[] = _savedViews || [];
+        const favoriteView: string | null = (typeof _favoriteView === "string" && _favoriteView !== "") ? _favoriteView : null
+        return new FileClassOptions(limit, icon, parent, excludes, tagNames, mapWithTag, filesPaths, bookmarksGroups, savedViews, favoriteView);
     }
 
     public isMappedWithTag(): boolean {

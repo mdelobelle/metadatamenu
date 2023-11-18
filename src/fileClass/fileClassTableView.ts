@@ -1,11 +1,20 @@
 import MetadataMenu from "main";
-import { ButtonComponent, TextComponent } from "obsidian";
+import { ButtonComponent, DropdownComponent, Modal, TextComponent } from "obsidian";
 import { FileClassManager } from "src/components/fileClassManager";
 import { FileClass } from "./fileClass";
+import { CreateSavedViewModal } from "./createSavedViewModal";
 
 const oppositeDirection = {
     'asc': 'desc',
     'desc': 'asc'
+}
+
+export interface SorterButton {
+    btn: ButtonComponent,
+    active: boolean,
+    direction: 'asc' | 'desc',
+    name: string,
+    priority?: number
 }
 
 export class FileClassTableView {
@@ -13,25 +22,30 @@ export class FileClassTableView {
     public container: HTMLDivElement
     private limit: number
     private tableContainer: HTMLDivElement
-    private filters: Record<string, TextComponent> = {}
-    private sorters: Record<string, { btn: ButtonComponent, active: boolean, direction: 'asc' | 'desc', name: string }> = {}
+    public filters: Record<string, TextComponent> = {}
+    public sorters: Record<string, SorterButton> = {}
     private refreshButton: ButtonComponent
     private paginationContainer: HTMLDivElement
     private sliceStart: number = 0
     private firstCollWidth: number;
     private tableFontSize: number;
     private fieldsContainer: HTMLDivElement;
+    private sortersPriorityLabels: Record<string, HTMLDivElement> = {}
+    public viewSelect: DropdownComponent
+    public favoriteBtn: ButtonComponent
 
     constructor(
         plugin: MetadataMenu,
         private component: FileClassManager,
         private viewContainer: HTMLDivElement,
-        private fileClass: FileClass
+        public fileClass: FileClass,
+        public selectedView?: string | undefined
     ) {
         this.plugin = plugin;
         this.container = this.viewContainer.createDiv({ cls: "fv-table" })
         this.limit = this.fileClass.getFileClassOptions().limit
         this.createHeader();
+        if (this.selectedView) this.changeView(this.selectedView)
     };
 
     private createHeader(): void {
@@ -43,8 +57,11 @@ export class FileClassTableView {
         this.buildLimitManager(limitContainer);
         this.buildPaginationManager(this.paginationContainer)
         this.buildFiltersAndSortManager(this.fieldsContainer);
+        this.buildSavedViewSelector(applyContainer)
+        this.buildFavoriteViewManager(applyContainer)
         this.buildRefreshManager(applyContainer);
         this.buildCleanFilters(applyContainer);
+        this.buildSaveFilters(applyContainer);
         this.buildHideFilters(applyContainer);
     }
 
@@ -112,20 +129,25 @@ export class FileClassTableView {
 
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
-            const values = (new Function("dv", "current", `return ${this.buildDvJSQuery()}`))(dvApi).values;
-            const count = values.length;
-            for (let i = 0; i <= Math.floor(count / this.limit); i++) {
-                if (i * this.limit < count) {
-                    const rangeComponent = container.createDiv({
-                        cls: `range ${i === this.sliceStart / this.limit ? "active" : ""}`,
-                        text: `${i * this.limit + 1} - ${Math.min((i + 1) * this.limit, count)}`
-                    })
-                    rangeComponent.onclick = () => {
-                        this.sliceStart = i * this.limit;
-                        this.udpate();
+            try {
+                const values = (new Function("dv", "current", `return ${this.buildDvJSQuery()}`))(dvApi).values;
+                const count = values.length;
+                for (let i = 0; i <= Math.floor(count / this.limit); i++) {
+                    if (i * this.limit < count) {
+                        const rangeComponent = container.createDiv({
+                            cls: `range ${i === this.sliceStart / this.limit ? "active" : ""}`,
+                            text: `${i * this.limit + 1} - ${Math.min((i + 1) * this.limit, count)}`
+                        })
+                        rangeComponent.onclick = () => {
+                            this.sliceStart = i * this.limit;
+                            this.udpate();
+                        }
                     }
                 }
+            } catch (e) {
+                console.error("unable to build the list of files")
             }
+
         }
     }
 
@@ -144,19 +166,52 @@ export class FileClassTableView {
         })
     }
 
+    private getMaxSorterPriority() {
+        return Object.values(this.sorters).reduce((intermediateMax, currentSorter) => Math.max(intermediateMax, currentSorter.priority || 0), 0)
+    }
+
+    private changeSorterPriority(name: string, priority: number | undefined) {
+        Object.keys(this.sorters).forEach(id => {
+            if (new RegExp(`${name}__(asc|desc)`).test(id)) {
+                this.sorters[id].priority = priority
+                this.sortersPriorityLabels[name].textContent = priority ? `(${priority})` : ""
+            }
+        })
+        //recalculate
+        const minPriority = Object.values(this.sorters)
+            .map(sorter => sorter.priority)
+            .filter(_p => _p !== undefined)
+            .sort((a, b) => a! - b!)[0]
+            || 0
+        Object.keys(this.sorters).forEach(key => {
+            const priority = this.sorters[key].priority
+            if (priority) {
+                const newPriority = priority - minPriority + 1
+                this.sorters[key].priority = newPriority
+                this.sortersPriorityLabels[this.sorters[key].name].textContent = `(${newPriority})`
+            }
+
+        })
+    }
+
     private toggleBtnState(name: string, direction: 'asc' | 'desc'): void {
-        const btnName = `${name}__${direction}`;
-        const oppositeBtnName = `${name}__${oppositeDirection[direction]}`
-        const { btn, active } = this.sorters[btnName]
-        const { btn: oppBtn } = this.sorters[oppositeBtnName]
+        const btnId = `${name}__${direction}`;
+        const oppositeBtnId = `${name}__${oppositeDirection[direction]}`
+        const { btn, active } = this.sorters[btnId]
+        const { btn: oppBtn } = this.sorters[oppositeBtnId]
         if (active) {
             btn.buttonEl.removeClass("active");
-            this.sorters[btnName].active = false
+            this.sorters[btnId].active = false
+            this.changeSorterPriority(name, undefined)
         } else {
             btn.setClass("active")
             oppBtn.buttonEl.removeClass("active");
-            this.sorters[btnName].active = true;
-            this.sorters[oppositeBtnName].active = false;
+            this.sorters[btnId].active = true;
+            this.sorters[oppositeBtnId].active = false;
+            if (!this.sorters[btnId].priority) {
+                const newPriority = this.getMaxSorterPriority() + 1
+                this.changeSorterPriority(name, newPriority)
+            }
         }
     }
 
@@ -174,15 +229,21 @@ export class FileClassTableView {
         const fieldNameAndSortContainer = container.createDiv({ cls: "field-header" });
         this.buildSortBtn(name, 'asc', fieldNameAndSortContainer);
         this.buildSortBtn(name, 'desc', fieldNameAndSortContainer);
-        fieldNameAndSortContainer.createDiv({ text: label, cls: "field-name" })
+        const prioAndLabelContainer = fieldNameAndSortContainer.createDiv({ cls: "label-container" })
+        prioAndLabelContainer.createDiv({ text: label, cls: "field-name" })
+        const prioContainer = prioAndLabelContainer.createDiv({ cls: "priority", text: this.sorters[name]?.priority ? `(${this.sorters[name].priority})` : "" })
+        this.sortersPriorityLabels[name] = prioContainer
     }
 
     private buildFilterComponent(name: string, container: HTMLDivElement): void {
         const fieldFilterContainer = container.createDiv({ cls: "filter-input" });
         const filter = new TextComponent(fieldFilterContainer);
         filter.setValue("");
-        filter.onChange(() => this.refreshButton.setCta());
-        this.filters[name] = filter;
+        filter.onChange((value) => {
+            this.filters[name].inputEl.value = value;
+            this.refreshButton.setCta()
+        });
+        this.filters[name] = filter
     }
 
     private buildFiltersAndSortManager(container: HTMLDivElement): void {
@@ -197,14 +258,104 @@ export class FileClassTableView {
         });
     }
 
+    private changeView(name: string) {
+        const options = this.fileClass.getFileClassOptions()
+        const savedViews = options.savedViews || []
+        Object.keys(this.sorters).forEach(key => {
+            this.sorters[key].priority = undefined
+            this.sortersPriorityLabels[this.sorters[key].name].textContent = ""
+        })
+        if (name && savedViews.find(view => view.name === name)) {
+            const savedView = savedViews.find(view => view.name === name)
+            Object.keys(this.filters).forEach(name => {
+                this.filters[name].inputEl.value = savedView?.filters.find(f => f.name === name)?.query || ""
+            })
+            Object.keys(this.sorters).forEach(id => {
+                const savedSorter = savedView?.sorters.find(f => id === `${f.name}__${f.direction}`)
+                const btn = this.sorters[id].btn
+                if (savedSorter) {
+                    this.sorters[id].active = true
+                    this.sorters[id].priority = savedSorter.priority
+                    this.sortersPriorityLabels[this.sorters[id].name].textContent = `(${savedSorter.priority})`
+                    btn.setClass("active")
+                } else {
+                    this.sorters[id].active = false
+                    btn.buttonEl.removeClass("active")
+                }
+            })
+        } else {
+            Object.keys(this.filters).forEach(name => this.filters[name].inputEl.value = "")
+            Object.keys(this.sorters).forEach(name => {
+                this.sorters[name].direction = "asc"
+                this.sorters[name].btn.buttonEl.removeClass("active")
+            })
+        }
+        this.selectedView = name
+        this.toggleFavoriteBtnState()
+        this.viewSelect.setValue(name)
+        console.log("SELECTED VIEW", this.selectedView)
+        this.udpate()
+    }
+
+    private buildSavedViewSelector(container: HTMLDivElement) {
+        const viewSelectContainer = container.createDiv({ cls: "cell" })
+        const options = this.fileClass.getFileClassOptions()
+        const savedViews = options.savedViews || []
+        this.viewSelect = new DropdownComponent(viewSelectContainer)
+        this.viewSelect.addOption("", "--None--")
+        savedViews.sort((a, b) => a.name < b.name ? -1 : 1).forEach(view => this.viewSelect.addOption(view.name, view.name))
+        this.viewSelect.onChange(value => this.changeView(value))
+    }
+
+    private toggleFavoriteBtnState() {
+        const options = this.fileClass.getFileClassOptions()
+        const favoriteView = options.favoriteView || null
+        if (options.savedViews?.length) {
+            this.favoriteBtn.setDisabled(false)
+            if (this.selectedView === favoriteView) {
+                this.favoriteBtn.setTooltip("Unselect this view as your favorite view")
+                this.favoriteBtn.buttonEl.addClass("favorite")
+            } else if (this.selectedView !== undefined) {
+                this.favoriteBtn.setTooltip("Select this view as your favorite view")
+                this.favoriteBtn.buttonEl.removeClass("favorite")
+            } else {
+                this.favoriteBtn.setDisabled(true)
+                this.favoriteBtn.buttonEl.removeClass("favorite")
+            }
+        } else {
+            this.favoriteBtn.setDisabled(true)
+            this.favoriteBtn.setTooltip("You don't have any saved view yet")
+        }
+    }
+
+    private buildFavoriteViewManager(container: HTMLDivElement) {
+        const options = this.fileClass.getFileClassOptions()
+        const favoriteView = options.favoriteView || null
+        const btnContainer = container.createDiv({ cls: "cell" })
+        this.favoriteBtn = new ButtonComponent(btnContainer);
+        this.favoriteBtn.setClass("favorite-button")
+        this.favoriteBtn.setIcon("star");
+        this.toggleFavoriteBtnState()
+        this.favoriteBtn.onClick(() => {
+            if (this.selectedView === favoriteView) {
+                console.log("NEW FAVORITE", null)
+                options.favoriteView = null
+                this.favoriteBtn.buttonEl.removeClass("favorite")
+            } else if (this.selectedView !== undefined) {
+                console.log("NEW FAVORITE", this.selectedView)
+                options.favoriteView = this.selectedView
+                this.favoriteBtn.buttonEl.addClass("favorite")
+            }
+            this.fileClass.updateOptions(options)
+        })
+    }
+
     private buildRefreshManager(container: HTMLDivElement): void {
         const btnContainer = container.createDiv({ cls: "cell" })
         this.refreshButton = new ButtonComponent(btnContainer);
         this.refreshButton.setIcon("refresh-ccw");
         this.refreshButton.setTooltip("Apply the filters and refresh the results")
-        this.refreshButton.onClick(() => {
-            this.udpate()
-        })
+        this.refreshButton.onClick(() => this.udpate())
     }
 
     private buildCleanFilters(container: HTMLDivElement): void {
@@ -213,9 +364,21 @@ export class FileClassTableView {
         cleanFilterBtn.setIcon("eraser");
         cleanFilterBtn.setTooltip("remove filter values")
         cleanFilterBtn.onClick(() => {
-            Object.values(this.filters).forEach(filter => filter.setValue(""))
+            const filterInputs = this.container.querySelectorAll(".filter-input input")
+            for (const input of filterInputs) {
+                if (input instanceof HTMLInputElement) input.value = ""
+            }
+            Object.keys(this.filters).forEach(name => this.filters[name].inputEl.value = "")
             this.refreshButton.setCta()
         })
+    }
+
+    private buildSaveFilters(container: HTMLDivElement): void {
+        const btnContainer = container.createDiv({ cls: "cell" })
+        const saveFilterBtn = new ButtonComponent(btnContainer);
+        saveFilterBtn.setIcon("save");
+        saveFilterBtn.setTooltip("Save current view (filters and sorters)")
+        saveFilterBtn.onClick(() => (new CreateSavedViewModal(this.plugin, this)).open())
     }
 
     private buildHideFilters(container: HTMLDivElement): void {
@@ -251,7 +414,7 @@ export class FileClassTableView {
             }
         }).join("")
     }
-
+    //TODO use sorter priority
     private buildSorterQuery(): string {
         return Object.entries(this.sorters).map(([fieldSorter, { btn, active, direction, name }]) => {
             const fieldKey = name === "file" ? "p.file.name" : `p["${name}"]`
@@ -269,7 +432,7 @@ export class FileClassTableView {
         const classFilesPath = this.plugin.settings.classFilesPath
         const templatesFolder = this.plugin.app.plugins.plugins["templater-obsidian"]?.settings["templates_folder"];
         const fileClassFiles = [...fFC.keys()].filter(path => fFC.get(path)?.some(fileClass => fileClass.name === this.fileClass.name))
-        const fileClassFilesPaths = `"${fileClassFiles.join('", "')}"`
+        const fileClassFilesPaths = `"${fileClassFiles.map(fC => fC.replaceAll('"', '\\"')).join('", "')}"`
         dvQuery += `dv.pages()\n`;
         dvQuery += `    .where(p => [${fileClassFilesPaths}].includes(p.file.path)
         ${!!classFilesPath ? "        && !p.file.path.includes('" + classFilesPath + "')\n" : ""}

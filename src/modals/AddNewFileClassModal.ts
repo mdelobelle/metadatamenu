@@ -1,6 +1,5 @@
 import MetadataMenu from "main";
 import { ButtonComponent, Modal, Notice, TextComponent, TFile, ToggleComponent } from "obsidian";
-import { FileClassManager } from "src/components/fileClassManager";
 import { cleanActions } from "src/utils/modals";
 
 

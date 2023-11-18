@@ -7,12 +7,22 @@
             margin-top: 1em;
             margin-right: 0.3em;
             
-
+            &.favorite-button{
+                &.favorite{
+                    color: var(--color-orange)
+                }
+            }
+            
             &.active{
                 background-color: var(--color-accent);
                 border-bottom: 3px solid var(--text-accent);
                 color: var(--text-on-accent);
             }
+        }
+
+        select {
+            margin-top: 1em;
+            margin-right: 0.3em;
         }
     }
 }
@@ -349,7 +359,7 @@
             .pagination{
                 display: flex;
                 margin: 0.5em 0;
-                
+                flex-wrap: wrap;
                 .range{
                     padding: 0 0.75em;
                     margin-right: 0.2em;
@@ -376,6 +386,17 @@
                     .field-header{
                         display: flex;
 
+                        .label-container{
+                            display: flex;
+                            align-items: center;
+
+                            .priority{
+                                font-weight: 300;
+                                font-size: small;
+                                color: var(--text-muted);
+                                margin-left: 0.2em;
+                            }
+                        }
                         .field-name{
                             font-weight: 600;
                             white-space: nowrap;
