@@ -4,13 +4,16 @@
         color: var(--link-color);
         margin-left: 0.2em;
         cursor:context-menu;
+        height: var(--icon-size);
         
         &.field-status-changed{
             color: var(--text-warning);
         }
 
         svg{
-            vertical-align: calc(var(--font-text-size) * -0.15);
+            vertical-align: calc(var(--font-text-size) * 0.15);
+            height: calc(var(--icon-size)*0.935);
+            width: calc(var(--icon-size)*0.935);
         }
     }
 }

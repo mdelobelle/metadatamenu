@@ -343,7 +343,7 @@ class FileClass {
         })
     }
 
-    static createFileClass(plugin: MetadataMenu, name: string, excludeParent: boolean = false): FileClass {
+    static createFileClass(plugin: MetadataMenu, name: string): FileClass {
         const fileClass = new FileClass(plugin, name);
         fileClass.options = fileClass.getFileClassOptions()
         fileClass.getAttributes();

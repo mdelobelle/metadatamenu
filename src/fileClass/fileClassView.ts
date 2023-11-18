@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
-import { FileView, ItemView, WorkspaceLeaf } from "obsidian";
-import { FileClassManager } from "src/components/fileClassManager";
+import { ItemView, WorkspaceLeaf } from "obsidian";
+import { FileClassManager, FileClassViewType } from "src/components/fileClassManager";
 import { FileClass } from "./fileClass";
 import { FileClassFieldsView } from "./fileClassFieldsView";
 import { FileClassSettingsView } from "./fileClassSettingsView";
@@ -53,7 +53,8 @@ export class FileClassView extends ItemView {
         private plugin: MetadataMenu,
         private component: FileClassManager,
         public name: string,
-        public fileClass: FileClass
+        public fileClass: FileClass,
+        public onOpenTabDisplay: keyof typeof FileClassViewType = "tableOption"
     ) {
         super(leaf)
         this.containerEl.addClass("metadata-menu")
@@ -82,7 +83,7 @@ export class FileClassView extends ItemView {
         this.buildFieldsView();
         this.buildTableView();
         this.buildMenu();
-        this.updateDisplayView("tableOption");
+        this.updateDisplayView(this.onOpenTabDisplay);
     }
 
     buildMenu(): void {

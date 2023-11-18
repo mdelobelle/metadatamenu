@@ -951,12 +951,15 @@ span.flatpickr-weekday {
   color: var(--link-color);
   margin-left: 0.2em;
   cursor: context-menu;
+  height: var(--icon-size);
 }
 .metadata-menu.fileclass-icon.field-status-changed {
   color: var(--text-warning);
 }
 .metadata-menu.fileclass-icon svg {
-  vertical-align: calc(var(--font-text-size) * -0.15);
+  vertical-align: calc(var(--font-text-size) * 0.15);
+  height: calc(var(--icon-size) * 0.935);
+  width: calc(var(--icon-size) * 0.935);
 }
 
 .plugin-metadata-menu {
@@ -1978,6 +1981,12 @@ span.flatpickr-weekday {
   color: var(--color-base-60);
 }
 
+.fileClass-add-button {
+  color: var(--text-accent);
+  padding: 0 0.5em;
+  display: flex;
+}
+
 .metadata-menu.fileclass-view .fv-menu {
   display: flex;
 }
@@ -2334,11 +2343,18 @@ span.flatpickr-weekday {
 }
 
 button.property-metadata-menu {
-  margin: 0;
+  margin: 0.15em 0;
   border: none;
   color: var(--text-accent);
   box-shadow: none;
   padding: 0 0.5em;
+  height: calc(var(--input-height) * 0.875);
+  width: calc(var(--input-height) * 0.875);
+}
+button.property-metadata-menu svg {
+  vertical-align: calc(var(--font-text-size) * 0.15);
+  height: calc(var(--icon-size) * 0.935);
+  width: calc(var(--icon-size) * 0.935);
 }
 
 .metadata-content .action-container {
@@ -2350,9 +2366,9 @@ button.property-metadata-menu {
   align-items: flex-end;
 }
 .metadata-content .action-container .fileclass-btn-container .add-field-button {
-  margin: 0;
   border: none;
   color: var(--text-accent);
   box-shadow: none;
   padding: 0 0.5em;
+  margin-left: 0.2em;
 }

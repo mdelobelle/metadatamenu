@@ -15,6 +15,7 @@ import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import { IndexDatabase } from 'src/db/DatabaseManager';
 import { updatePropertiesSection } from 'src/options/updateProps';
+import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -112,6 +113,7 @@ export default class MetadataMenu extends Plugin {
 		this.indexDB = this.addChild(new IndexDatabase(this))
 		await this.fieldIndex.fullIndex(true)
 		this.extraButton = this.addChild(new ExtraButton(this))
+		this.addChild(new FileClassFolderButton(this))
 		this.launched = true
 
 		//building palette commands

@@ -39,6 +39,7 @@ export type NewType = LookupStatus;
 
 export abstract class FieldIndexBuilder extends Component {
     public changedFiles: TFile[] = []
+    public openFileClassManagerAfterIndex: string[] = []
     public classFilesPath: string | null;
     public bookmarksGroupsMatchingFileClasses: Map<string, FileClass>;
     public canvasLastFiles: Map<string, string[]>

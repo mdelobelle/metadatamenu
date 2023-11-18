@@ -4,6 +4,12 @@ import { FileClassView, FILECLASS_VIEW_TYPE } from "src/fileClass/fileClassView"
 import { FileClass } from "../fileClass/fileClass";
 import { FileClassChoiceModal } from "../fileClass/fileClassChoiceModal";
 
+export enum FileClassViewType {
+    "tableOption" = "tableOption",
+    "fieldsOption" = "fieldsOption",
+    "settingsOption" = "settingsOption"
+}
+
 export class FileClassManager extends Component {
     public fileClassView: FileClassView;
     public fileClassViewType: string;
@@ -11,7 +17,8 @@ export class FileClassManager extends Component {
 
     constructor(
         public plugin: MetadataMenu,
-        public fileClass?: FileClass
+        public fileClass?: FileClass,
+        public onOpenTabDisplay: keyof typeof FileClassViewType = "tableOption"
     ) {
         super();
         if (!this.fileClass) {
@@ -80,7 +87,7 @@ export class FileClassManager extends Component {
 
             this.plugin.registerView(this.fileClassViewType,
                 (leaf: WorkspaceLeaf) => {
-                    const fileClassView = new FileClassView(leaf, this.plugin, this, this.name, fileClass)
+                    const fileClassView = new FileClassView(leaf, this.plugin, this, this.name, fileClass, this.onOpenTabDisplay)
                     this.fileClassView = fileClassView;
                     return fileClassView
                 }

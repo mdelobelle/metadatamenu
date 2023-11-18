@@ -16,6 +16,7 @@ import { BookmarkItem } from "src/typings/types";
 import { ExistingField } from "src/fields/ExistingField";
 import { FieldsPayload, postValues } from "src/commands/postValues";
 import { cFileWithGroups, cFileWithTags, FieldIndexBuilder, FieldsPayloadToProcess, IndexedExistingField } from "./FieldIndexBuilder";
+import { FileClassManager } from "src/components/fileClassManager";
 
 //TODO prevent fileClass with no attribute resulting in indexing preset fields instaead of nothing
 
@@ -334,6 +335,13 @@ export default class FieldIndex extends FieldIndexBuilder {
 
     private getFileClasses(): void {
         this.indexableFileClasses().forEach(f => FileClass.indexFileClass(this, f))
+        this.openFileClassManagerAfterIndex.forEach(fileClassName => {
+            const fileClass = this.fileClassesName.get(fileClassName)
+            if (fileClass) {
+                this.plugin.addChild(new FileClassManager(this.plugin, fileClass, "settingsOption"))
+            }
+        })
+        this.openFileClassManagerAfterIndex = []
     }
 
     private getLookupQueries(): void {

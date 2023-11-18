@@ -2,8 +2,6 @@ import { App, getLinkpath, LinkCache, MarkdownPostProcessorContext, MarkdownView
 import MetadataMenu from "main";
 import NoteFieldsComponent from "../components/NoteFields";
 import { FileClassManager } from "src/components/fileClassManager";
-import { Status } from "src/types/lookupTypes";
-import { FieldType } from "src/types/fieldTypes";
 
 export function clearExtraAttributes(link: HTMLElement) {
     Object.values(link.attributes).forEach(attr => {
