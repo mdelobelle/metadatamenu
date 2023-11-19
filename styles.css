@@ -2103,6 +2103,12 @@ span.flatpickr-weekday {
 .metadata-menu.fileclass-view .fv-fields .footer .cell button.favorite-button.favorite {
   color: var(--color-orange);
 }
+.metadata-menu.fileclass-view .fv-fields .footer .cell button.favorite-button:disabled {
+  color: var(--text-faint);
+}
+.metadata-menu.fileclass-view .fv-fields .footer .cell button.remove-button {
+  color: var(--text-error);
+}
 .metadata-menu.fileclass-view .fv-fields .footer .cell button.active {
   background-color: var(--color-accent);
   border-bottom: 3px solid var(--text-accent);
@@ -2235,6 +2241,12 @@ span.flatpickr-weekday {
 .metadata-menu.fileclass-view .fv-settings .footer .cell button.favorite-button.favorite {
   color: var(--color-orange);
 }
+.metadata-menu.fileclass-view .fv-settings .footer .cell button.favorite-button:disabled {
+  color: var(--text-faint);
+}
+.metadata-menu.fileclass-view .fv-settings .footer .cell button.remove-button {
+  color: var(--text-error);
+}
 .metadata-menu.fileclass-view .fv-settings .footer .cell button.active {
   background-color: var(--color-accent);
   border-bottom: 3px solid var(--text-accent);
@@ -2366,6 +2378,12 @@ span.flatpickr-weekday {
 }
 .metadata-menu.fileclass-view .fv-table .options .footer .cell button.favorite-button.favorite {
   color: var(--color-orange);
+}
+.metadata-menu.fileclass-view .fv-table .options .footer .cell button.favorite-button:disabled {
+  color: var(--text-faint);
+}
+.metadata-menu.fileclass-view .fv-table .options .footer .cell button.remove-button {
+  color: var(--text-error);
 }
 .metadata-menu.fileclass-view .fv-table .options .footer .cell button.active {
   background-color: var(--color-accent);

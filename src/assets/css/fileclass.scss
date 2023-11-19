@@ -11,8 +11,16 @@
                 &.favorite{
                     color: var(--color-orange)
                 }
+
+                &:disabled{
+                    color: var(--text-faint)
+                }
             }
             
+            &.remove-button{
+                color: var(--text-error)
+            }
+
             &.active{
                 background-color: var(--color-accent);
                 border-bottom: 3px solid var(--text-accent);

@@ -10,7 +10,7 @@ import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { Note } from "src/note/note";
 import FieldIndex from "src/index/FieldIndex";
 import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
-import { SavedView } from "./createSavedViewModal";
+import { SavedView } from "./tableViewModals";
 
 const options: Record<string, { name: string, toValue: (value: any) => any }> = {
     "limit": { name: "limit", toValue: (value: any) => value },
@@ -34,7 +34,7 @@ export interface FileClassOptions {
     mapWithTag: boolean,
     filesPaths?: string[],
     bookmarksGroups?: string[],
-    saveViews?: SavedView[],
+    savedViews?: SavedView[],
     favoriteView?: string | null
 }
 

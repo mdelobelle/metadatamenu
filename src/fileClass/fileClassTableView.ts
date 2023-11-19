@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { ButtonComponent, DropdownComponent, Modal, TextComponent } from "obsidian";
 import { FileClassManager } from "src/components/fileClassManager";
 import { FileClass } from "./fileClass";
-import { CreateSavedViewModal } from "./createSavedViewModal";
+import { CreateSavedViewModal } from "./tableViewModals";
 
 const oppositeDirection = {
     'asc': 'desc',
@@ -31,8 +31,10 @@ export class FileClassTableView {
     private tableFontSize: number;
     private fieldsContainer: HTMLDivElement;
     private sortersPriorityLabels: Record<string, HTMLDivElement> = {}
+    private viewSelectContainer: HTMLDivElement;
     public viewSelect: DropdownComponent
     public favoriteBtn: ButtonComponent
+    public viewRemoveBtn: ButtonComponent
 
     constructor(
         plugin: MetadataMenu,
@@ -57,17 +59,20 @@ export class FileClassTableView {
         this.buildLimitManager(limitContainer);
         this.buildPaginationManager(this.paginationContainer)
         this.buildFiltersAndSortManager(this.fieldsContainer);
-        this.buildSavedViewSelector(applyContainer)
+        this.viewSelectContainer = applyContainer.createDiv({ cls: "cell" })
+        this.buildSavedViewSelector()
         this.buildFavoriteViewManager(applyContainer)
         this.buildRefreshManager(applyContainer);
-        this.buildCleanFilters(applyContainer);
-        this.buildSaveFilters(applyContainer);
+        this.buildCleanFiltersAndSorters(applyContainer);
+        this.buildSaveView(applyContainer);
+        this.buildSavedViewRemoveButton(applyContainer)
         this.buildHideFilters(applyContainer);
     }
 
     public udpate(): void {
         this.buildTable();
-        this.buildPaginationComponent(this.paginationContainer);
+        this.buildPaginationManager(this.paginationContainer);
+        this.buildSavedViewSelector()
         this.refreshButton.removeCta();
     }
 
@@ -124,7 +129,7 @@ export class FileClassTableView {
             })
     }
 
-    private buildPaginationComponent(container: HTMLDivElement): void {
+    private buildPaginationManager(container: HTMLDivElement): void {
         container.replaceChildren();
 
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
@@ -149,10 +154,6 @@ export class FileClassTableView {
             }
 
         }
-    }
-
-    private buildPaginationManager(container: HTMLDivElement): void {
-        this.buildPaginationComponent(container);
     }
 
     private buildLimitManager(container: HTMLDivElement): void {
@@ -258,13 +259,11 @@ export class FileClassTableView {
         });
     }
 
-    private changeView(name: string) {
+    private changeView(name?: string) {
         const options = this.fileClass.getFileClassOptions()
         const savedViews = options.savedViews || []
-        Object.keys(this.sorters).forEach(key => {
-            this.sorters[key].priority = undefined
-            this.sortersPriorityLabels[this.sorters[key].name].textContent = ""
-        })
+        this.resetFilters()
+        this.resetSorters()
         if (name && savedViews.find(view => view.name === name)) {
             const savedView = savedViews.find(view => view.name === name)
             Object.keys(this.filters).forEach(name => {
@@ -286,25 +285,49 @@ export class FileClassTableView {
         } else {
             Object.keys(this.filters).forEach(name => this.filters[name].inputEl.value = "")
             Object.keys(this.sorters).forEach(name => {
-                this.sorters[name].direction = "asc"
                 this.sorters[name].btn.buttonEl.removeClass("active")
             })
         }
         this.selectedView = name
         this.toggleFavoriteBtnState()
-        this.viewSelect.setValue(name)
-        console.log("SELECTED VIEW", this.selectedView)
+        this.viewSelect.setValue(name || "")
+        this.viewRemoveBtn.setDisabled(!this.selectedView)
+        this.viewRemoveBtn.setTooltip(`Remove ${this.selectedView} view from the saved views`)
         this.udpate()
     }
 
-    private buildSavedViewSelector(container: HTMLDivElement) {
-        const viewSelectContainer = container.createDiv({ cls: "cell" })
+    private buildSavedViewSelector() {
+        this.viewSelectContainer.replaceChildren()
         const options = this.fileClass.getFileClassOptions()
         const savedViews = options.savedViews || []
-        this.viewSelect = new DropdownComponent(viewSelectContainer)
-        this.viewSelect.addOption("", "--None--")
-        savedViews.sort((a, b) => a.name < b.name ? -1 : 1).forEach(view => this.viewSelect.addOption(view.name, view.name))
-        this.viewSelect.onChange(value => this.changeView(value))
+        this.viewSelect = new DropdownComponent(this.viewSelectContainer)
+        if (!savedViews.length) {
+            this.viewSelect.addOption("", "No saved view")
+            this.viewSelect.setDisabled(true)
+        } else {
+            this.viewSelect.addOption("", "--None--")
+            savedViews.sort((a, b) => a.name < b.name ? -1 : 1).forEach(view => this.viewSelect.addOption(view.name, view.name))
+            this.viewSelect.onChange(value => this.changeView(value))
+            this.viewSelect.setValue(this.selectedView || "")
+        }
+    }
+
+    private buildSavedViewRemoveButton(container: HTMLDivElement) {
+        const btnContainer = container.createDiv({ cls: "cell" })
+        this.viewRemoveBtn = new ButtonComponent(btnContainer)
+            .setIcon("trash")
+            .setClass("remove-button")
+            .setDisabled(!this.selectedView)
+            .setTooltip(`Remove ${this.selectedView} view from the saved views`)
+            .onClick(async () => {
+                const options = this.fileClass.getFileClassOptions()
+                if (options.favoriteView === this.selectedView) options.favoriteView = null
+                options.savedViews = options.savedViews?.filter(view => view.name !== this.selectedView)
+                await this.fileClass.updateOptions(options)
+                this.changeView()
+                this.viewRemoveBtn.setDisabled(true)
+                this.udpate()
+            })
     }
 
     private toggleFavoriteBtnState() {
@@ -312,7 +335,7 @@ export class FileClassTableView {
         const favoriteView = options.favoriteView || null
         if (options.savedViews?.length) {
             this.favoriteBtn.setDisabled(false)
-            if (this.selectedView === favoriteView) {
+            if (this.selectedView === favoriteView && !!favoriteView) {
                 this.favoriteBtn.setTooltip("Unselect this view as your favorite view")
                 this.favoriteBtn.buttonEl.addClass("favorite")
             } else if (this.selectedView !== undefined) {
@@ -329,24 +352,24 @@ export class FileClassTableView {
     }
 
     private buildFavoriteViewManager(container: HTMLDivElement) {
-        const options = this.fileClass.getFileClassOptions()
-        const favoriteView = options.favoriteView || null
+
         const btnContainer = container.createDiv({ cls: "cell" })
         this.favoriteBtn = new ButtonComponent(btnContainer);
         this.favoriteBtn.setClass("favorite-button")
         this.favoriteBtn.setIcon("star");
         this.toggleFavoriteBtnState()
-        this.favoriteBtn.onClick(() => {
+        this.favoriteBtn.onClick(async () => {
+            const options = this.fileClass.getFileClassOptions()
+            const favoriteView = options.favoriteView || null
             if (this.selectedView === favoriteView) {
-                console.log("NEW FAVORITE", null)
                 options.favoriteView = null
                 this.favoriteBtn.buttonEl.removeClass("favorite")
             } else if (this.selectedView !== undefined) {
-                console.log("NEW FAVORITE", this.selectedView)
                 options.favoriteView = this.selectedView
                 this.favoriteBtn.buttonEl.addClass("favorite")
             }
-            this.fileClass.updateOptions(options)
+            await this.fileClass.updateOptions(options)
+            this.toggleFavoriteBtnState()
         })
     }
 
@@ -358,7 +381,19 @@ export class FileClassTableView {
         this.refreshButton.onClick(() => this.udpate())
     }
 
-    private buildCleanFilters(container: HTMLDivElement): void {
+    private resetSorters() {
+        Object.keys(this.sorters).forEach(key => {
+            this.sorters[key].priority = undefined
+            this.sorters[key].active = false
+            this.sortersPriorityLabels[this.sorters[key].name].textContent = ""
+        })
+    }
+
+    private resetFilters() {
+        Object.keys(this.filters).forEach(name => this.filters[name].inputEl.value = "")
+    }
+
+    private buildCleanFiltersAndSorters(container: HTMLDivElement): void {
         const btnContainer = container.createDiv({ cls: "cell" })
         const cleanFilterBtn = new ButtonComponent(btnContainer);
         cleanFilterBtn.setIcon("eraser");
@@ -368,12 +403,13 @@ export class FileClassTableView {
             for (const input of filterInputs) {
                 if (input instanceof HTMLInputElement) input.value = ""
             }
-            Object.keys(this.filters).forEach(name => this.filters[name].inputEl.value = "")
+            this.resetFilters()
+            this.resetSorters()
             this.refreshButton.setCta()
         })
     }
 
-    private buildSaveFilters(container: HTMLDivElement): void {
+    private buildSaveView(container: HTMLDivElement): void {
         const btnContainer = container.createDiv({ cls: "cell" })
         const saveFilterBtn = new ButtonComponent(btnContainer);
         saveFilterBtn.setIcon("save");
@@ -414,16 +450,21 @@ export class FileClassTableView {
             }
         }).join("")
     }
-    //TODO use sorter priority
+
     private buildSorterQuery(): string {
-        return Object.entries(this.sorters).map(([fieldSorter, { btn, active, direction, name }]) => {
-            const fieldKey = name === "file" ? "p.file.name" : `p["${name}"]`
-            if (active) {
-                return `    .sort(p => ${fieldKey}, "${direction}")\n`
-            } else {
-                return ""
-            }
-        }).join("")
+        const sorters = Object.entries(this.sorters)
+            .sort((s1, s2) => (s1[1].priority || 0) < (s2[1].priority || 0) ? -1 : 1)
+            .filter(s => s[1].active)
+            .map(s => {
+                const fieldKey = s[1].name === "file" ? `["file"]["name"]` : `["${s[1].name}"]`
+                const dir = s[1].direction === "asc" ? 1 : -1
+                return `        if(p1${fieldKey} > p2${fieldKey}) return ${dir}\n` +
+                    `        if(p1${fieldKey} < p2${fieldKey}) return ${-1 * dir}\n`
+            })
+        const sortingQuery = `    .array().sort((p1, p2) => {\n${sorters.join("")}\n    })\n`
+        console.log(this.sorters)
+        console.log(sortingQuery)
+        return sortingQuery
     }
 
     private buildDvJSQuery(): string {

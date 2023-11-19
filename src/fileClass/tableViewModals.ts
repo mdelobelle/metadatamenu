@@ -101,17 +101,18 @@ export class CreateSavedViewModal extends Modal {
                 saveBtn.setCta();
             }
         });
-        saveBtn.onClick(async () => { this.save() })
+        saveBtn.onClick(async () => { await this.save() })
     }
 
-    private save() {
+    private async save() {
         const options = this.view.fileClass.getFileClassOptions()
         options.savedViews = [...options.savedViews || [], this.savedView]
-        this.view.fileClass.updateOptions(options)
-        this.view.viewSelect.addOption(this.savedView.name, this.savedView.name)
-        this.view.viewSelect.setValue(this.savedView.name)
+        await this.view.fileClass.updateOptions(options)
+        //this.view.viewSelect.addOption(this.savedView.name, this.savedView.name)
+        //this.view.viewSelect.setValue(this.savedView.name)
         this.view.selectedView = this.savedView.name
         this.view.favoriteBtn.buttonEl.disabled = false
+        this.view.udpate()
         this.close()
 
     }
