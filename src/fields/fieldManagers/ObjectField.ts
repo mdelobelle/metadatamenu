@@ -3,7 +3,7 @@ import { FieldIcon, FieldType } from "src/types/fieldTypes";
 
 import { FieldManager, SettingLocation } from "../FieldManager";
 import Field from "../Field";
-import { TFile, Menu } from "obsidian";
+import { TFile, Menu, setIcon } from "obsidian";
 import NoteFieldsComponent, { FieldOptions } from "src/components/NoteFields";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import ObjectModal from "src/modals/fields/ObjectModal";
@@ -52,9 +52,23 @@ export default class ObjectField extends FieldManager {
     createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
 
     }
-    createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }): void {
-        const fieldValue = dv.el('span', "{...}", attrs);
+    createDvField(
+        dv: any,
+        p: any,
+        fieldContainer: HTMLElement,
+        attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }
+    ): void {
+        const fieldValue = dv.el('span', "{...}", { ...attrs, cls: "value-container" });
         fieldContainer.appendChild(fieldValue);
+        const editBtn = fieldContainer.createEl("button");
+        setIcon(editBtn, FieldIcon[this.field.type])
+        editBtn.onclick = async () => {
+            const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
+            const _eF = file instanceof TFile &&
+                file.extension == "md" &&
+                await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, file, this.field.id)
+            if (_eF) this.createAndOpenFieldModal(file, this.field.name, _eF, _eF.indexedPath)
+        }
     }
     getOptionsStr(): string {
         return ""
