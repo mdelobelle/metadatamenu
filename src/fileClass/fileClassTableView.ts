@@ -361,16 +361,23 @@ export class FileClassTableView {
     }
 
     private buildDvJSRendering(): string {
-        const fields = this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.filter(_f => _f.isRoot()) || []
+        //const fields = this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.filter(_f => _f.isRoot()) || []
+        const fields = this.fieldSet.fields.sort((f1, f2) => f1.columnPosition < f2.columnPosition ? -1 : 1)
         let dvJS = "const {fieldModifier: f} = this.app.plugins.plugins[\"metadata-menu\"].api;\n" +
-            "dv.table([\"File\",";
+            "dv.table([";
         dvJS += fields.map(field => `"${field.name}"`).join(",");
         dvJS += `], \n`;
         dvJS += this.buildDvJSQuery();
         dvJS += this.buildSorterQuery();
         dvJS += `    .slice(${this.sliceStart}, ${this.sliceStart + this.limit})\n`;
-        dvJS += "    .map(p => [\n        dv.el(\"span\", p.file.link, {cls: \"field-name\"}),\n";
-        dvJS += fields.map(field => `        f(dv, p, "${field.name}", {options: {alwaysOn: false, showAddField: true}})`).join(",\n");
+        dvJS += "    .map(p => [\n";
+        dvJS += fields.map(field => {
+            if (field.name === "file") {
+                return "        dv.el(\"span\", p.file.link, {cls: \"field-name\"})";
+            } else {
+                return `        f(dv, p, "${field.name}", {options: {alwaysOn: false, showAddField: true}})`
+            }
+        }).join(",\n");
         dvJS += "    \n])";
         dvJS += "\n);"
         return dvJS

@@ -1,4 +1,4 @@
-import { App, editorViewField, MarkdownView, setIcon, TFile } from "obsidian";
+import { App, editorInfoField, editorViewField, MarkdownView, setIcon, TFile } from "obsidian";
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { RangeSetBuilder } from "@codemirror/state";
 import { syntaxTree } from "@codemirror/language";
@@ -89,7 +89,7 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
                 if (!settings.enableEditor) {
                     return builder.finish();
                 }
-                const mdView = view.state.field(editorViewField) as MarkdownView;
+                const mdView = view.state.field(editorInfoField) as MarkdownView;
                 let lastAttributes = {};
                 let iconDecoAfter: Decoration | null = null;
                 let iconDecoAfterWhere: number | null = null;

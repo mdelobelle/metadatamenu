@@ -2,13 +2,7 @@ import MetadataMenu from "main"
 import { ButtonComponent, Modal, TextComponent } from "obsidian"
 import { cleanActions } from "src/utils/modals"
 import { FileClassTableView } from "./fileClassTableView"
-import { RowSorter as ViewRowSorter } from "./tableViewFieldSet"
-
-interface Sorter {
-    name: string,
-    direction: 'asc' | 'desc',
-    priority: number
-}
+import { RowSorter as ViewRowSorter, ColumnMover } from "./tableViewFieldSet"
 
 interface Filter {
     name: string,
@@ -21,11 +15,16 @@ interface RowSorter {
     priority: number
 }
 
+interface Column {
+    name: string,
+    hidden: boolean,
+    position: number
+}
 
 export class SavedView {
-    //sorters: Array<Sorter> = []
-    rowSorters: Array<RowSorter> = []
+    sorters: Array<RowSorter> = []
     filters: Array<Filter> = []
+    columns: Array<Column> = []
     constructor(public name: string) {
 
     }
@@ -38,29 +37,27 @@ export class SavedView {
             })
         })
     }
-    /*
-    public buildSorters(sorters: Record<string, SorterButton>) {
-        Object.keys(sorters).forEach(id => {
-            if (sorters[id].active) {
-                this.sorters.push({
-                    name: sorters[id].name,
-                    direction: sorters[id].direction,
-                    priority: sorters[id].priority || 0
-                })
-            }
-        })
-    }
-    */
+
     public buildRowSorters(rowSorters: Record<string, ViewRowSorter>) {
         Object.keys(rowSorters).forEach(name => {
             const sorter = rowSorters[name]
             if (sorter.direction) {
-                this.rowSorters.push({
+                this.sorters.push({
                     name: sorter.name,
                     direction: sorter.direction,
                     priority: sorter.priority || 0
                 })
             }
+        })
+    }
+
+    public buildColumnMovers(columnMovers: Record<string, ColumnMover>) {
+        Object.entries(columnMovers).forEach(([name, column]) => {
+            this.columns.push({
+                name: name,
+                hidden: column.hidden,
+                position: column.position
+            })
         })
     }
 }
@@ -83,8 +80,8 @@ export class CreateSavedViewModal extends Modal {
         }
         this.savedView = new SavedView("")
         this.savedView.buildFilters(view.fieldSet.filters)
-        //this.savedView.buildSorters(view.fieldSet.sorters)
         this.savedView.buildRowSorters(view.fieldSet.rowSorters)
+        this.savedView.buildColumnMovers(view.fieldSet.columnMovers)
         this.buildModal()
         this.containerEl.addClass("metadata-menu")
     }
@@ -130,12 +127,9 @@ export class CreateSavedViewModal extends Modal {
         const options = this.view.fileClass.getFileClassOptions()
         options.savedViews = [...options.savedViews || [], this.savedView]
         await this.view.fileClass.updateOptions(options)
-        //this.view.viewSelect.addOption(this.savedView.name, this.savedView.name)
-        //this.view.viewSelect.setValue(this.savedView.name)
         this.view.selectedView = this.savedView.name
         this.view.favoriteBtn.buttonEl.disabled = false
         this.view.udpate()
         this.close()
-
     }
 }
