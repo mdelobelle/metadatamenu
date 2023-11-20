@@ -1,40 +1,27 @@
 import MetadataMenu from "main";
-import { ButtonComponent, DropdownComponent, Modal, TextComponent } from "obsidian";
+import { ButtonComponent, DropdownComponent, TextComponent } from "obsidian";
 import { FileClassManager } from "src/components/fileClassManager";
 import { FileClass } from "./fileClass";
-import { CreateSavedViewModal } from "./tableViewModals";
-
-const oppositeDirection = {
-    'asc': 'desc',
-    'desc': 'asc'
-}
-
-export interface SorterButton {
-    btn: ButtonComponent,
-    active: boolean,
-    direction: 'asc' | 'desc',
-    name: string,
-    priority?: number
-}
+import { FieldSet } from "./tableViewFieldSet";
+import { CreateSavedViewModal } from "./tableViewModal";
 
 export class FileClassTableView {
-    private plugin: MetadataMenu;
+    public plugin: MetadataMenu;
     public container: HTMLDivElement
     private limit: number
     private tableContainer: HTMLDivElement
-    public filters: Record<string, TextComponent> = {}
-    public sorters: Record<string, SorterButton> = {}
-    private refreshButton: ButtonComponent
+    public refreshButton: ButtonComponent
     private paginationContainer: HTMLDivElement
     private sliceStart: number = 0
     private firstCollWidth: number;
     private tableFontSize: number;
-    private fieldsContainer: HTMLDivElement;
-    private sortersPriorityLabels: Record<string, HTMLDivElement> = {}
+    public fieldsContainer: HTMLDivElement;
+    public sortersPriorityLabels: Record<string, HTMLDivElement> = {}
     private viewSelectContainer: HTMLDivElement;
     public viewSelect: DropdownComponent
     public favoriteBtn: ButtonComponent
     public viewRemoveBtn: ButtonComponent
+    public fieldSet: FieldSet
 
     constructor(
         plugin: MetadataMenu,
@@ -56,14 +43,14 @@ export class FileClassTableView {
         this.paginationContainer = header.createDiv({ cls: "pagination" });
         this.fieldsContainer = header.createDiv({ cls: "fields" })
         const applyContainer = header.createDiv({ cls: "footer" })
+        this.viewSelectContainer = applyContainer.createDiv({ cls: "cell" })
         this.buildLimitManager(limitContainer);
         this.buildPaginationManager(this.paginationContainer)
-        this.buildFiltersAndSortManager(this.fieldsContainer);
-        this.viewSelectContainer = applyContainer.createDiv({ cls: "cell" })
-        this.buildSavedViewSelector()
+        this.buildFields(this.fieldsContainer)
+        this.buildViewSelector()
         this.buildFavoriteViewManager(applyContainer)
         this.buildRefreshManager(applyContainer);
-        this.buildCleanFiltersAndSorters(applyContainer);
+        this.buildCleanFields(applyContainer);
         this.buildSaveView(applyContainer);
         this.buildSavedViewRemoveButton(applyContainer)
         this.buildHideFilters(applyContainer);
@@ -72,62 +59,28 @@ export class FileClassTableView {
     public udpate(): void {
         this.buildTable();
         this.buildPaginationManager(this.paginationContainer);
-        this.buildSavedViewSelector()
+        this.buildViewSelector()
         this.refreshButton.removeCta();
     }
 
-    public buildTable(): void {
-        if (this.tableContainer) {
-            this.tableContainer.remove()
-        };
-        this.tableContainer = this.container.createDiv({ attr: { id: `table-container-${Math.floor(Date.now() / 1000)}` } })
-        this.tableContainer.onscroll = (e) => {
-            const table = this.tableContainer
-            const firstColl = this.tableContainer.querySelectorAll('tbody > tr > td:first-child')
-            const firstFileLink = firstColl[0]?.querySelector("a.internal-link")
-            if (firstColl && firstFileLink) {
-                if (!this.firstCollWidth) this.firstCollWidth = parseFloat(getComputedStyle(firstColl[0]).width)
-                if (!this.tableFontSize) this.tableFontSize = parseFloat(getComputedStyle(firstFileLink).width)
-                const position = (e.target as HTMLDivElement).scrollLeft
-                if (window.matchMedia("(max-width: 400px)").matches) {
-                    if (position !== 0) {
-                        table.addClass("scrolled");
-                        table.querySelectorAll('tbody > tr > td:first-child').forEach((item: HTMLElement) => {
-                            (item.querySelector("a:first-child") as HTMLElement).style.maxWidth = `${Math.max(
-                                3 * this.tableFontSize,
-                                this.firstCollWidth - this.tableFontSize - position
-                            )}px`;
-                        })
-                    } else {
-                        this.tableContainer.removeClass("scrolled")
-                        table.querySelectorAll('tbody > tr > td:first-child').forEach((item: HTMLElement) => {
-                            (item.querySelector("a:first-child") as HTMLElement).style.maxWidth = "100%";
-                        })
-                    }
+    /*
+    ** Max rows
+    */
 
-                }
-            }
-        }
-
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        if (dvApi) {
-            dvApi.executeJs(this.buildDvJSRendering(), this.tableContainer, this.plugin, this.fileClass.getClassFile().path)
-        }
-        // links aren't clickable anymore, rebinding them to click event
-        this.addClickEventToLink()
+    private buildLimitManager(container: HTMLDivElement): void {
+        container.replaceChildren();
+        container.createDiv({ text: "Results per page: ", cls: "label" })
+        const limitInput = new TextComponent(container)
+        limitInput.setValue(`${this.limit}`)
+        limitInput.onChange((value) => {
+            this.limit = parseInt(value) || this.limit;
+            this.refreshButton.setCta();
+        })
     }
 
-    private addClickEventToLink(): void {
-        this.container.querySelectorAll("a.internal-link")
-            .forEach((link: HTMLLinkElement) => {
-                link.addEventListener("click", () => this.plugin.app.workspace.openLinkText(
-                    //@ts-ignore
-                    link.getAttr("data-href").split("/").last()?.replace(/(.*).md/, "$1"),
-                    this.fileClass.getClassFile().path,
-                    'tab'
-                ))
-            })
-    }
+    /*
+    ** Pagination
+    */
 
     private buildPaginationManager(container: HTMLDivElement): void {
         container.replaceChildren();
@@ -152,142 +105,26 @@ export class FileClassTableView {
             } catch (e) {
                 console.error("unable to build the list of files")
             }
-
         }
     }
 
-    private buildLimitManager(container: HTMLDivElement): void {
-        container.replaceChildren();
-        container.createDiv({ text: "Results per page: ", cls: "label" })
-        const limitInput = new TextComponent(container)
-        limitInput.setValue(`${this.limit}`)
-        limitInput.onChange((value) => {
-            this.limit = parseInt(value) || this.limit;
-            this.refreshButton.setCta();
-        })
+    /*
+    ** Fields
+    */
+
+    private buildFields(container: HTMLDivElement) {
+        container.replaceChildren()
+        this.fieldSet = new FieldSet(this, container)
     }
 
-    private getMaxSorterPriority() {
-        return Object.values(this.sorters).reduce((intermediateMax, currentSorter) => Math.max(intermediateMax, currentSorter.priority || 0), 0)
-    }
+    /*
+    ** Actions
+    */
 
-    private changeSorterPriority(name: string, priority: number | undefined) {
-        Object.keys(this.sorters).forEach(id => {
-            if (new RegExp(`${name}__(asc|desc)`).test(id)) {
-                this.sorters[id].priority = priority
-                this.sortersPriorityLabels[name].textContent = priority ? `(${priority})` : ""
-            }
-        })
-        //recalculate
-        const minPriority = Object.values(this.sorters)
-            .map(sorter => sorter.priority)
-            .filter(_p => _p !== undefined)
-            .sort((a, b) => a! - b!)[0]
-            || 0
-        Object.keys(this.sorters).forEach(key => {
-            const priority = this.sorters[key].priority
-            if (priority) {
-                const newPriority = priority - minPriority + 1
-                this.sorters[key].priority = newPriority
-                this.sortersPriorityLabels[this.sorters[key].name].textContent = `(${newPriority})`
-            }
-
-        })
-    }
-
-    private toggleBtnState(name: string, direction: 'asc' | 'desc'): void {
-        const btnId = `${name}__${direction}`;
-        const oppositeBtnId = `${name}__${oppositeDirection[direction]}`
-        const { btn, active } = this.sorters[btnId]
-        const { btn: oppBtn } = this.sorters[oppositeBtnId]
-        if (active) {
-            btn.buttonEl.removeClass("active");
-            this.sorters[btnId].active = false
-            this.changeSorterPriority(name, undefined)
-        } else {
-            btn.setClass("active")
-            oppBtn.buttonEl.removeClass("active");
-            this.sorters[btnId].active = true;
-            this.sorters[oppositeBtnId].active = false;
-            if (!this.sorters[btnId].priority) {
-                const newPriority = this.getMaxSorterPriority() + 1
-                this.changeSorterPriority(name, newPriority)
-            }
-        }
-    }
-
-    private buildSortBtn(name: string, direction: 'asc' | 'desc', component: HTMLDivElement): void {
-        const btn = new ButtonComponent(component);
-        btn.setIcon(direction === 'asc' ? "chevron-up" : "chevron-down");
-        this.sorters[`${name}__${direction}`] = { btn: btn, active: false, name: name, direction: direction }
-        btn.onClick(() => {
-            this.toggleBtnState(name, direction);
-            this.udpate()
-        })
-    }
-
-    private buildFieldNameAndSortComponent(name: string, label: string, container: HTMLDivElement): void {
-        const fieldNameAndSortContainer = container.createDiv({ cls: "field-header" });
-        this.buildSortBtn(name, 'asc', fieldNameAndSortContainer);
-        this.buildSortBtn(name, 'desc', fieldNameAndSortContainer);
-        const prioAndLabelContainer = fieldNameAndSortContainer.createDiv({ cls: "label-container" })
-        prioAndLabelContainer.createDiv({ text: label, cls: "field-name" })
-        const prioContainer = prioAndLabelContainer.createDiv({ cls: "priority", text: this.sorters[name]?.priority ? `(${this.sorters[name].priority})` : "" })
-        this.sortersPriorityLabels[name] = prioContainer
-    }
-
-    private buildFilterComponent(name: string, container: HTMLDivElement): void {
-        const fieldFilterContainer = container.createDiv({ cls: "filter-input" });
-        const filter = new TextComponent(fieldFilterContainer);
-        filter.setValue("");
-        filter.onChange((value) => {
-            this.filters[name].inputEl.value = value;
-            this.refreshButton.setCta()
-        });
-        this.filters[name] = filter
-    }
-
-    private buildFiltersAndSortManager(container: HTMLDivElement): void {
-        const fieldContainer = container.createDiv({ cls: "field-container" })
-        this.buildFieldNameAndSortComponent("file", "File name", fieldContainer)
-        this.buildFilterComponent("file", fieldContainer);
-        const fields = this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name) || [];
-        fields.forEach(field => {
-            const fieldContainer = container.createDiv({ cls: "field-container" })
-            this.buildFieldNameAndSortComponent(field.name, field.name, fieldContainer)
-            this.buildFilterComponent(field.name, fieldContainer);
-        });
-    }
+    /* view selection */
 
     private changeView(name?: string) {
-        const options = this.fileClass.getFileClassOptions()
-        const savedViews = options.savedViews || []
-        this.resetFilters()
-        this.resetSorters()
-        if (name && savedViews.find(view => view.name === name)) {
-            const savedView = savedViews.find(view => view.name === name)
-            Object.keys(this.filters).forEach(name => {
-                this.filters[name].inputEl.value = savedView?.filters.find(f => f.name === name)?.query || ""
-            })
-            Object.keys(this.sorters).forEach(id => {
-                const savedSorter = savedView?.sorters.find(f => id === `${f.name}__${f.direction}`)
-                const btn = this.sorters[id].btn
-                if (savedSorter) {
-                    this.sorters[id].active = true
-                    this.sorters[id].priority = savedSorter.priority
-                    this.sortersPriorityLabels[this.sorters[id].name].textContent = `(${savedSorter.priority})`
-                    btn.setClass("active")
-                } else {
-                    this.sorters[id].active = false
-                    btn.buttonEl.removeClass("active")
-                }
-            })
-        } else {
-            Object.keys(this.filters).forEach(name => this.filters[name].inputEl.value = "")
-            Object.keys(this.sorters).forEach(name => {
-                this.sorters[name].btn.buttonEl.removeClass("active")
-            })
-        }
+        this.fieldSet.changeView(name)
         this.selectedView = name
         this.toggleFavoriteBtnState()
         this.viewSelect.setValue(name || "")
@@ -296,7 +133,7 @@ export class FileClassTableView {
         this.udpate()
     }
 
-    private buildSavedViewSelector() {
+    private buildViewSelector() {
         this.viewSelectContainer.replaceChildren()
         const options = this.fileClass.getFileClassOptions()
         const savedViews = options.savedViews || []
@@ -381,40 +218,29 @@ export class FileClassTableView {
         this.refreshButton.onClick(() => this.udpate())
     }
 
-    private resetSorters() {
-        Object.keys(this.sorters).forEach(key => {
-            this.sorters[key].priority = undefined
-            this.sorters[key].active = false
-            this.sortersPriorityLabels[this.sorters[key].name].textContent = ""
-        })
-    }
-
-    private resetFilters() {
-        Object.keys(this.filters).forEach(name => this.filters[name].inputEl.value = "")
-    }
-
-    private buildCleanFiltersAndSorters(container: HTMLDivElement): void {
+    private buildCleanFields(container: HTMLDivElement): void {
         const btnContainer = container.createDiv({ cls: "cell" })
         const cleanFilterBtn = new ButtonComponent(btnContainer);
         cleanFilterBtn.setIcon("eraser");
         cleanFilterBtn.setTooltip("remove filter values")
         cleanFilterBtn.onClick(() => {
+            /*
             const filterInputs = this.container.querySelectorAll(".filter-input input")
             for (const input of filterInputs) {
                 if (input instanceof HTMLInputElement) input.value = ""
             }
-            this.resetFilters()
-            this.resetSorters()
+            */
+            this.fieldSet.reset()
             this.refreshButton.setCta()
         })
     }
 
     private buildSaveView(container: HTMLDivElement): void {
         const btnContainer = container.createDiv({ cls: "cell" })
-        const saveFilterBtn = new ButtonComponent(btnContainer);
-        saveFilterBtn.setIcon("save");
-        saveFilterBtn.setTooltip("Save current view (filters and sorters)")
-        saveFilterBtn.onClick(() => (new CreateSavedViewModal(this.plugin, this)).open())
+        const saveViewBtn = new ButtonComponent(btnContainer);
+        saveViewBtn.setIcon("save");
+        saveViewBtn.setTooltip("Save current view (filters and sorters)")
+        saveViewBtn.onClick(() => (new CreateSavedViewModal(this.plugin, this)).open())
     }
 
     private buildHideFilters(container: HTMLDivElement): void {
@@ -434,14 +260,67 @@ export class FileClassTableView {
                 hideFilterBtn.setTooltip("collapse filters");
             }
         }
+        hideFilterBtn.onClick(() => toggleState())
+    }
 
-        hideFilterBtn.onClick(() => {
-            toggleState();
-        })
+    /*
+    ** Table
+    */
+
+    public buildTable(): void {
+        if (this.tableContainer) {
+            this.tableContainer.remove()
+        };
+        this.tableContainer = this.container.createDiv({ attr: { id: `table-container-${Math.floor(Date.now() / 1000)}` } })
+        this.tableContainer.onscroll = (e) => {
+            const table = this.tableContainer
+            const firstColl = this.tableContainer.querySelectorAll('tbody > tr > td:first-child')
+            const firstFileLink = firstColl[0]?.querySelector("a.internal-link")
+            if (firstColl && firstFileLink) {
+                if (!this.firstCollWidth) this.firstCollWidth = parseFloat(getComputedStyle(firstColl[0]).width)
+                if (!this.tableFontSize) this.tableFontSize = parseFloat(getComputedStyle(firstFileLink).width)
+                const position = (e.target as HTMLDivElement).scrollLeft
+                if (window.matchMedia("(max-width: 400px)").matches) {
+                    if (position !== 0) {
+                        table.addClass("scrolled");
+                        table.querySelectorAll('tbody > tr > td:first-child').forEach((item: HTMLElement) => {
+                            (item.querySelector("a:first-child") as HTMLElement).style.maxWidth = `${Math.max(
+                                3 * this.tableFontSize,
+                                this.firstCollWidth - this.tableFontSize - position
+                            )}px`;
+                        })
+                    } else {
+                        this.tableContainer.removeClass("scrolled")
+                        table.querySelectorAll('tbody > tr > td:first-child').forEach((item: HTMLElement) => {
+                            (item.querySelector("a:first-child") as HTMLElement).style.maxWidth = "100%";
+                        })
+                    }
+                }
+            }
+        }
+
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        if (dvApi) {
+            dvApi.executeJs(this.buildDvJSRendering(), this.tableContainer, this.plugin, this.fileClass.getClassFile().path)
+        }
+        // links aren't clickable anymore, rebinding them to click event
+        this.addClickEventToLink()
+    }
+
+    private addClickEventToLink(): void {
+        this.container.querySelectorAll("a.internal-link")
+            .forEach((link: HTMLLinkElement) => {
+                link.addEventListener("click", () => this.plugin.app.workspace.openLinkText(
+                    //@ts-ignore
+                    link.getAttr("data-href").split("/").last()?.replace(/(.*).md/, "$1"),
+                    this.fileClass.getClassFile().path,
+                    'tab'
+                ))
+            })
     }
 
     private buildFilterQuery(): string {
-        return Object.entries(this.filters).map(([fieldName, input]) => {
+        return Object.entries(this.fieldSet?.filters || {}).map(([fieldName, input]) => {
             const field = fieldName === "file" ? `p.file.name` : `p["${fieldName}"]`
             if (input.getValue()) {
                 return `    .filter(p => ${field} && ${field}.toString().toLowerCase().includes("${input.getValue()}".toLowerCase()))\n`
@@ -452,9 +331,9 @@ export class FileClassTableView {
     }
 
     private buildSorterQuery(): string {
-        const sorters = Object.entries(this.sorters)
+        const sorters = Object.entries(this.fieldSet.rowSorters)
             .sort((s1, s2) => (s1[1].priority || 0) < (s2[1].priority || 0) ? -1 : 1)
-            .filter(s => s[1].active)
+            .filter(s => s[1].direction)
             .map(s => {
                 const fieldKey = s[1].name === "file" ? `["file"]["name"]` : `["${s[1].name}"]`
                 const dir = s[1].direction === "asc" ? 1 : -1
@@ -462,8 +341,6 @@ export class FileClassTableView {
                     `        if(p1${fieldKey} < p2${fieldKey}) return ${-1 * dir}\n`
             })
         const sortingQuery = `    .array().sort((p1, p2) => {\n${sorters.join("")}\n    })\n`
-        console.log(this.sorters)
-        console.log(sortingQuery)
         return sortingQuery
     }
 

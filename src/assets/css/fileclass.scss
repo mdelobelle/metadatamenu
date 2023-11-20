@@ -304,7 +304,100 @@
                 width: 300px;
             }
         }
-*/
+        */        
+        .options{
+            @media screen and (max-width: 400px) {
+                max-height: 50em;
+                overflow: scroll;
+            }
+
+            .limit{
+                display: flex;
+                font-weight: 600;
+                align-items: baseline;
+            }
+
+            .pagination{
+                display: flex;
+                margin: 0.5em 0;
+                flex-wrap: wrap;
+                .range{
+                    padding: 0 0.75em;
+                    margin-right: 0.2em;
+
+                    &.active{
+                        background-color: var(--color-accent);
+                        color: var(--text-on-accent);    
+                        border-radius: 0.75em;
+                    }
+
+                    &:hover{
+                        background-color: var(--color-base-35);
+                        color: var(---text-on-accent);
+                        border-radius: 0.75em;
+                    }
+                }
+            }
+
+            .fields{
+                display: flex;
+                flex-wrap: wrap;
+                row-gap: 0.5em;
+                column-gap: 0.5em;
+
+                .field-container{
+
+                    .field-header{
+                        display: flex;
+                        align-items: center;
+
+                        button {
+                            height: 1.5em;
+                            width: 1.5em;
+                            padding: 0.3em;
+                            border-radius: 0.75em;
+                            margin-right: 0.5em;
+
+                            &.active{
+                                background-color: var(--color-accent);
+                                color: var(--text-on-accent);
+                            }
+                        }
+
+                        .label-container{
+                            display: flex;
+                            align-items: center;
+
+                            .field-name{
+                                font-weight: 600;
+                                white-space: nowrap;
+                                margin-right: 0.375em;
+                            }
+
+                            .priority{
+                                font-weight: 300;
+                                font-size: small;
+                                color: var(--text-muted);
+                                margin-right: 0.375em;
+                            }
+                        }
+                    }
+
+                    .filter-input{
+                        display: flex;
+                        margin-top: 0.5em;
+
+                        input{
+                            width: 100%
+                        }
+                    }
+                }
+
+            }
+            .footer{
+                @include footer-button();
+            }
+        }
         div[id^="table-container"]{
             overflow: scroll;
 
@@ -352,92 +445,6 @@
             }
         }
 
-        .options{
-            @media screen and (max-width: 400px) {
-                max-height: 50em;
-                overflow: scroll;
-            }
 
-            .limit{
-                display: flex;
-                font-weight: 600;
-                align-items: baseline;
-            }
-
-            .pagination{
-                display: flex;
-                margin: 0.5em 0;
-                flex-wrap: wrap;
-                .range{
-                    padding: 0 0.75em;
-                    margin-right: 0.2em;
-
-                    &.active{
-                        background-color: var(--color-accent);
-                        color: var(--text-on-accent);    
-                        border-radius: 0.75em;
-                    }
-
-                    &:hover{
-                        background-color: var(--color-base-35);
-                        color: var(---text-on-accent);
-                        border-radius: 0.75em;
-                    }
-                }
-            }
-
-            .fields{
-                display: flex;
-                flex-wrap: wrap;
-
-                .field-container{
-                    .field-header{
-                        display: flex;
-
-                        .label-container{
-                            display: flex;
-                            align-items: center;
-
-                            .priority{
-                                font-weight: 300;
-                                font-size: small;
-                                color: var(--text-muted);
-                                margin-left: 0.2em;
-                            }
-                        }
-                        .field-name{
-                            font-weight: 600;
-                            white-space: nowrap;
-                        }
-
-                        align-items: center;
-
-                        button {
-                            height: 1.5em;
-                            width: 1.5em;
-                            padding: 0.3em;
-                            border-radius: 0.75em;
-                            margin-right: 0.5em;
-
-                            &.active{
-                                background-color: var(--color-accent);
-                                color: var(--text-on-accent);
-                            }
-                        }
-                    }
-
-                    .filter-input{
-                        display: flex;
-                        margin-right: 0.5em;
-                        margin-top: 0.5em;
-                    }
-
-                }
-
-            }
-            .footer{
-                @include footer-button();
-            }
-        }
     }
 }

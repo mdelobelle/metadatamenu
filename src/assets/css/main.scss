@@ -4,7 +4,8 @@
         color: var(--link-color);
         margin-left: 0.2em;
         cursor:context-menu;
-        height: var(--icon-size);
+        display: flex;
+        align-items: center;
         
         &.field-status-changed{
             color: var(--text-warning);

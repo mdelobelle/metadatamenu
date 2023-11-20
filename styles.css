@@ -952,7 +952,8 @@ span.flatpickr-weekday {
   color: var(--link-color);
   margin-left: 0.2em;
   cursor: context-menu;
-  height: var(--icon-size);
+  display: flex;
+  align-items: center;
 }
 .metadata-menu.fileclass-icon.field-status-changed {
   color: var(--text-warning);
@@ -2260,12 +2261,110 @@ span.flatpickr-weekday {
 .metadata-menu.fileclass-view .fv-table {
   display: contents;
   /*
-          .table-view-table {
-              @media screen and (max-width: 390px) {
-                  width: 300px;
-              }
-          }
+  .table-view-table {
+      @media screen and (max-width: 390px) {
+          width: 300px;
+      }
+  }
   */
+}
+@media screen and (max-width: 400px) {
+  .metadata-menu.fileclass-view .fv-table .options {
+    max-height: 50em;
+    overflow: scroll;
+  }
+}
+.metadata-menu.fileclass-view .fv-table .options .limit {
+  display: flex;
+  font-weight: 600;
+  align-items: baseline;
+}
+.metadata-menu.fileclass-view .fv-table .options .pagination {
+  display: flex;
+  margin: 0.5em 0;
+  flex-wrap: wrap;
+}
+.metadata-menu.fileclass-view .fv-table .options .pagination .range {
+  padding: 0 0.75em;
+  margin-right: 0.2em;
+}
+.metadata-menu.fileclass-view .fv-table .options .pagination .range.active {
+  background-color: var(--color-accent);
+  color: var(--text-on-accent);
+  border-radius: 0.75em;
+}
+.metadata-menu.fileclass-view .fv-table .options .pagination .range:hover {
+  background-color: var(--color-base-35);
+  color: var(---text-on-accent);
+  border-radius: 0.75em;
+}
+.metadata-menu.fileclass-view .fv-table .options .fields {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 0.5em;
+  column-gap: 0.5em;
+}
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header {
+  display: flex;
+  align-items: center;
+}
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header button {
+  height: 1.5em;
+  width: 1.5em;
+  padding: 0.3em;
+  border-radius: 0.75em;
+  margin-right: 0.5em;
+}
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header button.active {
+  background-color: var(--color-accent);
+  color: var(--text-on-accent);
+}
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header .label-container {
+  display: flex;
+  align-items: center;
+}
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header .label-container .field-name {
+  font-weight: 600;
+  white-space: nowrap;
+  margin-right: 0.375em;
+}
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header .label-container .priority {
+  font-weight: 300;
+  font-size: small;
+  color: var(--text-muted);
+  margin-right: 0.375em;
+}
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input {
+  display: flex;
+  margin-top: 0.5em;
+}
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input input {
+  width: 100%;
+}
+.metadata-menu.fileclass-view .fv-table .options .footer {
+  display: flex;
+}
+.metadata-menu.fileclass-view .fv-table .options .footer .cell button {
+  margin-top: 1em;
+  margin-right: 0.3em;
+}
+.metadata-menu.fileclass-view .fv-table .options .footer .cell button.favorite-button.favorite {
+  color: var(--color-orange);
+}
+.metadata-menu.fileclass-view .fv-table .options .footer .cell button.favorite-button:disabled {
+  color: var(--text-faint);
+}
+.metadata-menu.fileclass-view .fv-table .options .footer .cell button.remove-button {
+  color: var(--text-error);
+}
+.metadata-menu.fileclass-view .fv-table .options .footer .cell button.active {
+  background-color: var(--color-accent);
+  border-bottom: 3px solid var(--text-accent);
+  color: var(--text-on-accent);
+}
+.metadata-menu.fileclass-view .fv-table .options .footer .cell select {
+  margin-top: 1em;
+  margin-right: 0.3em;
 }
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] {
   overflow: scroll;
@@ -2301,99 +2400,6 @@ span.flatpickr-weekday {
     overflow: hidden;
     width: 6em;
   }
-}
-@media screen and (max-width: 400px) {
-  .metadata-menu.fileclass-view .fv-table .options {
-    max-height: 50em;
-    overflow: scroll;
-  }
-}
-.metadata-menu.fileclass-view .fv-table .options .limit {
-  display: flex;
-  font-weight: 600;
-  align-items: baseline;
-}
-.metadata-menu.fileclass-view .fv-table .options .pagination {
-  display: flex;
-  margin: 0.5em 0;
-  flex-wrap: wrap;
-}
-.metadata-menu.fileclass-view .fv-table .options .pagination .range {
-  padding: 0 0.75em;
-  margin-right: 0.2em;
-}
-.metadata-menu.fileclass-view .fv-table .options .pagination .range.active {
-  background-color: var(--color-accent);
-  color: var(--text-on-accent);
-  border-radius: 0.75em;
-}
-.metadata-menu.fileclass-view .fv-table .options .pagination .range:hover {
-  background-color: var(--color-base-35);
-  color: var(---text-on-accent);
-  border-radius: 0.75em;
-}
-.metadata-menu.fileclass-view .fv-table .options .fields {
-  display: flex;
-  flex-wrap: wrap;
-}
-.metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header {
-  display: flex;
-  align-items: center;
-}
-.metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header .label-container {
-  display: flex;
-  align-items: center;
-}
-.metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header .label-container .priority {
-  font-weight: 300;
-  font-size: small;
-  color: var(--text-muted);
-  margin-left: 0.2em;
-}
-.metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header .field-name {
-  font-weight: 600;
-  white-space: nowrap;
-}
-.metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header button {
-  height: 1.5em;
-  width: 1.5em;
-  padding: 0.3em;
-  border-radius: 0.75em;
-  margin-right: 0.5em;
-}
-.metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header button.active {
-  background-color: var(--color-accent);
-  color: var(--text-on-accent);
-}
-.metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input {
-  display: flex;
-  margin-right: 0.5em;
-  margin-top: 0.5em;
-}
-.metadata-menu.fileclass-view .fv-table .options .footer {
-  display: flex;
-}
-.metadata-menu.fileclass-view .fv-table .options .footer .cell button {
-  margin-top: 1em;
-  margin-right: 0.3em;
-}
-.metadata-menu.fileclass-view .fv-table .options .footer .cell button.favorite-button.favorite {
-  color: var(--color-orange);
-}
-.metadata-menu.fileclass-view .fv-table .options .footer .cell button.favorite-button:disabled {
-  color: var(--text-faint);
-}
-.metadata-menu.fileclass-view .fv-table .options .footer .cell button.remove-button {
-  color: var(--text-error);
-}
-.metadata-menu.fileclass-view .fv-table .options .footer .cell button.active {
-  background-color: var(--color-accent);
-  border-bottom: 3px solid var(--text-accent);
-  color: var(--text-on-accent);
-}
-.metadata-menu.fileclass-view .fv-table .options .footer .cell select {
-  margin-top: 1em;
-  margin-right: 0.3em;
 }
 
 button.property-metadata-menu {

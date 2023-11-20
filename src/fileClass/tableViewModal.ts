@@ -1,7 +1,8 @@
 import MetadataMenu from "main"
 import { ButtonComponent, Modal, TextComponent } from "obsidian"
 import { cleanActions } from "src/utils/modals"
-import { FileClassTableView, SorterButton } from "./fileClassTableView"
+import { FileClassTableView } from "./fileClassTableView"
+import { RowSorter as ViewRowSorter } from "./tableViewFieldSet"
 
 interface Sorter {
     name: string,
@@ -14,9 +15,16 @@ interface Filter {
     query: string
 }
 
+interface RowSorter {
+    name: string,
+    direction: 'asc' | 'desc',
+    priority: number
+}
+
 
 export class SavedView {
-    sorters: Array<Sorter> = []
+    //sorters: Array<Sorter> = []
+    rowSorters: Array<RowSorter> = []
     filters: Array<Filter> = []
     constructor(public name: string) {
 
@@ -30,7 +38,7 @@ export class SavedView {
             })
         })
     }
-
+    /*
     public buildSorters(sorters: Record<string, SorterButton>) {
         Object.keys(sorters).forEach(id => {
             if (sorters[id].active) {
@@ -38,6 +46,19 @@ export class SavedView {
                     name: sorters[id].name,
                     direction: sorters[id].direction,
                     priority: sorters[id].priority || 0
+                })
+            }
+        })
+    }
+    */
+    public buildRowSorters(rowSorters: Record<string, ViewRowSorter>) {
+        Object.keys(rowSorters).forEach(name => {
+            const sorter = rowSorters[name]
+            if (sorter.direction) {
+                this.rowSorters.push({
+                    name: sorter.name,
+                    direction: sorter.direction,
+                    priority: sorter.priority || 0
                 })
             }
         })
@@ -61,8 +82,9 @@ export class CreateSavedViewModal extends Modal {
             }
         }
         this.savedView = new SavedView("")
-        this.savedView.buildFilters(view.filters)
-        this.savedView.buildSorters(view.sorters)
+        this.savedView.buildFilters(view.fieldSet.filters)
+        //this.savedView.buildSorters(view.fieldSet.sorters)
+        this.savedView.buildRowSorters(view.fieldSet.rowSorters)
         this.buildModal()
         this.containerEl.addClass("metadata-menu")
     }
