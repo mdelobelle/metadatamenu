@@ -74,7 +74,7 @@ export default class NumberField extends FieldManager {
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
         const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
         const modal = new NumberModal(this.plugin, file, this.field, eF, indexedPath);
-        modal.titleEl.setText(`Change Value for <${name}>`);
+        modal.titleEl.setText(`Change Value for <${this.field.name}>`);
         modal.open()
     }
 

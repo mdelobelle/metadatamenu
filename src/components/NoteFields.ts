@@ -239,17 +239,6 @@ export class FieldsModal extends Modal {
         fieldManager.addFieldOption(this.file, fieldOptions, itemIndexedPath, this.noteFields);
     }
 
-    private openInsertMissingFieldsForFileClassModal(fileClass: FileClass): void {
-        const modal = new ChooseSectionModal(
-            this.plugin,
-            this.file,
-            (lineNumber: number, asList: boolean, asBlockquote: boolean) => insertMissingFields(
-                this.plugin, this.file.path, lineNumber, asList, asBlockquote, fileClass.name
-            )
-        );
-        modal.open()
-    }
-
 
     private buildFileClassManager(container: HTMLDivElement): void {
         const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || [];
@@ -265,11 +254,24 @@ export class FieldsModal extends Modal {
                     const fileClassNameContainer = fileClassOptionsContainer.createDiv({ cls: "name", text: _fileClass.name })
                     fileClassNameContainer.setAttr("id", `fileClass__${_fileClass.name.replace("/", "___").replace(" ", "_")}`)
                     if (await _fileClass.missingFieldsForFileClass(this.file)) {
+                        const fileClassInsertMissingFieldsInFrontmatterBtn = new ButtonComponent(fileClassOptionsContainer)
+                        fileClassInsertMissingFieldsInFrontmatterBtn.setIcon("align-vertical-space-around")
+                        fileClassInsertMissingFieldsInFrontmatterBtn.setTooltip(`Insert missing fields for ${_fileClass.name}`)
+                        fileClassInsertMissingFieldsInFrontmatterBtn.onClick(() => {
+                            insertMissingFields(this.plugin, this.file.path, -1, false, false, _fileClass.name)
+
+                        })
                         const fileClassInsertMissingFieldsBtn = new ButtonComponent(fileClassOptionsContainer)
-                        fileClassInsertMissingFieldsBtn.setIcon("battery-full")
+                        fileClassInsertMissingFieldsBtn.setIcon("log-in")
                         fileClassInsertMissingFieldsBtn.setTooltip(`Insert missing fields for ${_fileClass.name}`)
                         fileClassInsertMissingFieldsBtn.onClick(() => {
-                            this.openInsertMissingFieldsForFileClassModal(_fileClass)
+                            new ChooseSectionModal(
+                                this.plugin,
+                                this.file,
+                                (lineNumber: number, asList: boolean, asBlockquote: boolean) => insertMissingFields(
+                                    this.plugin, this.file.path, lineNumber, asList, asBlockquote, _fileClass.name
+                                )
+                            ).open()
                         })
                     }
 
@@ -316,8 +318,22 @@ export class FieldsModal extends Modal {
     private buildInsertMissingFieldsBtn() {
         const insertMissingFieldsContainer = this.contentEl.createDiv({ cls: "insert-all-fields" });
         insertMissingFieldsContainer.createDiv({ text: "Insert missing fields" });
+
+        const insertMissingFieldsInFrontmatterBtn = new ButtonComponent(insertMissingFieldsContainer)
+        insertMissingFieldsInFrontmatterBtn.setIcon("align-vertical-space-around")
+        insertMissingFieldsInFrontmatterBtn.setTooltip("In Frontmatter")
+        insertMissingFieldsInFrontmatterBtn.onClick(() => {
+            if (!this.indexedPath) {
+                insertMissingFields(this.plugin, this.file.path, -1)
+            } else {
+                const field = this.note.getExistingFieldForIndexedPath(this.indexedPath)?.field
+                const fileClass = field?.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
+                insertMissingFields(this.plugin, this.file.path, -1, false, false, fileClass?.name, this.indexedPath)
+            }
+        })
         const insertMissingFieldsBtn = new ButtonComponent(insertMissingFieldsContainer)
-        insertMissingFieldsBtn.setIcon("battery-full")
+        insertMissingFieldsBtn.setIcon("log-in")
+        insertMissingFieldsBtn.setTooltip("At line...")
         insertMissingFieldsBtn.onClick(() => {
             if (!this.indexedPath) {
                 new ChooseSectionModal(

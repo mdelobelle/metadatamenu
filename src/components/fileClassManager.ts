@@ -76,6 +76,7 @@ export class FileClassManager extends Component {
             if (view) {
                 view.updateFieldsView();
                 view.updateSettingsView();
+                view.tableView.buildTable();
             }
         }));
     }
