@@ -57,6 +57,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         return !!frontmatterEnd && cursor.line < frontmatterEnd
     }
 
+
     onTrigger(
         cursor: EditorPosition,
         editor: Editor,
@@ -70,7 +71,9 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             return null;
         };
         if (file?.extension !== "md") return null
+        if (editor.editorComponent.table) return null
         const fullLine = editor.getLine(editor.getCursor().line)
+        if (fullLine.startsWith("|")) return null
         this.inFrontmatter = this.isInFrontmatter(editor, cursor)
         if (this.inFrontmatter) {
             const regex = new RegExp(`^${genericFieldRegex}:(?<values>.*)`, "u");

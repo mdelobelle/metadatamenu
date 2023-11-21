@@ -36,6 +36,12 @@ interface Property {
 }
 
 declare module "obsidian" {
+
+    interface Editor {
+        editorComponent: {
+            table?: any
+        }
+    }
     interface MarkdownView {
         metadataEditor: {
             rendered: Array<{
