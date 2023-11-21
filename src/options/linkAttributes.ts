@@ -110,7 +110,6 @@ function updateLinkMetadataMenuFormButton(app: App, plugin: MetadataMenu, link: 
 }
 
 export function updateDivExtraAttributes(app: App, plugin: MetadataMenu, link: HTMLElement, viewTypeName: string | null, sourceName: string, _linkName?: string) {
-    //console.log(viewTypeName, "|", link, "|", sourceName, "|", _linkName)
     switch (viewTypeName) {
         case "file-explorer": {
             const dataPath = link?.parentElement?.dataset.path

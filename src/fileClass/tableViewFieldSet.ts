@@ -27,6 +27,8 @@ export interface ColumnMover {
 }
 
 export class Field {
+    public priorityLabelContainer: HTMLDivElement
+    public visibilityButton: ButtonComponent
 
     constructor(
         public container: HTMLDivElement,
@@ -37,7 +39,7 @@ export class Field {
         public rowPriority?: number,
         public isColumnHidden: boolean = false,
         public rowSortingDirection: 'asc' | 'desc' | undefined = undefined,
-        public query: string = ""
+        public query: string = "",
     ) {
         this.buildFieldHeaderComponent()
         this.buildFilterComponent()
@@ -68,7 +70,7 @@ export class Field {
         }
         const leftBtn = buildBtn('left')
         const rightBtn = buildBtn('right')
-        this.parentFieldSet.columnMovers[this.name] = {
+        this.parentFieldSet.columnManagers[this.name] = {
             name: this.name,
             hidden: false,
             leftBtn: leftBtn,
@@ -98,14 +100,27 @@ export class Field {
         }
     }
 
+    public setVisibilityButtonState(isHidden: boolean) {
+        this.isColumnHidden = isHidden
+        this.parentFieldSet.columnManagers[this.name].hidden = this.isColumnHidden
+        this.visibilityButton.setIcon(this.isColumnHidden ? "eye-off" : "eye")
+        this.parentFieldSet.tableView.udpate()
+    }
+
+    private buildVisibilityBtn(component: HTMLDivElement) {
+        this.visibilityButton = new ButtonComponent(component)
+            .setIcon(this.isColumnHidden ? "eye-off" : "eye")
+            .onClick(() => this.setVisibilityButtonState(!this.isColumnHidden))
+    }
+
     private buildFieldHeaderComponent(): void {
         const container = this.container.createDiv({ cls: "field-header" });
         this.buildRowSorterButtons(container)
         const prioAndLabelContainer = container.createDiv({ cls: "label-container" })
         prioAndLabelContainer.createDiv({ text: this.label, cls: "field-name" })
         const priorityLabel = this.parentFieldSet.rowSorters[this.name]?.priority ? `(${this.parentFieldSet.rowSorters[this.name].priority})` : ""
-        const prioContainer = prioAndLabelContainer.createDiv({ cls: "priority", text: priorityLabel })
-        this.parentFieldSet.sortersPriorityLabels[this.name] = prioContainer
+        this.priorityLabelContainer = prioAndLabelContainer.createDiv({ cls: "priority", text: priorityLabel })
+        this.buildVisibilityBtn(container)
         this.buildColumnMoverBtn(container)
     }
 
@@ -127,8 +142,7 @@ export class FieldSet {
     public plugin: MetadataMenu
     public filters: Record<string, TextComponent> = {}
     public rowSorters: Record<string, RowSorter> = {}
-    public columnMovers: Record<string, ColumnMover> = {}
-    public sortersPriorityLabels: Record<string, HTMLDivElement> = {}
+    public columnManagers: Record<string, ColumnMover> = {}
     public fieldsContainer: HTMLDivElement
 
     constructor(
@@ -159,9 +173,9 @@ export class FieldSet {
     }
 
     public moveColumn(name: string, direction: 'left' | 'right'): void {
-        const currentPosition = this.columnMovers[name].position
-        Object.keys(this.columnMovers).forEach(_name => {
-            const mover = this.columnMovers[_name]
+        const currentPosition = this.columnManagers[name].position
+        Object.keys(this.columnManagers).forEach(_name => {
+            const mover = this.columnManagers[_name]
             const field = this.fields.find(f => f.name === _name)!
             switch (direction) {
                 case 'left':
@@ -223,26 +237,27 @@ export class FieldSet {
     private changeRowSorterPriority(name: string, priority: number | undefined) {
         const currentPriority = this.rowSorters[name].priority
         Object.keys(this.rowSorters).forEach(_name => {
+            const field = this.fields.find(f => f.name === _name)!
             const sorter = this.rowSorters[_name]
             if (_name == name) {
                 sorter.priority = !currentPriority ? priority : undefined
-                this.sortersPriorityLabels[_name].textContent = sorter.priority ? `(${sorter.priority})` : ""
-                console.log(_name, sorter.priority, this.sortersPriorityLabels[name].textContent)
+                field.priorityLabelContainer.textContent = sorter.priority ? `(${sorter.priority})` : ""
             } else if (currentPriority && sorter.priority && !priority && sorter.priority > currentPriority) {
                 sorter.priority = sorter.priority - 1
-                this.sortersPriorityLabels[_name].textContent = `(${sorter.priority})`
+                field.priorityLabelContainer.textContent = `(${sorter.priority})`
             }
         })
     }
 
     private resetRowSorters() {
-        Object.keys(this.rowSorters).forEach(key => {
-            const sorter = this.rowSorters[key]
+        Object.keys(this.rowSorters).forEach(_name => {
+            const sorter = this.rowSorters[_name]
             sorter.priority = undefined
             sorter.direction = undefined
             sorter.ascBtn.buttonEl.removeClass("active")
             sorter.descBtn.buttonEl.removeClass("active")
-            this.sortersPriorityLabels[this.rowSorters[key].name].textContent = ""
+            const field = this.fields.find(f => f.name === _name)!
+            field.priorityLabelContainer.textContent = ""
         })
     }
 
@@ -250,14 +265,14 @@ export class FieldSet {
         Object.keys(this.filters).forEach(name => this.filters[name].inputEl.value = "")
     }
 
-    private resetColumnMovers() {
+    private resetColumnManagers() {
 
     }
 
     public reset() {
         this.resetRowSorters()
         this.resetFilters()
-        this.resetColumnMovers()
+        this.resetColumnManagers()
     }
 
     public changeView(_name?: string) {
@@ -283,20 +298,22 @@ export class FieldSet {
                             rowSorter.descBtn.setClass("active")
                             break;
                     }
-                    this.sortersPriorityLabels[name].textContent = `(${savedSorter.priority})`
+                    const field = this.fields.find(f => f.name === name)!
+                    field.priorityLabelContainer.textContent = `(${savedSorter.priority})`
                 } else {
                     rowSorter.direction = undefined
                     rowSorter.ascBtn.buttonEl.removeClass("active")
                     rowSorter.descBtn.buttonEl.removeClass("active")
                 }
             })
-            Object.keys(this.columnMovers).forEach(name => {
-                const mover = this.columnMovers[name]
+            Object.keys(this.columnManagers).forEach(name => {
+                const mover = this.columnManagers[name]
                 const field = this.fields.find(f => f.name === name)!
                 for (const column of savedView.columns || []) {
                     if (column.name === name) {
                         mover.position = column.position
                         field.columnPosition = column.position
+                        field.setVisibilityButtonState(column.hidden)
                     }
                 }
             })
@@ -309,19 +326,20 @@ export class FieldSet {
                 this.rowSorters[name].ascBtn.buttonEl.removeClass("active")
                 this.rowSorters[name].descBtn.buttonEl.removeClass("active")
             })
-            Object.keys(this.columnMovers).forEach(name => {
+            Object.keys(this.columnManagers).forEach(name => {
                 for (const [_index, _field] of fCFields.entries()) {
                     const field = this.fields.find(f => f.name === _field.name)
                     if (field && field.name === name) {
                         field.columnPosition = _index + 1
-                        this.columnMovers[name].position = _index + 1
+                        this.columnManagers[name].position = _index + 1
                     }
                 }
                 if (name === 'file') {
                     const field = this.fields.find(f => f.name === 'file')
                     if (field) {
                         field.columnPosition = 0
-                        this.columnMovers[name].position = 0
+                        field.setVisibilityButtonState(false)
+                        this.columnManagers[name].position = 0
                     }
                 }
             })

@@ -51,8 +51,8 @@ export class SavedView {
         })
     }
 
-    public buildColumnMovers(columnMovers: Record<string, ColumnMover>) {
-        Object.entries(columnMovers).forEach(([name, column]) => {
+    public buildColumnManagers(columnManagers: Record<string, ColumnMover>) {
+        Object.entries(columnManagers).forEach(([name, column]) => {
             this.columns.push({
                 name: name,
                 hidden: column.hidden,
@@ -81,7 +81,7 @@ export class CreateSavedViewModal extends Modal {
         this.savedView = new SavedView("")
         this.savedView.buildFilters(view.fieldSet.filters)
         this.savedView.buildRowSorters(view.fieldSet.rowSorters)
-        this.savedView.buildColumnMovers(view.fieldSet.columnMovers)
+        this.savedView.buildColumnManagers(view.fieldSet.columnManagers)
         this.buildModal()
         this.containerEl.addClass("metadata-menu")
     }

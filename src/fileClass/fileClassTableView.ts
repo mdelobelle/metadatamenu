@@ -16,7 +16,6 @@ export class FileClassTableView {
     private firstCollWidth: number;
     private tableFontSize: number;
     public fieldsContainer: HTMLDivElement;
-    public sortersPriorityLabels: Record<string, HTMLDivElement> = {}
     private viewSelectContainer: HTMLDivElement;
     public viewSelect: DropdownComponent
     public favoriteBtn: ButtonComponent
@@ -362,7 +361,9 @@ export class FileClassTableView {
 
     private buildDvJSRendering(): string {
         //const fields = this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.filter(_f => _f.isRoot()) || []
-        const fields = this.fieldSet.fields.sort((f1, f2) => f1.columnPosition < f2.columnPosition ? -1 : 1)
+        const fields = this.fieldSet.fields
+            .filter(f => !this.fieldSet.fields.find(_f => _f.name === f.name)?.isColumnHidden)
+            .sort((f1, f2) => f1.columnPosition < f2.columnPosition ? -1 : 1)
         let dvJS = "const {fieldModifier: f} = this.app.plugins.plugins[\"metadata-menu\"].api;\n" +
             "dv.table([";
         dvJS += fields.map(field => `"${field.name}"`).join(",");
