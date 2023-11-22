@@ -952,8 +952,9 @@ span.flatpickr-weekday {
   color: var(--link-color);
   margin-left: 0.2em;
   cursor: context-menu;
-  display: flex;
   align-items: center;
+  display: inline-flex;
+  margin-left: 0.375em;
 }
 .metadata-menu.fileclass-icon.field-status-changed {
   color: var(--text-warning);
