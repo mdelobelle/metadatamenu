@@ -66,7 +66,7 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	enableSearch: true,
 	enableProperties: true,
 	buttonIcon: "clipboard-list",
-	tableViewMaxRecords: 100,
+	tableViewMaxRecords: 20,
 	frontmatterListDisplay: MultiDisplayType.asArray,
 	fileClassExcludedFolders: [],
 	showIndexingStatusInStatusBar: true,

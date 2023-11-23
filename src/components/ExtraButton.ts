@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { Component, TFile, debounce } from "obsidian";
+import { Component, debounce } from "obsidian";
 import { clearExtraAttributes, updateDivExtraAttributes, updateElLinks, updateVisibleLinks } from "src/options/linkAttributes";
 import { Prec } from "@codemirror/state";
 import { buildCMViewPlugin } from "src/options/livePreview";

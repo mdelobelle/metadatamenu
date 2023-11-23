@@ -1,5 +1,5 @@
 import MetadataMenu from "main"
-import { ButtonComponent, TextComponent } from "obsidian"
+import { ButtonComponent, debounce, TextComponent } from "obsidian"
 import { FileClass } from "./fileClass"
 import { FileClassTableView } from "./fileClassTableView"
 
@@ -127,10 +127,11 @@ export class Field {
     private buildFilterComponent(): void {
         const fieldFilterContainer = this.container.createDiv({ cls: "filter-input" });
         const filter = new TextComponent(fieldFilterContainer);
+        const debounced = debounce((fieldset: FieldSet) => fieldset.tableView.udpate(), 1000, true)
         filter.setValue("");
         filter.onChange((value) => {
             this.parentFieldSet.filters[this.name].inputEl.value = value;
-            this.parentFieldSet.tableView.refreshButton.setCta()
+            debounced(this.parentFieldSet)
         });
         this.parentFieldSet.filters[this.name] = filter
     }

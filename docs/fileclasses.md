@@ -275,13 +275,16 @@ Managed by the system
 ## Fileclass Fields
 
 In this view, as in the [preset fields](settings.md#preset-field-settings) settings, you can add, edit and remove [fields definition](fields.md) for this fileclass:
-- click the "list plus" button to add a new field
-- click the "pencil" button to edit a field's definition
-- click the "trash" button to remove a field
+- "list plus" button to add a new field
+- "pencil" button to edit a field's definition
+- "trash" button to remove a field
 
 ## Table view
 This view shows all files mapped with the fileclass. you can modify the fields directly from the table.
 
-- click on the "collapse filter" button to access more options: sort the table, filter the results...
-- click on the "eraser" button to erase the filters and sorting
-- click on the "counter-clockwise-arrow" to apply the filters and sorters
+- "saved view" dropdown select to select a saved view
+- "star" button to set or revoke the current view as the favorite view
+- "eraser" button to reset the filters and sorting
+- "save" button to save the current view
+- "trash" button to delete the current view from the saved views
+- "collapse filter" button to access more options: sort the table, filter the results, re-arrange columns orders, hide/show columns...

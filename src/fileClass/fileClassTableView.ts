@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { ButtonComponent, DropdownComponent, TextComponent } from "obsidian";
+import { ButtonComponent, debounce, DropdownComponent, TextComponent } from "obsidian";
 import { FileClassManager } from "src/components/fileClassManager";
 import { FileClass } from "./fileClass";
 import { FieldSet } from "./tableViewFieldSet";
@@ -10,7 +10,6 @@ export class FileClassTableView {
     public container: HTMLDivElement
     private limit: number
     private tableContainer: HTMLDivElement
-    public refreshButton: ButtonComponent
     private paginationContainer: HTMLDivElement
     private sliceStart: number = 0
     private firstCollWidth: number;
@@ -48,7 +47,6 @@ export class FileClassTableView {
         this.buildFields(this.fieldsContainer)
         this.buildViewSelector()
         this.buildFavoriteViewManager(applyContainer)
-        this.buildRefreshManager(applyContainer);
         this.buildCleanFields(applyContainer);
         this.buildSaveView(applyContainer);
         this.buildSavedViewRemoveButton(applyContainer)
@@ -59,7 +57,6 @@ export class FileClassTableView {
         this.buildTable();
         this.buildPaginationManager(this.paginationContainer);
         this.buildViewSelector()
-        this.refreshButton.removeCta();
     }
 
     /*
@@ -71,9 +68,10 @@ export class FileClassTableView {
         container.createDiv({ text: "Results per page: ", cls: "label" })
         const limitInput = new TextComponent(container)
         limitInput.setValue(`${this.limit}`)
+        const debounced = debounce((fieldset: FieldSet) => fieldset.tableView.udpate(), 1000, true)
         limitInput.onChange((value) => {
             this.limit = parseInt(value) || this.limit;
-            this.refreshButton.setCta();
+            debounced(this.fieldSet)
         })
     }
 
@@ -209,14 +207,6 @@ export class FileClassTableView {
         })
     }
 
-    private buildRefreshManager(container: HTMLDivElement): void {
-        const btnContainer = container.createDiv({ cls: "cell" })
-        this.refreshButton = new ButtonComponent(btnContainer);
-        this.refreshButton.setIcon("refresh-ccw");
-        this.refreshButton.setTooltip("Apply the filters and refresh the results")
-        this.refreshButton.onClick(() => this.udpate())
-    }
-
     private buildCleanFields(container: HTMLDivElement): void {
         const btnContainer = container.createDiv({ cls: "cell" })
         const cleanFilterBtn = new ButtonComponent(btnContainer);
@@ -230,7 +220,6 @@ export class FileClassTableView {
             }
             */
             this.fieldSet.reset()
-            this.refreshButton.setCta()
         })
     }
 

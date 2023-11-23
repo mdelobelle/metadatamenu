@@ -99,19 +99,17 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 	private plugin: MetadataMenu;
 	private newFileClassesPath: string | null;
 	private newFileClassAlias: string
+	private newTableViewMaxRecords: number
 
 	constructor(plugin: MetadataMenu) {
 		super(plugin.app, plugin);
 		this.plugin = plugin;
 		this.newFileClassAlias = this.plugin.settings.fileClassAlias
 		this.newFileClassesPath = this.plugin.settings.classFilesPath
+		this.newTableViewMaxRecords = this.plugin.settings.tableViewMaxRecords
 		this.containerEl.addClass("metadata-menu")
 		this.containerEl.addClass("settings")
 	};
-
-	private setStyle(container: HTMLElement): void {
-
-	}
 
 	private createSettingGroup(title: string, subTitle?: string, withButton: boolean = false): HTMLDivElement {
 		const settingHeader = this.containerEl.createEl('div')
@@ -412,6 +410,32 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		global.settingEl.addClass("no-border");
 		global.settingEl.addClass("narrow-title");
 		global.controlEl.addClass("full-width");
+
+
+		const rowPerPageSaveButton = new ButtonComponent(classFilesSettings)
+		rowPerPageSaveButton.buttonEl.addClass("save")
+		rowPerPageSaveButton.setIcon("save")
+		rowPerPageSaveButton.onClick(async () => {
+			this.plugin.settings.tableViewMaxRecords = this.newTableViewMaxRecords
+			await this.plugin.saveSettings()
+			rowPerPageSaveButton.removeCta()
+		})
+
+		const maxRows = new Setting(classFilesSettings)
+			.setName('Result per page')
+			.setDesc('Number of result per page in table view')
+			.addText((text) => {
+				text
+					.setValue(`${this.plugin.settings.tableViewMaxRecords}`)
+					.onChange(async (value) => {
+						this.newTableViewMaxRecords = parseInt(value || `${this.plugin.settings.tableViewMaxRecords}`);
+						rowPerPageSaveButton.setCta()
+					});
+			})
+		maxRows.settingEl.addClass("no-border");
+		maxRows.settingEl.addClass("narrow-title");
+		maxRows.controlEl.addClass("full-width");
+		maxRows.settingEl.appendChild(rowPerPageSaveButton.buttonEl)
 
 
 		/* 

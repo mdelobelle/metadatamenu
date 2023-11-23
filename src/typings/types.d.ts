@@ -123,6 +123,7 @@ declare module "obsidian" {
     interface Workspace {
         on(name: "metadata-menu:db-ready", callback: () => void, ctx?: any): EventRef;
         on(name: "metadata-menu:indexed", callback: () => void, ctx?: any): EventRef;
+        on(name: "metadata-menu:filter-changed", ctx?: any): EventRef;
         on(name: "layout-change", callback: Debouncer<[_file: TFile], void>, ctx?: any): EventRef;
     }
     interface Menu {

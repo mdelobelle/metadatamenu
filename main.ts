@@ -1,5 +1,5 @@
 import './env'
-import { MarkdownView, Notice, Plugin } from 'obsidian';
+import { debounce, MarkdownView, Notice, Plugin } from 'obsidian';
 import { addCommands } from 'src/commands/paletteCommands';
 import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
@@ -16,6 +16,7 @@ import ValueSuggest from "src/suggester/metadataSuggester";
 import { IndexDatabase } from 'src/db/DatabaseManager';
 import { updatePropertiesSection } from 'src/options/updateProps';
 import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton';
+import { FieldSet } from 'src/fileClass/tableViewFieldSet';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -108,7 +109,7 @@ export default class MetadataMenu extends Plugin {
 				addCommands(this)
 			})
 		)
-
+		this.registerEvent(this.app.workspace.on('metadata-menu:filter-changed', debounce((fieldSet: FieldSet) => console.log(fieldSet.tableView), 1000, true)));
 		//buildind index
 		this.indexDB = this.addChild(new IndexDatabase(this))
 		await this.fieldIndex.fullIndex(true)

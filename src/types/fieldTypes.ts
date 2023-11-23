@@ -68,7 +68,7 @@ export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
     "Select": "Accept a single value from a list",
     "Multi": "Accept multiple values from a list",
     "Cycle": "Cycle through values from a list",
-    "Boolean": "Accept true of false",
+    "Boolean": "Accept true or false",
     "Number": "Accept a number",
     "File": "Accept a link",
     "MultiFile": "Accept multiple links",
