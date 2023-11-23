@@ -37,6 +37,10 @@ For complete documentation : https://mdelobelle.github.io/metadatamenu
 
 [demo 14](https://youtu.be/G47AYkmoKJs): Create a Kanban board with Canvas Group fields
 
+[demo 15](https://youtu.be/EhEJSxTzzBg): Nested fields (Object, Object List, Yaml, JSON)
+
+[demo 16](https://youtu.be/Q0fPp3C3EaA): Fileclass tableviews
+
 # General concepts
 
 Metadata Menu can manage any metadata field located in frontmatter (YAML syntax) or in the body of the note with the syntax `field::` (dataview style)

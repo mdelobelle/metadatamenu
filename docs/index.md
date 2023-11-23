@@ -42,3 +42,7 @@ It also enables frontmatter of inline-field autocompletion with suggested values
 [demo 13](https://youtu.be/7oaau8ijVUA): Canvas fields
 
 [demo 14](https://youtu.be/G47AYkmoKJs): Create a Kanban board with Canvas Group fields
+
+[demo 15](https://youtu.be/EhEJSxTzzBg): Nested fields (Object, Object List, Yaml, JSON)
+
+[demo 16](https://youtu.be/Q0fPp3C3EaA): Fileclass tableviews

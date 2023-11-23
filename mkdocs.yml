@@ -23,9 +23,11 @@ nav:
   - Overview: index.md
   - General Concepts: general.md
   - Settings: settings.md
-  - Controls: controls.md
+  - Fields: fields.md
   - FileClasses: fileclasses.md
+  - Controls: controls.md
   - API: api.md
+  - Releases: releases.md
 
 repo_url: https://github.com/mdelobelle/metadatamenu
 
