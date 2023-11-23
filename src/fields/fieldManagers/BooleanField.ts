@@ -7,7 +7,9 @@ import BooleanModal from "src/modals/fields/BooleanModal";
 import { FieldType, FieldIcon } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
-
+import { ExistingField } from "../existingField";
+import ObjectModal from "src/modals/fields/ObjectModal";
+import ObjectListModal from "src/modals/fields/ObjectListModal";
 export default class BooleanField extends FieldManager {
 
     constructor(plugin: MetadataMenu, field: Field) {
@@ -15,35 +17,30 @@ export default class BooleanField extends FieldManager {
         this.showModalOption = false
     }
 
-    public async toggle(name: string, value: string, file: TFile): Promise<void> {
-        const bValue = BooleanField.stringToBoolean(value);
-        await postValues(this.plugin, [{ name: name, payload: { value: (!bValue).toString() } }], file)
+    public async toggle(file: TFile, indexedPath?: string): Promise<void> {
+        const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const value = BooleanField.stringToBoolean(eF?.value)
+        const postValue = !value ? "true" : "false"
+        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: postValue } }], file)
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
-        const bValue = BooleanField.stringToBoolean(value);
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
+        const name = this.field.name
         const iconName = FieldIcon[FieldType.Boolean]
-        const action = async () => await this.toggle(name, value, file)
+        const action = async () => await this.toggle(file, indexedPath)
 
-        if (BooleanField.isMenu(location)) {
-            location.addItem((item) => {
-                item.setTitle(`<${name}> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}`);
-                item.setIcon(iconName);
-                item.onClick(action);
-                item.setSection("metadata-menu.fields");
-            })
-        } else if (BooleanField.isSuggest(location)) {
+        if (BooleanField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
-                actionLabel: `<span><b>${name}</b> ${bValue ? "✅ ▷ ❌" : "❌ ▷ ✅"}</span>`,
+                actionLabel: `Toggle <span><b>${name}</b></span>`,
                 action: action,
                 icon: iconName
             });
         } else if (BooleanField.isFieldOptions(location)) {
             location.addOption(
-                bValue ? "x-square" : "check-square",
+                "check-square",
                 action,
-                bValue ? "✅ ▷ ❌" : "❌ ▷ ✅");
+                "✅");
         };
     };
     public getOptionsStr(): string {
@@ -71,14 +68,14 @@ export default class BooleanField extends FieldManager {
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        eF?: ExistingField,
+        indexedPath?: string,
         lineNumber?: number,
-        after?: boolean,
         asList?: boolean,
-        asComment?: boolean
+        asBlockquote?: boolean,
+        previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const bValue = BooleanField.stringToBoolean(value || "false");
-        const fieldModal = new BooleanModal(this.plugin, file, this.field, bValue, lineNumber, after, asList, asComment)
+        const fieldModal = new BooleanModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal)
         fieldModal.titleEl.setText(`Set value for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -93,7 +90,7 @@ export default class BooleanField extends FieldManager {
         checkbox.checked = p[this.field.name]
         fieldContainer.appendChild(checkbox)
         checkbox.onchange = (value) => {
-            BooleanField.replaceValues(this.plugin, p.file.path, this.field.name, checkbox.checked.toString());
+            BooleanField.replaceValues(this.plugin, p.file.path, this.field.id, checkbox.checked.toString());
         }
     }
 }

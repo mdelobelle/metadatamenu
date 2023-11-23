@@ -19,16 +19,22 @@
 
 .metadata-menu.modal-container {
 
-    .modal {
-        overflow: auto;
-    }
-
     &.narrow {
 
         .modal{
             width: initial;
         }
 
+    }
+
+    .cm-gutter{
+        color: var(--text-code);
+        background-color: var(--background-primary);
+    }
+    
+    .cm-activeLineGutter, .cm-activeLine {
+        background-color: var(--text-accent);
+        color: var(--text-on-accent);
     }
 
     .vstacked{
@@ -53,7 +59,29 @@
         display: flex;
         align-items: center;
         margin: 1em 0;
+        
+        .tooltip-btn{
 
+
+            .tooltip-button{
+                background: none;
+                box-shadow: none;
+                border: none;
+                vertical-align: middle;
+                color: var(--text-warning);
+                padding-right: 1em;
+            }
+            
+        }  
+
+        .info {
+            white-space: nowrap;
+            margin-right: 1em;
+            font-size: x-small;
+            font-style: italic;
+            color: var(--color-accent);
+        }
+        
         .label {
             white-space: nowrap;
 
@@ -276,14 +304,13 @@
     }
 
     .field-error{
-        height: 2em;
+        height: 100%;
         color: var(--text-on-accent);
         width: 100%;
         background-color: var(--color-accent);
         padding: var(--size-4-1) var(--size-4-2);
         font-size: var(--font-ui-small);
         border-radius: var(--input-radius);
-        height: var(--input-height);
     }
 
     .field-warning{
@@ -297,6 +324,7 @@
     .footer-actions {
         display: flex;
         padding: var(--size-4-3);
+        align-items: center;
 
         .spacer {
             width: 100%;
@@ -304,7 +332,7 @@
 
         .info {
             white-space: nowrap;
-            margin: 30px 12px 12px 0;
+            margin-right: 1em;
             font-size: x-small;
             font-style: italic;
             color: var(--color-accent);

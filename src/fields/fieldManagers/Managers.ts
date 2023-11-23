@@ -12,6 +12,10 @@ import Formula from './FormulaField'
 import Canvas from './CanvasField'
 import CanvasGroup from './CanvasGroupField'
 import CanvasGroupLink from './CanvasGroupLinkField'
+import YAML from "./YAMLField"
+import JSON from "./JSONField"
+import Object from "./ObjectField"
+import ObjectList from "./ObjectListField"
 
 const Managers = {
     Input,
@@ -27,7 +31,11 @@ const Managers = {
     Formula,
     Canvas,
     CanvasGroup,
-    CanvasGroupLink
+    CanvasGroupLink,
+    YAML,
+    JSON,
+    Object,
+    ObjectList
 }
 
 export default Managers

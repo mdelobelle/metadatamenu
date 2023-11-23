@@ -12,25 +12,22 @@ function buildAndOpenModal(
 ): void {
     if (attrs?.options?.inFrontmatter) {
         const lineNumber = - 1
-        F.openFieldModal(plugin, file, fieldName, "", lineNumber, false, false, false)
+        F.openFieldModal(plugin, file, fieldName, lineNumber, false, false)
     } else {
         new chooseSectionModal(
             plugin,
             file,
             (
                 lineNumber: number,
-                after: boolean,
                 asList: boolean,
-                asComment: boolean
+                asBlockquote: boolean
             ) => F.openFieldModal(
                 plugin,
                 file,
                 fieldName,
-                "",
                 lineNumber,
-                after,
                 asList,
-                asComment
+                asBlockquote
             )
         ).open();
     }
@@ -45,6 +42,13 @@ function createDvField(
     attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
 ): void {
     const field = plugin.fieldIndex.filesFields.get(p.file.path)?.find(field => field.name === fieldName)
+    if (!field?.isRoot()) {
+        /*
+        field modifiers are only available for root fields
+        */
+        dv.el('span', p[field!.name], attrs);
+        return
+    }
     if (field?.type) {
         const fieldManager = new FieldManager[field.type](plugin, field);
         fieldManager.createDvField(dv, p, fieldContainer, attrs);
@@ -61,7 +65,6 @@ export function fieldModifier(
     fieldName: string,
     attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
 ): HTMLElement {
-
     /* fieldContainer*/
     const fieldContainer: HTMLElement = dv.el("div", "")
     fieldContainer.setAttr("class", `metadata-menu-dv-field-container ${fieldName}`)
@@ -88,18 +91,15 @@ export function fieldModifier(
                             file,
                             (
                                 lineNumber: number,
-                                after: boolean,
                                 asList: boolean,
-                                asComment: boolean
+                                asBlockquote: boolean
                             ) => F.openFieldModal(
                                 plugin,
                                 file,
                                 undefined,
-                                "",
                                 lineNumber,
-                                after,
                                 asList,
-                                asComment
+                                asBlockquote
                             ),
                         ).open();
                     }

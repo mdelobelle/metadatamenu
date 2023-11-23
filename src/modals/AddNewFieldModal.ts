@@ -3,13 +3,12 @@ import MetadataMenu from "main";
 import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
 
-export default class addNewFieldModal extends Modal {
+export default class AddNewFieldModal extends Modal {
 
     constructor(
         private plugin: MetadataMenu,
         private lineNumber: number,
         private file: TFile,
-        private after: boolean
     ) {
         super(plugin.app);
         this.containerEl.addClass("metadata-menu")
@@ -35,7 +34,7 @@ export default class addNewFieldModal extends Modal {
         const saveButton = new ButtonComponent(footerButtons);
         saveButton.setIcon("checkmark");
         saveButton.onClick(async () => {
-            await postValues(this.plugin, [{ name: nameInput.getValue(), payload: { value: valueInput.getValue() } }], this.file, this.lineNumber, this.after);
+            await postValues(this.plugin, [{ id: `new-field-${nameInput.getValue()}`, payload: { value: valueInput.getValue() } }], this.file, this.lineNumber);
             this.close();
         });
         const cancelButton = new ButtonComponent(footerButtons);

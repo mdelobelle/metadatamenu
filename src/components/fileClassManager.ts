@@ -4,6 +4,12 @@ import { FileClassView, FILECLASS_VIEW_TYPE } from "src/fileClass/fileClassView"
 import { FileClass } from "../fileClass/fileClass";
 import { FileClassChoiceModal } from "../fileClass/fileClassChoiceModal";
 
+export enum FileClassViewType {
+    "tableOption" = "tableOption",
+    "fieldsOption" = "fieldsOption",
+    "settingsOption" = "settingsOption"
+}
+
 export class FileClassManager extends Component {
     public fileClassView: FileClassView;
     public fileClassViewType: string;
@@ -11,7 +17,8 @@ export class FileClassManager extends Component {
 
     constructor(
         public plugin: MetadataMenu,
-        public fileClass?: FileClass
+        public fileClass?: FileClass,
+        public onOpenTabDisplay: keyof typeof FileClassViewType = "tableOption"
     ) {
         super();
         if (!this.fileClass) {
@@ -27,6 +34,7 @@ export class FileClassManager extends Component {
             this.name = this.fileClass.name;
             this.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + this.fileClass.name
             await this.openFileClassView();
+            this.registerIndexingDone()
         } else {
             const tagsAndFileClasses = this.getActiveFileTagsAndFileClasses();
             if (tagsAndFileClasses.length === 1) {
@@ -38,6 +46,7 @@ export class FileClassManager extends Component {
                     this.fileClass = fileClass;
                     this.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + fileClass.name
                     await this.openFileClassView();
+                    this.registerIndexingDone()
                 } else {
                     this.plugin.removeChild(this)
                     this.unload()
@@ -61,6 +70,17 @@ export class FileClassManager extends Component {
         this.plugin.app.viewRegistry.unregisterView(this.fileClassViewType);
     }
 
+    private registerIndexingDone() {
+        this.registerEvent(this.plugin.app.workspace.on("metadata-menu:indexed", () => {
+            const view = this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType)[0]?.view as FileClassView | undefined
+            if (view) {
+                view.updateFieldsView();
+                view.updateSettingsView();
+                view.tableView.buildTable();
+            }
+        }));
+    }
+
     public async openFileClassView(): Promise<void> {
         if (this.fileClass) {
             const fileClass = this.fileClass
@@ -68,7 +88,7 @@ export class FileClassManager extends Component {
 
             this.plugin.registerView(this.fileClassViewType,
                 (leaf: WorkspaceLeaf) => {
-                    const fileClassView = new FileClassView(leaf, this.plugin, this, this.name, fileClass)
+                    const fileClassView = new FileClassView(leaf, this.plugin, this, this.name, fileClass, this.onOpenTabDisplay)
                     this.fileClassView = fileClassView;
                     return fileClassView
                 }
@@ -82,14 +102,6 @@ export class FileClassManager extends Component {
             this.plugin.app.workspace.revealLeaf(
                 this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType).last()!
             );
-
-            this.registerEvent(this.plugin.app.workspace.on("metadata-menu:updated-index", () => {
-                const view = this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType)[0]?.view as FileClassView | undefined
-                if (view) {
-                    view.updateFieldsView();
-                    view.updateSettingsView();
-                }
-            }));
         }
     }
 

@@ -1,7 +1,9 @@
 import MetadataMenu from "main";
 import { FuzzyMatch, FuzzySuggestModal, setIcon, TFile } from "obsidian";
-import { FieldIcon, FieldManager, FieldType, FieldTypeTagClass } from "src/types/fieldTypes";
-import addNewFieldModal from "./addNewFieldModal";
+import { postValues } from "src/commands/postValues";
+import { ExistingField } from "src/fields/ExistingField";
+import { FieldIcon, FieldManager, FieldType, FieldTypeTagClass, frontmatterOnlyTypes, objectTypes } from "src/types/fieldTypes";
+import AddNewFieldModal from "./AddNewFieldModal";
 
 
 interface Option {
@@ -11,24 +13,38 @@ interface Option {
 
 
 export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
-
+    // a modal to insert field at root level
     constructor(
         private plugin: MetadataMenu,
         private file: TFile,
         private lineNumber: number,
-        private after: boolean,
+        private asList: boolean = false,
+        private asBlockquote: boolean = false
     ) {
         super(plugin.app);
         this.containerEl.addClass("metadata-menu")
     };
 
     getItems(): Option[] {
-        return [{ actionLabel: '++New++' }]
-            .concat(this.plugin.fieldIndex.filesFields
-                .get(this.file.path)?.map(field => {
-                    return { actionLabel: field.name, type: field.type }
-                }) || []
-            );
+        const { start, end } = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatterPosition || {}
+        if (start && end && start.line <= this.lineNumber && end.line >= this.lineNumber || this.lineNumber === -1) {
+            return [{ actionLabel: '++New++' }]
+                .concat(this.plugin.fieldIndex.filesFields
+                    .get(this.file.path)?.filter(_f => _f.isRoot()).map(field => {
+                        return { actionLabel: field.name, type: field.type }
+                    }) || []
+                );
+        } else {
+            return [{ actionLabel: '++New++' }]
+                .concat(this.plugin.fieldIndex.filesFields
+                    .get(this.file.path)?.filter(_f => _f.isRoot() && !frontmatterOnlyTypes.includes(_f.type))
+                    .filter(_f => !objectTypes.includes(_f.type))
+                    .map(field => {
+                        return { actionLabel: field.name, type: field.type }
+                    }) || []
+                );
+        }
+
     }
 
     getItemText(item: Option): string {
@@ -44,16 +60,23 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
         if (item.item.type) el.createDiv({ cls: `chip ${FieldTypeTagClass[item.item.type]}`, text: item.item.type })
     }
 
-    onChooseItem(item: Option, evt: MouseEvent | KeyboardEvent): void {
+    async onChooseItem(item: Option, evt: MouseEvent | KeyboardEvent): Promise<void> {
         if (item.actionLabel === "++New++") {
-            const newFieldModal = new addNewFieldModal(this.plugin, this.lineNumber, this.file, this.after);
+            const newFieldModal = new AddNewFieldModal(this.plugin, this.lineNumber, this.file);
             newFieldModal.open();
             this.close();
         } else {
             const field = this.plugin.fieldIndex.filesFields.get(this.file.path)?.find(field => field.name === item.actionLabel)
             if (field) {
-                const fieldManager = new FieldManager[field.type](this.plugin, field);
-                fieldManager.createAndOpenFieldModal(this.file, item.actionLabel, "", this.lineNumber, this.after, false, false);
+                if (objectTypes.includes(field.type)) {
+                    await postValues(this.plugin, [{ id: field.id, payload: { value: "" } }], this.file)
+                    const eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, this.file, field.id)
+                    const fieldManager = new FieldManager[field.type](this.plugin, field);
+                    fieldManager.createAndOpenFieldModal(this.file, field.name, eF, field.id, undefined, undefined, undefined, undefined)
+                } else {
+                    const fieldManager = new FieldManager[field.type](this.plugin, field);
+                    fieldManager.createAndOpenFieldModal(this.file, item.actionLabel, undefined, undefined, this.lineNumber, this.asList, this.asBlockquote);
+                }
             }
         }
     }

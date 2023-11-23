@@ -8,6 +8,9 @@ import Field from "../Field";
 import { FieldManager } from "../FieldManager";
 import { FieldOptions } from "src/components/NoteFields";
 import { postValues } from "src/commands/postValues";
+import { ExistingField } from "../existingField";
+import ObjectModal from "src/modals/fields/ObjectModal";
+import ObjectListModal from "src/modals/fields/ObjectListModal";
 
 export default class NumberField extends FieldManager {
 
@@ -68,44 +71,49 @@ export default class NumberField extends FieldManager {
         )
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
-        const modal = new NumberModal(this.plugin, file, this.field, value);
-        modal.titleEl.setText(`Change Value for <${name}>`);
+    public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
+        const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const modal = new NumberModal(this.plugin, file, this.field, eF, indexedPath);
+        modal.titleEl.setText(`Change Value for <${this.field.name}>`);
+        modal.open()
+    }
+
+    private async applyStep(file: TFile, direction: "increase" | "decrease", indexedPath?: string): Promise<void> {
         const { min, max, step } = this.field.options;
         const fMin = parseFloat(min)
         const fMax = parseFloat(max)
         const fStep = parseFloat(step)
-        const fValue = parseFloat(value) || 0
-        const canDecrease = !isNaN(fMin) && fValue - fStep >= fMin;
-        const canIncrease = !isNaN(fMax) && fValue + fStep <= fMax;
-        const action = () => modal.open()
-        const decrease = async () => await postValues(this.plugin, [{ name: name, payload: { value: (fValue - fStep).toString() } }], file)
-        const increase = async () => await postValues(this.plugin, [{ name: name, payload: { value: (fValue + fStep).toString() } }], file)
-        if (NumberField.isMenu(location)) {
-            location.addItem((item) => {
-                item.setTitle(`Update <${name}>`);
-                item.setIcon(FieldIcon[FieldType.Number]);
-                item.onClick(action);
-                item.setSection("metadata-menu.fields");
-            })
+        const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const value = eF?.value || ""
+        const fValue = parseFloat(value)
+        if (!isNaN(fValue)) {
+            switch (direction) {
+                case "decrease":
+                    if (!isNaN(fMin) && fValue - fStep >= fMin) {
+                        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: (fValue - fStep).toString() } }], file)
+                    }
+                    break;
+                case "increase":
+                    if (!isNaN(fMax) && fValue + fStep <= fMax) {
+                        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: (fValue + fStep).toString() } }], file)
+                    }
 
-            if (fStep) {
-                if (canDecrease)
-                    location.addItem((item) => {
-                        item.setIcon("minus-square");
-                        item.setTitle(`<${name}> ↘️ ${fValue - fStep}`);
-                        item.onClick(decrease);
-                        item.setSection("metadata-menu.fields");
-                    })
-                if (canIncrease)
-                    location.addItem((item) => {
-                        item.setIcon("plus-square");
-                        item.setTitle(`<${name}> ↗️ ${fValue + fStep}`);
-                        item.onClick(increase);
-                        item.setSection("metadata-menu.fields");
-                    })
+                default:
+                    break;
             }
-        } else if (NumberField.isSuggest(location)) {
+
+        }
+
+    }
+
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
+        const name = this.field.name
+        const { step } = this.field.options;
+        const fStep = parseFloat(step)
+        const action = async () => await this.buildAndOpenModal(file, indexedPath)
+        const increase = async () => await this.applyStep(file, "increase", indexedPath)
+        const decrease = async () => await this.applyStep(file, "decrease", indexedPath)
+        if (NumberField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
@@ -114,12 +122,8 @@ export default class NumberField extends FieldManager {
             });
         } else if (NumberField.isFieldOptions(location)) {
             if (step) {
-                if (canDecrease) {
-                    location.addOption("minus-square", decrease, `Decrease ${name} by ${step}`);
-                }
-                if (canIncrease) {
-                    location.addOption("plus-square", increase, `Increase ${name} by ${step}`);
-                }
+                location.addOption("minus-square", decrease, `Decrease ${name} by ${step}`);
+                location.addOption("plus-square", increase, `Increase ${name} by ${step}`);
             }
             location.addOption(FieldIcon[FieldType.Number], action, `Update ${name}'s value`)
         };
@@ -131,31 +135,31 @@ export default class NumberField extends FieldManager {
         numberStepValueContainer.createDiv({ cls: "spacer" });
         this.numberStepValue = new TextComponent(numberStepValueContainer)
         this.numberStepValue.inputEl.addClass("with-label")
-        this.numberStepValue.setValue(this.field.options.step || "")
+        this.numberStepValue.setValue(`${this.field.options.step}` || "")
 
         const numberMinValueContainer = container.createDiv({ cls: "field-container" });
         numberMinValueContainer.createEl("span", { text: "Min value (optional)", cls: 'label' })
         this.numberMinValue = new TextComponent(numberMinValueContainer)
         this.numberMinValue.inputEl.addClass("full-width");
         this.numberMinValue.inputEl.addClass("with-label")
-        this.numberMinValue.setValue(this.field.options.min || "")
+        this.numberMinValue.setValue(`${this.field.options.min}` || "")
 
         const numberMaxValueContainer = container.createDiv({ cls: "field-container" });
         numberMaxValueContainer.createEl("span", { text: "Max value (optional)", cls: 'label' })
         this.numberMaxValue = new TextComponent(numberMaxValueContainer)
         this.numberMaxValue.inputEl.addClass("full-width");
         this.numberMaxValue.inputEl.addClass("with-label")
-        this.numberMaxValue.setValue(this.field.options.max || "")
+        this.numberMaxValue.setValue(`${this.field.options.max}` || "")
         this.numberStepValue.onChange(value => {
-            this.field.options.step = value;
+            this.field.options.step = parseFloat(value);
             FieldSettingsModal.removeValidationError(this.numberStepValue);
         })
         this.numberMinValue.onChange(value => {
-            this.field.options.min = value;
+            this.field.options.min = parseFloat(value);
             FieldSettingsModal.removeValidationError(this.numberMinValue);
         })
         this.numberMaxValue.onChange(value => {
-            this.field.options.max = value;
+            this.field.options.max = parseFloat(value);
             FieldSettingsModal.removeValidationError(this.numberMaxValue);
         })
     }
@@ -194,13 +198,14 @@ export default class NumberField extends FieldManager {
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        eF?: ExistingField,
+        indexedPath?: string,
         lineNumber?: number,
-        after?: boolean,
         asList?: boolean,
-        asComment?: boolean
+        asBlockquote?: boolean,
+        previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const fieldModal = new NumberModal(this.plugin, file, this.field, value || "", lineNumber, after, asList, asComment);
+        const fieldModal = new NumberModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -271,7 +276,7 @@ export default class NumberField extends FieldManager {
             if (this.validateValue(input.value)) {
                 const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
                 if (file instanceof TFile && file.extension == "md") {
-                    await postValues(this.plugin, [{ name: this.field.name, payload: { value: input.value } }], file)
+                    await postValues(this.plugin, [{ id: this.field.id, payload: { value: input.value } }], file)
                     this.toggleDvButtons(decrementButton, incrementButton, input.value)
                 }
                 fieldContainer.removeChild(inputContainer)
@@ -306,7 +311,7 @@ export default class NumberField extends FieldManager {
                 if (this.validateValue(input.value)) {
                     const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
                     if (file instanceof TFile && file.extension == "md") {
-                        await postValues(this.plugin, [{ name: this.field.name, payload: { value: input.value } }], file)
+                        await postValues(this.plugin, [{ id: this.field.id, payload: { value: input.value } }], file)
                         this.toggleDvButtons(decrementButton, incrementButton, input.value)
                     }
                     fieldContainer.removeChild(inputContainer)
@@ -340,7 +345,7 @@ export default class NumberField extends FieldManager {
                 const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
                 if (file instanceof TFile && file.extension == "md") {
                     const newValue = (!!fStep ? p[this.field.name] - fStep : p[this.field.name] - 1).toString();
-                    await postValues(this.plugin, [{ name: this.field.name, payload: { value: newValue } }], file)
+                    await postValues(this.plugin, [{ id: this.field.id, payload: { value: newValue } }], file)
                     this.toggleDvButtons(decrementButton, incrementButton, newValue);
                 }
             }
@@ -354,7 +359,7 @@ export default class NumberField extends FieldManager {
                 const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
                 if (file instanceof TFile && file.extension == "md") {
                     const newValue = (!!fStep ? p[this.field.name] + fStep : p[this.field.name] + 1).toString();
-                    await postValues(this.plugin, [{ name: this.field.name, payload: { value: newValue } }], file)
+                    await postValues(this.plugin, [{ id: this.field.id, payload: { value: newValue } }], file)
                     this.toggleDvButtons(decrementButton, incrementButton, newValue);
                 }
             }

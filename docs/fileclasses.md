@@ -2,103 +2,107 @@
 
 Manage preset values based on the context of a file (fileClass)
 
-!!! info "Dependency"
 
-    Dataview plugin required
-    
+## What is a fileClass
 
-## Define a class for a file and authorized fields for this class
+A fileClass is basically a simple file located in the folder defined in the [plugin's settings](settings.md#fileclass-files-folder)
 
-a class file is basically a simple note
+The name of the file will be the name of the class. 
 
-the name of the file will be the name of the class
+To map a file of your vault with a fileClass you have [several options](fileclasses.md#file-mapping)
 
-the lines of the file will be the fields managed for this class
+You can sort your fileClasses in sub-folders. Then if you want to use them in a note, just type their sub-path in the frontmatter of the note: `fileClass: <sub-folder>/<sub-sub-folder>/<fileClass name>`
 
-1. Define the folder where you want to store your class files (see settings above)
-2. Create a note in this folder, let's say `music.md`, containing lines with the name of fields, their type and options (see [settings](#field-settings-syntax)) that you want to manage for this class
-```md
-music.md
-=========
-genre:: {"type": "Input", "options": {"0": "rock", "1": "pop"}}
-difficulty::{"type": "Number" ....
-...
+the frontmatter section of this file contains the [Fileclass settings](fileclasses.md#fileclass-settings) and [fields definition]() for this fileClass. The body of this file is not used by the plugin, you can write anything you want in there.
+
+## setup
+1. Define the folder where you want to store your class files in the [plugin's settings](settings.md#fileclass-files-folder)
+2. Create a note in this folder, let's say `music.md`
+3. A button will appear in the tab header of this note. click on it to access the "fileClass view" composed of 3 tabs
+    - A table view listing all files that inherit this fileClass
+    - A Fileclass Fields views where you can add/change/remove fields definitions for this fileclass
+    - A [Fileclass Settings](fileclasses.md#fileclass-settings) view where you can change the settings of the fileclass
+
+## File mapping
+
+You have several options to map a file with a fileClass. Those options can be combined to associate multiple fileclasses to a given file. In case 2 fileclasses mapped with the same file have fields with the same name, the field will be mapped according to this priority order:
+1. fileClass value in the [frontmatter](fileclasses.md#basic-mapping)
+2. [Tag](fileclasses.md#map-with-tag) match
+3. [Path](fileclasses.md#files-paths-option) match
+4. [Bookmark group](fileclasses.md#bookmark-group-option) match
+5. [fileClassQuery](fileclasses.md#map-with-a-query) match
+6. [Global fileClass](fileclasses.md#global-fileclass-mapping)
+7. settings [preset fields](settings.md#preset-field-settings)
+
+### Basic mapping
+
+include the name of the fileclass in the frontmatter of a note:
+
 ```
-3. In a regular note, let's say `Black Dog.md`, insert a frontmatter field named `fileClass`
-4. The value of `fileClass` has to be the name of the file Class where you have the fields that you want to manage for this note. e.g in our case
-```yaml
+Bob Dylan.md
+===============================
 ---
 fileClass: music
 ---
-```
-5. when right-clicking on a link to `Black Dog.md`, the fields in the context menu will be filter to show only the ones that are also included in `music.md`.
 
-### Nested fileClasses
-
-You can sort your fileClasses in sub-folders. Then if you want to use them in a note, just type their sub-path `fileClass: <sub-folder>/<sub-sub-folder>/<fileClass name>`
-
-## field settings syntax
-
-You can specify the type of a field in a fileClass, and its options. Type and Options are called "field settings"
-
-Type can be one of the types defined above (see ## Field Types)
-
-Options can be an array of options, or an object <key, value>
-
-> NB 1: Arrays will be converted in Objects <key, value> after the first modification of the field through `Manage <fileClass> Fields` action in context menu (see below)
-
-
-> NB 2: "input" type attributes dont need a setting, leaving the name of the attribute only will categorize this attribute automatically as an "input" type.
-
-
-A field settings is written in JSON (using double-quote only `"` )and must be written as a value of and "inline (dataview) field"
-
-### example
-
-Say you want to set fields in `music.md` fileClass :
-
-- `genre` is a `Multi` field with "rock", "pop" and "jazz" as options,
-- `difficulty` is a `Number` within [0, 100] that you want to decrement/increment by 5
-- `masterization`is a `Cycle` field with [⭐️, ⭐️⭐️, ⭐️⭐️⭐️, ⭐️⭐️⭐️⭐️, ⭐️⭐️⭐️⭐️⭐️] values
-- `tone` is a `Select` field with [A, B, C, D, E, F, G] values
-- `artist` is an `Input` field
-- `tab available` is a `Boolean` field
-
-here is how the fileClass `music` file should be written
-
-```md
-music.md
-=========
-genre:: {"type":"Multi", "options":["rock", "pop", "jazz"]}
-difficulty:: {"type": "Number", "options": {"step": "5", "min": "0", "max": "100"}}
-masterization:: {"type":"Cycle", "options":["⭐️", "⭐️⭐️", "⭐️⭐️⭐️", "⭐️⭐️⭐️⭐️", "⭐️⭐️⭐️⭐️⭐️"]}
-tone:: {"type":"Select", "options":["A", "B", "C", "D", "E", "F", "G"]}
-artist
-tab available:: {"type": "Boolean"}
+some cool stuff about Bob Dylan
 ```
 
-this `music` fileClass could also be written
+`Bob Dylan.md` will be mapped with the fileClass `music`
 
-```md
-music.md
-=========
-genre:: {"type":"Multi", "options":{"0":"rock", "1":"pop", "2": "jazz"}
-difficulty:: {"type": "Number", "options": {"step": "5", "min": "0", "max": "100"}}
-masterization:: {"type":"Cycle", "options":{"0": "⭐️", "1": "⭐️⭐️", "2": "⭐️⭐️⭐️", "3": "⭐️⭐️⭐️⭐️", "4": "⭐️⭐️⭐️⭐️⭐️"}}
-tone:: {"type":"Select", "options":{"0": "A", "1": "B", "2": "C", "3": "D", "4": "E", "5": "F", "6": "G"}}
-artist:: {"type": "Input"}
-tab available:: {"type": "Boolean"}
+you can set multiple fileClass for a file:
+
+```
+Obsidian.md
+==============================
+---
+fileClass:
+  - company 
+  - pkm
+---
+
+some cool stuff about Obsidian
 ```
 
-## fileClass settings forms
-Because it can be overwhelming to remember this syntax, you can manage "type" and "options" for each fields from:
-- the context menu of a note that has this fileClass as a frontmatter's fileClass attribute : click on [`⚙️ Manage <music> fields`] for `music.md` from any file with `fileClass: music` set in frontmatter
-- the more-options menu of a fileClass file
-- a command within a fileClass file (`alt+P`) -> `Metadata Menu: fileClass attributes options`
+### Map with tag
 
-You will be asked to choose the field that you want to modify or if you want to add a new one. After having selected a field, you will acces to a form to modify the type and options of the field (same form as in the plugin's [settings](settings.md#preset-field-settings))
+Include a tag that matches the fileclass and set [mapWithTag](fileclasses.md#map-with-tag) as true:
 
-## fileClass inheritance
+```
+Bob Dylan.md
+===============================
+#music
+
+some cool stuff about Bob Dylan
+```
+`Bob Dylan.md` will be mapped with the fileClass `music`
+
+Or choose any other tag defined in the [tag names](fileclasses.md#tagnames-option)
+
+### Map with folder's path
+
+Put your file in a folder that matches one the options defined in [Files paths option](fileclasses.md#files-paths-option)
+
+For example if "Resources/Music" is defined in [Files paths option](fileclasses.md#files-paths-option), and if Bob Dylan.md is in `<Your Vault>/Resources/Music/` then it will be mapped with the fileClass `music`
+
+
+### Map with bookmark groups
+
+Bookmark your file with a bookmark group that matches one the options defined in [Bookmark groups options](fileclasses.md#bookmark-group-option)
+
+
+### Map with a query
+
+Set a [Fileclass query](settings.md#fileclass-queries) in the plugin settings and all files included in this query's result will be mapped with the related fileclass
+
+
+### Global fileclass mapping
+
+If the file isn't mapped with a fileclass thanks to the previous options, and if there is a [Global Fileclass](settings.md#global-fileclass) defined, then the file will be mapped with this global fileclass
+
+## FileClass Settings
+
+All fileclass settings are easily configurable in a dedicated view named `Fileclass Setting`. This view is accessible by clicking the button next to the fileclass name (in the file explorer, in the tab header of the fileclass file, next to the internal link to this file etc...).
 
 ### `extends` field
 
@@ -108,7 +112,7 @@ It may be usefull if you have several fileClass with the same set of fields.
 
 For example you may have a fileClass named `course.md` with some fields like `teacher`, `lecture`, `grade`, `type`.
 
-And you may want to define more specific fields depending on the type of course: a first fileClass `mathematics.md` with a field `chapter:: {"type": "Select", "options": {"0": "Algebra", "1": "Geometry", "2": "Statistics"}}` and a second fileClass `physics.md` with a field `lecture:: {"type": "Select", "options": {"0": "Mecanics", "1": "Optics", "2": "Electricity"}}`. For the two of them, you want to benefit from the `course` fileClass's fields.
+And you may want to define more specific fields depending on the type of course: a first fileClass `mathematics.md` with a field `chapter` and a second fileClass `physics.md` with a field `lecture`. For the two of them, you want to benefit from the `course` fileClass's fields.
 
 You can do this very easily by using the `extends` field in their frontmatter.
 
@@ -117,9 +121,29 @@ With our example:
 `course.md`
 
 ```
-teacher::{"type": "Input"}
-grade::{"type": "Select", "options":{"0": "A", "1": "B", "2": "C"}}
-type::{"type": "Select", "options":{"0": "at school", "1": "online", "2": "personal teacher at home"}}
+---
+fields:
+  - name: teacher
+    type: Input
+    id: ....
+    ...
+  - name: grade
+    type: Select
+    options: 
+      - "0": "A"
+      - "1": "B"
+      - "2": "C"
+    id: ...
+  - name: type
+    type: Select
+    options:
+      - "0": "at school"
+      - "1": "online"
+      - "2": "personal teacher at home"
+    id: ...
+  
+---
+
 ```
 
 `mathematics.md`
@@ -127,18 +151,37 @@ type::{"type": "Select", "options":{"0": "at school", "1": "online", "2": "perso
 ```
 ---
 extends: course
+fields:
+  - name: chapter
+    type: Select
+    options:
+      - "0": Algebra
+      - "1": Geometry
+      - "2": Statistics
+    id: ...
+  - name: to do next
+    type: File
+    options:
+      dvQueryString: "dv.pages('\"Courses\"')"
+    id: ...
 ---
-chapter::{"type": "Select", "options": {"0": "Algebra", "1": "Geometry", "2": "Statistics"}}
-to do next::{"type": "File", "options": {"dvQueryString": "dv.pages('\"Courses\"')"}}
 ```
 
 `physics.md`
 
 ```
 ---
+....
 extends: course
+- fields:
+  - name: lecture
+    type: Select
+    options:
+      - "0": Mecanics
+      - "1": Optics
+      - "2": Electricity
+    id: ...
 ---
-lecture:: {"type": "Select", "options": {"0": "Mecanics", "1": "Optics", "2": "Electricity"}}
 ```
 
 All notes with fileClass `mathematics` or `physics` will benefit from the fields of `course` with the same option, but they will have their own fields in addition to it (`chapter` for `mathematics`, `lecture` for `physics`)
@@ -152,15 +195,28 @@ for example:
 ```
 ---
 extends: course
+- fields:
+  - name: lecture
+    type: Select
+    options:
+      - "0": Mecanics
+      - "1": Optics
+      - "2": Electricity
+    id: ...
+  - name: type
+    type: Select
+    options:
+      - "0": "at school"
+      - "1": "online"
+    id: ...
+
 ---
-lecture:: {"type": "Select", "options": {"0": "Mecanics", "1": "Optics", "2": "Electricity"}}
-type::{"type": "Select", "options":{"0": "at school", "1": "online"}}
 ```
 
 the `type` field in `physics` will override the one in `course`. notes with `fileClass: physics` will have `at school` and `online` options for `type` but not `personal teacher at home`
 
 
-### `excludes` field
+### `excludes` option
 
 when defined with an array of values, the field in the array won't be inherited from the parent fileClass
 
@@ -178,20 +234,57 @@ lecture:: {"type": "Select", "options": {"0": "Mecanics", "1": "Optics", "2": "E
 
 notes with `fileClass: physics` will inherit `teacher` and `type` from `course` fileClass but not `grade`
 
-### `mapWithTag` field : Supercharged Tag
+### `mapWithTag` option
+*Supercharged Tag*
 
 when this is set to `true` all notes including a tag with the same name will benefit from the fields' definitions of this fileclass
 
-you can also map a fileclass with his tag from the context menu of the fileclass
-
 This works with nested tags as well
 
-### `tagNames`field: aliases for your fileClasses
+### `tagNames` option
+*aliases for your fileClasses*
 
 when not empty (string or array of string), the tags will be mapped with this fileClass
 
-### `icon`field
+
+### `Files Paths` option
+*map path with your fileClasses*
+
+when not empty (string or array of string), the file with those paths will be mapped with this fileClass
+
+
+### `Bookmark group` option 
+*map bookmark with your fileClasses*
+
+when not empty (string or array of string), the files bookmarked with those bookmark groups will be mapped with this fileClass
+
+### `button icon` option
 
 you can customize the icon of the metadata button that gives access to a modal containing all available fields for a note bound with this fileclass
 
 the icon names are available from https://lucide.dev
+
+### `max records per page` attribute
+
+number of rows per page in the [fileclass's table view](fileclasses.md#table-view). 
+
+### `version` attribute
+
+Managed by the system
+
+## Fileclass Fields
+
+In this view, as in the [preset fields](settings.md#preset-field-settings) settings, you can add, edit and remove [fields definition](fields.md) for this fileclass:
+- "list plus" button to add a new field
+- "pencil" button to edit a field's definition
+- "trash" button to remove a field
+
+## Table view
+This view shows all files mapped with the fileclass. you can modify the fields directly from the table.
+
+- "saved view" dropdown select to select a saved view
+- "star" button to set or revoke the current view as the favorite view
+- "eraser" button to reset the filters and sorting
+- "save" button to save the current view
+- "trash" button to delete the current view from the saved views
+- "collapse filter" button to access more options: sort the table, filter the results, re-arrange columns orders, hide/show columns...

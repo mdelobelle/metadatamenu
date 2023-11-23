@@ -7,7 +7,9 @@ import MetadataMenu from "main";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { FieldOptions } from "src/components/NoteFields";
 import { Link } from "src/types/dataviewTypes";
-
+import { ExistingField } from "../existingField";
+import ObjectModal from "src/modals/fields/ObjectModal";
+import ObjectListModal from "src/modals/fields/ObjectListModal";
 
 const convertDataviewArrayOfLinkToArrayOfPath = (arr: (Link | any)[]) => {
     return arr.reduce((acc, cur) => {
@@ -70,18 +72,16 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
     }
     public getFiles = (currentFile?: TFile): TFile[] => getFiles(this.plugin, this.field, this.field.options.dvQueryString, currentFile)
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
+        const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const modal = this.modalFactory(this.plugin, file, this.field, eF, indexedPath)
+        modal.open()
+    }
 
-        const modal = this.modalFactory(this.plugin, file, this.field, value)
-        const action = () => modal.open()
-        if (AbstractFileBasedField.isMenu(location)) {
-            location.addItem((item) => {
-                item.setTitle(`Update ${name}`);
-                item.setIcon(FieldIcon[FieldType.File]);
-                item.onClick(action);
-                item.setSection("metadata-menu.fields");
-            });
-        } else if (AbstractFileBasedField.isSuggest(location)) {
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
+        const name = this.field.name
+        const action = async () => await this.buildAndOpenModal(file, indexedPath)
+        if (AbstractFileBasedField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
@@ -165,13 +165,14 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        eF?: ExistingField,
+        indexedPath?: string,
         lineNumber?: number,
-        after?: boolean,
         asList?: boolean,
-        asComment?: boolean
+        asBlockquote?: boolean,
+        previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const fieldModal = this.modalFactory(this.plugin, file, this.field, value, lineNumber, after, asList, asComment)
+        const fieldModal = this.modalFactory(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal)
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -184,21 +185,17 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
     ): void {
         attrs.cls = "value-container"
         fieldContainer.appendChild(dv.el('span', p[this.field.name], attrs))
-
         const searchBtn = fieldContainer.createEl("button")
         setIcon(searchBtn, FieldIcon[FieldType.File])
         const spacer = fieldContainer.createEl("div", { cls: "spacer" })
 
         const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
-        let fieldModal: T
         if (file instanceof TFile && file.extension == "md") {
-            fieldModal = this.modalFactory(this.plugin, file, this.field, p[this.field.name])
+            searchBtn.onclick = async () => await this.buildAndOpenModal(file)
         } else {
-            throw Error("path doesn't correspond to a proper file");
+            searchBtn.onclick = async () => { }
         }
-        searchBtn.onclick = () => {
-            fieldModal.open()
-        }
+
 
         if (!attrs?.options?.alwaysOn) {
             searchBtn.hide()

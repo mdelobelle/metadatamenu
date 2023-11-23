@@ -7,6 +7,9 @@ import InsertFieldSuggestModal from "src/modals/insertFieldSuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldManager as FM, FieldType } from "src/types/fieldTypes";
 import Field from "./Field";
+import { ExistingField } from "./existingField";
+import ObjectModal from "src/modals/fields/ObjectModal";
+import ObjectListModal from "src/modals/fields/ObjectListModal";
 
 export const enum SettingLocation {
     "PluginSettings",
@@ -14,8 +17,7 @@ export const enum SettingLocation {
 }
 
 export abstract class FieldManager {
-
-    abstract addFieldOption(name: string, value: string, file: TFile, location: Menu | FCSM | FieldOptions): void;
+    abstract addFieldOption(file: TFile, location: Menu | FCSM | FieldOptions, indexedPath?: string, ...args: any): void;
     abstract validateOptions(): boolean;
     abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
     abstract createDvField(
@@ -29,7 +31,8 @@ export abstract class FieldManager {
         }
     ): void
     abstract getOptionsStr(): string;
-    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): void;
+    abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField, indexedPath?: string,
+        lineNumber?: number, asList?: boolean, asBlockquote?: boolean, previousModal?: ObjectModal | ObjectListModal): void;
     public showModalOption: boolean = true;
 
     constructor(public plugin: MetadataMenu, public field: Field, public type: FieldType) {
@@ -65,6 +68,25 @@ export abstract class FieldManager {
             );
             error = true;
         };
+        if (this.field.fileClassName) {
+            const fields = this.plugin.fieldIndex.fileClassesFields.get(this.field.fileClassName)?.filter(_f => _f.path === this.field.path && _f.id !== this.field.id)
+            if (fields?.map(_f => _f.name).includes(this.field.name)) {
+                FieldSettingsModal.setValidationError(
+                    textInput,
+                    `There is already a field with this name for this path in this ${this.plugin.settings.fileClassAlias}. Please choose another name`
+                );
+                error = true;
+            }
+        } else {
+            const fields = this.plugin.presetFields.filter(_f => _f.path === this.field.path && _f.id !== this.field.id)
+            if (fields?.map(_f => _f.name).includes(this.field.name)) {
+                FieldSettingsModal.setValidationError(
+                    textInput,
+                    "There is already a field with this name for this path in presetFields. Please choose another name"
+                );
+                error = true;
+            }
+        }
         return !error
     }
 
@@ -72,16 +94,12 @@ export abstract class FieldManager {
         return true;
     }
 
-    public static async replaceValues(plugin: MetadataMenu, path: string, fieldName: string, value: string): Promise<void> {
+    public static async replaceValues(plugin: MetadataMenu, path: string, id: string, value: string): Promise<void> {
         const file = plugin.app.vault.getAbstractFileByPath(path)
         if (file instanceof TFile && file.extension == "md") {
-            await postValues(plugin, [{ name: fieldName, payload: { value: value } }], file)
+            await postValues(plugin, [{ id: id, payload: { value: value } }], file)
         }
     }
-
-    public static isMenu(location: Menu | "InsertFieldCommand" | FCSM | FieldOptions): location is Menu {
-        return (location as Menu).addItem !== undefined;
-    };
 
     public static isSuggest(location: Menu | "InsertFieldCommand" | FCSM | FieldOptions): location is FCSM {
         return (location as FCSM).getItems !== undefined;
@@ -100,18 +118,18 @@ export abstract class FieldManager {
         file: TFile,
         fieldName: string,
         field: Field | undefined,
-        value?: string,
+        eF?: ExistingField,
+        indexedPath?: string,
         lineNumber?: number,
-        after?: boolean,
         asList?: boolean,
-        asComment?: boolean
+        asBlockquote?: boolean
     ): void {
         if (field) {
             const fieldManager = new FM[field.type](plugin, field);
-            fieldManager.createAndOpenFieldModal(file, fieldName, value, lineNumber, after, asList, asComment);
+            fieldManager.createAndOpenFieldModal(file, fieldName, eF, indexedPath, lineNumber, asList, asBlockquote);
         } else {
             const fieldManager = FieldManager.createDefault(plugin, fieldName!);
-            fieldManager.createAndOpenFieldModal(file, fieldName!, value, lineNumber, after, asList, asComment);
+            fieldManager.createAndOpenFieldModal(file, fieldName!, eF, indexedPath, lineNumber, asList, asBlockquote);
         }
     }
 
@@ -119,23 +137,21 @@ export abstract class FieldManager {
         plugin: MetadataMenu,
         file: TFile,
         fieldName: string | undefined,
-        value: string,
         lineNumber: number,
-        after: boolean,
         asList: boolean,
-        asComment: boolean
+        asBlockquote: boolean
     ) {
         if (!fieldName) {
-            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, after);
+            const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, asList, asBlockquote);
             modal.open();
         } else {
             const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
-            if (field) this.createAndOpenModal(plugin, file, fieldName, field, value, lineNumber, after, asList, asComment);
+            if (field) this.createAndOpenModal(plugin, file, fieldName, field, undefined, undefined, lineNumber, asList, asBlockquote);
         }
     }
 
     public static createDefault(plugin: MetadataMenu, name: string): FieldManager {
-        const field = Field.createDefault(name);
+        const field = Field.createDefault(plugin, name);
         return new FM[field.type](plugin, field);
     }
 
@@ -151,20 +167,15 @@ export abstract class FieldManager {
         return toBooleanValue;
     }
 
-    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked = () => { }): void {
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+    public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked = () => { }): void {
         let valueText: string;
-        if (dvApi) {
-            switch (dvApi.page(file.path)[fieldName]) {
-                case undefined: valueText = ""; break;
-                case null: valueText = ""; break;
-                case false: valueText = "false"; break;
-                case 0: valueText = "0"; break;
-                default: valueText = dvApi.page(file.path)[fieldName];
-            }
-        } else {
-            valueText = "";
+        switch (value) {
+            case undefined: valueText = ""; break;
+            case null: valueText = ""; break;
+            case false: valueText = "false"; break;
+            case 0: valueText = "0"; break;
+            default: valueText = value.toString() || "";
         }
-        container.createDiv({ text: valueText })
+        container.createDiv({ text: `${valueText}` })
     }
 }

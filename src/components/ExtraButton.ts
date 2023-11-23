@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { Component, TFile, debounce } from "obsidian";
+import { Component, debounce } from "obsidian";
 import { clearExtraAttributes, updateDivExtraAttributes, updateElLinks, updateVisibleLinks } from "src/options/linkAttributes";
 import { Prec } from "@codemirror/state";
 import { buildCMViewPlugin } from "src/options/livePreview";
@@ -10,10 +10,7 @@ export default class ExtraButton extends Component {
     private modalObservers: MutationObserver[] = [];
 
     constructor(
-        public plugin: MetadataMenu,
-        public cacheVersion: string,
-        public onChange: () => void,
-
+        public plugin: MetadataMenu
     ) {
         super();
     }
@@ -27,22 +24,6 @@ export default class ExtraButton extends Component {
         const ext = Prec.lowest(buildCMViewPlugin(this.plugin));
         this.plugin.registerEditorExtension(ext);
 
-        this.plugin.registerMarkdownPostProcessor((el, ctx) => {
-            updateElLinks(this.plugin.app, this.plugin, el, ctx)
-        });
-
-
-        const plugin = this.plugin;
-        const updateLinks = (_file: TFile) => {
-            updateVisibleLinks(plugin.app, plugin);
-            this.observers.forEach(([observer, type, own_class]: [any, any, any]) => {
-                const leaves = plugin.app.workspace.getLeavesOfType(type);
-                leaves.forEach((leaf: any) => {
-                    this.updateContainer(leaf.view.containerEl, own_class, type);
-                })
-            });
-        }
-
         this.observers = [];
 
         this.plugin.app.workspace.onLayoutReady(() => {
@@ -52,13 +33,25 @@ export default class ExtraButton extends Component {
         });
 
         // Initialization
-        this.registerEvent(this.plugin.app.metadataCache.on('changed', debounce(updateLinks, 500, true)));
-        // @ts-ignore
-        this.registerEvent(this.plugin.app.workspace.on("layout-change", debounce(updateLinks, 10, true)));
+        this.registerEvent(this.plugin.app.metadataCache.on('changed', debounce(this.updateLinks, 100, true)));
+        this.registerEvent(this.plugin.app.workspace.on('metadata-menu:indexed', debounce(this.updateLinks, 100, true)));
+        this.registerEvent(this.plugin.app.workspace.on("layout-change", debounce(this.updateLinks, 10, true)));
         this.registerEvent(this.plugin.app.workspace.on("window-open", (window, win) => this.initModalObservers(window.getContainer()!.doc)));
         this.registerEvent(this.plugin.app.workspace.on("layout-change", () => this.initViewObservers()));
-        this.registerEvent(this.plugin.app.workspace.on("metadata-menu:indexed", () => this.reloadObservers()));
+        this.registerEvent(this.plugin.app.internalPlugins.getPluginById("bookmarks").instance.on("changed", debounce(this.updateLinks, 100, true)))
     }
+
+    public updateLinks = () => {
+        updateVisibleLinks(this.plugin.app, this.plugin);
+        this.observers.forEach(([observer, type, own_class]: [any, any, any]) => {
+            const leaves = this.plugin.app.workspace.getLeavesOfType(type);
+            leaves.forEach((leaf: any) => {
+                this.updateContainer(leaf.view.containerEl, own_class, type);
+            })
+        });
+
+    }
+
 
     private initViewObservers() {
         // Reset observers
@@ -148,6 +141,7 @@ export default class ExtraButton extends Component {
             const el = nodes[i] as HTMLElement;
             const isCanvasFileLink = el.parentElement?.getAttr("data-path")?.includes(".canvas")
             if (!isCanvasFileLink) {
+                //HERE
                 updateDivExtraAttributes(this.plugin.app, this.plugin, el, viewTypeName, "");
             }
         }

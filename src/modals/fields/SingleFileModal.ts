@@ -4,6 +4,10 @@ import { FieldManager } from "src/types/fieldTypes";
 import FileField from "src/fields/fieldManagers/FileField";
 import MetadataMenu from "main";
 import { postValues } from "src/commands/postValues";
+import { getLink } from "src/utils/parser";
+import { ExistingField } from "src/fields/ExistingField";
+import ObjectModal from "./ObjectModal";
+import ObjectListModal from "./ObjectListModal";
 
 export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
 
@@ -13,21 +17,25 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
         private plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        initialValueObject: any,
+        private eF?: ExistingField,
+        private indexedPath?: string,
         private lineNumber: number = -1,
-        private after: boolean = false,
         private asList: boolean = false,
-        private asComment: boolean = false
+        private asBlockquote: boolean = false,
+        private previousModal?: ObjectModal | ObjectListModal
     ) {
         super(plugin.app);
-        const dvApi = this.plugin.app.plugins.plugins["dataview"]?.api
-        if (dvApi) {
-            if (dvApi.value.isLink(initialValueObject)) {
-                const file = this.plugin.app.vault.getAbstractFileByPath(initialValueObject.path)
-                if (file instanceof TFile) this.selectedFile = file
-            }
+        const initialValueObject: string = this.eF?.value || ""
+        const link = getLink(initialValueObject, this.file)
+        if (link) {
+            const file = this.plugin.app.vault.getAbstractFileByPath(link.path)
+            if (file instanceof TFile) this.selectedFile = file
         }
         this.containerEl.addClass("metadata-menu");
+    }
+
+    onClose(): void {
+        this.previousModal?.open()
     }
 
     getItems(): TFile[] {
@@ -75,6 +83,7 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
             alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(item.path))
         }
         const value = FileField.buildMarkDownLink(this.plugin, this.file, item.basename, undefined, alias)
-        await postValues(this.plugin, [{ name: this.field.name, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asComment)
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
+        this.previousModal?.open()
     }
 }

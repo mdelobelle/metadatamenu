@@ -17,12 +17,66 @@
 
             .setting-item-description{
                 margin-bottom: 1.33em;
+                
+            }
+        }
+    }
+
+    .fields-container{
+        display: grid;
+        padding-top: 0.5em;
+        .setting-item{
+
+            .setting-item-info{
+                
+
+                .name{
+                    font-weight: 500;
+                    white-space: nowrap;
+                    display: inline-flex;
+
+                    .indentation{
+                        width: 1em;
+                        color: var(--text-faint);
+                        margin-right: 0.3em;
+                    }
+                }
+                .spacer{
+
+                    width: 100%;
+                }
             }
         }
     }
 
     .setting-item{
+        .setting-item-info{
+            &.with-button{
+                display: grid;
+                grid-template-columns: auto 1fr auto;
+                width: 100%;
 
+                .setting-item-info-text{
+                    grid: 1;
+                }
+                .spacer{
+                    grid: 2;
+                    width: 100%;
+                }
+
+                button{
+                    grid: 3;
+                    max-width: 3.25em;
+                }
+            }
+            .setting-item-description{
+                font-weight: 500;
+            }
+            .setting-item-name{
+                font-weight: 500;
+                white-space: nowrap;
+            }
+        }
         &.vstacked{
             display: grid;
             margin: 1em 0;
@@ -38,11 +92,6 @@
             border: none;
         }
 
-        .name{
-            font-weight: 500;
-            white-space: nowrap;
-        }
-
         &.narrow-title {
             
             .setting-item-info{
@@ -52,6 +101,10 @@
             .setting-item-control{
                 flex:2
             }
+        }
+
+        .save{
+            margin-left: 1em;
         }
     }
 

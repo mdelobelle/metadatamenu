@@ -28,10 +28,14 @@ export default class FieldCommandSuggestModal extends FuzzySuggestModal<Option> 
     }
 
     renderSuggestion(item: FuzzyMatch<Option>, el: HTMLElement): void {
-        el.addClass("value-container");
-        const iconContainer = el.createDiv({ cls: "icon-container" })
-        item.item.icon ? setIcon(iconContainer, item.item.icon) : setIcon(iconContainer, "pencil")
-        const actionLabel = el.createDiv()
-        actionLabel.innerHTML = item.item.actionLabel
+        if (item.item.id === "__optionSeparator") {
+            el.addClass("suggest-separator");
+        } else {
+            el.addClass("value-container");
+            const iconContainer = el.createDiv({ cls: "icon-container" })
+            item.item.icon ? setIcon(iconContainer, item.item.icon) : setIcon(iconContainer, "pencil")
+            const actionLabel = el.createDiv()
+            actionLabel.innerHTML = item.item.actionLabel
+        }
     }
 };

@@ -53,5 +53,20 @@
     &.canvas-links{
         background-color: var(--color-blue);
     }
+
+    &.yaml{
+        background-color: var(--color-blue);
+    }
+
+    &.json{
+        background-color: var(--color-blue);
+    }
     
+    &.object{
+        background-color: var(--color-red);
+    }
+
+    &.object-list{
+        background-color: var(--color-red);
+    }
 }

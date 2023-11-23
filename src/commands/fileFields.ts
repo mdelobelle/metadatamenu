@@ -1,41 +1,50 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian"
+import { ExistingField } from "src/fields/ExistingField";
 import { FieldManager, FieldType } from "src/types/fieldTypes";
-import { genuineKeys } from "src/utils/dataviewUtils";
+
+
+export interface IFieldInfo {
+    id: string,
+    name: string,
+    type: FieldType
+    value: string;
+    indexedPath: string | undefined
+    sourceType: "fileClass" | "settings"
+    fileClassName: string | undefined;
+    isValid: boolean;
+    options: Record<string, any>
+    ignoredInMenu: boolean;
+}
 
 export class FieldInfo {
-    protected type?: FieldType = undefined;
-    protected sourceType?: "fileClass" | "settings" = undefined;
-    protected fileClass?: string = undefined;
-    protected options?: Record<string, string> | string[] = undefined;
-    protected isValid?: boolean = undefined;
-    protected ignoreInMenu: boolean
-    protected value: string = "";
-    protected valuesListNotePath?: string = undefined;
-    public unique: boolean = true
 
-    public setInfos(
-        plugin: MetadataMenu,
-        file: TFile,
-        fieldName: string,
-        value: string,
-        matchingFileClassQuery?: string | undefined
-    ): void {
-        this.value = value;
-        this.ignoreInMenu = plugin.settings.globallyIgnoredFields.includes(fieldName);
-        const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
-        if (field) {
-            const fieldManager = new FieldManager[field.type](plugin, field);
-            this.isValid = fieldManager.validateValue(value)
-            this.fileClass = field.fileClassName;
-            this.type = field.type;
-            this.options = field.options;
-            this.sourceType = field.fileClassName ? "fileClass" : "settings"
+    constructor(
+        public plugin: MetadataMenu,
+        public file: TFile,
+        public eF: ExistingField
+    ) {
+    }
+
+    public getInfos(): IFieldInfo {
+        const field = this.eF.field
+        const fieldManager = new FieldManager[field.type](this.plugin, field);
+        return {
+            ignoredInMenu: this.plugin.settings.globallyIgnoredFields.includes(this.eF.field.name),
+            isValid: fieldManager.validateValue(this.eF.value),
+            fileClassName: this.eF.field.fileClassName,
+            type: this.eF.field.type,
+            options: this.eF.field.options,
+            sourceType: this.eF.field.fileClassName ? "fileClass" : "settings",
+            indexedPath: this.eF.indexedPath,
+            id: this.eF.field.id,
+            name: this.eF.field.name,
+            value: this.eF.value
         }
     }
 }
 
-export function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | string): Record<string, FieldInfo> {
+export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | string): Promise<Record<string, IFieldInfo>> {
     /*
     returns all fields with source, type, options, isValid, ignored
     */
@@ -50,24 +59,10 @@ export function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | string)
             throw Error("path doesn't correspond to a proper file");
         }
     }
-    const fields: Record<string, FieldInfo> = {}
-    const dvApi = plugin.app.plugins.plugins.dataview?.api
-    //@ts-ignore
-    if (dvApi) {
-        const dvFile = dvApi.page(file.path)
-        try {
-            genuineKeys(dvFile).forEach(async key => {
-                if (key !== "file") {
-                    const fieldInfo = new FieldInfo;
-                    fieldInfo.unique = !Object.keys(fields).includes(key);
-                    fields[key] = fieldInfo;
-                    fieldInfo.setInfos(plugin, file, key, dvFile[key]);
-                }
-            })
-        } catch (error) {
-            throw (error);
-        }
+    const eFs = await ExistingField.getExistingFieldsFromIndexForFilePath(plugin, file)
+    const fields: Record<string, IFieldInfo> = {}
+    for (const eF of eFs) {
+        if (eF.indexedPath) fields[eF.indexedPath] = (new FieldInfo(plugin, file, eF)).getInfos()
     }
-
     return fields;
 }

@@ -1,7 +1,11 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
 import MultiFileModal from "src/modals/fields/MultiFileModal";
+import ObjectListModal from "src/modals/fields/ObjectListModal";
+import ObjectModal from "src/modals/fields/ObjectModal";
 import { FieldType } from "src/types/fieldTypes";
+import { displayLinksOrText } from "src/utils/linksUtils";
+import { ExistingField } from "../existingField";
 import Field from "../Field";
 import AbstractFileBasedField from "./AbstractFileBasedField";
 
@@ -15,14 +19,16 @@ export default class MultiFileField extends AbstractFileBasedField<MultiFileModa
         plugin: MetadataMenu,
         file: TFile,
         field: Field,
-        initialValueObject: any,
+        eF?: ExistingField,
+        indexedPath?: string,
         lineNumber: number = -1,
-        after: boolean = false,
         asList: boolean = false,
-        asComment: boolean = false
+        asBlockquote: boolean = false,
+        previousModal?: ObjectModal | ObjectListModal
     ): MultiFileModal {
-        return new MultiFileModal(plugin, file, field, initialValueObject, lineNumber, after, asList, asComment);
+        return new MultiFileModal(plugin, file, field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal);
     }
+
 
     static buildMarkDownLink(plugin: MetadataMenu, file: TFile, path: string): string {
         const destFile = plugin.app.metadataCache.getFirstLinkpathDest(path, file.path)
@@ -42,26 +48,8 @@ export default class MultiFileField extends AbstractFileBasedField<MultiFileModa
         return true
     }
 
-    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClick: () => {}): void {
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        if (dvApi) {
-            const dvValue = dvApi.page(file.path)[fieldName]
-            const values = Array.isArray(dvValue) ? dvValue : [dvValue]
-            values.forEach((value, i) => {
-                if (dvApi.value.isLink(value)) {
-                    const link = container.createEl('a', { text: value.path.split("/").last().replace(/(.*).md/, "$1") });
-                    link.onclick = () => {
-                        this.plugin.app.workspace.openLinkText(value.path, file.path, true)
-                        onClick()
-                    }
-                } else {
-                    container.createDiv({ text: value });
-                }
-                if (i < values.length - 1) {
-                    container.createEl('span', { text: " | " })
-                }
-            })
-        }
-        container.createDiv()
+    public displayValue(container: HTMLDivElement, file: TFile, value: string, onClick: () => {}): void {
+
+        displayLinksOrText(value, file, container, this.plugin, () => onClick)
     }
 }

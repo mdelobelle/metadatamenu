@@ -1,10 +1,16 @@
 # Controls
 
-## Control field with autocompletion
-In Editor mode, type ":" after a field in frontmatter, or "::" after an inline-field to trigger the autocompletion for `Select` and `Multi` fields
+With Metadata Menu, you have several options to control a field:
+- [Autocompletion](#control-field-with-autocompletion)
+- [Context Menu and command palette](#context-menu-and-command-palette)
+- Metadata menu button opening the [note's fields modal](#open-fields-modal)
+- [Api](api.md)
 
-## Control field from links, file and plugin options
-Right click in the live preview, on a link, a file in explorer, or opening a file's or plugin's context menu will automatically display an item per target note's frontmatter field and "inline fields" (dataview syntax)
+## Control field with autocompletion
+In Editor mode, type ":" after a field in frontmatter, or "::" after an inline-field to trigger the autocompletion for `Select`, `Multi`, `File` and `Multi File` fields
+
+## Context Menu and Command palette
+Right click in the live preview, on a link, a file in explorer, or opening a file's or plugin's context menu will display options to manage the note's fields
 
 these options are accessible from:
 
@@ -16,74 +22,13 @@ these options are accessible from:
 - the command palette "Cmd+P" : Metadata Menu - field options or insert field at cursor or manage field at cursor
 - other context menu (not tested)
 
-### Update free value field (type: `Input`)
+### Open fields modal
 
-1. Right-click on the link (or context menu, ...)
-2. Click on "Update .... " to change the field's value
-3. Change the value in the modal's prompt
-4. Type `enter` to save or click X or `esc` to cancel
+Will open a modal to manage the fields and fileclasses of this note with a compact UI
 
-> NB: if you have the `natural language dates` plugin installed, you can type the target date in natural langage and toggle the 📆 selector to automatically convert the input into a link towards the daily note
+### Manage Fields
 
-### Update multiple free values field (type: `Input`)
-
-1. Right-click on the link (or context menu, ...)
-2. Click on "Update .... " to change the field's value
-1. Change values comma-separated
-1. Press `enter`, the values will be displayed as an array of values in the target note's frontmatter field; or as a list of values comma separated in an inline field
-
-**this doesn't work with indented lists YAML format**
-
-### Update boolean field (type: `Boolean`)
-
-1. Right-click on the link (or context menu, ...)
-1. Click on `✅ ▷ ❌` or `❌ ▷ ✅` depending on the value of the boolean to change the value by its opposite
-
-### Select a value for the field (type: `Select`)
-
-1. Right-click on the link (or context menu, ...)
-2. Click on "🔽 .... " to change the field's value
-3. The modal will display a dropdown list with preset values
-4. Change the value in the modal's dropdown
-5. Click on the save button to save or click X or `esc` to cancel
-
-### Multi select preset values for field (type: `Multi`)
-
-1. Right-click on the link (or context menu, ...)
-2. Click on "🟰 .... " to change the field's value
-3. The modal will display a list for preset values
-4. Change the values by clicking on the values in the list
-5. Click on the save button to save or click X or `esc` to cancel, or click the trash button to empty the field
-
-### Cycle through preset values (type: `Cycle`)
-
-1. Right-click on the link (or context menu, ...)
-2. Click on " .. > .. " to change the field's value for the next one in the settings list
-
-### Update a link to a file (type: `File`)
-
-1. Right-click on the link (or context menu, ...)
-2. Click on " 🔎 Update ... "
-3. Type or select the link within the modal
-
-
-### Update a list of links to files (type: `MultiFile`)
-
-1. Right-click on the link (or context menu, ...)
-2. Click on " 🔎 Update ... "
-3. Click on the chosen links within the list
-4. Click on the save button to save or click X or `esc` to cancel, or click the trash button to empty the field
-
-
-### Update a date (type: `Date`)
-
-1. Right-click on the link (or context menu, ...)
-2. Click on " 📅 Update ... "
-3. Type the date or select the date thanks to the date picker by clicking the "📅" button in the modal. If you have `Natural Language Dates` plugin installed, you can also type your date in natural language and have it parsed automatically
-3bis. Click on "⏭" to shift the date in the future according to the interval set
-4. Toggle `on` the `insert as link` option if you want your date to be included as a link
-
-
+Will open a native Obsidian suggest modal with options available to modify a field or execute the actions mentionned hereafter
 
 ### Add a new field at section
 
@@ -91,7 +36,9 @@ these options are accessible from:
 2. Click on "Add field at section"
 3. Select the line in the target file where you want to insert the new field
 4. Select the field
-5. Select/input the value for this field (if the field has preset values, you will be prompted to choose one)
+5. Use the field's modal to manage the value
+
+NB: if the field type is restricted to the frontmatter section, it will be added at the end of the frontmatter whatever the line chosen
 
 ### Add a new field at cursor
 
@@ -99,7 +46,7 @@ In live preview, you can add a field at cursor without having to choose the sect
 
 ### Insert all missing fields
 
-When fileClasses or Supercharged Tags are defined for a note, you can bulk insert all fields defined in those fileClasses that aren't yet included in the note
+When fileClasses are defined for a note, you can bulk insert all fields defined in those fileClasses that aren't yet included in the note
 
 You can also insert missing fields on a fileClass per fileClass mode : this option is also available in fileClass sub-menu, or next to fileClasses in the Metadata Menu modal (see [Metadata Menu button](#metadata-menu-button--metadata-menu-modal))
 
@@ -158,71 +105,9 @@ dv.table(["file", "Masterization", "Tune"],
 
 Controls will be added to the dataview's table depending on the type of the field.
 
-### `Input`
-when hovering the field you will get a 🖍 button
-
-when clicking the button, an input field will replace the value. you can type a new value
-- type escape or click the ❌ button : the input will be replaced by the initial value
-- type enter or click the ✅ button: the initial value will be replaced by the input value in the target note and the input field will be replaced by the value
-
-### `Boolean`
-the value will be replaced by a checkbox: click on the checkbox to modify the value
-
-### `Number`
-when hovering the field you will get 3 buttons: ◀️, 🖍 and ▶️
-
-when clicking 🖍, an input field will replace the value. you can type a new value
-
-- type escape or click the ❌ button : the input will be replaced by the initial value
-- type enter or click the ✅ button: the initial value will be replaced by the input value in the target note and the input field will be replaced by the value
-
-when clicking on ◀️, you will decrement the value by `1` or by the value of `step` if defined
-
-when clicking on ▶️, you will increment the value by `1` or by the value of `step` if defined
-
-### `Cycle`
-when hovering the field you will a ▶️ button
-
-when clicking on ▶️, you will replace the value of the field by the new option defined in field options
-
-### `Select`
-Click to the arrow next to the value.
-
-The value of the field will then be replaced by a select field. 
-
-Select another value to change the value
-
-### `Multi`
-The values of this field are displayed as a chip component
-
-When hovering the value, a "➕" button will be added at the end of the list.
-
-When hovering a chip, a "❌" button will be added after the value
-
-When clicking on "❌", the value will be removed from the list of the values in the target field.
-
-When clicking on "➕", the values will be replaced by a select field in the table with the remaining values available (not already selected). Select the new value that you want to add: it will be added at the end of the list in the target field.
-
-### `File`
-The values of this field are displayed as a link
-
-Click the "🔎" button next to the link to display a suggester modal.
-
-Select a choice to replace the link in the target field.
-
-
-### `Date`
-The values of this field are displayed as a date string or a as link
-
-Click the "📆" button next to the link to display a date select modal.
-
-type a new date (or select thanks to the datepicker) to replace the link in the target field.
-
-Click the "⏭" button to shift the date in the future according to the interval set
-
 ## Globally update lookup fields
 
-Lookup fields automatically update themselves. Even if you shouldn't modify a lookup field , if that happens the lookup field won't be automatically updated until one of its related notes is updated.
+Lookup fields automatically update themselves unless you untoggle their "Auto-update" option
 
 If you want to force-update this lookup field you can use the command palette command `Metadata Menu: Update lookup fields`
 
@@ -239,3 +124,5 @@ From there you can
 - bulk insert missing fields (for all fileClasses, or or one fileClass in particular)
 
 The icon of the button can be customized in the fileClass with the higher priority (see [icon](/fileclasses/#iconfield) )
+
+The visibility of the button can be managed in the plugin [settings](settings.md#show-extra-button-to-access-metadata-menu-form)

@@ -6,6 +6,9 @@ import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
 import { FieldOptions } from "src/components/NoteFields";
+import { ExistingField } from "../existingField";
+import ObjectModal from "src/modals/fields/ObjectModal";
+import ObjectListModal from "src/modals/fields/ObjectListModal";
 
 export default class SelectField extends AbstractListBasedField {
 
@@ -15,18 +18,17 @@ export default class SelectField extends AbstractListBasedField {
         super(plugin, field, FieldType.Select)
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
-        const modal = new SelectModal(this.plugin, file, value, this.field);
+    public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
+        const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const modal = new SelectModal(this.plugin, file, this.field, eF, indexedPath);
         modal.titleEl.setText("Select value");
-        const action = () => modal.open()
-        if (SelectField.isMenu(location)) {
-            location.addItem((item) => {
-                item.setTitle(`Update ${name}`);
-                item.setIcon(FieldIcon[FieldType.Select]);
-                item.onClick(action);
-                item.setSection("metadata-menu.fields");
-            });
-        } else if (SelectField.isSuggest(location)) {
+        modal.open()
+    }
+
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
+        const name = this.field.name
+        const action = async () => await this.buildAndOpenModal(file, indexedPath)
+        if (SelectField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
@@ -34,7 +36,7 @@ export default class SelectField extends AbstractListBasedField {
                 icon: FieldIcon[FieldType.Select]
             });
         } else if (SelectField.isFieldOptions(location)) {
-            location.addOption(FieldIcon[FieldType.Multi], action, `Update ${name}'s value`);
+            location.addOption(FieldIcon[FieldType.Select], action, `Update ${name}'s value`);
         };
     };
 
@@ -43,13 +45,14 @@ export default class SelectField extends AbstractListBasedField {
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        eF?: ExistingField,
+        indexedPath?: string,
         lineNumber?: number,
-        after?: boolean,
         asList?: boolean,
-        asComment?: boolean
+        asBlockquote?: boolean,
+        previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const fieldModal = new SelectModal(this.plugin, file, value || "", this.field, lineNumber, after, asList, asComment);
+        const fieldModal = new SelectModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal);
         fieldModal.titleEl.setText(`Select option for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -68,14 +71,13 @@ export default class SelectField extends AbstractListBasedField {
         const dropDownButton = fieldContainer.createEl("button");
         setIcon(dropDownButton, "down-chevron-glyph");
         const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
-        let fieldModal: SelectModal;
         if (file instanceof TFile && file.extension == "md") {
-            fieldModal = new SelectModal(this.plugin, file, p[this.field.name], this.field)
+            dropDownButton.onclick = async () => await this.buildAndOpenModal(file)
         } else {
-            throw Error("path doesn't correspond to a proper file");
+            dropDownButton.onclick = () => { }
         }
 
-        dropDownButton.onclick = () => fieldModal.open()
+
         if (!attrs?.options?.alwaysOn) {
             dropDownButton.hide();
             spacer.show();

@@ -10,6 +10,7 @@ import { Status } from "src/types/lookupTypes";
 import { FieldOptions } from "src/components/NoteFields";
 import { updateFormulas } from "src/commands/updateFormulas";
 import { postValues } from "src/commands/postValues";
+import { ExistingField } from "../existingField";
 
 export default class FormulaField extends FieldManager {
 
@@ -18,44 +19,46 @@ export default class FormulaField extends FieldManager {
         this.showModalOption = false
     }
 
-    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
+        const name = this.field.name;
         const f = this.plugin.fieldIndex;
-        const id = `${file.path}__${this.field.name}`;
-        let status: Status;
-        status = f.fileFormulaFieldsStatus.get(id) || Status.changed
-        const icon = status === Status.changed ? "refresh-ccw" : "file-check"
-        const action = () => { updateFormulas(this.plugin, { file: file, fieldName: this.field.name }) };
-        if (FormulaField.isMenu(location) && status === Status.changed) {
-            location.addItem((item) => {
-                item.setTitle(`Update <${name}>`);
-                item.setIcon(icon);
-                item.onClick(action);
-                item.setSection("metadata-menu.fields");
-            })
-        } else if (FormulaField.isSuggest(location) && status === Status.changed) {
-            location.options.push({
-                id: `update_${name}`,
-                actionLabel: `<span>Update <b>${name}</b></span>`,
-                action: action,
-                icon: icon
-            });
-        } else if (FormulaField.isFieldOptions(location) && status === Status.changed) {
-            location.addOption(icon, action, `Update ${name}'s value`);
-        } else if (FormulaField.isFieldOptions(location) && status === Status.upToDate) {
-            location.addOption(icon, () => { }, `${name} is up to date`);
+        const id = `${file.path}__${name}`;
+        if (!this.field.options.autoUpdate && this.field.options.autoUpdate !== undefined) {
+            let status: Status;
+            status = f.fileFormulaFieldsStatus.get(id) || Status.changed
+            const icon = status === Status.changed ? "refresh-ccw" : "file-check"
+            const action = async () => {
+                await updateFormulas(this.plugin, { file: file, fieldName: name })
+                f.applyUpdates()
+            };
+            if (FormulaField.isSuggest(location) && status === Status.changed) {
+                location.options.push({
+                    id: `update_${name}`,
+                    actionLabel: `<span>Update <b>${name}</b></span>`,
+                    action: action,
+                    icon: icon
+                });
+            } else if (FormulaField.isFieldOptions(location) && status === Status.changed) {
+                location.addOption(icon, action, `Update ${name}'s value`);
+            } else if (FormulaField.isFieldOptions(location) && status === Status.upToDate) {
+                location.addOption(icon, () => { }, `${name} is up to date`);
+            }
+        } else if (FormulaField.isFieldOptions(location)) {
+            location.addOption("server-cog", () => { }, `${name} is auto-updated`, "disabled");
         }
     }
 
     async createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        eF?: ExistingField,
+        indexedPath?: string,
         lineNumber?: number,
-        after?: boolean,
         asList?: boolean,
-        asComment?: boolean
+        asBlockquote?: boolean
     ): Promise<void> {
-        await postValues(this.plugin, [{ name: this.field.name, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
+        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file, lineNumber, asList, asBlockquote)
+        await this.plugin.fieldIndex.fullIndex()
     }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }): void {
@@ -63,9 +66,9 @@ export default class FormulaField extends FieldManager {
         fieldContainer.appendChild(fieldValue);
     }
 
-    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked = () => { }): void {
-        const fileClassName = this.plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName)?.fileClassName || "presetField"
-        container.createDiv({ text: this.plugin.fieldIndex.fileFormulaFieldLastValue.get(`${file.path}__calculated__${fileClassName}___${fieldName}`) })
+    public displayValue(container: HTMLDivElement, file: TFile, value: string, onClicked = () => { }): void {
+        const fileClassName = this.plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.id === this.field.id)?.fileClassName || "presetField"
+        container.createDiv({ text: this.plugin.fieldIndex.fileFormulaFieldLastValue.get(`${file.path}__calculated__${fileClassName}___${this.field.name}`) })
     }
 
     private createFormulaContainer(container: HTMLDivElement): void {
@@ -84,7 +87,7 @@ export default class FormulaField extends FieldManager {
 
         const formulaTopContainer = container.createDiv({ cls: "vstacked" });
         formulaTopContainer.createEl("span", { text: "javascript formula", cls: 'label' });
-        formulaTopContainer.createEl("span", { text: "current and pages variables are available`", cls: 'sub-text' });
+        formulaTopContainer.createEl("span", { text: "current and dv variables are available`", cls: 'sub-text' });
         const formulaContainer = formulaTopContainer.createDiv({ cls: "field-container" });
         const formula = new TextAreaComponent(formulaContainer);
         formula.inputEl.addClass("full-width");

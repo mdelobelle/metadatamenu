@@ -2,36 +2,28 @@
 
 API is accessible with `app.plugins.plugins["metadata-menu"].api`
 
-### getValues
+### getValues (deprecated)
 
 `getValues(fileOrFilePath: TFile | string, attribute: string)`
 
 Takes a TFile containing the field and a string for the related field name
-
-Returns an array with the values of the field
-
-This is an asynchronous function, so you should await it.
-
-### replaceValues (deprecated)
-`replaceValues(fileOrFilePath: TFile | string, attribute: string, input: string)`
-
-Takes a TFile containing the field, a string for the related field name, a new value for this field and updates the field with the new value
+Returns an array with the values of the field. If there are several fields with the same name (in object list fields for example, see [Settings](settings#object-listoptions)), this function will return an array with all the exisiting values
 
 This is an asynchronous function, so you should await it.
 
-### insertValues (deprecated)
-`insertValues(fileOrFilePath: TFile | string, attribute: string, value: string, lineNumber: number, inFrontmatter: boolean, top: boolean)`
+### getValuesForIndexedPath
 
-Takes a TFile, a string for the field name, a value for this field and insert the formatted field in the file at the line specified.
+`getValuesForIndexedPath(fileOrFilePath: TFile | string, indexedPath: string)`
 
-You'll have to specify if the field will be in frontmatter to apply YAML syntax
+Takes a TFile containing the field and a string for the related field's [indexedPath](fileclasses#id-and-indexedpath)
+
+Returns the value of the field for this indexedPath
 
 This is an asynchronous function, so you should await it.
-
 
 ### postValues
 creates or updates fields with values in the target note
-`postValues(fileOrFilePath: TFile | string, payload: FieldsPayload, lineNumber?: number, after?: boolean, asList?: boolean, asComment?:boolean)`
+`postValues(fileOrFilePath: TFile | string, payload: FieldsPayload, lineNumber?: number, after?: boolean, asList?: boolean, asBlockquote?:boolean)`
 
 #### parameters:
 
@@ -40,18 +32,17 @@ creates or updates fields with values in the target note
 - `lineNumber?: number` : optional line number where to create fields if it doesn't exist. If the field already exists, this attribute won't do anything. If line number is undefined and the field doesn't exist yet, it will be included in frontmatter
 - `after?: boolean` : optional parameter to create new fields after or before the line number. Defaults to `true`
 - `asList?: boolean`: optional parameter to create new fields as list (insert a `- ` before the field's name) . Defaults to `false`
-- `asComment?: boolean`: optional parameter to create new fields as comment (insert a `>` before the field's name) . Defaults to `false`
+- `asBlockquote?: boolean`: optional parameter to create new fields as comment (insert a `>` before the field's name) . Defaults to `false`
 
 #### `FieldsPayload` and `FieldPayload`
 
 ```typescript
 export type FieldPayload = {
     value: string, // the field's value as string
-    previousItemsCount?: number // optional, not usefull for api 
 }
 
 export type FieldsPayload = Array<{
-    name: string, //the name of the field
+    id: string, //the indexedPath of the field
     payload: FieldPayload
 }>
 ```
@@ -68,19 +59,12 @@ Takes a TFile or e filePath and returns all the fields in the document, both fro
 
 ```typescript
 {
-    (fieldName: string): {
+    (indexedPath: string): {
         /* the value of the field in the file */
         value: string | undefined, 
 
-        /* unicity of the field in the note: if false it means that this field appears more than once in the file */
-        unique: boolean,
-
         /* the fileClass name applied to this field if there is a fileClass AND if the field is set in the fileClass or the fileClass it's inheriting from */
-        fileClass: string | undefined,
-
-        /* the fileClass query applied to this field if there is a fileClass
-        AND if the file matches the query attached to this fileClass in the settings AND if the field is set in the fileClass or the fileClass it's inheriting from */
-        fileClassQuery: string | undefined
+        fileClassName: string | undefined,
 
         /* true if this fieldName is in "Globally ignored fields" in the plugin settings */
         ignoreInMenu: boolean | undefined,
@@ -95,16 +79,19 @@ Takes a TFile or e filePath and returns all the fields in the document, both fro
         sourceType: "fileClass" | "settings" | undefined,
 
         /* the type of the field according to the plugin settings or the fileClass  */
-        type: "Input" | "Select" | "Multi" | "Cycle" | "Boolean" | "Number" | undefined
+        type: "Input" | "Select" | "Multi" | "Cycle" | "Boolean" | "Number" | "File" | "MultiFile" | "Date" | "Lookup" | "Formula" | "Canvas" | "CanvasGroup" | "CanvasGroupLink" | "YAML" | "JSON" | "Object" | "ObjectList"
 
-        /* the note containing the values for multi, cycle or select types when defined in the plugin settings  */
-        valuesListNotePath: string | undefined
+        /* the unique identifier of the field definition in the vault */
+        id: string
+
+        /* the unique idenfier of the path of this field in this file*/
+        indexedPath: string | undefined
     }
 }
 ```
 
 ### insertMissingFields
-`insertMissingFields: (fileOrFilePath: string | TFile, lineNumber: number, boolean, asList: boolean, asComment: boolean, fileClassName?: string)`
+`insertMissingFields: (fileOrFilePath: string | TFile, lineNumber: number, boolean, asList: boolean, asBlockquote: boolean, fileClassName?: string)`
 
 Takes:
 - a TFile or its path, 

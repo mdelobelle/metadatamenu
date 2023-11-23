@@ -57,6 +57,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         return !!frontmatterEnd && cursor.line < frontmatterEnd
     }
 
+
     onTrigger(
         cursor: EditorPosition,
         editor: Editor,
@@ -70,7 +71,9 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             return null;
         };
         if (file?.extension !== "md") return null
+        if (editor.editorComponent.table) return null
         const fullLine = editor.getLine(editor.getCursor().line)
+        if (fullLine.startsWith("|")) return null
         this.inFrontmatter = this.isInFrontmatter(editor, cursor)
         if (this.inFrontmatter) {
             const regex = new RegExp(`^${genericFieldRegex}:(?<values>.*)`, "u");
@@ -272,7 +275,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 let parsedField: Record<string, string | string[] | null> = parseYaml(serializedField)
                 let [attr, pastValues] = Object.entries(parsedField)[0]
                 let newField: string
-                if (this.field && this.field.getDisplay(this.plugin) === MultiDisplayType.asList) {
+                if (this.field && this.field.getDisplay() === MultiDisplayType.asList) {
                     const fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
                     const options = (fieldManager as AbstractListBasedField)
                         .getOptionsList(dvApi.page(this.context?.file.path))
@@ -331,7 +334,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 }
                 editor.replaceRange(newField, { line: beginFieldLineNumber, ch: 0 }, { line: endFieldLineNumber, ch: editor.getLine(endFieldLineNumber).length });
 
-                if (!(this.field?.getDisplay(this.plugin) === MultiDisplayType.asList)
+                if (!(this.field?.getDisplay() === MultiDisplayType.asList)
                     && !(fieldName === "tags" && this.plugin.settings.frontmatterListDisplay === MultiDisplayType.asList)
                     && (Array.isArray(pastValues) || typeof pastValues === 'string' && pastValues.contains(","))) {
                     editor.setCursor({ line: beginFieldLineNumber, ch: newField.length - 1 })
@@ -343,7 +346,6 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                     editor.setCursor({ line: endFieldLineNumber, ch: editor.getLine(endFieldLineNumber).length })
                 }
             } catch (error) {
-                console.log(error)
                 new Notice("Frontmatter wrongly formatted", 2000)
                 this.close()
                 return

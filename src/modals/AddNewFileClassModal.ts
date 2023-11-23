@@ -1,11 +1,10 @@
 import MetadataMenu from "main";
-import { ButtonComponent, Modal, TextComponent, ToggleComponent } from "obsidian";
-import { createFileClass } from "src/commands/createFileClass";
+import { ButtonComponent, Modal, Notice, TextComponent, TFile, ToggleComponent } from "obsidian";
 import { cleanActions } from "src/utils/modals";
 
 
 export default class AddNewFileClassModal extends Modal {
-
+    name: string
     constructor(
         private plugin: MetadataMenu,
     ) {
@@ -15,10 +14,19 @@ export default class AddNewFileClassModal extends Modal {
 
     onOpen(): void {
         this.titleEl.setText("Add a new fileClass");
+        this.containerEl.onkeydown = async (e) => {
+            if (e.key == "Enter" && e.altKey) {
+                e.preventDefault()
+                await this.save()
+            }
+            if (e.key === "Escape" && e.altKey) {
+                this.close()
+            }
+        }
         this.buildAddFileClassForm();
     }
 
-    buildAddFileClassForm(): void {
+    private buildAddFileClassForm(): void {
         const fileClassesPath = this.plugin.settings.classFilesPath!
         const fileClassAlias = this.plugin.settings.fileClassAlias
         const nameContainer = this.contentEl.createDiv({ cls: "field-container" });
@@ -29,31 +37,18 @@ export default class AddNewFileClassModal extends Modal {
         nameInput.inputEl.addClass("full-width");
         const nameErrorContainer = this.contentEl.createDiv({ cls: "field-error", text: `This ${fileClassAlias} file already exists` });
 
-        const mapWithTagContainer = this.contentEl.createDiv({ cls: "field-container" });
-        mapWithTagContainer.createDiv({ cls: "label", text: `Map this ${fileClassAlias} file with the tag of same name` });
-        mapWithTagContainer.createDiv({ cls: "spacer" });
-        const mapWithTagToggler = new ToggleComponent(mapWithTagContainer)
-        mapWithTagToggler.setValue(false);
-        mapWithTagToggler.onChange(value => {
-            if (value) { tagNamesContainer.show(); } else { tagNamesContainer.hide(); }
-        })
-
-        const tagNamesContainer = this.contentEl.createDiv({ cls: "field-container" });
-        tagNamesContainer.createDiv({ cls: "label", text: "Aliases (optional)" });
-        const tagNamesInput = new TextComponent(tagNamesContainer);
-        tagNamesInput.inputEl.addClass("with-label");
-        tagNamesInput.inputEl.addClass("full-width");
-        tagNamesInput.setPlaceholder("Leave empty to map with the tag of same name as fileclass")
-        tagNamesContainer.hide();
         cleanActions(this.contentEl, ".footer-actions")
         const actionsContainer = this.contentEl.createDiv({ cls: "footer-actions" });
         actionsContainer.createDiv({ cls: "spacer" })
+        const infoContainer = actionsContainer.createDiv({ cls: "info" })
+        infoContainer.setText("Alt+Enter to save")
         const saveBtn = new ButtonComponent(actionsContainer);
         saveBtn.setDisabled(true);
         saveBtn.setIcon("file-plus-2");
 
         nameErrorContainer.hide();
         nameInput.onChange(async value => {
+            this.name = nameInput.getValue()
             nameErrorContainer.hide();
             saveBtn.setDisabled(false)
             saveBtn.setCta()
@@ -67,14 +62,26 @@ export default class AddNewFileClassModal extends Modal {
                 saveBtn.setCta();
             }
         });
-        saveBtn.onClick(() => {
-            createFileClass(
-                this.plugin,
-                nameInput.getValue(),
-                mapWithTagToggler.getValue(),
-                tagNamesInput.getValue().split(",").map(t => t.trim())
-            );
-            this.close();
-        })
+        saveBtn.onClick(async () => await this.save())
+    }
+
+
+
+    private async save() {
+        const fileClassName = this.name
+        const classFilesPath = this.plugin.settings.classFilesPath
+        let fCFile: TFile
+        const openAfterCreate = this.plugin.fieldIndex.openFileClassManagerAfterIndex
+        if (classFilesPath) {
+            try {
+                openAfterCreate.push(fileClassName)
+                fCFile = await this.plugin.app.vault.create(`${classFilesPath}${fileClassName}.md`, "")
+            } catch (error) {
+                openAfterCreate.remove(fileClassName)
+                new Notice("Something went wrong. Impossible to create this fileClass", 3000)
+                return
+            }
+        }
+        this.close();
     }
 }

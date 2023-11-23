@@ -4,9 +4,59 @@
         color: var(--link-color);
         margin-left: 0.2em;
         cursor:context-menu;
+        align-items: center;
+        display: inline-flex;
+        margin-left: 0.375em;
         
+        &.field-status-changed{
+            color: var(--text-warning);
+        }
+
         svg{
-            vertical-align: calc(var(--font-text-size) * -0.15);
+            height: calc(var(--icon-size)*0.935);
+            width: calc(var(--icon-size)*0.935);
         }
     }
+}
+
+
+.workspace-tab-header-inner{
+    .metadata-menu{
+        &.fileclass-icon{
+            svg{
+                vertical-align: calc(var(--icon-size)*0.15);
+            }
+        }
+    }
+}
+.plugin-metadata-menu{
+    padding: 0 var(--size-2-2);
+
+    .status-item-btn{
+
+        box-shadow: none;
+        padding: 0;
+        height: inherit;
+
+        .sync-status-icon{
+
+            .svg-icon{
+                stroke-width: 1.5;
+                stroke: var(--text-faint);
+            }
+
+            &.indexing{
+                .rotating{
+                    stroke: var(--color-blue);
+                }
+            }
+
+            &.indexed{
+                .check-mark{
+                    stroke: var(--color-green)
+                }
+            }
+        }
+    }
+
 }

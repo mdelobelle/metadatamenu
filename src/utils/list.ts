@@ -31,7 +31,7 @@ export function getListBoundsFromListItemCacheList(
             }
         })
     if (end >= 0) {
-        //console.log({ start: start, end: end })
+        DEBUG && console.log({ start: start, end: end })
         return { start: start, end: end }
     }
     return

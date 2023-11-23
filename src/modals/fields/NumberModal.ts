@@ -1,36 +1,42 @@
 import MetadataMenu from "main";
-import { Modal, TextComponent, TFile, ButtonComponent } from "obsidian";
+import { TextComponent, TFile, ButtonComponent } from "obsidian";
 import { postValues } from "src/commands/postValues";
+import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
 import NumberField from "src/fields/fieldManagers/NumberField";
 import { FieldManager } from "src/types/fieldTypes";
 import { cleanActions } from "src/utils/modals";
-import BaseModal from "../baseModal";
+import BaseModal from "../BaseModal";
+import ObjectListModal from "./ObjectListModal";
+import ObjectModal from "./ObjectModal";
 
 export default class NumberModal extends BaseModal {
 
     private fieldManager: NumberField;
     private numberInput: TextComponent;
     private errorField: HTMLDivElement;
+    private value: string;
 
     constructor(
         public plugin: MetadataMenu,
-        private file: TFile,
+        public file: TFile,
         private field: Field,
-        private value: string,
+        private eF?: ExistingField,
+        public indexedPath?: string,
         private lineNumber: number = -1,
-        private after: boolean = false,
         private asList: boolean = false,
-        private asComment: boolean = false
+        private asBlockquote: boolean = false,
+        public previousModal?: ObjectModal | ObjectListModal
     ) {
-        super(plugin);
+        super(plugin, file, previousModal, indexedPath);
+        this.value = this.eF?.value || ""
         this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
         this.containerEl.addClass("metadata-menu")
+        this.buildInputEl();
     };
 
     onOpen() {
         super.onOpen()
-        this.buildInputEl();
     };
 
     private decrement(numberInput: TextComponent): void {
@@ -90,11 +96,8 @@ export default class NumberModal extends BaseModal {
 
         fieldContainer.createDiv({ cls: "spacer" })
 
-        const validateBtn = new ButtonComponent(fieldContainer);
-        validateBtn.setIcon("checkmark");
+        this.buildSimpleSaveBtn(fieldContainer)
 
-        const cancelBtn = new ButtonComponent(fieldContainer);
-        cancelBtn.setIcon("cross");
         cleanActions(this.contentEl, ".field-error")
         this.errorField = this.contentEl.createEl("div", { cls: "field-error" })
         this.errorField.hide()
@@ -120,15 +123,6 @@ export default class NumberModal extends BaseModal {
             this.decrement(numberInput);
             this.toggleButtonsState(minusBtn, plusBtn, numberInput);
         })
-
-        cancelBtn.onClick((e) => {
-            e.preventDefault();
-            this.close()
-        })
-
-        validateBtn.onClick(async () => {
-            this.save();
-        })
     };
 
     public async save(): Promise<void> {
@@ -141,7 +135,9 @@ export default class NumberModal extends BaseModal {
             this.numberInput.inputEl.setAttr("class", "is-invalid")
             return
         }
-        await postValues(this.plugin, [{ name: this.field.name, payload: { value: inputValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
-        this.close();
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: inputValue } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
+        this.saved = true
+        if (this.previousModal) await this.goToPreviousModal()
+        this.close()
     }
 };

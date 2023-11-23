@@ -1,0 +1,37 @@
+@mixin control-button {
+    margin: 0.15em 0;
+    border: none;
+    color: var(--text-accent);
+    box-shadow: none;
+    padding: 0 0.5em;
+    height: calc(var(--input-height)*0.875);
+    width: calc(var(--input-height)*0.875);
+}
+
+button.property-metadata-menu{
+    @include control-button();
+    svg{
+        vertical-align: calc(var(--font-text-size) * 0.15);
+        height: calc(var(--icon-size)*0.935);
+        width: calc(var(--icon-size)*0.935);
+    }
+}
+
+.metadata-content{
+    .action-container{
+        display: flex;
+        align-items: flex-end;
+        .fileclass-btn-container{
+
+            display: flex;
+            align-items: flex-end;
+            .add-field-button{
+                border: none;
+                color: var(--text-accent);
+                box-shadow: none;
+                padding: 0 0.5em;
+                margin-left: 0.2em;
+            }
+        }
+    }
+}

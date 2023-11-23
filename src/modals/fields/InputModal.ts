@@ -1,28 +1,32 @@
 import MetadataMenu from "main";
-import { ButtonComponent, DropdownComponent, TextAreaComponent, TextComponent, TFile } from "obsidian";
+import { DropdownComponent, Notice, TextAreaComponent, TextComponent, TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
+import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
 import { cleanActions } from "src/utils/modals";
-import BaseModal from "../baseModal";
+import BaseModal from "../BaseModal";
+import ObjectListModal from "./ObjectListModal";
+import ObjectModal from "./ObjectModal";
 
 export default class InputModal extends BaseModal {
     private templateValues: Record<string, string> = {};
     private renderedValue: TextAreaComponent;
     private newValue: string;
+    private value: string;
 
     constructor(
         public plugin: MetadataMenu,
-        private file: TFile,
+        public file: TFile,
         private field: Field,
-        private value: string,
+        private eF?: ExistingField,
+        public indexedPath?: string,
         private lineNumber: number = -1,
-        private after: boolean = false,
         private asList: boolean = false,
-        private asComment: boolean = false
-    ) { super(plugin); };
-
-    onOpen() {
-        super.onOpen()
+        private asBlockquote: boolean = false,
+        public previousModal?: ObjectModal | ObjectListModal
+    ) {
+        super(plugin, file, previousModal, indexedPath);
+        this.value = this.eF?.value || ""
         if (this.field.options.template) {
             const templateFieldRegex = new RegExp(`\\{\\{(?<field>[^\\}]+?)\\}\\}`, "gu");
             const tF = this.field.options.template.matchAll(templateFieldRegex)
@@ -33,8 +37,14 @@ export default class InputModal extends BaseModal {
                     const [name, optionsString] = value.split(/:(.*)/s).map((v: string) => v.trim())
                     this.templateValues[name] = "";
                     if (optionsString) {
-                        const options = JSON.parse(optionsString);
-                        this.buildTemplateSelectItem(this.contentEl.createDiv({ cls: "field-container" }), name, options);
+                        try {
+                            const options = JSON.parse(optionsString);
+                            this.buildTemplateSelectItem(this.contentEl.createDiv({ cls: "field-container" }), name, options);
+                        } catch ({ name: errorName, message }) {
+                            const notice = `{{${name}}} field definition is not a valid JSON \n` +
+                                `in <${this.field.name}> ${this.field.fileClassName ? this.field.fileClassName : "Metadata Menu"} settings`
+                            if (errorName === "SyntaxError") new Notice(notice, 5000)
+                        }
                     } else {
                         this.buildTemplateInputItem(this.contentEl.createDiv({ cls: "field-container" }), name);
                     }
@@ -47,8 +57,13 @@ export default class InputModal extends BaseModal {
             this.buildInputEl(this.contentEl.createDiv({ cls: "field-container" }));
         }
         cleanActions(this.contentEl, ".footer-actions")
-        this.buildSaveBtn(this.contentEl.createDiv({ cls: "footer-actions" }));
+        //this.buildSaveBtn(this.contentEl.createDiv({ cls: "footer-actions" }));
+        this.buildFooterBtn()
         this.containerEl.addClass("metadata-menu")
+    };
+
+    onOpen() {
+        super.onOpen()
     };
 
     private renderValue() {
@@ -58,8 +73,8 @@ export default class InputModal extends BaseModal {
             renderedString = renderedString.replace(fieldRegex, this.templateValues[k])
         })
 
-        this.renderedValue.setValue(renderedString)
-        this.newValue = renderedString
+        this.renderedValue.setValue(renderedString.replaceAll("\n", ", "))
+        this.newValue = renderedString.replaceAll("\n", ", ")
     }
 
     private buildTemplateInputItem(fieldContainer: HTMLDivElement, name: string) {
@@ -103,7 +118,11 @@ export default class InputModal extends BaseModal {
     };
 
     public async save(): Promise<void> {
-        await postValues(this.plugin, [{ name: this.field.name, payload: { value: this.newValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
-        this.close();
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: this.newValue } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
+        this.saved = true
+        if (this.previousModal) await this.goToPreviousModal()
+        this.close()
     }
+
+
 };

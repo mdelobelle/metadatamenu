@@ -65,7 +65,12 @@ export function getFrontmatterPosition(plugin: MetadataMenu, file: TFile) {
         } else if (cache.frontmatter) {
             return cache.frontmatter.position
         } else {
-            return { start: undefined, end: undefined }
+            const firstSection = cache.sections?.[0]
+            if (firstSection?.type === "yaml") {
+                return firstSection.position
+            } else {
+                return { start: undefined, end: undefined }
+            }
         }
     } else {
         return { start: undefined, end: undefined }

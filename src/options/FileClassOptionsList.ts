@@ -1,7 +1,6 @@
 import MetadataMenu from "main";
 import { Menu, Notice, TFile } from "obsidian";
 import { insertMissingFields } from "src/commands/insertMissingFields";
-import { postValues } from "src/commands/postValues";
 import { FileClassManager } from "src/components/fileClassManager";
 import { FileClass } from "src/fileClass/fileClass";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
@@ -38,7 +37,7 @@ export default class FileClassOptionsList {
 
     public createExtraOptionList(openAfterCreate: boolean = true): void {
         const mapWithTagAction = async () => {
-            await postValues(this.plugin, [{ name: "mapWithTag", payload: { value: "true" } }], this.file);
+            this.plugin.app.fileManager.processFrontMatter(this.file, fm => fm.mapWithTag = true)
         }
         const openFileClassTableViewAction = () => {
             const fileClassComponent = new FileClassManager(this.plugin, fileClass)
@@ -59,16 +58,14 @@ export default class FileClassOptionsList {
                         this.fromFile,
                         (
                             lineNumber: number,
-                            after: boolean,
                             asList: boolean,
-                            asComment: boolean
+                            asBlockquote: boolean
                         ) => insertMissingFields(
                             this.plugin,
                             dvFile.file.path,
                             lineNumber,
-                            after,
                             asList,
-                            asComment,
+                            asBlockquote,
                             fileClass?.name
                         )
                     );

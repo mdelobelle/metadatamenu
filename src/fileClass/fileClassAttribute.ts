@@ -6,14 +6,17 @@ import { FieldManager, FieldType, MultiDisplayType } from "src/types/fieldTypes"
 class FileClassAttribute {
 
     constructor(
+        public plugin: MetadataMenu,
         public origin: string,
         public name: string,
+        public id: string,
         public type: FieldType = FieldType.Input,
         public options: string[] | Record<string, any> = [],
         public fileClassName: string,
         public command: FieldCommand,
         public display?: MultiDisplayType,
-        public style?: Record<keyof typeof FieldStyleLabel, boolean>
+        public style?: Record<keyof typeof FieldStyleLabel, boolean>,
+        public path?: string
     ) { }
 
     public getField() {
@@ -25,7 +28,7 @@ class FileClassAttribute {
         } else {
             options = this.options
         }
-        return new Field(this.name, options, this.name, this.type, this.fileClassName, this.command, this.display, this.style);
+        return new Field(this.plugin, this.name, options, this.id, this.type, this.fileClassName, this.command, this.display, this.style, this.path);
     }
 
     public getOptionsString(plugin: MetadataMenu) {

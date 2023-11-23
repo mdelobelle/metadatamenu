@@ -10,6 +10,9 @@ import * as Lookup from "src/types/lookupTypes";
 import { Status } from "src/types/lookupTypes";
 import { FieldOptions } from "src/components/NoteFields";
 import { updateLookups } from "src/commands/updateLookups";
+import { extractLinks, getLink } from "src/utils/parser";
+import { displayLinksOrText } from "src/utils/linksUtils";
+import { ExistingField } from "../existingField";
 import { postValues } from "src/commands/postValues";
 
 export default class LookupField extends FieldManager {
@@ -19,7 +22,8 @@ export default class LookupField extends FieldManager {
         this.showModalOption = false
     }
 
-    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
+        const name = this.field.name
         if (!this.field.options.autoUpdate && this.field.options.autoUpdate !== undefined) {
             const f = this.plugin.fieldIndex;
             const id = `${file.path}__${this.field.name}`;
@@ -32,15 +36,11 @@ export default class LookupField extends FieldManager {
                 this.field.options.outputType
             ) status = Status.changed
             const icon = status === Status.changed ? "refresh-ccw" : "file-check"
-            const action = () => { updateLookups(this.plugin, "single_command", { file: file, fieldName: this.field.name }) }
-            if (LookupField.isMenu(location) && status === Status.changed) {
-                location.addItem((item) => {
-                    item.setTitle(`Update <${name}>`);
-                    item.setIcon(icon);
-                    item.onClick(action);
-                    item.setSection("metadata-menu.fields");
-                })
-            } else if (LookupField.isSuggest(location) && status === Status.changed) {
+            const action = async () => {
+                await updateLookups(this.plugin, { file: file, fieldName: this.field.name })
+                f.applyUpdates()
+            }
+            if (LookupField.isSuggest(location) && status === Status.changed) {
                 location.options.push({
                     id: `update_${name}`,
                     actionLabel: `<span>Update <b>${name}</b></span>`,
@@ -61,13 +61,14 @@ export default class LookupField extends FieldManager {
     async createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        eF?: ExistingField,
+        indexedPath?: string,
         lineNumber?: number,
-        after?: boolean,
         asList?: boolean,
-        asComment?: boolean
+        asBlockquote?: boolean
     ): Promise<void> {
-        await postValues(this.plugin, [{ name: this.field.name, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
+        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file, lineNumber, asList, asBlockquote)
+        await this.plugin.fieldIndex.fullIndex()
     }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }): void {
@@ -76,6 +77,7 @@ export default class LookupField extends FieldManager {
         const fileClassName = this.plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName)?.fileClassName || "presetField"
         const fieldValue = dv.el('span', this.plugin.fieldIndex.fileLookupFieldLastValue.get(`${file.path}__related__${fileClassName}___${fieldName}`), attrs);
         fieldContainer.appendChild(fieldValue);
+
     }
 
     private displaySelectedOutputOptionContainer(optionContainers: [Array<keyof typeof Lookup.Type>, HTMLElement | undefined][], value: keyof typeof Lookup.Type) {
@@ -88,9 +90,8 @@ export default class LookupField extends FieldManager {
         })
     }
 
-    public displayValue(container: HTMLDivElement, file: TFile, fieldName: string, onClicked = () => { }): void {
-        const fileClassName = this.plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.name === fieldName)?.fileClassName || "presetField"
-        container.createDiv({ text: this.plugin.fieldIndex.fileLookupFieldLastValue.get(`${file.path}__related__${fileClassName}___${fieldName}`) })
+    public displayValue(container: HTMLDivElement, file: TFile, value: string, onClicked = () => { }): void {
+        displayLinksOrText(value, file, container, this.plugin, () => onClicked)
     }
 
     private displaySelectedOutputWarningContainer(optionWarningContainer: HTMLDivElement, value: keyof typeof Lookup.Type) {

@@ -1,4 +1,4 @@
-import { App, editorViewField, MarkdownView, setIcon, TFile } from "obsidian";
+import { App, editorInfoField, editorViewField, MarkdownView, setIcon, TFile } from "obsidian";
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { RangeSetBuilder } from "@codemirror/state";
 import { syntaxTree } from "@codemirror/language";
@@ -33,7 +33,7 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
                 let fileClass = plugin.fieldIndex.fileClassesName.get(this.fileClassName)
                 const classFilesPath = plugin.settings.classFilesPath
                 if (classFilesPath && this.destName.includes(classFilesPath)) {
-                    const icon = "file-spreadsheet"
+                    const icon = fileClass?.getIcon() || "file-spreadsheet"
                     fileClass = plugin.fieldIndex.fileClassesPath.get(this.destName + ".md")
                     if (fileClass) {
                         setIcon(metadataMenuBtn, icon || settings.buttonIcon)
@@ -89,7 +89,7 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
                 if (!settings.enableEditor) {
                     return builder.finish();
                 }
-                const mdView = view.state.field(editorViewField) as MarkdownView;
+                const mdView = view.state.field(editorInfoField) as MarkdownView;
                 let lastAttributes = {};
                 let iconDecoAfter: Decoration | null = null;
                 let iconDecoAfterWhere: number | null = null;
@@ -130,10 +130,11 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
                                         iconDecoAfterWhere = null;
                                     }
                                 }
-                                if (isLink && !isAlias && !isPipe || isMDUrl) {
+                                if (mdView.file && isLink && !isAlias && !isPipe || isMDUrl) {
+
                                     let linkText = view.state.doc.sliceString(node.from, node.to);
                                     linkText = linkText.split("#")[0];
-                                    let file = plugin.app.metadataCache.getFirstLinkpathDest(linkText, mdView.file.basename);
+                                    let file = plugin.app.metadataCache.getFirstLinkpathDest(linkText, mdView!.file!.basename);
                                     if (isMDUrl && !file) {
                                         try {
                                             file = plugin.app.vault.getAbstractFileByPath(decodeURIComponent(linkText)) as TFile;
@@ -148,11 +149,6 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
                                                 attributes,
                                                 class: "fileclass-text"
                                             });
-                                            /*
-                                            let iconDecoBefore = Decoration.widget({
-                                                widget: new HeaderWidget(fileClassName, false),
-                                            });
-                                            */
                                             iconDecoAfter = Decoration.widget({
                                                 widget: new HeaderWidget(fileClassName, true, file.path.replace(/(.*).md/, "$1")),
                                             });

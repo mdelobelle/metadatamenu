@@ -1,37 +1,32 @@
 import MetadataMenu from "main";
 import { Modal, TFile, ButtonComponent } from "obsidian";
 import { postValues } from "src/commands/postValues";
+import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
+import BooleanField from "src/fields/fieldManagers/BooleanField";
+import BaseModal from "../BaseModal";
+import ObjectListModal from "./ObjectListModal";
+import ObjectModal from "./ObjectModal";
 
-export default class BooleanModal extends Modal {
-
+export default class BooleanModal extends BaseModal {
+    private value: boolean
     constructor(
-        private plugin: MetadataMenu,
-        private file: TFile,
+        public plugin: MetadataMenu,
+        public file: TFile,
         private field: Field,
-        private value: boolean,
+        private eF?: ExistingField,
+        public indexedPath?: string,
         private lineNumber: number = -1,
-        private after: boolean = false,
         private asList: boolean = false,
-        private asComment: boolean = false
+        private asBlockquote: boolean = false,
+        public previousModal?: ObjectModal | ObjectListModal
     ) {
-        super(plugin.app);
-        this.plugin = plugin;
-        this.file = file;
-        this.value = value;
-        this.lineNumber = lineNumber;
-        this.after = after;
-        this.asList = asList;
-        this.asComment = asComment;
-        this.field = field
-    };
-
-    onOpen() {
+        super(plugin, file, previousModal, indexedPath);
+        this.value = this.eF ? BooleanField.stringToBoolean(this.eF.value || "") : false;
         this.containerEl.addClass("metadata-menu")
         this.containerEl.addClass("narrow")
         this.buildToggleEl();
     };
-
 
     private buildToggleEl(): void {
         const choicesContainer = this.contentEl.createDiv({ cls: "value-container" })
@@ -60,13 +55,14 @@ export default class BooleanModal extends Modal {
             trueButton.setCta();
             falseButton.removeCta();
         })
-        const saveButton = new ButtonComponent(choicesContainer);
-        saveButton.setClass("right")
-        saveButton.setIcon("checkmark");
-        saveButton.onClick(async () => {
-            const value = this.value.toString()
-            await postValues(this.plugin, [{ name: this.field.name, payload: { value: value } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
-            this.close();
-        });
+        this.buildSimpleSaveBtn(choicesContainer)
     };
+
+    public async save(): Promise<void> {
+        const value = this.value.toString()
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
+        this.saved = true
+        if (this.previousModal) await this.goToPreviousModal()
+        this.close();
+    }
 };

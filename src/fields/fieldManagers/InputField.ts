@@ -6,6 +6,9 @@ import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
 import { FieldOptions } from "src/components/NoteFields";
+import { ExistingField } from "../existingField";
+import ObjectListModal from "src/modals/fields/ObjectListModal";
+import ObjectModal from "src/modals/fields/ObjectModal";
 
 export default class InputField extends FieldManager {
 
@@ -17,19 +20,18 @@ export default class InputField extends FieldManager {
         return this.field.options.template || ""
     }
 
-    public addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
-        const modal = new InputModal(this.plugin, file, this.field, value);
-        modal.titleEl.setText(`Change Value for <${name}>`);
+    private async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
+        const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const modal = new InputModal(this.plugin, file, this.field, eF, indexedPath);
+        modal.titleEl.setText(`Change Value for <${this.field.name}>`);
+        modal.open()
+    }
+
+    public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
+        const name = this.field.name
         const iconName = FieldIcon[FieldType.Input];
-        const action = () => modal.open();
-        if (InputField.isMenu(location)) {
-            location.addItem((item) => {
-                item.setTitle(`Update <${name}>`);
-                item.setIcon(iconName);
-                item.onClick(action);
-                item.setSection("metadata-menu.fields");
-            })
-        } else if (InputField.isSuggest(location)) {
+        const action = async () => await this.buildAndOpenModal(file, indexedPath);
+        if (InputField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
@@ -62,13 +64,14 @@ export default class InputField extends FieldManager {
     public createAndOpenFieldModal(
         file: TFile,
         selectedFieldName: string,
-        value?: string,
+        eF?: ExistingField,
+        indexedPath?: string,
         lineNumber?: number,
-        after?: boolean,
         asList?: boolean,
-        asComment?: boolean
+        asBlockquote?: boolean,
+        previousModal?: ObjectModal | ObjectListModal
     ): void {
-        const fieldModal = new InputModal(this.plugin, file, this.field, value || "", lineNumber, after, asList, asComment);
+        const fieldModal = new InputModal(this.plugin, file, this.field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal);
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
@@ -110,7 +113,7 @@ export default class InputField extends FieldManager {
         const validateIcon = inputContainer.createEl("button");
         setIcon(validateIcon, "checkmark");
         validateIcon.onclick = (e) => {
-            InputField.replaceValues(this.plugin, p.file.path, this.field.name, input.value);
+            InputField.replaceValues(this.plugin, p.file.path, this.field.id, input.value);
             inputContainer.hide()
         }
         const cancelIcon = inputContainer.createEl("button");
@@ -125,7 +128,7 @@ export default class InputField extends FieldManager {
 
         input.onkeydown = (e) => {
             if (e.key === "Enter") {
-                InputField.replaceValues(this.plugin, p.file.path, this.field.name, input.value);
+                InputField.replaceValues(this.plugin, p.file.path, this.field.id, input.value);
                 inputContainer.hide();
             }
             if (e.key === 'Escape') {
@@ -136,12 +139,11 @@ export default class InputField extends FieldManager {
             }
         }
         /* button on click : remove button and field and display input field*/
-        editBtn.onclick = () => {
+        editBtn.onclick = async () => {
             if (this.field.options.template) {
                 const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path);
                 if (file instanceof TFile && file.extension === 'md') {
-                    const inputModal = new InputModal(this.plugin, file, this.field, p[this.field.name]);
-                    inputModal.open();
+                    await this.buildAndOpenModal(file, this.field.id)
                 }
             } else {
                 inputContainer.show();

@@ -5,8 +5,12 @@ import { FieldManager as FM } from "src/fields/FieldManager";
 import MetadataMenu from "main";
 import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
+import { extractLinks, getLink } from "src/utils/parser";
+import { ExistingField } from "src/fields/ExistingField";
+import ObjectModal from "./ObjectModal";
+import ObjectListModal from "./ObjectListModal";
 
-export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
+export default class MultiFileModal extends FuzzySuggestModal<TFile> {
 
     private selectedFiles: TFile[] = [];
 
@@ -14,28 +18,40 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
         private plugin: MetadataMenu,
         private file: TFile,
         private field: Field,
-        initialValueObject: any,
+        private eF?: ExistingField,
+        private indexedPath?: string,
         private lineNumber: number = -1,
-        private after: boolean = false,
         private asList: boolean = false,
-        private asComment: boolean = false
+        private asBlockquote: boolean = false,
+        private previousModal?: ObjectModal | ObjectListModal
     ) {
         super(plugin.app);
-        const dvApi = this.plugin.app.plugins.plugins["dataview"]?.api
-        if (dvApi) {
-            const selectedValues: Array<any> = Array.isArray(initialValueObject) ? initialValueObject : [initialValueObject]
-            selectedValues.forEach(value => {
-                if (dvApi.value.isLink(value)) {
-                    const file = this.plugin.app.vault.getAbstractFileByPath(value.path)
-                    if (file instanceof TFile) this.selectedFiles.push(file)
-                }
-            })
+        const initialOptions: string | string[] = this.eF?.value || []
+        if (initialOptions) {
+            if (Array.isArray(initialOptions)) {
+                // in frontmatter it can be a regular array
+                initialOptions.map(item => {
+                    const link = getLink(item, this.file)
+                    if (link) {
+                        const file = this.plugin.app.vault.getAbstractFileByPath(link.path)
+                        if (file instanceof TFile && !this.selectedFiles.map(_f => _f.path).includes(file.path)) this.selectedFiles.push(file)
+                    }
+                })
+            } else {
+                // in inline fields, it can be links comma separated, let's matchAll
+                const links = extractLinks(initialOptions)
+                links.forEach(_link => {
+                    const link = getLink(_link, this.file)
+                    if (link) {
+                        const file = this.plugin.app.vault.getAbstractFileByPath(link.path)
+                        if (file instanceof TFile && !this.selectedFiles.map(_f => _f.path).includes(link.path)) this.selectedFiles.push(file)
+                    }
+                })
+            }
+        } else {
+            this.selectedFiles = [];
         }
         this.containerEl.addClass("metadata-menu")
-    }
-
-    onOpen() {
-        super.onOpen()
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter" && e.altKey) {
                 e.preventDefault();
@@ -71,6 +87,14 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
         this.modalEl.appendChild(buttonContainer)
     }
 
+    onOpen() {
+        super.onOpen()
+    }
+
+    onClose(): void {
+        this.previousModal?.open()
+    }
+
     getItems(): TFile[] {
         const sortingMethod = new Function("a", "b", `return ${this.field.options.customSorting}`) || function (a: TFile, b: TFile) { return a.basename < b.basename ? -1 : 1 }
         try {
@@ -95,11 +119,11 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
             }
             return FM.buildMarkDownLink(this.plugin, this.file, file.basename, undefined, alias)
         })
-        await postValues(this.plugin, [{ name: this.field.name, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
     }
 
     async clearValues() {
-        await postValues(this.plugin, [{ name: this.field.name, payload: { value: "" } }], this.file)
+        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: "" } }], this.file)
     }
 
     renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {
@@ -154,6 +178,8 @@ export default class MultiFileFuzzySuggester extends FuzzySuggestModal<TFile> {
         this.renderSelected()
     }
 
-    async onChooseItem(item: TFile): Promise<void> { }
+    async onChooseItem(item: TFile): Promise<void> {
+
+    }
 
 }

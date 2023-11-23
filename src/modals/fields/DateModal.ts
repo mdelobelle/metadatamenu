@@ -7,8 +7,11 @@ import MetadataMenu from "main";
 import { FieldIcon, FieldType, FieldManager } from "src/types/fieldTypes";
 import DateField from "src/fields/fieldManagers/DateField";
 import { postValues } from "src/commands/postValues";
-import BaseModal from "../baseModal";
+import BaseModal from "../BaseModal";
 import { cleanActions } from "src/utils/modals";
+import { ExistingField } from "src/fields/ExistingField";
+import ObjectModal from "./ObjectModal";
+import ObjectListModal from "./ObjectListModal";
 
 export default class DateModal extends BaseModal {
 
@@ -21,41 +24,41 @@ export default class DateModal extends BaseModal {
     private pushNextInterval: boolean = false;
     private currentShift?: string
     private nextShift?: string
-    private dateManager?: DateField
-    private dvApi?: any
+    private dateManager: DateField
+    private initialValue: string
 
     constructor(
         public plugin: MetadataMenu,
-        private file: TFile,
+        public file: TFile,
         private field: Field,
-        private initialValue: string,
+        private eF?: ExistingField,
+        public indexedPath?: string,
         private lineNumber: number = -1,
-        private after: boolean = false,
         private asList: boolean = false,
-        private asComment: boolean = false
+        private asBlockquote: boolean = false,
+        public previousModal?: ObjectModal | ObjectListModal
     ) {
-        super(plugin);
+        super(plugin, file, previousModal);
+        const initialValue = this.eF?.value || ""
         this.initialValue = initialValue ? initialValue.toString().replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last() || "" : "";
         this.insertAsLink = FM.stringToBoolean(this.field.options.defaultInsertAsLink || "false") || false;
         this.format = this.field.options.dateFormat || this.field.options.defaultDateFormat;
-        this.dvApi = this.plugin.app.plugins.plugins["dataview"]?.api
-        if (this.dvApi) this.dateManager = new FieldManager[this.field.type](this.plugin, this.field);
+        this.dateManager = new FieldManager[this.field.type](this.plugin, this.field);
         this.value = this.initialValue;
-
     };
 
-    onOpen() {
+    async onOpen() {
         super.onOpen()
         this.containerEl.addClass("metadata-menu")
         cleanActions(this.contentEl, ".field-container");
         cleanActions(this.contentEl, ".field-error");
         const fieldContainer = this.contentEl.createDiv({ cls: "field-container" });
-        this.buildFields(fieldContainer);
+        await this.buildFields(fieldContainer);
         this.errorField = this.contentEl.createEl("div", { cls: "field-error" });
         this.errorField.hide();
     };
 
-    public async save(e: Event): Promise<void> {
+    public async save(): Promise<void> {
         //e.preventDefault();
         let newValue: moment.Moment;
         //try natural language date
@@ -65,7 +68,6 @@ export default class DateModal extends BaseModal {
                 const nldates = this.plugin.app.plugins.plugins['nldates-obsidian'];
                 newValue = nldates.parseDate(this.value).moment;
             } catch (error) {
-                console.log(error)
                 newValue = moment(this.value, this.format);
             }
         } else {
@@ -74,14 +76,18 @@ export default class DateModal extends BaseModal {
         if (newValue.isValid()) {
             const linkPath = this.plugin.app.metadataCache.getFirstLinkpathDest(this.field.options.linkPath || "" + newValue.format(this.format), this.file.path)
             const formattedValue = this.insertAsLink ? `[[${this.field.options.linkPath || ""}${newValue.format(this.format)}${linkPath ? "|" + linkPath.basename : ""}]]` : newValue.format(this.format)
-            await postValues(this.plugin, [{ name: this.field.name, payload: { value: formattedValue } }], this.file, this.lineNumber, this.after, this.asList, this.asComment)
+            await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: formattedValue } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
+            this.saved = true
+            if (this.previousModal) await this.goToPreviousModal()
             if (this.nextIntervalField && this.pushNextInterval && this.nextShift) {
-                await postValues(this.plugin, [{ name: this.nextIntervalField!.name, payload: { value: this.nextShift! } }], this.file.path)
+                await postValues(this.plugin, [{ id: this.nextIntervalField!.id, payload: { value: this.nextShift! } }], this.file.path)
                 this.close()
             }
             this.close();
         } else if (!this.value) {
-            await postValues(this.plugin, [{ name: this.field.name, payload: { value: "" } }], this.file, this.lineNumber, this.after, this.asList, this.asComment);
+            await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
+            this.saved = true
+            if (this.previousModal) await this.goToPreviousModal()
             this.close()
         } else {
             this.errorField.show();
@@ -91,11 +97,11 @@ export default class DateModal extends BaseModal {
         }
     }
 
-    private buildFields(dateFieldsContainer: HTMLDivElement) {
+    private async buildFields(dateFieldsContainer: HTMLDivElement): Promise<void> {
 
-        this.buildInputEl(dateFieldsContainer);
+        await this.buildInputEl(dateFieldsContainer);
         this.buildInsertAsLinkButton(dateFieldsContainer);
-        this.buildSaveBtn(dateFieldsContainer);
+        this.buildSimpleSaveBtn(dateFieldsContainer);
     }
 
     private buildInsertAsLinkButton(container: HTMLDivElement) {
@@ -124,10 +130,8 @@ export default class DateModal extends BaseModal {
         }
     }
 
-    private buildInputEl(container: HTMLDivElement): void {
-
-        if (this.dateManager) [this.currentShift, this.nextIntervalField, this.nextShift] = this.dateManager.shiftDuration(this.file);
-
+    private async buildInputEl(container: HTMLDivElement): Promise<void> {
+        [this.currentShift, this.nextIntervalField, this.nextShift] = await this.dateManager.shiftDuration(this.file);
         this.inputEl = new TextComponent(container);
         this.inputEl.inputEl.focus();
 
@@ -171,18 +175,11 @@ export default class DateModal extends BaseModal {
         })
 
         shiftFromTodayBtn.onClick(async (e: MouseEvent) => {
-            const currentDvDate = this.dvApi.date(moment(this.initialValue, this.format).toISOString());
-            const newDate = currentDvDate.plus(this.dvApi.duration(this.currentShift || "1 day"));
-            const newValue = moment(newDate.toString()).format(this.format)
+            const newValue = await this.dateManager.getNewDateValue(this.currentShift, this.file, this.indexedPath)
             this.inputEl.setValue(newValue);
             this.value = newValue;
             this.pushNextInterval = true;
             this.toggleButton(shiftFromTodayBtn, this.inputEl.getValue())
         })
-
-        if (!this.dvApi) {
-            shiftFromTodayBtn.buttonEl.hide();
-            shiftFromTodayBtn.setDisabled(true);
-        }
     };
 };

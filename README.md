@@ -81,7 +81,6 @@ a Field can be modified or added from several locations:
 - dataview table if you have dataview plugin installed
 
 # Roadmap
-- [ ] manage indented lists multi-values frontmatter field
 
 # Know Issue
 - autocomplete conflicts with Various Complements plugin

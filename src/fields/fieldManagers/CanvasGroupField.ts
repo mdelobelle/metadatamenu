@@ -5,6 +5,7 @@ import { FieldOptions } from "src/components/NoteFields"
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
 import FieldSettingsModal from "src/settings/FieldSettingsModal"
 import { FieldType } from "src/types/fieldTypes"
+import { ExistingField } from "../existingField"
 import Field from "../Field"
 import { SettingLocation } from "../FieldManager"
 import AbstractCanvasBasedField from "./AbstractCanvasBasedField"
@@ -17,12 +18,13 @@ export default class CanvasGroupField extends AbstractCanvasBasedField {
         super(plugin, field, FieldType.CanvasGroup)
     }
 
-    addFieldOption(name: string, value: string, file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions): void {
+    addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         //no field option to add for this field, it is automatically updated
     }
 
-    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, value?: string, lineNumber?: number, after?: boolean, asList?: boolean, asComment?: boolean): Promise<void> {
-        await postValues(this.plugin, [{ name: this.field.name, payload: { value: "" } }], file, lineNumber, after, asList, asComment)
+    async createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField,
+        indexedPath?: string, lineNumber?: number, asList?: boolean, asBlockquote?: boolean): Promise<void> {
+        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file, lineNumber, asList, asBlockquote)
     }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined }): void {

@@ -1,5 +1,13 @@
 .metadata-menu.modal-container.note-fields-modal{
 
+    .navigation-separator{
+        margin-top: 1em;
+    }
+
+    .back-button-wrapper{
+        display: flex;
+    }
+
     button {
         padding: 0 0 0.4em 0.4em;
         height: auto;
