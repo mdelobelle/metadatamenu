@@ -6,7 +6,7 @@ import { FieldType, FieldIcon } from "src/types/fieldTypes";
 import Field from "../Field";
 import { SettingLocation } from "../FieldManager";
 import { FieldManager } from "../FieldManager";
-import { Status, statusIcon, tatusIcon } from "src/types/lookupTypes";
+import { Status, statusIcon } from "src/types/lookupTypes";
 import { FieldOptions } from "src/components/NoteFields";
 import { updateFormulas } from "src/commands/updateFormulas";
 import { postValues } from "src/commands/postValues";

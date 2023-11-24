@@ -79,10 +79,10 @@ export async function updateFormulas(
             }
         } catch {
             f.fileFormulaFieldsStatus.set(`${filePath}__${field.name}`, Status.error)
-            if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
+            //if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
         }
     }))
-    if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`);
+    //if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`);
     DEBUG && console.log("finished update formulas", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     //3 remove non existing formula fields from index, since those indexes aren't flushed each time
     cleanRemovedFormulasFromIndex(plugin);

@@ -140,5 +140,5 @@ export async function updateLookups(
     Object.entries(payloads).forEach(async ([filePath, fieldsPayload]) => {
         f.pushPayloadToUpdate(filePath, fieldsPayload)
     })
-    if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`)
+    //if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`)
 }
