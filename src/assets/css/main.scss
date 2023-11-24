@@ -12,6 +12,10 @@
             color: var(--text-warning);
         }
 
+        &.field-status-error{
+            color: var(--text-error);
+        }
+
         svg{
             height: calc(var(--icon-size)*0.935);
             width: calc(var(--icon-size)*0.935);

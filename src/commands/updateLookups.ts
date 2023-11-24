@@ -32,6 +32,7 @@ function renderValue(field: Field, pages: any, plugin: MetadataMenu, tFile: TFil
                     try {
                         return renderingFunction(dvFile)
                     } catch {
+                        plugin.fieldIndex.fileLookupFieldsStatus.set(`${tFile.path}__related__${field.fileClassName}___${field.name}`, Lookup.Status.error)
                         if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
                         return ""
                     }
@@ -49,6 +50,7 @@ function renderValue(field: Field, pages: any, plugin: MetadataMenu, tFile: TFil
                 try {
                     newValue = summarizingFunction(pages).toString();
                 } catch {
+                    plugin.fieldIndex.fileLookupFieldsStatus.set(`${tFile.path}__related__${field.fileClassName}___${field.name}`, Lookup.Status.error)
                     if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
                     newValue = ""
                 }
@@ -138,5 +140,5 @@ export async function updateLookups(
     Object.entries(payloads).forEach(async ([filePath, fieldsPayload]) => {
         f.pushPayloadToUpdate(filePath, fieldsPayload)
     })
-    if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`)
+    //if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`)
 }
