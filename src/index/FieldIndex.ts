@@ -629,6 +629,18 @@ export default class FieldIndex extends FieldIndexBuilder {
         return changed
     }
 
+    public dvQFieldHasAnError(path: string) {
+        let changed: boolean = false
+        this.filesLookupAndFormulaFieldsExists.get(path)?.forEach(field => {
+            if (field.type === FieldType.Lookup) {
+                changed = changed || this.fileLookupFieldsStatus.get(path + "__" + field.name) === Status.error
+            } else if (field.type === FieldType.Formula) {
+                changed = changed || this.fileFormulaFieldsStatus.get(path + "__" + field.name) === Status.error
+            }
+        })
+        return changed
+    }
+
     public isIndexed(file: TFile): boolean {
         this.indexableFiles().map(f => f.path).includes(file.path)
         return true

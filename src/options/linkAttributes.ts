@@ -16,11 +16,14 @@ export function clearExtraAttributes(link: HTMLElement) {
 }
 
 function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, destPath: string, viewTypeName: string | null, fileClassName?: string) {
-    const setStatusChanged = (el: Element) => {
+    const setStatus = (el: Element) => {
         const path = destPath + ".md"
         el.removeClass("field-status-changed")
+        el.removeClass("field-status-error")
         const changed = plugin.fieldIndex.dvQFieldChanged(path)
-        if (changed) el.addClass("field-status-changed")
+        const error = plugin.fieldIndex.dvQFieldHasAnError(path)
+        if (error) el.addClass("field-status-error")
+        else if (changed) el.addClass("field-status-changed")
     }
     if (link.classList.contains("metadata-menu-button-hidden")) return; //so that snippets can prevent the button from being added
     switch (viewTypeName) {
@@ -57,7 +60,7 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
         const el = link.nextElementSibling
         if (!el?.hasClass("fileclass-icon")) {
             const metadataMenuBtn = plugin.app.workspace.containerEl.createEl('a', { cls: "metadata-menu fileclass-icon" })
-            setStatusChanged(metadataMenuBtn)
+            setStatus(metadataMenuBtn)
             if (metadataMenuBtn) {
                 setIcon(metadataMenuBtn, icon)
                 link.parentElement?.insertBefore(metadataMenuBtn, link.nextSibling)
@@ -67,7 +70,7 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
                 }
             }
         } else {
-            setStatusChanged(el)
+            setStatus(el)
         }
     }
     else if (fileClassName) {
@@ -78,7 +81,7 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
             const el = link.nextElementSibling
             if (!el?.hasClass("fileclass-icon")) {
                 const metadataMenuBtn = plugin.app.workspace.containerEl.createEl('a', { cls: "metadata-menu fileclass-icon" })
-                setStatusChanged(metadataMenuBtn)
+                setStatus(metadataMenuBtn)
                 if (metadataMenuBtn) {
                     setIcon(metadataMenuBtn, icon || plugin.settings.buttonIcon)
                     link.parentElement?.insertBefore(metadataMenuBtn, link.nextSibling)
@@ -92,7 +95,7 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
                     }
                 }
             } else {
-                setStatusChanged(el)
+                setStatus(el)
             }
         }
     }

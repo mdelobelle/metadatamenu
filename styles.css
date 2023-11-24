@@ -959,6 +959,9 @@ span.flatpickr-weekday {
 .metadata-menu.fileclass-icon.field-status-changed {
   color: var(--text-warning);
 }
+.metadata-menu.fileclass-icon.field-status-error {
+  color: var(--text-error);
+}
 .metadata-menu.fileclass-icon svg {
   height: calc(var(--icon-size) * 0.935);
   width: calc(var(--icon-size) * 0.935);

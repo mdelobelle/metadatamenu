@@ -6,7 +6,7 @@ import { FieldType, FieldIcon } from "src/types/fieldTypes";
 import Field from "../Field";
 import { SettingLocation } from "../FieldManager";
 import { FieldManager } from "../FieldManager";
-import { Status } from "src/types/lookupTypes";
+import { Status, statusIcon, tatusIcon } from "src/types/lookupTypes";
 import { FieldOptions } from "src/components/NoteFields";
 import { updateFormulas } from "src/commands/updateFormulas";
 import { postValues } from "src/commands/postValues";
@@ -23,14 +23,13 @@ export default class FormulaField extends FieldManager {
         const name = this.field.name;
         const f = this.plugin.fieldIndex;
         const id = `${file.path}__${name}`;
+        const status = f.fileFormulaFieldsStatus.get(id) || Status.changed
         if (!this.field.options.autoUpdate && this.field.options.autoUpdate !== undefined) {
-            let status: Status;
-            status = f.fileFormulaFieldsStatus.get(id) || Status.changed
-            const icon = status === Status.changed ? "refresh-ccw" : "file-check"
             const action = async () => {
                 await updateFormulas(this.plugin, { file: file, fieldName: name })
                 f.applyUpdates()
             };
+            const icon = statusIcon[status]
             if (FormulaField.isSuggest(location) && status === Status.changed) {
                 location.options.push({
                     id: `update_${name}`,
@@ -42,9 +41,12 @@ export default class FormulaField extends FieldManager {
                 location.addOption(icon, action, `Update ${name}'s value`);
             } else if (FormulaField.isFieldOptions(location) && status === Status.upToDate) {
                 location.addOption(icon, () => { }, `${name} is up to date`);
+            } else if (FormulaField.isFieldOptions(location) && status === Status.error) {
+                location.addOption(icon, () => { }, `${name} has an error`);
             }
         } else if (FormulaField.isFieldOptions(location)) {
-            location.addOption("server-cog", () => { }, `${name} is auto-updated`, "disabled");
+            const icon = status === Status.error ? statusIcon['error'] : "server-cog"
+            location.addOption(icon, () => { }, `${name} is auto-updated`, "disabled");
         }
     }
 

@@ -78,6 +78,7 @@ export async function updateFormulas(
                 }
             }
         } catch {
+            f.fileFormulaFieldsStatus.set(`${filePath}__${field.name}`, Status.error)
             if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
         }
     }))
