@@ -89,7 +89,7 @@ export default class FieldIndex extends FieldIndexBuilder {
             this.plugin.app.metadataCache.on("dataview:index-ready", async () => {
                 DEBUG && console.log("dataview index ready")
                 this.dv = this.plugin.app.plugins.plugins.dataview;
-                await this.fullIndex(true)
+                await this.fullIndex()
             })
         )
 
@@ -143,7 +143,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         this.plugin.indexStatus.setState("indexing")
         this.classFilesPath = this.plugin.settings.classFilesPath
         await this.indexFieldsAndValues()
-        if (this.dvReady()) await this.resolveAndUpdateDVQueriesBasedFields(forceUpdateAll);
+        if (this.dvReady() && forceUpdateAll) await this.resolveAndUpdateDVQueriesBasedFields(forceUpdateAll);
         if (this.remainingLegacyFileClasses) await this.migrateFileClasses();
         await this.cleanIndex()
         this.plugin.app.workspace.trigger("metadata-menu:indexed");

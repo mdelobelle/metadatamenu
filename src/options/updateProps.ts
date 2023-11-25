@@ -25,16 +25,16 @@ const updateProps = async (plugin: MetadataMenu, view: View) => {
         if (!pseudoField.id || !pseudoField.type) return
         const node = note.getNodeForIndexedPath(pseudoField.id)
         if (!node) return
-        const buttons = item.containerEl.findAll(".property-metadata-menu")
-        buttons.forEach(button => item.containerEl.removeChild(button))
+        const buttonsContainers = item.containerEl.findAll(".field-btn-container")
+        buttonsContainers.forEach(container => item.containerEl.removeChild(container))
         if (plugin.settings.enableProperties) {
-            const btnContainer = new ButtonComponent(item.containerEl)
-            btnContainer.setIcon(FieldIcon[pseudoField.type])
-            btnContainer.setClass("property-metadata-menu")
-            btnContainer.onClick(() => { optionsList ? optionsList.createAndOpenFieldModal(node) : null })
-            item.containerEl.insertBefore(btnContainer.buttonEl, item.valueEl)
+            const btnContainer = item.containerEl.createDiv({ cls: "field-btn-container" })
+            const btn = new ButtonComponent(btnContainer)
+            btn.setIcon(FieldIcon[pseudoField.type])
+            btn.setClass("property-metadata-menu")
+            btn.onClick(() => { optionsList ? optionsList.createAndOpenFieldModal(node) : null })
+            item.containerEl.insertBefore(btnContainer, item.valueEl)
         }
-
     })
     const actionContainer = view.metadataEditor.contentEl.find('.action-container') || view.metadataEditor.contentEl.createDiv({ cls: "action-container" })
     actionContainer.replaceChildren()

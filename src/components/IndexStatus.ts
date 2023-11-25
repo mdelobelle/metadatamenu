@@ -105,8 +105,8 @@ export default class IndexStatus extends Component {
     }
 
     public checkForUpdate(view: View | undefined) {
-        if (view && view instanceof FileView) {
-            const file = this.plugin.app.vault.getAbstractFileByPath(view!.file!.path)
+        if (view && view instanceof FileView && view.file) {
+            const file = this.plugin.app.vault.getAbstractFileByPath(view.file.path)
             if (file instanceof TFile && file.extension === 'md') {
                 this.file = file
                 if (this.plugin.fieldIndex.dvQFieldChanged(file.path)) {

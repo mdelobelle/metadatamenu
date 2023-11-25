@@ -195,7 +195,7 @@ export default class DateField extends FieldManager {
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
-        attrs: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }
+        attrs: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; } = {}
     ): void {
         attrs.cls = "value-container"
         const fieldValue = dv.el('span', p[this.field.name], attrs);

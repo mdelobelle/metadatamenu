@@ -89,16 +89,16 @@ with `options: {inFrontmatter: false}` (default) a modal will be displayed to se
 ```js
 /* dataviewjs block */
 
-const {fieldModifier: f} = this.app.plugins.plugins["metadata-menu"].api // destruct metadata-menu api to use fieldModifier function and give an alias: "f"
+const {fieldModifier: f} = MetadataMenu.api // destruct metadata-menu api to use fieldModifier function and give an alias: "f"
 
 dv.table(["file", "Masterization", "Tune"], 
-        dv.pages()
-        .where(p => p.fileClass === "music")
-        .map(p => [
-            p.file.link, 
-            f(dv, p, "masterization", {options: {alwaysOn: true}}),  // pass dv (dataview api instance), p (the page), the field name to fieldModifier (: "f") and an object with options: {alwaysOn: true} so taht the control is always visible
-            f(dv, p, "tune") // pass dv (dataview api instance), p (the page), and the field name to fieldModifier (: "f")
-            ])
+    dv.pages()
+    .where(p => p.fileClass === "music")
+    .map(p => [
+        p.file.link, 
+        f(dv, p, "masterization", {options: {alwaysOn: true}}),  // pass dv (dataview api instance), p (the page), the field name to fieldModifier (: "f") and an object with options: {alwaysOn: true} so taht the control is always visible
+        f(dv, p, "tune") // pass dv (dataview api instance), p (the page), and the field name to fieldModifier (: "f")
+        ])
     )
 )
 ```
