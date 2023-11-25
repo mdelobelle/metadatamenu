@@ -89,13 +89,11 @@ export default class FieldIndex extends FieldIndexBuilder {
             this.plugin.app.metadataCache.on("dataview:index-ready", async () => {
                 DEBUG && console.log("dataview index ready")
                 this.dv = this.plugin.app.plugins.plugins.dataview;
-                await this.fullIndex()
             })
         )
 
         this.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
-
                 if (op === "update" && this.dvReady()) {
                     const filePayloadToProcess = this.dVRelatedFieldsToUpdate.get(file.path)
                     if (![...this.dVRelatedFieldsToUpdate.keys()].includes(file.path)) {
@@ -136,14 +134,20 @@ export default class FieldIndex extends FieldIndexBuilder {
 
     public async indexFieldsAndValues(): Promise<void> {
         await this.indexFields();
-        await ExistingField.indexFieldsValues(this.plugin)
+        /*
+        ** Asynchronously gets values
+        */
+        ExistingField.indexFieldsValues(this.plugin) //asynchronous
     }
 
     public async fullIndex(forceUpdateAll = false): Promise<void> {
         this.plugin.indexStatus.setState("indexing")
         this.classFilesPath = this.plugin.settings.classFilesPath
         await this.indexFieldsAndValues()
-        if (this.dvReady() && forceUpdateAll) await this.resolveAndUpdateDVQueriesBasedFields(forceUpdateAll);
+        /*
+        ** Asynchronously resolve queries
+        */
+        if (this.dvReady()) this.resolveAndUpdateDVQueriesBasedFields(forceUpdateAll);  //asynchronous
         if (this.remainingLegacyFileClasses) await this.migrateFileClasses();
         await this.cleanIndex()
         this.plugin.app.workspace.trigger("metadata-menu:indexed");
@@ -205,7 +209,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         this.lastDVUpdatingTime = Date.now()
     }
 
-    private async resolveAndUpdateDVQueriesBasedFields(
+    public async resolveAndUpdateDVQueriesBasedFields(
         force_update_all = false,
         forceUpdateOne?: { file: TFile, fieldName: string }
     ): Promise<void> {
@@ -218,6 +222,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         await updateLookups(this.plugin, forceUpdateOne, force_update_all)
         await updateFormulas(this.plugin, forceUpdateOne, force_update_all);
         await this.applyUpdates()
+        this.plugin.app.workspace.trigger("metadata-menu:indexed");
         DEBUG && console.log("Resolved dvQ in ", (Date.now() - start) / 1000, "s")
     }
 

@@ -1,5 +1,7 @@
 .metadata-menu.settings {
-
+    .settings-info-warning{
+        color: var(--text-warning);
+    }
     .setting-divider{
         padding: 0.75em 0;
         border-bottom: 1px solid var(--background-modifier-border);

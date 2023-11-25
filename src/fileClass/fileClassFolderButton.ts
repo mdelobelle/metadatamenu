@@ -38,15 +38,16 @@ export class FileClassFolderButton extends Component {
         if (!fCFolder) return
         const container = fCFolder.selfEl
         //clean
-        const existingButtons = explorerView.containerEl.findAll(".fileClass-add-button")
+        const existingButtons = container.findAll(".fileClass-add-button")
         for (const btn of existingButtons) container.removeChild(btn)
         //add
-        const addBtn = container.createDiv({ cls: "fileClass-add-button" })
-        setIcon(addBtn, "plus-circle")
-        addBtn.onclick = (e) => {
-            e.preventDefault();
-            (new AddNewFileClassModal(this.plugin)).open()
+        if (!container.findAll(".fileClass-add-button").length) {
+            const addBtn = container.createDiv({ cls: "fileClass-add-button" })
+            setIcon(addBtn, "plus-circle")
+            addBtn.onclick = (e) => {
+                e.preventDefault();
+                (new AddNewFileClassModal(this.plugin)).open()
+            }
         }
-
     }
 }

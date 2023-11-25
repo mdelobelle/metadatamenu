@@ -160,6 +160,23 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			true
 		)
 
+		/* Scope*/
+		const reloadInfo = globalSettings.createDiv({ cls: "settings-info-warning" })
+		new Setting(globalSettings)
+			.setName('Scope')
+			.setDesc('Index fields in frontmatter only or in the whole note (if you use dataview inline fields). ' +
+				'Indexing full notes could cause some latencies in vaults with large files')
+			.addDropdown((cb: DropdownComponent) => {
+				cb.addOption("frontmatterOnly", "Frontmatter only")
+				cb.addOption("fullNote", "Full note")
+				cb.setValue(this.plugin.settings.frontmatterOnly ? "frontmatterOnly" : "fullNote")
+				cb.onChange(async (value) => {
+					this.plugin.settings.frontmatterOnly = value === "frontmatterOnly" ? true : false
+					await this.plugin.saveSettings();
+					reloadInfo.textContent = "Please reload metadata menu to apply this change"
+				});
+			}).settingEl.addClass("no-border");
+
 		/* Manage menu options display*/
 		new Setting(globalSettings)
 			.setName("Display field options in context menu")

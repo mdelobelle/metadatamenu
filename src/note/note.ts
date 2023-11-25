@@ -140,6 +140,7 @@ export class Note {
                 }
             }
             if (!inFrontmatter) {
+                if (this.plugin.settings.frontmatterOnly) break;
                 if (rawLine.startsWith("```")) {
                     this.codeBlocksLines.push(i)
                     previousLineIsCode = !previousLineIsCode
@@ -167,7 +168,6 @@ export class Note {
         const lines = content.split("\n")
 
         this.buildSections(content)
-        //if (this.file.stat.size > 100000) return
         const frontmatterEnd = this.frontmatterEnd()
         for (const [i, rawLine] of lines.entries()) {
             const position = !!frontmatterEnd && i <= frontmatterEnd ? "yaml" : "inline"

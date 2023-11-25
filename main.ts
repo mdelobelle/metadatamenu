@@ -109,7 +109,10 @@ export default class MetadataMenu extends Plugin {
 				addCommands(this)
 			})
 		)
-		this.registerEvent(this.app.workspace.on('metadata-menu:filter-changed', debounce((fieldSet: FieldSet) => console.log(fieldSet.tableView), 1000, true)));
+		this.registerEvent(
+			this.app.workspace.on('metadata-menu:filter-changed',
+				debounce((fieldSet: FieldSet) => console.log(fieldSet.tableView), 1000, true))
+		);
 		//buildind index
 		this.indexDB = this.addChild(new IndexDatabase(this))
 		await this.fieldIndex.fullIndex()
