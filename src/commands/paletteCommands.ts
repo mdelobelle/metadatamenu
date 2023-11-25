@@ -362,7 +362,7 @@ function forceIndexFieldsValues(plugin: MetadataMenu) {
             (async function () {
                 await plugin.indexDB.updates.removeElement("fieldsValues")
                 plugin.fieldIndex.init()
-                plugin.fieldIndex.fullIndex(true)
+                plugin.fieldIndex.fullIndex()
             })()
         }
     })

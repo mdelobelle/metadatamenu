@@ -2400,7 +2400,11 @@ span.flatpickr-weekday {
   }
 }
 
-button.property-metadata-menu {
+.field-btn-container {
+  display: flex;
+  align-items: flex-end;
+}
+.field-btn-container button.property-metadata-menu {
   margin: 0.15em 0;
   border: none;
   color: var(--text-accent);
@@ -2409,7 +2413,7 @@ button.property-metadata-menu {
   height: calc(var(--input-height) * 0.875);
   width: calc(var(--input-height) * 0.875);
 }
-button.property-metadata-menu svg {
+.field-btn-container button.property-metadata-menu svg {
   vertical-align: calc(var(--font-text-size) * 0.15);
   height: calc(var(--icon-size) * 0.935);
   width: calc(var(--icon-size) * 0.935);

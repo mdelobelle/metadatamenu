@@ -8,14 +8,20 @@
     width: calc(var(--input-height)*0.875);
 }
 
-button.property-metadata-menu{
-    @include control-button();
-    svg{
-        vertical-align: calc(var(--font-text-size) * 0.15);
-        height: calc(var(--icon-size)*0.935);
-        width: calc(var(--icon-size)*0.935);
+
+.field-btn-container{
+    display: flex;
+    align-items: flex-end;
+    button.property-metadata-menu{
+        @include control-button();
+        svg{
+            vertical-align: calc(var(--font-text-size) * 0.15);
+            height: calc(var(--icon-size)*0.935);
+            width: calc(var(--icon-size)*0.935);
+        }
     }
 }
+
 
 .metadata-content{
     .action-container{

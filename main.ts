@@ -112,7 +112,7 @@ export default class MetadataMenu extends Plugin {
 		this.registerEvent(this.app.workspace.on('metadata-menu:filter-changed', debounce((fieldSet: FieldSet) => console.log(fieldSet.tableView), 1000, true)));
 		//buildind index
 		this.indexDB = this.addChild(new IndexDatabase(this))
-		await this.fieldIndex.fullIndex(true)
+		await this.fieldIndex.fullIndex()
 		this.extraButton = this.addChild(new ExtraButton(this))
 		this.addChild(new FileClassFolderButton(this))
 		this.launched = true
@@ -137,7 +137,7 @@ export default class MetadataMenu extends Plugin {
 		this.settings.presetFields = this.presetFields.map(_field => { const { plugin, ...field } = _field; return field });
 		this.settings.fileClassQueries = this.initialFileClassQueries;
 		await this.saveData(this.settings);
-		await this.fieldIndex.fullIndex(true);
+		await this.fieldIndex.fullIndex();
 	};
 
 	onunload() {
