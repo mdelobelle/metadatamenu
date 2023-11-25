@@ -1,5 +1,6 @@
 import MetadataMenu from "main"
-import { ButtonComponent, debounce, TextComponent } from "obsidian"
+import { ButtonComponent, debounce, DropdownComponent, TextComponent, ToggleComponent } from "obsidian"
+import { FieldType } from "src/types/fieldTypes"
 import { FileClass } from "./fileClass"
 import { FileClassTableView } from "./fileClassTableView"
 
@@ -125,15 +126,42 @@ export class Field {
     }
 
     private buildFilterComponent(): void {
-        const fieldFilterContainer = this.container.createDiv({ cls: "filter-input" });
-        const filter = new TextComponent(fieldFilterContainer);
+        const field = this.parentFieldSet.plugin.fieldIndex.fileClassesFields.get(this.parentFieldSet.fileClass.name)?.find(f => f.name === this.name)
         const debounced = debounce((fieldset: FieldSet) => fieldset.tableView.udpate(), 1000, true)
-        filter.setValue("");
-        filter.onChange((value) => {
-            this.parentFieldSet.filters[this.name].inputEl.value = value;
-            debounced(this.parentFieldSet)
-        });
-        this.parentFieldSet.filters[this.name] = filter
+
+        switch (field?.type) {
+            case FieldType.Boolean:
+                {
+                    console.log("HERE")
+                    const fieldFilterContainer = this.container.createDiv({ cls: "filter-input" });
+                    const filter = new DropdownComponent(fieldFilterContainer);
+
+                    filter.addOption("all", "True or false")
+                    filter.addOption("true", "True")
+                    filter.addOption("false", "False")
+                    filter.setValue("all");
+                    filter.onChange((value) => {
+                        (this.parentFieldSet.filters[this.name] as DropdownComponent).selectEl.value = value;
+                        this.parentFieldSet.tableView.udpate()
+                    });
+                    this.parentFieldSet.filters[this.name] = filter
+                }
+                break;
+
+            default:
+                {
+                    const fieldFilterContainer = this.container.createDiv({ cls: "filter-input" });
+                    const filter = new TextComponent(fieldFilterContainer);
+                    filter.setValue("");
+                    filter.onChange((value) => {
+                        (this.parentFieldSet.filters[this.name] as TextComponent).inputEl.value = value;
+                        debounced(this.parentFieldSet)
+                    });
+                    this.parentFieldSet.filters[this.name] = filter
+                }
+                break;
+        }
+
     }
 }
 
@@ -141,7 +169,7 @@ export class FieldSet {
     public fields: Field[] = []
     public fileClass: FileClass
     public plugin: MetadataMenu
-    public filters: Record<string, TextComponent> = {}
+    public filters: Record<string, TextComponent | DropdownComponent> = {}
     public rowSorters: Record<string, RowSorter> = {}
     public columnManagers: Record<string, ColumnMover> = {}
     public fieldsContainer: HTMLDivElement
@@ -263,7 +291,11 @@ export class FieldSet {
     }
 
     private resetFilters() {
-        Object.keys(this.filters).forEach(name => this.filters[name].inputEl.value = "")
+        Object.keys(this.filters).forEach(name => {
+            const filter = this.filters[name]
+            if (filter instanceof DropdownComponent) filter.selectEl.value = "all"
+            else filter.inputEl.value = ""
+        })
     }
 
     private resetColumnManagers() {
@@ -283,7 +315,12 @@ export class FieldSet {
         if (_name && savedViews.find(view => view.name === _name)) {
             const savedView = savedViews.find(view => view.name === _name)!
             Object.keys(this.filters).forEach(name => {
-                this.filters[name].inputEl.value = savedView?.filters.find(f => f.name === name)?.query || ""
+                const filter = this.filters[name]
+                if (filter instanceof TextComponent) {
+                    filter.inputEl.value = savedView?.filters.find(f => f.name === name)?.query || ""
+                } else if (filter instanceof DropdownComponent) {
+                    filter.selectEl.value = savedView?.filters.find(f => f.name === name)?.query || "all"
+                }
             })
             Object.keys(this.rowSorters).forEach(name => {
                 const rowSorter: RowSorter = this.rowSorters[name]
@@ -322,7 +359,11 @@ export class FieldSet {
         } else {
             const fCFields = this.plugin.fieldIndex.fileClassesFields
                 .get(this.fileClass.name)?.filter(_f => _f.isRoot()) || [];
-            Object.keys(this.filters).forEach(name => this.filters[name].inputEl.value = "")
+            Object.keys(this.filters).forEach(name => {
+                const filter = this.filters[name]
+                if (filter instanceof TextComponent) filter.inputEl.value = ""
+                else filter.selectEl.value = "all"
+            })
             Object.keys(this.rowSorters).forEach(name => {
                 this.rowSorters[name].ascBtn.buttonEl.removeClass("active")
                 this.rowSorters[name].descBtn.buttonEl.removeClass("active")
