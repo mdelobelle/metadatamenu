@@ -2,6 +2,7 @@ import MetadataMenu from "main";
 import { ButtonComponent, Modal, TFile } from "obsidian"
 import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
+import { Note } from "src/note/note";
 import { FieldManager } from "src/types/fieldTypes";
 import ObjectListModal from "./fields/ObjectListModal";
 import ObjectModal from "./fields/ObjectModal";
@@ -65,13 +66,12 @@ export default class BaseModal extends Modal {
     }
 
     public async goToPreviousModal() {
-        await ExistingField.indexFieldsValues(this.plugin)
         const pM = this.previousModal
 
         if (pM && this.indexedPath) {
             const upperPath = Field.upperIndexedPathObjectPath(this.indexedPath)
             const { index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
-            const eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, pM.file, pM.indexedPath)
+            const eF = await Note.getExistingFieldForIndexedPath(this.plugin, pM.file, pM.indexedPath)
             const pField = pM.eF?.field
             const pFile = pM.file
             const pIndexedPath = pM.indexedPath

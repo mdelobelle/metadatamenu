@@ -77,9 +77,11 @@ class ButtonDisplaySetting extends Setting {
 			"enableBacklinks" |
 			"enableSearch" |
 			"enableFileExplorer" |
-			"enableStarred"
+			"enableStarred",
+		private needsReload: boolean
 	) {
 		super(containerEl)
+		const reloadInfo = this.containerEl.createDiv({ cls: "settings-info-warning" })
 		this
 			.setName(this.name)
 			.setDesc(this.description)
@@ -88,6 +90,7 @@ class ButtonDisplaySetting extends Setting {
 				cb.onChange(value => {
 					this.plugin.settings[this.value] = value;
 					this.plugin.saveSettings();
+					if (this.needsReload) reloadInfo.textContent = "Please reload metadata menu to apply this change"
 				})
 			}).settingEl.addClass("no-border");
 
@@ -508,7 +511,8 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			{
 				name: "File explorer",
 				description: "Display an extra button to access metadata menu form in the file explorer",
-				value: "enableFileExplorer"
+				value: "enableFileExplorer",
+				needsReload: true
 			},
 			{
 				name: "Properties",
@@ -526,8 +530,9 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			"enableBacklinks" |
 			"enableSearch" |
 			"enableFileExplorer" |
-			"enableStarred"
-		}[]).forEach(s => new ButtonDisplaySetting(this.plugin, metadataMenuBtnSettings, s.name, s.description, s.value))
+			"enableStarred",
+			needsReload: boolean
+		}[]).forEach(s => new ButtonDisplaySetting(this.plugin, metadataMenuBtnSettings, s.name, s.description, s.value, s.needsReload))
 
 		/* 
 		--------------------------------------------------

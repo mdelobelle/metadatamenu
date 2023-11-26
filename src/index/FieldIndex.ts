@@ -13,12 +13,10 @@ import { updateCanvas, updateCanvasAfterFileClass } from "src/commands/updateCan
 import { CanvasData } from "obsidian/canvas";
 import { V1FileClassMigration } from "src/fileClass/fileClassMigration";
 import { BookmarkItem } from "src/typings/types";
-import { ExistingField } from "src/fields/ExistingField";
 import { FieldsPayload, postValues } from "src/commands/postValues";
 import { cFileWithGroups, cFileWithTags, FieldIndexBuilder, FieldsPayloadToProcess, IndexedExistingField } from "./FieldIndexBuilder";
 import { FileClassManager } from "src/components/fileClassManager";
 
-//TODO prevent fileClass with no attribute resulting in indexing preset fields instaead of nothing
 
 export default class FieldIndex extends FieldIndexBuilder {
     constructor(public plugin: MetadataMenu) {
@@ -55,7 +53,6 @@ export default class FieldIndex extends FieldIndexBuilder {
 
         this.registerEvent(
             this.plugin.app.vault.on("delete", async (file) => {
-                await this.plugin.indexDB.fieldsValues.bulkRemoveElementsForFile(file.path)
                 this.filesFields.delete(file.path)
                 await this.fullIndex()
             })
@@ -63,8 +60,6 @@ export default class FieldIndex extends FieldIndexBuilder {
 
         this.registerEvent(
             this.plugin.app.vault.on("rename", async (file, oldPath) => {
-                await this.plugin.indexDB.fieldsValues.updateItemsAfterFileRename(oldPath, file.path)
-                await this.plugin.indexDB.fieldsValues.bulkRemoveElementsForFile(oldPath)
                 this.filesFields.delete(oldPath)
                 await this.fullIndex()
             })
@@ -134,10 +129,6 @@ export default class FieldIndex extends FieldIndexBuilder {
 
     public async indexFieldsAndValues(): Promise<void> {
         await this.indexFields();
-        /*
-        ** Asynchronously gets values
-        */
-        ExistingField.indexFieldsValues(this.plugin) //asynchronous
     }
 
     public async fullIndex(forceUpdateAll = false): Promise<void> {
@@ -149,13 +140,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         */
         if (this.dvReady()) this.resolveAndUpdateDVQueriesBasedFields(forceUpdateAll);  //asynchronous
         if (this.remainingLegacyFileClasses) await this.migrateFileClasses();
-        await this.cleanIndex()
         this.plugin.app.workspace.trigger("metadata-menu:indexed");
-    }
-
-    public async cleanIndex() {
-        const deleted = await this.plugin.indexDB.fieldsValues.cleanUnindexedFiles(this.plugin) as IndexedExistingField[]
-        deleted.forEach(iEF => this.plugin.fieldIndex.filesFieldsLastChange.set(iEF.filePath, Date.now()))
     }
 
     public async indexFields(): Promise<void> {
@@ -536,7 +521,6 @@ export default class FieldIndex extends FieldIndexBuilder {
         5. settings preset fields
 
         compares the fieldSet of the file and updates filesFieldsLastChange accordingly
-        this is used by ExistingField.indexFieldsValues as one of the conditions to trigger an update of a file's exisiting fields values
         */
 
         const filesToIndex = this.indexableFiles()
@@ -546,7 +530,6 @@ export default class FieldIndex extends FieldIndexBuilder {
             )
 
         filesToIndex.forEach(f => {
-            //const fileFileClassesVersions: Record<string, string> = {}
             const fileFieldsFromInnerFileClasses = this.filesFieldsFromInnerFileClasses.get(f.path)
             const fileFieldsFromQuery = this.filesFieldsFromFileClassQueries.get(f.path);
             const fileFieldsFromTag = this.filesFieldsFromTags.get(f.path);
@@ -602,24 +585,12 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     private async getFilesLookupAndFormulaFieldsExists(file?: TFile): Promise<void> {
-
-        const lookups = await this.plugin.indexDB.fieldsValues.getElementsForType("Lookup") as IndexedExistingField[]
-        const formulas = await this.plugin.indexDB.fieldsValues.getElementsForType("Formula") as IndexedExistingField[]
-        const filesExistingFields: Record<string, IndexedExistingField[]> = {};
-        [...lookups, ...formulas].forEach(iF => {
-            filesExistingFields[iF.filePath] = [...(filesExistingFields[iF.filePath] || []), iF]
+        if (!this.dvReady()) return
+        [...this.filesFields.entries()].forEach(([filePath, fields]) => {
+            const dvFields = fields.filter(f => f.isRoot() && [FieldType.Lookup, FieldType.Formula].includes(f.type) &&
+                f.name in this.dv.api.page(filePath))
+            this.filesLookupAndFormulaFieldsExists.set(filePath, dvFields)
         });
-
-        Object.keys(filesExistingFields).forEach(filePath => {
-            const existingFields = filesExistingFields[filePath]
-                .map(_f => {
-                    const field = Field.getFieldFromId(this.plugin, _f.fieldId, _f.fileClassName)
-                    return field
-                })
-                .filter(_f => !!_f) as Field[]
-
-            this.filesLookupAndFormulaFieldsExists.set(filePath, existingFields)
-        })
     }
 
     public dvQFieldChanged(path: string) {

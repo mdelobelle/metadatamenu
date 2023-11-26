@@ -50,4 +50,15 @@ export class FileClassFolderButton extends Component {
             }
         }
     }
+    static removeBtn(plugin: MetadataMenu) {
+        const fCFolderPath = plugin.settings.classFilesPath?.replace(/\/$/, "")
+        const explorerView = plugin.app.workspace.getLeavesOfType("file-explorer")?.[0]?.view as ExplorerView
+        if (!explorerView || !fCFolderPath) return
+        const fCFolder = explorerView.fileItems[fCFolderPath]
+        if (!fCFolder) return
+        const container = fCFolder.selfEl
+        //clean
+        const existingButtons = container.findAll(".fileClass-add-button")
+        for (const btn of existingButtons) container.removeChild(btn)
+    }
 }

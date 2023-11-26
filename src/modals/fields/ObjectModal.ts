@@ -10,6 +10,7 @@ import ObjectListModal from "./ObjectListModal";
 import ObjectField from "src/fields/fieldManagers/ObjectField";
 import { postValues } from "src/commands/postValues";
 import BaseSuggestModal from "../BaseObjectModal";
+import { Note } from "src/note/note";
 
 export default class ObjectModal extends BaseSuggestModal<ExistingField | Field> {
     public existingFields: ExistingField[] = []
@@ -28,7 +29,6 @@ export default class ObjectModal extends BaseSuggestModal<ExistingField | Field>
     };
 
     async onOpen() {
-        await ExistingField.indexFieldsValues(this.plugin)
         if (this.indexedPath) {
             const upperPath = Field.upperIndexedPathObjectPath(this.indexedPath)
             const { index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
@@ -67,8 +67,7 @@ export default class ObjectModal extends BaseSuggestModal<ExistingField | Field>
     async onChooseSuggestion(item: ExistingField | Field, evt: MouseEvent | KeyboardEvent) {
         const reOpen = async () => {
             // because vault.on("modify") is not triggered fast enough
-            await ExistingField.indexFieldsValues(this.plugin)
-            const eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, this.file, this.indexedPath)
+            const eF = await Note.getExistingFieldForIndexedPath(this.plugin, this.file, this.indexedPath)
             if (eF) {
                 const thisFieldManager = new FieldManager[eF.field.type](this.plugin, eF.field)
                 thisFieldManager.createAndOpenFieldModal(this.file, eF.field.name, eF, eF.indexedPath, undefined, undefined, undefined, this.previousModal)
@@ -100,7 +99,6 @@ export default class ObjectModal extends BaseSuggestModal<ExistingField | Field>
             } else if (item.type === FieldType.Object) {
                 await postValues(this.plugin, [{ id: `${this.indexedPath}____${item.id}`, payload: { value: "" } }], this.file)
                 await this.plugin.fieldIndex.indexFields()
-                await ExistingField.indexFieldsValues(this.plugin, [this.file])
                 const fieldManager = new FieldManager[item.type](this.plugin, item) as F
                 fieldManager.createAndOpenFieldModal(this.file, item.name, undefined, `${this.indexedPath}____${item.id}`, this.lineNumber, this.asList, this.asBlockquote, this)
             } else {

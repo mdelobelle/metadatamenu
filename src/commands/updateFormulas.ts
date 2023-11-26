@@ -1,6 +1,5 @@
 import MetadataMenu from "main";
-import { Notice, TFile } from "obsidian";
-import { ExistingField } from "src/fields/ExistingField";
+import { TFile } from "obsidian";
 import Field from "src/fields/Field";
 import { FieldType } from "src/types/fieldTypes";
 import { Status } from "src/types/lookupTypes";
@@ -38,7 +37,6 @@ export async function updateFormulas(
     const start = Date.now()
     DEBUG && console.log("start update formulas", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
     const f = plugin.fieldIndex;
-    let renderingErrors: string[] = [];
     //1. flatten all file__formulaField in a Map
     const fileFormulasFields: Map<string, Field> = new Map();
     [...f.filesLookupAndFormulaFieldsExists].forEach(([filePath, fields]) => {
@@ -57,9 +55,7 @@ export async function updateFormulas(
             field.options.autoUpdate === true
         const _file = plugin.app.vault.getAbstractFileByPath(filePath)
         if (!_file || !(_file instanceof TFile)) return
-        const eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(plugin, _file, field.id)
-        const currentValue = (eF?.value !== undefined ? `${eF.value}` : "")
-        f.fileFormulaFieldLastValue.set(id, currentValue);
+        const currentValue = `${f.fileFormulaFieldLastValue.get(id) || ""}`;
         try {
             const dvFile = f.dv.api.page(filePath)
             const newValue = (new Function("current, dv", `return ${field.options.formula}`))(dvFile, f.dv.api).toString();
@@ -72,17 +68,14 @@ export async function updateFormulas(
                     f.fileFormulaFieldsStatus.set(`${filePath}__${field.name}`, Status.changed)
                 } else {
                     f.pushPayloadToUpdate(filePath, [{ id: field.id, payload: { value: newValue } }])
-                    //await postValues(plugin, [{ id: field.id, payload: { value: newValue } }], filePath)
                     f.fileFormulaFieldLastValue.set(id, newValue);
                     f.fileFormulaFieldsStatus.set(`${filePath}__${field.name}`, Status.upToDate)
                 }
             }
         } catch {
             f.fileFormulaFieldsStatus.set(`${filePath}__${field.name}`, Status.error)
-            //if (!renderingErrors.includes(field.name)) renderingErrors.push(field.name)
         }
     }))
-    //if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`);
     DEBUG && console.log("finished update formulas", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     //3 remove non existing formula fields from index, since those indexes aren't flushed each time
     cleanRemovedFormulasFromIndex(plugin);

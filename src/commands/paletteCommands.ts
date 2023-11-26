@@ -15,7 +15,6 @@ import { FieldType } from "src/types/fieldTypes";
 import { updateLookups } from "./updateLookups";
 import { updateFormulas } from "./updateFormulas";
 import { Note } from "src/note/note";
-import { ExistingField } from "src/fields/ExistingField";
 
 function addFileClassAttributeOptions(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
@@ -173,7 +172,7 @@ function insertMissingFieldsCommand(plugin: MetadataMenu) {
             if (inFile) {
                 (async function () {
                     const file = view.file!;
-                    const existingFields = await ExistingField.getExistingFieldsFromIndexForFilePath(plugin, file)
+                    const existingFields = await Note.getExistingFields(plugin, file)
                     const existingFieldsNames = existingFields.map(eF => eF.field.name)
                     if (![...plugin.fieldIndex.filesFields.get(file.path) || []]
                         .map(field => field.name)
@@ -360,9 +359,6 @@ function forceIndexFieldsValues(plugin: MetadataMenu) {
         checkCallback: (checking: boolean) => {
             if (checking) return true;
             (async function () {
-                await plugin.indexDB.updates.removeElement("fieldsValues")
-                plugin.fieldIndex.init()
-                //plugin.fieldIndex.fullIndex()
                 plugin.fieldIndex.fullIndex(true)
             })()
         }
