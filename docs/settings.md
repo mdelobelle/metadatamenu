@@ -2,6 +2,12 @@
 
 ## Global settings
 
+### `Scope`
+
+You can choose to manage only frontmatter fields or frontmatter and inline-fields (could be slower with very large files)
+
+Changing this setting requires the plugin to be reloaded.
+
 ### `Display field options in context menu`
 
 if toggled `on` : Metadata Menu will display one control item per field in the target note in the context menu. That could result in a very large context menu if the target note has many fields
@@ -49,6 +55,9 @@ This is usefull if you are more confortable with setting your preset fields in a
 
 If global fileClass is null or unproperly configured, the preset fields defined in the plugin settings will have the priority.
 
+### Fileclass selector in note fields modal
+You can hide the fileClass selector automatically added to the note fields modal since it can be duplicated with fileclass inheritance or global fileclass
+
 ### fileClass queries
 You can define fileClasses to be applicable to every file matching a dataview query. (same syntax as for `File` type fields)
 
@@ -56,10 +65,10 @@ If a File matches several queries, the last matching fileClass (starting from th
 
 ### Show extra button to access metadata menu form
 
-When a note has one or more fileClass (or [supercharged tags](/fileClasses/#mapwithtag-field--supercharged-tag)) you can display a button next to the note's : 
+When a note has one or more fileClass you can display a button next to the note's : 
 - links in reading mode
 - links in live preview
-- file in file explorer
+- file in file explorer (will also toggle the "Fileclass folder add button")
 - reference in search panel
 - reference in backlinks panel
 - tab header

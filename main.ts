@@ -13,7 +13,6 @@ import { DEFAULT_SETTINGS, MetadataMenuSettings } from "src/settings/MetadataMen
 import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
-import { IndexDatabase } from 'src/db/DatabaseManager';
 import { updatePropertiesSection } from 'src/options/updateProps';
 import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton';
 import { FieldSet } from 'src/fileClass/tableViewFieldSet';
@@ -28,7 +27,6 @@ export default class MetadataMenu extends Plugin {
 	public extraButton: ExtraButton;
 	public contextMenu: ContextMenu;
 	public indexStatus: IndexStatus;
-	public indexDB: IndexDatabase;
 	public indexName: string;
 	public launched: boolean = false;
 
@@ -78,13 +76,9 @@ export default class MetadataMenu extends Plugin {
 
 		this.addSettingTab(new MetadataMenuSettingTab(this));
 
-
-
-
 		//registering Metadata Menu suggestor for live preview
 		this.registerEditorSuggest(new ValueSuggest(this));
 		this.api = new MetadataMenuApi(this).make();
-
 
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', (leaf) => {
@@ -109,17 +103,15 @@ export default class MetadataMenu extends Plugin {
 				addCommands(this)
 			})
 		)
-		this.registerEvent(this.app.workspace.on('metadata-menu:filter-changed', debounce((fieldSet: FieldSet) => console.log(fieldSet.tableView), 1000, true)));
+
 		//buildind index
-		this.indexDB = this.addChild(new IndexDatabase(this))
 		await this.fieldIndex.fullIndex()
 		this.extraButton = this.addChild(new ExtraButton(this))
-		this.addChild(new FileClassFolderButton(this))
+		if (this.settings.enableFileExplorer) this.addChild(new FileClassFolderButton(this))
 		this.launched = true
 
 		//building palette commands
 		addCommands(this)
-
 	};
 
 	/*
@@ -142,5 +134,6 @@ export default class MetadataMenu extends Plugin {
 
 	onunload() {
 		console.log('x------ Metadata Menu unloaded ------x');
+		FileClassFolderButton.removeBtn(this)
 	};
 }

@@ -13,7 +13,7 @@ import { getLink } from "src/utils/parser";
 import { ExistingField } from "../existingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
-//import { unitOfTime } from "moment";
+import { Note } from "src/note/note";
 
 
 
@@ -28,7 +28,7 @@ export default class DateField extends FieldManager {
     }
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
-        const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
         const modal = new DateModal(this.plugin, file, this.field, eF, indexedPath);
         modal.titleEl.setText(`Change date for <${this.field.name}>`);
         modal.open()
@@ -157,7 +157,7 @@ export default class DateField extends FieldManager {
 
     public async getMomentDate(file: TFile, indexedPath?: string): Promise<moment.Moment> {
         const { dateFormat } = this.field.options
-        const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
         const _date = eF?.value
         const _dateLink = getLink(_date, file)
         const _dateText = _dateLink ? _dateLink.path.split("/").last()?.replace(/(.*).md/, "$1") : _date
@@ -307,7 +307,7 @@ export default class DateField extends FieldManager {
             //cycle field exists
             const cycleManager: CycleField = new FM[cycle.type](this.plugin, cycle)
             const options = cycleManager.getOptionsList();
-            currentValue = (await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, cycle.id))?.value
+            currentValue = (await Note.getExistingFieldForIndexedPath(this.plugin, file, cycle.id))?.value
             if (currentValue) {
                 //current value has a match in cycle options
                 nextValue = cycleManager.nextOption(currentValue)

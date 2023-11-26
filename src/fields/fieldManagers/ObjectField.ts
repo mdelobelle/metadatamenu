@@ -10,6 +10,7 @@ import ObjectModal from "src/modals/fields/ObjectModal";
 import OptionsList from "src/options/OptionsList";
 import { ExistingField } from "../ExistingField";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
+import { Note } from "src/note/note";
 
 export default class ObjectField extends FieldManager {
 
@@ -27,7 +28,8 @@ export default class ObjectField extends FieldManager {
             const name = this.field.name
             const action = async () => {
                 //create an optionList for this indexedPath
-                const _eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, file, indexedPath)
+                const note = await Note.buildNote(this.plugin, file)
+                const _eF = note.existingFields.find(__eF => __eF.indexedPath === indexedPath)
                 if (_eF) {
                     this.createAndOpenFieldModal(file, _eF.field.name, _eF, _eF.indexedPath, undefined, undefined, undefined, undefined)
                 } else {
@@ -64,9 +66,7 @@ export default class ObjectField extends FieldManager {
         setIcon(editBtn, FieldIcon[this.field.type])
         editBtn.onclick = async () => {
             const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
-            const _eF = file instanceof TFile &&
-                file.extension == "md" &&
-                await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, file, this.field.id)
+            const _eF = file instanceof TFile && await Note.getExistingFieldForIndexedPath(this.plugin, file, this.field.id)
             if (_eF) this.createAndOpenFieldModal(file, this.field.name, _eF, _eF.indexedPath)
         }
     }
@@ -78,8 +78,8 @@ export default class ObjectField extends FieldManager {
         existingFields: ExistingField[],
         missingFields: Field[]
     }> {
-        const existingFields = (await ExistingField.getExistingFieldsFromIndexForFilePath(plugin, file))
-            .filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === indexedPath) || []
+        const existingFields = (await Note.getExistingFields(plugin, file)).filter(eF => eF.indexedPath &&
+            Field.upperPath(eF.indexedPath) === indexedPath)
         const { id, index } = Field.getIdAndIndex(indexedPath?.split("____").last())
         const missingFields = plugin.fieldIndex.filesFields.get(file.path)?.filter(_f =>
             _f.getFirstAncestor()?.id === id).filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []

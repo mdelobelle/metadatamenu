@@ -11,6 +11,7 @@ import { postValues } from "src/commands/postValues";
 import { ExistingField } from "../existingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
+import { Note } from "src/note/note";
 
 export default class NumberField extends FieldManager {
 
@@ -72,7 +73,7 @@ export default class NumberField extends FieldManager {
     }
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
-        const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
         const modal = new NumberModal(this.plugin, file, this.field, eF, indexedPath);
         modal.titleEl.setText(`Change Value for <${this.field.name}>`);
         modal.open()
@@ -83,7 +84,7 @@ export default class NumberField extends FieldManager {
         const fMin = parseFloat(min)
         const fMax = parseFloat(max)
         const fStep = parseFloat(step)
-        const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
         const value = eF?.value || ""
         const fValue = parseFloat(value)
         if (!isNaN(fValue)) {

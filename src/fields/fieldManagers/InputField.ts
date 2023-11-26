@@ -9,6 +9,7 @@ import { FieldOptions } from "src/components/NoteFields";
 import { ExistingField } from "../existingField";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import ObjectModal from "src/modals/fields/ObjectModal";
+import { Note } from "src/note/note";
 
 export default class InputField extends FieldManager {
 
@@ -21,7 +22,7 @@ export default class InputField extends FieldManager {
     }
 
     private async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
-        const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
         const modal = new InputModal(this.plugin, file, this.field, eF, indexedPath);
         modal.titleEl.setText(`Change Value for <${this.field.name}>`);
         modal.open()

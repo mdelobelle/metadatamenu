@@ -52,8 +52,7 @@ export default class ObjectListModal extends BaseSuggestModal<ObjectListItem> {
     }
 
     async onOpen() {
-        await ExistingField.indexFieldsValues(this.plugin)
-        const _eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, this.file, this.indexedPath)
+        const _eF = await Note.getExistingFieldForIndexedPath(this.plugin, this.file, this.indexedPath)
         this.objects = await _eF?.getChildrenFields(this.plugin, this.file) || []
         super.onOpen()
     };
@@ -90,10 +89,7 @@ export default class ObjectListModal extends BaseSuggestModal<ObjectListItem> {
 
     async onChooseSuggestion(item: ObjectListItem, evt: MouseEvent | KeyboardEvent) {
         const reOpen = async () => {
-
-            // because vault.on("modify") is not triggered fast enough
-            await ExistingField.indexFieldsValues(this.plugin)
-            const eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, this.file, this.indexedPath)
+            const eF = await Note.getExistingFieldForIndexedPath(this.plugin, this.file, this.indexedPath)
             if (eF) {
                 const thisFieldManager = new FieldManager[eF.field.type](this.plugin, eF.field)
                 thisFieldManager.createAndOpenFieldModal(this.file, eF.field.name, eF, eF.indexedPath, undefined, undefined, undefined, this.previousModal)
