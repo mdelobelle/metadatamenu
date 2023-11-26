@@ -72,7 +72,6 @@ export abstract class FieldManager {
             const fields = this.plugin.fieldIndex.fileClassesFields
                 .get(this.field.fileClassName)?.filter(_f => _f.path === this.field.path && _f.id !== this.field.id && _f.fileClassName === this.field.fileClassName)
             if (fields?.map(_f => _f.name).includes(this.field.name)) {
-                console.log(this.field)
                 FieldSettingsModal.setValidationError(
                     textInput,
                     `There is already a field with this name for this path in this ${this.plugin.settings.fileClassAlias}. Please choose another name`
