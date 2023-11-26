@@ -1,17 +1,28 @@
 import MetadataMenu from "main";
 import { FuzzyMatch, FuzzySuggestModal, setIcon, TFile } from "obsidian";
+import { insertMissingFields } from "src/commands/insertMissingFields";
 import { postValues } from "src/commands/postValues";
-import { ExistingField } from "src/fields/ExistingField";
 import { Note } from "src/note/note";
 import { FieldIcon, FieldManager, FieldType, FieldTypeTagClass, frontmatterOnlyTypes, objectTypes } from "src/types/fieldTypes";
-import AddNewFieldModal from "./AddNewFieldModal";
+import chooseSectionModal from "./chooseSectionModal";
 
 
 interface Option {
     actionLabel: string,
-    type?: FieldType
+    type?: FieldType,
+    icon?: string
 }
 
+const defaulOptions: Option[] = [
+    {
+        actionLabel: 'Insert missing fields in frontmatter',
+        icon: 'align-vertical-space-around'
+    },
+    {
+        actionLabel: 'Insert missing fields at section',
+        icon: "enter"
+    }
+]
 
 export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
     // a modal to insert field at root level
@@ -29,21 +40,19 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
     getItems(): Option[] {
         const { start, end } = this.plugin.app.metadataCache.getFileCache(this.file)?.frontmatterPosition || {}
         if (start && end && start.line <= this.lineNumber && end.line >= this.lineNumber || this.lineNumber === -1) {
-            return [{ actionLabel: '++New++' }]
-                .concat(this.plugin.fieldIndex.filesFields
-                    .get(this.file.path)?.filter(_f => _f.isRoot()).map(field => {
-                        return { actionLabel: field.name, type: field.type }
-                    }) || []
-                );
+            return defaulOptions.concat(this.plugin.fieldIndex.filesFields
+                .get(this.file.path)?.filter(_f => _f.isRoot()).map(field => {
+                    return { actionLabel: field.name, type: field.type }
+                }) || []
+            );
         } else {
-            return [{ actionLabel: '++New++' }]
-                .concat(this.plugin.fieldIndex.filesFields
-                    .get(this.file.path)?.filter(_f => _f.isRoot() && !frontmatterOnlyTypes.includes(_f.type))
-                    .filter(_f => !objectTypes.includes(_f.type))
-                    .map(field => {
-                        return { actionLabel: field.name, type: field.type }
-                    }) || []
-                );
+            return defaulOptions.concat(this.plugin.fieldIndex.filesFields
+                .get(this.file.path)?.filter(_f => _f.isRoot() && !frontmatterOnlyTypes.includes(_f.type))
+                .filter(_f => !objectTypes.includes(_f.type))
+                .map(field => {
+                    return { actionLabel: field.name, type: field.type }
+                }) || []
+            );
         }
 
     }
@@ -55,17 +64,31 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
     renderSuggestion(item: FuzzyMatch<Option>, el: HTMLElement): void {
         el.addClass("value-container")
         const iconContainer = el.createDiv({ cls: "icon-container" })
-        item.item.type ? setIcon(iconContainer, FieldIcon[item.item.type]) : setIcon(iconContainer, "plus-with-circle")
+        item.item.type ? setIcon(iconContainer, FieldIcon[item.item.type]) : setIcon(iconContainer, item.item.icon || "plus-with-circle")
         el.createDiv({ text: item.item.actionLabel })
         el.createDiv({ cls: "spacer" })
         if (item.item.type) el.createDiv({ cls: `chip ${FieldTypeTagClass[item.item.type]}`, text: item.item.type })
     }
 
     async onChooseItem(item: Option, evt: MouseEvent | KeyboardEvent): Promise<void> {
-        if (item.actionLabel === "++New++") {
-            const newFieldModal = new AddNewFieldModal(this.plugin, this.lineNumber, this.file);
-            newFieldModal.open();
-            this.close();
+        if (item.actionLabel === 'Insert missing fields in frontmatter') {
+            insertMissingFields(this.plugin, this.file.path, -1)
+        } else if (item.actionLabel === 'Insert missing fields at section') {
+            new chooseSectionModal(
+                this.plugin,
+                this.file,
+                (
+                    lineNumber: number,
+                    asList: boolean,
+                    asBlockquote: boolean
+                ) => insertMissingFields(
+                    this.plugin,
+                    this.file.path,
+                    lineNumber,
+                    asList,
+                    asBlockquote
+                )
+            ).open();
         } else {
             const field = this.plugin.fieldIndex.filesFields.get(this.file.path)?.find(field => field.name === item.actionLabel)
             if (field) {

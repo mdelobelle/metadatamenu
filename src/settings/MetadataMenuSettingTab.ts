@@ -457,6 +457,20 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		maxRows.controlEl.addClass("full-width");
 		maxRows.settingEl.appendChild(rowPerPageSaveButton.buttonEl)
 
+		/* Fileclass selector in modal*/
+
+		const showFileClassSelectInModal = new Setting(classFilesSettings)
+			.setName('Fileclass Select')
+			.setDesc('Show fileclass select option in note fields modals')
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.showFileClassSelectInModal);
+				cb.onChange(value => {
+					this.plugin.settings.showFileClassSelectInModal = value;
+					this.plugin.saveSettings();
+				})
+			})
+		showFileClassSelectInModal.settingEl.addClass("no-border");
+		showFileClassSelectInModal.controlEl.addClass("full-width");
 
 		/* 
 		--------------------------------------------------
