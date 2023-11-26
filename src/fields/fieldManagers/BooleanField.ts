@@ -10,6 +10,7 @@ import { FieldManager } from "../FieldManager";
 import { ExistingField } from "../existingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
+import { Note } from "src/note/note";
 export default class BooleanField extends FieldManager {
 
     constructor(plugin: MetadataMenu, field: Field) {
@@ -18,7 +19,7 @@ export default class BooleanField extends FieldManager {
     }
 
     public async toggle(file: TFile, indexedPath?: string): Promise<void> {
-        const eF = await this.plugin.indexDB.fieldsValues.getElementForIndexedPath<ExistingField>(file, indexedPath)
+        const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
         const value = BooleanField.stringToBoolean(eF?.value)
         const postValue = !value ? "true" : "false"
         await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: postValue } }], file)

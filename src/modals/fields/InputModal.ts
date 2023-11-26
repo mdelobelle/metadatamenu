@@ -106,6 +106,7 @@ export default class InputModal extends BaseModal {
         this.renderedValue.inputEl.addClass("full-width")
         this.renderedValue.inputEl.rows = 3;
         this.renderedValue.setValue(this.value);
+        this.renderedValue.onChange(value => this.newValue = value)
     }
 
     private buildInputEl(container: HTMLDivElement): void {

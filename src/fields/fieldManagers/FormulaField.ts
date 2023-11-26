@@ -59,7 +59,6 @@ export default class FormulaField extends FieldManager {
         asList?: boolean,
         asBlockquote?: boolean
     ): Promise<void> {
-        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file, lineNumber, asList, asBlockquote)
         await this.plugin.fieldIndex.fullIndex()
     }
 

@@ -44,7 +44,7 @@ export default class ObjectListField extends FieldManager {
             }
         } else {
             const moveToObject = async () => {
-                const _eF = await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, file, indexedPath)
+                const _eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
                 if (_eF) this.createAndOpenFieldModal(file, _eF.field.name, _eF, _eF.indexedPath, undefined, undefined, undefined, undefined)
             }
             const removeObject = async () => {
@@ -83,7 +83,7 @@ export default class ObjectListField extends FieldManager {
             const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
             const _eF = file instanceof TFile &&
                 file.extension == "md" &&
-                await ExistingField.getExistingFieldFromIndexForIndexedPath(this.plugin, file, this.field.id)
+                await Note.getExistingFieldForIndexedPath(this.plugin, file, this.field.id)
             if (_eF) this.createAndOpenFieldModal(file, this.field.name, _eF, _eF.indexedPath)
         }
     }

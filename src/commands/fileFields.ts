@@ -1,6 +1,7 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian"
 import { ExistingField } from "src/fields/ExistingField";
+import { Note } from "src/note/note";
 import { FieldManager, FieldType } from "src/types/fieldTypes";
 
 
@@ -59,7 +60,7 @@ export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | s
             throw Error("path doesn't correspond to a proper file");
         }
     }
-    const eFs = await ExistingField.getExistingFieldsFromIndexForFilePath(plugin, file)
+    const eFs = await Note.getExistingFields(plugin, file)
     const fields: Record<string, IFieldInfo> = {}
     for (const eF of eFs) {
         if (eF.indexedPath) fields[eF.indexedPath] = (new FieldInfo(plugin, file, eF)).getInfos()

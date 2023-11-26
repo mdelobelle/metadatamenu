@@ -375,9 +375,14 @@ export class FieldsModal extends Modal {
             items.forEach((item: any, index: number) => this.buildObjectListItemContainer(fieldsContainer, field, item, `${this.indexedPath}[${index}]`))
             this.buildInsertNewItem(field, this.indexedPath)
         } else {
-            this.existingFields.forEach(eF => {
-                this.buildFieldContainer(fieldsContainer, eF.field, eF.value, eF.indexedPath)
-            })
+            this.existingFields
+                .filter(f => {
+                    if (f.name === this.plugin.settings.fileClassAlias) return this.plugin.settings.showFileClassSelectInModal
+                    else return true
+                })
+                .forEach(eF => {
+                    this.buildFieldContainer(fieldsContainer, eF.field, eF.value, eF.indexedPath)
+                })
             this.missingFields.forEach(_f => this.buildFieldContainer(fieldsContainer, _f, undefined))
             if (this.missingFields.length) this.buildInsertMissingFieldsBtn()
         }

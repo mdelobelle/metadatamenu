@@ -44,6 +44,8 @@ export interface MetadataMenuSettings {
 	fileIndexingExcludedFolders: Array<string>;
 	fileIndexingExcludedExtensions: Array<string>;
 	fileIndexingExcludedRegex: Array<string>;
+	frontmatterOnly: boolean;
+	showFileClassSelectInModal: boolean;
 }
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
@@ -72,7 +74,9 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	showIndexingStatusInStatusBar: true,
 	fileIndexingExcludedFolders: [],
 	fileIndexingExcludedExtensions: [".excalidraw.md"],
-	fileIndexingExcludedRegex: []
+	fileIndexingExcludedRegex: [],
+	frontmatterOnly: false,
+	showFileClassSelectInModal: true
 };
 
 export const incrementVersion = (plugin: MetadataMenu) => {

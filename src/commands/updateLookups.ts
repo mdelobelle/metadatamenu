@@ -101,7 +101,7 @@ export async function updateLookups(
             if (!f.fileLookupFieldLastOutputType.get(lookupFileId)) f.fileLookupFieldLastOutputType.set(lookupFileId, outputType)
             newValue = renderValue(field, pages, plugin, file, renderingErrors)
             //check if value has changed in order not to create an infinite loop
-            const currentValue = (await ExistingField.getExistingFieldFromIndexForIndexedPath(plugin, file, field.id))?.value
+            const currentValue = f.fileLookupFieldLastValue.get(lookupFileId)
             const shouldCheckForUpdate =
                 field.options.autoUpdate ||
                 field.options.autoUpdate === undefined ||
@@ -140,5 +140,4 @@ export async function updateLookups(
     Object.entries(payloads).forEach(async ([filePath, fieldsPayload]) => {
         f.pushPayloadToUpdate(filePath, fieldsPayload)
     })
-    //if (renderingErrors.length) new Notice(`Those fields have incorrect output rendering functions:\n${renderingErrors.join(",\n")}`)
 }

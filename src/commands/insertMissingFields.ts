@@ -1,9 +1,7 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
 import Field from "src/fields/Field";
-import ObjectListField from "src/fields/fieldManagers/ObjectListField";
 import { Note } from "src/note/note";
-import { frontmatterOnlyTypes } from "src/types/fieldTypes";
 import { getFileFromFileOrPath } from "src/utils/fileUtils";
 import { FieldsPayload, postValues } from "./postValues";
 

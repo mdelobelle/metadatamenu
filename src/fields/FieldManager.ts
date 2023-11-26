@@ -69,7 +69,8 @@ export abstract class FieldManager {
             error = true;
         };
         if (this.field.fileClassName) {
-            const fields = this.plugin.fieldIndex.fileClassesFields.get(this.field.fileClassName)?.filter(_f => _f.path === this.field.path && _f.id !== this.field.id)
+            const fields = this.plugin.fieldIndex.fileClassesFields
+                .get(this.field.fileClassName)?.filter(_f => _f.path === this.field.path && _f.id !== this.field.id && _f.fileClassName === this.field.fileClassName)
             if (fields?.map(_f => _f.name).includes(this.field.name)) {
                 FieldSettingsModal.setValidationError(
                     textInput,

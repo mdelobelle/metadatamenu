@@ -24,7 +24,10 @@ export class Line {
     }
 
     public buildNodes() {
-
+        if (!(this.position === "yaml") && this.plugin.settings.frontmatterOnly) {
+            new LineNode(this.plugin, this, this.rawContent)
+            return
+        }
         if (this.note.codeBlocksLines.includes(this.number)) this.shouldParse = false
         if (!(this.position === "yaml") &&
             !this.note.prefixedLines.includes(this.number) &&

@@ -77,9 +77,11 @@ class ButtonDisplaySetting extends Setting {
 			"enableBacklinks" |
 			"enableSearch" |
 			"enableFileExplorer" |
-			"enableStarred"
+			"enableStarred",
+		private needsReload: boolean
 	) {
 		super(containerEl)
+		const reloadInfo = this.containerEl.createDiv({ cls: "settings-info-warning" })
 		this
 			.setName(this.name)
 			.setDesc(this.description)
@@ -88,6 +90,7 @@ class ButtonDisplaySetting extends Setting {
 				cb.onChange(value => {
 					this.plugin.settings[this.value] = value;
 					this.plugin.saveSettings();
+					if (this.needsReload) reloadInfo.textContent = "Please reload metadata menu to apply this change"
 				})
 			}).settingEl.addClass("no-border");
 
@@ -159,6 +162,23 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			"Global settings to apply to your whole vault",
 			true
 		)
+
+		/* Scope*/
+		const reloadInfo = globalSettings.createDiv({ cls: "settings-info-warning" })
+		new Setting(globalSettings)
+			.setName('Scope')
+			.setDesc('Index fields in frontmatter only or in the whole note (if you use dataview inline fields). ' +
+				'Indexing full notes could cause some latencies in vaults with large files')
+			.addDropdown((cb: DropdownComponent) => {
+				cb.addOption("frontmatterOnly", "Frontmatter only")
+				cb.addOption("fullNote", "Full note")
+				cb.setValue(this.plugin.settings.frontmatterOnly ? "frontmatterOnly" : "fullNote")
+				cb.onChange(async (value) => {
+					this.plugin.settings.frontmatterOnly = value === "frontmatterOnly" ? true : false
+					await this.plugin.saveSettings();
+					reloadInfo.textContent = "Please reload metadata menu to apply this change"
+				});
+			}).settingEl.addClass("no-border");
 
 		/* Manage menu options display*/
 		new Setting(globalSettings)
@@ -437,6 +457,20 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		maxRows.controlEl.addClass("full-width");
 		maxRows.settingEl.appendChild(rowPerPageSaveButton.buttonEl)
 
+		/* Fileclass selector in modal*/
+
+		const showFileClassSelectInModal = new Setting(classFilesSettings)
+			.setName('Fileclass Select')
+			.setDesc('Show fileclass select option in note fields modals')
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.showFileClassSelectInModal);
+				cb.onChange(value => {
+					this.plugin.settings.showFileClassSelectInModal = value;
+					this.plugin.saveSettings();
+				})
+			})
+		showFileClassSelectInModal.settingEl.addClass("no-border");
+		showFileClassSelectInModal.controlEl.addClass("full-width");
 
 		/* 
 		--------------------------------------------------
@@ -491,7 +525,8 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			{
 				name: "File explorer",
 				description: "Display an extra button to access metadata menu form in the file explorer",
-				value: "enableFileExplorer"
+				value: "enableFileExplorer",
+				needsReload: true
 			},
 			{
 				name: "Properties",
@@ -509,8 +544,9 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			"enableBacklinks" |
 			"enableSearch" |
 			"enableFileExplorer" |
-			"enableStarred"
-		}[]).forEach(s => new ButtonDisplaySetting(this.plugin, metadataMenuBtnSettings, s.name, s.description, s.value))
+			"enableStarred",
+			needsReload: boolean
+		}[]).forEach(s => new ButtonDisplaySetting(this.plugin, metadataMenuBtnSettings, s.name, s.description, s.value, s.needsReload))
 
 		/* 
 		--------------------------------------------------
