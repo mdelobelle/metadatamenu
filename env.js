@@ -1,1 +1,1 @@
-window.DEBUG=true
+window.DEBUG=false
