@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { TFile, Menu, TextAreaComponent, TextComponent, DropdownComponent, ToggleComponent } from "obsidian";
+import { TFile, Menu, TextAreaComponent, TextComponent, DropdownComponent, ToggleComponent, setIcon, Debouncer } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldType } from "src/types/fieldTypes";
@@ -14,6 +14,8 @@ import { extractLinks, getLink } from "src/utils/parser";
 import { displayLinksOrText } from "src/utils/linksUtils";
 import { ExistingField } from "../existingField";
 import { postValues } from "src/commands/postValues";
+import { OptionsMultiSelectModal } from "src/fileClass/OptionsMultiSelectModal";
+import { FieldSet } from "src/fileClass/tableViewFieldSet";
 
 export default class LookupField extends FieldManager {
 
@@ -264,5 +266,37 @@ export default class LookupField extends FieldManager {
 
     validateOptions(): boolean {
         return true
+    }
+
+
+    public buildFilter(container: HTMLDivElement, parentFieldSet: FieldSet, name: string, debounced: Debouncer<[fieldset: FieldSet], void>) {
+        const fieldFilterContainer = container.createDiv({ cls: "filter-input" });
+        fieldFilterContainer.addClass("filter-with-dropdown")
+        const filter = new TextComponent(fieldFilterContainer);
+        const button = container.createEl("button", { cls: "infield-button" })
+        filter.inputEl.parentElement?.appendChild(button)
+        setIcon(button, "chevron-down")
+        filter.setValue("");
+        filter.onChange((value) => {
+            (parentFieldSet.filters[name] as TextComponent).inputEl.value = value;
+            debounced(parentFieldSet)
+        });
+        button.onclick = () => {
+            const fileClass = parentFieldSet.fileClass
+            const fileClassFile = fileClass.getClassFile()
+            const field = this.plugin.fieldIndex.fileClassesFields.get(fileClass.name)?.find(f => f.isRoot() && f.name === name)
+            if (field) (new OptionsMultiSelectModal(this.plugin, fileClassFile, field, parentFieldSet)).open()
+        }
+        parentFieldSet.filters[name] = filter
+    }
+
+    public buildFilterQuery(valueGetter: string, value: string): string {
+        const values = value.split(",").map(item => item.trim())
+        if (values.length) {
+            const valuesQueries = values.map(val => `${valueGetter}.toString().toLowerCase().includes("${val}".toLowerCase())`)
+            return `    .filter(p => ${valueGetter} && (${valuesQueries.join(" || ")}))\n`
+        } else {
+            return ""
+        }
     }
 }

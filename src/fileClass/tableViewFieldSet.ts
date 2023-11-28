@@ -1,6 +1,7 @@
 import MetadataMenu from "main"
 import { ButtonComponent, debounce, DropdownComponent, TextComponent, ToggleComponent } from "obsidian"
-import { FieldType } from "src/types/fieldTypes"
+import { FieldManager as FM } from "src/fields/FieldManager"
+import { FieldManager, FieldType } from "src/types/fieldTypes"
 import { FileClass } from "./fileClass"
 import { FileClassTableView } from "./fileClassTableView"
 
@@ -128,40 +129,19 @@ export class Field {
     private buildFilterComponent(): void {
         const field = this.parentFieldSet.plugin.fieldIndex.fileClassesFields.get(this.parentFieldSet.fileClass.name)?.find(f => f.name === this.name)
         const debounced = debounce((fieldset: FieldSet) => fieldset.tableView.udpate(), 1000, true)
-
-        switch (field?.type) {
-            case FieldType.Boolean:
-                {
-                    console.log("HERE")
-                    const fieldFilterContainer = this.container.createDiv({ cls: "filter-input" });
-                    const filter = new DropdownComponent(fieldFilterContainer);
-
-                    filter.addOption("all", "True or false")
-                    filter.addOption("true", "True")
-                    filter.addOption("false", "False")
-                    filter.setValue("all");
-                    filter.onChange((value) => {
-                        (this.parentFieldSet.filters[this.name] as DropdownComponent).selectEl.value = value;
-                        this.parentFieldSet.tableView.udpate()
-                    });
-                    this.parentFieldSet.filters[this.name] = filter
-                }
-                break;
-
-            default:
-                {
-                    const fieldFilterContainer = this.container.createDiv({ cls: "filter-input" });
-                    const filter = new TextComponent(fieldFilterContainer);
-                    filter.setValue("");
-                    filter.onChange((value) => {
-                        (this.parentFieldSet.filters[this.name] as TextComponent).inputEl.value = value;
-                        debounced(this.parentFieldSet)
-                    });
-                    this.parentFieldSet.filters[this.name] = filter
-                }
-                break;
+        if (field) {
+            const fieldManager = new FieldManager[field.type](this.parentFieldSet.plugin, field) as FM
+            fieldManager.buildFilter(this.container, this.parentFieldSet, field.name, debounced)
+        } else {
+            const fieldFilterContainer = this.container.createDiv({ cls: "filter-input" });
+            const filter = new TextComponent(fieldFilterContainer);
+            filter.setValue("");
+            filter.onChange((value) => {
+                (this.parentFieldSet.filters[this.name] as TextComponent).inputEl.value = value;
+                debounced(this.parentFieldSet)
+            });
+            this.parentFieldSet.filters[this.name] = filter
         }
-
     }
 }
 

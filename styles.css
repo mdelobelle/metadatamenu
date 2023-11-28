@@ -2305,20 +2305,26 @@ span.flatpickr-weekday {
   row-gap: 0.5em;
   column-gap: 0.5em;
 }
-.metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header {
-  display: flex;
-  align-items: center;
-}
-.metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header button {
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container button {
   height: 1.5em;
   width: 1.5em;
   padding: 0.3em;
   border-radius: 0.75em;
   margin-right: 0.5em;
 }
-.metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header button.active {
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container button.active {
   background-color: var(--color-accent);
   color: var(--text-on-accent);
+}
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container button:focus {
+  box-shadow: none;
+}
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container button:hover {
+  box-shadow: 0 0 0 1px var(--interactive-accent);
+}
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header {
+  display: flex;
+  align-items: center;
 }
 .metadata-menu.fileclass-view .fv-table .options .fields .field-container .field-header .label-container {
   display: flex;
@@ -2341,6 +2347,26 @@ span.flatpickr-weekday {
 }
 .metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input input {
   width: 100%;
+}
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input select {
+  width: 100%;
+}
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input.filter-with-dropdown {
+  flex-direction: row;
+  border: var(--input-border-width) solid var(--background-modifier-border);
+  border-radius: var(--input-radius);
+  align-items: center;
+}
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input.filter-with-dropdown input {
+  flex-grow: 2;
+  border: none;
+}
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input.filter-with-dropdown input:focus {
+  outline: none;
+}
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input.filter-with-dropdown:hover, .metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input.filter-with-dropdown:focus-within {
+  border-color: var(--background-modifier-border-hover);
+  transition: box-shadow 0.15s ease-in-out, border 0.15s ease-in-out;
 }
 .metadata-menu.fileclass-view .fv-table .options .footer {
   display: flex;

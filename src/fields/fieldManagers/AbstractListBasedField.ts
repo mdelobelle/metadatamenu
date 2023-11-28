@@ -1,11 +1,15 @@
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager, SettingLocation } from "../FieldManager";
-import { TextComponent, ButtonComponent, setIcon, DropdownComponent, TextAreaComponent } from "obsidian";
+import { TextComponent, ButtonComponent, setIcon, DropdownComponent, TextAreaComponent, Debouncer } from "obsidian";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import MetadataMenu from "main";
 import { FileSuggest } from "src/suggester/FileSuggester";
 import * as selectValuesSource from "src/types/selectValuesSourceTypes"
+import { FieldSet } from "src/fileClass/tableViewFieldSet";
+import { OptionsMultiSelectModal } from "src/fileClass/OptionsMultiSelectModal";
+
+
 
 export default abstract class AbstractListBasedField extends FieldManager {
 
@@ -134,7 +138,9 @@ export default abstract class AbstractListBasedField extends FieldManager {
                     {
                         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
                         if (dvApi) {
-                            values = new Function("dv", "current", `return ${this.field.options.valuesFromDVQuery}`)(dvApi, dvFile)
+                            //TODO validate this is still working after adding fallback empty object
+                            //values = new Function("dv", "current", `return ${this.field.options.valuesFromDVQuery}`)(dvApi, dvFile)
+                            values = new Function("dv", "current", `return ${this.field.options.valuesFromDVQuery}`)(dvApi, dvFile || {})
                         } else {
                             values = []
                         }
@@ -282,4 +288,38 @@ export default abstract class AbstractListBasedField extends FieldManager {
         attrs.cls = "value-container"
         fieldContainer.appendChild(dv.el('span', p[this.field.name], attrs))
     }
+
+
+    public buildFilter(container: HTMLDivElement, parentFieldSet: FieldSet, name: string, debounced: Debouncer<[fieldset: FieldSet], void>) {
+        const fieldFilterContainer = container.createDiv({ cls: "filter-input" });
+        fieldFilterContainer.addClass("filter-with-dropdown")
+        const filter = new TextComponent(fieldFilterContainer);
+        const button = container.createEl("button", { cls: "infield-button" })
+        filter.inputEl.parentElement?.appendChild(button)
+        setIcon(button, "chevron-down")
+        filter.setValue("");
+        filter.onChange((value) => {
+            (parentFieldSet.filters[name] as TextComponent).inputEl.value = value;
+            debounced(parentFieldSet)
+        });
+        button.onclick = () => {
+            const fileClass = parentFieldSet.fileClass
+            const fileClassFile = fileClass.getClassFile()
+            const field = this.plugin.fieldIndex.fileClassesFields.get(fileClass.name)?.find(f => f.isRoot() && f.name === name)
+            console.log(parentFieldSet, name)
+            if (field) (new OptionsMultiSelectModal(this.plugin, fileClassFile, field, parentFieldSet)).open()
+        }
+        parentFieldSet.filters[name] = filter
+    }
+
+    public buildFilterQuery(valueGetter: string, value: string): string {
+        const values = value.split(",").map(item => item.trim())
+        if (values.length) {
+            const valuesQueries = values.map(val => `${valueGetter}.toString().toLowerCase().includes("${val}".toLowerCase())`)
+            return `    .filter(p => ${valueGetter} && (${valuesQueries.join(" || ")}))\n`
+        } else {
+            return ""
+        }
+    }
+
 }

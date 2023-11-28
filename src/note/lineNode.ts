@@ -96,13 +96,31 @@ export class LineNode {
                     }
                     for (const field of this.line.note.fields) {
                         if (yamlAttr === field.name) {
-                            this.indexedId = field.id
+                            //FIXME: pas bon: choppe le premier field avec le bon nom
+                            // il faut:
+                            // chopper l'id du field parent et le rajouter au filtre
+                            let indexedId = field.id
+
+                            if (this.line.parentLine) {
+                                const parentNode = this.line.parentLine.nodes[0]
+                                const parentField = parentNode.field
+                                if (parentField) {
+                                    const parentIndexedId = this.line.note.existingFields.find(eF => eF.field.id === parentField.id)?.indexedId
+                                    indexedId = `${parentIndexedId}____${field.id}` || field.id
+                                } else {
+                                    indexedId = field.id
+                                }
+                            } else {
+                                indexedId = field.id
+                            }
+                            if (field.path && indexedId !== `${field.path}____${field.id}`) continue
+
+                            this.indexedId = indexedId
                             const existingField = new ExistingField(field, this.value, this.indexedId)
                             if (field.path) {
                                 const parentLine = this.line.parentLine
                                 const parentNode = parentLine?.nodes[0]
                                 const parentField = parentNode?.field
-
                                 if (parentField?.id === field.path.split("____").last()) {
                                     this.field = field
                                     if (this.field && parentField?.type === FieldType.ObjectList) {

@@ -1,6 +1,8 @@
 import MetadataMenu from "main";
 import { ButtonComponent, debounce, DropdownComponent, TextComponent } from "obsidian";
 import { FileClassManager } from "src/components/fileClassManager";
+import { FieldManager as FM } from "src/fields/FieldManager";
+import { FieldManager, FieldType } from "src/types/fieldTypes";
 import { FileClass } from "./fileClass";
 import { FieldSet } from "./tableViewFieldSet";
 import { CreateSavedViewModal } from "./tableViewModal";
@@ -309,9 +311,15 @@ export class FileClassTableView {
 
     private buildFilterQuery(): string {
         return Object.entries(this.fieldSet?.filters || {}).map(([fieldName, input]) => {
-            const field = fieldName === "file" ? `p.file.name` : `p["${fieldName}"]`
+            const valueGetter = fieldName === "file" ? `p.file.name` : `p["${fieldName}"]`
+            const fCField = fieldName !== "file" ? this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.find(f => f.name === fieldName) : undefined
             if (input.getValue()) {
-                return `    .filter(p => ${field} && ${field}.toString().toLowerCase().includes("${input.getValue()}".toLowerCase()))\n`
+                if (fCField) {
+                    const fieldManager = new FieldManager[fCField.type](this.plugin, fCField) as FM
+                    return fieldManager.buildFilterQuery(valueGetter, input.getValue())
+                } else {
+                    return `    .filter(p => ${valueGetter} && ${valueGetter}.toString().toLowerCase().includes("${input.getValue()}".toLowerCase()))\n`
+                }
             } else {
                 return ""
             }
