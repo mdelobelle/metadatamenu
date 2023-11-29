@@ -1,12 +1,33 @@
 import Field from "../fields/Field";
-import { FieldManager as FM, FieldType } from "src/types/fieldTypes";
-import { TextComponent, ButtonComponent, setIcon, Debouncer, TFile, SuggestModal } from "obsidian";
+import { FieldManager as FM, FieldManager, FieldType } from "src/types/fieldTypes";
+import { TextComponent, ButtonComponent, setIcon, TFile, SuggestModal } from "obsidian";
 import MetadataMenu from "main";
 import { FieldSet } from "src/fileClass/tableViewFieldSet";
 import { getLink } from "src/utils/parser";
 import FileField from "../fields/fieldManagers/FileField";
 import { cleanActions } from "src/utils/modals";
 import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
+import MultiFileField from "src/fields/fieldManagers/MultiFileField";
+
+export enum fieldStates {
+    __empty__ = "__empty__",
+    __notEmpty__ = "__notEmpty__",
+    __notFound__ = "__notFound__",
+    __existing__ = "__existing__"
+}
+
+export const displayValue: Record<keyof typeof fieldStates, string> = {
+    __empty__: "Empty Fields",
+    __notEmpty__: "Not Empty Fields",
+    __notFound__: "Not Found Fields",
+    __existing__: "Existing Fields"
+}
+export const displayIcon: Record<keyof typeof fieldStates, string> = {
+    __empty__: "box-select",
+    __notEmpty__: "plus-square",
+    __notFound__: "x-circle",
+    __existing__: "circle-dot"
+}
 
 export class OptionsMultiSelectModal extends SuggestModal<string>{
     private selectedOptions: Array<string>;
@@ -15,7 +36,7 @@ export class OptionsMultiSelectModal extends SuggestModal<string>{
     constructor(
         public plugin: MetadataMenu,
         public fileClassFile: TFile,
-        public field: Field,
+        public field: Field | "file",
         public parentFieldSet: FieldSet
     ) {
         super(plugin.app);
@@ -26,7 +47,8 @@ export class OptionsMultiSelectModal extends SuggestModal<string>{
         cleanActions(this.containerEl, ".footer-actions")
         const footerActionsContainer = this.containerEl.createDiv({ cls: "footer-actions" })
         this.buildFooterActions(footerActionsContainer)
-        this.input = this.parentFieldSet.filters[this.field.name] as TextComponent
+        const id = this.field === "file" ? "file" : this.field.name
+        this.input = this.parentFieldSet.filters[id] as TextComponent
         const initialOptions = this.input.getValue()
         if (initialOptions) {
             if (Array.isArray(initialOptions)) {
@@ -62,24 +84,51 @@ export class OptionsMultiSelectModal extends SuggestModal<string>{
     };
 
     getSuggestions(query: string): string[] {
-        const multiTypes = [
-            FieldType.Multi,
-            FieldType.MultiFile,
-            FieldType.Select,
-            FieldType.File
-        ]
-        if (multiTypes.includes(this.field.type)) {
-            const fieldManager = new FM[this.field.type](this.plugin, this.field) as AbstractListBasedField
-            const values = fieldManager.getOptionsList().filter(o => String(o).toLowerCase().includes(query.toLowerCase()))
-            return values
-        } else if (this.field.type === FieldType.Lookup) {
-            const values = [...this.plugin.fieldIndex.fileLookupFieldLastValue.entries()].filter(([fieldId, lookupFiles]) => {
-                return fieldId.endsWith(`__related__${this.fileClassFile.basename}___${this.field.name}`) && lookupFiles !== ""
-            }).map(([fieldId, lookupFiles]) => lookupFiles).join(",")
-            return [...new Set(values.split(",").map(item => item.trim().replace(/\[\[|\]\]/g, "")))]
-        } else {
+        if (this.field === "file") {
             return []
+        } else {
+
+            const field = this.field as Field
+            switch (field.type) {
+                case FieldType.Boolean: {
+                    return ["__empty__", "true", "false"]
+                }
+                case FieldType.Multi:
+                case FieldType.Select: {
+                    const fieldManager = new FM[field.type](this.plugin, this.field) as AbstractListBasedField
+                    const values = fieldManager.getOptionsList().filter(o => String(o).toLowerCase().includes(query.toLowerCase()))
+                    return [...Object.keys(fieldStates), ...values]
+                }
+                case FieldType.MultiFile:
+                case FieldType.File: {
+                    const sortingMethod = new Function("a", "b", `return ${field.options.customSorting}`) as (a: TFile, b: TFile) => number ||
+                        function (a: TFile, b: TFile) { return a.basename < b.basename ? -1 : 1 }
+                    try {
+                        const fileManager = new FieldManager[field.type](this.plugin, this.field) as FileField | MultiFileField;
+                        const values = fileManager.getFiles()
+                            .sort(sortingMethod)
+                            .map(item => item.basename.trim().replace(/\[\[|\]\]/g, ""))
+                            .filter(o => String(o).toLowerCase().includes(query.toLowerCase()));
+                        return ["__empty__", "__notEmpty__", ...values]
+                    } catch (error) {
+                        return []
+                    }
+                }
+                case FieldType.Lookup: {
+                    const _values = [...this.plugin.fieldIndex.fileLookupFieldLastValue.entries()].filter(([fieldId, lookupFiles]) => {
+                        return fieldId.endsWith(`__related__${this.fileClassFile.basename}___${(this.field as Field).name}`) && lookupFiles !== ""
+                    }).map(([fieldId, lookupFiles]) => lookupFiles).join(",")
+                    const values = [...new Set(_values.split(",")
+                        .map(item => item.trim().replace(/\[\[|\]\]/g, ""))
+                        .filter(o => String(o).toLowerCase().includes(query.toLowerCase()))
+                    )]
+                    return [...Object.keys(fieldStates), ...values]
+                }
+                default:
+                    return [...Object.keys(fieldStates)];
+            }
         }
+
     }
 
     buildFooterActions(footerActionsContainer: HTMLDivElement) {
@@ -142,7 +191,19 @@ export class OptionsMultiSelectModal extends SuggestModal<string>{
     }
 
     renderSuggestion(value: string, el: HTMLElement) {
-        el.setText(value)
+        const labelContainer = el.createDiv({ cls: "label-with-icon-container" })
+        const icon = labelContainer.createDiv({ cls: "icon" })
+        if (Object.keys(fieldStates).includes(value)) {
+            setIcon(icon, displayIcon[(value as keyof typeof fieldStates)])
+        }
+        const label = labelContainer.createDiv({ cls: "label" })
+        let labelText = ""
+        if (Object.keys(fieldStates).includes(value)) {
+            labelText = displayValue[(value as keyof typeof fieldStates)]
+        } else {
+            labelText = `${value.slice(0, 50)}${value.length > 50 ? "..." : ""}`
+        }
+        label.setText(labelText)
         el.addClass("value-container")
         const spacer = this.containerEl.createDiv({ cls: "spacer" })
         el.appendChild(spacer)
@@ -158,7 +219,12 @@ export class OptionsMultiSelectModal extends SuggestModal<string>{
         if (this.selectedOptions.includes(value.toString())) {
             this.selectedOptions.remove(value.toString())
         } else {
-            this.selectedOptions.push(value.toString())
+            if (Object.keys(fieldStates).includes(value)) {
+                this.selectedOptions = [value]
+            } else {
+                this.selectedOptions = [...this.selectedOptions.filter(o => !Object.keys(fieldStates).includes(o))]
+                this.selectedOptions.push(value.toString())
+            }
         }
         this.renderSelected()
     }

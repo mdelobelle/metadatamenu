@@ -15,7 +15,6 @@ import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import { updatePropertiesSection } from 'src/options/updateProps';
 import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton';
-import { FieldSet } from 'src/fileClass/tableViewFieldSet';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;

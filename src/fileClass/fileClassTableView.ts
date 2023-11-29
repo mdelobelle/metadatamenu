@@ -1,11 +1,10 @@
 import MetadataMenu from "main";
 import { ButtonComponent, debounce, DropdownComponent, TextComponent } from "obsidian";
 import { FileClassManager } from "src/components/fileClassManager";
-import { FieldManager as FM } from "src/fields/FieldManager";
-import { FieldManager, FieldType } from "src/types/fieldTypes";
 import { FileClass } from "./fileClass";
 import { FieldSet } from "./tableViewFieldSet";
 import { CreateSavedViewModal } from "./tableViewModal";
+import { fieldStates } from "./OptionsMultiSelectModal";
 
 export class FileClassTableView {
     public plugin: MetadataMenu;
@@ -312,13 +311,39 @@ export class FileClassTableView {
     private buildFilterQuery(): string {
         return Object.entries(this.fieldSet?.filters || {}).map(([fieldName, input]) => {
             const valueGetter = fieldName === "file" ? `p.file.name` : `p["${fieldName}"]`
-            const fCField = fieldName !== "file" ? this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.find(f => f.name === fieldName) : undefined
             if (input.getValue()) {
-                if (fCField) {
-                    const fieldManager = new FieldManager[fCField.type](this.plugin, fCField) as FM
-                    return fieldManager.buildFilterQuery(valueGetter, input.getValue())
+                const value = input.getValue()
+                if (!value.startsWith("/")) {
+                    let values = value.split(",").map(item => item.trim())
+                    const empty = values.find(v => v === "__empty__")
+                    const notEmpty = values.find(v => v === "__notEmpty__")
+                    const notFound = values.find(v => v === "__notFound__")
+                    const existing = values.find(v => v === "__existing__")
+                    values = values.filter(v => !Object.keys(fieldStates).includes(v))
+                    if (empty) {
+                        return `    .filter(p => ${valueGetter} === null)\n`
+                    } else if (notEmpty) {
+                        return `    .filter(p => ${valueGetter} !== null)\n`
+                    } else if (notFound) {
+                        return `    .filter(p => ${valueGetter} === undefined)\n`
+                    } else if (existing) {
+                        return `    .filter(p => ${valueGetter} !== undefined)\n`
+                    } else if (values.length) {
+                        const valuesQueries = values.map(val => `${valueGetter}.toString().toLowerCase().includes("${val}".toLowerCase())`)
+                        return `    .filter(p => ${valueGetter} && (${valuesQueries.join(" || ")}))\n`
+                    } else {
+                        return ""
+                    }
                 } else {
-                    return `    .filter(p => ${valueGetter} && ${valueGetter}.toString().toLowerCase().includes("${input.getValue()}".toLowerCase()))\n`
+                    const cleaned = value.replace(/^\//, "").replace(/\/$/, "")
+                    let isValid = true
+                    try {
+                        new RegExp(cleaned)
+                    } catch (error) {
+                        isValid = false
+                    }
+                    if (isValid) return `    .filter(p => ${valueGetter} && new RegExp("${cleaned}").test(${valueGetter}))\n`
+                    else return ""
                 }
             } else {
                 return ""
@@ -361,7 +386,7 @@ export class FileClassTableView {
         const fields = this.fieldSet.fields
             .filter(f => !this.fieldSet.fields.find(_f => _f.name === f.name)?.isColumnHidden)
             .sort((f1, f2) => f1.columnPosition < f2.columnPosition ? -1 : 1)
-        let dvJS = "const {fieldModifier: f} = this.app.plugins.plugins[\"metadata-menu\"].api;\n" +
+        let dvJS = "const {fieldModifier: f} = MetadataMenu.api;\n" +
             "dv.table([";
         dvJS += fields.map(field => `"${field.name}"`).join(",");
         dvJS += `], \n`;

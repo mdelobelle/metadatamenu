@@ -8,7 +8,7 @@ import AbstractListBasedField from "./AbstractListBasedField";
 import { FieldOptions } from "src/components/NoteFields";
 import { postValues } from "src/commands/postValues";
 import { SettingLocation } from "../FieldManager";
-import { ExistingField } from "../existingField";
+import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
@@ -106,7 +106,7 @@ export default class CycleField extends AbstractListBasedField {
         attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, any> } = {}
     ): void {
         attrs.cls = "value-container"
-        fieldContainer.appendChild(dv.el('span', p[this.field.name], attrs))
+        fieldContainer.appendChild(dv.el('span', p[this.field.name] || "", attrs))
         const spacer = fieldContainer.createEl("div", { cls: "spacer" })
         /* button to display input */
         const cycleBtn = fieldContainer.createEl("button")

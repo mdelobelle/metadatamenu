@@ -7,7 +7,7 @@ import InsertFieldSuggestModal from "src/modals/insertFieldSuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldManager as FM, FieldType } from "src/types/fieldTypes";
 import Field from "./Field";
-import { ExistingField } from "./existingField";
+import { ExistingField } from "./ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { FieldSet } from "src/fileClass/tableViewFieldSet";
@@ -179,20 +179,5 @@ export abstract class FieldManager {
             default: valueText = value.toString() || "";
         }
         container.createDiv({ text: `${valueText}` })
-    }
-
-    public buildFilter(container: HTMLDivElement, parentFieldSet: FieldSet, name: string, debounced: Debouncer<[fieldset: FieldSet], void>) {
-        const fieldFilterContainer = container.createDiv({ cls: "filter-input" });
-        const filter = new TextComponent(fieldFilterContainer);
-        filter.setValue("");
-        filter.onChange((value) => {
-            (parentFieldSet.filters[name] as TextComponent).inputEl.value = value;
-            debounced(parentFieldSet)
-        });
-        parentFieldSet.filters[name] = filter
-    }
-
-    public buildFilterQuery(valueGetter: string, value: string) {
-        return `    .filter(p => ${valueGetter} && ${valueGetter}.toString().toLowerCase().includes("${value}".toLowerCase()))\n`
     }
 }

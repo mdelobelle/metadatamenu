@@ -7,11 +7,11 @@ import BooleanModal from "src/modals/fields/BooleanModal";
 import { FieldType, FieldIcon } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
-import { ExistingField } from "../existingField";
+import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
-import { FieldSet } from "src/fileClass/tableViewFieldSet";
+
 export default class BooleanField extends FieldManager {
 
     constructor(plugin: MetadataMenu, field: Field) {
@@ -94,21 +94,6 @@ export default class BooleanField extends FieldManager {
         checkbox.onchange = (value) => {
             BooleanField.replaceValues(this.plugin, p.file.path, this.field.id, checkbox.checked.toString());
         }
-    }
-
-    public buildFilter(container: HTMLDivElement, parentFieldSet: FieldSet, name: string, debounced: Debouncer<[fieldset: FieldSet], void>) {
-        const fieldFilterContainer = container.createDiv({ cls: "filter-input" });
-        const filter = new DropdownComponent(fieldFilterContainer);
-
-        filter.addOption("all", "True or false")
-        filter.addOption("true", "True")
-        filter.addOption("false", "False")
-        filter.setValue("all");
-        filter.onChange((value) => {
-            (parentFieldSet.filters[name] as DropdownComponent).selectEl.value = value;
-            parentFieldSet.tableView.udpate()
-        });
-        parentFieldSet.filters[name] = filter
     }
 
     public buildFilterQuery(valueGetter: string, value: string): string {

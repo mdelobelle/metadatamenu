@@ -880,6 +880,7 @@ span.flatpickr-weekday {
 .metadata-menu-dv-field-container {
   display: flex;
   align-items: center;
+  min-height: var(--font-adaptive-normal);
 }
 .metadata-menu-dv-field-container .value-container {
   margin-right: 0.375em;
@@ -1866,6 +1867,12 @@ span.flatpickr-weekday {
   margin-right: 0.5em;
   font-weight: 600;
 }
+.value-container .label-with-icon-container {
+  display: inline-flex;
+}
+.value-container .label-with-icon-container .icon {
+  margin-right: 0.5em;
+}
 .value-container .icon-container {
   margin: 0em 0.7em 0em 0em;
   display: block;
@@ -2305,6 +2312,11 @@ span.flatpickr-weekday {
   row-gap: 0.5em;
   column-gap: 0.5em;
 }
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container {
+  padding: var(--button-radius);
+  background-color: var(--odd-color);
+  border-radius: var(--button-radius);
+}
 .metadata-menu.fileclass-view .fv-table .options .fields .field-container button {
   height: 1.5em;
   width: 1.5em;
@@ -2348,6 +2360,10 @@ span.flatpickr-weekday {
 .metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input input {
   width: 100%;
 }
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input input:focus {
+  outline: none;
+  box-shadow: none;
+}
 .metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input select {
   width: 100%;
 }
@@ -2356,13 +2372,15 @@ span.flatpickr-weekday {
   border: var(--input-border-width) solid var(--background-modifier-border);
   border-radius: var(--input-radius);
   align-items: center;
+  background-color: var(--background-modifier-form-field);
 }
 .metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input.filter-with-dropdown input {
   flex-grow: 2;
   border: none;
 }
-.metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input.filter-with-dropdown input:focus {
-  outline: none;
+.metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input.filter-with-dropdown input:focus-within {
+  border-color: none;
+  transition: none;
 }
 .metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input.filter-with-dropdown:hover, .metadata-menu.fileclass-view .fv-table .options .fields .field-container .filter-input.filter-with-dropdown:focus-within {
   border-color: var(--background-modifier-border-hover);

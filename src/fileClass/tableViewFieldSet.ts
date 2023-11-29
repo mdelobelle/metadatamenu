@@ -1,9 +1,8 @@
 import MetadataMenu from "main"
-import { ButtonComponent, debounce, DropdownComponent, TextComponent, ToggleComponent } from "obsidian"
-import { FieldManager as FM } from "src/fields/FieldManager"
-import { FieldManager, FieldType } from "src/types/fieldTypes"
+import { ButtonComponent, debounce, Debouncer, DropdownComponent, setIcon, TextComponent } from "obsidian"
 import { FileClass } from "./fileClass"
 import { FileClassTableView } from "./fileClassTableView"
+import { OptionsMultiSelectModal } from "./OptionsMultiSelectModal"
 
 const btnIcons: Record<string, string> = {
     'asc': 'chevron-up',
@@ -126,22 +125,41 @@ export class Field {
         this.buildColumnMoverBtn(container)
     }
 
+    private buildFilter(container: HTMLDivElement, parentFieldSet: FieldSet, name: string, debounced: Debouncer<[fieldset: FieldSet], void>) {
+        const fieldFilterContainer = container.createDiv({ cls: "filter-input" });
+        const filter = new TextComponent(fieldFilterContainer);
+        if (name === "file") {
+            filter.setValue("");
+            filter.onChange((value) => {
+                (parentFieldSet.filters[name] as TextComponent).inputEl.value = value;
+                debounced(parentFieldSet)
+            });
+        } else {
+
+            const plugin = this.parentFieldSet.plugin
+            fieldFilterContainer.addClass("filter-with-dropdown")
+            const button = container.createEl("button", { cls: "infield-button" })
+            filter.inputEl.parentElement?.appendChild(button)
+            setIcon(button, "chevron-down")
+            filter.setValue("");
+            filter.onChange((value) => {
+                (parentFieldSet.filters[name] as TextComponent).inputEl.value = value;
+                debounced(parentFieldSet)
+            });
+            button.onclick = () => {
+                const fileClass = parentFieldSet.fileClass
+                const fileClassFile = fileClass.getClassFile()
+                const field = plugin.fieldIndex.fileClassesFields.get(fileClass.name)?.find(f => f.isRoot() && f.name === this.name);
+                (new OptionsMultiSelectModal(plugin, fileClassFile, field || "file", this.parentFieldSet)).open()
+            }
+        }
+        this.parentFieldSet.filters[this.name] = filter
+    }
+
     private buildFilterComponent(): void {
         const field = this.parentFieldSet.plugin.fieldIndex.fileClassesFields.get(this.parentFieldSet.fileClass.name)?.find(f => f.name === this.name)
         const debounced = debounce((fieldset: FieldSet) => fieldset.tableView.udpate(), 1000, true)
-        if (field) {
-            const fieldManager = new FieldManager[field.type](this.parentFieldSet.plugin, field) as FM
-            fieldManager.buildFilter(this.container, this.parentFieldSet, field.name, debounced)
-        } else {
-            const fieldFilterContainer = this.container.createDiv({ cls: "filter-input" });
-            const filter = new TextComponent(fieldFilterContainer);
-            filter.setValue("");
-            filter.onChange((value) => {
-                (this.parentFieldSet.filters[this.name] as TextComponent).inputEl.value = value;
-                debounced(this.parentFieldSet)
-            });
-            this.parentFieldSet.filters[this.name] = filter
-        }
+        this.buildFilter(this.container, this.parentFieldSet, field?.name || "file", debounced)
     }
 }
 

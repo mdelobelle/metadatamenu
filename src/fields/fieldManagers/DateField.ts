@@ -10,7 +10,7 @@ import { FieldManager as FM } from "src/types/fieldTypes";
 import { FieldOptions } from "src/components/NoteFields";
 import { postValues } from "src/commands/postValues";
 import { getLink } from "src/utils/parser";
-import { ExistingField } from "../existingField";
+import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
@@ -198,7 +198,7 @@ export default class DateField extends FieldManager {
         attrs: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; } = {}
     ): void {
         attrs.cls = "value-container"
-        const fieldValue = dv.el('span', p[this.field.name], attrs);
+        const fieldValue = dv.el('span', p[this.field.name] || "", attrs);
         const dateBtn = fieldContainer.createEl("button")
         setIcon(dateBtn, FieldIcon[FieldType.Date])
         const spacer = fieldContainer.createDiv({ cls: "spacer-1" })

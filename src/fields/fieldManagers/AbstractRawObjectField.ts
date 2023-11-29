@@ -8,7 +8,7 @@ import { FieldManager } from "../FieldManager";
 import { FieldOptions } from "src/components/NoteFields";
 import { LanguageSupport } from "@codemirror/language";
 import { Extension } from "@codemirror/state"
-import { ExistingField } from "../existingField";
+import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
@@ -78,7 +78,7 @@ export default abstract class RawObjectField extends FieldManager {
         attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
     ): void {
         attrs.cls = "value-container"
-        const fieldValue = (dv.el('span', p[this.field.name], attrs) as HTMLDivElement);
+        const fieldValue = (dv.el('span', p[this.field.name] || "", attrs) as HTMLDivElement);
         fieldContainer.appendChild(fieldValue);
         /* button to display input */
         const editBtn = fieldContainer.createEl("button");

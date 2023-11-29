@@ -346,7 +346,10 @@
                 column-gap: 0.5em;
 
                 .field-container{
-                    
+                    padding: var(--button-radius);
+                    background-color: var(--odd-color);
+                    border-radius: var(--button-radius);
+
                     button {
                         height: 1.5em;
                         width: 1.5em;
@@ -372,8 +375,6 @@
                         display: flex;
                         align-items: center;
 
-                        
-
                         .label-container{
                             display: flex;
                             align-items: center;
@@ -396,10 +397,14 @@
                     .filter-input{
                         display: flex;
                         margin-top: 0.5em;
-                        
 
                         input{
                             width: 100%
+                        }
+
+                        input:focus {
+                            outline: none;
+                            box-shadow: none;
                         }
 
                         select{
@@ -411,14 +416,16 @@
                             border: var(--input-border-width) solid var(--background-modifier-border);
                             border-radius: var(--input-radius);
                             align-items: center;
+                            background-color: var(--background-modifier-form-field);
 
                             input {
                                 flex-grow:2;
                                 border: none;
                             }
                             
-                            input:focus {
-                                outline: none;
+                            input:focus-within{
+                                border-color: none;
+                                transition: none;
                             }
                         }
 

@@ -5,7 +5,7 @@ import ObjectListModal from "src/modals/fields/ObjectListModal";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import { FieldType } from "src/types/fieldTypes";
 import { displayLinksOrText } from "src/utils/linksUtils";
-import { ExistingField } from "../existingField";
+import { ExistingField } from "../ExistingField";
 import Field from "../Field";
 import AbstractFileBasedField from "./AbstractFileBasedField";
 
