@@ -22,6 +22,8 @@ export class FileClassTableView {
     public favoriteBtn: ButtonComponent
     public viewRemoveBtn: ButtonComponent
     public fieldSet: FieldSet
+    public limitWrapped: boolean = false
+    public ranges: HTMLDivElement[] = []
 
     constructor(
         plugin: MetadataMenu,
@@ -83,13 +85,37 @@ export class FileClassTableView {
 
     private buildPaginationManager(container: HTMLDivElement): void {
         container.replaceChildren();
-
+        this.ranges = []
+        const toggleRanges = (rangesCount: number) => {
+            for (const [index, rangeComponent] of this.ranges.entries()) {
+                if (rangesCount >= 5 && index > 2 && index < rangesCount - 2) {
+                    if (this.limitWrapped) rangeComponent.show()
+                    else rangeComponent.hide()
+                }
+            }
+            this.limitWrapped = !this.limitWrapped
+        }
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
             try {
                 const values = (new Function("dv", "current", `return ${this.buildDvJSQuery()}`))(dvApi).values;
                 const count = values.length;
-                for (let i = 0; i <= Math.floor(count / this.limit); i++) {
+                const rangeExpander = container.createDiv({
+                    cls: `range`,
+                    text: `< ... >`
+                })
+                const rangesCount = Math.floor(count / this.limit) + 1
+                rangeExpander.onclick = () => {
+                    if (rangeExpander.hasClass("active")) {
+                        rangeExpander.removeClass("active")
+                        rangeExpander.setText("< ... >")
+                    } else {
+                        rangeExpander.addClass("active")
+                        rangeExpander.setText("> ... <")
+                    }
+                    toggleRanges(rangesCount)
+                }
+                for (let i = 0; i < rangesCount; i++) {
                     if (i * this.limit < count) {
                         const rangeComponent = container.createDiv({
                             cls: `range ${i === this.sliceStart / this.limit ? "active" : ""}`,
@@ -99,8 +125,14 @@ export class FileClassTableView {
                             this.sliceStart = i * this.limit;
                             this.udpate();
                         }
+                        this.ranges.push(rangeComponent)
+                    }
+                    if (rangesCount >= 5 && i === 2) {
+                        container.appendChild(rangeExpander)
                     }
                 }
+                const activeRange = this.ranges.find(r => r.hasClass("active"))
+                if (activeRange && this.ranges.indexOf(activeRange) < 2) toggleRanges(rangesCount)
             } catch (e) {
                 console.error("unable to build the list of files")
             }
@@ -214,15 +246,7 @@ export class FileClassTableView {
         const cleanFilterBtn = new ButtonComponent(btnContainer);
         cleanFilterBtn.setIcon("eraser");
         cleanFilterBtn.setTooltip("remove filter values")
-        cleanFilterBtn.onClick(() => {
-            /*
-            const filterInputs = this.container.querySelectorAll(".filter-input input")
-            for (const input of filterInputs) {
-                if (input instanceof HTMLInputElement) input.value = ""
-            }
-            */
-            this.fieldSet.reset()
-        })
+        cleanFilterBtn.onClick(() => this.fieldSet.reset())
     }
 
     private buildSaveView(container: HTMLDivElement): void {
