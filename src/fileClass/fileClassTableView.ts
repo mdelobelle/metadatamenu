@@ -5,6 +5,7 @@ import { FileClass } from "./fileClass";
 import { FieldSet } from "./tableViewFieldSet";
 import { CreateSavedViewModal } from "./tableViewModal";
 import { fieldStates } from "./OptionsMultiSelectModal";
+import { FieldType } from "src/types/fieldTypes";
 
 export class FileClassTableView {
     public plugin: MetadataMenu;
@@ -329,8 +330,23 @@ export class FileClassTableView {
                     } else if (existing) {
                         return `    .filter(p => ${valueGetter} !== undefined)\n`
                     } else if (values.length) {
-                        const valuesQueries = values.map(val => `${valueGetter}.toString().toLowerCase().includes("${val}".toLowerCase())`)
-                        return `    .filter(p => ${valueGetter} && (${valuesQueries.join(" || ")}))\n`
+                        const fCField = fieldName !== "file" ? this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.find(f => f.name === fieldName) : undefined
+                        if (fCField?.type === FieldType.Boolean) {
+                            switch (value) {
+                                case 'true':
+                                    return `    .filter(p => ${valueGetter} === true)\n`
+                                case 'false':
+                                    return `    .filter(p => ${valueGetter} === false)\n`
+                                case 'false, true':
+                                case 'true, false':
+                                    return `    .filter(p => [true, false].some(b => ${valueGetter} === b))\n`
+                                default:
+                                    return ""
+                            }
+                        } else {
+                            const valuesQueries = values.map(val => `${valueGetter}.toString().toLowerCase().includes("${val}".toLowerCase())`)
+                            return `    .filter(p => ${valueGetter} && (${valuesQueries.join(" || ")}))\n`
+                        }
                     } else {
                         return ""
                     }

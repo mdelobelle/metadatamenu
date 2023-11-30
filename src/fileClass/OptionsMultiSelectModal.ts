@@ -87,17 +87,17 @@ export class OptionsMultiSelectModal extends SuggestModal<string>{
         if (this.field === "file") {
             return []
         } else {
-
+            const commonStates = Object.keys(fieldStates)
             const field = this.field as Field
             switch (field.type) {
                 case FieldType.Boolean: {
-                    return ["__empty__", "true", "false"]
+                    return [...commonStates, "true", "false"]
                 }
                 case FieldType.Multi:
                 case FieldType.Select: {
                     const fieldManager = new FM[field.type](this.plugin, this.field) as AbstractListBasedField
                     const values = fieldManager.getOptionsList().filter(o => String(o).toLowerCase().includes(query.toLowerCase()))
-                    return [...Object.keys(fieldStates), ...values]
+                    return [...commonStates, ...values]
                 }
                 case FieldType.MultiFile:
                 case FieldType.File: {
@@ -122,10 +122,10 @@ export class OptionsMultiSelectModal extends SuggestModal<string>{
                         .map(item => item.trim().replace(/\[\[|\]\]/g, ""))
                         .filter(o => String(o).toLowerCase().includes(query.toLowerCase()))
                     )]
-                    return [...Object.keys(fieldStates), ...values]
+                    return [...commonStates, ...values]
                 }
                 default:
-                    return [...Object.keys(fieldStates)];
+                    return [...commonStates];
             }
         }
 

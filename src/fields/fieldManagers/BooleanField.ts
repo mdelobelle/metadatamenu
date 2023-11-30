@@ -95,15 +95,4 @@ export default class BooleanField extends FieldManager {
             BooleanField.replaceValues(this.plugin, p.file.path, this.field.id, checkbox.checked.toString());
         }
     }
-
-    public buildFilterQuery(valueGetter: string, value: string): string {
-        switch (value) {
-            case 'true':
-                return `    .filter(p => ${valueGetter})\n`
-            case 'false':
-                return `    .filter(p => !${valueGetter})\n`
-            default:
-                return ""
-        }
-    }
 }
