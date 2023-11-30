@@ -100,21 +100,8 @@ export class FileClassTableView {
             try {
                 const values = (new Function("dv", "current", `return ${this.buildDvJSQuery()}`))(dvApi).values;
                 const count = values.length;
-                const rangeExpander = container.createDiv({
-                    cls: `range`,
-                    text: `< ... >`
-                })
+
                 const rangesCount = Math.floor(count / this.limit) + 1
-                rangeExpander.onclick = () => {
-                    if (rangeExpander.hasClass("active")) {
-                        rangeExpander.removeClass("active")
-                        rangeExpander.setText("< ... >")
-                    } else {
-                        rangeExpander.addClass("active")
-                        rangeExpander.setText("> ... <")
-                    }
-                    toggleRanges(rangesCount)
-                }
                 for (let i = 0; i < rangesCount; i++) {
                     if (i * this.limit < count) {
                         const rangeComponent = container.createDiv({
@@ -128,7 +115,20 @@ export class FileClassTableView {
                         this.ranges.push(rangeComponent)
                     }
                     if (rangesCount >= 5 && i === 2) {
-                        container.appendChild(rangeExpander)
+                        const rangeExpander = container.createDiv({
+                            cls: `range`,
+                            text: `< ... >`
+                        })
+                        rangeExpander.onclick = () => {
+                            if (rangeExpander.hasClass("active")) {
+                                rangeExpander.removeClass("active")
+                                rangeExpander.setText("< ... >")
+                            } else {
+                                rangeExpander.addClass("active")
+                                rangeExpander.setText("> ... <")
+                            }
+                            toggleRanges(rangesCount)
+                        }
                     }
                 }
                 const activeRange = this.ranges.find(r => r.hasClass("active"))
