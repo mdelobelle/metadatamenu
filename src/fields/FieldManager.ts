@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { Menu, TextComponent, TFile } from "obsidian";
+import { Debouncer, Menu, TextComponent, TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import FCSM from "src/options/FieldCommandSuggestModal";
 import { FieldOptions } from "src/components/NoteFields";
@@ -7,9 +7,10 @@ import InsertFieldSuggestModal from "src/modals/insertFieldSuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldManager as FM, FieldType } from "src/types/fieldTypes";
 import Field from "./Field";
-import { ExistingField } from "./existingField";
+import { ExistingField } from "./ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
+import { FieldSet } from "src/fileClass/tableViewFieldSet";
 
 export const enum SettingLocation {
     "PluginSettings",

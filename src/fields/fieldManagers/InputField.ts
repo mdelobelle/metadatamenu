@@ -6,7 +6,7 @@ import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
 import { FieldOptions } from "src/components/NoteFields";
-import { ExistingField } from "../existingField";
+import { ExistingField } from "../ExistingField";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import { Note } from "src/note/note";
@@ -86,7 +86,7 @@ export default class InputField extends FieldManager {
         attrs.cls = "value-container"
         /* button to display input */
         const editBtn = fieldContainer.createEl("button");
-        const fieldValue = (dv.el('span', p[this.field.name], attrs) as HTMLDivElement);
+        const fieldValue = (dv.el('span', p[this.field.name] || "", attrs) as HTMLDivElement);
         fieldContainer.appendChild(fieldValue);
         const inputContainer = fieldContainer.createDiv({});
         inputContainer.hide();

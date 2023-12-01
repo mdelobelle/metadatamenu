@@ -110,7 +110,7 @@ export const FieldIcon: Record<keyof typeof FieldType, string> = {
     "Select": "right-triangle",
     "Multi": "bullet-list",
     "Cycle": "switch",
-    "Boolean": "checkmark",
+    "Boolean": "toggle-left",
     "Number": "plus-minus-glyph",
     "File": "link",
     "MultiFile": "link",

@@ -10,7 +10,7 @@ import { Status, statusIcon } from "src/types/lookupTypes";
 import { FieldOptions } from "src/components/NoteFields";
 import { updateFormulas } from "src/commands/updateFormulas";
 import { postValues } from "src/commands/postValues";
-import { ExistingField } from "../existingField";
+import { ExistingField } from "../ExistingField";
 
 export default class FormulaField extends FieldManager {
 

@@ -15,7 +15,6 @@ import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import { updatePropertiesSection } from 'src/options/updateProps';
 import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton';
-import { FieldSet } from 'src/fileClass/tableViewFieldSet';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -77,7 +76,6 @@ export default class MetadataMenu extends Plugin {
 		this.addSettingTab(new MetadataMenuSettingTab(this));
 
 		//registering Metadata Menu suggestor for live preview
-		this.registerEditorSuggest(new ValueSuggest(this));
 		this.api = new MetadataMenuApi(this).make();
 
 		this.registerEvent(
@@ -108,6 +106,7 @@ export default class MetadataMenu extends Plugin {
 		await this.fieldIndex.fullIndex()
 		this.extraButton = this.addChild(new ExtraButton(this))
 		if (this.settings.enableFileExplorer) this.addChild(new FileClassFolderButton(this))
+		this.registerEditorSuggest(new ValueSuggest(this));
 		this.launched = true
 
 		//building palette commands

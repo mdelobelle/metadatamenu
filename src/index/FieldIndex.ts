@@ -19,8 +19,11 @@ import { FileClassManager } from "src/components/fileClassManager";
 
 
 export default class FieldIndex extends FieldIndexBuilder {
+    private launchTime: number
+
     constructor(public plugin: MetadataMenu) {
         super(plugin)
+        this.launchTime = Date.now()
     }
 
     async onload(): Promise<void> {
@@ -69,11 +72,9 @@ export default class FieldIndex extends FieldIndexBuilder {
             this.plugin.app.metadataCache.on('resolved', async () => {
                 if (this.plugin.app.metadataCache.inProgressTaskCount === 0 && this.plugin.launched) {
                     if (this.changedFiles.every(file => this.classFilesPath && file.path.startsWith(this.classFilesPath))) {
-                        await this.indexFieldsAndValues()
                         await updateCanvasAfterFileClass(this.plugin, this.changedFiles)
-                    } else {
-                        await this.indexFieldsAndValues()
                     }
+                    await this.indexFieldsAndValues()
                     this.plugin.app.workspace.trigger("metadata-menu:indexed");
                     this.changedFiles = []
                 }
@@ -89,7 +90,7 @@ export default class FieldIndex extends FieldIndexBuilder {
 
         this.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
-                if (op === "update" && this.dvReady()) {
+                if (file.stat.mtime > this.launchTime && op === "update" && this.dvReady()) {
                     const filePayloadToProcess = this.dVRelatedFieldsToUpdate.get(file.path)
                     if (![...this.dVRelatedFieldsToUpdate.keys()].includes(file.path)) {
                         await this.resolveAndUpdateDVQueriesBasedFields(false)

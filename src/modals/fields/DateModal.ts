@@ -66,13 +66,15 @@ export default class DateModal extends BaseModal {
             //@ts-ignore
             try {
                 const nldates = this.plugin.app.plugins.plugins['nldates-obsidian'];
-                newValue = nldates.parseDate(this.value).moment;
+                const parsedDate = nldates.parseDate(`${this.value}`)
+                newValue = parsedDate.date ? parsedDate.moment : moment(`${this.value}`, this.format);
             } catch (error) {
-                newValue = moment(this.value, this.format);
+                newValue = moment(`${this.value}`, this.format);
             }
         } else {
-            newValue = moment(this.value, this.format);
+            newValue = moment(`${this.value}`, this.format);
         }
+        console.log(newValue)
         if (newValue.isValid()) {
             const linkPath = this.plugin.app.metadataCache.getFirstLinkpathDest(this.field.options.linkPath || "" + newValue.format(this.format), this.file.path)
             const formattedValue = this.insertAsLink ? `[[${this.field.options.linkPath || ""}${newValue.format(this.format)}${linkPath ? "|" + linkPath.basename : ""}]]` : newValue.format(this.format)
@@ -101,6 +103,7 @@ export default class DateModal extends BaseModal {
 
         await this.buildInputEl(dateFieldsContainer);
         this.buildInsertAsLinkButton(dateFieldsContainer);
+        this.buildClearBtn(dateFieldsContainer);
         this.buildSimpleSaveBtn(dateFieldsContainer);
     }
 
@@ -119,6 +122,16 @@ export default class DateModal extends BaseModal {
             setLinkBtnIcon();
         })
 
+    }
+
+    private buildClearBtn(container: HTMLDivElement) {
+        const clearBtn = new ButtonComponent(container);
+        clearBtn.setIcon("eraser");
+        clearBtn.setTooltip(`Clear ${this.field.name}'s date`)
+        clearBtn.onClick(() => {
+            this.value = "";
+            this.inputEl.setPlaceholder("")
+        })
     }
 
     private toggleButton(button: ButtonComponent, value: string): void {

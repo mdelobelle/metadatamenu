@@ -1,13 +1,13 @@
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager, SettingLocation } from "../FieldManager";
-import { TextAreaComponent, TFile, Notice, setIcon, Menu, Modal } from "obsidian";
+import { TextAreaComponent, TFile, Notice, setIcon, Menu, Modal, Debouncer } from "obsidian";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import MetadataMenu from "main";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { FieldOptions } from "src/components/NoteFields";
 import { Link } from "src/types/dataviewTypes";
-import { ExistingField } from "../existingField";
+import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
@@ -23,7 +23,7 @@ export const getFiles = (plugin: MetadataMenu, field: Field, dvQueryString: stri
     //@ts-ignore
     const getResults = (api: DataviewPlugin["api"]) => {
         try {
-            return (new Function("dv", "current", `return ${dvQueryString}`))(api, api.page(currentFile?.path))
+            return (new Function("dv", "current", `return ${dvQueryString}`))(api, currentFile ? api.page(currentFile.path) : undefined)
         } catch (error) {
             new Notice(`Wrong query for field <${field.name}>\ncheck your settings`, 3000)
         }
@@ -185,7 +185,7 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
         attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
     ): void {
         attrs.cls = "value-container"
-        fieldContainer.appendChild(dv.el('span', p[this.field.name], attrs))
+        fieldContainer.appendChild(dv.el('span', p[this.field.name] || "", attrs))
         const searchBtn = fieldContainer.createEl("button")
         setIcon(searchBtn, FieldIcon[FieldType.File])
         const spacer = fieldContainer.createEl("div", { cls: "spacer" })

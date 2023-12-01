@@ -5,7 +5,7 @@ import Field from "../Field";
 import AbstractFileBasedField from "./AbstractFileBasedField";
 import SingleFileModal from "src/modals/fields/SingleFileModal";
 import { getLink } from "src/utils/parser";
-import { ExistingField } from "../existingField";
+import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 
