@@ -39,6 +39,7 @@ export default class DateField extends FieldManager {
         const dateIconName = FieldIcon[FieldType.Date];
         const dateModalAction = async () => await this.buildAndOpenModal(file, indexedPath);
         const shiftDateAction = async () => await this.shiftDate(file, indexedPath);
+        const clearDateAction = async () => await this.clearDate(file, indexedPath)
         if (DateField.isSuggest(location)) {
             location.options.push({
                 id: `update_${name}`,
@@ -54,9 +55,16 @@ export default class DateField extends FieldManager {
                     icon: "skip-forward"
                 })
             }
+            location.options.push({
+                id: `clear_${name}`,
+                actionLabel: `<span>Clear <b>${name}</b></span>`,
+                action: dateModalAction,
+                icon: "eraser"
+            })
         } else if (DateField.isFieldOptions(location)) {
             location.addOption("skip-forward", shiftDateAction, `Shift ${name} ahead`);
             location.addOption(dateIconName, dateModalAction, `Set ${name}'s date`);
+            location.addOption("eraser", clearDateAction, `Clear ${name}'s date`);
         };
     }
 
@@ -189,6 +197,11 @@ export default class DateField extends FieldManager {
             newValue
         await postValues(this.plugin, [{ id: indexedPath, payload: { value: formattedValue } }], file)
 
+    }
+
+    public async clearDate(file: TFile, indexedPath?: string): Promise<void> {
+        if (!indexedPath) return
+        await postValues(this.plugin, [{ id: indexedPath, payload: { value: "" } }], file)
     }
 
     public createDvField(

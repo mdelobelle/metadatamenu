@@ -40,9 +40,14 @@ export default class BooleanField extends FieldManager {
             });
         } else if (BooleanField.isFieldOptions(location)) {
             location.addOption(
-                "check-square",
+                iconName,
                 action,
-                "✅");
+                `Toggle ${name}`,
+                this.field.fileClassName,
+                file,
+                indexedPath,
+                this.plugin
+            );
         };
     };
     public getOptionsStr(): string {
