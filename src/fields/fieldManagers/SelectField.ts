@@ -6,7 +6,7 @@ import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import AbstractListBasedField from "./AbstractListBasedField";
 import { FieldOptions } from "src/components/NoteFields";
-import { ExistingField } from "../existingField";
+import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
@@ -77,8 +77,6 @@ export default class SelectField extends AbstractListBasedField {
         } else {
             dropDownButton.onclick = () => { }
         }
-
-
         if (!attrs?.options?.alwaysOn) {
             dropDownButton.hide();
             spacer.show();

@@ -14,7 +14,7 @@ class FileClassQuery {
         try {
             return (new Function("dv", `return ${this.query}`))(api)
         } catch (error) {
-            new Notice(`Wrong query for <${this.name}>. Check your settings`);
+            new Notice(` for <${this.name}>. Check your settings`);
             return []
         }
     };

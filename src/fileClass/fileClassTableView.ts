@@ -4,6 +4,8 @@ import { FileClassManager } from "src/components/fileClassManager";
 import { FileClass } from "./fileClass";
 import { FieldSet } from "./tableViewFieldSet";
 import { CreateSavedViewModal } from "./tableViewModal";
+import { fieldStates } from "./OptionsMultiSelectModal";
+import { FieldType } from "src/types/fieldTypes";
 
 export class FileClassTableView {
     public plugin: MetadataMenu;
@@ -20,6 +22,8 @@ export class FileClassTableView {
     public favoriteBtn: ButtonComponent
     public viewRemoveBtn: ButtonComponent
     public fieldSet: FieldSet
+    public limitWrapped: boolean = false
+    public ranges: HTMLDivElement[] = []
 
     constructor(
         plugin: MetadataMenu,
@@ -81,13 +85,24 @@ export class FileClassTableView {
 
     private buildPaginationManager(container: HTMLDivElement): void {
         container.replaceChildren();
-
+        this.ranges = []
+        const toggleRanges = (rangesCount: number) => {
+            for (const [index, rangeComponent] of this.ranges.entries()) {
+                if (rangesCount >= 5 && index > 2 && index < rangesCount - 2) {
+                    if (this.limitWrapped) rangeComponent.show()
+                    else rangeComponent.hide()
+                }
+            }
+            this.limitWrapped = !this.limitWrapped
+        }
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
             try {
                 const values = (new Function("dv", "current", `return ${this.buildDvJSQuery()}`))(dvApi).values;
                 const count = values.length;
-                for (let i = 0; i <= Math.floor(count / this.limit); i++) {
+
+                const rangesCount = Math.floor(count / this.limit) + 1
+                for (let i = 0; i < rangesCount; i++) {
                     if (i * this.limit < count) {
                         const rangeComponent = container.createDiv({
                             cls: `range ${i === this.sliceStart / this.limit ? "active" : ""}`,
@@ -97,8 +112,27 @@ export class FileClassTableView {
                             this.sliceStart = i * this.limit;
                             this.udpate();
                         }
+                        this.ranges.push(rangeComponent)
+                    }
+                    if (rangesCount >= 5 && i === 2) {
+                        const rangeExpander = container.createDiv({
+                            cls: `range`,
+                            text: `< ... >`
+                        })
+                        rangeExpander.onclick = () => {
+                            if (rangeExpander.hasClass("active")) {
+                                rangeExpander.removeClass("active")
+                                rangeExpander.setText("< ... >")
+                            } else {
+                                rangeExpander.addClass("active")
+                                rangeExpander.setText("> ... <")
+                            }
+                            toggleRanges(rangesCount)
+                        }
                     }
                 }
+                const activeRange = this.ranges.find(r => r.hasClass("active"))
+                if (activeRange && this.ranges.indexOf(activeRange) < 2) toggleRanges(rangesCount)
             } catch (e) {
                 console.error("unable to build the list of files")
             }
@@ -212,15 +246,7 @@ export class FileClassTableView {
         const cleanFilterBtn = new ButtonComponent(btnContainer);
         cleanFilterBtn.setIcon("eraser");
         cleanFilterBtn.setTooltip("remove filter values")
-        cleanFilterBtn.onClick(() => {
-            /*
-            const filterInputs = this.container.querySelectorAll(".filter-input input")
-            for (const input of filterInputs) {
-                if (input instanceof HTMLInputElement) input.value = ""
-            }
-            */
-            this.fieldSet.reset()
-        })
+        cleanFilterBtn.onClick(() => this.fieldSet.reset())
     }
 
     private buildSaveView(container: HTMLDivElement): void {
@@ -309,9 +335,56 @@ export class FileClassTableView {
 
     private buildFilterQuery(): string {
         return Object.entries(this.fieldSet?.filters || {}).map(([fieldName, input]) => {
-            const field = fieldName === "file" ? `p.file.name` : `p["${fieldName}"]`
+            const valueGetter = fieldName === "file" ? `p.file.name` : `p["${fieldName}"]`
             if (input.getValue()) {
-                return `    .filter(p => ${field} && ${field}.toString().toLowerCase().includes("${input.getValue()}".toLowerCase()))\n`
+                const value = input.getValue()
+                if (!value.startsWith("/")) {
+                    let values = value.split(",").map(item => item.trim())
+                    const empty = values.find(v => v === "__empty__")
+                    const notEmpty = values.find(v => v === "__notEmpty__")
+                    const notFound = values.find(v => v === "__notFound__")
+                    const existing = values.find(v => v === "__existing__")
+                    values = values.filter(v => !Object.keys(fieldStates).includes(v))
+                    if (empty) {
+                        return `    .filter(p => ${valueGetter} === null)\n`
+                    } else if (notEmpty) {
+                        return `    .filter(p => ${valueGetter} !== null)\n`
+                    } else if (notFound) {
+                        return `    .filter(p => ${valueGetter} === undefined)\n`
+                    } else if (existing) {
+                        return `    .filter(p => ${valueGetter} !== undefined)\n`
+                    } else if (values.length) {
+                        const fCField = fieldName !== "file" ? this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.find(f => f.name === fieldName) : undefined
+                        if (fCField?.type === FieldType.Boolean) {
+                            switch (value) {
+                                case 'true':
+                                    return `    .filter(p => ${valueGetter} === true)\n`
+                                case 'false':
+                                    return `    .filter(p => ${valueGetter} === false)\n`
+                                case 'false, true':
+                                case 'true, false':
+                                    return `    .filter(p => [true, false].some(b => ${valueGetter} === b))\n`
+                                default:
+                                    return ""
+                            }
+                        } else {
+                            const valuesQueries = values.map(val => `${valueGetter}.toString().toLowerCase().includes("${val}".toLowerCase())`)
+                            return `    .filter(p => ${valueGetter} && (${valuesQueries.join(" || ")}))\n`
+                        }
+                    } else {
+                        return ""
+                    }
+                } else {
+                    const cleaned = value.replace(/^\//, "").replace(/\/$/, "")
+                    let isValid = true
+                    try {
+                        new RegExp(cleaned)
+                    } catch (error) {
+                        isValid = false
+                    }
+                    if (isValid) return `    .filter(p => ${valueGetter} && new RegExp("${cleaned}").test(${valueGetter}))\n`
+                    else return ""
+                }
             } else {
                 return ""
             }
@@ -353,7 +426,7 @@ export class FileClassTableView {
         const fields = this.fieldSet.fields
             .filter(f => !this.fieldSet.fields.find(_f => _f.name === f.name)?.isColumnHidden)
             .sort((f1, f2) => f1.columnPosition < f2.columnPosition ? -1 : 1)
-        let dvJS = "const {fieldModifier: f} = this.app.plugins.plugins[\"metadata-menu\"].api;\n" +
+        let dvJS = "const {fieldModifier: f} = MetadataMenu.api;\n" +
             "dv.table([";
         dvJS += fields.map(field => `"${field.name}"`).join(",");
         dvJS += `], \n`;

@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { TFile, Menu, TextAreaComponent, TextComponent, DropdownComponent, ToggleComponent } from "obsidian";
+import { TFile, Menu, TextAreaComponent, TextComponent, DropdownComponent, ToggleComponent, setIcon, Debouncer } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldType } from "src/types/fieldTypes";
@@ -10,10 +10,8 @@ import * as Lookup from "src/types/lookupTypes";
 import { Status } from "src/types/lookupTypes";
 import { FieldOptions } from "src/components/NoteFields";
 import { updateLookups } from "src/commands/updateLookups";
-import { extractLinks, getLink } from "src/utils/parser";
 import { displayLinksOrText } from "src/utils/linksUtils";
-import { ExistingField } from "../existingField";
-import { postValues } from "src/commands/postValues";
+import { ExistingField } from "../ExistingField";
 
 export default class LookupField extends FieldManager {
 
@@ -214,7 +212,6 @@ export default class LookupField extends FieldManager {
         outputRenderingFunction.onChange(value => {
             this.field.options.customListFunction = value
         })
-
 
         const outputSummarizingFunctionTopContainer = container.createDiv({ cls: "vstacked" });
         this.field.options.customSummarizingFunction = this.field.options.customSummarizingFunction || Lookup.Default.CustomSummarizing

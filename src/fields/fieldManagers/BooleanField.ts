@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { Menu, TFile } from "obsidian";
+import { Debouncer, DropdownComponent, Menu, TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { FieldOptions } from "src/components/NoteFields"
@@ -7,10 +7,11 @@ import BooleanModal from "src/modals/fields/BooleanModal";
 import { FieldType, FieldIcon } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager } from "../FieldManager";
-import { ExistingField } from "../existingField";
+import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
+
 export default class BooleanField extends FieldManager {
 
     constructor(plugin: MetadataMenu, field: Field) {
@@ -39,9 +40,14 @@ export default class BooleanField extends FieldManager {
             });
         } else if (BooleanField.isFieldOptions(location)) {
             location.addOption(
-                "check-square",
+                iconName,
                 action,
-                "✅");
+                `Toggle ${name}`,
+                this.field.fileClassName,
+                file,
+                indexedPath,
+                this.plugin
+            );
         };
     };
     public getOptionsStr(): string {

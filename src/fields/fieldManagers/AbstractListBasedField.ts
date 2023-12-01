@@ -1,11 +1,13 @@
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
 import { FieldManager, SettingLocation } from "../FieldManager";
-import { TextComponent, ButtonComponent, setIcon, DropdownComponent, TextAreaComponent } from "obsidian";
+import { TextComponent, ButtonComponent, setIcon, DropdownComponent, TextAreaComponent, Debouncer } from "obsidian";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import MetadataMenu from "main";
 import { FileSuggest } from "src/suggester/FileSuggester";
 import * as selectValuesSource from "src/types/selectValuesSourceTypes"
+
+
 
 export default abstract class AbstractListBasedField extends FieldManager {
 
@@ -134,7 +136,9 @@ export default abstract class AbstractListBasedField extends FieldManager {
                     {
                         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
                         if (dvApi) {
-                            values = new Function("dv", "current", `return ${this.field.options.valuesFromDVQuery}`)(dvApi, dvFile)
+                            //TODO validate this is still working after adding fallback empty object
+                            //values = new Function("dv", "current", `return ${this.field.options.valuesFromDVQuery}`)(dvApi, dvFile)
+                            values = new Function("dv", "current", `return ${this.field.options.valuesFromDVQuery}`)(dvApi, dvFile || {})
                         } else {
                             values = []
                         }
@@ -280,6 +284,6 @@ export default abstract class AbstractListBasedField extends FieldManager {
         attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
     ): void {
         attrs.cls = "value-container"
-        fieldContainer.appendChild(dv.el('span', p[this.field.name], attrs))
+        fieldContainer.appendChild(dv.el('span', p[this.field.name] || "", attrs))
     }
 }

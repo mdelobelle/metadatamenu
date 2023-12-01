@@ -96,6 +96,14 @@
         font-weight: 600;
     }
 
+    .label-with-icon-container{
+        display: inline-flex;
+        
+        .icon{
+            margin-right: 0.5em;
+        }
+    }
+
     .icon-container{
         margin: 0em 0.7em 0em 0em;
         display: block;

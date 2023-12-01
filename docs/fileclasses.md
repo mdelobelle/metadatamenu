@@ -282,6 +282,27 @@ In this view, as in the [preset fields](settings.md#preset-field-settings) setti
 ## Table view
 This view shows all files mapped with the fileclass. you can modify the fields directly from the table.
 
+
+### Filters
+Type a value in a field's filter, the table will be filtered to only display notes for which this field contains the filter value.
+
+You can filter by several values with a comma, the table will be filtered to only display notes for which this field contains one of the filter values
+
+For more complex filtering you can type a regex patter such as `/Eco|Science/`. You'll have to escape backslash, for example: `/2023-11-(\\d+) Mon/`.
+
+All columns' field except for the first column (file link) comes with a dropdown selector:
+- Empty values: will filter to display notes for which the field is in the note, but with no value
+- Not empty values: will filter to display notes for which the field is in the note, and it has a value
+- Not found: will filter to display notes for which the field is not in the note
+- Existing: will filter to display notes for which the field is in the note, whatever the value
+- field's specific values depending on their type:
+  - Boolean: true, false. (false won't match undefined or empty fields)
+  - Select, Multi-Select: the list of predefined values
+  - File, Multi-File: the list of files matching the predefined query
+  - Lookups: the list of files currently returned by lookup queries
+
+### Sorters
+
 - "saved view" dropdown select to select a saved view
 - "star" button to set or revoke the current view as the favorite view
 - "eraser" button to reset the filters and sorting

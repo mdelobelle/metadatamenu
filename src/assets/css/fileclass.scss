@@ -346,23 +346,34 @@
                 column-gap: 0.5em;
 
                 .field-container{
+                    padding: var(--button-radius);
+                    background-color: var(--odd-color);
+                    border-radius: var(--button-radius);
+
+                    button {
+                        height: 1.5em;
+                        width: 1.5em;
+                        padding: 0.3em;
+                        border-radius: 0.75em;
+                        margin-right: 0.5em;
+
+                        &.active{
+                            background-color: var(--color-accent);
+                            color: var(--text-on-accent);
+                        }
+
+                        &:focus{
+                            box-shadow: none;
+                        }
+
+                        &:hover{
+                            box-shadow: 0 0 0 1px var(--interactive-accent);
+                        }
+                    }
 
                     .field-header{
                         display: flex;
                         align-items: center;
-
-                        button {
-                            height: 1.5em;
-                            width: 1.5em;
-                            padding: 0.3em;
-                            border-radius: 0.75em;
-                            margin-right: 0.5em;
-
-                            &.active{
-                                background-color: var(--color-accent);
-                                color: var(--text-on-accent);
-                            }
-                        }
 
                         .label-container{
                             display: flex;
@@ -389,6 +400,38 @@
 
                         input{
                             width: 100%
+                        }
+
+                        input:focus {
+                            outline: none;
+                            box-shadow: none;
+                        }
+
+                        select{
+                            width: 100%
+                        }
+
+                        &.filter-with-dropdown{
+                            flex-direction:row;
+                            border: var(--input-border-width) solid var(--background-modifier-border);
+                            border-radius: var(--input-radius);
+                            align-items: center;
+                            background-color: var(--background-modifier-form-field);
+
+                            input {
+                                flex-grow:2;
+                                border: none;
+                            }
+                            
+                            input:focus-within{
+                                border-color: none;
+                                transition: none;
+                            }
+                        }
+
+                        &.filter-with-dropdown:hover, &.filter-with-dropdown:focus-within{
+                            border-color: var(--background-modifier-border-hover);
+                            transition: box-shadow 0.15s ease-in-out, border 0.15s ease-in-out;
                         }
                     }
                 }

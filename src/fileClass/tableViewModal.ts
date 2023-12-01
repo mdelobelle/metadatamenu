@@ -1,5 +1,5 @@
 import MetadataMenu from "main"
-import { ButtonComponent, Modal, TextComponent } from "obsidian"
+import { ButtonComponent, DropdownComponent, Modal, TextComponent } from "obsidian"
 import { cleanActions } from "src/utils/modals"
 import { FileClassTableView } from "./fileClassTableView"
 import { RowSorter as ViewRowSorter, ColumnMover } from "./tableViewFieldSet"
@@ -29,11 +29,11 @@ export class SavedView {
 
     }
 
-    public buildFilters(filters: Record<string, TextComponent>) {
+    public buildFilters(filters: Record<string, TextComponent | DropdownComponent>) {
         Object.entries(filters).forEach(([name, query]) => {
             this.filters.push({
                 name: name,
-                query: query.inputEl.value
+                query: query instanceof TextComponent ? query.inputEl.value : query.selectEl.value
             })
         })
     }

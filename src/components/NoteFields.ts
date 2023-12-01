@@ -13,18 +13,40 @@ import { Note } from "src/note/note";
 import { ExistingField } from "src/fields/ExistingField";
 import ObjectListField from "src/fields/fieldManagers/ObjectListField";
 import { postValues } from "src/commands/postValues";
+import BooleanField from "src/fields/fieldManagers/BooleanField";
 
 export class FieldOptions {
 
     constructor(public container: HTMLDivElement) { }
 
-    public addOption(icon: string, onclick: () => {} | void, tooltip?: string, className?: string) {
+    private async setIconAndTooltipAsync(fieldOption: ButtonComponent, file: TFile, indexedPath: string, plugin: MetadataMenu): Promise<void> {
+        const eF = await Note.getExistingFieldForIndexedPath(plugin, file, indexedPath)
+        switch (eF?.field.type) {
+            case FieldType.FieldType.Boolean: {
+                const value = BooleanField.stringToBoolean(eF?.value)
+                fieldOption.setIcon(!value ? "toggle-left" : "toggle-right")
+                fieldOption.setTooltip(!value ? `Set ${eF.name} as true` : `Set ${eF.name} as false`);
+            }
+                break;
+            default: {
+                fieldOption.setIcon("pencil")
+                fieldOption.setTooltip(`Update ${eF?.name || ""}`);
+            }
+        }
+    }
+
+    public addOption(icon: string, onclick: () => {} | void, tooltip?: string, className?: string, file?: TFile, indexedPath?: string, plugin?: MetadataMenu) {
         const fieldOptionContainer = this.container.createDiv({ cls: "field-item field-option" })
-        const fieldOption = new ButtonComponent(fieldOptionContainer)
-        fieldOption.setIcon(icon)
+        const fieldOption = new ButtonComponent(fieldOptionContainer);
+        if (indexedPath && file && plugin) {
+            this.setIconAndTooltipAsync(fieldOption, file, indexedPath, plugin)
+        } else {
+            fieldOption.setIcon(icon)
+            if (tooltip) fieldOption.setTooltip(tooltip);
+        }
         if (className) fieldOption.buttonEl.addClass(className);
         fieldOption.onClick(() => onclick())
-        if (tooltip) fieldOption.setTooltip(tooltip);
+
     }
 }
 
