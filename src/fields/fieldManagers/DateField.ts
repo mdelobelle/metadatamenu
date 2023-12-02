@@ -58,7 +58,7 @@ export default class DateField extends FieldManager {
             location.options.push({
                 id: `clear_${name}`,
                 actionLabel: `<span>Clear <b>${name}</b></span>`,
-                action: dateModalAction,
+                action: clearDateAction,
                 icon: "eraser"
             })
         } else if (DateField.isFieldOptions(location)) {
@@ -88,8 +88,9 @@ export default class DateField extends FieldManager {
         const dateFormatContainer = container.createDiv({ cls: "field-container" });
         dateFormatContainer.createEl("span", { text: "Date format", cls: 'label' })
         const dateExample = dateFormatContainer.createEl("span", { cls: 'more-info' })
-        dateFormatContainer.createDiv({ cls: 'spacer' })
         const dateFormatInput = new TextComponent(dateFormatContainer)
+        dateFormatInput.inputEl.addClass("with-label")
+        dateFormatInput.inputEl.addClass("full-width")
         dateFormatInput.setValue(this.field.options.dateFormat)
         dateExample.setText(`${moment().format(dateFormatInput.getValue())}`)
         dateFormatInput.onChange((value: string) => {
@@ -110,8 +111,9 @@ export default class DateField extends FieldManager {
         //folder path for link
         const dateLinkPathContainer = container.createDiv({ cls: "field-container" });
         dateLinkPathContainer.createEl("span", { text: "Link path (optional)", cls: 'label' })
-        dateLinkPathContainer.createDiv({ cls: "spacer" })
         const dateLinkPathInput = new TextComponent(dateLinkPathContainer)
+        dateLinkPathInput.inputEl.addClass("with-label")
+        dateLinkPathInput.inputEl.addClass("full-width")
         dateLinkPathInput.setValue(this.field.options.linkPath)
         dateLinkPathInput.onChange((value: string) => {
             this.field.options.linkPath = value + ((!value.endsWith("/") && !!value.length) ? "/" : "");

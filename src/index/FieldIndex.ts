@@ -1,4 +1,4 @@
-import { Notice, TFile } from "obsidian"
+import { Notice, TFile, TFolder } from "obsidian"
 import MetadataMenu from "main"
 import Field from "../fields/Field";
 import { FileClass } from "src/fileClass/fileClass";
@@ -414,8 +414,10 @@ export default class FieldIndex extends FieldIndexBuilder {
 
         if (!this.filesPathsMatchingFileClasses.size) return
         const paths = [...this.filesPathsMatchingFileClasses.keys()]
+        /*
         const filesWithPath: TFile[] =
-            this.indexableFiles().filter(_f => _f.parent && paths.includes(_f.parent.path))
+            this.indexableFiles().filter(_f => _f.parent && paths.some(p => _f.parent!.path.startsWith(p)))
+        console.log(filesWithPath)
         filesWithPath.forEach((file: TFile) => {
             this.resolveFileClassBinding(
                 this.filesPathsMatchingFileClasses,
@@ -424,6 +426,21 @@ export default class FieldIndex extends FieldIndexBuilder {
                 file
             )
         })
+        */
+        this.indexableFiles()
+            .filter(_f => _f.parent !== null)
+            .forEach((file: TFile) => {
+                for (const path of paths) {
+                    if (file.parent!.path.startsWith(path)) {
+                        this.resolveFileClassBinding(
+                            this.filesPathsMatchingFileClasses,
+                            this.filesFieldsFromFilesPaths,
+                            path,
+                            file
+                        )
+                    }
+                }
+            })
     }
 
     private getFilesForItems(items: BookmarkItem[], groups: string[], filesWithGroups: cFileWithGroups[], path: string = "") {
@@ -517,6 +534,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         1. Inner fileClass
         2.1 Tag match
         2.2 Path match
+        2.3 BookmarkGroup match
         3. fileClassQuery match
         4. Global fileClass
         5. settings preset fields
