@@ -32,7 +32,7 @@ Metadata Menu can manage several field types. Choose them depending on the kind 
 - [Cycle](fields.md#cycle): a field that will `Cycle through values from a list`
 - [File](fields.md#file): a field that will `Accept a link to a file from your vault`
 - [MultiFile](fields.md#multi-file): a field that will `Accept multiple links`
-- [Date](fieldsmd.#date): a field that will `Accept a date`
+- [Date](fields.md#date): a field that will `Accept a date`
 - [Lookup](fields.md#lookup): a field that will `Accept a lookup query`
 - [Formula](fields.md#formula): a field that will `Make Calculation based on note's fields`
 - [Canvas](fields.md#canvas): a field that will `Update with links in a canvas`
@@ -219,6 +219,9 @@ You can define:
 - Link path : if provided, the path will be explicitely included in the internal link : `[[Daily/Notes/2024-01-01]]`
 - Define a shift interval: a value in [moment.js duration notation](https://momentjs.com/docs/#/durations/creating/)
 - Choose a [cycle field](#cycle) belonging to this fileclass or preset fields that contains duration values. Each time you shift the date, the date will be added the current value, and the cycle field will be updated with the next value in the list. This "Interval field" can't be a [nested field](#nesting-fields)
+
+#### Template for link path
+You can use templates to build your path with the formating token syntax of [moment.js](https://momentjs.com/docs/#/parsing/string-format/). For example `Daily/Notes/{{YYYY}}/{{MM}}` will render `[[Daily/Notes/2024/01/2024-01-01]]`. That can be useful if you have split subfolder for your daily notes for example
 
 ### controls
 - Field modal: input a date, choose a date from a datepicker, insert as link/as raw text, shift ahead

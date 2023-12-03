@@ -245,7 +245,7 @@ export async function updateCanvas(
         })
         //update target files
         currentFiles.forEach(async ({ cumulatedLinksFields, cumulatedGroupsFields, cumulatedGroupsLinksFields }, filePath) => {
-            const file = app.vault.getAbstractFileByPath(filePath)
+            const file = plugin.app.vault.getAbstractFileByPath(filePath)
             if (file && file instanceof TFile) {
                 const fields = plugin.fieldIndex.filesFields.get(file.path) || []
                 const payload: FieldsPayload = []

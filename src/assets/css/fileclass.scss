@@ -447,9 +447,17 @@
             .field-name{
                 
                 span{
-                    display: inline-flex;
-                    a {
-                        white-space: nowrap;
+                    display: grid;
+                    grid-template-columns: auto auto;
+                    float: left;
+                    
+                    a.internal-link{
+                        grid-column: 2;
+                    }
+
+                    a.metadatamenu.fileclass-icon{
+                        grid-area: 1;
+                        margin-right: 0.375em;
                     }
                 }
             }
@@ -464,7 +472,7 @@
                 z-index: 2;
             }
 
-            tbody > tr > td:first-child{
+            tbody > tr > td:first-child {
                 position: sticky;
                 left: 0;
                 z-index: 1;
@@ -493,19 +501,44 @@
                 background-color: var(--background-primary);
             }
 
+
             &.scrolled{
                 tbody > tr > td:first-child{
                     @media screen and (max-width: 390px) {
                         overflow: hidden;
                         text-overflow: ellipsis;
-
+                        background-color: white;
                         a.internal-link{
                             white-space: nowrap;
                             text-overflow: ellipsis;
                             overflow: hidden;
                             width: 6em
                         }
+                        .field-name{
+                
+                            span{
+                                display: grid;
+                                grid-template-columns: auto auto;
+                                float: left;
+                                
+                                a.internal-link{
+                                    grid-column: 2;
+                                }
+            
+                                a.metadatamenu.fileclass-icon{
+                                    grid-area: 1;
+                                    margin-right: 0.375em;
+                                }
+                            }
+                        }
                     }
+                }
+                tbody > tr:nth-child(even):hover > td:first-child{
+                    background-color: var(--background-primary);
+                }
+    
+                tbody > tr:nth-child(odd):hover > td:first-child{
+                    background-color: var(--odd-color);;
                 }
             }
         }
