@@ -469,6 +469,28 @@
                 left: 0;
                 z-index: 1;
                 max-width: 100%;
+                background-color: inherit;
+                span{
+                    display: grid;
+                    grid-template-columns: auto auto;
+                    float: left;
+                    a.internal-link {
+                        grid-column: 2;
+                        white-space: nowrap;
+                    }
+                    a.fileclass-icon{
+                        grid-area: 1;
+                        margin-right: 0.375em;
+                    }
+                }
+            }
+
+            tbody > tr:nth-child(odd):hover > td:first-child{
+                background-color: var(--odd-color);
+            }
+
+            tbody > tr:nth-child(even):hover > td:first-child{
+                background-color: var(--background-primary);
             }
 
             &.scrolled{

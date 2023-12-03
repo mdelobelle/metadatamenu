@@ -2433,6 +2433,26 @@ span.flatpickr-weekday {
   left: 0;
   z-index: 1;
   max-width: 100%;
+  background-color: inherit;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr > td:first-child span {
+  display: grid;
+  grid-template-columns: auto auto;
+  float: left;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr > td:first-child span a.internal-link {
+  grid-column: 2;
+  white-space: nowrap;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr > td:first-child span a.fileclass-icon {
+  grid-area: 1;
+  margin-right: 0.375em;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr:nth-child(odd):hover > td:first-child {
+  background-color: var(--odd-color);
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr:nth-child(even):hover > td:first-child {
+  background-color: var(--background-primary);
 }
 @media screen and (max-width: 390px) {
   .metadata-menu.fileclass-view .fv-table div[id^=table-container].scrolled tbody > tr > td:first-child {
