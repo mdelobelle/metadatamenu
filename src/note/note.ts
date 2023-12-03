@@ -79,7 +79,9 @@ export class Note {
                     case FieldType.Lookup: return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
                     case FieldType.Multi: return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
                     case FieldType.MultiFile: return this.renderMultiFields(rawValue, (item) => `"${item}"`);
-                    case FieldType.Canvas: return this.renderMultiFields(rawValue, (item) => item ? `${item}` : "");
+                    case FieldType.Canvas: return this.renderMultiFields(rawValue, (item) => item ? `"${item}"` : "");
+                    case FieldType.CanvasGroup: return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
+                    case FieldType.CanvasGroupLink: return this.renderMultiFields(rawValue, (item) => item ? `"${item}"` : "");
                     case undefined: if ([...ReservedMultiAttributes, this.plugin.settings.fileClassAlias].includes(field.name)) {
                         return this.renderMultiFields(rawValue, (item) => `${item}`)
                     } else {
