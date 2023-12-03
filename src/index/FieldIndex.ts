@@ -414,19 +414,6 @@ export default class FieldIndex extends FieldIndexBuilder {
 
         if (!this.filesPathsMatchingFileClasses.size) return
         const paths = [...this.filesPathsMatchingFileClasses.keys()]
-        /*
-        const filesWithPath: TFile[] =
-            this.indexableFiles().filter(_f => _f.parent && paths.some(p => _f.parent!.path.startsWith(p)))
-        console.log(filesWithPath)
-        filesWithPath.forEach((file: TFile) => {
-            this.resolveFileClassBinding(
-                this.filesPathsMatchingFileClasses,
-                this.filesFieldsFromFilesPaths,
-                file.parent!.path,
-                file
-            )
-        })
-        */
         this.indexableFiles()
             .filter(_f => _f.parent !== null)
             .forEach((file: TFile) => {

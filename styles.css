@@ -2415,10 +2415,16 @@ span.flatpickr-weekday {
   overflow: scroll;
 }
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] .field-name span {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: auto auto;
+  float: left;
 }
-.metadata-menu.fileclass-view .fv-table div[id^=table-container] .field-name span a {
-  white-space: nowrap;
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] .field-name span a.internal-link {
+  grid-column: 2;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] .field-name span a.metadatamenu.fileclass-icon {
+  grid-area: 1;
+  margin-right: 0.375em;
 }
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th {
   position: sticky;
@@ -2433,11 +2439,19 @@ span.flatpickr-weekday {
   left: 0;
   z-index: 1;
   max-width: 100%;
+  background-color: inherit;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr:nth-child(odd):hover > td:first-child {
+  background-color: var(--odd-color);
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr:nth-child(even):hover > td:first-child {
+  background-color: var(--background-primary);
 }
 @media screen and (max-width: 390px) {
   .metadata-menu.fileclass-view .fv-table div[id^=table-container].scrolled tbody > tr > td:first-child {
     overflow: hidden;
     text-overflow: ellipsis;
+    background-color: white;
   }
   .metadata-menu.fileclass-view .fv-table div[id^=table-container].scrolled tbody > tr > td:first-child a.internal-link {
     white-space: nowrap;
@@ -2445,6 +2459,24 @@ span.flatpickr-weekday {
     overflow: hidden;
     width: 6em;
   }
+  .metadata-menu.fileclass-view .fv-table div[id^=table-container].scrolled tbody > tr > td:first-child .field-name span {
+    display: grid;
+    grid-template-columns: auto auto;
+    float: left;
+  }
+  .metadata-menu.fileclass-view .fv-table div[id^=table-container].scrolled tbody > tr > td:first-child .field-name span a.internal-link {
+    grid-column: 2;
+  }
+  .metadata-menu.fileclass-view .fv-table div[id^=table-container].scrolled tbody > tr > td:first-child .field-name span a.metadatamenu.fileclass-icon {
+    grid-area: 1;
+    margin-right: 0.375em;
+  }
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container].scrolled tbody > tr:nth-child(even):hover > td:first-child {
+  background-color: var(--background-primary);
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container].scrolled tbody > tr:nth-child(odd):hover > td:first-child {
+  background-color: var(--odd-color);
 }
 
 .field-btn-container {
