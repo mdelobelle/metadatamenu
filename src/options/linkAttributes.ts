@@ -85,6 +85,7 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
                 if (metadataMenuBtn) {
                     setIcon(metadataMenuBtn, icon || plugin.settings.buttonIcon)
                     link.parentElement?.insertBefore(metadataMenuBtn, link.nextSibling)
+                    if (viewTypeName === "a.internal-link" && metadataMenuBtn.closest(".fv-table")) metadataMenuBtn.addClass("dataview-fileclass-icon")
                     metadataMenuBtn.onclick = (event) => {
                         const file = plugin.app.vault.getAbstractFileByPath(`${destPath}.md`)
                         if (file instanceof TFile && file.extension === "md") {

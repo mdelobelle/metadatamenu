@@ -7,6 +7,11 @@
         align-items: center;
         display: inline-flex;
         margin-left: 0.375em;
+
+        &.dataview-fileclass-icon{
+            grid-area: 1;
+            margin-right: 0.375em;
+        }
         
         &.field-status-changed{
             color: var(--text-warning);
@@ -22,7 +27,6 @@
         }
     }
 }
-
 
 .workspace-tab-header-inner{
     .metadata-menu{

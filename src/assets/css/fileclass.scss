@@ -444,7 +444,7 @@
         div[id^="table-container"]{
             overflow: scroll;
 
-            .field-name{
+            .field-name, .value-container{
                 
                 span{
                     display: grid;
@@ -453,11 +453,6 @@
                     
                     a.internal-link{
                         grid-column: 2;
-                    }
-
-                    a.metadatamenu.fileclass-icon{
-                        grid-area: 1;
-                        margin-right: 0.375em;
                     }
                 }
             }
@@ -478,19 +473,6 @@
                 z-index: 1;
                 max-width: 100%;
                 background-color: inherit;
-                span{
-                    display: grid;
-                    grid-template-columns: auto auto;
-                    float: left;
-                    a.internal-link {
-                        grid-column: 2;
-                        white-space: nowrap;
-                    }
-                    a.fileclass-icon{
-                        grid-area: 1;
-                        margin-right: 0.375em;
-                    }
-                }
             }
 
             tbody > tr:nth-child(odd):hover > td:first-child{

@@ -957,6 +957,10 @@ span.flatpickr-weekday {
   display: inline-flex;
   margin-left: 0.375em;
 }
+.metadata-menu.fileclass-icon.dataview-fileclass-icon {
+  grid-area: 1;
+  margin-right: 0.375em;
+}
 .metadata-menu.fileclass-icon.field-status-changed {
   color: var(--text-warning);
 }
@@ -2414,17 +2418,13 @@ span.flatpickr-weekday {
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] {
   overflow: scroll;
 }
-.metadata-menu.fileclass-view .fv-table div[id^=table-container] .field-name span {
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] .field-name span, .metadata-menu.fileclass-view .fv-table div[id^=table-container] .value-container span {
   display: grid;
   grid-template-columns: auto auto;
   float: left;
 }
-.metadata-menu.fileclass-view .fv-table div[id^=table-container] .field-name span a.internal-link {
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] .field-name span a.internal-link, .metadata-menu.fileclass-view .fv-table div[id^=table-container] .value-container span a.internal-link {
   grid-column: 2;
-}
-.metadata-menu.fileclass-view .fv-table div[id^=table-container] .field-name span a.metadatamenu.fileclass-icon {
-  grid-area: 1;
-  margin-right: 0.375em;
 }
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th {
   position: sticky;
@@ -2440,19 +2440,6 @@ span.flatpickr-weekday {
   z-index: 1;
   max-width: 100%;
   background-color: inherit;
-}
-.metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr > td:first-child span {
-  display: grid;
-  grid-template-columns: auto auto;
-  float: left;
-}
-.metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr > td:first-child span a.internal-link {
-  grid-column: 2;
-  white-space: nowrap;
-}
-.metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr > td:first-child span a.fileclass-icon {
-  grid-area: 1;
-  margin-right: 0.375em;
 }
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr:nth-child(odd):hover > td:first-child {
   background-color: var(--odd-color);
