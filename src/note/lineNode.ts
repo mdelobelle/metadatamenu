@@ -238,6 +238,9 @@ export class LineNode {
                 || this.field.type === FieldType.Lookup
                 || this.field.type === FieldType.Multi
                 || this.field.type === FieldType.MultiFile
+                || this.field.type === FieldType.Canvas
+                || this.field.type === FieldType.CanvasGroup
+                || this.field.type === FieldType.CanvasGroupLink
             )
         ) return
         //limit inline indented line removal for lookup fields. it could be done for other multi types

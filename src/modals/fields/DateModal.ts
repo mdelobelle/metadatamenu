@@ -14,7 +14,7 @@ import ObjectModal from "./ObjectModal";
 import ObjectListModal from "./ObjectListModal";
 
 export default class DateModal extends BaseModal {
-
+    private pathTemplateItems: Record<string, string> = {}
     private value: string;
     private insertAsLink: boolean;
     private inputEl: TextComponent;
@@ -58,6 +58,25 @@ export default class DateModal extends BaseModal {
         this.errorField.hide();
     };
 
+    private buildPath(value: moment.Moment): string {
+        let renderedPath = this.field.options.linkPath || ""
+        const templatePathRegex = new RegExp(`\\{\\{(?<pattern>[^\\}]+?)\\}\\}`, "gu");
+        const tP = renderedPath.matchAll(templatePathRegex)
+        let next = tP.next();
+        while (!next.done) {
+            if (next.value.groups) {
+                const pattern = next.value.groups.pattern
+                this.pathTemplateItems[pattern] = moment(value).format(pattern)
+            }
+            next = tP.next()
+        }
+        Object.keys(this.pathTemplateItems).forEach(k => {
+            const fieldRegex = new RegExp(`\\{\\{${k}(:[^\\}]*)?\\}\\}`, "u")
+            renderedPath = renderedPath.replace(fieldRegex, this.pathTemplateItems[k])
+        })
+        return renderedPath
+    }
+
     public async save(): Promise<void> {
         //e.preventDefault();
         let newValue: moment.Moment;
@@ -74,10 +93,10 @@ export default class DateModal extends BaseModal {
         } else {
             newValue = moment(`${this.value}`, this.format);
         }
-        console.log(newValue)
         if (newValue.isValid()) {
-            const linkPath = this.plugin.app.metadataCache.getFirstLinkpathDest(this.field.options.linkPath || "" + newValue.format(this.format), this.file.path)
-            const formattedValue = this.insertAsLink ? `[[${this.field.options.linkPath || ""}${newValue.format(this.format)}${linkPath ? "|" + linkPath.basename : ""}]]` : newValue.format(this.format)
+            const renderedPath = this.buildPath(newValue)
+            const linkPath = this.plugin.app.metadataCache.getFirstLinkpathDest(renderedPath || "" + newValue.format(this.format), this.file.path)
+            const formattedValue = this.insertAsLink ? `[[${renderedPath || ""}${newValue.format(this.format)}${linkPath ? "|" + linkPath.basename : ""}]]` : newValue.format(this.format)
             await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: formattedValue } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
             this.saved = true
             if (this.previousModal) await this.goToPreviousModal()

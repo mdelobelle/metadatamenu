@@ -142,7 +142,9 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
                                         catch (e) { }
                                     }
                                     if (file) {
-                                        const fileClassName = plugin.fieldIndex.filesFileClassesNames.get(file.path)?.last()
+                                        let fileClassName: string | undefined
+                                        if (plugin.settings.classFilesPath && file.path.startsWith(plugin.settings.classFilesPath)) fileClassName = file.basename
+                                        else fileClassName = plugin.fieldIndex.filesFileClassesNames.get(file.path)?.last()
                                         if (fileClassName) {
                                             const attributes = { "fileclass-name": fileClassName }
                                             let deco = Decoration.mark({
