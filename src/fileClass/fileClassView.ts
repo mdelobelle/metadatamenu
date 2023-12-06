@@ -51,7 +51,7 @@ export class FileClassView extends ItemView {
     constructor(
         public leaf: WorkspaceLeaf,
         private plugin: MetadataMenu,
-        private component: FileClassManager,
+        public component: FileClassManager,
         public name: string,
         public fileClass: FileClass,
         public onOpenTabDisplay: keyof typeof FileClassViewType = "tableOption"

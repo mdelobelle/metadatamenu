@@ -4,6 +4,11 @@ import { FileClassView, FILECLASS_VIEW_TYPE } from "src/fileClass/fileClassView"
 import { FileClass } from "../fileClass/fileClass";
 import { FileClassChoiceModal } from "../fileClass/fileClassChoiceModal";
 
+interface FileClassStoredView {
+    id: string,
+    leafId: string
+}
+
 export enum FileClassViewType {
     "tableOption" = "tableOption",
     "fieldsOption" = "fieldsOption",
@@ -35,6 +40,10 @@ export class FileClassManager extends Component {
             this.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + this.fileClass.name
             await this.openFileClassView();
             this.registerIndexingDone()
+            this.plugin.indexDB.fileClassViews.editElement(this.fileClassViewType, {
+                id: this.fileClassViewType,
+                leafId: this.fileClassView?.leaf.id
+            })
         } else {
             const tagsAndFileClasses = this.getActiveFileTagsAndFileClasses();
             if (tagsAndFileClasses.length === 1) {
@@ -47,6 +56,11 @@ export class FileClassManager extends Component {
                     this.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + fileClass.name
                     await this.openFileClassView();
                     this.registerIndexingDone()
+                    this.plugin.indexDB.fileClassViews.editElement(FILECLASS_VIEW_TYPE + "__" + this.name,
+                        {
+                            id: FILECLASS_VIEW_TYPE + "__" + this.name,
+                            leafId: this.fileClassView.leaf.id
+                        })
                 } else {
                     this.plugin.removeChild(this)
                     this.unload()
@@ -68,6 +82,7 @@ export class FileClassManager extends Component {
         this.plugin.app.workspace.detachLeavesOfType(this.fileClassViewType);
         // @ts-ignore
         this.plugin.app.viewRegistry.unregisterView(this.fileClassViewType);
+        this.plugin.indexDB.fileClassViews.removeElement(FILECLASS_VIEW_TYPE + "__" + this.name)
     }
 
     private registerIndexingDone() {
@@ -94,14 +109,20 @@ export class FileClassManager extends Component {
                 }
             )
 
-            //@ts-ignore
-            await this.plugin.app.workspace.getLeaf('tab', 'vertical').setViewState({
-                type: this.fileClassViewType,
-                active: true
-            });
-            this.plugin.app.workspace.revealLeaf(
-                this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType).last()!
-            );
+            //FIXME: conflict with float-search that is overring getLeaf...
+            try {
+                //@ts-ignore
+                await this.plugin.app.workspace.getLeaf('tab', 'vertical').setViewState({
+                    type: this.fileClassViewType,
+                    active: true
+                });
+                this.plugin.app.workspace.revealLeaf(
+                    this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType).last()!
+                );
+            } catch (e) {
+                this.unload()
+                console.warn("Fileclass view couldn't load because of a conflict with another plugin")
+            }
         }
     }
 
@@ -115,5 +136,22 @@ export class FileClassManager extends Component {
             tagsAndFileClasses.push(...(index.filesFileClassesNames.get(activeFilePath) || []))
         }
         return [...new Set(tagsAndFileClasses)]
+    }
+
+    static async reloadViews(plugin: MetadataMenu): Promise<void> {
+        const registeredFileClassViews = Object
+            .keys(plugin.app.viewRegistry.viewByType)
+            .filter(key => key.startsWith("FileClassView__"));
+        (await plugin.indexDB.fileClassViews.getElement("all") as FileClassStoredView[] || []).forEach(view => {
+            const fileClassName = /FileClassView__(.*)/.exec(view.id)?.[1]
+            if (fileClassName && !registeredFileClassViews.some(viewName => viewName.includes(fileClassName))) {
+                const leaf = plugin.app.workspace.getLeafById(view.leafId)
+                const fileClass = plugin.fieldIndex.fileClassesName.get(fileClassName)
+                if (fileClass) {
+                    if (leaf && !(leaf.view.component instanceof FileClassManager)) plugin.app.workspace.detachLeavesOfType(view.id);
+                    plugin.addChild(new FileClassManager(plugin, fileClass, "tableOption"))
+                }
+            }
+        });
     }
 }

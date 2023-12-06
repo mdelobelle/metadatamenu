@@ -40,8 +40,14 @@ export class FileClassChoiceModal extends SuggestModal<string> {
         if (fileClass && dvApi) {
             this.fileClassManager.name = item
             this.fileClassManager.fileClass = fileClass
-            this.fileClassManager.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + fileClass.name
+            const viewType = FILECLASS_VIEW_TYPE + "__" + fileClass.name
+            this.fileClassManager.fileClassViewType = viewType
             this.fileClassManager.openFileClassView();
+            this.plugin.indexDB.fileClassViews.editElement(viewType,
+                {
+                    id: viewType,
+                    leafId: this.fileClassManager.fileClassView.leaf.id
+                })
         }
         this.close()
     }

@@ -15,6 +15,8 @@ import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import { updatePropertiesSection } from 'src/options/updateProps';
 import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton';
+import { FileClassManager } from 'src/components/fileClassManager';
+import { IndexDatabase } from 'src/db/DatabaseManager';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -28,6 +30,7 @@ export default class MetadataMenu extends Plugin {
 	public indexStatus: IndexStatus;
 	public indexName: string;
 	public launched: boolean = false;
+	public indexDB: IndexDatabase;
 
 	async onload(): Promise<void> {
 		console.log('+------ Metadata Menu loaded --------+');
@@ -92,6 +95,7 @@ export default class MetadataMenu extends Plugin {
 				if (currentView) this.indexStatus.checkForUpdate(currentView)
 				updatePropertiesSection(this)
 				addCommands(this)
+				FileClassManager.reloadViews(this)
 			})
 		)
 
@@ -101,16 +105,16 @@ export default class MetadataMenu extends Plugin {
 				addCommands(this)
 			})
 		)
-
+		this.indexDB = this.addChild(new IndexDatabase(this))
 		//buildind index
 		await this.fieldIndex.fullIndex()
 		this.extraButton = this.addChild(new ExtraButton(this))
 		if (this.settings.enableFileExplorer) this.addChild(new FileClassFolderButton(this))
 		this.registerEditorSuggest(new ValueSuggest(this));
 		this.launched = true
-
 		//building palette commands
 		addCommands(this)
+		//reloading views
 	};
 
 	/*
