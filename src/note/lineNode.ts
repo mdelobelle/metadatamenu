@@ -96,9 +96,6 @@ export class LineNode {
                     }
                     for (const field of this.line.note.fields) {
                         if (yamlAttr === field.name) {
-                            //FIXME: pas bon: choppe le premier field avec le bon nom
-                            // il faut:
-                            // chopper l'id du field parent et le rajouter au filtre
                             let indexedId = field.id
 
                             if (this.line.parentLine) {

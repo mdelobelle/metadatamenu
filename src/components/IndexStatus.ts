@@ -82,6 +82,7 @@ export default class IndexStatus extends Component {
                             updatesToApply = true
                         } else if (field.type === FieldType.Formula) {
                             await updateFormulas(this.plugin, { file: this.file, fieldName: field.name })
+                            updatesToApply = true
                         }
                     }
                 })
