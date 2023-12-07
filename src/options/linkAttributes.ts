@@ -1,7 +1,7 @@
 import { App, getLinkpath, LinkCache, MarkdownPostProcessorContext, MarkdownView, TFile, setIcon } from "obsidian"
 import MetadataMenu from "main";
 import NoteFieldsComponent from "../components/NoteFields";
-import { FileClassManager } from "src/components/fileClassManager";
+import { FileClassViewManager } from "src/components/FileClassViewManager";
 
 export function clearExtraAttributes(link: HTMLElement) {
     Object.values(link.attributes).forEach(attr => {
@@ -65,7 +65,9 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
                 setIcon(metadataMenuBtn, icon)
                 link.parentElement?.insertBefore(metadataMenuBtn, link.nextSibling)
                 metadataMenuBtn.onclick = (event) => {
-                    plugin.addChild(new FileClassManager(plugin, fileClass))
+                    const fileClassViewManager = new FileClassViewManager(plugin, fileClass)
+                    plugin.addChild(fileClassViewManager)
+                    fileClassViewManager.build()
                     event.stopPropagation();
                 }
             }

@@ -15,7 +15,7 @@ import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import { updatePropertiesSection } from 'src/options/updateProps';
 import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton';
-import { FileClassManager } from 'src/components/fileClassManager';
+import { FileClassViewManager } from 'src/components/FileClassViewManager';
 import { IndexDatabase } from 'src/db/DatabaseManager';
 
 export default class MetadataMenu extends Plugin {
@@ -95,7 +95,7 @@ export default class MetadataMenu extends Plugin {
 				if (currentView) this.indexStatus.checkForUpdate(currentView)
 				updatePropertiesSection(this)
 				addCommands(this)
-				FileClassManager.reloadViews(this)
+				FileClassViewManager.reloadViews(this)
 			})
 		)
 

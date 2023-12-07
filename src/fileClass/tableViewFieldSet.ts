@@ -4,6 +4,12 @@ import { FileClass } from "./fileClass"
 import { FileClassTableView } from "./fileClassTableView"
 import { OptionsMultiSelectModal } from "./OptionsMultiSelectModal"
 
+export interface ViewConfiguration {
+    sorters: Array<RowSorter>,
+    filters: Array<Filter>,
+    columns: Array<Column>
+}
+
 const btnIcons: Record<string, string> = {
     'asc': 'chevron-up',
     'desc': 'chevron-down',
@@ -11,7 +17,24 @@ const btnIcons: Record<string, string> = {
     'right': 'chevron-right'
 }
 
+export interface Filter {
+    name: string,
+    query: string
+}
+
 export interface RowSorter {
+    name: string,
+    direction: 'asc' | 'desc',
+    priority: number
+}
+
+export interface Column {
+    name: string,
+    hidden: boolean,
+    position: number
+}
+
+export interface RowSorterComponent {
     name: string,
     direction: 'asc' | 'desc' | undefined,
     ascBtn: ButtonComponent,
@@ -64,7 +87,7 @@ export class Field {
                 if (this.canMove(direction)) {
                     this.parentFieldSet.moveColumn(this.name, direction);
                     this.parentFieldSet.reorderFields()
-                    this.parentFieldSet.tableView.udpate()
+                    this.parentFieldSet.tableView.update()
                 }
             })
             return btn
@@ -86,7 +109,7 @@ export class Field {
             btn.setIcon(btnIcons[direction])
             btn.onClick(() => {
                 this.parentFieldSet.toggleRowSorterButtonsState(this.name, direction);
-                this.parentFieldSet.tableView.udpate()
+                this.parentFieldSet.tableView.update()
             })
             return btn
         }
@@ -105,7 +128,7 @@ export class Field {
         this.isColumnHidden = isHidden
         this.parentFieldSet.columnManagers[this.name].hidden = this.isColumnHidden
         this.visibilityButton.setIcon(this.isColumnHidden ? "eye-off" : "eye")
-        this.parentFieldSet.tableView.udpate()
+        this.parentFieldSet.tableView.update()
     }
 
     private buildVisibilityBtn(component: HTMLDivElement) {
@@ -158,7 +181,7 @@ export class Field {
 
     private buildFilterComponent(): void {
         const field = this.parentFieldSet.plugin.fieldIndex.fileClassesFields.get(this.parentFieldSet.fileClass.name)?.find(f => f.name === this.name)
-        const debounced = debounce((fieldset: FieldSet) => fieldset.tableView.udpate(), 1000, true)
+        const debounced = debounce((fieldset: FieldSet) => fieldset.tableView.update(), 1000, true)
         this.buildFilter(this.container, this.parentFieldSet, field?.name || "file", debounced)
     }
 }
@@ -168,7 +191,7 @@ export class FieldSet {
     public fileClass: FileClass
     public plugin: MetadataMenu
     public filters: Record<string, TextComponent | DropdownComponent> = {}
-    public rowSorters: Record<string, RowSorter> = {}
+    public rowSorters: Record<string, RowSorterComponent> = {}
     public columnManagers: Record<string, ColumnMover> = {}
     public fieldsContainer: HTMLDivElement
 
@@ -306,6 +329,34 @@ export class FieldSet {
         this.resetColumnManagers()
     }
 
+    public getParams(): ViewConfiguration {
+        const filters = Object.entries(this.filters).map(([name, filter]) => {
+            return {
+                name: name,
+                query: filter.getValue()
+            }
+        })
+        const sorters = Object.entries(this.rowSorters).filter(([n, s]) => s.direction !== undefined).map(([name, sorter]) => {
+            return {
+                name: name,
+                direction: sorter.direction || "asc",
+                priority: sorter.priority || 0
+            }
+        })
+        const columns = Object.entries(this.columnManagers).map(([name, columnManager]) => {
+            return {
+                name: name,
+                hidden: columnManager.hidden,
+                position: columnManager.position
+            }
+        })
+        return {
+            filters: filters,
+            sorters: sorters,
+            columns: columns
+        }
+    }
+
     public changeView(_name?: string) {
         const options = this.fileClass.getFileClassOptions()
         const savedViews = options.savedViews || []
@@ -321,7 +372,7 @@ export class FieldSet {
                 }
             })
             Object.keys(this.rowSorters).forEach(name => {
-                const rowSorter: RowSorter = this.rowSorters[name]
+                const rowSorter: RowSorterComponent = this.rowSorters[name]
                 const savedSorter = savedView?.sorters?.find(f => f.name === name)
                 if (savedSorter) {
                     rowSorter.direction = savedSorter.direction

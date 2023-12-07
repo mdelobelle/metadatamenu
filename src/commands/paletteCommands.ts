@@ -10,7 +10,7 @@ import FileClassOptionsList from "src/options/FileClassOptionsList";
 import OptionsList from "src/options/OptionsList";
 import { insertMissingFields } from "./insertMissingFields";
 import { FieldManager as F } from "src/fields/FieldManager";
-import { FileClassManager } from "src/components/fileClassManager";
+import { FileClassViewManager } from "src/components/FileClassViewManager";
 import { FieldType } from "src/types/fieldTypes";
 import { updateLookups } from "./updateLookups";
 import { updateFormulas } from "./updateFormulas";
@@ -281,8 +281,9 @@ function addFileClassTableViewCommand(plugin: MetadataMenu) {
             }
             const activeFilePath = plugin.app.workspace.getActiveFile()?.path
             const fileClass = activeFilePath ? plugin.fieldIndex.fileClassesPath.get(activeFilePath) : undefined
-            const fileClassComponent = new FileClassManager(plugin, fileClass)
+            const fileClassComponent = new FileClassViewManager(plugin, fileClass)
             plugin.addChild(fileClassComponent);
+            fileClassComponent.build()
         }
     })
 }

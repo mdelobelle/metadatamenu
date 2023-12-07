@@ -8,7 +8,7 @@ import { FieldManager as FM } from "src/types/fieldTypes";
 import { FieldManager as F, FieldManager } from "src/fields/FieldManager";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { FileClass } from "src/fileClass/fileClass";
-import { FileClassManager } from "./fileClassManager";
+import { FileClassViewManager } from "./FileClassViewManager";
 import { Note } from "src/note/note";
 import { ExistingField } from "src/fields/ExistingField";
 import ObjectListField from "src/fields/fieldManagers/ObjectListField";
@@ -328,8 +328,9 @@ export class FieldsModal extends Modal {
                             .forEach(cont => { cont.removeClass("active") })
                     }
                     fileClassNameContainer.onclick = () => {
-                        const fileClassComponent = new FileClassManager(this.plugin, _fileClass)
+                        const fileClassComponent = new FileClassViewManager(this.plugin, _fileClass)
                         this.plugin.addChild(fileClassComponent);
+                        fileClassComponent.build()
                         this.close();
                     }
                 }

@@ -2,24 +2,7 @@ import MetadataMenu from "main"
 import { ButtonComponent, DropdownComponent, Modal, TextComponent } from "obsidian"
 import { cleanActions } from "src/utils/modals"
 import { FileClassTableView } from "./fileClassTableView"
-import { RowSorter as ViewRowSorter, ColumnMover } from "./tableViewFieldSet"
-
-interface Filter {
-    name: string,
-    query: string
-}
-
-interface RowSorter {
-    name: string,
-    direction: 'asc' | 'desc',
-    priority: number
-}
-
-interface Column {
-    name: string,
-    hidden: boolean,
-    position: number
-}
+import { RowSorterComponent, ColumnMover, RowSorter, Filter, Column } from "./tableViewFieldSet"
 
 export class SavedView {
     sorters: Array<RowSorter> = []
@@ -38,7 +21,7 @@ export class SavedView {
         })
     }
 
-    public buildRowSorters(rowSorters: Record<string, ViewRowSorter>) {
+    public buildRowSorters(rowSorters: Record<string, RowSorterComponent>) {
         Object.keys(rowSorters).forEach(name => {
             const sorter = rowSorters[name]
             if (sorter.direction) {

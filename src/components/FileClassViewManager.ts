@@ -15,7 +15,7 @@ export enum FileClassViewType {
     "settingsOption" = "settingsOption"
 }
 
-export class FileClassManager extends Component {
+export class FileClassViewManager extends Component {
     public fileClassView: FileClassView;
     public fileClassViewType: string;
     public name: string;
@@ -23,7 +23,8 @@ export class FileClassManager extends Component {
     constructor(
         public plugin: MetadataMenu,
         public fileClass?: FileClass,
-        public onOpenTabDisplay: keyof typeof FileClassViewType = "tableOption"
+        public onOpenTabDisplay: keyof typeof FileClassViewType = "tableOption",
+        public revealAfterOpen: boolean = true
     ) {
         super();
         if (!this.fileClass) {
@@ -33,8 +34,7 @@ export class FileClassManager extends Component {
         }
     }
 
-    async onload(): Promise<void> {
-
+    public async build(): Promise<void> {
         if (this.fileClass) {
             this.name = this.fileClass.name;
             this.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + this.fileClass.name
@@ -91,7 +91,7 @@ export class FileClassManager extends Component {
             if (view) {
                 view.updateFieldsView();
                 view.updateSettingsView();
-                view.tableView.buildTable();
+                view.tableView.update();
             }
         }));
     }
@@ -116,9 +116,11 @@ export class FileClassManager extends Component {
                     type: this.fileClassViewType,
                     active: true
                 });
-                this.plugin.app.workspace.revealLeaf(
-                    this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType).last()!
-                );
+                if (this.revealAfterOpen) {
+                    this.plugin.app.workspace.revealLeaf(
+                        this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType).last()!
+                    );
+                }
             } catch (e) {
                 this.unload()
                 console.warn("Fileclass view couldn't load because of a conflict with another plugin")
@@ -142,16 +144,19 @@ export class FileClassManager extends Component {
         const registeredFileClassViews = Object
             .keys(plugin.app.viewRegistry.viewByType)
             .filter(key => key.startsWith("FileClassView__"));
-        (await plugin.indexDB.fileClassViews.getElement("all") as FileClassStoredView[] || []).forEach(view => {
+        for (const view of (await plugin.indexDB.fileClassViews.getElement("all") as FileClassStoredView[] || [])) {
             const fileClassName = /FileClassView__(.*)/.exec(view.id)?.[1]
             if (fileClassName && !registeredFileClassViews.some(viewName => viewName.includes(fileClassName))) {
                 const leaf = plugin.app.workspace.getLeafById(view.leafId)
                 const fileClass = plugin.fieldIndex.fileClassesName.get(fileClassName)
                 if (fileClass) {
-                    if (leaf && !(leaf.view.component instanceof FileClassManager)) plugin.app.workspace.detachLeavesOfType(view.id);
-                    plugin.addChild(new FileClassManager(plugin, fileClass, "tableOption"))
+                    console.log(fileClass)
+                    if (leaf && !(leaf.view.component instanceof FileClassViewManager)) plugin.app.workspace.detachLeavesOfType(view.id);
+                    const fileClassManager = new FileClassViewManager(plugin, fileClass, "tableOption", false)
+                    plugin.addChild(fileClassManager)
+                    await fileClassManager.build()
                 }
             }
-        });
+        }
     }
 }

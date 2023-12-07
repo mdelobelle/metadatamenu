@@ -1,13 +1,13 @@
 import MetadataMenu from "main";
 import { SuggestModal } from "obsidian";
-import { FileClassManager } from "../components/fileClassManager";
+import { FileClassViewManager } from "../components/FileClassViewManager";
 import { FILECLASS_VIEW_TYPE } from "./fileClassView";
 
 export class FileClassChoiceModal extends SuggestModal<string> {
 
     constructor(
         private plugin: MetadataMenu,
-        private fileClassManager: FileClassManager,
+        private fileClassManager: FileClassViewManager,
         private tagsAndFileClasses: string[]
     ) {
         super(plugin.app);
@@ -42,7 +42,7 @@ export class FileClassChoiceModal extends SuggestModal<string> {
             this.fileClassManager.fileClass = fileClass
             const viewType = FILECLASS_VIEW_TYPE + "__" + fileClass.name
             this.fileClassManager.fileClassViewType = viewType
-            this.fileClassManager.openFileClassView();
+            await this.fileClassManager.openFileClassView();
             this.plugin.indexDB.fileClassViews.editElement(viewType,
                 {
                     id: viewType,
