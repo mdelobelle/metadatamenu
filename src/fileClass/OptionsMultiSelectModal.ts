@@ -146,7 +146,7 @@ export class OptionsMultiSelectModal extends SuggestModal<string>{
         clearButton.setTooltip("Clear field's value(s)")
         clearButton.onClick(async () => {
             this.input.setValue("")
-            this.parentFieldSet.tableView.udpate()
+            this.parentFieldSet.tableView.update()
             this.close();
         })
         clearButton.buttonEl.addClass("danger")
@@ -167,7 +167,7 @@ export class OptionsMultiSelectModal extends SuggestModal<string>{
     async replaceValues() {
         const options = this.selectedOptions;
         this.input.inputEl.value = options.join(", ");
-        this.parentFieldSet.tableView.udpate()
+        this.parentFieldSet.tableView.update()
         this.close();
     }
 

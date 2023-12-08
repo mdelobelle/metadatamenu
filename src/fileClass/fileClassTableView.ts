@@ -24,6 +24,7 @@ export class FileClassTableView {
     constructor(
         plugin: MetadataMenu,
         private viewContainer: HTMLDivElement,
+        public tableId: string,
         public fileClass: FileClass,
         public selectedView?: string | undefined
     ) {
@@ -232,7 +233,7 @@ export class FileClassTableView {
         if (this.tableContainer) {
             this.tableContainer.remove()
         };
-        this.tableContainer = this.container.createDiv({ attr: { id: `table-container-${Math.floor(Date.now() / 1000)}` } })
+        this.tableContainer = this.container.createDiv({ attr: { id: this.tableId } })
         this.fileClassDataviewTable.buildTable(this.tableContainer)
     }
 }

@@ -157,7 +157,7 @@ class FileClass {
         }
     }
 
-    getIcon(): string | undefined {
+    getIcon(): string {
         const parents = [this.name, ...this.plugin.fieldIndex.fileClassesAncestors.get(this.name) || []]
         let icon: string | undefined;
         parents.some((fileClassName, i) => {
@@ -171,6 +171,7 @@ class FileClass {
                 };
             }
         })
+        //TODO add a setting for default fileclass icon
         return icon || "package"
     }
 

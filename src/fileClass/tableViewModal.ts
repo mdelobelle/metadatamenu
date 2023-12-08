@@ -84,35 +84,31 @@ export class CreateSavedViewModal extends Modal {
         const infoContainer = actionsContainer.createDiv({ cls: "info" })
         infoContainer.setText("Alt+Enter to save")
         const saveBtn = new ButtonComponent(actionsContainer);
-        saveBtn.setDisabled(true);
+        saveBtn.setDisabled(true)
         saveBtn.setIcon("file-plus-2");
-
         nameErrorContainer.hide();
         nameInput.onChange(async value => {
             this.savedView.name = nameInput.getValue()
             nameErrorContainer.hide();
             saveBtn.setDisabled(false)
             saveBtn.setCta()
-            if (this.view.fileClass.options.savedViews?.some(view => view.name === this.savedView.name)) {
-                nameErrorContainer.show();
-                saveBtn.setDisabled(true)
-                saveBtn.removeCta()
-            }
-            else {
-                saveBtn.setDisabled(false);
-                saveBtn.setCta();
-            }
         });
         saveBtn.onClick(async () => { await this.save() })
+
+        if (this.view.selectedView) {
+            nameInput.setValue(this.view.selectedView)
+            saveBtn.setDisabled(false)
+            saveBtn.setCta()
+        }
     }
 
     private async save() {
         const options = this.view.fileClass.getFileClassOptions()
-        options.savedViews = [...options.savedViews || [], this.savedView]
+        options.savedViews = [...options.savedViews?.filter(v => v.name !== this.savedView.name) || [], this.savedView]
         await this.view.fileClass.updateOptions(options)
         this.view.selectedView = this.savedView.name
         this.view.favoriteBtn.buttonEl.disabled = false
-        this.view.udpate()
+        this.view.update()
         this.close()
     }
 }

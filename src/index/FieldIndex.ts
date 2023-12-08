@@ -1,4 +1,4 @@
-import { Notice, TFile, TFolder } from "obsidian"
+import { Notice, TFile, TFolder, debounce } from "obsidian"
 import MetadataMenu from "main"
 import Field from "../fields/Field";
 import { FileClass } from "src/fileClass/fileClass";
@@ -68,17 +68,19 @@ export default class FieldIndex extends FieldIndexBuilder {
             })
         )
 
-        this.registerEvent(
-            this.plugin.app.metadataCache.on('resolved', async () => {
-                if (this.plugin.app.metadataCache.inProgressTaskCount === 0 && this.plugin.launched) {
-                    if (this.changedFiles.every(file => this.classFilesPath && file.path.startsWith(this.classFilesPath))) {
-                        await updateCanvasAfterFileClass(this.plugin, this.changedFiles)
-                    }
-                    await this.indexFieldsAndValues()
-                    this.plugin.app.workspace.trigger("metadata-menu:indexed");
-                    this.changedFiles = []
+        const debouncedIndexing = debounce(async () => {
+            if (this.plugin.app.metadataCache.inProgressTaskCount === 0 && this.plugin.launched) {
+                if (this.changedFiles.every(file => this.classFilesPath && file.path.startsWith(this.classFilesPath))) {
+                    await updateCanvasAfterFileClass(this.plugin, this.changedFiles)
                 }
-            })
+                await this.indexFieldsAndValues()
+                this.plugin.app.workspace.trigger("metadata-menu:indexed");
+                this.changedFiles = []
+            }
+        }, this.plugin.settings.refreshInterval, true)
+
+        this.registerEvent(
+            this.plugin.app.metadataCache.on('resolved', debouncedIndexing)
         )
 
         this.registerEvent(
@@ -88,17 +90,21 @@ export default class FieldIndex extends FieldIndexBuilder {
             })
         )
 
+        const debouncedQueryResolution = debounce(async (op: any, file: TFile) => {
+            if (file.stat.mtime > this.launchTime && op === "update" && this.dvReady()) {
+                const filePayloadToProcess = this.dVRelatedFieldsToUpdate.get(file.path)
+                if (![...this.dVRelatedFieldsToUpdate.keys()].includes(file.path)) {
+                    await this.resolveAndUpdateDVQueriesBasedFields(false)
+                } else if (filePayloadToProcess) {
+                    filePayloadToProcess.status = "processed"
+                }
+                if ([...this.dVRelatedFieldsToUpdate.values()].every(item => item.status === "processed")) this.dVRelatedFieldsToUpdate = new Map()
+            }
+        }, this.plugin.settings.refreshInterval, true)
+
         this.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
-                if (file.stat.mtime > this.launchTime && op === "update" && this.dvReady()) {
-                    const filePayloadToProcess = this.dVRelatedFieldsToUpdate.get(file.path)
-                    if (![...this.dVRelatedFieldsToUpdate.keys()].includes(file.path)) {
-                        await this.resolveAndUpdateDVQueriesBasedFields(false)
-                    } else if (filePayloadToProcess) {
-                        filePayloadToProcess.status = "processed"
-                    }
-                    if ([...this.dVRelatedFieldsToUpdate.values()].every(item => item.status === "processed")) this.dVRelatedFieldsToUpdate = new Map()
-                }
+                debouncedQueryResolution(op, file)
             })
         )
     }

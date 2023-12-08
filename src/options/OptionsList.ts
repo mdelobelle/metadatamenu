@@ -158,7 +158,7 @@ export default class OptionsList {
 		if (lastFileClassName) {
 			const fileClass = this.plugin.fieldIndex.fileClassesName.get(lastFileClassName)
 			if (fileClass) {
-				const icon = fileClass.getIcon() || "clipboard-list"
+				const icon = fileClass.getIcon()
 				const noteFieldsComponent = new NoteFieldsComponent(this.plugin, "1", () => { }, this.file)
 				const action = () => this.plugin.addChild(noteFieldsComponent);
 				if (isMenu(this.location)) {

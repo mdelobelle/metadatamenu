@@ -24,7 +24,8 @@ export class FileClassViewManager extends Component {
         public plugin: MetadataMenu,
         public fileClass?: FileClass,
         public onOpenTabDisplay: keyof typeof FileClassViewType = "tableOption",
-        public revealAfterOpen: boolean = true
+        public revealAfterOpen: boolean = true,
+        public selectedView?: string
     ) {
         super();
         if (!this.fileClass) {
@@ -103,7 +104,8 @@ export class FileClassViewManager extends Component {
 
             this.plugin.registerView(this.fileClassViewType,
                 (leaf: WorkspaceLeaf) => {
-                    const fileClassView = new FileClassView(leaf, this.plugin, this, this.name, fileClass, this.onOpenTabDisplay)
+                    const tableId = `table-container-${Math.floor(Date.now() / 1000)}`
+                    const fileClassView = new FileClassView(leaf, this.plugin, tableId, this, this.name, fileClass, this.onOpenTabDisplay, this.selectedView)
                     this.fileClassView = fileClassView;
                     return fileClassView
                 }

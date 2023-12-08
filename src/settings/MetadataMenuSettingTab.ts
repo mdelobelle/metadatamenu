@@ -9,6 +9,7 @@ import FileClassQuery from "src/fileClass/FileClassQuery";
 import FileClassQuerySettingsModal from "./FileClassQuerySettingModal";
 import FileClassQuerySetting from "./FileClassQuerySetting";
 import { MultiDisplayType } from "src/types/fieldTypes";
+import { DEFAULT_SETTINGS } from "./MetadataMenuSettings";
 
 class SettingTextWithButtonComponent extends Setting {
 	private newValues: string[] = []
@@ -103,6 +104,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 	private newFileClassesPath: string | null;
 	private newFileClassAlias: string
 	private newTableViewMaxRecords: number
+	private refreshInterval: number
 
 	constructor(plugin: MetadataMenu) {
 		super(plugin.app, plugin);
@@ -164,7 +166,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		)
 
 		/* Scope*/
-		const reloadInfo = globalSettings.createDiv({ cls: "settings-info-warning" })
+		const scopeReloadInfo = globalSettings.createDiv({ cls: "settings-info-warning" })
 		new Setting(globalSettings)
 			.setName('Scope')
 			.setDesc('Index fields in frontmatter only or in the whole note (if you use dataview inline fields). ' +
@@ -176,7 +178,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				cb.onChange(async (value) => {
 					this.plugin.settings.frontmatterOnly = value === "frontmatterOnly" ? true : false
 					await this.plugin.saveSettings();
-					reloadInfo.textContent = "Please reload metadata menu to apply this change"
+					scopeReloadInfo.textContent = "Please reload metadata menu to apply this change"
 				});
 			}).settingEl.addClass("no-border");
 
@@ -243,6 +245,8 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		enableAutoComplete.settingEl.addClass("no-border");
 		enableAutoComplete.controlEl.addClass("full-width");
 
+
+
 		/* Indexing Status icon*/
 
 		const showIndexingStatus = new Setting(globalSettings)
@@ -295,6 +299,36 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				});
 			}).settingEl.addClass("no-border");
+
+		/* Refresh Interval */
+
+		const refreshReloadInfo = globalSettings.createDiv({ cls: "settings-info-warning" })
+
+		const refreshSaveButton = new ButtonComponent(globalSettings)
+		refreshSaveButton.buttonEl.addClass("save")
+		refreshSaveButton.setIcon("save")
+		refreshSaveButton.onClick(async () => {
+			this.plugin.settings.refreshInterval = this.refreshInterval
+			await this.plugin.saveSettings()
+			refreshSaveButton.removeCta()
+			refreshReloadInfo.textContent = "Please relaunch obsidian to apply this change"
+		})
+
+		const refreshInterval = new Setting(globalSettings)
+			.setName('Refresh Interval')
+			.setDesc('How long to wait (in milliseconds) for files to stop changing before indexing fields')
+			.addText((text) => {
+				text
+					.setValue(`${this.plugin.settings.refreshInterval}`)
+					.onChange(async (value) => {
+						this.refreshInterval = parseInt(value) || DEFAULT_SETTINGS.refreshInterval;
+						refreshSaveButton.setCta()
+					});
+			})
+		refreshInterval.settingEl.addClass("no-border");
+		refreshInterval.settingEl.addClass("narrow-title");
+		refreshInterval.controlEl.addClass("full-width");
+		refreshInterval.settingEl.appendChild(refreshSaveButton.buttonEl)
 
 		/* 
 		-----------------------------------------

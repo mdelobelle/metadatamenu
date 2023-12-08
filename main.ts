@@ -1,5 +1,5 @@
 import './env'
-import { debounce, MarkdownView, Notice, Plugin } from 'obsidian';
+import { debounce, MarkdownView, Notice, parseYaml, Plugin, setIcon } from 'obsidian';
 import { addCommands } from 'src/commands/paletteCommands';
 import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
@@ -17,6 +17,10 @@ import { updatePropertiesSection } from 'src/options/updateProps';
 import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton';
 import { FileClassViewManager } from 'src/components/FileClassViewManager';
 import { IndexDatabase } from 'src/db/DatabaseManager';
+import { FileClassTableView } from 'src/fileClass/fileClassTableView';
+import { FileClassCodeBlockView } from 'src/fileClass/fileClassCodeBlockView';
+import { FileClassDataviewTable } from 'src/fileClass/fileClassDataviewTable';
+import { FileClassCodeBlockManager } from 'src/components/FileClassCodeBlockManager';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -84,7 +88,6 @@ export default class MetadataMenu extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', (leaf) => {
 				if (leaf) this.indexStatus.checkForUpdate(leaf.view)
-				addCommands(this)
 			})
 		)
 
@@ -94,7 +97,6 @@ export default class MetadataMenu extends Plugin {
 				const currentView = this.app.workspace.getActiveViewOfType(MarkdownView)
 				if (currentView) this.indexStatus.checkForUpdate(currentView)
 				updatePropertiesSection(this)
-				addCommands(this)
 				FileClassViewManager.reloadViews(this)
 			})
 		)
@@ -102,9 +104,13 @@ export default class MetadataMenu extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on("file-open", (file) => {
 				updatePropertiesSection(this)
-				addCommands(this)
 			})
 		)
+
+		this.registerMarkdownCodeBlockProcessor("mdm", async (source, el, ctx) => {
+			this.addChild(new FileClassCodeBlockManager(this, el, source))
+		});
+
 		this.indexDB = this.addChild(new IndexDatabase(this))
 		//buildind index
 		await this.fieldIndex.fullIndex()

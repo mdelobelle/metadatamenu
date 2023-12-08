@@ -51,10 +51,12 @@ export class FileClassView extends ItemView {
     constructor(
         public leaf: WorkspaceLeaf,
         private plugin: MetadataMenu,
+        public tableId: string,
         public component: FileClassViewManager,
         public name: string,
         public fileClass: FileClass,
-        public onOpenTabDisplay: keyof typeof FileClassViewType = "tableOption"
+        public onOpenTabDisplay: keyof typeof FileClassViewType = "tableOption",
+        public selectedView?: string
     ) {
         super(leaf)
         this.containerEl.addClass("metadata-menu")
@@ -105,7 +107,7 @@ export class FileClassView extends ItemView {
 
     buildTableView(): void {
         const favoriteView = this.fileClass.options.favoriteView || undefined
-        this.tableView = new FileClassTableView(this.plugin, this.viewContainer, this.fileClass, favoriteView)
+        this.tableView = new FileClassTableView(this.plugin, this.viewContainer, this.tableId, this.fileClass, this.selectedView || favoriteView)
         this.views.push(this.tableView.container);
     }
 
@@ -127,7 +129,7 @@ export class FileClassView extends ItemView {
     }
 
     protected async onOpen(): Promise<void> {
-        this.icon = this.fileClass?.getIcon() || "file-spreadsheet"
+        this.icon = this.fileClass?.getIcon()
         this.tableView.update();
     }
 }

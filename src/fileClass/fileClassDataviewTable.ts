@@ -4,18 +4,21 @@ import { FileClass } from "./fileClass";
 import { fieldStates } from "./OptionsMultiSelectModal";
 import { FieldType } from "src/types/fieldTypes";
 import { FileClassTableView } from "./fileClassTableView";
+import { FileClassCodeBlockView } from "./fileClassCodeBlockView";
+import { setIcon } from "obsidian";
+import { FileClassViewManager } from "src/components/FileClassViewManager";
 
 export class FileClassDataviewTable {
     private firstCollWidth: number;
     private tableFontSize: number;
     public ranges: HTMLDivElement[] = []
     public limitWrapped: boolean = false
-    private limit: number
-
+    public limit: number
+    private hasButton: boolean = false
     constructor(
         public plugin: MetadataMenu,
         public viewConfiguration: ViewConfiguration,
-        public view: FileClassTableView,
+        public view: FileClassTableView | FileClassCodeBlockView,
         private fileClass: FileClass,
         maxRow?: number,
         private sliceStart: number = 0
@@ -43,6 +46,7 @@ export class FileClassDataviewTable {
                 const count = values.length;
 
                 const rangesCount = Math.floor(count / this.limit) + 1
+                if (rangesCount < 2) return
                 for (let i = 0; i < rangesCount; i++) {
                     if (i * this.limit < count) {
                         const rangeComponent = container.createDiv({
@@ -110,11 +114,37 @@ export class FileClassDataviewTable {
         }
 
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        if (dvApi) {
-            dvApi.executeJs(this.buildDvJSRendering(), tableContainer, this.plugin, this.fileClass.getClassFile().path)
-        }
+        if (dvApi) dvApi.executeJs(
+            this.buildDvJSRendering(),
+            tableContainer,
+            this.plugin,
+            this.fileClass.getClassFile().path
+        )
         // links aren't clickable anymore, rebinding them to click event
-        this.addClickEventToLink(tableContainer)
+        if (this.view instanceof FileClassTableView) this.addClickEventToLink(tableContainer)
+    }
+
+    public buidFileClassViewBtn(): void {
+        const id = this.view.tableId
+        if (document.querySelector(`#${id} thead th .fileclass-icon`)) return
+        const firstColHeader = document.querySelector(`#${id} thead th`)
+        if (firstColHeader) {
+            const firstColHeaderContainer = firstColHeader.createDiv({ cls: "first-col-header-container" });
+            [...firstColHeader.children].forEach(child => {
+                if (!child.hasClass("first-col-header-container")) {
+                    firstColHeaderContainer?.append(child)
+                }
+            })
+            const button = firstColHeaderContainer.createDiv({ cls: "fileclass-icon" })
+            setIcon(button, this.fileClass.getIcon())
+            button.onclick = () => {
+                const fileClassViewManager = new FileClassViewManager(this.plugin, this.fileClass, "tableOption", true, this.view.selectedView)
+                this.plugin.addChild(fileClassViewManager)
+                fileClassViewManager.build()
+            }
+            firstColHeaderContainer?.prepend(button)
+        }
+        this.hasButton = true
     }
 
     private addClickEventToLink(tableContainer: HTMLDivElement): void {
@@ -233,7 +263,7 @@ export class FileClassDataviewTable {
         dvJS += "    .map(p => [\n";
         dvJS += fields.map(field => {
             if (field.name === "file") {
-                return "        dv.el(\"span\", p.file.link, {cls: \"field-name\"})";
+                return "        dv.el(\"div\", p.file.link, {cls: \"field-name\"})";
             } else {
                 return `        f(dv, p, "${field.name}", {options: {alwaysOn: false, showAddField: true}})`
             }

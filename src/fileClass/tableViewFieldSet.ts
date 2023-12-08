@@ -128,13 +128,15 @@ export class Field {
         this.isColumnHidden = isHidden
         this.parentFieldSet.columnManagers[this.name].hidden = this.isColumnHidden
         this.visibilityButton.setIcon(this.isColumnHidden ? "eye-off" : "eye")
-        this.parentFieldSet.tableView.update()
     }
 
     private buildVisibilityBtn(component: HTMLDivElement) {
         this.visibilityButton = new ButtonComponent(component)
             .setIcon(this.isColumnHidden ? "eye-off" : "eye")
-            .onClick(() => this.setVisibilityButtonState(!this.isColumnHidden))
+            .onClick(() => {
+                this.setVisibilityButtonState(!this.isColumnHidden)
+                this.parentFieldSet.tableView.update()
+            })
     }
 
     private buildFieldHeaderComponent(): void {
