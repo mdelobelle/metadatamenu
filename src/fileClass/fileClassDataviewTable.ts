@@ -114,12 +114,9 @@ export class FileClassDataviewTable {
         }
 
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        if (dvApi) dvApi.executeJs(
-            this.buildDvJSRendering(),
-            tableContainer,
-            this.plugin,
-            this.fileClass.getClassFile().path
-        )
+        if (dvApi) {
+            dvApi.executeJs(this.buildDvJSRendering(), tableContainer, this.plugin, this.fileClass.getClassFile().path)
+        }
         // links aren't clickable anymore, rebinding them to click event
         if (this.view instanceof FileClassTableView) this.addClickEventToLink(tableContainer)
     }

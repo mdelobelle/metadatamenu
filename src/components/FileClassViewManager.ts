@@ -19,6 +19,7 @@ export class FileClassViewManager extends Component {
     public fileClassView: FileClassView;
     public fileClassViewType: string;
     public name: string;
+    public tableId: string;
 
     constructor(
         public plugin: MetadataMenu,
@@ -84,6 +85,8 @@ export class FileClassViewManager extends Component {
         // @ts-ignore
         this.plugin.app.viewRegistry.unregisterView(this.fileClassViewType);
         this.plugin.indexDB.fileClassViews.removeElement(FILECLASS_VIEW_TYPE + "__" + this.name)
+        this.plugin._children.filter(child => child.hasOwnProperty("containerEl") && child.containerEl.getAttr("id") === this.tableId)
+            .forEach(child => this.plugin.removeChild(child))
     }
 
     private registerIndexingDone() {
@@ -104,8 +107,8 @@ export class FileClassViewManager extends Component {
 
             this.plugin.registerView(this.fileClassViewType,
                 (leaf: WorkspaceLeaf) => {
-                    const tableId = `table-container-${Math.floor(Date.now() / 1000)}`
-                    const fileClassView = new FileClassView(leaf, this.plugin, tableId, this, this.name, fileClass, this.onOpenTabDisplay, this.selectedView)
+                    this.tableId = `table-container-${Math.floor(Date.now() / 1000)}`
+                    const fileClassView = new FileClassView(leaf, this.plugin, this.tableId, this, this.name, fileClass, this.onOpenTabDisplay, this.selectedView)
                     this.fileClassView = fileClassView;
                     return fileClassView
                 }

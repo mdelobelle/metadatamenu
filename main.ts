@@ -1,5 +1,5 @@
 import './env'
-import { debounce, MarkdownView, Notice, parseYaml, Plugin, setIcon } from 'obsidian';
+import { MarkdownView, Notice, Plugin } from 'obsidian';
 import { addCommands } from 'src/commands/paletteCommands';
 import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
@@ -17,9 +17,6 @@ import { updatePropertiesSection } from 'src/options/updateProps';
 import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton';
 import { FileClassViewManager } from 'src/components/FileClassViewManager';
 import { IndexDatabase } from 'src/db/DatabaseManager';
-import { FileClassTableView } from 'src/fileClass/fileClassTableView';
-import { FileClassCodeBlockView } from 'src/fileClass/fileClassCodeBlockView';
-import { FileClassDataviewTable } from 'src/fileClass/fileClassDataviewTable';
 import { FileClassCodeBlockManager } from 'src/components/FileClassCodeBlockManager';
 
 export default class MetadataMenu extends Plugin {
@@ -35,6 +32,7 @@ export default class MetadataMenu extends Plugin {
 	public indexName: string;
 	public launched: boolean = false;
 	public indexDB: IndexDatabase;
+	public codeBlockManagers: FileClassCodeBlockManager[] = []
 
 	async onload(): Promise<void> {
 		console.log('+------ Metadata Menu loaded --------+');
@@ -118,11 +116,12 @@ export default class MetadataMenu extends Plugin {
 		addCommands(this)
 
 		this.registerMarkdownCodeBlockProcessor("mdm", async (source, el, ctx) => {
-			this.addChild(new FileClassCodeBlockManager(this, el, source))
+			this.codeBlockManagers.filter(manager => manager.ctx.docId = ctx.docId).forEach(manager => this.removeChild(manager))
+			const fileClassCodeBlockManager = new FileClassCodeBlockManager(this, el, source, ctx)
+			this.codeBlockManagers.push(fileClassCodeBlockManager)
+			this.addChild(fileClassCodeBlockManager)
 		});
 		this.app.workspace.trigger("layout-change")
-
-
 	};
 
 	/*

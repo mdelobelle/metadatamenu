@@ -201,6 +201,18 @@ declare module "obsidian" {
     interface Menu {
         setSectionSubmenu: (label: string, options: { title: string, icon: string }) => any
     }
+
+    interface DataviewJSRenderer {
+
+        api: DataviewApi,
+        script: string,
+        container: HTMLElement,
+        origin: string
+    }
+
+    interface Plugin {
+        _children: any[]
+    }
 }
 
 declare global {

@@ -6,6 +6,7 @@ import { ViewConfiguration } from "./tableViewFieldSet";
 export class FileClassCodeBlockView {
     public fileClassDataviewTable: FileClassDataviewTable
     public viewConfiguration: ViewConfiguration
+
     constructor(
         public plugin: MetadataMenu,
         public tableId: string,
