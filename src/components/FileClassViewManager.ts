@@ -152,7 +152,6 @@ export class FileClassViewManager extends Component {
                 const leaf = plugin.app.workspace.getLeafById(view.leafId)
                 const fileClass = plugin.fieldIndex.fileClassesName.get(fileClassName)
                 if (fileClass) {
-                    console.log(fileClass)
                     if (leaf && !(leaf.view.component instanceof FileClassViewManager)) plugin.app.workspace.detachLeavesOfType(view.id);
                     const fileClassManager = new FileClassViewManager(plugin, fileClass, "tableOption", false)
                     plugin.addChild(fileClassManager)

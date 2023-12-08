@@ -107,10 +107,6 @@ export default class MetadataMenu extends Plugin {
 			})
 		)
 
-		this.registerMarkdownCodeBlockProcessor("mdm", async (source, el, ctx) => {
-			this.addChild(new FileClassCodeBlockManager(this, el, source))
-		});
-
 		this.indexDB = this.addChild(new IndexDatabase(this))
 		//buildind index
 		await this.fieldIndex.fullIndex()
@@ -120,7 +116,13 @@ export default class MetadataMenu extends Plugin {
 		this.launched = true
 		//building palette commands
 		addCommands(this)
-		//reloading views
+
+		this.registerMarkdownCodeBlockProcessor("mdm", async (source, el, ctx) => {
+			this.addChild(new FileClassCodeBlockManager(this, el, source))
+		});
+		this.app.workspace.trigger("layout-change")
+
+
 	};
 
 	/*

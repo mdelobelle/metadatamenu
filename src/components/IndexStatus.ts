@@ -53,7 +53,6 @@ export default class IndexStatus extends Component {
     };
 
     public setState(state: keyof typeof Statuses) {
-        //TODO handle several index state (for fields, values and queries) with a priority
         this.state = state;
         this.statusBtn.setTooltip(statusTooltip[state], { placement: "top" })
         for (const status in Statuses) {

@@ -107,7 +107,7 @@ export default class CycleField extends AbstractListBasedField {
     ): void {
         attrs.cls = "value-container"
         fieldContainer.appendChild(dv.el('span', p[this.field.name] || "", attrs))
-        const spacer = fieldContainer.createEl("div", { cls: "spacer" })
+        const spacer = fieldContainer.createEl("div", { cls: "spacer-1" })
         /* button to display input */
         const cycleBtn = fieldContainer.createEl("button")
         setIcon(cycleBtn, FieldIcon[FieldType.Cycle])
