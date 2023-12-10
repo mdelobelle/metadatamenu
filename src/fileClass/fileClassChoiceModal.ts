@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { SuggestModal } from "obsidian";
 import { FileClassViewManager } from "../components/FileClassViewManager";
-import { FILECLASS_VIEW_TYPE } from "./fileClassView";
+import { FILECLASS_VIEW_TYPE } from "./views/fileClassView";
 
 export class FileClassChoiceModal extends SuggestModal<string> {
 

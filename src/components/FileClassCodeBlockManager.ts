@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { Component, MarkdownPostProcessorContext, parseYaml } from "obsidian";
 import { FileClass } from "src/fileClass/fileClass";
-import { FileClassCodeBlockView } from "src/fileClass/fileClassCodeBlockView";
+import { FileClassCodeBlockView } from "src/fileClass/views/fileClassCodeBlockView";
 import { DataviewJSRenderer } from "obsidian";
 
 export enum FileClassViewType {

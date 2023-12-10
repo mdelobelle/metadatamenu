@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { FileClassViewManager, FileClassViewType } from "src/components/FileClassViewManager";
-import { FileClass } from "./fileClass";
+import { FileClass } from "../fileClass";
 import { FileClassFieldsView } from "./fileClassFieldsView";
 import { FileClassSettingsView } from "./fileClassSettingsView";
 import { FileClassTableView } from "./fileClassTableView";

@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { Component, WorkspaceLeaf } from "obsidian";
-import { FileClassView, FILECLASS_VIEW_TYPE } from "src/fileClass/fileClassView";
+import { FileClassView, FILECLASS_VIEW_TYPE } from "src/fileClass/views/fileClassView";
 import { FileClass } from "../fileClass/fileClass";
 import { FileClassChoiceModal } from "../fileClass/fileClassChoiceModal";
 

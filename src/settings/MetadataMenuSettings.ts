@@ -78,7 +78,7 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	fileIndexingExcludedRegex: [],
 	frontmatterOnly: false,
 	showFileClassSelectInModal: true,
-	refreshInterval: 2500
+	refreshInterval: 0
 };
 
 export const incrementVersion = (plugin: MetadataMenu) => {

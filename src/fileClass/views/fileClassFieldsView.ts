@@ -2,9 +2,9 @@ import MetadataMenu from "main";
 import { ButtonComponent, setIcon, Setting } from "obsidian";
 import { removeFileClassAttributeWithId } from "src/commands/removeFileClassAttribute";
 import { FieldTypeTagClass } from "src/types/fieldTypes";
-import { FileClass } from "./fileClass";
-import { FileClassAttribute } from "./fileClassAttribute";
-import { FileClassAttributeModal } from "./FileClassAttributeModal";
+import { FileClass } from "../fileClass";
+import { FileClassAttribute } from "../fileClassAttribute";
+import { FileClassAttributeModal } from "../FileClassAttributeModal";
 
 class FileClassFieldSetting {
     private plugin: MetadataMenu;

@@ -10,7 +10,7 @@ import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { Note } from "src/note/note";
 import FieldIndex from "src/index/FieldIndex";
 import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
-import { SavedView } from "./tableViewModal";
+import { SavedView } from "./views/tableViewComponents/saveViewModal";
 
 const options: Record<string, { name: string, toValue: (value: any) => any }> = {
     "limit": { name: "limit", toValue: (value: any) => value },

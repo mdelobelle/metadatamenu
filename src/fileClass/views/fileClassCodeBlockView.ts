@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
-import { FileClassDataviewTable } from "./fileClassDataviewTable";
-import { FileClass } from "./fileClass";
-import { ViewConfiguration } from "./tableViewFieldSet";
+import { FileClassDataviewTable } from "./tableViewComponents/fileClassDataviewTable";
+import { FileClass } from "../fileClass";
+import { ViewConfiguration } from "./tableViewComponents/tableViewFieldSet";
 
 export class FileClassCodeBlockView {
     public fileClassDataviewTable: FileClassDataviewTable

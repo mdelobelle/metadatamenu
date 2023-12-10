@@ -1,10 +1,10 @@
 import MetadataMenu from "main";
 import { ViewConfiguration } from "./tableViewFieldSet"
-import { FileClass } from "./fileClass";
+import { FileClass } from "../../fileClass";
 import { fieldStates } from "./OptionsMultiSelectModal";
 import { FieldType } from "src/types/fieldTypes";
-import { FileClassTableView } from "./fileClassTableView";
-import { FileClassCodeBlockView } from "./fileClassCodeBlockView";
+import { FileClassTableView } from "../fileClassTableView";
+import { FileClassCodeBlockView } from "../fileClassCodeBlockView";
 import { setIcon } from "obsidian";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
 
@@ -14,7 +14,6 @@ export class FileClassDataviewTable {
     public ranges: HTMLDivElement[] = []
     public limitWrapped: boolean = false
     public limit: number
-    private hasButton: boolean = false
     constructor(
         public plugin: MetadataMenu,
         public viewConfiguration: ViewConfiguration,
@@ -22,7 +21,6 @@ export class FileClassDataviewTable {
         private fileClass: FileClass,
         maxRow?: number,
         private sliceStart: number = 0
-
     ) {
         this.limit = maxRow || this.fileClass.options.limit || this.plugin.settings.tableViewMaxRecords
     }
@@ -141,7 +139,6 @@ export class FileClassDataviewTable {
             }
             firstColHeaderContainer?.prepend(button)
         }
-        this.hasButton = true
     }
 
     private addClickEventToLink(tableContainer: HTMLDivElement): void {
@@ -216,14 +213,28 @@ export class FileClassDataviewTable {
     }
 
     private buildSorterQuery(): string {
+        const buildCOp = (fieldKey: string, cO: string, index: number, dir: number) => {
+            return `rank(basename(p${index}${fieldKey}),[${cO}], ${dir})`
+        }
+        const buildOp = (fieldKey: string, index: number) => {
+            return `basename(p${index}${fieldKey})`
+        }
         const sorters = Object.entries(this.viewConfiguration.sorters)
             .sort((s1, s2) => (s1[1].priority || 0) < (s2[1].priority || 0) ? -1 : 1)
             .filter(s => s[1].direction)
             .map(s => {
                 const fieldKey = s[1].name === "file" ? `["file"]["name"]` : `["${s[1].name}"]`
                 const dir = s[1].direction === "asc" ? 1 : -1
-                return `        if(p1${fieldKey} > p2${fieldKey}) return ${dir}\n` +
-                    `        if(p1${fieldKey} < p2${fieldKey}) return ${-1 * dir}\n`
+                if (s[1].customOrder?.length) {
+                    const cO = s[1].customOrder.map(item => `"${item}"`).join(",")
+                    return `` +
+                        `        if(${buildCOp(fieldKey, cO, 1, dir)} > ${buildCOp(fieldKey, cO, 2, dir)}) return ${dir}\n` +
+                        `        if(${buildCOp(fieldKey, cO, 1, dir)} < ${buildCOp(fieldKey, cO, 2, dir)}) return ${-1 * dir}\n`
+                } else {
+                    return `` +
+                        `        if(${buildOp(fieldKey, 1)} > ${buildOp(fieldKey, 2)}) return ${dir}\n` +
+                        `        if(${buildOp(fieldKey, 1)} < ${buildOp(fieldKey, 2)}) return ${-1 * dir}\n`
+                }
             })
         const sortingQuery = `    .array().sort((p1, p2) => {\n${sorters.join("")}\n    })\n`
         return sortingQuery
@@ -250,8 +261,24 @@ export class FileClassDataviewTable {
             .filter(f => !this.viewConfiguration.columns.find(_f => _f.name === f.name)?.hidden)
             .sort((f1, f2) => f1.position < f2.position ? -1 : 1)
         let dvJS = "const {fieldModifier: f} = MetadataMenu.api;\n" +
+            "const basename = (item) => {\n" +
+            "    if(item.hasOwnProperty('path')){\n" +
+            "        return /([^\/]*).md/.exec(item.path)?.[1] || item.path\n" +
+            "    }else if(typeof item === 'string'){\n" +
+            "        return item\n" +
+            "    }else{\n" +
+            "        return item.toString()\n" +
+            "    }\n" +
+            "}\n" +
+            "const rank = (item, options, dir) => {\n" +
+            "    const indexInOptions = options.indexOf(basename(item));\n" +
+            "    if(dir === 1){\n" +
+            "        if(indexInOptions === -1) return Infinity\n" +
+            "    }\n" +
+            "    return indexInOptions\n" +
+            "}\n" +
             "dv.table([";
-        dvJS += fields.map(field => `"${field.name}"`).join(",");
+        dvJS += fields.map(field => `"${field.name === "file" ? this.fileClass.name : field.name}"`).join(",");
         dvJS += `], \n`;
         dvJS += this.buildDvJSQuery();
         dvJS += this.buildSorterQuery();

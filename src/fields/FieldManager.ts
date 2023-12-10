@@ -10,7 +10,7 @@ import Field from "./Field";
 import { ExistingField } from "./ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
-import { FieldSet } from "src/fileClass/tableViewFieldSet";
+import { FieldSet } from "src/fileClass/views/tableViewComponents/tableViewFieldSet";
 
 export const enum SettingLocation {
     "PluginSettings",

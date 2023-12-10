@@ -1,8 +1,9 @@
 import MetadataMenu from "main"
 import { ButtonComponent, DropdownComponent, Modal, TextComponent } from "obsidian"
 import { cleanActions } from "src/utils/modals"
-import { FileClassTableView } from "./fileClassTableView"
-import { RowSorterComponent, ColumnMover, RowSorter, Filter, Column } from "./tableViewFieldSet"
+import { FileClassTableView } from "../fileClassTableView"
+import { ColumnMover, RowSorter, Filter, Column } from "./tableViewFieldSet"
+import { RowSorterComponent } from "./RowSorterComponent"
 
 export class SavedView {
     sorters: Array<RowSorter> = []
@@ -24,11 +25,12 @@ export class SavedView {
     public buildRowSorters(rowSorters: Record<string, RowSorterComponent>) {
         Object.keys(rowSorters).forEach(name => {
             const sorter = rowSorters[name]
-            if (sorter.direction) {
+            if (sorter.direction || sorter.customOrder?.length) {
                 this.sorters.push({
                     name: sorter.name,
-                    direction: sorter.direction,
-                    priority: sorter.priority || 0
+                    direction: sorter.direction || 'asc',
+                    priority: sorter.priority || 0,
+                    customOrder: sorter.customOrder || []
                 })
             }
         })
@@ -110,6 +112,7 @@ export class CreateSavedViewModal extends Modal {
         this.view.selectedView = this.savedView.name
         this.view.favoriteBtn.buttonEl.disabled = false
         this.view.update()
+        this.view.saveViewBtn.removeCta()
         this.close()
     }
 }

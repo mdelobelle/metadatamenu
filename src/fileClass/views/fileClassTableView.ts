@@ -1,9 +1,9 @@
 import MetadataMenu from "main";
 import { ButtonComponent, debounce, DropdownComponent, TextComponent } from "obsidian";
-import { FileClass } from "./fileClass";
-import { FieldSet } from "./tableViewFieldSet";
-import { CreateSavedViewModal } from "./tableViewModal";
-import { FileClassDataviewTable } from "./fileClassDataviewTable";
+import { FileClass } from "../fileClass";
+import { FieldSet } from "./tableViewComponents/tableViewFieldSet";
+import { CreateSavedViewModal } from "./tableViewComponents/saveViewModal";
+import { FileClassDataviewTable } from "./tableViewComponents/fileClassDataviewTable";
 
 export class FileClassTableView {
     public plugin: MetadataMenu;
@@ -13,6 +13,7 @@ export class FileClassTableView {
     private paginationContainer: HTMLDivElement
     public fieldsContainer: HTMLDivElement;
     private viewSelectContainer: HTMLDivElement;
+    public saveViewBtn: ButtonComponent;
     public viewSelect: DropdownComponent
     public favoriteBtn: ButtonComponent
     public viewRemoveBtn: ButtonComponent
@@ -75,6 +76,7 @@ export class FileClassTableView {
         const debounced = debounce((fieldset: FieldSet) => fieldset.tableView.update(this.limit), 1000, true)
         limitInput.onChange((value) => {
             this.limit = parseInt(value) || this.limit;
+            this.saveViewBtn.setCta()
             debounced(this.fieldSet)
         })
     }
@@ -110,6 +112,7 @@ export class FileClassTableView {
         this.viewRemoveBtn.setDisabled(!this.selectedView)
         this.viewRemoveBtn.setTooltip(`Remove ${this.selectedView} view from the saved views`)
         this.update()
+        this.saveViewBtn.removeCta()
     }
 
     private buildViewSelector() {
@@ -185,6 +188,7 @@ export class FileClassTableView {
                 this.favoriteBtn.buttonEl.addClass("favorite")
             }
             await this.fileClass.updateOptions(options)
+            this.saveViewBtn.setCta()
             this.toggleFavoriteBtnState()
         })
     }
@@ -193,16 +197,16 @@ export class FileClassTableView {
         const btnContainer = container.createDiv({ cls: "cell" })
         const cleanFilterBtn = new ButtonComponent(btnContainer);
         cleanFilterBtn.setIcon("eraser");
-        cleanFilterBtn.setTooltip("remove filter values")
+        cleanFilterBtn.setTooltip("Clear all filters, sorters and ordering")
         cleanFilterBtn.onClick(() => this.fieldSet.reset())
     }
 
     private buildSaveView(container: HTMLDivElement): void {
         const btnContainer = container.createDiv({ cls: "cell" })
-        const saveViewBtn = new ButtonComponent(btnContainer);
-        saveViewBtn.setIcon("save");
-        saveViewBtn.setTooltip("Save current view (filters and sorters)")
-        saveViewBtn.onClick(() => (new CreateSavedViewModal(this.plugin, this)).open())
+        this.saveViewBtn = new ButtonComponent(btnContainer)
+            .setIcon("save")
+            .setTooltip("Save current view (filters and sorters)")
+            .onClick(() => (new CreateSavedViewModal(this.plugin, this)).open())
     }
 
     private buildHideFilters(container: HTMLDivElement): void {
