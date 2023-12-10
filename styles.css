@@ -1022,6 +1022,9 @@ span.flatpickr-weekday {
   font-size: smaller;
   color: var(--text-muted);
 }
+.metadata-menu.modal-container .info-code {
+  font-size: x-small;
+}
 .metadata-menu.modal-container .field-container {
   display: flex;
   align-items: center;
@@ -1480,6 +1483,9 @@ span.flatpickr-weekday {
   display: flex;
   font-size: smaller;
   color: var(--text-muted);
+}
+.metadata-menu.modal-container .info-code {
+  font-size: x-small;
 }
 .metadata-menu.modal-container .field-container {
   display: flex;

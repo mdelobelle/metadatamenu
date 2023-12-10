@@ -128,6 +128,7 @@ export class FileClassViewManager extends Component {
                 }
             } catch (e) {
                 this.unload()
+                console.log(e)
                 console.warn("Fileclass view couldn't load because of a conflict with another plugin")
             }
         }

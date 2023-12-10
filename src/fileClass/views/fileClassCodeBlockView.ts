@@ -2,6 +2,7 @@ import MetadataMenu from "main";
 import { FileClassDataviewTable } from "./tableViewComponents/fileClassDataviewTable";
 import { FileClass } from "../fileClass";
 import { ViewConfiguration } from "./tableViewComponents/tableViewFieldSet";
+import { MarkdownPostProcessorContext } from "obsidian";
 
 export class FileClassCodeBlockView {
     public fileClassDataviewTable: FileClassDataviewTable
@@ -13,7 +14,8 @@ export class FileClassCodeBlockView {
         public fileClass: FileClass,
         public paginationContainer: HTMLDivElement,
         public tableContainer: HTMLDivElement,
-        public selectedView?: string | undefined
+        public selectedView?: string | undefined,
+        public ctx?: MarkdownPostProcessorContext
     ) {
         this.viewConfiguration = this.getViewConfig()
         this.fileClassDataviewTable = new FileClassDataviewTable(this.plugin, this.viewConfiguration, this, fileClass)
@@ -42,7 +44,7 @@ export class FileClassCodeBlockView {
 
     public update(maxRows?: number, sliceStart: number = 0): void {
         this.fileClassDataviewTable = new FileClassDataviewTable(
-            this.plugin, this.viewConfiguration, this, this.fileClass, maxRows, sliceStart)
+            this.plugin, this.viewConfiguration, this, this.fileClass, maxRows, sliceStart, this.ctx)
         this.fileClassDataviewTable.buildTable(this.tableContainer);
         this.fileClassDataviewTable.buildPaginationManager(this.paginationContainer);
     }

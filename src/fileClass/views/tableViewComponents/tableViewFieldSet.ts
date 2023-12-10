@@ -1,9 +1,11 @@
 import MetadataMenu from "main"
-import { ButtonComponent, DropdownComponent, TextComponent, TFile } from "obsidian"
+import { ButtonComponent, Debouncer, TextComponent, setIcon } from "obsidian"
 import { FileClass } from "../../fileClass"
 import { FileClassTableView } from "../fileClassTableView"
 import { RowSorterComponent } from "./RowSorterComponent";
 import { FieldComponent } from "./FieldComponent";
+import { OptionsMultiSelectModal } from "./OptionsMultiSelectModal";
+import { FilterComponent } from "./FilterComponent";
 
 export interface ViewConfiguration {
     sorters: Array<RowSorter>,
@@ -20,7 +22,8 @@ export const btnIcons: Record<string, string> = {
 
 export interface Filter {
     name: string,
-    query: string
+    query: string,
+    customFilter: string
 }
 
 export interface RowSorter {
@@ -44,11 +47,12 @@ export interface ColumnMover {
     position: number
 }
 
+
 export class FieldSet {
     public fields: FieldComponent[] = []
     public fileClass: FileClass
     public plugin: MetadataMenu
-    public filters: Record<string, TextComponent | DropdownComponent> = {}
+    public filters: Record<string, FilterComponent> = {}
     public rowSorters: Record<string, RowSorterComponent> = {}
     public columnManagers: Record<string, ColumnMover> = {}
     public fieldsContainer: HTMLDivElement
@@ -120,9 +124,7 @@ export class FieldSet {
 
     private resetFilters() {
         Object.keys(this.filters).forEach(name => {
-            const filter = this.filters[name]
-            if (filter instanceof DropdownComponent) filter.selectEl.value = "all"
-            else filter.inputEl.value = ""
+            this.filters[name].reset()
         })
     }
 
@@ -135,10 +137,11 @@ export class FieldSet {
     }
 
     public getParams(): ViewConfiguration {
-        const filters = Object.entries(this.filters).map(([name, filter]) => {
+        const filters = Object.entries(this.filters).map(([name, filterComponent]) => {
             return {
                 name: name,
-                query: filter.getValue()
+                query: filterComponent.filter.getValue(),
+                customFilter: filterComponent.customFilter
             }
         })
         const sorters = Object.entries(this.rowSorters).filter(([n, s]) => s.direction !== undefined || s.customOrder?.length).map(([name, sorter]) => {
@@ -192,12 +195,11 @@ export class FieldSet {
         if (_name && savedViews.find(view => view.name === _name)) {
             const savedView = savedViews.find(view => view.name === _name)!
             Object.keys(this.filters).forEach(name => {
-                const filter = this.filters[name]
-                if (filter instanceof TextComponent) {
-                    filter.inputEl.value = savedView?.filters.find(f => f.name === name)?.query || ""
-                } else if (filter instanceof DropdownComponent) {
-                    filter.selectEl.value = savedView?.filters.find(f => f.name === name)?.query || "all"
-                }
+                const filterComponent = this.filters[name]
+                const savedFilter = savedView?.filters.find(f => f.name === name)
+                filterComponent.filter.inputEl.value = savedFilter?.query || ""
+                filterComponent.customFilter = savedFilter?.customFilter || ""
+                filterComponent.toggleCustomFilterState()
             })
             Object.keys(this.rowSorters).forEach(name => {
                 const rowSorter: RowSorterComponent = this.rowSorters[name]

@@ -36,12 +36,12 @@ export class FileClassCodeBlockManager extends Component {
         try {
             const content = parseYaml(source)
             const fileClassName = content[this.plugin.settings.fileClassAlias]
-            const selectedView = content.view
+            const selectedView = content.view?.toString() as string | undefined
             this.fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
             if (this.fileClass) {
                 this.itemsPerPage = content["files per page"] || this.fileClass.options.limit || this.plugin.settings.tableViewMaxRecords
                 this.startAtItem = content["start"] || 0
-                this.fileClassCodeBlockView = new FileClassCodeBlockView(this.plugin, this.tableId, this.fileClass, paginationContainer, tableContainer, selectedView)
+                this.fileClassCodeBlockView = new FileClassCodeBlockView(this.plugin, this.tableId, this.fileClass, paginationContainer, tableContainer, selectedView, this.ctx)
                 this.fileClassCodeBlockView.fileClassDataviewTable.limit = this.itemsPerPage
                 this.plugin.registerMarkdownPostProcessor((el, ctx) => {
                     this.fileClassCodeBlockView.fileClassDataviewTable.buidFileClassViewBtn()

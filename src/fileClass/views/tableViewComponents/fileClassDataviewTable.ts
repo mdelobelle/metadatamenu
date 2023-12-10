@@ -5,7 +5,7 @@ import { fieldStates } from "./OptionsMultiSelectModal";
 import { FieldType } from "src/types/fieldTypes";
 import { FileClassTableView } from "../fileClassTableView";
 import { FileClassCodeBlockView } from "../fileClassCodeBlockView";
-import { setIcon } from "obsidian";
+import { MarkdownPostProcessorContext, setIcon } from "obsidian";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
 
 export class FileClassDataviewTable {
@@ -20,7 +20,8 @@ export class FileClassDataviewTable {
         public view: FileClassTableView | FileClassCodeBlockView,
         private fileClass: FileClass,
         maxRow?: number,
-        private sliceStart: number = 0
+        private sliceStart: number = 0,
+        private ctx?: MarkdownPostProcessorContext
     ) {
         this.limit = maxRow || this.fileClass.options.limit || this.plugin.settings.tableViewMaxRecords
     }
@@ -40,7 +41,8 @@ export class FileClassDataviewTable {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
             try {
-                const values = (new Function("dv", "current", `return ${this.buildDvJSQuery()}`))(dvApi).values;
+                const current = this.ctx ? dvApi.page(this.ctx.sourcePath) : {}
+                const values = (new Function("dv", "current", `return ${this.buildDvJSQuery()}`))(dvApi, current).values;
                 const count = values.length;
 
                 const rangesCount = Math.floor(count / this.limit) + 1
@@ -77,6 +79,7 @@ export class FileClassDataviewTable {
                 const activeRange = this.ranges.find(r => r.hasClass("active"))
                 if (activeRange && this.ranges.indexOf(activeRange) < 2) toggleRanges(rangesCount)
             } catch (e) {
+                console.log(e)
                 console.error("unable to build the list of files")
             }
         }
@@ -157,6 +160,10 @@ export class FileClassDataviewTable {
 
         return Object.entries(this.viewConfiguration.filters).map(([index, filter]) => {
             const valueGetter = filter.name === "file" ? `p.file.name` : `p["${filter.name}"]`
+            const current = this.ctx ? `dv.page("${this.ctx.sourcePath}")` : "{}"
+            if (filter.customFilter) {
+                return `    .filter(p => (new Function("value","current", "${filter.customFilter}"))(${valueGetter}, ${current}))`
+            }
             if (filter.query) {
                 const value = filter.query
                 if (!value.startsWith("/")) {

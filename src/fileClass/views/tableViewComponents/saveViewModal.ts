@@ -1,9 +1,10 @@
 import MetadataMenu from "main"
-import { ButtonComponent, DropdownComponent, Modal, TextComponent } from "obsidian"
+import { ButtonComponent, Modal, TextComponent } from "obsidian"
 import { cleanActions } from "src/utils/modals"
 import { FileClassTableView } from "../fileClassTableView"
 import { ColumnMover, RowSorter, Filter, Column } from "./tableViewFieldSet"
 import { RowSorterComponent } from "./RowSorterComponent"
+import { FilterComponent } from "./FilterComponent"
 
 export class SavedView {
     sorters: Array<RowSorter> = []
@@ -13,11 +14,12 @@ export class SavedView {
 
     }
 
-    public buildFilters(filters: Record<string, TextComponent | DropdownComponent>) {
-        Object.entries(filters).forEach(([name, query]) => {
+    public buildFilters(filters: Record<string, FilterComponent>) {
+        Object.entries(filters).forEach(([name, filterComponent]) => {
             this.filters.push({
                 name: name,
-                query: query instanceof TextComponent ? query.inputEl.value : query.selectEl.value
+                query: filterComponent.filter.inputEl.value,
+                customFilter: filterComponent.customFilter
             })
         })
     }
