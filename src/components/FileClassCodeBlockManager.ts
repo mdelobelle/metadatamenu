@@ -35,7 +35,7 @@ export class FileClassCodeBlockManager extends Component {
         container.createDiv()
         try {
             const content = parseYaml(source)
-            const fileClassName = content.fileClass
+            const fileClassName = content[this.plugin.settings.fileClassAlias]
             const selectedView = content.view
             this.fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
             if (this.fileClass) {
@@ -57,18 +57,12 @@ export class FileClassCodeBlockManager extends Component {
 
     onload(): void {
         this.build(this.el, this.source)
-        /*
-        const debounced = debounce((itemsPerPage: number, startAtItem: number) => {
-            this.fileClassCodeBlockView.update(this.itemsPerPage, this.startAtItem)
-        }, this.plugin.settings.refreshInterval, true)
-        */
+
         this.plugin.registerEvent(
             this.plugin.app.workspace.on("metadata-menu:indexed", () => {
                 if (!this.fileClassCodeBlockView || !this.fileClass) {
                     this.el.replaceChildren()
                     this.build(this.el, this.source)
-                } else {
-                    //debounced(this.itemsPerPage, this.startAtItem)
                 }
             })
         )

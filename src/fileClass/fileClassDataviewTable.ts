@@ -246,7 +246,6 @@ export class FileClassDataviewTable {
     }
 
     private buildDvJSRendering(): string {
-        //const fields = this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.filter(_f => _f.isRoot()) || []
         const fields = this.viewConfiguration.columns
             .filter(f => !this.viewConfiguration.columns.find(_f => _f.name === f.name)?.hidden)
             .sort((f1, f2) => f1.position < f2.position ? -1 : 1)

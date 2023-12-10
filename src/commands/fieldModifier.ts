@@ -41,7 +41,7 @@ function createDvField(
     fieldName: string,
     attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
 ): void {
-    const field = plugin.fieldIndex.filesFields.get(p.file.path)?.find(field => field.name === fieldName)
+    const field = plugin.fieldIndex.filesFields.get(p.file.path)?.filter(f => f.isRoot()).find(field => field.name === fieldName)
     if (!field?.isRoot()) {
         /*
         field modifiers are only available for root fields
@@ -70,7 +70,6 @@ export function fieldModifier(
     fieldContainer.setAttr("class", `metadata-menu-dv-field-container ${fieldName}`)
 
     /* create fieldModifier depending on fileClass type or preset value*/
-
     if (p[fieldName] === undefined) {
         if (!attrs?.options?.showAddField) {
             const emptyField = dv.el("span", null, attrs);
@@ -82,7 +81,7 @@ export function fieldModifier(
 
                 const file = plugin.app.vault.getAbstractFileByPath(p.file.path)
                 if (file instanceof TFile && file.extension == "md") {
-                    const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
+                    const field = plugin.fieldIndex.filesFields.get(file.path)?.filter(f => f.isRoot()).find(field => field.name === fieldName)
                     if (field) {
                         buildAndOpenModal(plugin, file, fieldName, attrs)
                     } else {
@@ -112,7 +111,7 @@ export function fieldModifier(
     } else {
         const file = plugin.app.vault.getAbstractFileByPath(p.file.path)
         if (file instanceof TFile && file.extension == "md") {
-            const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
+            const field = plugin.fieldIndex.filesFields.get(file.path)?.filter(f => f.isRoot()).find(field => field.name === fieldName)
             if (field) {
                 createDvField(plugin, dv, p, fieldContainer, fieldName, attrs)
             } else {

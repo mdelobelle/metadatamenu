@@ -28,7 +28,7 @@ export class FileClassCodeBlockView {
                 name: "file",
                 hidden: false,
                 position: 0
-            }].concat(this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.map((f, index) => {
+            }].concat(this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.filter(f => f.isRoot()).map((f, index) => {
                 return {
                     name: f.name,
                     hidden: false,

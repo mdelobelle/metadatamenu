@@ -88,7 +88,7 @@ export class CreateSavedViewModal extends Modal {
         saveBtn.setIcon("file-plus-2");
         nameErrorContainer.hide();
         nameInput.onChange(async value => {
-            this.savedView.name = nameInput.getValue()
+            this.savedView.name = value
             nameErrorContainer.hide();
             saveBtn.setDisabled(false)
             saveBtn.setCta()
@@ -97,6 +97,7 @@ export class CreateSavedViewModal extends Modal {
 
         if (this.view.selectedView) {
             nameInput.setValue(this.view.selectedView)
+            this.savedView.name = this.view.selectedView
             saveBtn.setDisabled(false)
             saveBtn.setCta()
         }

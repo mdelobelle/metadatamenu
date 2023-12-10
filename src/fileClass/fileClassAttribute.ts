@@ -19,6 +19,11 @@ class FileClassAttribute {
         public path?: string
     ) { }
 
+    public getLevel(): number {
+        if (!this.path) return 0
+        return this.path.split("____").length
+    }
+
     public getField() {
         let options: Record<string, string> = {};
         if (Array.isArray(this.options)) {
