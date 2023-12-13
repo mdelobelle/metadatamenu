@@ -1,25 +1,10 @@
 import MetadataMenu from "main"
-import { ButtonComponent, DropdownComponent, Modal, TextComponent } from "obsidian"
+import { ButtonComponent, Modal, TextComponent } from "obsidian"
 import { cleanActions } from "src/utils/modals"
-import { FileClassTableView } from "./fileClassTableView"
-import { RowSorter as ViewRowSorter, ColumnMover } from "./tableViewFieldSet"
-
-interface Filter {
-    name: string,
-    query: string
-}
-
-interface RowSorter {
-    name: string,
-    direction: 'asc' | 'desc',
-    priority: number
-}
-
-interface Column {
-    name: string,
-    hidden: boolean,
-    position: number
-}
+import { FileClassTableView } from "../fileClassTableView"
+import { ColumnMover, RowSorter, Filter, Column } from "./tableViewFieldSet"
+import { RowSorterComponent } from "./RowSorterComponent"
+import { FilterComponent } from "./FilterComponent"
 
 export class SavedView {
     sorters: Array<RowSorter> = []
@@ -29,23 +14,25 @@ export class SavedView {
 
     }
 
-    public buildFilters(filters: Record<string, TextComponent | DropdownComponent>) {
-        Object.entries(filters).forEach(([name, query]) => {
+    public buildFilters(filters: Record<string, FilterComponent>) {
+        Object.entries(filters).forEach(([name, filterComponent]) => {
             this.filters.push({
                 name: name,
-                query: query instanceof TextComponent ? query.inputEl.value : query.selectEl.value
+                query: filterComponent.filter.inputEl.value,
+                customFilter: filterComponent.customFilter
             })
         })
     }
 
-    public buildRowSorters(rowSorters: Record<string, ViewRowSorter>) {
+    public buildRowSorters(rowSorters: Record<string, RowSorterComponent>) {
         Object.keys(rowSorters).forEach(name => {
             const sorter = rowSorters[name]
-            if (sorter.direction) {
+            if (sorter.direction || sorter.customOrder?.length) {
                 this.sorters.push({
                     name: sorter.name,
-                    direction: sorter.direction,
-                    priority: sorter.priority || 0
+                    direction: sorter.direction || 'asc',
+                    priority: sorter.priority || 0,
+                    customOrder: sorter.customOrder || []
                 })
             }
         })
@@ -101,35 +88,33 @@ export class CreateSavedViewModal extends Modal {
         const infoContainer = actionsContainer.createDiv({ cls: "info" })
         infoContainer.setText("Alt+Enter to save")
         const saveBtn = new ButtonComponent(actionsContainer);
-        saveBtn.setDisabled(true);
+        saveBtn.setDisabled(true)
         saveBtn.setIcon("file-plus-2");
-
         nameErrorContainer.hide();
         nameInput.onChange(async value => {
-            this.savedView.name = nameInput.getValue()
+            this.savedView.name = value
             nameErrorContainer.hide();
             saveBtn.setDisabled(false)
             saveBtn.setCta()
-            if (this.view.fileClass.options.savedViews?.some(view => view.name === this.savedView.name)) {
-                nameErrorContainer.show();
-                saveBtn.setDisabled(true)
-                saveBtn.removeCta()
-            }
-            else {
-                saveBtn.setDisabled(false);
-                saveBtn.setCta();
-            }
         });
         saveBtn.onClick(async () => { await this.save() })
+
+        if (this.view.selectedView) {
+            nameInput.setValue(this.view.selectedView)
+            this.savedView.name = this.view.selectedView
+            saveBtn.setDisabled(false)
+            saveBtn.setCta()
+        }
     }
 
     private async save() {
         const options = this.view.fileClass.getFileClassOptions()
-        options.savedViews = [...options.savedViews || [], this.savedView]
+        options.savedViews = [...options.savedViews?.filter(v => v.name !== this.savedView.name) || [], this.savedView]
         await this.view.fileClass.updateOptions(options)
         this.view.selectedView = this.savedView.name
         this.view.favoriteBtn.buttonEl.disabled = false
-        this.view.udpate()
+        this.view.update()
+        this.view.saveViewBtn.removeCta()
         this.close()
     }
 }

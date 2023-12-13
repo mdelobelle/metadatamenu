@@ -5,6 +5,7 @@ import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
 import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, multiTypes, rootOnlyTypes, frontmatterOnlyTypes } from "src/types/fieldTypes";
 import { FieldHTMLTagMap, FieldStyle, FieldStyleKey } from "src/types/dataviewTypes";
 import { cleanActions } from "src/utils/modals";
+import { addInsertFieldCommand } from "src/commands/paletteCommands";
 
 export abstract class BaseSettingModal extends Modal {
     public iconName: TextComponent;
@@ -326,6 +327,7 @@ export abstract class BaseSettingModal extends Modal {
             };
             if (this.addCommand) {
                 this.field.command = this.command
+                addInsertFieldCommand(this.plugin, this.command, this.field, this.field.fileClassName)
             } else {
                 delete this.field.command
             }
@@ -334,7 +336,7 @@ export abstract class BaseSettingModal extends Modal {
             } else {
                 delete this.field.display
             }
-            await this.onSave()
+            this.onSave()
             this.close();
         })
     }

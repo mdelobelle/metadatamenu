@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { ItemView, WorkspaceLeaf } from "obsidian";
-import { FileClassManager, FileClassViewType } from "src/components/fileClassManager";
-import { FileClass } from "./fileClass";
+import { FileClassViewManager, FileClassViewType } from "src/components/FileClassViewManager";
+import { FileClass } from "../fileClass";
 import { FileClassFieldsView } from "./fileClassFieldsView";
 import { FileClassSettingsView } from "./fileClassSettingsView";
 import { FileClassTableView } from "./fileClassTableView";
@@ -51,10 +51,12 @@ export class FileClassView extends ItemView {
     constructor(
         public leaf: WorkspaceLeaf,
         private plugin: MetadataMenu,
-        private component: FileClassManager,
+        public tableId: string,
+        public component: FileClassViewManager,
         public name: string,
         public fileClass: FileClass,
-        public onOpenTabDisplay: keyof typeof FileClassViewType = "tableOption"
+        public onOpenTabDisplay: keyof typeof FileClassViewType = "tableOption",
+        public selectedView?: string
     ) {
         super(leaf)
         this.containerEl.addClass("metadata-menu")
@@ -105,7 +107,7 @@ export class FileClassView extends ItemView {
 
     buildTableView(): void {
         const favoriteView = this.fileClass.options.favoriteView || undefined
-        this.tableView = new FileClassTableView(this.plugin, this.component, this.viewContainer, this.fileClass, favoriteView)
+        this.tableView = new FileClassTableView(this.plugin, this.viewContainer, this.tableId, this.fileClass, this.selectedView || favoriteView)
         this.views.push(this.tableView.container);
     }
 
@@ -127,7 +129,7 @@ export class FileClassView extends ItemView {
     }
 
     protected async onOpen(): Promise<void> {
-        this.icon = this.fileClass?.getIcon() || "file-spreadsheet"
-        this.tableView.buildTable();
+        this.icon = this.fileClass?.getIcon()
+        this.tableView.update();
     }
 }

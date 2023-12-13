@@ -199,6 +199,7 @@ export class Note {
         return
     }
 
+
     private frontmatterEnd() {
         return this.frontmatterPosition?.end.line
     }

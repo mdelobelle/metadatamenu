@@ -37,11 +37,20 @@ interface Property {
 
 declare module "obsidian" {
 
+    interface App {
+        viewRegistry: ViewRegistry
+    }
+
     interface Editor {
         editorComponent: {
             table?: any
         }
     }
+
+    interface View {
+        component: any
+    }
+
     interface MarkdownView {
         metadataEditor: {
             rendered: Array<{
@@ -124,10 +133,86 @@ declare module "obsidian" {
         on(name: "metadata-menu:db-ready", callback: () => void, ctx?: any): EventRef;
         on(name: "metadata-menu:indexed", callback: () => void, ctx?: any): EventRef;
         on(name: "metadata-menu:filter-changed", ctx?: any): EventRef;
+        on(name: "layout-ready", callback: () => void, ctx?: any): EventRef;
         on(name: "layout-change", callback: Debouncer<[_file: TFile], void>, ctx?: any): EventRef;
     }
+    interface ViewRegistry extends Events {
+        /**
+         * Mapping of file extensions to view type
+         */
+        typeByExtension: Record<string, string>;
+        /**
+         * Mapping of view type to view constructor
+         */
+        viewByType: Record<string, (leaf: WorkspaceLeaf) => View>;
+
+        /**
+         * Get the view type associated with a file extension
+         * @param extension File extension
+         */
+        getTypeByExtension: (extension: string) => string;
+        /**
+         * Get the view constructor associated with a view type
+         */
+        getViewCreatorByType: (type: string) => (leaf: WorkspaceLeaf) => View;
+        /**
+         * Check whether a view type is registered
+         */
+        isExtensionRegistered: (extension: string) => boolean;
+        /**
+         * Register a view type for a file extension
+         * @param extension File extension
+         * @param type View type
+         * @remark Prefer registering the extension via the Plugin class
+         */
+        registerExtensions: (extension: string[], type: string) => void;
+        /**
+         * Register a view constructor for a view type
+         */
+        registerView: (type: string, viewCreator: (leaf: WorkspaceLeaf) => View) => void;
+        /**
+         * Register a view and its associated file extensions
+         */
+        registerViewWithExtensions: (extensions: string[], type: string, viewCreator: (leaf: WorkspaceLeaf) => View) => void;
+        /**
+         * @internal
+         */
+        trigger: (type: string) => void;
+        /**
+         * Unregister extensions for a view type
+         */
+        unregisterExtensions: (extension: string[]) => void;
+        /**
+         * Unregister a view type
+         */
+        unregisterView: (type: string) => void;
+    }
+
+    interface WorkspaceLeaf {
+        id: string
+    }
+
+    interface WorkspaceRoot {
+        children: Array<{
+            children: Array<WorkspaceLeaf>
+        }>
+    }
+
     interface Menu {
         setSectionSubmenu: (label: string, options: { title: string, icon: string }) => any
+    }
+
+    interface DataviewJSRenderer {
+
+        api: DataviewApi,
+        script: string,
+        container: HTMLElement,
+        origin: string
+    }
+
+    interface Plugin {
+        _children: any[],
+        _events: any[]
     }
 }
 

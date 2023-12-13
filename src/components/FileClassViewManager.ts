@@ -1,8 +1,13 @@
 import MetadataMenu from "main";
 import { Component, WorkspaceLeaf } from "obsidian";
-import { FileClassView, FILECLASS_VIEW_TYPE } from "src/fileClass/fileClassView";
+import { FileClassView, FILECLASS_VIEW_TYPE } from "src/fileClass/views/fileClassView";
 import { FileClass } from "../fileClass/fileClass";
 import { FileClassChoiceModal } from "../fileClass/fileClassChoiceModal";
+
+interface FileClassStoredView {
+    id: string,
+    leafId: string
+}
 
 export enum FileClassViewType {
     "tableOption" = "tableOption",
@@ -10,15 +15,18 @@ export enum FileClassViewType {
     "settingsOption" = "settingsOption"
 }
 
-export class FileClassManager extends Component {
+export class FileClassViewManager extends Component {
     public fileClassView: FileClassView;
     public fileClassViewType: string;
     public name: string;
+    public tableId: string;
 
     constructor(
         public plugin: MetadataMenu,
         public fileClass?: FileClass,
-        public onOpenTabDisplay: keyof typeof FileClassViewType = "tableOption"
+        public onOpenTabDisplay: keyof typeof FileClassViewType = "tableOption",
+        public revealAfterOpen: boolean = true,
+        public selectedView?: string
     ) {
         super();
         if (!this.fileClass) {
@@ -28,13 +36,16 @@ export class FileClassManager extends Component {
         }
     }
 
-    async onload(): Promise<void> {
-
+    public async build(): Promise<void> {
         if (this.fileClass) {
             this.name = this.fileClass.name;
             this.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + this.fileClass.name
             await this.openFileClassView();
             this.registerIndexingDone()
+            this.plugin.indexDB.fileClassViews.editElement(this.fileClassViewType, {
+                id: this.fileClassViewType,
+                leafId: this.fileClassView?.leaf.id
+            })
         } else {
             const tagsAndFileClasses = this.getActiveFileTagsAndFileClasses();
             if (tagsAndFileClasses.length === 1) {
@@ -47,6 +58,11 @@ export class FileClassManager extends Component {
                     this.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + fileClass.name
                     await this.openFileClassView();
                     this.registerIndexingDone()
+                    this.plugin.indexDB.fileClassViews.editElement(FILECLASS_VIEW_TYPE + "__" + this.name,
+                        {
+                            id: FILECLASS_VIEW_TYPE + "__" + this.name,
+                            leafId: this.fileClassView.leaf.id
+                        })
                 } else {
                     this.plugin.removeChild(this)
                     this.unload()
@@ -68,7 +84,14 @@ export class FileClassManager extends Component {
         this.plugin.app.workspace.detachLeavesOfType(this.fileClassViewType);
         // @ts-ignore
         this.plugin.app.viewRegistry.unregisterView(this.fileClassViewType);
+        this.plugin.indexDB.fileClassViews.removeElement(FILECLASS_VIEW_TYPE + "__" + this.name)
+
+        this.plugin._children.filter(child => child.hasOwnProperty("script") && child.containerEl.getAttr("id") === this.tableId)
+            .forEach(child => {
+                this.plugin.removeChild(child)
+            })
     }
+
 
     private registerIndexingDone() {
         this.registerEvent(this.plugin.app.workspace.on("metadata-menu:indexed", () => {
@@ -76,7 +99,7 @@ export class FileClassManager extends Component {
             if (view) {
                 view.updateFieldsView();
                 view.updateSettingsView();
-                view.tableView.buildTable();
+                view.tableView.update();
             }
         }));
     }
@@ -88,20 +111,29 @@ export class FileClassManager extends Component {
 
             this.plugin.registerView(this.fileClassViewType,
                 (leaf: WorkspaceLeaf) => {
-                    const fileClassView = new FileClassView(leaf, this.plugin, this, this.name, fileClass, this.onOpenTabDisplay)
+                    this.tableId = `table-container-${Math.floor(Date.now())}`
+                    const fileClassView = new FileClassView(leaf, this.plugin, this.tableId, this, this.name, fileClass, this.onOpenTabDisplay, this.selectedView)
                     this.fileClassView = fileClassView;
                     return fileClassView
                 }
             )
 
-            //@ts-ignore
-            await this.plugin.app.workspace.getLeaf('tab', 'vertical').setViewState({
-                type: this.fileClassViewType,
-                active: true
-            });
-            this.plugin.app.workspace.revealLeaf(
-                this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType).last()!
-            );
+            //FIXME: conflict with float-search that is overring getLeaf...
+            try {
+                //@ts-ignore
+                await this.plugin.app.workspace.getLeaf('tab', 'vertical').setViewState({
+                    type: this.fileClassViewType,
+                    active: true
+                });
+                if (this.revealAfterOpen) {
+                    this.plugin.app.workspace.revealLeaf(
+                        this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType).last()!
+                    );
+                }
+            } catch (e) {
+                this.unload()
+                console.warn("Fileclass view couldn't load because of a conflict with another plugin")
+            }
         }
     }
 
@@ -115,5 +147,24 @@ export class FileClassManager extends Component {
             tagsAndFileClasses.push(...(index.filesFileClassesNames.get(activeFilePath) || []))
         }
         return [...new Set(tagsAndFileClasses)]
+    }
+
+    static async reloadViews(plugin: MetadataMenu): Promise<void> {
+        const registeredFileClassViews = Object
+            .keys(plugin.app.viewRegistry.viewByType)
+            .filter(key => key.startsWith("FileClassView__"));
+        for (const view of (await plugin.indexDB.fileClassViews.getElement("all") as FileClassStoredView[] || [])) {
+            const fileClassName = /FileClassView__(.*)/.exec(view.id)?.[1]
+            if (fileClassName && !registeredFileClassViews.some(viewName => viewName.includes(fileClassName))) {
+                const leaf = plugin.app.workspace.getLeafById(view.leafId)
+                const fileClass = plugin.fieldIndex.fileClassesName.get(fileClassName)
+                if (fileClass) {
+                    if (leaf && !(leaf.view.component instanceof FileClassViewManager)) plugin.app.workspace.detachLeavesOfType(view.id);
+                    const fileClassManager = new FileClassViewManager(plugin, fileClass, "tableOption", false)
+                    plugin.addChild(fileClassManager)
+                    await fileClassManager.build()
+                }
+            }
+        }
     }
 }

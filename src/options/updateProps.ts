@@ -46,7 +46,7 @@ const updateProps = async (plugin: MetadataMenu, view: View) => {
     fileClasses?.forEach(fileClass => {
         const addFieldButton = new ButtonComponent(fileClassButtonsContainer)
         addFieldButton.setClass("add-field-button")
-        addFieldButton.setIcon(fileClass.getIcon() || "gear")
+        addFieldButton.setIcon(fileClass.getIcon())
         addFieldButton.onClick(() => (new InsertFieldSuggestModal(plugin, file, -1, false, false)).open())
     })
     actionContainer.appendChild(fileClassButtonsContainer)

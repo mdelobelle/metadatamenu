@@ -1,4 +1,4 @@
-import { Notice, TFile, TFolder } from "obsidian"
+import { Notice, TFile, TFolder, debounce } from "obsidian"
 import MetadataMenu from "main"
 import Field from "../fields/Field";
 import { FileClass } from "src/fileClass/fileClass";
@@ -15,7 +15,7 @@ import { V1FileClassMigration } from "src/fileClass/fileClassMigration";
 import { BookmarkItem } from "src/typings/types";
 import { FieldsPayload, postValues } from "src/commands/postValues";
 import { cFileWithGroups, cFileWithTags, FieldIndexBuilder, FieldsPayloadToProcess, IndexedExistingField } from "./FieldIndexBuilder";
-import { FileClassManager } from "src/components/fileClassManager";
+import { FileClassViewManager } from "src/components/FileClassViewManager";
 
 
 export default class FieldIndex extends FieldIndexBuilder {
@@ -325,14 +325,18 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     private getFileClasses(): void {
-        this.indexableFileClasses().forEach(f => FileClass.indexFileClass(this, f))
-        this.openFileClassManagerAfterIndex.forEach(fileClassName => {
-            const fileClass = this.fileClassesName.get(fileClassName)
-            if (fileClass) {
-                this.plugin.addChild(new FileClassManager(this.plugin, fileClass, "settingsOption"))
-            }
-        })
-        this.openFileClassManagerAfterIndex = []
+        this.indexableFileClasses().forEach(f => FileClass.indexFileClass(this, f));
+        (async () => {
+            await Promise.all(this.openFileClassManagerAfterIndex.map(async fileClassName => {
+                const fileClass = this.fileClassesName.get(fileClassName)
+                if (fileClass) {
+                    const fileClassViewManager = new FileClassViewManager(this.plugin, fileClass, "settingsOption")
+                    this.plugin.addChild(fileClassViewManager)
+                    await fileClassViewManager.build()
+                }
+            }))
+            this.openFileClassManagerAfterIndex = []
+        })()
     }
 
     private getLookupQueries(): void {

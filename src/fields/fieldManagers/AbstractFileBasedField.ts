@@ -188,7 +188,7 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
         fieldContainer.appendChild(dv.el('span', p[this.field.name] || "", attrs))
         const searchBtn = fieldContainer.createEl("button")
         setIcon(searchBtn, FieldIcon[FieldType.File])
-        const spacer = fieldContainer.createEl("div", { cls: "spacer" })
+        const spacer = fieldContainer.createEl("div", { cls: "spacer-1" })
 
         const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
         if (file instanceof TFile && file.extension == "md") {

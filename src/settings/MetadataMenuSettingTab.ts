@@ -9,6 +9,7 @@ import FileClassQuery from "src/fileClass/FileClassQuery";
 import FileClassQuerySettingsModal from "./FileClassQuerySettingModal";
 import FileClassQuerySetting from "./FileClassQuerySetting";
 import { MultiDisplayType } from "src/types/fieldTypes";
+import { DEFAULT_SETTINGS } from "./MetadataMenuSettings";
 
 class SettingTextWithButtonComponent extends Setting {
 	private newValues: string[] = []
@@ -164,7 +165,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		)
 
 		/* Scope*/
-		const reloadInfo = globalSettings.createDiv({ cls: "settings-info-warning" })
+		const scopeReloadInfo = globalSettings.createDiv({ cls: "settings-info-warning" })
 		new Setting(globalSettings)
 			.setName('Scope')
 			.setDesc('Index fields in frontmatter only or in the whole note (if you use dataview inline fields). ' +
@@ -176,7 +177,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				cb.onChange(async (value) => {
 					this.plugin.settings.frontmatterOnly = value === "frontmatterOnly" ? true : false
 					await this.plugin.saveSettings();
-					reloadInfo.textContent = "Please reload metadata menu to apply this change"
+					scopeReloadInfo.textContent = "Please reload metadata menu to apply this change"
 				});
 			}).settingEl.addClass("no-border");
 
@@ -242,6 +243,8 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			})
 		enableAutoComplete.settingEl.addClass("no-border");
 		enableAutoComplete.controlEl.addClass("full-width");
+
+
 
 		/* Indexing Status icon*/
 
@@ -456,6 +459,21 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		maxRows.settingEl.addClass("narrow-title");
 		maxRows.controlEl.addClass("full-width");
 		maxRows.settingEl.appendChild(rowPerPageSaveButton.buttonEl)
+
+		/* Choose fileclass at file creation Fileclass selector in modal*/
+
+		const chooseFileClassAtFileCreation = new Setting(classFilesSettings)
+			.setName('Add a fileclass after create')
+			.setDesc('Select a fileclass at file creation to be added to the file')
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.chooseFileClassAtFileCreation);
+				cb.onChange(value => {
+					this.plugin.settings.chooseFileClassAtFileCreation = value;
+					this.plugin.saveSettings();
+				})
+			})
+		chooseFileClassAtFileCreation.settingEl.addClass("no-border");
+		chooseFileClassAtFileCreation.controlEl.addClass("full-width");
 
 		/* Fileclass selector in modal*/
 

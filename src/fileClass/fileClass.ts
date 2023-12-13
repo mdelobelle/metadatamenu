@@ -10,7 +10,7 @@ import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { Note } from "src/note/note";
 import FieldIndex from "src/index/FieldIndex";
 import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
-import { SavedView } from "./tableViewModal";
+import { SavedView } from "./views/tableViewComponents/saveViewModal";
 
 const options: Record<string, { name: string, toValue: (value: any) => any }> = {
     "limit": { name: "limit", toValue: (value: any) => value },
@@ -71,13 +71,14 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
         super(plugin.app)
     }
     getSuggestions(query: string): string[] | Promise<string[]> {
-        return [...this.plugin.fieldIndex.fileClassesName.keys()]
+        const fileClasses = [...this.plugin.fieldIndex.fileClassesName.keys()]
             .filter(fileClassName => !this.plugin.fieldIndex.filesFileClasses
                 .get(this.file.path)?.map(fileClass => fileClass.name)
                 .includes(fileClassName)
             )
             .filter(fileClassName => fileClassName.toLocaleLowerCase().contains(query.toLowerCase()))
             .sort();
+        return fileClasses
     }
 
     renderSuggestion(value: string, el: HTMLElement) {
@@ -157,7 +158,7 @@ class FileClass {
         }
     }
 
-    getIcon(): string | undefined {
+    getIcon(): string {
         const parents = [this.name, ...this.plugin.fieldIndex.fileClassesAncestors.get(this.name) || []]
         let icon: string | undefined;
         parents.some((fileClassName, i) => {
@@ -171,6 +172,7 @@ class FileClass {
                 };
             }
         })
+        //TODO add a setting for default fileclass icon
         return icon || "package"
     }
 

@@ -1,8 +1,8 @@
 import MetadataMenu from "main";
 import { MarkdownView, Notice, TFile } from "obsidian";
 import NoteFieldsComponent from "src/components/NoteFields";
-import Field from "src/fields/Field";
-import { FileClass } from "src/fileClass/fileClass";
+import Field, { FieldCommand } from "src/fields/Field";
+import { AddFileClassToFileModal, FileClass } from "src/fileClass/fileClass";
 import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
 import chooseSectionModal from "src/modals/chooseSectionModal";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
@@ -10,7 +10,7 @@ import FileClassOptionsList from "src/options/FileClassOptionsList";
 import OptionsList from "src/options/OptionsList";
 import { insertMissingFields } from "./insertMissingFields";
 import { FieldManager as F } from "src/fields/FieldManager";
-import { FileClassManager } from "src/components/fileClassManager";
+import { FileClassViewManager } from "src/components/FileClassViewManager";
 import { FieldType } from "src/types/fieldTypes";
 import { updateLookups } from "./updateLookups";
 import { updateFormulas } from "./updateFormulas";
@@ -222,7 +222,44 @@ function addOpenFieldsModalCommand(plugin: MetadataMenu) {
     })
 }
 
-function addInsertFieldCommand(plugin: MetadataMenu): void {
+export function addInsertFieldCommand(plugin: MetadataMenu, command: FieldCommand, field: Field, fileClassName?: string) {
+    plugin.addCommand({
+        id: command.id,
+        name: command.label,
+        icon: command.icon,
+        checkCallback: (checking: boolean): boolean | void => {
+            const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
+            const fR = command.id.match(/insert__(?<fieldId>.*)/)
+            const fileClasses = view?.file ? plugin.fieldIndex.filesFileClasses.get(view?.file.path) : undefined
+            const belongsToView = field !== undefined && !!view?.file &&
+                (
+                    !!fileClasses && fileClasses.some(fileClass => fileClass.name === fileClassName) ||
+                    (!fileClasses && !fileClassName)
+                )
+            if (checking) return belongsToView
+            if (view?.file && field) {
+                new chooseSectionModal(
+                    plugin,
+                    view.file,
+                    (
+                        lineNumber: number,
+                        asList: boolean,
+                        asBlockquote: boolean
+                    ) => F.openFieldModal(
+                        plugin,
+                        view.file!,
+                        field.name,
+                        lineNumber,
+                        asList,
+                        asBlockquote
+                    )
+                ).open();
+            }
+        }
+    })
+}
+
+function addInsertFieldsCommand(plugin: MetadataMenu): void {
     const fields: { field: Field, fileClassName: string | undefined }[] = [];
     plugin.presetFields.forEach(f => { if (f.command && f.isRoot()) fields.push({ field: f, fileClassName: undefined }) });
     [...plugin.fieldIndex.fileClassesFields].forEach(([fileClassName, _fields]) => {
@@ -232,57 +269,45 @@ function addInsertFieldCommand(plugin: MetadataMenu): void {
         if (_field.field.command) {
             const { field, fileClassName } = _field
             const command = field.command!
-            plugin.addCommand({
-                id: command.id,
-                name: command.label,
-                icon: command.icon,
-                checkCallback: (checking: boolean): boolean | void => {
-                    const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
-                    const fR = command.id.match(/insert__(?<fieldId>.*)/)
-                    const fileClasses = view?.file ? plugin.fieldIndex.filesFileClasses.get(view?.file.path) : undefined
-                    const belongsToView = field !== undefined && !!view?.file &&
-                        (
-                            !!fileClasses && fileClasses.some(fileClass => fileClass.name === fileClassName) ||
-                            (!fileClasses && !fileClassName)
-                        )
-                    if (checking) return belongsToView
-                    if (view?.file && field) {
-                        new chooseSectionModal(
-                            plugin,
-                            view.file,
-                            (
-                                lineNumber: number,
-                                asList: boolean,
-                                asBlockquote: boolean
-                            ) => F.openFieldModal(
-                                plugin,
-                                view.file!,
-                                field.name,
-                                lineNumber,
-                                asList,
-                                asBlockquote
-                            )
-                        ).open();
-                    }
-                }
-            })
+            addInsertFieldCommand(plugin, command, field, fileClassName)
         }
     })
 }
 
-function addFileClassTableViewCommand(plugin: MetadataMenu) {
+function addOpenFileclassViewCommand(plugin: MetadataMenu) {
     plugin.addCommand({
         id: "open_fileclass_view",
         name: "Open fileClass view",
-        icon: "file-spreadsheet",
+        icon: "package",
         checkCallback: (checking: boolean) => {
             if (checking) {
                 return true
             }
             const activeFilePath = plugin.app.workspace.getActiveFile()?.path
             const fileClass = activeFilePath ? plugin.fieldIndex.fileClassesPath.get(activeFilePath) : undefined
-            const fileClassComponent = new FileClassManager(plugin, fileClass)
+            const fileClassComponent = new FileClassViewManager(plugin, fileClass)
             plugin.addChild(fileClassComponent);
+            fileClassComponent.build()
+        }
+    })
+}
+
+
+function addFileclassToFileCommand(plugin: MetadataMenu) {
+    plugin.addCommand({
+        id: "add_fileclass_to_file",
+        name: "Add fileClass to file",
+        icon: "package-plus",
+        checkCallback: (checking: boolean) => {
+            const activeFile = plugin.app.workspace.getActiveFile()
+            if (checking) {
+                return !!activeFile
+            }
+            if (activeFile) {
+                const modal = new AddFileClassToFileModal(plugin, activeFile)
+                modal.open()
+
+            }
         }
     })
 }
@@ -373,10 +398,11 @@ export function addCommands(plugin: MetadataMenu) {
     addManageFieldAtCursorCommand(plugin);
     insertMissingFieldsCommand(plugin);
     addOpenFieldsModalCommand(plugin)
-    addInsertFieldCommand(plugin)
+    addInsertFieldsCommand(plugin)
     addUpdateFileLookupsCommand(plugin);
     addUpdateFileFormulasCommand(plugin)
-    addFileClassTableViewCommand(plugin)
+    addOpenFileclassViewCommand(plugin)
+    addFileclassToFileCommand(plugin)
     addUpdateLookupsAndFormulas(plugin)
     forceIndexFieldsValues(plugin)
 }

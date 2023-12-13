@@ -96,11 +96,7 @@ export class LineNode {
                     }
                     for (const field of this.line.note.fields) {
                         if (yamlAttr === field.name) {
-                            //FIXME: pas bon: choppe le premier field avec le bon nom
-                            // il faut:
-                            // chopper l'id du field parent et le rajouter au filtre
                             let indexedId = field.id
-
                             if (this.line.parentLine) {
                                 const parentNode = this.line.parentLine.nodes[0]
                                 const parentField = parentNode.field
@@ -153,7 +149,7 @@ export class LineNode {
                                     break;
                                 }
 
-                            } else {
+                            } else if (field.id === indexedId) {
                                 this.field = field
                                 this.indexedPath = this.field.getIndexedPath(this)
                                 this.value = frontmatter[field.name]

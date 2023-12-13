@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { Menu, Notice, TFile } from "obsidian";
 import { insertMissingFields } from "src/commands/insertMissingFields";
-import { FileClassManager } from "src/components/fileClassManager";
+import { FileClassViewManager } from "src/components/FileClassViewManager";
 import { FileClass } from "src/fileClass/fileClass";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
 import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
@@ -40,7 +40,7 @@ export default class FileClassOptionsList {
             this.plugin.app.fileManager.processFrontMatter(this.file, fm => fm.mapWithTag = true)
         }
         const openFileClassTableViewAction = () => {
-            const fileClassComponent = new FileClassManager(this.plugin, fileClass)
+            const fileClassComponent = new FileClassViewManager(this.plugin, fileClass)
             this.plugin.addChild(fileClassComponent);
         }
         if (isMenu(this.location)) { this.location.addSeparator(); };

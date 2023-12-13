@@ -1,5 +1,5 @@
 import './env'
-import { debounce, MarkdownView, Notice, Plugin } from 'obsidian';
+import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
 import { addCommands } from 'src/commands/paletteCommands';
 import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
@@ -15,6 +15,10 @@ import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import { updatePropertiesSection } from 'src/options/updateProps';
 import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton';
+import { FileClassViewManager } from 'src/components/FileClassViewManager';
+import { IndexDatabase } from 'src/db/DatabaseManager';
+import { FileClassCodeBlockManager } from 'src/components/FileClassCodeBlockManager';
+import { AddFileClassToFileModal } from 'src/fileClass/fileClass';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -28,6 +32,8 @@ export default class MetadataMenu extends Plugin {
 	public indexStatus: IndexStatus;
 	public indexName: string;
 	public launched: boolean = false;
+	public indexDB: IndexDatabase;
+	public codeBlockManagers: FileClassCodeBlockManager[] = []
 
 	async onload(): Promise<void> {
 		console.log('+------ Metadata Menu loaded --------+');
@@ -75,13 +81,21 @@ export default class MetadataMenu extends Plugin {
 
 		this.addSettingTab(new MetadataMenuSettingTab(this));
 
-		//registering Metadata Menu suggestor for live preview
 		this.api = new MetadataMenuApi(this).make();
+
+		this.registerEvent(
+			this.app.vault.on("create", (file) => {
+				if (!this.fieldIndex.fileClassesName.size) return
+				if (file instanceof TFile && this.settings.chooseFileClassAtFileCreation) {
+					const modal = new AddFileClassToFileModal(this, file)
+					modal.open()
+				}
+			})
+		)
 
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', (leaf) => {
 				if (leaf) this.indexStatus.checkForUpdate(leaf.view)
-				addCommands(this)
 			})
 		)
 
@@ -91,26 +105,37 @@ export default class MetadataMenu extends Plugin {
 				const currentView = this.app.workspace.getActiveViewOfType(MarkdownView)
 				if (currentView) this.indexStatus.checkForUpdate(currentView)
 				updatePropertiesSection(this)
-				addCommands(this)
+				FileClassViewManager.reloadViews(this)
+				this.codeBlockManagers.forEach(manager => {
+					if (!manager.isLoaded) {
+						manager.build()
+					}
+				})
 			})
 		)
 
 		this.registerEvent(
 			this.app.workspace.on("file-open", (file) => {
 				updatePropertiesSection(this)
-				addCommands(this)
 			})
 		)
 
+		this.indexDB = this.addChild(new IndexDatabase(this))
 		//buildind index
 		await this.fieldIndex.fullIndex()
 		this.extraButton = this.addChild(new ExtraButton(this))
 		if (this.settings.enableFileExplorer) this.addChild(new FileClassFolderButton(this))
 		this.registerEditorSuggest(new ValueSuggest(this));
 		this.launched = true
-
 		//building palette commands
 		addCommands(this)
+
+		this.registerMarkdownCodeBlockProcessor("mdm", async (source, el, ctx) => {
+			const fileClassCodeBlockManager = new FileClassCodeBlockManager(this, el, source, ctx)
+			this.codeBlockManagers.push(fileClassCodeBlockManager)
+			ctx.addChild(fileClassCodeBlockManager)
+		});
+		this.app.workspace.trigger("layout-change")
 	};
 
 	/*

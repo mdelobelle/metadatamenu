@@ -41,7 +41,15 @@
     display: flex;
 }
 
-.metadata-menu.fileclass-view{
+.edit-block-button.fileclass-codeblock-icon{
+    right: calc(var(--size-2-2) + 2em);
+}
+
+.first-col-header-container{
+    display: flex;
+}
+
+.metadata-menu.fileclass-view, .metadata-menu.fileclass-codeblock-view{
     
     .fv-menu{
         display: flex;

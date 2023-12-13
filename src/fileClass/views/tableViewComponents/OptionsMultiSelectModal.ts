@@ -1,10 +1,10 @@
-import Field from "../fields/Field";
+import Field from "../../../fields/Field";
 import { FieldManager as FM, FieldManager, FieldType } from "src/types/fieldTypes";
 import { TextComponent, ButtonComponent, setIcon, TFile, SuggestModal } from "obsidian";
 import MetadataMenu from "main";
-import { FieldSet } from "src/fileClass/tableViewFieldSet";
+import { FieldSet } from "src/fileClass/views/tableViewComponents/tableViewFieldSet";
 import { getLink } from "src/utils/parser";
-import FileField from "../fields/fieldManagers/FileField";
+import FileField from "../../../fields/fieldManagers/FileField";
 import { cleanActions } from "src/utils/modals";
 import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
 import MultiFileField from "src/fields/fieldManagers/MultiFileField";
@@ -48,7 +48,7 @@ export class OptionsMultiSelectModal extends SuggestModal<string>{
         const footerActionsContainer = this.containerEl.createDiv({ cls: "footer-actions" })
         this.buildFooterActions(footerActionsContainer)
         const id = this.field === "file" ? "file" : this.field.name
-        this.input = this.parentFieldSet.filters[id] as TextComponent
+        this.input = this.parentFieldSet.filters[id].filter
         const initialOptions = this.input.getValue()
         if (initialOptions) {
             if (Array.isArray(initialOptions)) {
@@ -142,11 +142,12 @@ export class OptionsMultiSelectModal extends SuggestModal<string>{
         cancelButton.setTooltip("Cancel")
         //clear value button
         const clearButton = new ButtonComponent(footerActionsContainer)
-        clearButton.setIcon("eraser")
-        clearButton.setTooltip("Clear field's value(s)")
+        clearButton.setIcon("filter-x")
+        clearButton.setTooltip("Clear filtered value(s)")
         clearButton.onClick(async () => {
             this.input.setValue("")
-            this.parentFieldSet.tableView.udpate()
+            this.parentFieldSet.tableView.update()
+            this.parentFieldSet.tableView.saveViewBtn.setCta()
             this.close();
         })
         clearButton.buttonEl.addClass("danger")
@@ -167,7 +168,8 @@ export class OptionsMultiSelectModal extends SuggestModal<string>{
     async replaceValues() {
         const options = this.selectedOptions;
         this.input.inputEl.value = options.join(", ");
-        this.parentFieldSet.tableView.udpate()
+        this.parentFieldSet.tableView.update()
+        this.parentFieldSet.tableView.saveViewBtn.setCta()
         this.close();
     }
 

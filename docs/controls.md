@@ -4,6 +4,7 @@ With Metadata Menu, you have several options to control a field:
 - [Autocompletion](#control-field-with-autocompletion)
 - [Context Menu and command palette](#context-menu-and-command-palette)
 - Metadata menu button opening the [note's fields modal](#open-fields-modal)
+- [Codeblocks](#codeblocks)
 - [Api](api.md)
 
 ## Control field with autocompletion
@@ -126,3 +127,16 @@ From there you can
 The icon of the button can be customized in the fileClass with the higher priority (see [icon](/fileclasses/#iconfield) )
 
 The visibility of the button can be managed in the plugin [settings](settings.md#show-extra-button-to-access-metadata-menu-form)
+
+## Codeblocks
+
+You can display a [fileclass table view](fileclasses.md#table-view) anywhere with a codeblock:
+
+~~~
+```mdm
+fileClass: <your file class> mandatory
+view: <your saved view> optional
+files per page:  <a number> optional
+start: <a number> optional
+``` 
+~~~~

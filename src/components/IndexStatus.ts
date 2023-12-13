@@ -53,7 +53,6 @@ export default class IndexStatus extends Component {
     };
 
     public setState(state: keyof typeof Statuses) {
-        //TODO handle several index state (for fields, values and queries) with a priority
         this.state = state;
         this.statusBtn.setTooltip(statusTooltip[state], { placement: "top" })
         for (const status in Statuses) {
@@ -82,6 +81,7 @@ export default class IndexStatus extends Component {
                             updatesToApply = true
                         } else if (field.type === FieldType.Formula) {
                             await updateFormulas(this.plugin, { file: this.file, fieldName: field.name })
+                            updatesToApply = true
                         }
                     }
                 })
