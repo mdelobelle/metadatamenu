@@ -104,6 +104,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 	private newFileClassesPath: string | null;
 	private newFileClassAlias: string
 	private newTableViewMaxRecords: number
+	private newIcon: string
 
 	constructor(plugin: MetadataMenu) {
 		super(plugin.app, plugin);
@@ -111,6 +112,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		this.newFileClassAlias = this.plugin.settings.fileClassAlias
 		this.newFileClassesPath = this.plugin.settings.classFilesPath
 		this.newTableViewMaxRecords = this.plugin.settings.tableViewMaxRecords
+		this.newIcon = this.plugin.settings.fileClassIcon
 		this.containerEl.addClass("metadata-menu")
 		this.containerEl.addClass("settings")
 	};
@@ -434,7 +436,37 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		global.settingEl.addClass("narrow-title");
 		global.controlEl.addClass("full-width");
 
+		/* Default Icon */
+		const defaultIconSave = new ButtonComponent(classFilesSettings)
+		defaultIconSave.buttonEl.addClass("save")
+		defaultIconSave.setIcon("save")
+		defaultIconSave.onClick(async () => {
+			this.plugin.settings.fileClassIcon = this.newIcon
+			await this.plugin.saveSettings()
+			defaultIconSave.removeCta()
+		})
+		const iconManagerContainer = classFilesSettings.createDiv({ cls: "icon" })
+		const defaultIconSetting = new Setting(classFilesSettings)
+			.setName("Default Icon")
+			.setDesc("Choose a default icon for fileclasses from lucide.dev library")
+			.addText(cb => {
+				cb.setValue(this.plugin.settings.fileClassIcon || DEFAULT_SETTINGS.fileClassIcon)
+					.onChange((value) => {
+						this.newIcon = value
+						setIcon(iconManagerContainer, value);
+						defaultIconSave.setCta()
+					})
+			})
+		setIcon(iconManagerContainer, this.plugin.settings.fileClassIcon || DEFAULT_SETTINGS.fileClassIcon);
+		defaultIconSetting.settingEl.appendChild(iconManagerContainer)
+		defaultIconSetting.settingEl.appendChild(defaultIconSave.buttonEl)
 
+
+		defaultIconSetting.settingEl.addClass("no-border");
+		defaultIconSetting.settingEl.addClass("narrow-title");
+		defaultIconSetting.controlEl.addClass("full-width");
+
+		/* Rows per pages */
 		const rowPerPageSaveButton = new ButtonComponent(classFilesSettings)
 		rowPerPageSaveButton.buttonEl.addClass("save")
 		rowPerPageSaveButton.setIcon("save")

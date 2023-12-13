@@ -52,6 +52,9 @@
     }
 
     .setting-item{
+        .icon{
+            margin-left: 1em
+        }
         .setting-item-info{
             &.with-button{
                 display: grid;

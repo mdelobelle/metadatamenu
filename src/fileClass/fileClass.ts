@@ -173,7 +173,7 @@ class FileClass {
             }
         })
         //TODO add a setting for default fileclass icon
-        return icon || "package"
+        return icon || this.plugin.settings.fileClassIcon
     }
 
     public async missingFieldsForFileClass(file: TFile): Promise<boolean> {

@@ -127,12 +127,7 @@ export class OptionsPriorityModal extends Modal {
         this.confirmButton = new ButtonComponent(footerActionsContainer)
         this.confirmButton.setIcon("checkmark")
         this.confirmButton.onClick(() => {
-            if (!compareArrays(this.initialOrder, this.orderedOptions)) {
-                if (compareArrays(this.orderedOptions, this.getOptions())) this.orderedOptions = []
-                this.updateCustomOrder(this.orderedOptions)
-            } else if (compareArrays(this.initialOrder, this.getOptions())) {
-                this.updateCustomOrder([])
-            }
+            this.updateCustomOrder(this.orderedOptions)
             this.close()
         })
     }

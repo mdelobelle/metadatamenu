@@ -47,6 +47,7 @@ export interface MetadataMenuSettings {
 	frontmatterOnly: boolean;
 	showFileClassSelectInModal: boolean;
 	chooseFileClassAtFileCreation: boolean;
+	fileClassIcon: string;
 }
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
@@ -78,7 +79,8 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	fileIndexingExcludedRegex: [],
 	frontmatterOnly: false,
 	showFileClassSelectInModal: true,
-	chooseFileClassAtFileCreation: false
+	chooseFileClassAtFileCreation: false,
+	fileClassIcon: "package"
 };
 
 export const incrementVersion = (plugin: MetadataMenu) => {
