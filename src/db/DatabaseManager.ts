@@ -38,7 +38,7 @@ export class IndexDatabase extends Component {
             this.plugin.app.vault.adapter.basePath ||
             this.plugin.app.vault.getName()}`
         if (!this.name) return
-        const request = indexedDB.open(this.name, 1);
+        const request = indexedDB.open(this.name, 2);
         request.onerror = (err) => {
             console.error(`IndexedDB error: ${request.error}`, err);
         }
