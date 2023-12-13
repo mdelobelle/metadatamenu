@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { Component, MarkdownPostProcessorContext, parseYaml } from "obsidian";
+import { Component, MarkdownPostProcessorContext, MarkdownRenderChild, parseYaml } from "obsidian";
 import { FileClass } from "src/fileClass/fileClass";
 import { FileClassCodeBlockView } from "src/fileClass/views/fileClassCodeBlockView";
 import { DataviewJSRenderer } from "obsidian";
@@ -8,29 +8,33 @@ export enum FileClassViewType {
     "table" = "table"
 }
 
-export class FileClassCodeBlockManager extends Component {
+export class FileClassCodeBlockManager extends MarkdownRenderChild {
     public fileClassCodeBlockView: FileClassCodeBlockView;
     public itemsPerPage: number
     public startAtItem: number
     public fileClass: FileClass | undefined
     public tableId: string
+    public isLoaded: boolean = false
 
     constructor(
         public plugin: MetadataMenu,
-        public el: HTMLElement,
+        public containerEl: HTMLElement,
         public source: string,
         public ctx: MarkdownPostProcessorContext
     ) {
-        super();
+        super(containerEl);
     }
 
-    public build(el: HTMLElement, source: string) {
+    public build() {
+        const el = this.containerEl
+        const source = this.source
+        el.replaceChildren()
         el.addClass("metadata-menu")
         el.addClass("fileclass-codeblock-view")
         const container = el.createDiv({ cls: "fv-table" })
         const header = container.createDiv({ cls: "options" })
         const paginationContainer = header.createDiv({ cls: "pagination" });
-        this.tableId = `table-container-${Math.floor(Date.now() / 1000)}`
+        this.tableId = `table-container-${Math.floor(Date.now())}`
         const tableContainer = container.createDiv({ attr: { id: this.tableId } })
         container.createDiv()
         try {
@@ -47,6 +51,7 @@ export class FileClassCodeBlockManager extends Component {
                     this.fileClassCodeBlockView.fileClassDataviewTable.buidFileClassViewBtn()
                 })
                 this.fileClassCodeBlockView.update(this.itemsPerPage, this.startAtItem)
+                this.isLoaded = true
             } else {
                 el.setText(`${fileClassName} isn't a proper fileclass`)
             }
@@ -56,22 +61,13 @@ export class FileClassCodeBlockManager extends Component {
     }
 
     onload(): void {
-        this.build(this.el, this.source)
-
-        this.plugin.registerEvent(
-            this.plugin.app.workspace.on("metadata-menu:indexed", () => {
-                if (!this.fileClassCodeBlockView || !this.fileClass) {
-                    this.el.replaceChildren()
-                    this.build(this.el, this.source)
-                }
-            })
-        )
+        this.build()
     }
 
-
     onunload(): void {
-        this.el.replaceChildren()
-        this.plugin._children.filter(child => child.hasOwnProperty("containerEl") && child.containerEl.getAttr("id") === this.tableId)
-            .forEach(child => this.plugin.removeChild(child))
+        this.plugin._children.filter(child => child.hasOwnProperty("script") && child.containerEl.getAttr("id") === this.tableId)
+            .forEach(child => {
+                this.plugin.removeChild(child)
+            })
     }
 }

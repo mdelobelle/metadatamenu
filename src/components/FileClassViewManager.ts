@@ -85,9 +85,13 @@ export class FileClassViewManager extends Component {
         // @ts-ignore
         this.plugin.app.viewRegistry.unregisterView(this.fileClassViewType);
         this.plugin.indexDB.fileClassViews.removeElement(FILECLASS_VIEW_TYPE + "__" + this.name)
-        this.plugin._children.filter(child => child.hasOwnProperty("containerEl") && child.containerEl.getAttr("id") === this.tableId)
-            .forEach(child => this.plugin.removeChild(child))
+
+        this.plugin._children.filter(child => child.hasOwnProperty("script") && child.containerEl.getAttr("id") === this.tableId)
+            .forEach(child => {
+                this.plugin.removeChild(child)
+            })
     }
+
 
     private registerIndexingDone() {
         this.registerEvent(this.plugin.app.workspace.on("metadata-menu:indexed", () => {
@@ -107,7 +111,7 @@ export class FileClassViewManager extends Component {
 
             this.plugin.registerView(this.fileClassViewType,
                 (leaf: WorkspaceLeaf) => {
-                    this.tableId = `table-container-${Math.floor(Date.now() / 1000)}`
+                    this.tableId = `table-container-${Math.floor(Date.now())}`
                     const fileClassView = new FileClassView(leaf, this.plugin, this.tableId, this, this.name, fileClass, this.onOpenTabDisplay, this.selectedView)
                     this.fileClassView = fileClassView;
                     return fileClassView
@@ -128,7 +132,6 @@ export class FileClassViewManager extends Component {
                 }
             } catch (e) {
                 this.unload()
-                console.log(e)
                 console.warn("Fileclass view couldn't load because of a conflict with another plugin")
             }
         }

@@ -301,6 +301,8 @@ All columns' field except for the first column (file link) comes with a dropdown
   - File, Multi-File: the list of files matching the predefined query
   - Lookups: the list of files currently returned by lookup queries
 
+You can also define a custom filtering function in javascript returning a boolean
+
 ### Sorters
 
 - "saved view" dropdown select to select a saved view
@@ -309,3 +311,5 @@ All columns' field except for the first column (file link) comes with a dropdown
 - "save" button to save the current view
 - "trash" button to delete the current view from the saved views
 - "collapse filter" button to access more options: sort the table, filter the results, re-arrange columns orders, hide/show columns...
+
+You can define a custom sort by moving up/down the preset values of the field (for File, MultiFile, Select, MultiSelect, Lookup)

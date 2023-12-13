@@ -71,13 +71,14 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
         super(plugin.app)
     }
     getSuggestions(query: string): string[] | Promise<string[]> {
-        return [...this.plugin.fieldIndex.fileClassesName.keys()]
+        const fileClasses = [...this.plugin.fieldIndex.fileClassesName.keys()]
             .filter(fileClassName => !this.plugin.fieldIndex.filesFileClasses
                 .get(this.file.path)?.map(fileClass => fileClass.name)
                 .includes(fileClassName)
             )
             .filter(fileClassName => fileClassName.toLocaleLowerCase().contains(query.toLowerCase()))
             .sort();
+        return fileClasses
     }
 
     renderSuggestion(value: string, el: HTMLElement) {

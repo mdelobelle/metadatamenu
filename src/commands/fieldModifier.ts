@@ -3,6 +3,8 @@ import { FieldManager } from "src/types/fieldTypes";
 import { FieldManager as F } from "src/fields/FieldManager";
 import chooseSectionModal from "src/modals/chooseSectionModal";
 import { setIcon, TFile } from "obsidian";
+import { insertMissingFields } from "./insertMissingFields";
+import { postValues } from "./postValues";
 
 function buildAndOpenModal(
     plugin: MetadataMenu,
@@ -76,29 +78,17 @@ export function fieldModifier(
             fieldContainer.appendChild(emptyField);
         } else {
             const addFieldBtn = dv.el("button", attrs);
-            setIcon(addFieldBtn, "plus-with-circle")
+            setIcon(addFieldBtn, "log-in")
             addFieldBtn.onclick = async () => {
-
                 const file = plugin.app.vault.getAbstractFileByPath(p.file.path)
                 if (file instanceof TFile && file.extension == "md") {
                     const field = plugin.fieldIndex.filesFields.get(file.path)?.filter(f => f.isRoot()).find(field => field.name === fieldName)
                     if (field) {
                         buildAndOpenModal(plugin, file, fieldName, attrs)
                     } else {
-                        new chooseSectionModal(
-                            plugin,
-                            file,
-                            (
-                                lineNumber: number,
-                                asList: boolean,
-                                asBlockquote: boolean
-                            ) => F.openFieldModal(
-                                plugin,
-                                file,
-                                undefined,
-                                lineNumber,
-                                asList,
-                                asBlockquote
+                        new chooseSectionModal(plugin, file,
+                            (lineNumber: number, asList: boolean, asBlockquote: boolean) => F.openFieldModal(
+                                plugin, file, undefined, lineNumber, asList, asBlockquote
                             ),
                         ).open();
                     }
@@ -107,6 +97,18 @@ export function fieldModifier(
                 }
             }
             fieldContainer.appendChild(addFieldBtn);
+            const addInFrontmatterFieldBtn = dv.el("button", attrs);
+            setIcon(addInFrontmatterFieldBtn, "align-vertical-space-around")
+            addInFrontmatterFieldBtn.onclick = async () => {
+                const file = plugin.app.vault.getAbstractFileByPath(p.file.path)
+                if (file instanceof TFile && file.extension == "md") {
+                    const field = plugin.fieldIndex.filesFields.get(file.path)?.filter(f => f.isRoot()).find(field => field.name === fieldName)
+                    if (field) F.openFieldModal(plugin, file, field.name, -1, false, false)
+                } else {
+                    throw Error("path doesn't correspond to a proper file");
+                }
+            }
+            fieldContainer.appendChild(addInFrontmatterFieldBtn);
         }
     } else {
         const file = plugin.app.vault.getAbstractFileByPath(p.file.path)

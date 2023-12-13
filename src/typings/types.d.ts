@@ -211,7 +211,8 @@ declare module "obsidian" {
     }
 
     interface Plugin {
-        _children: any[]
+        _children: any[],
+        _events: any[]
     }
 }
 

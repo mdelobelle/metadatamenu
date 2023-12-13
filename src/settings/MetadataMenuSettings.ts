@@ -46,7 +46,7 @@ export interface MetadataMenuSettings {
 	fileIndexingExcludedRegex: Array<string>;
 	frontmatterOnly: boolean;
 	showFileClassSelectInModal: boolean;
-	refreshInterval: number;
+	chooseFileClassAtFileCreation: boolean;
 }
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
@@ -78,7 +78,7 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	fileIndexingExcludedRegex: [],
 	frontmatterOnly: false,
 	showFileClassSelectInModal: true,
-	refreshInterval: 0
+	chooseFileClassAtFileCreation: false
 };
 
 export const incrementVersion = (plugin: MetadataMenu) => {

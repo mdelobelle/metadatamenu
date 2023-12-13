@@ -79,7 +79,6 @@ export class FileClassDataviewTable {
                 const activeRange = this.ranges.find(r => r.hasClass("active"))
                 if (activeRange && this.ranges.indexOf(activeRange) < 2) toggleRanges(rangesCount)
             } catch (e) {
-                console.log(e)
                 console.error("unable to build the list of files")
             }
         }
@@ -162,7 +161,7 @@ export class FileClassDataviewTable {
             const valueGetter = filter.name === "file" ? `p.file.name` : `p["${filter.name}"]`
             const current = this.ctx ? `dv.page("${this.ctx.sourcePath}")` : "{}"
             if (filter.customFilter) {
-                return `    .filter(p => (new Function("value","current", "${filter.customFilter}"))(${valueGetter}, ${current}))`
+                return `    .filter(p => (new Function("value","current", "dv", "${filter.customFilter}"))(${valueGetter}, ${current}, dv))`
             }
             if (filter.query) {
                 const value = filter.query
@@ -269,12 +268,12 @@ export class FileClassDataviewTable {
             .sort((f1, f2) => f1.position < f2.position ? -1 : 1)
         let dvJS = "const {fieldModifier: f} = MetadataMenu.api;\n" +
             "const basename = (item) => {\n" +
-            "    if(item.hasOwnProperty('path')){\n" +
+            "    if(item && item.hasOwnProperty('path')){\n" +
             "        return /([^\/]*).md/.exec(item.path)?.[1] || item.path\n" +
             "    }else if(typeof item === 'string'){\n" +
             "        return item\n" +
             "    }else{\n" +
-            "        return item.toString()\n" +
+            "        return item?.toString() || '' \n" +
             "    }\n" +
             "}\n" +
             "const rank = (item, options, dir) => {\n" +

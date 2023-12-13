@@ -104,7 +104,6 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 	private newFileClassesPath: string | null;
 	private newFileClassAlias: string
 	private newTableViewMaxRecords: number
-	private refreshInterval: number
 
 	constructor(plugin: MetadataMenu) {
 		super(plugin.app, plugin);
@@ -300,36 +299,6 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				});
 			}).settingEl.addClass("no-border");
 
-		/* Refresh Interval */
-
-		const refreshReloadInfo = globalSettings.createDiv({ cls: "settings-info-warning" })
-
-		const refreshSaveButton = new ButtonComponent(globalSettings)
-		refreshSaveButton.buttonEl.addClass("save")
-		refreshSaveButton.setIcon("save")
-		refreshSaveButton.onClick(async () => {
-			this.plugin.settings.refreshInterval = this.refreshInterval
-			await this.plugin.saveSettings()
-			refreshSaveButton.removeCta()
-			refreshReloadInfo.textContent = "Please relaunch obsidian to apply this change"
-		})
-
-		const refreshInterval = new Setting(globalSettings)
-			.setName('Refresh Interval')
-			.setDesc('How long to wait (in milliseconds) for files to stop changing before indexing fields')
-			.addText((text) => {
-				text
-					.setValue(`${this.plugin.settings.refreshInterval}`)
-					.onChange(async (value) => {
-						this.refreshInterval = parseInt(value) || DEFAULT_SETTINGS.refreshInterval;
-						refreshSaveButton.setCta()
-					});
-			})
-		refreshInterval.settingEl.addClass("no-border");
-		refreshInterval.settingEl.addClass("narrow-title");
-		refreshInterval.controlEl.addClass("full-width");
-		refreshInterval.settingEl.appendChild(refreshSaveButton.buttonEl)
-
 		/* 
 		-----------------------------------------
 		Managing predefined options for properties 
@@ -490,6 +459,21 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		maxRows.settingEl.addClass("narrow-title");
 		maxRows.controlEl.addClass("full-width");
 		maxRows.settingEl.appendChild(rowPerPageSaveButton.buttonEl)
+
+		/* Choose fileclass at file creation Fileclass selector in modal*/
+
+		const chooseFileClassAtFileCreation = new Setting(classFilesSettings)
+			.setName('Add a fileclass after create')
+			.setDesc('Select a fileclass at file creation to be added to the file')
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.chooseFileClassAtFileCreation);
+				cb.onChange(value => {
+					this.plugin.settings.chooseFileClassAtFileCreation = value;
+					this.plugin.saveSettings();
+				})
+			})
+		chooseFileClassAtFileCreation.settingEl.addClass("no-border");
+		chooseFileClassAtFileCreation.controlEl.addClass("full-width");
 
 		/* Fileclass selector in modal*/
 

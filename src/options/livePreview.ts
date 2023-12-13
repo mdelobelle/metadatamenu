@@ -38,7 +38,9 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
                     if (fileClass) {
                         setIcon(metadataMenuBtn, icon || settings.buttonIcon)
                         metadataMenuBtn.onclick = (event) => {
-                            plugin.addChild(new FileClassViewManager(plugin, fileClass))
+                            const fileClassViewManager = new FileClassViewManager(plugin, fileClass)
+                            plugin.addChild(fileClassViewManager)
+                            fileClassViewManager.build()
                             event.stopPropagation()
                         }
                     }

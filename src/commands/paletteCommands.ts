@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { MarkdownView, Notice, TFile } from "obsidian";
 import NoteFieldsComponent from "src/components/NoteFields";
 import Field, { FieldCommand } from "src/fields/Field";
-import { FileClass } from "src/fileClass/fileClass";
+import { AddFileClassToFileModal, FileClass } from "src/fileClass/fileClass";
 import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
 import chooseSectionModal from "src/modals/chooseSectionModal";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
@@ -274,11 +274,11 @@ function addInsertFieldsCommand(plugin: MetadataMenu): void {
     })
 }
 
-function addFileClassTableViewCommand(plugin: MetadataMenu) {
+function addOpenFileclassViewCommand(plugin: MetadataMenu) {
     plugin.addCommand({
         id: "open_fileclass_view",
         name: "Open fileClass view",
-        icon: "file-spreadsheet",
+        icon: "package",
         checkCallback: (checking: boolean) => {
             if (checking) {
                 return true
@@ -288,6 +288,26 @@ function addFileClassTableViewCommand(plugin: MetadataMenu) {
             const fileClassComponent = new FileClassViewManager(plugin, fileClass)
             plugin.addChild(fileClassComponent);
             fileClassComponent.build()
+        }
+    })
+}
+
+
+function addFileclassToFileCommand(plugin: MetadataMenu) {
+    plugin.addCommand({
+        id: "add_fileclass_to_file",
+        name: "Add fileClass to file",
+        icon: "package-plus",
+        checkCallback: (checking: boolean) => {
+            const activeFile = plugin.app.workspace.getActiveFile()
+            if (checking) {
+                return !!activeFile
+            }
+            if (activeFile) {
+                const modal = new AddFileClassToFileModal(plugin, activeFile)
+                modal.open()
+
+            }
         }
     })
 }
@@ -381,7 +401,8 @@ export function addCommands(plugin: MetadataMenu) {
     addInsertFieldsCommand(plugin)
     addUpdateFileLookupsCommand(plugin);
     addUpdateFileFormulasCommand(plugin)
-    addFileClassTableViewCommand(plugin)
+    addOpenFileclassViewCommand(plugin)
+    addFileclassToFileCommand(plugin)
     addUpdateLookupsAndFormulas(plugin)
     forceIndexFieldsValues(plugin)
 }

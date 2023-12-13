@@ -17,7 +17,8 @@ if toggled `off` : Metadata Menu will display a "Field Options" item in the cont
 ### `Globally ignored fields`
 the fields listed here (comma separated) won't be available in context menus
 
-//TODO doc for ignored extensions, patterns, folders....
+### `Exclusions`
+You can exclude files based on their path, their extension or their name based on a regex pattern
 
 ### `First day of week`
 For `Date` fields' datepicker, select the day the week should start with (default `Monday`)
@@ -54,6 +55,12 @@ You can define a fileClass that will be applicable to all of your notes, even if
 This is usefull if you are more confortable with setting your preset fields in a note rather than in the plugin settings.
 
 If global fileClass is null or unproperly configured, the preset fields defined in the plugin settings will have the priority.
+
+### Result per page
+Default number of files per page in the table view and code blocks
+
+### Add a fileclass after create
+Toggle on to display the fileclass list to choose from to be added to a new file
 
 ### Fileclass selector in note fields modal
 You can hide the fileClass selector automatically added to the note fields modal since it can be duplicated with fileclass inheritance or global fileclass

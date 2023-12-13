@@ -1,5 +1,5 @@
 import './env'
-import { MarkdownView, Notice, Plugin } from 'obsidian';
+import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
 import { addCommands } from 'src/commands/paletteCommands';
 import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
@@ -18,6 +18,7 @@ import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton';
 import { FileClassViewManager } from 'src/components/FileClassViewManager';
 import { IndexDatabase } from 'src/db/DatabaseManager';
 import { FileClassCodeBlockManager } from 'src/components/FileClassCodeBlockManager';
+import { AddFileClassToFileModal } from 'src/fileClass/fileClass';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -80,8 +81,17 @@ export default class MetadataMenu extends Plugin {
 
 		this.addSettingTab(new MetadataMenuSettingTab(this));
 
-		//registering Metadata Menu suggestor for live preview
 		this.api = new MetadataMenuApi(this).make();
+
+		this.registerEvent(
+			this.app.vault.on("create", (file) => {
+				if (!this.fieldIndex.fileClassesName.size) return
+				if (file instanceof TFile && this.settings.chooseFileClassAtFileCreation) {
+					const modal = new AddFileClassToFileModal(this, file)
+					modal.open()
+				}
+			})
+		)
 
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', (leaf) => {
@@ -96,6 +106,11 @@ export default class MetadataMenu extends Plugin {
 				if (currentView) this.indexStatus.checkForUpdate(currentView)
 				updatePropertiesSection(this)
 				FileClassViewManager.reloadViews(this)
+				this.codeBlockManagers.forEach(manager => {
+					if (!manager.isLoaded) {
+						manager.build()
+					}
+				})
 			})
 		)
 
@@ -116,10 +131,9 @@ export default class MetadataMenu extends Plugin {
 		addCommands(this)
 
 		this.registerMarkdownCodeBlockProcessor("mdm", async (source, el, ctx) => {
-			this.codeBlockManagers.filter(manager => manager.ctx.docId = ctx.docId).forEach(manager => this.removeChild(manager))
 			const fileClassCodeBlockManager = new FileClassCodeBlockManager(this, el, source, ctx)
 			this.codeBlockManagers.push(fileClassCodeBlockManager)
-			this.addChild(fileClassCodeBlockManager)
+			ctx.addChild(fileClassCodeBlockManager)
 		});
 		this.app.workspace.trigger("layout-change")
 	};

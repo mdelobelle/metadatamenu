@@ -27,6 +27,7 @@ export class CustomFilterModal extends Modal {
         this.contentEl.createDiv({ cls: "info-code" }).createEl("code", { text: `value is the value of the file's ${this.filterComponent.name} field` })
         this.contentEl.createDiv({ cls: "info-code" }).createEl("code", { text: `current is the current page (dv.page) if this view is embedded in a codeblock` })
         this.contentEl.createDiv({ cls: "info-code" }).createEl("code", { text: `returns a boolean, ` })
+        this.contentEl.createDiv({ cls: "info-code" }).createEl("code", { text: `double quote have to be escaped like this \\", ` })
         this.contentEl.createDiv({ cls: "info-code" }).createEl("code", { text: `example:` })
         this.contentEl.createDiv({ cls: "info-code" }).createEl("code", { text: `return value < current.priority;` })
         this.contentEl.createDiv({ cls: "info-code" }).createEl("code", { text: `*/` })
