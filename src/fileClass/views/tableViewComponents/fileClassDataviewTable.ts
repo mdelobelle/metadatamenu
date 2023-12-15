@@ -14,8 +14,8 @@ export class FileClassDataviewTable {
     public ranges: HTMLDivElement[] = []
     public limitWrapped: boolean = false
     public limit: number
+    public plugin: MetadataMenu
     constructor(
-        public plugin: MetadataMenu,
         public viewConfiguration: ViewConfiguration,
         public view: FileClassTableView | FileClassCodeBlockView,
         private fileClass: FileClass,
@@ -23,6 +23,7 @@ export class FileClassDataviewTable {
         private sliceStart: number = 0,
         private ctx?: MarkdownPostProcessorContext
     ) {
+        this.plugin = this.view.manager.plugin
         this.limit = maxRow || this.fileClass.options.limit || this.plugin.settings.tableViewMaxRecords
     }
 
@@ -115,7 +116,8 @@ export class FileClassDataviewTable {
 
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
-            dvApi.executeJs(this.buildDvJSRendering(), tableContainer, this.plugin, this.fileClass.getClassFile().path)
+            //TODO replace this.plugin by this.<the manager component hosting this view> so that we can remove the child deletion mecanism
+            dvApi.executeJs(this.buildDvJSRendering(), tableContainer, this.view.manager, this.fileClass.getClassFile().path)
         }
         // links aren't clickable anymore, rebinding them to click event
         if (this.view instanceof FileClassTableView) this.addClickEventToLink(tableContainer)
@@ -283,13 +285,14 @@ export class FileClassDataviewTable {
             "    }\n" +
             "    return indexInOptions\n" +
             "}\n" +
-            "dv.table([";
+            "dv.table([\"[x]\",";
         dvJS += fields.map(field => `"${field.name === "file" ? this.fileClass.name : field.name}"`).join(",");
         dvJS += `], \n`;
         dvJS += this.buildDvJSQuery();
         dvJS += this.buildSorterQuery();
         dvJS += `    .slice(${this.sliceStart}, ${this.sliceStart + this.limit})\n`;
         dvJS += "    .map(p => [\n";
+        dvJS += `        dv.el(\"input\", \"\", {cls: \"file-select\", type: \"checkbox\", attr: {onclick:\"((e) => {console.log(${this.view.tableId})})()\"}}),\n`;
         dvJS += fields.map(field => {
             if (field.name === "file") {
                 return "        dv.el(\"div\", p.file.link, {cls: \"field-name\"})";

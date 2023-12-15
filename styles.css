@@ -2468,6 +2468,9 @@ span.flatpickr-weekday {
   left: 0;
   z-index: 2;
 }
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th:first-child span.dataview.small-text, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th:first-child span.dataview.small-text {
+  display: none;
+}
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr > td:first-child, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] tbody > tr > td:first-child {
   position: sticky;
   left: 0;

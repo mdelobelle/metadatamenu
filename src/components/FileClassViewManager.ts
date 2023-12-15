@@ -85,11 +85,12 @@ export class FileClassViewManager extends Component {
         // @ts-ignore
         this.plugin.app.viewRegistry.unregisterView(this.fileClassViewType);
         this.plugin.indexDB.fileClassViews.removeElement(FILECLASS_VIEW_TYPE + "__" + this.name)
-
+        /*
         this.plugin._children.filter(child => child.hasOwnProperty("script") && child.containerEl.getAttr("id") === this.tableId)
             .forEach(child => {
                 this.plugin.removeChild(child)
             })
+        */
     }
 
 
@@ -131,6 +132,7 @@ export class FileClassViewManager extends Component {
                     );
                 }
             } catch (e) {
+                console.log(e)
                 this.unload()
                 console.warn("Fileclass view couldn't load because of a conflict with another plugin")
             }

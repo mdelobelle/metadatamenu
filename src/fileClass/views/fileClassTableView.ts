@@ -4,6 +4,7 @@ import { FileClass } from "../fileClass";
 import { FieldSet } from "./tableViewComponents/tableViewFieldSet";
 import { CreateSavedViewModal } from "./tableViewComponents/saveViewModal";
 import { FileClassDataviewTable } from "./tableViewComponents/fileClassDataviewTable";
+import { FileClassViewManager } from "src/components/FileClassViewManager";
 
 export class FileClassTableView {
     public plugin: MetadataMenu;
@@ -23,18 +24,18 @@ export class FileClassTableView {
     private fileClassDataviewTable: FileClassDataviewTable
 
     constructor(
-        plugin: MetadataMenu,
+        public manager: FileClassViewManager,
         private viewContainer: HTMLDivElement,
         public tableId: string,
         public fileClass: FileClass,
         public selectedView?: string | undefined
     ) {
-        this.plugin = plugin;
+        this.plugin = manager.plugin;
         this.container = this.viewContainer.createDiv({ cls: "fv-table" })
         this.limit = this.fileClass.getFileClassOptions().limit
         this.createHeader();
         this.fileClassDataviewTable = new FileClassDataviewTable(
-            this.plugin, this.fieldSet.getParams(), this, this.fileClass)
+            this.fieldSet.getParams(), this, this.fileClass)
         if (this.selectedView) this.changeView(this.selectedView)
     };
 
@@ -58,7 +59,7 @@ export class FileClassTableView {
 
     public update(maxRows?: number, sliceStart: number = 0): void {
         this.fileClassDataviewTable = new FileClassDataviewTable(
-            this.plugin, this.fieldSet.getParams(), this, this.fileClass, maxRows, sliceStart)
+            this.fieldSet.getParams(), this, this.fileClass, maxRows, sliceStart)
         this.buildTable();
         this.buildPaginationManager(this.paginationContainer);
         this.buildViewSelector()

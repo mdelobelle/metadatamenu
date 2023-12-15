@@ -107,7 +107,7 @@ export class FileClassView extends ItemView {
 
     buildTableView(): void {
         const favoriteView = this.fileClass.options.favoriteView || undefined
-        this.tableView = new FileClassTableView(this.plugin, this.viewContainer, this.tableId, this.fileClass, this.selectedView || favoriteView)
+        this.tableView = new FileClassTableView(this.component, this.viewContainer, this.tableId, this.fileClass, this.selectedView || favoriteView)
         this.views.push(this.tableView.container);
     }
 

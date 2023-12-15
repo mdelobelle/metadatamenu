@@ -172,7 +172,6 @@ class FileClass {
                 };
             }
         })
-        //TODO add a setting for default fileclass icon
         return icon || this.plugin.settings.fileClassIcon
     }
 
