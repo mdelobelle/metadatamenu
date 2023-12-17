@@ -313,6 +313,17 @@ class FileClass {
         await this.incrementVersion();
     }
 
+    public getChildren() {
+        const childrenNames: [string, string][] = [];
+        [...this.plugin.fieldIndex.fileClassesAncestors].forEach(([_fName, ancestors]) => {
+            if (ancestors.includes(this.name)) {
+                const path = [this.name, ...ancestors.slice(0, ancestors.indexOf(this.name)).reverse(), _fName].join(" > ")
+                childrenNames.push([_fName, path])
+            }
+        })
+        return childrenNames
+    }
+
     public async updateAttribute(
         newType: keyof typeof FieldType,
         newName: string,

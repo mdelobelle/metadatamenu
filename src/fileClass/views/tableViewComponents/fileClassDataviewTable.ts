@@ -26,6 +26,7 @@ export class FileClassDataviewTable {
     ) {
         this.plugin = this.view.manager.plugin
         this.limit = maxRow || this.fileClass.options.limit || this.plugin.settings.tableViewMaxRecords
+        console.log(this.fileClass.getChildren())
     }
 
     public buildPaginationManager(container: HTMLDivElement): void {
@@ -44,7 +45,12 @@ export class FileClassDataviewTable {
         if (dvApi) {
             try {
                 const current = this.ctx ? dvApi.page(this.ctx.sourcePath) : {}
-                const values = (new Function("dv", "current", `return ${this.buildDvJSQuery()}`))(dvApi, current).values;
+                const fFC = this.plugin.fieldIndex.filesFileClasses
+                const fileClassFiles = [...fFC.keys()].filter(path => fFC.get(path)?.some(_fileClass => _fileClass.name === this.fileClass.name))
+                const values = (new Function(
+                    "dv", "current", "fileClassFiles",
+                    `return ${this.buildDvJSQuery()}`)
+                )(dvApi, current, fileClassFiles).values;
                 const count = values.length;
 
                 const rangesCount = Math.floor(count / this.limit) + 1
