@@ -11,6 +11,7 @@ import { Note } from "src/note/note";
 import FieldIndex from "src/index/FieldIndex";
 import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
 import { SavedView } from "./views/tableViewComponents/saveViewModal";
+import { insertMissingFields } from "src/commands/insertMissingFields";
 
 const options: Record<string, { name: string, toValue: (value: any) => any }> = {
     "limit": { name: "limit", toValue: (value: any) => value },
@@ -93,6 +94,9 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
         const currentFileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path)
         const newValue = currentFileClasses ? [...currentFileClasses.map(fc => fc.name), value].join(", ") : value
         await postValues(this.plugin, [{ id: `fileclass-field-${fileClassAlias}`, payload: { value: newValue } }], this.file, -1)
+        if (this.plugin.settings.autoInsertFieldsAtFileClassInsertion) {
+            insertMissingFields(this.plugin, this.file, -1)
+        }
     }
 }
 

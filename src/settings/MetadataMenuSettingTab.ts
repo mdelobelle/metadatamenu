@@ -507,6 +507,22 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		chooseFileClassAtFileCreation.settingEl.addClass("no-border");
 		chooseFileClassAtFileCreation.controlEl.addClass("full-width");
 
+
+		/* Choose fileclass at file creation Fileclass selector in modal*/
+
+		const autoInsertFieldsAtFileClassInsertion = new Setting(classFilesSettings)
+			.setName('Insert fileClass fields')
+			.setDesc('Includes fileClass in frontmatter after fileClass choice')
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.autoInsertFieldsAtFileClassInsertion);
+				cb.onChange(value => {
+					this.plugin.settings.autoInsertFieldsAtFileClassInsertion = value;
+					this.plugin.saveSettings();
+				})
+			})
+		autoInsertFieldsAtFileClassInsertion.settingEl.addClass("no-border");
+		autoInsertFieldsAtFileClassInsertion.controlEl.addClass("full-width");
+
 		/* Fileclass selector in modal*/
 
 		const showFileClassSelectInModal = new Setting(classFilesSettings)

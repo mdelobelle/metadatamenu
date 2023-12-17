@@ -33,7 +33,6 @@ export default class MetadataMenu extends Plugin {
 	public indexName: string;
 	public launched: boolean = false;
 	public indexDB: IndexDatabase;
-	public codeBlockManagers: FileClassCodeBlockManager[] = []
 
 	async onload(): Promise<void> {
 		console.log('+------ Metadata Menu loaded --------+');
@@ -106,11 +105,6 @@ export default class MetadataMenu extends Plugin {
 				if (currentView) this.indexStatus.checkForUpdate(currentView)
 				updatePropertiesSection(this)
 				FileClassViewManager.reloadViews(this)
-				this.codeBlockManagers.forEach(manager => {
-					if (!manager.isLoaded) {
-						manager.build()
-					}
-				})
 			})
 		)
 
@@ -132,7 +126,6 @@ export default class MetadataMenu extends Plugin {
 
 		this.registerMarkdownCodeBlockProcessor("mdm", async (source, el, ctx) => {
 			const fileClassCodeBlockManager = new FileClassCodeBlockManager(this, el, source, ctx)
-			this.codeBlockManagers.push(fileClassCodeBlockManager)
 			ctx.addChild(fileClassCodeBlockManager)
 		});
 		this.app.workspace.trigger("layout-change")

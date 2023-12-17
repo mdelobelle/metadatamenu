@@ -47,6 +47,7 @@ export interface MetadataMenuSettings {
 	frontmatterOnly: boolean;
 	showFileClassSelectInModal: boolean;
 	chooseFileClassAtFileCreation: boolean;
+	autoInsertFieldsAtFileClassInsertion: boolean;
 	fileClassIcon: string;
 }
 
@@ -80,6 +81,7 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	frontmatterOnly: false,
 	showFileClassSelectInModal: true,
 	chooseFileClassAtFileCreation: false,
+	autoInsertFieldsAtFileClassInsertion: false,
 	fileClassIcon: "package"
 };
 

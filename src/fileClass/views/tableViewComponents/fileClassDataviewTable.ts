@@ -115,7 +115,7 @@ export class FileClassDataviewTable {
             }
         }
         const table = tableContainer.querySelector(`#table-container-${this.view.tableId}`) as HTMLDivElement
-        this.setObserver(tableContainer)
+        //this.setObserver(tableContainer)
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
             //TODO replace this.plugin by this.<the manager component hosting this view> so that we can remove the child deletion mecanism
@@ -136,7 +136,7 @@ export class FileClassDataviewTable {
             for (var mutation of mutationsList) {
                 if (mutation.type == "childList") {
                     for (const node of mutation.addedNodes) {
-
+                        //@ts-ignore
                         if ("className" in node && (node.className as string).includes('field-name')) {
                             const fileDiv = (node as HTMLElement).querySelector("span");
                             fileDiv?.addClass("field-sub-container")
@@ -299,10 +299,17 @@ export class FileClassDataviewTable {
         const fileClassFiles = [...fFC.keys()].filter(path => fFC.get(path)?.some(fileClass => fileClass.name === this.fileClass.name))
         const fileClassFilesPaths = `"${fileClassFiles.map(fC => fC.replaceAll('"', '\\"')).join('", "')}"`
         dvQuery += `dv.pages()\n`;
+        //TODO replace this by a call to a mdm method to provide the files
+        dvQuery += `    .where(p => fileClassFiles.includes(p.file.path)
+        ${!!classFilesPath ? "        && !p.file.path.includes('" + classFilesPath + "')\n" : ""}
+        ${templatesFolder ? "        && !p.file.path.includes('" + templatesFolder + "')\n" : ""}
+        )\n`;
+        /*
         dvQuery += `    .where(p => [${fileClassFilesPaths}].includes(p.file.path)
         ${!!classFilesPath ? "        && !p.file.path.includes('" + classFilesPath + "')\n" : ""}
         ${templatesFolder ? "        && !p.file.path.includes('" + templatesFolder + "')\n" : ""}
         )\n`;
+        */
         dvQuery += this.buildFilterQuery();
         return dvQuery;
     }
@@ -312,6 +319,8 @@ export class FileClassDataviewTable {
             .filter(f => !this.viewConfiguration.columns.find(_f => _f.name === f.name)?.hidden)
             .sort((f1, f2) => f1.position < f2.position ? -1 : 1)
         let dvJS = "const {fieldModifier: f} = MetadataMenu.api;\n" +
+            "const fFC = MetadataMenu.fieldIndex.filesFileClasses\n" +
+            `const fileClassFiles = [...fFC.keys()].filter(path => fFC.get(path)?.some(_fileClass => _fileClass.name === "${this.fileClass.name}"))\n` +
             "const basename = (item) => {\n" +
             "    if(item && item.hasOwnProperty('path')){\n" +
             "        return /([^\/]*).md/.exec(item.path)?.[1] || item.path\n" +
