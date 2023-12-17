@@ -5,14 +5,14 @@ import { FileClassTableView } from "../fileClassTableView"
 import { ColumnMover, RowSorter, Filter, Column } from "./tableViewFieldSet"
 import { RowSorterComponent } from "./RowSorterComponent"
 import { FilterComponent } from "./FilterComponent"
+import { FileClassChild } from "src/fileClass/fileClass"
 
 export class SavedView {
+    children: Array<FileClassChild>
     sorters: Array<RowSorter> = []
     filters: Array<Filter> = []
     columns: Array<Column> = []
-    constructor(public name: string) {
-
-    }
+    constructor(public name: string) { }
 
     public buildFilters(filters: Record<string, FilterComponent>) {
         Object.entries(filters).forEach(([id, filterComponent]) => {

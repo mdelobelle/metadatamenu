@@ -41,7 +41,6 @@ export class FilterComponent {
         setIcon(button, "chevron-down")
         button.onclick = () => {
             const plugin = this.parentFieldSet.plugin
-            //const fileClass = this.parentFieldSet.fileClass
             const fileClassFile = this.fileClass.getClassFile()
             const field = plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.find(f => f.isRoot() && f.name === this.name);
             (new OptionsMultiSelectModal(plugin, fileClassFile, field || "file", this.parentFieldSet)).open()

@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { ButtonComponent, debounce, DropdownComponent, TextComponent } from "obsidian";
-import { FileClass } from "../fileClass";
+import { FileClass, FileClassChild } from "../fileClass";
 import { FieldSet } from "./tableViewComponents/tableViewFieldSet";
 import { CreateSavedViewModal } from "./tableViewComponents/saveViewModal";
 import { FileClassDataviewTable } from "./tableViewComponents/fileClassDataviewTable";
@@ -28,7 +28,8 @@ export class FileClassTableView {
         private viewContainer: HTMLDivElement,
         public tableId: string,
         public fileClass: FileClass,
-        public selectedView?: string | undefined
+        public selectedView?: string | undefined,
+        public children: FileClassChild[] = []
     ) {
         this.plugin = manager.plugin;
         this.container = this.viewContainer.createDiv({ cls: "fv-table" })
@@ -96,7 +97,7 @@ export class FileClassTableView {
 
     private buildFields(container: HTMLDivElement) {
         container.replaceChildren()
-        this.fieldSet = new FieldSet(this, container, this.fileClass.getChildren())
+        this.fieldSet = new FieldSet(this, container, this.children)
     }
 
     /*

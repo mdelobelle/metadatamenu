@@ -45,7 +45,7 @@ export class FileClassDataviewTable {
             try {
                 const current = this.ctx ? dvApi.page(this.ctx.sourcePath) : {}
                 const fFC = this.plugin.fieldIndex.filesFileClasses
-                const fileClassesNames = [this.fileClass.name, ...this.fileClass.getChildren().map(c => c.name)]
+                const fileClassesNames = [this.fileClass.name, ...this.viewConfiguration.children.map(c => c.name)]
                 const fileClassFiles = [...fFC.keys()].filter(path => fFC.get(path)?.some(_fileClass => fileClassesNames.includes(_fileClass.name)))
                 const values = (new Function(
                     "dv", "current", "fileClassFiles",
@@ -224,30 +224,30 @@ export class FileClassDataviewTable {
                     const existing = values.find(v => v === "__existing__")
                     values = values.filter(v => !Object.keys(fieldStates).includes(v))
                     if (empty) {
-                        return `    .filter(p => ${valueGetter} === null)\n`
+                        return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === null)\n`
                     } else if (notEmpty) {
-                        return `    .filter(p => ${valueGetter} !== null)\n`
+                        return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} !== null)\n`
                     } else if (notFound) {
-                        return `    .filter(p => ${valueGetter} === undefined)\n`
+                        return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === undefined)\n`
                     } else if (existing) {
-                        return `    .filter(p => ${valueGetter} !== undefined)\n`
+                        return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} !== undefined)\n`
                     } else if (values.length) {
                         const fCField = filter.name !== "file" ? this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.find(f => f.name === filter.name) : undefined
                         if (fCField?.type === FieldType.Boolean) {
                             switch (value) {
                                 case 'true':
-                                    return `    .filter(p => ${valueGetter} === true)\n`
+                                    return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === true)\n`
                                 case 'false':
-                                    return `    .filter(p => ${valueGetter} === false)\n`
+                                    return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === false)\n`
                                 case 'false, true':
                                 case 'true, false':
-                                    return `    .filter(p => [true, false].some(b => ${valueGetter} === b))\n`
+                                    return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && [true, false].some(b => ${valueGetter} === b))\n`
                                 default:
                                     return ""
                             }
                         } else {
                             const valuesQueries = values.map(val => `${valueGetter}.toString().toLowerCase().includes("${val}".toLowerCase())`)
-                            return `    .filter(p => ${valueGetter} && (${valuesQueries.join(" || ")}))\n`
+                            return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} && (${valuesQueries.join(" || ")}))\n`
                         }
                     } else {
                         return ""
@@ -313,7 +313,7 @@ export class FileClassDataviewTable {
     private buildDvJSRendering(): string {
         const buildColumnName = (column: Column) => {
             if (column.name === "file") return this.fileClass.name
-            if (this.fileClass.getChildren().length) return column.id.replace("____", ": ")
+            if (this.viewConfiguration.children.length) return column.id.replace("____", ": ")
             else return column.name
         }
         const columns = this.viewConfiguration.columns
@@ -321,7 +321,7 @@ export class FileClassDataviewTable {
             .sort((f1, f2) => f1.position < f2.position ? -1 : 1)
         let dvJS = "const {fieldModifier: f} = MetadataMenu.api;\n" +
             "const fFC = MetadataMenu.fieldIndex.filesFileClasses\n" +
-            `const fileClassesNames = ["${this.fileClass.name}", ...[${this.fileClass.getChildren().map(c => "'" + c.name + "'").join(", ")}]];\n` +
+            `const fileClassesNames = ["${this.fileClass.name}", ...[${this.viewConfiguration.children.map(c => "'" + c.name + "'").join(", ")}]];\n` +
             `const fileClassFiles = [...fFC.keys()].filter(path => fFC.get(path)?.some(_fileClass => fileClassesNames.includes(_fileClass.name)))\n` +
             "const basename = (item) => {\n" +
             "    if(item && item.hasOwnProperty('path')){\n" +

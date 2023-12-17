@@ -27,6 +27,7 @@ export class FileClassCodeBlockView {
     private getViewConfig(): ViewConfiguration {
         const options = this.fileClass.getFileClassOptions()
         const defaultConfig = {
+            children: [],
             filters: [],
             sorters: [],
             columns: [{

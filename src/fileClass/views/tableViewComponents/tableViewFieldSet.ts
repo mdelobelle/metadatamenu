@@ -8,6 +8,7 @@ import { FilterComponent } from "./FilterComponent";
 import Field from "src/fields/Field";
 
 export interface ViewConfiguration {
+    children: Array<FileClassChild>,
     sorters: Array<RowSorter>,
     filters: Array<Filter>,
     columns: Array<Column>
@@ -68,9 +69,15 @@ export class FieldSet {
         public children: FileClassChild[] = []
     ) {
         this.plugin = tableView.plugin
-        this.fileClass = tableView.fileClass
-        this.fileClasses = [this.fileClass, ...children.map(c => c.fileClass)]
-        const fileFieldContainer = container.createDiv({ cls: "field-container" })
+        this.build()
+    }
+
+    public build() {
+        this.fileClass = this.plugin.fieldIndex.fileClassesName.get(this.tableView.fileClass.name)!
+        this.fileClasses = [this.fileClass, ...this.children.map(c => c.fileClass)]
+        this.container.replaceChildren()
+        this.fieldComponents = []
+        const fileFieldContainer = this.container.createDiv({ cls: "field-container" })
         const fieldComponent = new FieldComponent(this.fileClass, fileFieldContainer, this, "file", "File Name", 0)
         this.fieldComponents.push(fieldComponent);
         let index = 0;
@@ -78,7 +85,7 @@ export class FieldSet {
             const fields = this.plugin.fieldIndex.fileClassesFields
                 .get(_fC.name)?.filter(_f => _f.isRoot()) || [];
             for (const [_index, field] of fields.entries()) {
-                const fieldContainer = container.createDiv({ cls: "field-container" })
+                const fieldContainer = this.container.createDiv({ cls: "field-container" })
                 this.fieldComponents.push(new FieldComponent(_fC, fieldContainer, this, field.name, field.name, _index + index + 1))
             }
             index += fields.length
@@ -148,6 +155,7 @@ export class FieldSet {
     }
 
     public getParams(): ViewConfiguration {
+        const children = this.children
         const filters = Object.entries(this.filters).map(([id, filterComponent]) => {
             return {
                 id: id,
@@ -174,6 +182,7 @@ export class FieldSet {
             }
         })
         return {
+            children: children,
             filters: filters,
             sorters: sorters,
             columns: columns
