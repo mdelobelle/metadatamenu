@@ -457,6 +457,15 @@
             }
 
             .field-name, .value-container{
+
+                .field-sub-container{
+                    display: flex;
+                    
+                        p {
+                            margin-block: 0em;
+                        }
+
+                }
                 
                 span{
                     display: grid;

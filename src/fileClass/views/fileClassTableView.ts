@@ -21,7 +21,7 @@ export class FileClassTableView {
     public fieldSet: FieldSet
     public limitWrapped: boolean = false
     public ranges: HTMLDivElement[] = []
-    private fileClassDataviewTable: FileClassDataviewTable
+    public fileClassDataviewTable: FileClassDataviewTable
 
     constructor(
         public manager: FileClassViewManager,

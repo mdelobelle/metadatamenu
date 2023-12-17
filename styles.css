@@ -2452,6 +2452,12 @@ span.flatpickr-weekday {
 .metadata-menu.fileclass-view .fv-table div[id^=table-container], .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] {
   overflow: scroll;
 }
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] .field-name .field-sub-container, .metadata-menu.fileclass-view .fv-table div[id^=table-container] .value-container .field-sub-container, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] .field-name .field-sub-container, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] .value-container .field-sub-container {
+  display: flex;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] .field-name .field-sub-container p, .metadata-menu.fileclass-view .fv-table div[id^=table-container] .value-container .field-sub-container p, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] .field-name .field-sub-container p, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] .value-container .field-sub-container p {
+  margin-block: 0em;
+}
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] .field-name span, .metadata-menu.fileclass-view .fv-table div[id^=table-container] .value-container span, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] .field-name span, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] .value-container span {
   display: grid;
   grid-template-columns: auto auto;

@@ -80,20 +80,6 @@ export class FileClassViewManager extends Component {
         }
     }
 
-    onunload(): void {
-        this.plugin.app.workspace.detachLeavesOfType(this.fileClassViewType);
-        // @ts-ignore
-        this.plugin.app.viewRegistry.unregisterView(this.fileClassViewType);
-        this.plugin.indexDB.fileClassViews.removeElement(FILECLASS_VIEW_TYPE + "__" + this.name)
-        /*
-        this.plugin._children.filter(child => child.hasOwnProperty("script") && child.containerEl.getAttr("id") === this.tableId)
-            .forEach(child => {
-                this.plugin.removeChild(child)
-            })
-        */
-    }
-
-
     private registerIndexingDone() {
         this.registerEvent(this.plugin.app.workspace.on("metadata-menu:indexed", () => {
             const view = this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType)[0]?.view as FileClassView | undefined
@@ -104,6 +90,7 @@ export class FileClassViewManager extends Component {
             }
         }));
     }
+
 
     public async openFileClassView(): Promise<void> {
         if (this.fileClass) {
@@ -132,7 +119,6 @@ export class FileClassViewManager extends Component {
                     );
                 }
             } catch (e) {
-                console.log(e)
                 this.unload()
                 console.warn("Fileclass view couldn't load because of a conflict with another plugin")
             }
@@ -149,6 +135,14 @@ export class FileClassViewManager extends Component {
             tagsAndFileClasses.push(...(index.filesFileClassesNames.get(activeFilePath) || []))
         }
         return [...new Set(tagsAndFileClasses)]
+    }
+
+    onunload(): void {
+        this.plugin.app.workspace.detachLeavesOfType(this.fileClassViewType);
+        // @ts-ignore
+        this.plugin.app.viewRegistry.unregisterView(this.fileClassViewType);
+        this.plugin.indexDB.fileClassViews.removeElement(FILECLASS_VIEW_TYPE + "__" + this.name)
+        this.fileClassView.tableView.fileClassDataviewTable.observer?.disconnect();
     }
 
     static async reloadViews(plugin: MetadataMenu): Promise<void> {

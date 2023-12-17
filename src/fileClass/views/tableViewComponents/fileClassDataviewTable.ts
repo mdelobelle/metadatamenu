@@ -15,6 +15,7 @@ export class FileClassDataviewTable {
     public limitWrapped: boolean = false
     public limit: number
     public plugin: MetadataMenu
+    public observer: MutationObserver;
     constructor(
         public viewConfiguration: ViewConfiguration,
         public view: FileClassTableView | FileClassCodeBlockView,
@@ -113,7 +114,8 @@ export class FileClassDataviewTable {
                 }
             }
         }
-
+        const table = tableContainer.querySelector(`#table-container-${this.view.tableId}`) as HTMLDivElement
+        this.setObserver(tableContainer)
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
             //TODO replace this.plugin by this.<the manager component hosting this view> so that we can remove the child deletion mecanism
@@ -121,6 +123,47 @@ export class FileClassDataviewTable {
         }
         // links aren't clickable anymore, rebinding them to click event
         if (this.view instanceof FileClassTableView) this.addClickEventToLink(tableContainer)
+    }
+
+    public setObserver(node: HTMLDivElement) {
+        // Selectionne le noeud dont les mutations seront observées
+        var targetNode = node
+        // Options de l'observateur (quelles sont les mutations à observer)
+        var config = { attributes: true, childList: true };
+
+        // Fonction callback à éxécuter quand une mutation est observée
+        var callback = function (mutationsList: MutationRecord[]) {
+            for (var mutation of mutationsList) {
+                if (mutation.type == "childList") {
+                    for (const node of mutation.addedNodes) {
+
+                        if ("className" in node && (node.className as string).includes('field-name')) {
+                            const fileDiv = (node as HTMLElement).querySelector("span");
+                            fileDiv?.addClass("field-sub-container")
+                            if (fileDiv) {
+                                const file = fileDiv.firstChild
+                                const checkboxContainer = file?.createDiv({})
+                                const checkbox = checkboxContainer?.createEl("input", { type: "checkbox", cls: "file-select" })
+                                if (checkbox && checkboxContainer) {
+                                    checkbox.onclick = () => {
+                                        console.log("hello")
+                                    }
+                                    fileDiv.prepend(checkboxContainer)
+                                }
+                            }
+                        }
+                    }
+                } else if (mutation.type == "attributes") {
+                    console.log("L'attribut '" + mutation.attributeName + "' a été modifié.");
+                }
+            }
+        };
+
+        // Créé une instance de l'observateur lié à la fonction de callback
+        this.observer = new MutationObserver(callback);
+
+        // Commence à observer le noeud cible pour les mutations précédemment configurées
+        if (targetNode) this.observer.observe(targetNode, config);
     }
 
     public buidFileClassViewBtn(): void {
@@ -285,14 +328,15 @@ export class FileClassDataviewTable {
             "    }\n" +
             "    return indexInOptions\n" +
             "}\n" +
-            "dv.table([\"[x]\",";
+            "dv.table([\n";
+        //"\"[x]\",\n"
         dvJS += fields.map(field => `"${field.name === "file" ? this.fileClass.name : field.name}"`).join(",");
         dvJS += `], \n`;
         dvJS += this.buildDvJSQuery();
         dvJS += this.buildSorterQuery();
         dvJS += `    .slice(${this.sliceStart}, ${this.sliceStart + this.limit})\n`;
         dvJS += "    .map(p => [\n";
-        dvJS += `        dv.el(\"input\", \"\", {cls: \"file-select\", type: \"checkbox\", attr: {onclick:\"((e) => {console.log(${this.view.tableId})})()\"}}),\n`;
+        //dvJS += `        dv.el(\"input\", \"\", {cls: \"file-select\", type: \"checkbox\", attr: {onclick:\"((e) => {console.log('${this.view.tableId}')})()\"}}),\n`;
         dvJS += fields.map(field => {
             if (field.name === "file") {
                 return "        dv.el(\"div\", p.file.link, {cls: \"field-name\"})";
