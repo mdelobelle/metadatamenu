@@ -2,18 +2,22 @@ import { TextComponent, Debouncer, setIcon, ButtonComponent } from "obsidian";
 import { OptionsMultiSelectModal } from "./OptionsMultiSelectModal";
 import { FieldSet } from "./tableViewFieldSet";
 import { CustomFilterModal } from "./CustomFilterModal";
+import { FileClass } from "src/fileClass/fileClass";
 
 export class FilterComponent {
     public filter: TextComponent
     public query: string
     public customFilter: string
     public filterBtn: ButtonComponent
+    public id: string
     constructor(
+        public fileClass: FileClass,
         public container: HTMLDivElement,
         public name: string,
         public parentFieldSet: FieldSet,
         public debounced: Debouncer<[fieldset: FieldSet], void>
     ) {
+        this.id = `${fileClass.name}____${this.name}`
         this.build()
     }
 
@@ -37,9 +41,9 @@ export class FilterComponent {
         setIcon(button, "chevron-down")
         button.onclick = () => {
             const plugin = this.parentFieldSet.plugin
-            const fileClass = this.parentFieldSet.fileClass
-            const fileClassFile = fileClass.getClassFile()
-            const field = plugin.fieldIndex.fileClassesFields.get(fileClass.name)?.find(f => f.isRoot() && f.name === this.name);
+            //const fileClass = this.parentFieldSet.fileClass
+            const fileClassFile = this.fileClass.getClassFile()
+            const field = plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.find(f => f.isRoot() && f.name === this.name);
             (new OptionsMultiSelectModal(plugin, fileClassFile, field || "file", this.parentFieldSet)).open()
         }
     }

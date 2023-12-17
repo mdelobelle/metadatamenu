@@ -26,6 +26,12 @@ const options: Record<string, { name: string, toValue: (value: any) => any }> = 
     "favoriteView": { name: "favoriteView", toValue: (value?: string) => value || null }
 }
 
+export interface FileClassChild {
+    name: string,
+    path: string[],
+    fileClass: FileClass
+}
+
 export interface FileClassOptions {
     limit: number,
     icon: string,
@@ -313,12 +319,19 @@ class FileClass {
         await this.incrementVersion();
     }
 
-    public getChildren() {
-        const childrenNames: [string, string][] = [];
+    public getChildren(): FileClassChild[] {
+        const childrenNames: FileClassChild[] = [];
         [...this.plugin.fieldIndex.fileClassesAncestors].forEach(([_fName, ancestors]) => {
             if (ancestors.includes(this.name)) {
-                const path = [this.name, ...ancestors.slice(0, ancestors.indexOf(this.name)).reverse(), _fName].join(" > ")
-                childrenNames.push([_fName, path])
+                const path = [...ancestors.slice(0, ancestors.indexOf(this.name)).reverse(), _fName]
+                const fileClass = this.plugin.fieldIndex.fileClassesName.get(_fName)
+                if (fileClass) {
+                    childrenNames.push({
+                        name: _fName,
+                        path: path,
+                        fileClass: fileClass
+                    })
+                }
             }
         })
         return childrenNames

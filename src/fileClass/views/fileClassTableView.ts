@@ -96,7 +96,7 @@ export class FileClassTableView {
 
     private buildFields(container: HTMLDivElement) {
         container.replaceChildren()
-        this.fieldSet = new FieldSet(this, container)
+        this.fieldSet = new FieldSet(this, container, this.fileClass.getChildren())
     }
 
     /*

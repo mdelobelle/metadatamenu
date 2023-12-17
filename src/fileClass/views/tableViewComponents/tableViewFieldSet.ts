@@ -1,11 +1,11 @@
 import MetadataMenu from "main"
-import { ButtonComponent, Debouncer, TextComponent, setIcon } from "obsidian"
-import { FileClass } from "../../fileClass"
+import { ButtonComponent } from "obsidian"
+import { FileClass, FileClassChild } from "../../fileClass"
 import { FileClassTableView } from "../fileClassTableView"
 import { RowSorterComponent } from "./RowSorterComponent";
 import { FieldComponent } from "./FieldComponent";
-import { OptionsMultiSelectModal } from "./OptionsMultiSelectModal";
 import { FilterComponent } from "./FilterComponent";
+import Field from "src/fields/Field";
 
 export interface ViewConfiguration {
     sorters: Array<RowSorter>,
@@ -21,12 +21,14 @@ export const btnIcons: Record<string, string> = {
 }
 
 export interface Filter {
+    id: string,
     name: string,
     query: string,
     customFilter: string
 }
 
 export interface RowSorter {
+    id: string,
     name: string,
     direction: 'asc' | 'desc',
     priority: number
@@ -34,12 +36,14 @@ export interface RowSorter {
 }
 
 export interface Column {
+    id: string,
     name: string,
     hidden: boolean,
     position: number
 }
 
 export interface ColumnMover {
+    id: string,
     name: string,
     hidden: boolean,
     leftBtn: ButtonComponent,
@@ -49,8 +53,9 @@ export interface ColumnMover {
 
 
 export class FieldSet {
-    public fields: FieldComponent[] = []
+    public fieldComponents: FieldComponent[] = []
     public fileClass: FileClass
+    public fileClasses: FileClass[]
     public plugin: MetadataMenu
     public filters: Record<string, FilterComponent> = {}
     public rowSorters: Record<string, RowSorterComponent> = {}
@@ -60,31 +65,37 @@ export class FieldSet {
     constructor(
         public tableView: FileClassTableView,
         public container: HTMLDivElement,
+        public children: FileClassChild[] = []
     ) {
         this.plugin = tableView.plugin
         this.fileClass = tableView.fileClass
+        this.fileClasses = [this.fileClass, ...children.map(c => c.fileClass)]
         const fileFieldContainer = container.createDiv({ cls: "field-container" })
-        const fileField = new FieldComponent(fileFieldContainer, this, "file", "File Name", 0)
-        this.fields.push(fileField)
-        const fields = this.plugin.fieldIndex.fileClassesFields
-            .get(this.fileClass.name)?.filter(_f => _f.isRoot()) || [];
-        for (const [index, field] of fields.entries()) {
-            const fieldContainer = container.createDiv({ cls: "field-container" })
-            this.fields.push(new FieldComponent(fieldContainer, this, field.name, field.name, index + 1))
-        }
+        const fieldComponent = new FieldComponent(this.fileClass, fileFieldContainer, this, "file", "File Name", 0)
+        this.fieldComponents.push(fieldComponent);
+        let index = 0;
+        [this.fileClass, ...this.children.map(c => c.fileClass)].forEach(_fC => {
+            const fields = this.plugin.fieldIndex.fileClassesFields
+                .get(_fC.name)?.filter(_f => _f.isRoot()) || [];
+            for (const [_index, field] of fields.entries()) {
+                const fieldContainer = container.createDiv({ cls: "field-container" })
+                this.fieldComponents.push(new FieldComponent(_fC, fieldContainer, this, field.name, field.name, _index + index + 1))
+            }
+            index += fields.length
+        })
     }
 
     public reorderFields() {
-        this.fields
+        this.fieldComponents
             .sort((f1, f2) => f1.columnPosition - f2.columnPosition)
             .forEach(field => this.container.appendChild(field.container))
     }
 
-    public moveColumn(name: string, direction: 'left' | 'right'): void {
-        const currentPosition = this.columnManagers[name].position
-        Object.keys(this.columnManagers).forEach(_name => {
-            const mover = this.columnManagers[_name]
-            const field = this.fields.find(f => f.name === _name)!
+    public moveColumn(id: string, direction: 'left' | 'right'): void {
+        const currentPosition = this.columnManagers[id].position
+        Object.keys(this.columnManagers).forEach(_id => {
+            const mover = this.columnManagers[_id]
+            const field = this.fieldComponents.find(f => f.id === _id)!
             switch (direction) {
                 case 'left':
                     if (mover.position === (currentPosition - 1)) {
@@ -115,16 +126,16 @@ export class FieldSet {
     }
 
     private resetRowSorters() {
-        Object.keys(this.rowSorters).forEach(_name => {
-            this.rowSorters[_name].reset()
-            const field = this.fields.find(f => f.name === _name)!
+        Object.keys(this.rowSorters).forEach(_id => {
+            this.rowSorters[_id].reset()
+            const field = this.fieldComponents.find(f => f.id === _id)!
             field.priorityLabelContainer.textContent = ""
         })
     }
 
     private resetFilters() {
-        Object.keys(this.filters).forEach(name => {
-            this.filters[name].reset()
+        Object.keys(this.filters).forEach(id => {
+            this.filters[id].reset()
         })
     }
 
@@ -137,24 +148,27 @@ export class FieldSet {
     }
 
     public getParams(): ViewConfiguration {
-        const filters = Object.entries(this.filters).map(([name, filterComponent]) => {
+        const filters = Object.entries(this.filters).map(([id, filterComponent]) => {
             return {
-                name: name,
+                id: id,
+                name: filterComponent.name,
                 query: filterComponent.filter.getValue(),
                 customFilter: filterComponent.customFilter
             }
         })
-        const sorters = Object.entries(this.rowSorters).filter(([n, s]) => s.direction !== undefined || s.customOrder?.length).map(([name, sorter]) => {
+        const sorters = Object.entries(this.rowSorters).filter(([id, s]) => s.direction !== undefined || s.customOrder?.length).map(([id, sorter]) => {
             return {
-                name: name,
+                id: id,
+                name: sorter.name,
                 direction: sorter.direction || "asc",
                 priority: sorter.priority || 0,
                 customOrder: sorter.customOrder || []
             }
         })
-        const columns = Object.entries(this.columnManagers).map(([name, columnManager]) => {
+        const columns = Object.entries(this.columnManagers).map(([id, columnManager]) => {
             return {
-                name: name,
+                id: id,
+                name: columnManager.name,
                 hidden: columnManager.hidden,
                 position: columnManager.position
             }
@@ -167,22 +181,28 @@ export class FieldSet {
     }
 
     public resetColumnManagers() {
-        Object.keys(this.columnManagers).forEach(name => {
-            const fCFields = this.plugin.fieldIndex.fileClassesFields
-                .get(this.fileClass.name)?.filter(_f => _f.isRoot()) || [];
+        Object.keys(this.columnManagers).forEach(id => {
+            const fCFields: Field[] = []
+            this.fileClasses.forEach(fC => {
+                this.plugin.fieldIndex.fileClassesFields
+                    .get(this.fileClass.name)?.filter(_f => _f.isRoot())?.forEach(_f => {
+                        fCFields.push(_f)
+                    })
+            })
             for (const [_index, _field] of fCFields.entries()) {
-                const field = this.fields.find(f => f.name === _field.name)
-                if (field && field.name === name) {
+                const field = this.fieldComponents.find(f => f.name === _field.name && f.fileClass.name === _field.fileClassName)
+                if (field && field.id === id) {
                     field.columnPosition = _index + 1
-                    this.columnManagers[name].position = _index + 1
+                    field.setVisibilityButtonState(false)
+                    this.columnManagers[id].position = _index + 1
                 }
             }
-            if (name === 'file') {
-                const field = this.fields.find(f => f.name === 'file')
+            if (id === 'file') {
+                const field = this.fieldComponents.find(f => f.name === 'file')
                 if (field) {
                     field.columnPosition = 0
                     field.setVisibilityButtonState(false)
-                    this.columnManagers[name].position = 0
+                    this.columnManagers[id].position = 0
                 }
             }
         })
@@ -194,21 +214,21 @@ export class FieldSet {
         this.reset()
         if (_name && savedViews.find(view => view.name === _name)) {
             const savedView = savedViews.find(view => view.name === _name)!
-            Object.keys(this.filters).forEach(name => {
-                const filterComponent = this.filters[name]
-                const savedFilter = savedView?.filters.find(f => f.name === name)
+            Object.keys(this.filters).forEach(id => {
+                const filterComponent = this.filters[id]
+                const savedFilter = savedView?.filters.find(f => f.id === id || (!f.id && f.name === filterComponent.name))
                 filterComponent.filter.inputEl.value = savedFilter?.query || ""
                 filterComponent.customFilter = savedFilter?.customFilter || ""
                 filterComponent.toggleCustomFilterState()
             })
-            Object.keys(this.rowSorters).forEach(name => {
-                const rowSorter: RowSorterComponent = this.rowSorters[name]
-                const savedSorter = savedView?.sorters?.find(f => f.name === name)
+            Object.keys(this.rowSorters).forEach(id => {
+                const rowSorter: RowSorterComponent = this.rowSorters[id]
+                const savedSorter = savedView?.sorters?.find(f => f.id === id || (!f.id && f.name === rowSorter.name))
                 if (savedSorter) {
                     rowSorter.priority = savedSorter.priority
                     rowSorter.customOrder = savedSorter.customOrder
                     rowSorter.toggleRowSorterButtonsState(savedSorter.direction)
-                    const field = this.fields.find(f => f.name === name)!
+                    const field = this.fieldComponents.find(f => f.id === id)!
                     field.priorityLabelContainer.textContent = `(${savedSorter.priority})`
                 } else {
                     rowSorter.direction = undefined
@@ -216,11 +236,11 @@ export class FieldSet {
                     rowSorter.descBtn.buttonEl.removeClass("active")
                 }
             })
-            Object.keys(this.columnManagers).forEach(name => {
-                const mover = this.columnManagers[name]
-                const field = this.fields.find(f => f.name === name)!
+            Object.keys(this.columnManagers).forEach(id => {
+                const mover = this.columnManagers[id]
+                const field = this.fieldComponents.find(f => f.id === id || (!f.id && f.name === mover.name))!
                 for (const column of savedView.columns || []) {
-                    if (column.name === name) {
+                    if (column.id === id) {
                         mover.position = column.position
                         field.columnPosition = column.position
                         field.setVisibilityButtonState(column.hidden)

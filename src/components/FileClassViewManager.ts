@@ -119,6 +119,7 @@ export class FileClassViewManager extends Component {
                     );
                 }
             } catch (e) {
+                console.log(e)
                 this.unload()
                 console.warn("Fileclass view couldn't load because of a conflict with another plugin")
             }
@@ -142,7 +143,7 @@ export class FileClassViewManager extends Component {
         // @ts-ignore
         this.plugin.app.viewRegistry.unregisterView(this.fileClassViewType);
         this.plugin.indexDB.fileClassViews.removeElement(FILECLASS_VIEW_TYPE + "__" + this.name)
-        this.fileClassView.tableView.fileClassDataviewTable.observer?.disconnect();
+        this.fileClassView?.tableView.fileClassDataviewTable.observer?.disconnect();
     }
 
     static async reloadViews(plugin: MetadataMenu): Promise<void> {
