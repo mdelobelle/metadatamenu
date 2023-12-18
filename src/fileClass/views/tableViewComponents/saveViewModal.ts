@@ -5,10 +5,9 @@ import { FileClassTableView } from "../fileClassTableView"
 import { ColumnMover, RowSorter, Filter, Column } from "./tableViewFieldSet"
 import { RowSorterComponent } from "./RowSorterComponent"
 import { FilterComponent } from "./FilterComponent"
-import { FileClassChild } from "src/fileClass/fileClass"
 
 export class SavedView {
-    children: Array<FileClassChild>
+    children: Array<string> = []
     sorters: Array<RowSorter> = []
     filters: Array<Filter> = []
     columns: Array<Column> = []
@@ -69,6 +68,7 @@ export class CreateSavedViewModal extends Modal {
             }
         }
         this.savedView = new SavedView("")
+        this.savedView.children = view.fieldSet.children.map(c => c.name)
         this.savedView.buildFilters(view.fieldSet.filters)
         this.savedView.buildRowSorters(view.fieldSet.rowSorters)
         this.savedView.buildColumnManagers(view.fieldSet.columnManagers)

@@ -1,10 +1,11 @@
 import MetadataMenu from "main";
 import { ButtonComponent, debounce, DropdownComponent, TextComponent } from "obsidian";
-import { FileClass, FileClassChild } from "../fileClass";
+import { FileClass } from "../fileClass";
 import { FieldSet } from "./tableViewComponents/tableViewFieldSet";
 import { CreateSavedViewModal } from "./tableViewComponents/saveViewModal";
 import { FileClassDataviewTable } from "./tableViewComponents/fileClassDataviewTable";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
+import { ChildrenMultiSelectModal } from "./tableViewComponents/ChildrenMultiSelectModal";
 
 export class FileClassTableView {
     public plugin: MetadataMenu;
@@ -29,16 +30,20 @@ export class FileClassTableView {
         public tableId: string,
         public fileClass: FileClass,
         public selectedView?: string | undefined,
-        public children: FileClassChild[] = []
     ) {
         this.plugin = manager.plugin;
         this.container = this.viewContainer.createDiv({ cls: "fv-table" })
+        this.build()
+    };
+
+    public build() {
         this.limit = this.fileClass.getFileClassOptions().limit
+        this.container.replaceChildren()
         this.createHeader();
         this.fileClassDataviewTable = new FileClassDataviewTable(
             this.fieldSet.getParams(), this, this.fileClass)
         if (this.selectedView) this.changeView(this.selectedView)
-    };
+    }
 
     private createHeader(): void {
         const header = this.container.createDiv({ cls: "options" })
@@ -55,6 +60,7 @@ export class FileClassTableView {
         this.buildCleanFields(applyContainer);
         this.buildSaveView(applyContainer);
         this.buildSavedViewRemoveButton(applyContainer)
+        if (this.fileClass.getChildren().length) this.buildChildrenSelector(applyContainer);
         this.buildHideFilters(applyContainer);
     }
 
@@ -97,7 +103,7 @@ export class FileClassTableView {
 
     private buildFields(container: HTMLDivElement) {
         container.replaceChildren()
-        this.fieldSet = new FieldSet(this, container, this.children)
+        this.fieldSet = new FieldSet(this, container)
     }
 
     /*
@@ -229,6 +235,20 @@ export class FileClassTableView {
             }
         }
         hideFilterBtn.onClick(() => toggleState())
+    }
+
+    /*
+    ** Children selector
+    */
+
+    private buildChildrenSelector(container: HTMLDivElement) {
+        const btnContainer = container.createDiv({ cls: "cell" })
+        const childrenBtn = new ButtonComponent(btnContainer);
+        childrenBtn.setIcon("network");
+        childrenBtn.setTooltip("display children selector")
+        childrenBtn.onClick(() => {
+            new ChildrenMultiSelectModal(this.plugin, this.fileClass, this.fieldSet).open()
+        })
     }
 
     /*

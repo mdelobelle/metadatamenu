@@ -1,4 +1,4 @@
-import { ButtonComponent, Debouncer, TextComponent, debounce, setIcon } from "obsidian"
+import { ButtonComponent, Debouncer, debounce } from "obsidian"
 import { FieldSet, btnIcons } from "./tableViewFieldSet"
 import { RowSorterComponent } from "./RowSorterComponent"
 import { FilterComponent } from "./FilterComponent"

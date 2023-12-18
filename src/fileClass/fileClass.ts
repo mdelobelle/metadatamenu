@@ -196,6 +196,12 @@ class FileClass {
         return missingFields
     }
 
+    public getViewChildren(name?: string): FileClassChild[] {
+        if (!name) return []
+        const childrenNames = this.getFileClassOptions().savedViews?.find(_view => _view.name === name)?.children || []
+        return this.getChildren().filter(c => childrenNames.includes(c.name))
+    }
+
     static getFileClassAttributes(plugin: MetadataMenu, fileClass: FileClass, excludes?: string[]): FileClassAttribute[] {
         const file = fileClass.getClassFile();
         const rawAttributes = plugin.app.metadataCache.getFileCache(file)?.frontmatter?.fields || []

@@ -45,12 +45,19 @@ export class FileClassDataviewTable {
             try {
                 const current = this.ctx ? dvApi.page(this.ctx.sourcePath) : {}
                 const fFC = this.plugin.fieldIndex.filesFileClasses
-                const fileClassesNames = [this.fileClass.name, ...this.viewConfiguration.children.map(c => c.name)]
+                const fileClassesNames = [this.fileClass.name, ...this.viewConfiguration.children]
                 const fileClassFiles = [...fFC.keys()].filter(path => fFC.get(path)?.some(_fileClass => fileClassesNames.includes(_fileClass.name)))
+                const fileFileClasses = (path: string) => {
+                    return this.plugin.fieldIndex.filesFileClasses.get(path)?.map(_fC => _fC.name) || []
+                }
+                const hasFileClass = (path: string, id: string) => {
+                    const fileClassName = id.split('____')[0]
+                    return fileFileClasses(path).includes(fileClassName)
+                }
                 const values = (new Function(
-                    "dv", "current", "fileClassFiles",
+                    "dv", "current", "fileClassFiles", "hasFileClass",
                     `return ${this.buildDvJSQuery()}`)
-                )(dvApi, current, fileClassFiles).values;
+                )(dvApi, current, fileClassFiles, hasFileClass).values;
                 const count = values.length;
 
                 const rangesCount = Math.floor(count / this.limit) + 1
@@ -87,6 +94,7 @@ export class FileClassDataviewTable {
                 const activeRange = this.ranges.find(r => r.hasClass("active"))
                 if (activeRange && this.ranges.indexOf(activeRange) < 2) toggleRanges(rangesCount)
             } catch (e) {
+                console.log(e)
                 console.error("unable to build the list of files")
             }
         }
@@ -124,7 +132,6 @@ export class FileClassDataviewTable {
         //this.setObserver(tableContainer)
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
-            //TODO replace this.plugin by this.<the manager component hosting this view> so that we can remove the child deletion mecanism
             dvApi.executeJs(this.buildDvJSRendering(), tableContainer, this.view.manager, this.fileClass.getClassFile().path)
         }
         // links aren't clickable anymore, rebinding them to click event
@@ -321,7 +328,7 @@ export class FileClassDataviewTable {
             .sort((f1, f2) => f1.position < f2.position ? -1 : 1)
         let dvJS = "const {fieldModifier: f} = MetadataMenu.api;\n" +
             "const fFC = MetadataMenu.fieldIndex.filesFileClasses\n" +
-            `const fileClassesNames = ["${this.fileClass.name}", ...[${this.viewConfiguration.children.map(c => "'" + c.name + "'").join(", ")}]];\n` +
+            `const fileClassesNames = ["${this.fileClass.name}", ...[${this.viewConfiguration.children.map(c => "'" + c + "'").join(", ")}]];\n` +
             `const fileClassFiles = [...fFC.keys()].filter(path => fFC.get(path)?.some(_fileClass => fileClassesNames.includes(_fileClass.name)))\n` +
             "const basename = (item) => {\n" +
             "    if(item && item.hasOwnProperty('path')){\n" +

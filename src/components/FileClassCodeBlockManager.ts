@@ -1,8 +1,7 @@
 import MetadataMenu from "main";
-import { Component, MarkdownPostProcessorContext, MarkdownRenderChild, parseYaml } from "obsidian";
+import { MarkdownPostProcessorContext, MarkdownRenderChild, parseYaml } from "obsidian";
 import { FileClass } from "src/fileClass/fileClass";
 import { FileClassCodeBlockView } from "src/fileClass/views/fileClassCodeBlockView";
-import { DataviewJSRenderer } from "obsidian";
 
 export enum FileClassViewType {
     "table" = "table"
@@ -63,12 +62,4 @@ export class FileClassCodeBlockManager extends MarkdownRenderChild {
     onload(): void {
         this.build()
     }
-    /*
-    onunload(): void {
-        this.plugin._children.filter(child => child.hasOwnProperty("script") && child.containerEl.getAttr("id") === this.tableId)
-            .forEach(child => {
-                this.plugin.removeChild(child)
-            })
-    }
-    */
 }

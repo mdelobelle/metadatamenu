@@ -63,10 +63,4 @@ export class FilterComponent {
         })
     }
 
-    public reset() {
-        this.filter.inputEl.value = ""
-        this.customFilter = ""
-        this.toggleCustomFilterState()
-    }
-
 }

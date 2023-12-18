@@ -8,7 +8,6 @@ import FileField from "../../../fields/fieldManagers/FileField";
 import { cleanActions } from "src/utils/modals";
 import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
 import MultiFileField from "src/fields/fieldManagers/MultiFileField";
-import { FieldComponent } from "./FieldComponent";
 
 export enum fieldStates {
     __empty__ = "__empty__",
@@ -49,7 +48,6 @@ export class OptionsMultiSelectModal extends SuggestModal<string>{
         const footerActionsContainer = this.containerEl.createDiv({ cls: "footer-actions" })
         this.buildFooterActions(footerActionsContainer)
         const id = this.field === "file" ? "file" : `${this.fileClassFile.basename.replace(/.md$/, "")}____${this.field.name}`
-        console.log(this.parentFieldSet.filters, id)
         this.input = this.parentFieldSet.filters[id].filter
         const initialOptions = this.input.getValue()
         if (initialOptions) {

@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { ButtonComponent, setIcon, Setting } from "obsidian";
+import { ButtonComponent, setIcon } from "obsidian";
 import { removeFileClassAttributeWithId } from "src/commands/removeFileClassAttribute";
 import { FieldTypeTagClass } from "src/types/fieldTypes";
 import { FileClass } from "../fileClass";

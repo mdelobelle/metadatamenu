@@ -8,7 +8,7 @@ import { FilterComponent } from "./FilterComponent";
 import Field from "src/fields/Field";
 
 export interface ViewConfiguration {
-    children: Array<FileClassChild>,
+    children: Array<string>,
     sorters: Array<RowSorter>,
     filters: Array<Filter>,
     columns: Array<Column>
@@ -62,18 +62,19 @@ export class FieldSet {
     public rowSorters: Record<string, RowSorterComponent> = {}
     public columnManagers: Record<string, ColumnMover> = {}
     public fieldsContainer: HTMLDivElement
+    public children: FileClassChild[]
 
     constructor(
         public tableView: FileClassTableView,
         public container: HTMLDivElement,
-        public children: FileClassChild[] = []
     ) {
         this.plugin = tableView.plugin
         this.build()
     }
 
-    public build() {
+    public build(children?: FileClassChild[]) {
         this.fileClass = this.plugin.fieldIndex.fileClassesName.get(this.tableView.fileClass.name)!
+        this.children = children || this.fileClass.getViewChildren(this.tableView.manager.selectedView)
         this.fileClasses = [this.fileClass, ...this.children.map(c => c.fileClass)]
         this.container.replaceChildren()
         this.fieldComponents = []
@@ -132,24 +133,11 @@ export class FieldSet {
         })
     }
 
-    private resetRowSorters() {
-        Object.keys(this.rowSorters).forEach(_id => {
-            this.rowSorters[_id].reset()
-            const field = this.fieldComponents.find(f => f.id === _id)!
-            field.priorityLabelContainer.textContent = ""
-        })
-    }
-
-    private resetFilters() {
-        Object.keys(this.filters).forEach(id => {
-            this.filters[id].reset()
-        })
-    }
-
-    public reset() {
-        this.resetRowSorters()
-        this.resetFilters()
-        this.resetColumnManagers()
+    public reset(children?: FileClassChild[]) {
+        this.rowSorters = {}
+        this.filters = {}
+        this.columnManagers = {}
+        this.build(children)
         this.tableView.update()
         this.tableView.saveViewBtn.setCta()
     }
@@ -182,7 +170,7 @@ export class FieldSet {
             }
         })
         return {
-            children: children,
+            children: children.map(c => c.name),
             filters: filters,
             sorters: sorters,
             columns: columns
@@ -220,6 +208,7 @@ export class FieldSet {
     public changeView(_name?: string) {
         const options = this.fileClass.getFileClassOptions()
         const savedViews = options.savedViews || []
+        this.tableView.manager.selectedView = _name || "";
         this.reset()
         if (_name && savedViews.find(view => view.name === _name)) {
             const savedView = savedViews.find(view => view.name === _name)!
@@ -256,12 +245,8 @@ export class FieldSet {
                     }
                 }
             })
-            this.reorderFields()
-        } else {
-            this.resetFilters()
-            this.resetRowSorters()
-            this.resetColumnManagers()
-            this.reorderFields()
         }
+        this.reorderFields()
     }
+
 }

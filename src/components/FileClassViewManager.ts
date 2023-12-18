@@ -86,7 +86,7 @@ export class FileClassViewManager extends Component {
             if (view) {
                 view.updateFieldsView();
                 view.updateSettingsView();
-                view.tableView.update();
+                view.tableView.build();
             }
         }));
     }

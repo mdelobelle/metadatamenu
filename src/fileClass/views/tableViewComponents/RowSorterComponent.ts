@@ -94,11 +94,4 @@ export class RowSorterComponent {
         return Object.values(this.parentFieldset.rowSorters)
             .reduce((intermediateMax, currentSorter) => Math.max(intermediateMax, currentSorter.priority || 0), 0)
     }
-
-    public reset() {
-        this.priority = undefined
-        this.direction = undefined
-        this.ascBtn.buttonEl.removeClass("active")
-        this.descBtn.buttonEl.removeClass("active")
-    }
 }
