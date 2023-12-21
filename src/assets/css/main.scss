@@ -12,6 +12,10 @@
             grid-area: 1;
             margin-right: 0.375em;
         }
+
+        &.field-status-may-have-changed{
+            color: var(--color-yellow);
+        }
         
         &.field-status-changed{
             color: var(--text-warning);

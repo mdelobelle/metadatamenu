@@ -11,6 +11,7 @@ import { Note } from "src/note/note";
 import FieldIndex from "src/index/FieldIndex";
 import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
 import { SavedView } from "./views/tableViewComponents/saveViewModal";
+import { insertMissingFields } from "src/commands/insertMissingFields";
 
 const options: Record<string, { name: string, toValue: (value: any) => any }> = {
     "limit": { name: "limit", toValue: (value: any) => value },
@@ -23,6 +24,12 @@ const options: Record<string, { name: string, toValue: (value: any) => any }> = 
     "parent": { name: "extends", toValue: (value: FileClass) => value?.name || null },
     "savedViews": { name: "savedViews", toValue: (value: SavedView[]) => value },
     "favoriteView": { name: "favoriteView", toValue: (value?: string) => value || null }
+}
+
+export interface FileClassChild {
+    name: string,
+    path: string[],
+    fileClass: FileClass
 }
 
 export interface FileClassOptions {
@@ -93,6 +100,9 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
         const currentFileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path)
         const newValue = currentFileClasses ? [...currentFileClasses.map(fc => fc.name), value].join(", ") : value
         await postValues(this.plugin, [{ id: `fileclass-field-${fileClassAlias}`, payload: { value: newValue } }], this.file, -1)
+        if (this.plugin.settings.autoInsertFieldsAtFileClassInsertion) {
+            insertMissingFields(this.plugin, this.file, -1)
+        }
     }
 }
 
@@ -129,7 +139,7 @@ class FileClass {
         const tagNames = FileClass.getTagNamesFromFrontMatter(_tagNames);
         const filesPaths = FileClass.getFilesPathsFromFrontMatter(_filesPaths);
         const bookmarksGroups = FileClass.getBookmarksGroupsFromFrontMatter(_bookmarksGroups);
-        const icon = typeof (_icon) === 'string' ? _icon : this.plugin.settings.buttonIcon
+        const icon = typeof (_icon) === 'string' ? _icon : this.plugin.settings.fileClassIcon
         const savedViews: SavedView[] = _savedViews || [];
         const favoriteView: string | null = (typeof _favoriteView === "string" && _favoriteView !== "") ? _favoriteView : null
         return new FileClassOptions(limit, icon, parent, excludes, tagNames, mapWithTag, filesPaths, bookmarksGroups, savedViews, favoriteView);
@@ -172,7 +182,6 @@ class FileClass {
                 };
             }
         })
-        //TODO add a setting for default fileclass icon
         return icon || this.plugin.settings.fileClassIcon
     }
 
@@ -185,6 +194,12 @@ class FileClass {
             !this.plugin.fieldIndex.fileClassesFields.get(this.name)?.map(f => f.id).every(id => currentFieldsIds.includes(id)) :
             false
         return missingFields
+    }
+
+    public getViewChildren(name?: string): FileClassChild[] {
+        if (!name) return []
+        const childrenNames = this.getFileClassOptions().savedViews?.find(_view => _view.name === name)?.children || []
+        return this.getChildren().filter(c => childrenNames.includes(c.name))
     }
 
     static getFileClassAttributes(plugin: MetadataMenu, fileClass: FileClass, excludes?: string[]): FileClassAttribute[] {
@@ -308,6 +323,24 @@ class FileClass {
             })
         })
         await this.incrementVersion();
+    }
+
+    public getChildren(): FileClassChild[] {
+        const childrenNames: FileClassChild[] = [];
+        [...this.plugin.fieldIndex.fileClassesAncestors].forEach(([_fName, ancestors]) => {
+            if (ancestors.includes(this.name)) {
+                const path = [...ancestors.slice(0, ancestors.indexOf(this.name)).reverse(), _fName]
+                const fileClass = this.plugin.fieldIndex.fileClassesName.get(_fName)
+                if (fileClass) {
+                    childrenNames.push({
+                        name: _fName,
+                        path: path,
+                        fileClass: fileClass
+                    })
+                }
+            }
+        })
+        return childrenNames
     }
 
     public async updateAttribute(

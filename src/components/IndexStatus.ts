@@ -3,8 +3,6 @@ import { ButtonComponent, Component, FileView, MarkdownEditView, TFile, View } f
 import { updateFormulas } from "src/commands/updateFormulas";
 import { updateLookups } from "src/commands/updateLookups";
 import { FieldType } from "src/types/fieldTypes";
-import { Status } from "src/types/lookupTypes";
-
 
 enum Statuses {
     "indexing" = "indexing",
@@ -111,6 +109,8 @@ export default class IndexStatus extends Component {
             if (file instanceof TFile && file.extension === 'md') {
                 this.file = file
                 if (this.plugin.fieldIndex.dvQFieldChanged(file.path)) {
+                    this.setState("update")
+                } else if (this.plugin.fieldIndex.dvQFieldMayHaveChanged(file.path)) {
                     this.setState("update")
                 } else {
                     this.setState("indexed")

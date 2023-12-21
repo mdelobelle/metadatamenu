@@ -313,3 +313,9 @@ You can also define a custom filtering function in javascript returning a boolea
 - "collapse filter" button to access more options: sort the table, filter the results, re-arrange columns orders, hide/show columns...
 
 You can define a custom sort by moving up/down the preset values of the field (for File, MultiFile, Select, MultiSelect, Lookup)
+
+### Child classes
+You can display child classes in the same view by selecting them from the children selector modal
+
+### Select and Save view
+You can save the sorters/filters of the current view, or choose an existing saved view and define a saved view as favorite to show it when the table view is opened

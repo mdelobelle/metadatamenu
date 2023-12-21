@@ -1,20 +1,24 @@
 import { ButtonComponent } from "obsidian"
 import { FieldSet, btnIcons } from "./tableViewFieldSet"
 import { OptionsPriorityModal } from "./OptionsPriorityModal"
+import { FileClass } from "src/fileClass/fileClass"
 
 export class RowSorterComponent {
+    public id: string
     public ascBtn: ButtonComponent
     public descBtn: ButtonComponent
     public customOrderBtn: ButtonComponent
 
     constructor(
         public parentFieldset: FieldSet,
+        public fileClass: FileClass,
         public fieldContainer: HTMLDivElement,
         public name: string,
         public direction: 'asc' | 'desc' | undefined,
         public priority?: number,
         public customOrder?: string[],
     ) {
+        this.id = `${this.fileClass}____${this.name}`
         this.ascBtn = this.buildSorterBtn('asc')
         this.descBtn = this.buildSorterBtn('desc')
         this.customOrderBtn = new ButtonComponent(fieldContainer)
@@ -73,10 +77,10 @@ export class RowSorterComponent {
 
     private changeRowSorterPriority(priority: number | undefined) {
         const currentPriority = this.priority
-        Object.keys(this.parentFieldset.rowSorters).forEach(_name => {
-            const field = this.parentFieldset.fields.find(f => f.name === _name)!
-            const sorter = this.parentFieldset.rowSorters[_name]
-            if (_name == this.name) {
+        Object.keys(this.parentFieldset.rowSorters).forEach(_id => {
+            const field = this.parentFieldset.fieldComponents.find(f => f.id === _id)!
+            const sorter = this.parentFieldset.rowSorters[_id]
+            if (_id == this.id) {
                 sorter.priority = !currentPriority ? priority : undefined
                 field.priorityLabelContainer.textContent = sorter.priority ? `(${sorter.priority})` : ""
             } else if (currentPriority && sorter.priority && !priority && sorter.priority > currentPriority) {
@@ -89,12 +93,5 @@ export class RowSorterComponent {
     private getMaxRowSorterPriority() {
         return Object.values(this.parentFieldset.rowSorters)
             .reduce((intermediateMax, currentSorter) => Math.max(intermediateMax, currentSorter.priority || 0), 0)
-    }
-
-    public reset() {
-        this.priority = undefined
-        this.direction = undefined
-        this.ascBtn.buttonEl.removeClass("active")
-        this.descBtn.buttonEl.removeClass("active")
     }
 }

@@ -376,20 +376,6 @@ function addUpdateFileFormulasCommand(plugin: MetadataMenu) {
     })
 }
 
-function forceIndexFieldsValues(plugin: MetadataMenu) {
-    plugin.addCommand({
-        id: "force_index_metadatamenu",
-        name: "Index MetadataMenu fields",
-        icon: "refresh-ccw",
-        checkCallback: (checking: boolean) => {
-            if (checking) return true;
-            (async function () {
-                plugin.fieldIndex.fullIndex(true)
-            })()
-        }
-    })
-}
-
 export function addCommands(plugin: MetadataMenu) {
     addFileClassAttributeOptions(plugin);
     addInsertFileClassAttribute(plugin);
@@ -404,5 +390,4 @@ export function addCommands(plugin: MetadataMenu) {
     addOpenFileclassViewCommand(plugin)
     addFileclassToFileCommand(plugin)
     addUpdateLookupsAndFormulas(plugin)
-    forceIndexFieldsValues(plugin)
 }

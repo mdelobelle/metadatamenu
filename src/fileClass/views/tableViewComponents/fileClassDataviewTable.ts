@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { ViewConfiguration } from "./tableViewFieldSet"
+import { Column, ViewConfiguration } from "./tableViewFieldSet"
 import { FileClass } from "../../fileClass";
 import { fieldStates } from "./OptionsMultiSelectModal";
 import { FieldType } from "src/types/fieldTypes";
@@ -14,8 +14,9 @@ export class FileClassDataviewTable {
     public ranges: HTMLDivElement[] = []
     public limitWrapped: boolean = false
     public limit: number
+    public plugin: MetadataMenu
+    public observer: MutationObserver;
     constructor(
-        public plugin: MetadataMenu,
         public viewConfiguration: ViewConfiguration,
         public view: FileClassTableView | FileClassCodeBlockView,
         private fileClass: FileClass,
@@ -23,6 +24,7 @@ export class FileClassDataviewTable {
         private sliceStart: number = 0,
         private ctx?: MarkdownPostProcessorContext
     ) {
+        this.plugin = this.view.manager.plugin
         this.limit = maxRow || this.fileClass.options.limit || this.plugin.settings.tableViewMaxRecords
     }
 
@@ -42,7 +44,20 @@ export class FileClassDataviewTable {
         if (dvApi) {
             try {
                 const current = this.ctx ? dvApi.page(this.ctx.sourcePath) : {}
-                const values = (new Function("dv", "current", `return ${this.buildDvJSQuery()}`))(dvApi, current).values;
+                const fFC = this.plugin.fieldIndex.filesFileClasses
+                const fileClassesNames = [this.fileClass.name, ...this.viewConfiguration.children]
+                const fileClassFiles = [...fFC.keys()].filter(path => fFC.get(path)?.some(_fileClass => fileClassesNames.includes(_fileClass.name)))
+                const fileFileClasses = (path: string) => {
+                    return this.plugin.fieldIndex.filesFileClasses.get(path)?.map(_fC => _fC.name) || []
+                }
+                const hasFileClass = (path: string, id: string) => {
+                    const fileClassName = id.split('____')[0]
+                    return fileFileClasses(path).includes(fileClassName)
+                }
+                const values = (new Function(
+                    "dv", "current", "fileClassFiles", "hasFileClass",
+                    `return ${this.buildDvJSQuery()}`)
+                )(dvApi, current, fileClassFiles, hasFileClass).values;
                 const count = values.length;
 
                 const rangesCount = Math.floor(count / this.limit) + 1
@@ -79,6 +94,7 @@ export class FileClassDataviewTable {
                 const activeRange = this.ranges.find(r => r.hasClass("active"))
                 if (activeRange && this.ranges.indexOf(activeRange) < 2) toggleRanges(rangesCount)
             } catch (e) {
+                console.log(e)
                 console.error("unable to build the list of files")
             }
         }
@@ -112,10 +128,10 @@ export class FileClassDataviewTable {
                 }
             }
         }
-
+        const table = tableContainer.querySelector(`#table-container-${this.view.tableId}`) as HTMLDivElement
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
-            dvApi.executeJs(this.buildDvJSRendering(), tableContainer, this.plugin, this.fileClass.getClassFile().path)
+            dvApi.executeJs(this.buildDvJSRendering(), tableContainer, this.view.manager, this.fileClass.getClassFile().path)
         }
         // links aren't clickable anymore, rebinding them to click event
         if (this.view instanceof FileClassTableView) this.addClickEventToLink(tableContainer)
@@ -173,30 +189,30 @@ export class FileClassDataviewTable {
                     const existing = values.find(v => v === "__existing__")
                     values = values.filter(v => !Object.keys(fieldStates).includes(v))
                     if (empty) {
-                        return `    .filter(p => ${valueGetter} === null)\n`
+                        return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === null)\n`
                     } else if (notEmpty) {
-                        return `    .filter(p => ${valueGetter} !== null)\n`
+                        return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} !== null)\n`
                     } else if (notFound) {
-                        return `    .filter(p => ${valueGetter} === undefined)\n`
+                        return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === undefined)\n`
                     } else if (existing) {
-                        return `    .filter(p => ${valueGetter} !== undefined)\n`
+                        return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} !== undefined)\n`
                     } else if (values.length) {
                         const fCField = filter.name !== "file" ? this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.find(f => f.name === filter.name) : undefined
                         if (fCField?.type === FieldType.Boolean) {
                             switch (value) {
                                 case 'true':
-                                    return `    .filter(p => ${valueGetter} === true)\n`
+                                    return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === true)\n`
                                 case 'false':
-                                    return `    .filter(p => ${valueGetter} === false)\n`
+                                    return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === false)\n`
                                 case 'false, true':
                                 case 'true, false':
-                                    return `    .filter(p => [true, false].some(b => ${valueGetter} === b))\n`
+                                    return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && [true, false].some(b => ${valueGetter} === b))\n`
                                 default:
                                     return ""
                             }
                         } else {
                             const valuesQueries = values.map(val => `${valueGetter}.toString().toLowerCase().includes("${val}".toLowerCase())`)
-                            return `    .filter(p => ${valueGetter} && (${valuesQueries.join(" || ")}))\n`
+                            return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} && (${valuesQueries.join(" || ")}))\n`
                         }
                     } else {
                         return ""
@@ -247,14 +263,11 @@ export class FileClassDataviewTable {
     }
 
     private buildDvJSQuery(): string {
-        const fFC = this.plugin.fieldIndex.filesFileClasses
         let dvQuery = "";
         const classFilesPath = this.plugin.settings.classFilesPath
         const templatesFolder = this.plugin.app.plugins.plugins["templater-obsidian"]?.settings["templates_folder"];
-        const fileClassFiles = [...fFC.keys()].filter(path => fFC.get(path)?.some(fileClass => fileClass.name === this.fileClass.name))
-        const fileClassFilesPaths = `"${fileClassFiles.map(fC => fC.replaceAll('"', '\\"')).join('", "')}"`
         dvQuery += `dv.pages()\n`;
-        dvQuery += `    .where(p => [${fileClassFilesPaths}].includes(p.file.path)
+        dvQuery += `    .where(p => fileClassFiles.includes(p.file.path)
         ${!!classFilesPath ? "        && !p.file.path.includes('" + classFilesPath + "')\n" : ""}
         ${templatesFolder ? "        && !p.file.path.includes('" + templatesFolder + "')\n" : ""}
         )\n`;
@@ -263,10 +276,18 @@ export class FileClassDataviewTable {
     }
 
     private buildDvJSRendering(): string {
-        const fields = this.viewConfiguration.columns
-            .filter(f => !this.viewConfiguration.columns.find(_f => _f.name === f.name)?.hidden)
+        const buildColumnName = (column: Column) => {
+            if (column.name === "file") return this.fileClass.name
+            if (this.viewConfiguration.children.length) return column.id.replace("____", ": ")
+            else return column.name
+        }
+        const columns = this.viewConfiguration.columns
+            .filter(f => !this.viewConfiguration.columns.find(_f => _f.id === f.id)?.hidden)
             .sort((f1, f2) => f1.position < f2.position ? -1 : 1)
         let dvJS = "const {fieldModifier: f} = MetadataMenu.api;\n" +
+            "const fFC = MetadataMenu.fieldIndex.filesFileClasses\n" +
+            `const fileClassesNames = ["${this.fileClass.name}", ...[${this.viewConfiguration.children.map(c => "'" + c + "'").join(", ")}]];\n` +
+            `const fileClassFiles = [...fFC.keys()].filter(path => fFC.get(path)?.some(_fileClass => fileClassesNames.includes(_fileClass.name)))\n` +
             "const basename = (item) => {\n" +
             "    if(item && item.hasOwnProperty('path')){\n" +
             "        return /([^\/]*).md/.exec(item.path)?.[1] || item.path\n" +
@@ -276,6 +297,17 @@ export class FileClassDataviewTable {
             "        return item?.toString() || '' \n" +
             "    }\n" +
             "}\n" +
+            "const fileFileClasses = (path) => {\n" +
+            "    return MetadataMenu.fieldIndex.filesFileClasses.get(path)?.map(_fC => _fC.name) || [] \n" +
+            "}\n" +
+            "const hasFileClass = (path, id) => {\n" +
+            "    if(id.includes('____')){\n" +
+            "        const fileClassName = id.split('____')[0]\n" +
+            "        return fileFileClasses(path).includes(fileClassName)\n" +
+            "    } else {\n" +
+            "        return true" +
+            "    }\n" +
+            "}\n" +
             "const rank = (item, options, dir) => {\n" +
             "    const indexInOptions = options.indexOf(basename(item));\n" +
             "    if(dir === 1){\n" +
@@ -283,18 +315,18 @@ export class FileClassDataviewTable {
             "    }\n" +
             "    return indexInOptions\n" +
             "}\n" +
-            "dv.table([";
-        dvJS += fields.map(field => `"${field.name === "file" ? this.fileClass.name : field.name}"`).join(",");
+            "dv.table([\n";
+        dvJS += columns.map(column => `"${buildColumnName(column)}"`).join(",");
         dvJS += `], \n`;
         dvJS += this.buildDvJSQuery();
         dvJS += this.buildSorterQuery();
         dvJS += `    .slice(${this.sliceStart}, ${this.sliceStart + this.limit})\n`;
         dvJS += "    .map(p => [\n";
-        dvJS += fields.map(field => {
-            if (field.name === "file") {
+        dvJS += columns.map(column => {
+            if (column.name === "file") {
                 return "        dv.el(\"div\", p.file.link, {cls: \"field-name\"})";
             } else {
-                return `        f(dv, p, "${field.name}", {options: {alwaysOn: false, showAddField: true}})`
+                return `        hasFileClass(p.file.path, "${column.id}") ? f(dv, p, "${column.name}", {options: {alwaysOn: false, showAddField: true}}) : ""`
             }
         }).join(",\n");
         dvJS += "    \n])";

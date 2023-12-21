@@ -4,6 +4,8 @@ import { FileClass } from "../fileClass";
 import { FieldSet } from "./tableViewComponents/tableViewFieldSet";
 import { CreateSavedViewModal } from "./tableViewComponents/saveViewModal";
 import { FileClassDataviewTable } from "./tableViewComponents/fileClassDataviewTable";
+import { FileClassViewManager } from "src/components/FileClassViewManager";
+import { ChildrenMultiSelectModal } from "./tableViewComponents/ChildrenMultiSelectModal";
 
 export class FileClassTableView {
     public plugin: MetadataMenu;
@@ -20,23 +22,26 @@ export class FileClassTableView {
     public fieldSet: FieldSet
     public limitWrapped: boolean = false
     public ranges: HTMLDivElement[] = []
-    private fileClassDataviewTable: FileClassDataviewTable
+    public fileClassDataviewTable: FileClassDataviewTable
 
     constructor(
-        plugin: MetadataMenu,
+        public manager: FileClassViewManager,
         private viewContainer: HTMLDivElement,
         public tableId: string,
         public fileClass: FileClass,
-        public selectedView?: string | undefined
+        public selectedView?: string | undefined,
     ) {
-        this.plugin = plugin;
+        this.plugin = manager.plugin;
         this.container = this.viewContainer.createDiv({ cls: "fv-table" })
-        this.limit = this.fileClass.getFileClassOptions().limit
-        this.createHeader();
-        this.fileClassDataviewTable = new FileClassDataviewTable(
-            this.plugin, this.fieldSet.getParams(), this, this.fileClass)
-        if (this.selectedView) this.changeView(this.selectedView)
+        this.build()
     };
+
+    public build() {
+        this.limit = this.fileClass.getFileClassOptions().limit
+        this.container.replaceChildren()
+        this.createHeader();
+        this.changeView(this.selectedView)
+    }
 
     private createHeader(): void {
         const header = this.container.createDiv({ cls: "options" })
@@ -53,12 +58,13 @@ export class FileClassTableView {
         this.buildCleanFields(applyContainer);
         this.buildSaveView(applyContainer);
         this.buildSavedViewRemoveButton(applyContainer)
+        if (this.fileClass.getChildren().length) this.buildChildrenSelector(applyContainer);
         this.buildHideFilters(applyContainer);
     }
 
     public update(maxRows?: number, sliceStart: number = 0): void {
         this.fileClassDataviewTable = new FileClassDataviewTable(
-            this.plugin, this.fieldSet.getParams(), this, this.fileClass, maxRows, sliceStart)
+            this.fieldSet.getParams(), this, this.fileClass, maxRows, sliceStart)
         this.buildTable();
         this.buildPaginationManager(this.paginationContainer);
         this.buildViewSelector()
@@ -227,6 +233,20 @@ export class FileClassTableView {
             }
         }
         hideFilterBtn.onClick(() => toggleState())
+    }
+
+    /*
+    ** Children selector
+    */
+
+    private buildChildrenSelector(container: HTMLDivElement) {
+        const btnContainer = container.createDiv({ cls: "cell" })
+        const childrenBtn = new ButtonComponent(btnContainer);
+        childrenBtn.setIcon("network");
+        childrenBtn.setTooltip("display children selector")
+        childrenBtn.onClick(() => {
+            new ChildrenMultiSelectModal(this.plugin, this.fileClass, this.fieldSet).open()
+        })
     }
 
     /*

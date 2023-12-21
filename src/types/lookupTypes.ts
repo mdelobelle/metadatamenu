@@ -112,12 +112,14 @@ export const bulletListLookupTypes = [
 ]
 
 export enum Status {
+    "mayHaveChanged" = "mayHaveChanged",
     "changed" = "changed",
     "error" = "error",
     "upToDate" = "upToDate"
 }
 
 export const statusIcon = {
+    "mayHaveChanged": "refresh-ccw",
     "error": "file-warning",
     "upToDate": "file-check",
     "changed": "refresh-ccw"

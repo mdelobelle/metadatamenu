@@ -7,17 +7,17 @@ import { RowSorterComponent } from "./RowSorterComponent"
 import { FilterComponent } from "./FilterComponent"
 
 export class SavedView {
+    children: Array<string> = []
     sorters: Array<RowSorter> = []
     filters: Array<Filter> = []
     columns: Array<Column> = []
-    constructor(public name: string) {
-
-    }
+    constructor(public name: string) { }
 
     public buildFilters(filters: Record<string, FilterComponent>) {
-        Object.entries(filters).forEach(([name, filterComponent]) => {
+        Object.entries(filters).forEach(([id, filterComponent]) => {
             this.filters.push({
-                name: name,
+                id: id,
+                name: filterComponent.name,
                 query: filterComponent.filter.inputEl.value,
                 customFilter: filterComponent.customFilter
             })
@@ -25,10 +25,11 @@ export class SavedView {
     }
 
     public buildRowSorters(rowSorters: Record<string, RowSorterComponent>) {
-        Object.keys(rowSorters).forEach(name => {
-            const sorter = rowSorters[name]
+        Object.keys(rowSorters).forEach(id => {
+            const sorter = rowSorters[id]
             if (sorter.direction || sorter.customOrder?.length) {
                 this.sorters.push({
+                    id: id,
                     name: sorter.name,
                     direction: sorter.direction || 'asc',
                     priority: sorter.priority || 0,
@@ -39,9 +40,10 @@ export class SavedView {
     }
 
     public buildColumnManagers(columnManagers: Record<string, ColumnMover>) {
-        Object.entries(columnManagers).forEach(([name, column]) => {
+        Object.entries(columnManagers).forEach(([id, column]) => {
             this.columns.push({
-                name: name,
+                id: id,
+                name: column.name,
                 hidden: column.hidden,
                 position: column.position
             })
@@ -66,6 +68,7 @@ export class CreateSavedViewModal extends Modal {
             }
         }
         this.savedView = new SavedView("")
+        this.savedView.children = view.fieldSet.children.map(c => c.name)
         this.savedView.buildFilters(view.fieldSet.filters)
         this.savedView.buildRowSorters(view.fieldSet.rowSorters)
         this.savedView.buildColumnManagers(view.fieldSet.columnManagers)

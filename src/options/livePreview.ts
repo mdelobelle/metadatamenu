@@ -36,7 +36,7 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
                     const icon = fileClass?.getIcon() || "file-spreadsheet"
                     fileClass = plugin.fieldIndex.fileClassesPath.get(this.destName + ".md")
                     if (fileClass) {
-                        setIcon(metadataMenuBtn, icon || settings.buttonIcon)
+                        setIcon(metadataMenuBtn, icon || settings.fileClassIcon)
                         metadataMenuBtn.onclick = (event) => {
                             const fileClassViewManager = new FileClassViewManager(plugin, fileClass)
                             plugin.addChild(fileClassViewManager)
@@ -47,7 +47,7 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
                 } else if (fileClass) {
 
                     const icon = fileClass.getIcon();
-                    setIcon(metadataMenuBtn, icon || settings.buttonIcon)
+                    setIcon(metadataMenuBtn, icon || settings.fileClassIcon)
                     metadataMenuBtn.onclick = (event) => {
                         const file = plugin.app.vault.getAbstractFileByPath(`${this.destName}.md`)
                         if (file instanceof TFile && file.extension === "md") {

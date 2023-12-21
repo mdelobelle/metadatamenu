@@ -1,13 +1,16 @@
-import { ButtonComponent, Debouncer, TextComponent, debounce, setIcon } from "obsidian"
+import { ButtonComponent, Debouncer, debounce } from "obsidian"
 import { FieldSet, btnIcons } from "./tableViewFieldSet"
 import { RowSorterComponent } from "./RowSorterComponent"
 import { FilterComponent } from "./FilterComponent"
+import { FileClass } from "src/fileClass/fileClass"
 
 export class FieldComponent {
     public priorityLabelContainer: HTMLDivElement
     public visibilityButton: ButtonComponent
+    public id: string
 
     constructor(
+        public fileClass: FileClass,
         public container: HTMLDivElement,
         public parentFieldSet: FieldSet,
         public name: string,
@@ -19,6 +22,7 @@ export class FieldComponent {
         public query: string = "",
         public customOrder: string[] = []
     ) {
+        this.id = `${this.fileClass.name}____${this.name}`
         this.buildFieldHeaderComponent()
         this.buildFieldComponent()
     }
@@ -28,7 +32,7 @@ export class FieldComponent {
             this.columnPosition === 0 &&
             direction === 'left'
             ||
-            this.columnPosition === this.parentFieldSet.fields.length - 1 &&
+            this.columnPosition === this.parentFieldSet.fieldComponents.length - 1 &&
             direction === 'right'
         )
     }
@@ -39,7 +43,7 @@ export class FieldComponent {
             btn.setIcon(btnIcons[direction])
             btn.onClick(() => {
                 if (this.canMove(direction)) {
-                    this.parentFieldSet.moveColumn(this.name, direction);
+                    this.parentFieldSet.moveColumn(this.id, direction);
                     this.parentFieldSet.reorderFields()
                     this.parentFieldSet.tableView.update()
                     this.parentFieldSet.tableView.saveViewBtn.setCta()
@@ -49,7 +53,8 @@ export class FieldComponent {
         }
         const leftBtn = buildBtn('left')
         const rightBtn = buildBtn('right')
-        this.parentFieldSet.columnManagers[this.name] = {
+        this.parentFieldSet.columnManagers[this.id] = {
+            id: this.id,
             name: this.name,
             hidden: false,
             leftBtn: leftBtn,
@@ -58,17 +63,16 @@ export class FieldComponent {
         }
     }
 
-    private buildRowSorterComponent(fieldHeader: HTMLDivElement) {
+    private buildRowSorterComponent(fileClass: FileClass, fieldHeader: HTMLDivElement) {
 
-        const rowSorterComponent = new RowSorterComponent(this.parentFieldSet, fieldHeader, this.name,
+        const rowSorterComponent = new RowSorterComponent(this.parentFieldSet, fileClass, fieldHeader, this.name,
             this.rowSortingDirection, this.rowPriority, this.customOrder)
-
-        this.parentFieldSet.rowSorters[this.name] = rowSorterComponent
+        this.parentFieldSet.rowSorters[this.id] = rowSorterComponent
     }
 
     public setVisibilityButtonState(isHidden: boolean) {
         this.isColumnHidden = isHidden
-        this.parentFieldSet.columnManagers[this.name].hidden = this.isColumnHidden
+        this.parentFieldSet.columnManagers[this.id].hidden = this.isColumnHidden
         this.visibilityButton.setIcon(this.isColumnHidden ? "eye-off" : "eye")
     }
 
@@ -83,11 +87,17 @@ export class FieldComponent {
     }
 
     private buildFieldHeaderComponent(): void {
+        if (this.parentFieldSet.children.length) {
+            this.container.createDiv({
+                text: this.fileClass.name,
+                cls: "field-fileclass-header"
+            });
+        }
         const container = this.container.createDiv({ cls: "field-header" });
-        this.buildRowSorterComponent(container)
+        this.buildRowSorterComponent(this.fileClass, container)
         const prioAndLabelContainer = container.createDiv({ cls: "label-container" })
         prioAndLabelContainer.createDiv({ text: this.label, cls: "field-name" })
-        const priorityLabel = this.parentFieldSet.rowSorters[this.name]?.priority ? `(${this.parentFieldSet.rowSorters[this.name].priority})` : ""
+        const priorityLabel = this.parentFieldSet.rowSorters[this.id]?.priority ? `(${this.parentFieldSet.rowSorters[this.id].priority})` : ""
         this.priorityLabelContainer = prioAndLabelContainer.createDiv({ cls: "priority", text: priorityLabel })
         this.buildVisibilityBtn(container)
         this.buildColumnMoverBtn(container)
@@ -95,8 +105,8 @@ export class FieldComponent {
 
     private buildFilter(name: string, debounced: Debouncer<[fieldset: FieldSet], void>) {
         const fieldFilterContainer = this.container.createDiv({ cls: "filter-input" });
-        const filterComponent = new FilterComponent(fieldFilterContainer, name, this.parentFieldSet, debounced)
-        this.parentFieldSet.filters[this.name] = filterComponent
+        const filterComponent = new FilterComponent(this.fileClass, fieldFilterContainer, name, this.parentFieldSet, debounced)
+        this.parentFieldSet.filters[filterComponent.id] = filterComponent
     }
 
     private buildFieldComponent(): void {

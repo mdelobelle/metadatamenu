@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { ButtonComponent, setIcon, Setting } from "obsidian";
+import { ButtonComponent, setIcon } from "obsidian";
 import { removeFileClassAttributeWithId } from "src/commands/removeFileClassAttribute";
 import { FieldTypeTagClass } from "src/types/fieldTypes";
 import { FileClass } from "../fileClass";
@@ -18,7 +18,6 @@ class FileClassFieldSetting {
         this.plugin = plugin;
         this.buildSetting();
     };
-    //FIXME grand child ot below the correct parent
     private buildSetting(): void {
         const fCA = this.fileClassAttribute
         const fieldNameContainer = this.container.createDiv({ cls: "name-container" })

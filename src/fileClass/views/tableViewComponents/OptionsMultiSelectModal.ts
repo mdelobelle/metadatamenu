@@ -47,7 +47,7 @@ export class OptionsMultiSelectModal extends SuggestModal<string>{
         cleanActions(this.containerEl, ".footer-actions")
         const footerActionsContainer = this.containerEl.createDiv({ cls: "footer-actions" })
         this.buildFooterActions(footerActionsContainer)
-        const id = this.field === "file" ? "file" : this.field.name
+        const id = this.field === "file" ? "file" : `${this.fileClassFile.basename.replace(/.md$/, "")}____${this.field.name}`
         this.input = this.parentFieldSet.filters[id].filter
         const initialOptions = this.input.getValue()
         if (initialOptions) {

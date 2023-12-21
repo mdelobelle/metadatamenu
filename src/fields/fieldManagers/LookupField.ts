@@ -33,12 +33,12 @@ export default class LookupField extends FieldManager {
                 f.fileLookupFieldLastOutputType.get(`${file.path}__related__${this.field.fileClassName}___${this.field.name}`) !==
                 this.field.options.outputType
             ) status = Status.changed
-            const icon = status === Status.changed ? "refresh-ccw" : "file-check"
+            const icon = Lookup.statusIcon[status]
             const action = async () => {
                 await updateLookups(this.plugin, { file: file, fieldName: this.field.name })
                 f.applyUpdates()
             }
-            if (LookupField.isSuggest(location) && status === Status.changed) {
+            if (LookupField.isSuggest(location) && [Status.changed, Status.mayHaveChanged].includes(status)) {
                 location.options.push({
                     id: `update_${name}`,
                     actionLabel: `<span>Update <b>${name}</b></span>`,
@@ -46,7 +46,7 @@ export default class LookupField extends FieldManager {
                     icon: icon
                 });
 
-            } else if (LookupField.isFieldOptions(location) && status === Status.changed) {
+            } else if (LookupField.isFieldOptions(location) && [Status.changed, Status.mayHaveChanged].includes(status)) {
                 location.addOption(icon, action, `Update ${name}'s value`);
             } else if (LookupField.isFieldOptions(location) && status === Status.upToDate) {
                 location.addOption(icon, () => { }, `${name} is up to date`);

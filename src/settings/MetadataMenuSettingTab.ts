@@ -246,6 +246,20 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		enableAutoComplete.settingEl.addClass("no-border");
 		enableAutoComplete.controlEl.addClass("full-width");
 
+		/* Auto calculated lookups and formulas*/
+		const enableAutoCalculation = new Setting(globalSettings)
+			.setName('Auto calculation')
+			.setDesc('Activate lookups and formulas fields global auto-calculation')
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.isAutoCalculationEnabled);
+				cb.onChange(value => {
+					this.plugin.settings.isAutoCalculationEnabled = value;
+					this.plugin.saveSettings();
+				})
+			})
+		enableAutoCalculation.settingEl.addClass("no-border");
+		enableAutoCalculation.controlEl.addClass("full-width");
+
 
 
 		/* Indexing Status icon*/
@@ -363,7 +377,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			fileClassesFolderSaveButton.removeCta()
 		})
 		const path = new Setting(classFilesSettings)
-			.setName('class Files path')
+			.setName('Class Files path')
 			.setDesc('Path to the files containing the authorized fields for a type of note')
 			.addSearch((cfs) => {
 				new FolderSuggest(this.plugin, cfs.inputEl);
@@ -390,7 +404,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		})
 
 		const alias = new Setting(classFilesSettings)
-			.setName('fileClass field alias')
+			.setName('FileClass field alias')
 			.setDesc('Choose another name for fileClass field in frontmatter (example: Category, type, ...')
 			.addText((text) => {
 				text
@@ -409,7 +423,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		/* Set global fileClass*/
 		const global = new Setting(classFilesSettings)
-			.setName('global fileClass')
+			.setName('Global fileClass')
 			.setDesc('Choose one fileClass to be applicable to all files ' +
 				'(even it is not present as a fileClass attribute in their frontmatter). ' +
 				'This will override the preset Fields defined above')
@@ -507,6 +521,22 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		chooseFileClassAtFileCreation.settingEl.addClass("no-border");
 		chooseFileClassAtFileCreation.controlEl.addClass("full-width");
 
+
+		/* Choose fileclass at file creation Fileclass selector in modal*/
+
+		const autoInsertFieldsAtFileClassInsertion = new Setting(classFilesSettings)
+			.setName('Insert fileClass fields')
+			.setDesc('Includes fileClass in frontmatter after fileClass choice')
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.autoInsertFieldsAtFileClassInsertion);
+				cb.onChange(value => {
+					this.plugin.settings.autoInsertFieldsAtFileClassInsertion = value;
+					this.plugin.saveSettings();
+				})
+			})
+		autoInsertFieldsAtFileClassInsertion.settingEl.addClass("no-border");
+		autoInsertFieldsAtFileClassInsertion.controlEl.addClass("full-width");
+
 		/* Fileclass selector in modal*/
 
 		const showFileClassSelectInModal = new Setting(classFilesSettings)
@@ -532,18 +562,6 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			'Metadata Menu button',
 			'Show extra button to access metadata menu modal of fields',
 			true);
-
-		new Setting(metadataMenuBtnSettings)
-			.setName("Metadata Menu button icon")
-			.setDesc("name of the default icon when not defined in fileClass")
-			.addText((text) => {
-				text
-					.setValue(this.plugin.settings.buttonIcon)
-					.onChange(async (value) => {
-						this.plugin.settings.buttonIcon = value || "clipboard-list";
-						await this.plugin.saveSettings();
-					});
-			}).settingEl.addClass("no-border");
 
 
 		([

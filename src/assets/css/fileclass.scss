@@ -452,12 +452,26 @@
         div[id^="table-container"]{
             overflow: scroll;
 
+            input.file-select{
+                
+            }
+
             .field-name, .value-container{
+
+                .field-sub-container{
+                    display: flex;
+                    
+                        p {
+                            margin-block: 0em;
+                        }
+
+                }
                 
                 span{
                     display: grid;
                     grid-template-columns: auto auto;
                     float: left;
+
                     
                     a.internal-link{
                         grid-column: 2;
@@ -473,6 +487,9 @@
             thead th:first-child {
                 left: 0;
                 z-index: 2;
+                span.dataview.small-text{
+                    display: none;
+                }
             }
 
             tbody > tr > td:first-child {

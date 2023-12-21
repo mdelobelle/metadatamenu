@@ -7,6 +7,8 @@ You can define preset types and values for those fields globally in the plugin's
 
 It also enables frontmatter of inline-field autocompletion with suggested values based on preset values.
 
+For a complete walk-through, here is an excellent showcase by Dany Hatcher: [complete demo](https://www.youtube.com/watch?v=qi4Uz7TZLOM)
+
 For complete documentation : https://mdelobelle.github.io/metadatamenu
 
 [demo 1](https://youtu.be/7bvIAkJf0OE) : basic features, settings and field types
@@ -61,6 +63,10 @@ Available types are:
 - `Canvas`: a field that will `Update with links in a canvas`
 - `Canvas Group`: a field that will `Update with groups in a canvas`
 - `Canvas Group Link`: a field that will `Update with groups links in a canvas`
+- `JSON`: a field that will `Accept a JSON object`
+- `YAML`: a field that will `Accept a YAML object`
+- `Object`: a field that will `Accept a collection of fields`
+- `Object List`: a field that will `Accept a list of collection of fields`
 
 ## Field settings
 By default each field is an `Input`

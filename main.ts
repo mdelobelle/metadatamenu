@@ -107,7 +107,7 @@ export default class MetadataMenu extends Plugin {
 				updatePropertiesSection(this)
 				FileClassViewManager.reloadViews(this)
 				this.codeBlockManagers.forEach(manager => {
-					if (!manager.isLoaded) {
+					if (true || !manager.isLoaded) {
 						manager.build()
 					}
 				})

@@ -9,7 +9,6 @@ import { FieldManager } from "../FieldManager";
 import { Status, statusIcon } from "src/types/lookupTypes";
 import { FieldOptions } from "src/components/NoteFields";
 import { updateFormulas } from "src/commands/updateFormulas";
-import { postValues } from "src/commands/postValues";
 import { ExistingField } from "../ExistingField";
 
 export default class FormulaField extends FieldManager {
@@ -30,14 +29,14 @@ export default class FormulaField extends FieldManager {
                 f.applyUpdates()
             };
             const icon = statusIcon[status]
-            if (FormulaField.isSuggest(location) && status === Status.changed) {
+            if (FormulaField.isSuggest(location) && [Status.changed, Status.mayHaveChanged].includes(status)) {
                 location.options.push({
                     id: `update_${name}`,
                     actionLabel: `<span>Update <b>${name}</b></span>`,
                     action: action,
                     icon: icon
                 });
-            } else if (FormulaField.isFieldOptions(location) && status === Status.changed) {
+            } else if (FormulaField.isFieldOptions(location) && [Status.changed, Status.mayHaveChanged].includes(status)) {
                 location.addOption(icon, action, `Update ${name}'s value`);
             } else if (FormulaField.isFieldOptions(location) && status === Status.upToDate) {
                 location.addOption(icon, () => { }, `${name} is up to date`);
