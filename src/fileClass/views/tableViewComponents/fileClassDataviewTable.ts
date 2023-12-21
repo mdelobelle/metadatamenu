@@ -302,6 +302,11 @@ export class FileClassDataviewTable {
             "}\n" +
             "const hasFileClass = (path, id) => {\n" +
             "    if(id.includes('____')){\n" +
+            "        const fileClassName = id.split('____')[0]\n" +
+            "        return fileFileClasses(path).includes(fileClassName)\n" +
+            "    } else {\n" +
+            "        return true" +
+            "    }\n" +
             "}\n" +
             "const rank = (item, options, dir) => {\n" +
             "    const indexInOptions = options.indexOf(basename(item));\n" +
