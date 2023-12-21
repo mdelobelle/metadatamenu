@@ -15,7 +15,7 @@ You can define preset types and values for those fields globally in the plugin's
 
 It also enables frontmatter of inline-field autocompletion with suggested values based on preset values.
 
-For a complete walk-through, here is an excellent showcase by Dany Hatcher: [complete demo](https://www.youtube.com/watch?v=qi4Uz7TZLOM)
+For a complete walk-through, here is an excellent showcase by Danny Hatcher: [complete demo](https://www.youtube.com/watch?v=qi4Uz7TZLOM)
 
 [demo 1](https://youtu.be/7bvIAkJf0OE) : basic features, settings and field types
 
