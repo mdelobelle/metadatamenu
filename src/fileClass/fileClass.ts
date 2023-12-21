@@ -139,7 +139,7 @@ class FileClass {
         const tagNames = FileClass.getTagNamesFromFrontMatter(_tagNames);
         const filesPaths = FileClass.getFilesPathsFromFrontMatter(_filesPaths);
         const bookmarksGroups = FileClass.getBookmarksGroupsFromFrontMatter(_bookmarksGroups);
-        const icon = typeof (_icon) === 'string' ? _icon : this.plugin.settings.buttonIcon
+        const icon = typeof (_icon) === 'string' ? _icon : this.plugin.settings.fileClassIcon
         const savedViews: SavedView[] = _savedViews || [];
         const favoriteView: string | null = (typeof _favoriteView === "string" && _favoriteView !== "") ? _favoriteView : null
         return new FileClassOptions(limit, icon, parent, excludes, tagNames, mapWithTag, filesPaths, bookmarksGroups, savedViews, favoriteView);

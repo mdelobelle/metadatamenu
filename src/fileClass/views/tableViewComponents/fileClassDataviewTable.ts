@@ -129,54 +129,12 @@ export class FileClassDataviewTable {
             }
         }
         const table = tableContainer.querySelector(`#table-container-${this.view.tableId}`) as HTMLDivElement
-        //this.setObserver(tableContainer)
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
             dvApi.executeJs(this.buildDvJSRendering(), tableContainer, this.view.manager, this.fileClass.getClassFile().path)
         }
         // links aren't clickable anymore, rebinding them to click event
         if (this.view instanceof FileClassTableView) this.addClickEventToLink(tableContainer)
-    }
-
-    public setObserver(node: HTMLDivElement) {
-        // Selectionne le noeud dont les mutations seront observées
-        var targetNode = node
-        // Options de l'observateur (quelles sont les mutations à observer)
-        var config = { attributes: true, childList: true };
-
-        // Fonction callback à éxécuter quand une mutation est observée
-        var callback = function (mutationsList: MutationRecord[]) {
-            for (var mutation of mutationsList) {
-                if (mutation.type == "childList") {
-                    for (const node of mutation.addedNodes) {
-                        //@ts-ignore
-                        if ("className" in node && (node.className as string).includes('field-name')) {
-                            const fileDiv = (node as HTMLElement).querySelector("span");
-                            fileDiv?.addClass("field-sub-container")
-                            if (fileDiv) {
-                                const file = fileDiv.firstChild
-                                const checkboxContainer = file?.createDiv({})
-                                const checkbox = checkboxContainer?.createEl("input", { type: "checkbox", cls: "file-select" })
-                                if (checkbox && checkboxContainer) {
-                                    checkbox.onclick = () => {
-                                        console.log("hello")
-                                    }
-                                    fileDiv.prepend(checkboxContainer)
-                                }
-                            }
-                        }
-                    }
-                } else if (mutation.type == "attributes") {
-                    console.log("L'attribut '" + mutation.attributeName + "' a été modifié.");
-                }
-            }
-        };
-
-        // Créé une instance de l'observateur lié à la fonction de callback
-        this.observer = new MutationObserver(callback);
-
-        // Commence à observer le noeud cible pour les mutations précédemment configurées
-        if (targetNode) this.observer.observe(targetNode, config);
     }
 
     public buidFileClassViewBtn(): void {
@@ -343,8 +301,7 @@ export class FileClassDataviewTable {
             "    return MetadataMenu.fieldIndex.filesFileClasses.get(path)?.map(_fC => _fC.name) || [] \n" +
             "}\n" +
             "const hasFileClass = (path, id) => {\n" +
-            "    const fileClassName = id.split('____')[0]\n" +
-            "    return fileFileClasses(path).includes(fileClassName)\n" +
+            "    if(id.includes('____')){\n" +
             "}\n" +
             "const rank = (item, options, dir) => {\n" +
             "    const indexInOptions = options.indexOf(basename(item));\n" +

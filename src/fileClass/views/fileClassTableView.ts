@@ -40,9 +40,7 @@ export class FileClassTableView {
         this.limit = this.fileClass.getFileClassOptions().limit
         this.container.replaceChildren()
         this.createHeader();
-        this.fileClassDataviewTable = new FileClassDataviewTable(
-            this.fieldSet.getParams(), this, this.fileClass)
-        if (this.selectedView) this.changeView(this.selectedView)
+        this.changeView(this.selectedView)
     }
 
     private createHeader(): void {

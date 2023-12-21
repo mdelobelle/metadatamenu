@@ -36,7 +36,6 @@ export interface MetadataMenuSettings {
 	enableFileExplorer: boolean;
 	enableSearch: boolean;
 	enableProperties: boolean;
-	buttonIcon: string;
 	tableViewMaxRecords: number;
 	frontmatterListDisplay: MultiDisplayType;
 	fileClassExcludedFolders: Array<string>;
@@ -49,6 +48,7 @@ export interface MetadataMenuSettings {
 	chooseFileClassAtFileCreation: boolean;
 	autoInsertFieldsAtFileClassInsertion: boolean;
 	fileClassIcon: string;
+	isAutoCalculationEnabled: boolean
 }
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
@@ -70,7 +70,6 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	enableFileExplorer: true,
 	enableSearch: true,
 	enableProperties: true,
-	buttonIcon: "clipboard-list",
 	tableViewMaxRecords: 20,
 	frontmatterListDisplay: MultiDisplayType.asArray,
 	fileClassExcludedFolders: [],
@@ -82,7 +81,8 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	showFileClassSelectInModal: true,
 	chooseFileClassAtFileCreation: false,
 	autoInsertFieldsAtFileClassInsertion: false,
-	fileClassIcon: "package"
+	fileClassIcon: "package",
+	isAutoCalculationEnabled: true
 };
 
 export const incrementVersion = (plugin: MetadataMenu) => {

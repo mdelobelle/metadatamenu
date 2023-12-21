@@ -33,7 +33,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                 if (this.bookmarks.enabled) {
                     const updateTime = this.bookmarks.lastSave
                     if (this.lastBookmarkChange === undefined || updateTime > this.lastBookmarkChange) {
-                        await this.indexFieldsAndValues()
+                        await this.indexFields()
                         this.lastBookmarkChange = updateTime
                         this.plugin.app.workspace.trigger("metadata-menu:indexed"); //to rebuild the button
                     }
@@ -74,7 +74,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                     if (this.changedFiles.every(file => this.classFilesPath && file.path.startsWith(this.classFilesPath))) {
                         await updateCanvasAfterFileClass(this.plugin, this.changedFiles)
                     }
-                    await this.indexFieldsAndValues()
+                    await this.indexFields()
                     this.plugin.app.workspace.trigger("metadata-menu:indexed");
                     this.changedFiles = []
                 }
@@ -90,7 +90,7 @@ export default class FieldIndex extends FieldIndexBuilder {
 
         this.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
-                if (file.stat.mtime > this.launchTime && op === "update" && this.dvReady()) {
+                if (file.stat.mtime > this.launchTime && op === "update" && this.dvReady() && this.settings.isAutoCalculationEnabled) {
                     const filePayloadToProcess = this.dVRelatedFieldsToUpdate.get(file.path)
                     if (![...this.dVRelatedFieldsToUpdate.keys()].includes(file.path)) {
                         await this.resolveAndUpdateDVQueriesBasedFields(false)
@@ -128,18 +128,16 @@ export default class FieldIndex extends FieldIndexBuilder {
         return []
     }
 
-    public async indexFieldsAndValues(): Promise<void> {
-        await this.indexFields();
-    }
-
     public async fullIndex(forceUpdateAll = false): Promise<void> {
         this.plugin.indexStatus.setState("indexing")
         this.classFilesPath = this.plugin.settings.classFilesPath
-        await this.indexFieldsAndValues()
+        await this.indexFields()
         /*
         ** Asynchronously resolve queries
         */
-        if (this.dvReady()) this.resolveAndUpdateDVQueriesBasedFields(forceUpdateAll);  //asynchronous
+        if (this.dvReady() && (this.settings.isAutoCalculationEnabled || forceUpdateAll)) {
+            this.resolveAndUpdateDVQueriesBasedFields(forceUpdateAll);  //asynchronous
+        }
         if (this.remainingLegacyFileClasses) await this.migrateFileClasses();
         this.plugin.app.workspace.trigger("metadata-menu:indexed");
     }
@@ -186,7 +184,9 @@ export default class FieldIndex extends FieldIndexBuilder {
                         fieldsPayload.forEach(fieldPayload => {
                             const field = this.filesFields
                                 .get(filePath)?.find(_f => _f.isRoot() && _f.id === fieldPayload.id)
-                            if (field) this.fileLookupFieldsStatus
+                            if (field && field.type === FieldType.Lookup) this.fileLookupFieldsStatus
+                                .set(`${filePath}__${field.name}`, LookupStatus.upToDate)
+                            if (field && field.type === FieldType.Formula) this.fileFormulaFieldsStatus
                                 .set(`${filePath}__${field.name}`, LookupStatus.upToDate)
                         })
                     }
@@ -202,7 +202,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         const start = Date.now()
         this.plugin.indexStatus.setState("indexing")
         cleanRemovedFormulasFromIndex(this.plugin);
-        await this.getFilesLookupAndFormulaFieldsExists();
+        this.getFilesLookupAndFormulaFieldsExists();
 
         resolveLookups(this.plugin);
         await updateLookups(this.plugin, forceUpdateOne, force_update_all)
@@ -594,12 +594,18 @@ export default class FieldIndex extends FieldIndexBuilder {
         return filesToIndex.length
     }
 
-    private async getFilesLookupAndFormulaFieldsExists(file?: TFile): Promise<void> {
+    private getFilesLookupAndFormulaFieldsExists(file?: TFile): void {
         if (!this.dvReady()) return
         [...this.filesFields.entries()].forEach(([filePath, fields]) => {
-            const dvFields = fields.filter(f => f.isRoot() && [FieldType.Lookup, FieldType.Formula].includes(f.type) &&
+            const dvFormulaFields = fields.filter(f => f.isRoot() && f.type === FieldType.Formula &&
                 f.name in this.dv.api.page(filePath))
-            this.filesLookupAndFormulaFieldsExists.set(filePath, dvFields)
+            if (!this.settings.isAutoCalculationEnabled) dvFormulaFields
+                .forEach(field => this.fileFormulaFieldsStatus.set(`${filePath}__${field.name}`, Status.mayHaveChanged))
+            const dvLookupFields = fields.filter(f => f.isRoot() && f.type === FieldType.Lookup &&
+                f.name in this.dv.api.page(filePath))
+            if (!this.settings.isAutoCalculationEnabled) dvFormulaFields
+                .forEach(field => this.fileLookupFieldsStatus.set(`${filePath}__${field.name}`, Status.mayHaveChanged))
+            this.filesLookupAndFormulaFieldsExists.set(filePath, [...dvFormulaFields, ...dvLookupFields])
         });
     }
 
@@ -610,6 +616,18 @@ export default class FieldIndex extends FieldIndexBuilder {
                 changed = changed || this.fileLookupFieldsStatus.get(path + "__" + field.name) === Status.changed
             } else if (field.type === FieldType.Formula) {
                 changed = changed || this.fileFormulaFieldsStatus.get(path + "__" + field.name) === Status.changed
+            }
+        })
+        return changed
+    }
+
+    public dvQFieldMayHaveChanged(path: string) {
+        let changed: boolean = false
+        this.filesLookupAndFormulaFieldsExists.get(path)?.forEach(field => {
+            if (field.type === FieldType.Lookup) {
+                changed = changed || this.fileLookupFieldsStatus.get(path + "__" + field.name) === Status.mayHaveChanged
+            } else if (field.type === FieldType.Formula) {
+                changed = changed || this.fileFormulaFieldsStatus.get(path + "__" + field.name) === Status.mayHaveChanged
             }
         })
         return changed

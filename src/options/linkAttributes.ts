@@ -20,10 +20,13 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
         const path = destPath + ".md"
         el.removeClass("field-status-changed")
         el.removeClass("field-status-error")
+        el.removeClass("field-status-may-have-changed")
         const changed = plugin.fieldIndex.dvQFieldChanged(path)
         const error = plugin.fieldIndex.dvQFieldHasAnError(path)
+        const mayHaveChanged = plugin.fieldIndex.dvQFieldMayHaveChanged(path)
         if (error) el.addClass("field-status-error")
         else if (changed) el.addClass("field-status-changed")
+        else if (mayHaveChanged) el.addClass("field-status-may-have-changed")
     }
     if (link.classList.contains("metadata-menu-button-hidden")) return; //so that snippets can prevent the button from being added
     switch (viewTypeName) {
@@ -85,7 +88,7 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
                 const metadataMenuBtn = plugin.app.workspace.containerEl.createEl('a', { cls: "metadata-menu fileclass-icon" })
                 setStatus(metadataMenuBtn)
                 if (metadataMenuBtn) {
-                    setIcon(metadataMenuBtn, icon || plugin.settings.buttonIcon)
+                    setIcon(metadataMenuBtn, icon || plugin.settings.fileClassIcon)
                     link.parentElement?.insertBefore(metadataMenuBtn, link.nextSibling)
                     if (viewTypeName === "a.internal-link" && metadataMenuBtn.closest(".fv-table")) metadataMenuBtn.addClass("dataview-fileclass-icon")
                     metadataMenuBtn.onclick = (event) => {

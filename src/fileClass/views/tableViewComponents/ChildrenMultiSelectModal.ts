@@ -22,7 +22,6 @@ export class ChildrenMultiSelectModal extends SuggestModal<FileClassChild>{
         this.buildFooterActions(footerActionsContainer)
         const initialOptions = this.parentFieldSet.children
         if (initialOptions) this.selectedChildren = [...initialOptions]
-        console.log(this.selectedChildren)
         this.containerEl.onkeydown = (e) => {
             if (e.key == "Enter" && e.altKey) {
                 this.parentFieldSet.reset(this.selectedChildren)

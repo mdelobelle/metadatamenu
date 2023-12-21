@@ -83,7 +83,7 @@ export class V1FileClassMigration {
                 await migration.migrate(remainingV1FileClass)
             })
         )
-        if ([...index.v1FileClassesPath.values()].length) await index.indexFieldsAndValues()
+        if ([...index.v1FileClassesPath.values()].length) await index.indexFields()
     }
 
 }
