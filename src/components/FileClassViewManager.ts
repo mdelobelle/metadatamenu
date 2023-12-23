@@ -138,7 +138,6 @@ export class FileClassViewManager extends Component {
     }
 
     onunload(): void {
-        console.log("UNLOAD FVM")
         this.plugin.app.workspace.detachLeavesOfType(this.fileClassViewType);
         // @ts-ignore
         this.plugin.app.viewRegistry.unregisterView(this.fileClassViewType);

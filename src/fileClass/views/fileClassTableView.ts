@@ -31,6 +31,7 @@ export class FileClassTableView {
         public fileClass: FileClass,
         public selectedView?: string | undefined,
     ) {
+
         this.plugin = manager.plugin;
         this.container = this.viewContainer.createDiv({ cls: "fv-table" })
         this.build()
@@ -63,6 +64,8 @@ export class FileClassTableView {
     }
 
     public update(maxRows?: number, sliceStart: number = 0): void {
+        //FIXME called 3 times when opening a fileClassView. this can be optimized
+        this.manager._children.forEach(child => this.manager.removeChild(child))
         this.fileClassDataviewTable = new FileClassDataviewTable(
             this.fieldSet.getParams(), this, this.fileClass, maxRows, sliceStart)
         this.buildTable();

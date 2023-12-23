@@ -66,8 +66,9 @@ export class FieldSet {
 
     constructor(
         public tableView: FileClassTableView,
-        public container: HTMLDivElement,
+        public container: HTMLDivElement
     ) {
+
         this.plugin = tableView.plugin
         this.build()
     }
@@ -206,6 +207,7 @@ export class FieldSet {
     }
 
     public changeView(_name?: string) {
+
         const options = this.fileClass.getFileClassOptions()
         const savedViews = options.savedViews || []
         this.tableView.manager.selectedView = _name || "";
