@@ -91,7 +91,6 @@ export class FileClassViewManager extends Component {
         }));
     }
 
-
     public async openFileClassView(): Promise<void> {
         if (this.fileClass) {
             const fileClass = this.fileClass
@@ -139,11 +138,12 @@ export class FileClassViewManager extends Component {
     }
 
     onunload(): void {
+        console.log("UNLOAD FVM")
         this.plugin.app.workspace.detachLeavesOfType(this.fileClassViewType);
         // @ts-ignore
         this.plugin.app.viewRegistry.unregisterView(this.fileClassViewType);
         this.plugin.indexDB.fileClassViews.removeElement(FILECLASS_VIEW_TYPE + "__" + this.name)
-        this.fileClassView?.tableView.fileClassDataviewTable.observer?.disconnect();
+        for (const child of this._children) { child.unload(); this.removeChild(child) }
     }
 
     static async reloadViews(plugin: MetadataMenu): Promise<void> {

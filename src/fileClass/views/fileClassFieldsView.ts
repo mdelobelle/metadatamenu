@@ -93,6 +93,7 @@ export class FileClassFieldsView {
         const fieldsContainer = this.container.createDiv({ cls: "fields-container" })
         const attributes = FileClass.getFileClassAttributes(this.plugin, this.fileClass);
         const sortedAttributes = attributes.filter(attr => !attr.path)
+        let hasError: boolean = false
         while (sortedAttributes.length < attributes.length) {
             const _initial = [...sortedAttributes]
             sortedAttributes.forEach((sAttr, parentIndex) => {
@@ -111,12 +112,20 @@ export class FileClassFieldsView {
                 }
             })
             if (_initial.length === sortedAttributes.length) {
-                throw Error("Impossible to restore field hierarchy, check you fileclass configuration")
+                console.error("Impossible to restore field hierarchy, check you fileclass configuration")
+                hasError = true
+                break
             }
         }
-        sortedAttributes.forEach(attribute => {
-            new FileClassFieldSetting(fieldsContainer, this.fileClass, attribute, this.plugin);
-        });
+        if (hasError) {
+            attributes.forEach(attribute => {
+                new FileClassFieldSetting(fieldsContainer, this.fileClass, attribute, this.plugin);
+            });
+        } else {
+            sortedAttributes.forEach(attribute => {
+                new FileClassFieldSetting(fieldsContainer, this.fileClass, attribute, this.plugin);
+            });
+        }
         this.builAddBtn();
     }
 }

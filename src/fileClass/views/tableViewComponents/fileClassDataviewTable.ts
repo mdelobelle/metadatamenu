@@ -15,7 +15,6 @@ export class FileClassDataviewTable {
     public limitWrapped: boolean = false
     public limit: number
     public plugin: MetadataMenu
-    public observer: MutationObserver;
     constructor(
         public viewConfiguration: ViewConfiguration,
         public view: FileClassTableView | FileClassCodeBlockView,
@@ -331,6 +330,7 @@ export class FileClassDataviewTable {
         }).join(",\n");
         dvJS += "    \n])";
         dvJS += "\n);"
+        console.log("DVJS")
         return dvJS
     }
 }

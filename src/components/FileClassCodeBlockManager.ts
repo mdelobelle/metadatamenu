@@ -62,4 +62,19 @@ export class FileClassCodeBlockManager extends MarkdownRenderChild {
     onload(): void {
         this.build()
     }
+
+    onunload(): void {
+        /*
+        console.log("UNLOAD")
+        const managers = this.plugin.codeBlockListManager.filter(child => child.hasOwnProperty("script") && child.containerEl.getAttr("id") === this.tableId)
+        console.log("BEFORE", managers.length, managers.map(m => m.tableId))
+        managers.forEach(manager => {
+            manager._children.forEach(child => { child.unload(), manager.removeChild(child) })
+            manager.unload()
+            managers.remove(manager)
+        })
+        console.log("AFTER", managers.length)
+        */
+    }
+
 }

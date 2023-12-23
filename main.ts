@@ -19,6 +19,7 @@ import { FileClassViewManager } from 'src/components/FileClassViewManager';
 import { IndexDatabase } from 'src/db/DatabaseManager';
 import { FileClassCodeBlockManager } from 'src/components/FileClassCodeBlockManager';
 import { AddFileClassToFileModal } from 'src/fileClass/fileClass';
+import { FileClassCodeBlockListManager } from 'src/components/FileClassCodeBlockListManager';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -33,7 +34,7 @@ export default class MetadataMenu extends Plugin {
 	public indexName: string;
 	public launched: boolean = false;
 	public indexDB: IndexDatabase;
-	public codeBlockManagers: FileClassCodeBlockManager[] = []
+	public codeBlockListManager: FileClassCodeBlockListManager
 
 	async onload(): Promise<void> {
 		console.log('+------ Metadata Menu loaded --------+');
@@ -62,7 +63,7 @@ export default class MetadataMenu extends Plugin {
 
 		this.indexStatus = this.addChild(new IndexStatus(this))
 		if (this.settings.showIndexingStatusInStatusBar) this.indexStatus.load()
-
+		this.codeBlockListManager = this.addChild(new FileClassCodeBlockListManager(this))
 		this.fieldIndex = this.addChild(new FieldIndex(this))
 		this.contextMenu = this.addChild(new ContextMenu(this))
 
@@ -106,11 +107,6 @@ export default class MetadataMenu extends Plugin {
 				if (currentView) this.indexStatus.checkForUpdate(currentView)
 				updatePropertiesSection(this)
 				FileClassViewManager.reloadViews(this)
-				this.codeBlockManagers.forEach(manager => {
-					if (true || !manager.isLoaded) {
-						manager.build()
-					}
-				})
 			})
 		)
 
@@ -132,7 +128,7 @@ export default class MetadataMenu extends Plugin {
 
 		this.registerMarkdownCodeBlockProcessor("mdm", async (source, el, ctx) => {
 			const fileClassCodeBlockManager = new FileClassCodeBlockManager(this, el, source, ctx)
-			this.codeBlockManagers.push(fileClassCodeBlockManager)
+			this.codeBlockListManager.addChild(fileClassCodeBlockManager)
 			ctx.addChild(fileClassCodeBlockManager)
 		});
 		this.app.workspace.trigger("layout-change")
