@@ -15,7 +15,6 @@ export class FileClassDataviewTable {
     public limitWrapped: boolean = false
     public limit: number
     public plugin: MetadataMenu
-    public observer: MutationObserver;
     constructor(
         public viewConfiguration: ViewConfiguration,
         public view: FileClassTableView | FileClassCodeBlockView,
@@ -128,7 +127,6 @@ export class FileClassDataviewTable {
                 }
             }
         }
-        const table = tableContainer.querySelector(`#table-container-${this.view.tableId}`) as HTMLDivElement
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
         if (dvApi) {
             dvApi.executeJs(this.buildDvJSRendering(), tableContainer, this.view.manager, this.fileClass.getClassFile().path)

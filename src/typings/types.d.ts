@@ -210,8 +210,8 @@ declare module "obsidian" {
         origin: string
     }
 
-    interface Plugin {
-        _children: any[],
+    interface Component {
+        _children: Component[],
         _events: any[]
     }
 }

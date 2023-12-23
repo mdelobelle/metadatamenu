@@ -62,4 +62,9 @@ export class FileClassCodeBlockManager extends MarkdownRenderChild {
     onload(): void {
         this.build()
     }
+
+    onunload(): void {
+        this.plugin.codeBlockListManager.removeChild(this)
+    }
+
 }
