@@ -14,6 +14,7 @@ export class FileClassCodeBlockManager extends MarkdownRenderChild {
     public fileClass: FileClass | undefined
     public tableId: string
     public isLoaded: boolean = false
+    public showAddField: boolean = false
 
     constructor(
         public plugin: MetadataMenu,
@@ -44,6 +45,7 @@ export class FileClassCodeBlockManager extends MarkdownRenderChild {
             if (this.fileClass) {
                 this.itemsPerPage = content["files per page"] || this.fileClass.options.limit || this.plugin.settings.tableViewMaxRecords
                 this.startAtItem = content["start"] || 0
+                this.showAddField = content["showAddField"] === true || false
                 this.fileClassCodeBlockView = new FileClassCodeBlockView(this, this.tableId, this.fileClass, paginationContainer, tableContainer, selectedView, this.ctx)
                 this.fileClassCodeBlockView.fileClassDataviewTable.limit = this.itemsPerPage
                 this.plugin.registerMarkdownPostProcessor((el, ctx) => {

@@ -40,6 +40,7 @@ export class FileClassDataviewTable {
             this.limitWrapped = !this.limitWrapped
         }
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+
         if (dvApi) {
             try {
                 const current = this.ctx ? dvApi.page(this.ctx.sourcePath) : {}
@@ -53,12 +54,12 @@ export class FileClassDataviewTable {
                     const fileClassName = id.split('____')[0]
                     return fileFileClasses(path).includes(fileClassName)
                 }
-                const values = (new Function(
+                const query = (new Function(
                     "dv", "current", "fileClassFiles", "hasFileClass",
                     `return ${this.buildDvJSQuery()}`)
-                )(dvApi, current, fileClassFiles, hasFileClass).values;
+                )(dvApi, current, fileClassFiles, hasFileClass)
+                const values = query.values;
                 const count = values.length;
-
                 const rangesCount = Math.floor(count / this.limit) + 1
                 if (rangesCount < 2) return
                 for (let i = 0; i < rangesCount; i++) {
@@ -97,7 +98,6 @@ export class FileClassDataviewTable {
                 console.error("unable to build the list of files")
             }
         }
-
     }
 
     public buildTable(tableContainer: HTMLDivElement): void {
@@ -265,7 +265,7 @@ export class FileClassDataviewTable {
         const classFilesPath = this.plugin.settings.classFilesPath
         const templatesFolder = this.plugin.app.plugins.plugins["templater-obsidian"]?.settings["templates_folder"];
         dvQuery += `dv.pages()\n`;
-        dvQuery += `    .where(p => fileClassFiles.includes(p.file.path)
+        dvQuery += `    .filter(p => fileClassFiles.includes(p.file.path)
         ${!!classFilesPath ? "        && !p.file.path.includes('" + classFilesPath + "')\n" : ""}
         ${templatesFolder ? "        && !p.file.path.includes('" + templatesFolder + "')\n" : ""}
         )\n`;
@@ -324,7 +324,8 @@ export class FileClassDataviewTable {
             if (column.name === "file") {
                 return "        dv.el(\"div\", p.file.link, {cls: \"field-name\"})";
             } else {
-                return `        hasFileClass(p.file.path, "${column.id}") ? f(dv, p, "${column.name}", {options: {alwaysOn: false, showAddField: true}}) : ""`
+                //TODO add a "show add field buttons default to false" -> faster
+                return `        hasFileClass(p.file.path, "${column.id}") ? f(dv, p, "${column.name}", {options: {alwaysOn: false, showAddField: ${this.view.manager.showAddField}}}) : ""`
             }
         }).join(",\n");
         dvJS += "    \n])";

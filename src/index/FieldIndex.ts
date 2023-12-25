@@ -72,6 +72,7 @@ export default class FieldIndex extends FieldIndexBuilder {
             this.plugin.app.metadataCache.on('resolved', async () => {
                 if (this.plugin.app.metadataCache.inProgressTaskCount === 0 && this.plugin.launched) {
                     if (this.changedFiles.every(file => this.classFilesPath && file.path.startsWith(this.classFilesPath))) {
+                        this.plugin.app.workspace.trigger("metadata-menu:fileclass-indexed");
                         await updateCanvasAfterFileClass(this.plugin, this.changedFiles)
                     }
                     await this.indexFields()

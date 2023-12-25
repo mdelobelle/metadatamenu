@@ -130,9 +130,8 @@ declare module "obsidian" {
         ): EventRef;
     }
     interface Workspace {
-        on(name: "metadata-menu:db-ready", callback: () => void, ctx?: any): EventRef;
         on(name: "metadata-menu:indexed", callback: () => void, ctx?: any): EventRef;
-        on(name: "metadata-menu:filter-changed", ctx?: any): EventRef;
+        on(name: "metadata-menu:fileclass-indexed", callback: () => void, ctx?: any): EventRef;
         on(name: "layout-ready", callback: () => void, ctx?: any): EventRef;
         on(name: "layout-change", callback: Debouncer<[_file: TFile], void>, ctx?: any): EventRef;
     }
@@ -200,14 +199,6 @@ declare module "obsidian" {
 
     interface Menu {
         setSectionSubmenu: (label: string, options: { title: string, icon: string }) => any
-    }
-
-    interface DataviewJSRenderer {
-
-        api: DataviewApi,
-        script: string,
-        container: HTMLElement,
-        origin: string
     }
 
     interface Component {
