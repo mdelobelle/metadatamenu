@@ -134,12 +134,12 @@ export class FieldSet {
         })
     }
 
-    public reset(children?: FileClassChild[]) {
+    public reset(children?: FileClassChild[], updateNeeded: boolean = true) {
         this.rowSorters = {}
         this.filters = {}
         this.columnManagers = {}
         this.build(children)
-        this.tableView.update()
+        if (updateNeeded) this.tableView.update()
         this.tableView.saveViewBtn.setCta()
     }
 
@@ -206,12 +206,12 @@ export class FieldSet {
         })
     }
 
-    public changeView(_name?: string) {
+    public changeView(_name?: string, updateNeeded: boolean = true) {
 
         const options = this.fileClass.getFileClassOptions()
         const savedViews = options.savedViews || []
         this.tableView.manager.selectedView = _name || "";
-        this.reset()
+        this.reset(undefined, updateNeeded)
         if (_name && savedViews.find(view => view.name === _name)) {
             const savedView = savedViews.find(view => view.name === _name)!
             Object.keys(this.filters).forEach(id => {

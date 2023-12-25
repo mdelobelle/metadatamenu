@@ -23,6 +23,7 @@ export class FileClassTableView {
     public limitWrapped: boolean = false
     public ranges: HTMLDivElement[] = []
     public fileClassDataviewTable: FileClassDataviewTable
+    public refreshBtn: ButtonComponent
 
     constructor(
         public manager: FileClassViewManager,
@@ -41,7 +42,7 @@ export class FileClassTableView {
         this.limit = this.fileClass.getFileClassOptions().limit
         this.container.replaceChildren()
         this.createHeader();
-        this.changeView(this.selectedView)
+        this.changeView(this.selectedView, false)
     }
 
     private createHeader(): void {
@@ -60,6 +61,8 @@ export class FileClassTableView {
         this.buildSaveView(applyContainer);
         this.buildSavedViewRemoveButton(applyContainer)
         if (this.fileClass.getChildren().length) this.buildChildrenSelector(applyContainer);
+        this.buildHideInsertFieldBtn(applyContainer);
+        this.buildRefreshBtn(applyContainer)
         this.buildHideFilters(applyContainer);
     }
 
@@ -113,8 +116,8 @@ export class FileClassTableView {
 
     /* view selection */
 
-    private changeView(name?: string) {
-        this.fieldSet.changeView(name)
+    private changeView(name?: string, updateNeeded: boolean = true) {
+        this.fieldSet.changeView(name, updateNeeded)
         this.selectedView = name
         this.toggleFavoriteBtnState()
         this.viewSelect.setValue(name || "")
@@ -135,7 +138,7 @@ export class FileClassTableView {
         } else {
             this.viewSelect.addOption("", "--None--")
             savedViews.sort((a, b) => a.name < b.name ? -1 : 1).forEach(view => this.viewSelect.addOption(view.name, view.name))
-            this.viewSelect.onChange(value => this.changeView(value))
+            this.viewSelect.onChange(value => this.changeView(value, false))
             this.viewSelect.setValue(this.selectedView || "")
         }
     }
@@ -236,6 +239,35 @@ export class FileClassTableView {
             }
         }
         hideFilterBtn.onClick(() => toggleState())
+    }
+
+    private buildHideInsertFieldBtn(container: HTMLDivElement): void {
+        const btnContainer = container.createDiv({ cls: "cell" })
+        const hideInsertBtn = new ButtonComponent(btnContainer);
+        hideInsertBtn.setIcon("plus-circle");
+        hideInsertBtn.setTooltip("Show insert field button in each cell (slower)")
+        const toggleState = () => {
+            if (this.manager.showAddField) {
+                hideInsertBtn.removeCta()
+                this.manager.showAddField = false
+            } else {
+                hideInsertBtn.setCta()
+                this.manager.showAddField = true
+            }
+        }
+        hideInsertBtn.onClick(() => { toggleState(); this.update() })
+    }
+
+    public triggerRefreshNeeded() {
+        this.refreshBtn.setCta()
+    }
+
+    private buildRefreshBtn(container: HTMLDivElement): void {
+        const btnContainer = container.createDiv({ cls: "cell" })
+        this.refreshBtn = new ButtonComponent(btnContainer);
+        this.refreshBtn.setIcon("refresh-cw");
+        this.refreshBtn.setTooltip("Refresh table results")
+        this.refreshBtn.onClick(() => { this.refreshBtn.removeCta(); this.update() })
     }
 
     /*

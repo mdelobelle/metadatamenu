@@ -20,6 +20,7 @@ export class FileClassViewManager extends Component {
     public fileClassViewType: string;
     public name: string;
     public tableId: string;
+    public showAddField: boolean = false
 
     constructor(
         public plugin: MetadataMenu,
@@ -36,34 +37,35 @@ export class FileClassViewManager extends Component {
         }
     }
 
+    private async openRegisterAndIndexView(fileClass: FileClass) {
+        this.fileClass = fileClass;
+        this.name = this.fileClass.name;
+        this.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + this.fileClass.name
+        await this.openFileClassView();
+        this.registerEvent(this.plugin.app.workspace.on("metadata-menu:fileclass-indexed", () => {
+            const view = this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType)[0]?.view as FileClassView | undefined
+            if (view) {
+                view.updateFieldsView();
+                view.updateSettingsView();
+                view.tableView.triggerRefreshNeeded();
+            }
+        }));
+        this.plugin.indexDB.fileClassViews.editElement(this.fileClassViewType, {
+            id: this.fileClassViewType,
+            leafId: this.fileClassView?.leaf.id
+        })
+    }
+
     public async build(): Promise<void> {
-        if (this.fileClass) {
-            this.name = this.fileClass.name;
-            this.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + this.fileClass.name
-            await this.openFileClassView();
-            this.registerIndexingDone()
-            this.plugin.indexDB.fileClassViews.editElement(this.fileClassViewType, {
-                id: this.fileClassViewType,
-                leafId: this.fileClassView?.leaf.id
-            })
-        } else {
+        if (this.fileClass) this.openRegisterAndIndexView(this.fileClass)
+        else {
             const tagsAndFileClasses = this.getActiveFileTagsAndFileClasses();
             if (tagsAndFileClasses.length === 1) {
                 const index = this.plugin.fieldIndex
                 const fileClassName = tagsAndFileClasses[0];
                 const fileClass = index.fileClassesName.get(fileClassName) || index.tagsMatchingFileClasses.get(fileClassName)
-                if (fileClass) {
-                    this.name = fileClass.name;
-                    this.fileClass = fileClass;
-                    this.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + fileClass.name
-                    await this.openFileClassView();
-                    this.registerIndexingDone()
-                    this.plugin.indexDB.fileClassViews.editElement(FILECLASS_VIEW_TYPE + "__" + this.name,
-                        {
-                            id: FILECLASS_VIEW_TYPE + "__" + this.name,
-                            leafId: this.fileClassView.leaf.id
-                        })
-                } else {
+                if (fileClass) this.openRegisterAndIndexView(fileClass)
+                else {
                     this.plugin.removeChild(this)
                     this.unload()
                 }
@@ -80,22 +82,10 @@ export class FileClassViewManager extends Component {
         }
     }
 
-    private registerIndexingDone() {
-        this.registerEvent(this.plugin.app.workspace.on("metadata-menu:indexed", () => {
-            const view = this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType)[0]?.view as FileClassView | undefined
-            if (view) {
-                view.updateFieldsView();
-                view.updateSettingsView();
-                view.tableView.build();
-            }
-        }));
-    }
-
     public async openFileClassView(): Promise<void> {
         if (this.fileClass) {
             const fileClass = this.fileClass
             this.plugin.app.workspace.detachLeavesOfType(this.fileClassViewType);
-
             this.plugin.registerView(this.fileClassViewType,
                 (leaf: WorkspaceLeaf) => {
                     this.tableId = `table-container-${Math.floor(Date.now())}`
