@@ -229,13 +229,11 @@ With our previous example:
 extends: course
 excludes: [grade]
 ---
-lecture:: {"type": "Select", "options": {"0": "Mecanics", "1": "Optics", "2": "Electricity"}}
 ```
 
 notes with `fileClass: physics` will inherit `teacher` and `type` from `course` fileClass but not `grade`
 
 ### `mapWithTag` option
-*Supercharged Tag*
 
 when this is set to `true` all notes including a tag with the same name will benefit from the fields' definitions of this fileclass
 
@@ -319,3 +317,6 @@ You can display child classes in the same view by selecting them from the childr
 
 ### Select and Save view
 You can save the sorters/filters of the current view, or choose an existing saved view and define a saved view as favorite to show it when the table view is opened
+
+### Rebuild table
+When there's a change in a fileclass setting or fileclass field, the table view won't be automatically rebuilt. A "refresh" button will be highlighted: click on it to rebuild the table to take fileclass changes into account

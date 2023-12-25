@@ -138,5 +138,6 @@ fileClass: <your file class> mandatory
 view: <your saved view> optional
 files per page:  <a number> optional
 start: <a number> optional
+showAddField: <true of false> optional (false if absent)
 ``` 
 ~~~~

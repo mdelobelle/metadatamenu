@@ -259,6 +259,7 @@ export class FileClassTableView {
     }
 
     public triggerRefreshNeeded() {
+        this.refreshBtn.buttonEl.show()
         this.refreshBtn.setCta()
     }
 
@@ -267,7 +268,12 @@ export class FileClassTableView {
         this.refreshBtn = new ButtonComponent(btnContainer);
         this.refreshBtn.setIcon("refresh-cw");
         this.refreshBtn.setTooltip("Refresh table results")
-        this.refreshBtn.onClick(() => { this.refreshBtn.removeCta(); this.update() })
+        this.refreshBtn.buttonEl.hide()
+        this.refreshBtn.onClick(() => {
+            this.refreshBtn.removeCta();
+            this.update();
+            this.refreshBtn.buttonEl.hide()
+        })
     }
 
     /*
