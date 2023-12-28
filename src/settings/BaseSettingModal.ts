@@ -1,11 +1,95 @@
 import MetadataMenu from "main";
-import { ButtonComponent, DropdownComponent, Modal, Notice, TextComponent, TextAreaComponent, ToggleComponent, setIcon } from "obsidian";
+import { ButtonComponent, DropdownComponent, Modal, Notice, TextComponent, TextAreaComponent, ToggleComponent, setIcon, SuggestModal } from "obsidian";
 import Field, { FieldCommand } from "src/fields/Field";
 import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
-import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, multiTypes, rootOnlyTypes, frontmatterOnlyTypes } from "src/types/fieldTypes";
+import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, multiTypes, rootOnlyTypes, frontmatterOnlyTypes, FieldIcon, FieldTypeTagClass } from "src/types/fieldTypes";
 import { FieldHTMLTagMap, FieldStyle, FieldStyleKey } from "src/types/dataviewTypes";
 import { cleanActions } from "src/utils/modals";
 import { addInsertFieldCommand } from "src/commands/paletteCommands";
+
+class TypeSelector extends SuggestModal<keyof typeof FieldType> {
+    constructor(
+        private fieldSetting: BaseSettingModal,
+        private labelContainer: HTMLDivElement
+    ) {
+        super(fieldSetting.plugin.app)
+        this.containerEl.addClass("metadata-menu")
+    }
+
+    getSuggestions(query: string): Array<keyof typeof FieldType> {
+        const fieldTypes: Array<keyof typeof FieldType> = []
+        Object.keys(FieldTypeTooltip).forEach((key: keyof typeof FieldType) => {
+            if (!rootOnlyTypes.includes(key as FieldType)) {
+                fieldTypes.push(key)
+            } else {
+                if (this.fieldSetting.field.isRoot()) fieldTypes.push(key)
+            }
+        })
+        return fieldTypes.filter(k => k.toLowerCase().includes(query.toLowerCase()))
+    }
+
+    renderSuggestion(value: keyof typeof FieldType, el: HTMLElement) {
+        el.addClass("value-container");
+        const iconContainer = el.createDiv({ cls: "icon-container" })
+        setIcon(iconContainer, FieldIcon[value])
+        const chipContainer = el.createDiv({ cls: "field-type-container" })
+        chipContainer.createDiv({ text: value, cls: `chip ${FieldTypeTagClass[value]}` })
+        chipContainer.createDiv({ cls: "spacer" })
+        el.createDiv({ cls: "field-type-tooltip", text: FieldTypeTooltip[value] })
+    }
+
+    onChooseSuggestion(item: keyof typeof FieldType, evt: MouseEvent | KeyboardEvent) {
+        this.fieldSetting.setType(item, this.labelContainer)
+    }
+}
+
+class ParentSelector extends SuggestModal<Field> {
+    constructor(
+        private fieldSetting: BaseSettingModal,
+        private compatibleParents: Field[],
+    ) {
+        super(fieldSetting.plugin.app)
+    }
+
+    getSuggestions(query: string): Field[] | Promise<Field[]> {
+        const parents = this.compatibleParents.filter(p => p.name.toLowerCase().includes(query.toLowerCase()))
+        return parents
+    }
+
+    renderSuggestion(parent: Field, el: HTMLElement) {
+        const path = ParentSelector.getParentPath(parent)
+        const display = ParentSelector.getHierarchyDisplay(
+            this.fieldSetting.plugin,
+            path,
+            this.fieldSetting.getFileClassName()
+        )
+        el.setText(display)
+    }
+
+    onChooseSuggestion(parent: Field, evt: MouseEvent | KeyboardEvent) {
+        this.fieldSetting.setParent(parent)
+        //TODO call setting.setParent(item) given that item is the path
+    }
+
+    static getHierarchyDisplay(plugin: MetadataMenu, path: string, fileClassName: string | undefined): string {
+        const display = path
+            .split("____")
+            .map(id =>
+                Field.getFieldFromId(
+                    plugin,
+                    id,
+                    fileClassName
+                )?.name || "")
+            .join(" > ")
+        return display
+    }
+
+    static getParentPath(item: Field): string {
+        const path = item.path ? item.path + "____" + item.id : item.id
+        return path
+    }
+
+}
 
 export abstract class BaseSettingModal extends Modal {
     public iconName: TextComponent;
@@ -113,35 +197,48 @@ export abstract class BaseSettingModal extends Modal {
         this.namePromptComponent = input
     }
 
-    private buildParentSelectContainer(): void {
+    public setParent(parent: Field | undefined) {
+        if (parent === undefined) {
+            this.path = ""
+            this.field.path = ""
+        } else {
+            const path = ParentSelector.getParentPath(parent)
+            this.path = path
+            this.field.path = path
+        }
+        this.buildParentSelectContainer(parent)
+        this.buildTypeSelectContainer()
+    }
+
+    private buildParentSelectContainer(parent?: Field): void {
         this.parentSelectContainer.replaceChildren()
         const compatibleParents = this.field.getCompatibleParents()
-        const parentSelectorContainerLabel = this.parentSelectContainer.createDiv({ cls: "label" });
-        parentSelectorContainerLabel.setText(`Parent:`);
-        this.parentSelectContainer.createDiv({ cls: "spacer" })
-        const parentSelect = new DropdownComponent(this.parentSelectContainer);
-        parentSelect.addOption("none", "--None--")
-        compatibleParents.forEach(parent => {
-            const path = parent.path ? parent.path + "____" + parent.id : parent.id
-            const display = path.split("____").map(id => Field.getFieldFromId(this.plugin, id, this.getFileClassName())?.name || "").join(" > ")
-            parentSelect.addOption(path, display)
-        })
-        if (this.field.path) {
-            parentSelect.setValue(this.field.path || "none")
-        } else {
-            parentSelect.setValue("none")
-        }
-        parentSelect.onChange((path: string) => {
-            if (path === "none") {
-                this.path = ""
-                this.field.path = ""
-            } else {
-                this.path = path
-                this.field.path = path
-            }
-            this.buildTypeSelectContainer()
-        })
+        const parentName = parent
+            ? ParentSelector.getHierarchyDisplay(
+                this.plugin,
+                ParentSelector.getParentPath(parent),
+                this.getFileClassName())
+            : "-- No parent field selected --"
+        this.parentSelectContainer
+            .createDiv({ cls: "label" })
+            .setText(`Parent:`);
+        this.parentSelectContainer
+            .createDiv({ cls: "spacer" })
+        this.parentSelectContainer
+            .createDiv({ cls: parent ? "parent-label" : "parent-label empty" })
+            .setText(parentName)
+
+        new ButtonComponent(this.parentSelectContainer)
+            .setButtonText(`${!this.field.path ? "Select a parent field" : "Change parent field"}`)
+            .onClick(() => {
+                new ParentSelector(this, compatibleParents).open()
+            })
+        new ButtonComponent(this.parentSelectContainer)
+            .setIcon("trash")
+            .onClick(() => this.setParent(undefined))
+
         if (!compatibleParents.length) this.parentSelectContainer.hide()
+        else this.parentSelectContainer.show()
     }
 
     private createFrontmatterListDisplayContainer(): void {
@@ -204,6 +301,7 @@ export abstract class BaseSettingModal extends Modal {
             this.addCommand ? iconContainer.show() : iconContainer.hide();
         });
     }
+
     private setLabelStyle(label: HTMLDivElement): void {
         const fieldStyle = this.field.style || {}
         Object.keys(FieldStyle).forEach((style: keyof typeof FieldStyle) => {
@@ -247,6 +345,36 @@ export abstract class BaseSettingModal extends Modal {
         }
     }
 
+    public setType(fieldType: keyof typeof FieldType, fieldTypeLabelContainer: HTMLDivElement): void {
+        fieldTypeLabelContainer.setText(fieldType)
+        fieldTypeLabelContainer.className = `chip ${FieldTypeTagClass[fieldType]}`
+
+        this.field = new Field(this.plugin);
+        this.setFileClassName()
+        Field.copyProperty(this.field, this.initialField);
+        this.field.name = this.namePromptComponent.getValue()
+        this.field.type = FieldTypeLabelMapping[fieldType];
+        this.field.path = this.path
+        if (this.field.type !== this.initialField.type &&
+            ![this.field.type, this.initialField.type].every(fieldType =>
+                [FieldType.Multi, FieldType.Select, FieldType.Cycle].includes(fieldType)
+            )
+        ) {
+            this.field.options = {}
+        }
+        this.buildParentSelectContainer()
+        if (multiTypes.includes(this.field.type)) {
+            this.frontmatterListDisplayContainer.show()
+        } else {
+            this.frontmatterListDisplayContainer.hide()
+        }
+        while (this.fieldOptionsContainer.firstChild) {
+            this.fieldOptionsContainer.removeChild(this.fieldOptionsContainer.firstChild);
+        }
+        this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
+        this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, this.location)
+    }
+
     private buildTypeSelectContainer(): void {
         this.typeSelectContainer.replaceChildren()
         const typeSelectorContainerLabel = this.typeSelectContainer.createDiv({ cls: "label" });
@@ -257,54 +385,26 @@ export abstract class BaseSettingModal extends Modal {
         info.setClass("tooltip-button")
         setIcon(info.buttonEl, !(this.field.id && !this.isNew()) ? "shield-alert" : "lock")
         info.setTooltip(`The field type \ncan't be modified once saved`)
-        const typeSelect = new DropdownComponent(this.typeSelectContainer);
+        const typeNameContainer = this.typeSelectContainer
+            .createDiv({ cls: "field-type-label" })
+            .createDiv({ cls: `chip ${FieldTypeTagClass[this.field.type]}` })
+        if (!this.field.id || this.isNew()) {
+            new ButtonComponent(this.typeSelectContainer)
+                .setButtonText("Choose a type")
+                .onClick(() => {
+                    new TypeSelector(this, typeNameContainer).open()
+                })
+        }
         this.frontmatterOnlyTypeInfoContainer = this.typeSelectContainer.createDiv({ cls: "tooltip-btn" });
         this.setTypeInfo()
-        Object.keys(FieldTypeTooltip).forEach((key: keyof typeof FieldType) => {
-            if (!rootOnlyTypes.includes(key as FieldType)) {
-                typeSelect.addOption(key, FieldTypeTooltip[key])
-            } else {
-                if (this.field.isRoot()) typeSelect.addOption(key, FieldTypeTooltip[key])
-            }
-
-        })
         if (this.field.type) {
-            typeSelect.setValue(this.field.type);
+            typeNameContainer.setText(this.field.type);
             if (multiTypes.includes(this.field.type)) {
                 this.frontmatterListDisplayContainer.show()
             } else {
                 this.frontmatterListDisplayContainer.hide()
             }
         }
-        if (this.field.id && !this.isNew()) { typeSelect.setDisabled(true); return }
-        //if (!this.new) { typeSelect.setDisabled(true); return }
-        typeSelect.onChange((typeLabel: keyof typeof FieldType) => {
-            this.field = new Field(this.plugin);
-            this.setFileClassName()
-            Field.copyProperty(this.field, this.initialField);
-            this.field.name = this.namePromptComponent.getValue()
-            this.field.type = FieldTypeLabelMapping[typeLabel];
-            this.field.path = this.path
-            if (this.field.type !== this.initialField.type &&
-                ![this.field.type, this.initialField.type].every(fieldType =>
-                    [FieldType.Multi, FieldType.Select, FieldType.Cycle].includes(fieldType)
-                )
-            ) {
-                this.field.options = {}
-            }
-            this.buildParentSelectContainer()
-            this.setTypeInfo()
-            if (multiTypes.includes(this.field.type)) {
-                this.frontmatterListDisplayContainer.show()
-            } else {
-                this.frontmatterListDisplayContainer.hide()
-            }
-            while (this.fieldOptionsContainer.firstChild) {
-                this.fieldOptionsContainer.removeChild(this.fieldOptionsContainer.firstChild);
-            }
-            this.fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
-            this.fieldManager.createSettingContainer(this.fieldOptionsContainer, this.plugin, this.location)
-        })
     }
 
     private validateFields(): boolean {

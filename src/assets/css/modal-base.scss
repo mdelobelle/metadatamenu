@@ -58,10 +58,30 @@
         font-size:x-small;
     }
 
+    .suggestion-item {
+        .field-type-container{
+            min-width: 160px;
+            //display: flex;
+        }
+
+        .field-type-tooltip{
+            color: var(--text-faint)
+        }
+    }
+
     .field-container{
         display: flex;
         align-items: center;
         margin: 1em 0;
+
+        .field-type-label, .parent-label{
+            margin: 0 1em;
+            white-space: nowrap;
+
+            &.empty{
+                color: var(--text-faint);
+            }
+        }
 
         .tooltip-btn{
 

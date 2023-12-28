@@ -1,6 +1,6 @@
 import Managers from "src/fields/fieldManagers/Managers";
 
-export const enum FieldType {
+export enum FieldType {
     'Input' = "Input",
     'Select' = "Select",
     'Multi' = "Multi",
