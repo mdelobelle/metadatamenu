@@ -9,6 +9,7 @@ export enum FieldType {
     "Number" = "Number",
     "File" = "File",
     "MultiFile" = "MultiFile",
+    "Media" = "Media",
     "Date" = "Date",
     "Lookup" = "Lookup",
     "Formula" = "Formula",
@@ -30,6 +31,7 @@ export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = 
     "Number": FieldType.Number,
     "File": FieldType.File,
     "MultiFile": FieldType.MultiFile,
+    "Media": FieldType.Media,
     "Date": FieldType.Date,
     "Lookup": FieldType.Lookup,
     "Formula": FieldType.Formula,
@@ -51,6 +53,7 @@ export const FieldTypeTagClass: Record<keyof typeof FieldType, string> = {
     "Number": "number",
     "File": "file",
     "MultiFile": "file",
+    "Media": "file",
     "Date": "date",
     "Lookup": "lookup",
     "Formula": "formula",
@@ -72,6 +75,7 @@ export const FieldTypeTooltip: Record<keyof typeof FieldType, string> = {
     "Number": "Accept a number",
     "File": "Accept a link",
     "MultiFile": "Accept multiple links",
+    "Media": "Accept a link to a media file",
     "Date": "Accept a date",
     "Lookup": "Accept a lookup query",
     "Formula": "Accept a formula",
@@ -93,6 +97,7 @@ export const FieldManager: Record<keyof typeof FieldType, any> = {
     "Number": Managers.Number,
     "File": Managers.File,
     "MultiFile": Managers.MultiFile,
+    "Media": Managers.Media,
     "Date": Managers.Date,
     "Lookup": Managers.Lookup,
     "Formula": Managers.Formula,
@@ -114,6 +119,7 @@ export const FieldIcon: Record<keyof typeof FieldType, string> = {
     "Number": "plus-minus-glyph",
     "File": "link",
     "MultiFile": "link",
+    "Media": "paperclip",
     "Date": "calendar-with-checkmark",
     "Lookup": "file-search",
     "Formula": "function-square",
@@ -135,6 +141,7 @@ export const FieldBackgroundColorClass: Record<keyof typeof FieldType, string> =
     "Number": "number",
     "File": "file",
     "MultiFile": "file",
+    "Media": "file",
     "Date": "date",
     "Lookup": "lookup",
     "Formula": "lookup",
@@ -186,5 +193,23 @@ export const frontmatterOnlyTypes = [
     FieldType.YAML,
     FieldType.Object,
     FieldType.ObjectList
-
 ]
+
+export enum MediaType {
+    "Audio" = "Audio",
+    "Image" = "Image",
+    "Video" = "Video"
+}
+
+export const extensionMediaTypes: Record<string, MediaType> = {
+    'avif': MediaType.Image,
+    'bmp': MediaType.Image,
+    'gif': MediaType.Image,
+    'jpg': MediaType.Image,
+    'jpeg': MediaType.Image,
+    'png': MediaType.Image,
+    'svg': MediaType.Image,
+    'tif': MediaType.Image,
+    'tiff': MediaType.Image,
+    'webp': MediaType.Image,
+}

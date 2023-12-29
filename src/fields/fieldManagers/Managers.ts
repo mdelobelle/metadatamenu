@@ -7,6 +7,7 @@ import Multi from './MultiField'
 import File from './FileField'
 import Date from './DateField'
 import MultiFile from './MultiFileField'
+import Media from './MediaField'
 import Lookup from './LookupField'
 import Formula from './FormulaField'
 import Canvas from './CanvasField'
@@ -26,6 +27,7 @@ const Managers = {
     Multi,
     File,
     Date,
+    Media,
     MultiFile,
     Lookup,
     Formula,

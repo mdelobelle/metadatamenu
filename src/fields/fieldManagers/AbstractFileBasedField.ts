@@ -87,14 +87,14 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
                 id: `update_${name}`,
                 actionLabel: `<span>Update <b>${name}</b></span>`,
                 action: action,
-                icon: FieldIcon[FieldType.File]
+                icon: FieldIcon[this.type]
             });
         } else if (AbstractFileBasedField.isFieldOptions(location)) {
             location.addOption(FieldIcon[FieldType.File], action, `Update ${name}'s value`);
         };
     }
 
-    private createFileContainer(container: HTMLDivElement): void {
+    public createQueryContainer(container: HTMLDivElement): void {
         const dvQueryStringTopContainer = container.createDiv({ cls: "vstacked" });
         dvQueryStringTopContainer.createEl("span", { text: "Dataview Query (optional)", cls: 'field-option' });
         const dvQueryStringContainer = dvQueryStringTopContainer.createDiv({ cls: "field-container" });
@@ -107,15 +107,16 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
             this.field.options.dvQueryString = value;
             FieldSettingsModal.removeValidationError(this.dvQueryString);
         })
+    }
 
-
-        const customeRenderingTopContainer = container.createDiv({ cls: "vstacked" })
-        customeRenderingTopContainer.createEl("span", { text: "Alias" });
-        customeRenderingTopContainer.createEl("span", { text: "Personalise the rendering of your links' aliases with a function returning a string (<page> object is available)", cls: 'sub-text' });
-        customeRenderingTopContainer.createEl("code", {
+    public createCustomRenderingContainer(container: HTMLDivElement): void {
+        const customRenderingTopContainer = container.createDiv({ cls: "vstacked" })
+        customRenderingTopContainer.createEl("span", { text: "Alias" });
+        customRenderingTopContainer.createEl("span", { text: "Personalise the rendering of your links' aliases with a function returning a string (<page> object is available)", cls: 'sub-text' });
+        customRenderingTopContainer.createEl("code", {
             text: `function(page) { return <function using "page">; }`
         })
-        const customeRenderingContainer = customeRenderingTopContainer.createDiv({ cls: "field-container" });
+        const customeRenderingContainer = customRenderingTopContainer.createDiv({ cls: "field-container" });
         const customRendering = new TextAreaComponent(customeRenderingContainer);
         customRendering.inputEl.cols = 50;
         customRendering.inputEl.rows = 4;
@@ -128,7 +129,9 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
             this.field.options.customRendering = value;
             FieldSettingsModal.removeValidationError(customRendering);
         })
+    }
 
+    public createCustomSortingContainer(container: HTMLDivElement): void {
         const customSortingTopContainer = container.createDiv({ cls: "vstacked" });
         customSortingTopContainer.createEl("span", { text: "Sorting order" });
         customSortingTopContainer.createEl("span", { text: "Personalise the sorting order of your links with a instruction taking 2 files (a, b) and returning -1, 0 or 1", cls: 'sub-text' });
@@ -151,8 +154,10 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
         })
     }
 
-    public createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
-        this.createFileContainer(parentContainer)
+    public createSettingContainer(container: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
+        this.createQueryContainer(container)
+        this.createCustomRenderingContainer(container)
+        this.createCustomSortingContainer(container)
     }
 
     public getOptionsStr(): string {

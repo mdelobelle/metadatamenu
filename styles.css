@@ -831,6 +831,9 @@ span.flatpickr-weekday {
 .metadata-menu .chip.field-type {
   font-size: x-small;
 }
+.metadata-menu .chip.media-type-container {
+  background-color: var(--text-accent);
+}
 .metadata-menu .chip.cycle {
   background-color: var(--color-blue);
 }
@@ -1954,11 +1957,69 @@ span.flatpickr-weekday {
 .value-container .empty {
   color: var(--text-faint);
 }
+.value-container .media-item {
+  display: flex;
+  align-items: center;
+}
+.value-container .media-item .media-info-container {
+  display: flex;
+}
+.value-container .media-item .thumbnail-container {
+  color: var(--text-faint);
+}
+.value-container .media-item .thumbnail-container img.thumbnail {
+  width: 100%;
+}
 
 .suggestion-item.suggest-separator {
   border-bottom: 1px solid var(--divider-color);
   border-radius: 0px;
   padding: 1px;
+}
+
+.prompt.media-as-cards {
+  width: 100%;
+}
+.prompt.media-as-cards .prompt-results {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 10px;
+}
+@media screen and (max-width: 400px) {
+  .prompt.media-as-cards .prompt-results {
+    grid-template-columns: auto;
+  }
+}
+@media (max-width: 780px) {
+  .prompt.media-as-cards .prompt-results {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 780px) and (max-width: 1020px) {
+  .prompt.media-as-cards .prompt-results {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (min-width: 1020px) and (max-width: 1280px) {
+  .prompt.media-as-cards .prompt-results {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+@media (min-width: 1280px) {
+  .prompt.media-as-cards .prompt-results {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+.prompt.media-as-cards .prompt-results .value-container {
+  align-items: flex-end;
+}
+.prompt.media-as-cards .prompt-results .value-container .media-item {
+  flex-direction: column;
+}
+.prompt.media-as-cards .prompt-results .value-container .media-item .file-name {
+  width: 100%;
+  text-align: center;
+  font-size: smaller;
 }
 
 .metadata-menu.settings .settings-info-warning {
