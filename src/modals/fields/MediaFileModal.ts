@@ -1,14 +1,14 @@
-import { TFile, setIcon, FuzzySuggestModal, FuzzyMatch } from "obsidian";
-import Field from "src/fields/Field";
-import { FieldManager, MediaType, extensionMediaTypes } from "src/types/fieldTypes";
 import MetadataMenu from "main";
+import { TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
-import { getLink } from "src/utils/parser";
 import { ExistingField } from "src/fields/ExistingField";
-import ObjectModal from "./ObjectModal";
-import ObjectListModal from "./ObjectListModal";
+import Field from "src/fields/Field";
 import MediaField from "src/fields/fieldManagers/MediaField";
+import { MediaType, extensionMediaTypes } from "src/types/fieldTypes";
+import { getLink } from "src/utils/parser";
 import { BaseMediaFileModal } from "../BaseMediaModal";
+import ObjectListModal from "./ObjectListModal";
+import ObjectModal from "./ObjectModal";
 
 export default class MediaFileModal extends BaseMediaFileModal {
 

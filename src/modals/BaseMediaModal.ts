@@ -9,7 +9,7 @@ import { postValues } from "src/commands/postValues";
 import MultiMediaField from "src/fields/fieldManagers/MultiMediaField";
 import MediaField from "src/fields/fieldManagers/MediaField";
 
-export const commonMediaTypeIcon = (display: "list" | "card") => `<svg xmlns="http://www.w3.org/2000/svg" ${display === 'card' ? 'width="256" height="256"' : 'width="40" height="40"'} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-question">
+export const commonMediaTypeIcon = (display: "list" | "card") => `<svg xmlns="http://www.w3.org/2000/svg" ${display === 'card' ? 'width="164" height="164"' : 'width="40" height="40"'} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-question">
     <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
     <polyline points="14 2 14 8 20 8"/>
     <circle cx="10" cy="13" r="2"/><path d="m20 17-1.09-1.09a2 2 0 0 0-2.82 0L10 22"/>
@@ -50,7 +50,6 @@ export class BaseMediaFileModal extends FuzzySuggestModal<TFile> {
             const fileManager = new FieldManager[this.field.type](this.plugin, this.field) as MultiMediaField | MediaField;
             return fileManager
                 .getFiles()
-                .filter(f => !this.field.options.folders.length || this.field.options.folders?.some((folder: string) => f.path.startsWith(folder)))
                 .sort(sortingMethod);
         } catch (error) {
             this.close();
@@ -77,9 +76,6 @@ export class BaseMediaFileModal extends FuzzySuggestModal<TFile> {
     renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {
         el.addClass("value-container")
         const isImage = extensionMediaTypes[value.item.extension] === MediaType.Image
-        if (!isImage && this.field.options.display === "card") {
-            el.createDiv({ cls: "spacer" })
-        }
         const suggestionContainer = el.createDiv({ cls: "media-item" });
         const thumbnailContainer = suggestionContainer.createDiv({ cls: "thumbnail-container" })
         if (isImage) {
@@ -93,7 +89,6 @@ export class BaseMediaFileModal extends FuzzySuggestModal<TFile> {
         } else {
             thumbnailContainer.innerHTML = commonMediaTypeIcon(this.field.options.display)
         }
-        if (!isImage && this.field.options.display === "card") el.createDiv({ cls: "spacer" })
 
         const mediaInfoContainer = suggestionContainer.createDiv({ cls: "media-info-container" })
         mediaInfoContainer.createDiv({ text: value.item.extension, cls: "chip media-type-container" })

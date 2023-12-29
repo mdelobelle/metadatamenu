@@ -1,15 +1,15 @@
 import MetadataMenu from "main";
-import { ButtonComponent, FuzzyMatch, FuzzySuggestModal, TFile, setIcon } from "obsidian";
+import { ButtonComponent, FuzzyMatch, TFile, setIcon } from "obsidian";
+import { postValues } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
-import ObjectModal from "./ObjectModal";
-import ObjectListModal from "./ObjectListModal";
-import { extractLinks, getLink } from "src/utils/parser";
+import BaseMediaField from "src/fields/fieldManagers/BaseMediaField";
 import { MediaType, extensionMediaTypes } from "src/types/fieldTypes";
-import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
+import { extractLinks, getLink } from "src/utils/parser";
 import { BaseMediaFileModal } from "../BaseMediaModal";
-import MediaField from "src/fields/fieldManagers/MultiMediaField";
+import ObjectListModal from "./ObjectListModal";
+import ObjectModal from "./ObjectModal";
 
 export class MultiMediaFileModal extends BaseMediaFileModal {
 
@@ -88,7 +88,7 @@ export class MultiMediaFileModal extends BaseMediaFileModal {
     async replaceValues() {
         const result = this.selectedFiles.map(file => {
             const alias = extensionMediaTypes[file.extension] === MediaType.Image ? this.field.options.thumbnailSize : undefined
-            return MediaField.buildLink(this.plugin, this.file, file.path, alias)
+            return BaseMediaField.buildLink(this.plugin, this.file, file.path, alias)
         })
         await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
     }

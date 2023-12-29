@@ -2012,6 +2012,7 @@ span.flatpickr-weekday {
 }
 .prompt.media-as-cards .prompt-results .value-container {
   align-items: flex-end;
+  justify-content: center;
 }
 .prompt.media-as-cards .prompt-results .value-container .media-item {
   flex-direction: column;
