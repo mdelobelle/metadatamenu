@@ -9,7 +9,7 @@ import { ExistingField } from "src/fields/ExistingField";
 import ObjectModal from "./ObjectModal";
 import ObjectListModal from "./ObjectListModal";
 import MultiField from "src/fields/fieldManagers/MultiField";
-import BaseSelecttModal from "../BaseSelectModal";
+import BaseSelecttModal from "../baseFieldModals/BaseSelectModal";
 
 export default class MultiSuggestModal extends BaseSelecttModal {
 

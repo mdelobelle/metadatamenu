@@ -9,7 +9,7 @@ import { FieldManager, FieldType } from "src/types/fieldTypes";
 import ObjectListModal from "./ObjectListModal";
 import ObjectField from "src/fields/fieldManagers/ObjectField";
 import { postValues } from "src/commands/postValues";
-import BaseSuggestModal from "../BaseObjectModal";
+import BaseSuggestModal from "../baseFieldModals/BaseObjectModal";
 import { Note } from "src/note/note";
 
 export default class ObjectModal extends BaseSuggestModal<ExistingField | Field> {

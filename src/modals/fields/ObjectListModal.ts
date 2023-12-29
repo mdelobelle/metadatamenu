@@ -7,7 +7,7 @@ import { Note } from "src/note/note";
 import { FieldManager } from "src/types/fieldTypes";
 import ObjectModal from "./ObjectModal";
 import { postValues } from "src/commands/postValues";
-import BaseSuggestModal from "../BaseObjectModal";
+import BaseSuggestModal from "../baseFieldModals/BaseObjectModal";
 export default class ObjectListModal extends BaseSuggestModal<ObjectListItem> {
     private toRemove?: ObjectListItem;
     private objects: ObjectListItem[] = []

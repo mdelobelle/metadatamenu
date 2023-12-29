@@ -4,8 +4,8 @@ import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
 import { Note } from "src/note/note";
 import { FieldManager } from "src/types/fieldTypes";
-import ObjectListModal from "./fields/ObjectListModal";
-import ObjectModal from "./fields/ObjectModal";
+import ObjectListModal from "../fields/ObjectListModal";
+import ObjectModal from "../fields/ObjectModal";
 
 export default class BaseModal extends Modal {
 

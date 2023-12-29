@@ -6,7 +6,7 @@ import Field from "src/fields/Field";
 import MediaField from "src/fields/fieldManagers/MediaField";
 import { MediaType, extensionMediaTypes } from "src/types/fieldTypes";
 import { getLink } from "src/utils/parser";
-import { BaseMediaFileModal } from "../BaseMediaModal";
+import { BaseMediaFileModal } from "../baseFieldModals/BaseMediaModal";
 import ObjectListModal from "./ObjectListModal";
 import ObjectModal from "./ObjectModal";
 

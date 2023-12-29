@@ -7,8 +7,8 @@ import AbstractListBasedField from "src/fields/abstractFieldManagers/AbstractLis
 import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
 import { ExistingField } from "src/fields/ExistingField";
-import ObjectModal from "./fields/ObjectModal";
-import ObjectListModal from "./fields/ObjectListModal";
+import ObjectModal from "../fields/ObjectModal";
+import ObjectListModal from "../fields/ObjectListModal";
 
 export default class BaseSelecttModal extends SuggestModal<string> {
 

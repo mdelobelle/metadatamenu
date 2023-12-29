@@ -7,7 +7,7 @@ import MetadataMenu from "main";
 import { FieldIcon, FieldType, FieldManager } from "src/types/fieldTypes";
 import DateField from "src/fields/fieldManagers/DateField";
 import { postValues } from "src/commands/postValues";
-import BaseModal from "../BaseModal";
+import BaseModal from "../baseFieldModals/BaseModal";
 import { cleanActions } from "src/utils/modals";
 import { ExistingField } from "src/fields/ExistingField";
 import ObjectModal from "./ObjectModal";
