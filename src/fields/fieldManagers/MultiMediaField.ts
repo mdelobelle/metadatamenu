@@ -11,21 +11,16 @@ import MediaFileModal from "src/modals/fields/MediaFileModal";
 import { SettingLocation } from "../FieldManager";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FolderSuggest } from "src/suggester/FolderSuggester";
+import { MultiMediaFileModal } from "src/modals/fields/MultiMediaFileModal";
+import { filesDisplay } from "./MediaField";
 
-
-export const filesDisplay = {
-    "list": "list",
-    "card": "card"
-}
-
-export default class MediaField extends AbstractFileBasedField<MediaFileModal> {
+export default class MediaField extends AbstractFileBasedField<MultiMediaFileModal> {
 
     public foldersInputComponents: Array<TextComponent> = []
 
     constructor(plugin: MetadataMenu, field: Field) {
-        super(plugin, field, FieldType.Media)
+        super(plugin, field, FieldType.MultiMedia)
         this.field.options.folders = this.field.options.folders || []
-
     }
 
     public modalFactory(
@@ -38,8 +33,8 @@ export default class MediaField extends AbstractFileBasedField<MediaFileModal> {
         asList: boolean = false,
         asBlockquote: boolean = false,
         previousModal?: ObjectModal | ObjectListModal
-    ): MediaFileModal {
-        return new MediaFileModal(plugin, file, field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal);
+    ): MultiMediaFileModal {
+        return new MultiMediaFileModal(plugin, file, field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal);
     }
 
     public getFiles = (): TFile[] => {

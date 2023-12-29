@@ -8,6 +8,7 @@ import File from './FileField'
 import Date from './DateField'
 import MultiFile from './MultiFileField'
 import Media from './MediaField'
+import MultiMedia from './MultiMediaField'
 import Lookup from './LookupField'
 import Formula from './FormulaField'
 import Canvas from './CanvasField'
@@ -28,6 +29,7 @@ const Managers = {
     File,
     Date,
     Media,
+    MultiMedia,
     MultiFile,
     Lookup,
     Formula,
