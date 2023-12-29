@@ -6,9 +6,10 @@ import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import MediaFileModal from "src/modals/fields/MediaFileModal";
-import BaseMediaField from "./BaseMediaField";
+import { AbstractMediaField } from "../abstractFieldManagers/AbstractMediaField";
 
-export default class MediaField extends BaseMediaField {
+
+export default class MediaField extends AbstractMediaField {
 
     public foldersInputComponents: Array<TextComponent> = []
 

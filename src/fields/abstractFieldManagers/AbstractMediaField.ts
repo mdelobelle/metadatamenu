@@ -18,7 +18,7 @@ export const filesDisplay = {
     "card": "card"
 }
 
-export default abstract class BaseMediaField extends AbstractFileBasedField<MediaFileModal | MultiMediaFileModal> {
+export abstract class AbstractMediaField extends AbstractFileBasedField<MediaFileModal | MultiMediaFileModal> {
 
     public foldersInputComponents: Array<TextComponent> = []
 

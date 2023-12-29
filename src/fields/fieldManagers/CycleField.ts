@@ -4,7 +4,7 @@ import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import SelectModal from "src/modals/fields/SelectModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
-import AbstractListBasedField from "./AbstractListBasedField";
+import AbstractListBasedField from "../abstractFieldManagers/AbstractListBasedField";
 import { FieldOptions } from "src/components/NoteFields";
 import { postValues } from "src/commands/postValues";
 import { SettingLocation } from "../FieldManager";

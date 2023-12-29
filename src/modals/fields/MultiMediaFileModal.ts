@@ -3,13 +3,13 @@ import { ButtonComponent, FuzzyMatch, TFile, setIcon } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
-import BaseMediaField from "src/fields/fieldManagers/BaseMediaField";
 import { MediaType, extensionMediaTypes } from "src/types/fieldTypes";
 import { cleanActions } from "src/utils/modals";
 import { extractLinks, getLink } from "src/utils/parser";
 import { BaseMediaFileModal } from "../BaseMediaModal";
 import ObjectListModal from "./ObjectListModal";
 import ObjectModal from "./ObjectModal";
+import { AbstractMediaField } from "src/fields/abstractFieldManagers/AbstractMediaField";
 
 export class MultiMediaFileModal extends BaseMediaFileModal {
 
@@ -88,7 +88,7 @@ export class MultiMediaFileModal extends BaseMediaFileModal {
     async replaceValues() {
         const result = this.selectedFiles.map(file => {
             const alias = extensionMediaTypes[file.extension] === MediaType.Image ? this.field.options.thumbnailSize : undefined
-            return BaseMediaField.buildLink(this.plugin, this.file, file.path, alias)
+            return AbstractMediaField.buildLink(this.plugin, this.file, file.path, alias)
         })
         await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
     }

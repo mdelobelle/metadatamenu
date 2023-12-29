@@ -6,7 +6,7 @@ import { FieldSet } from "src/fileClass/views/tableViewComponents/tableViewField
 import { getLink } from "src/utils/parser";
 import FileField from "../../../fields/fieldManagers/FileField";
 import { cleanActions } from "src/utils/modals";
-import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
+import AbstractListBasedField from "src/fields/abstractFieldManagers/AbstractListBasedField";
 import MultiFileField from "src/fields/fieldManagers/MultiFileField";
 
 export enum fieldStates {
@@ -29,7 +29,7 @@ export const displayIcon: Record<keyof typeof fieldStates, string> = {
     __existing__: "circle-dot"
 }
 
-export class OptionsMultiSelectModal extends SuggestModal<string>{
+export class OptionsMultiSelectModal extends SuggestModal<string> {
     private selectedOptions: Array<string>;
     private input: TextComponent;
 

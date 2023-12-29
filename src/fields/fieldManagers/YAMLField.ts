@@ -2,7 +2,7 @@ import { LanguageSupport, StreamLanguage } from "@codemirror/language";
 import MetadataMenu from "main";
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
-import RawObjectField from "./AbstractRawObjectField";
+import RawObjectField from "../abstractFieldManagers/AbstractRawObjectField";
 import * as yamlMode from '@codemirror/legacy-modes/mode/yaml';
 import { Diagnostic, linter } from "@codemirror/lint";
 import { stringify, parse } from "yaml";

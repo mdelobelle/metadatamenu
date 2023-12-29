@@ -8,7 +8,7 @@ import { FieldType } from "src/types/fieldTypes"
 import { ExistingField } from "../ExistingField"
 import Field from "../Field"
 import { SettingLocation } from "../FieldManager"
-import AbstractCanvasBasedField from "./AbstractCanvasBasedField"
+import AbstractCanvasBasedField from "../abstractFieldManagers/AbstractCanvasBasedField"
 
 export default class CanvasGroupField extends AbstractCanvasBasedField {
 
