@@ -42,7 +42,7 @@ export default class MediaFileModal extends BaseMediaFileModal {
     async onChooseItem(item: TFile): Promise<void> {
         const alias = extensionMediaTypes[item.extension] === MediaType.Image ? this.field.options.thumbnailSize : undefined
         const value = MediaField.buildLink(this.plugin, this.file, item.path, alias)
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
         this.previousModal?.open()
     }
 }

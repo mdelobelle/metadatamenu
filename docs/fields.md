@@ -18,8 +18,63 @@ In order to give metadata menu the capability to manage a field, you'll have to 
 - in a [fileClass](fileclass.md): the field definition will be applied to the files [mapped with this fileClass](fileclasses.md#file-mapping)
 
 All fields defintions are composed of:
- - [common settings](#field-settings)
+ - [common settings](#fields-common-settings)
  - specific options depending on their [type](#fields-types)
+
+These options are translated in a [field object](#field-object-structure) stored:
+- as a `fields` item in the [fileClass](fileclass.md) file for fileclasses fields
+- as a `fields` item in the `data.json` file of the plugin's folder for [preset fields](settings.md#preset-field-settings)
+
+### Field object structure
+
+|key|value|
+|---|-----|
+|name|field name|
+|type|[field type](general.md#field-types)|
+|id  |unique string automatically generated to identify the field across the vault|
+|options|specific options by field type|
+|path|The path of the field in the parent herarchy:<br> - empty or "" if the field doesn't have a parent<br>  - <parent_id> if the field has a parent (e.g. field of type [Object](fields.md#object) or [ObjectList](fields.md#object-list))<br> - <grand_parent_id>____<parent_id> if the field has a parent that also has a parent<br> - .... any depth level is supported|
+
+### Indexed Path
+
+For each field instance in a file, the plugin computes an indexedPath attribute for each existing field in the plugin's index.
+
+It is used to identify the field instance in an [ObjectList](fields.md#object-list) and has to be passed to the `id` attribute of the [postValues](api.md#postvalues) method.
+
+It is composed of each parent `id` separated by `____`, the position in each parent object list next to the parent `id` between square brackets, and ends with the field's `id`
+
+
+Example of a "Company" fileClass fields:
+|Field name|Type|id|path|
+|---|---|---|---|
+|City|Input|HDERA||
+|Employees|ObjectList|dx8Mth||
+|Name|Input|7r1kwd|dx8Mth|
+|Role|Input|PCNGE4|dx8Mth|
+|Contact Info|Object|Y0dsfZ|dx8Mth|
+|e-mail|Input|hRlSsW|dx8Mth____Y0dsfZ|
+|phone number|Input|xLPW7T|dx8Mth____Y0dsfZ|
+
+Example of computed indexedPath for each field in a file:
+
+ `ACME.md`
+```yaml
+---
+#Field                            # indexedPath
+City: Paris                       # HDERA
+Employees:                        # dx8Mth
+  - Name: John Doe                # dx8Mth[0]____7r1kwd
+    Role: CFO                     # dx8Mth[0]____PCNGE4
+    Contact Info:                 # dx8Mth[0]____Y0dsfZ
+      e-mail: john.doe@acme.ob    # dx8Mth[0]____Y0dsfZ____hRlSsW
+      phone number: 1234567891    # dx8Mth[0]____Y0dsfZ____xLPW7T
+  - Name: Ann Martin              # dx8Mth[1]____7r1kwd
+    Role: CEO                     # dx8Mth[1]____PCNGE4
+    Contact Info:                 # dx8Mth[1]____Y0dsfZ
+      e-mail: ann.martin@acme.ob  # dx8Mth[1]____Y0dsfZ____hRlSsW
+      phone number: 1234567890    # dx8Mth[1]____Y0dsfZ____xLPW7T
+---
+```
 
 ## Fields Types
 Metadata Menu can manage several field types. Choose them depending on the kind of data that you want to put in your field:

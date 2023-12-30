@@ -66,11 +66,11 @@ export class BaseMediaFileModal extends FuzzySuggestModal<TFile> {
             const alias = extensionMediaTypes[file.extension] === MediaType.Image ? this.field.options.thumbnailSize : undefined
             return MediaField.buildLink(this.plugin, this.file, file.path, alias)
         })
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
     }
 
     async clearValues() {
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: "" } }], this.file)
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: "" } }], this.file)
     }
 
     renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {

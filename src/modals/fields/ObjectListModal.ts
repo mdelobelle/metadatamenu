@@ -45,7 +45,7 @@ export default class ObjectListModal extends BaseSuggestModal<ObjectListItem> {
             this.open()
         } else if (this.indexedPath) {
             //first insert the empty object list
-            await postValues(this.plugin, [{ id: this.indexedPath, payload: { value: "" } }], this.file)
+            await postValues(this.plugin, [{ indexedPath: this.indexedPath, payload: { value: "" } }], this.file)
             this.close()
             this.open()
         }

@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { Debouncer, DropdownComponent, Menu, TFile } from "obsidian";
+import { Menu, TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { FieldOptions } from "src/components/NoteFields"
@@ -23,7 +23,7 @@ export default class BooleanField extends FieldManager {
         const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
         const value = BooleanField.stringToBoolean(eF?.value)
         const postValue = !value ? "true" : "false"
-        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: postValue } }], file)
+        await postValues(this.plugin, [{ indexedPath: indexedPath || this.field.id, payload: { value: postValue } }], file)
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {

@@ -65,7 +65,7 @@ export default class CycleField extends AbstractListBasedField {
     public async next(name: string, file: TFile, indexedPath?: string): Promise<void> {
         const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
         const value = eF?.value || ""
-        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: this.nextOption(value).toString() } }], file)
+        await postValues(this.plugin, [{ indexedPath: indexedPath || this.field.id, payload: { value: this.nextOption(value).toString() } }], file)
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {

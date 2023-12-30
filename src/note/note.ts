@@ -335,12 +335,12 @@ export class Note {
         asBlockquote: boolean = false
     ): Promise<void> {
         fields.forEach(field => {
-            const node = this.getNodeForIndexedPath(field.id)
+            const node = this.getNodeForIndexedPath(field.indexedPath)
             if (node && node.field) {
                 node.createFieldNodeContent(node.field, field.payload.value, node.line.position, asList, asBlockquote)
                 node.line.renderLine(asList, asBlockquote)
             } else {
-                this.insertField(field.id, field.payload, lineNumber, asList, asBlockquote)
+                this.insertField(field.indexedPath, field.payload, lineNumber, asList, asBlockquote)
             }
         })
         await this.plugin.app.vault.modify(this.file, this.renderNote())

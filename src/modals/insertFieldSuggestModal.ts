@@ -93,7 +93,7 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
             const field = this.plugin.fieldIndex.filesFields.get(this.file.path)?.find(field => field.name === item.actionLabel)
             if (field) {
                 if (objectTypes.includes(field.type)) {
-                    await postValues(this.plugin, [{ id: field.id, payload: { value: "" } }], this.file)
+                    await postValues(this.plugin, [{ indexedPath: field.id, payload: { value: "" } }], this.file)
                     const eF = await Note.getExistingFieldForIndexedPath(this.plugin, this.file, field.id)
                     const fieldManager = new FieldManager[field.type](this.plugin, field);
                     fieldManager.createAndOpenFieldModal(this.file, field.name, eF, field.id, undefined, undefined, undefined, undefined)

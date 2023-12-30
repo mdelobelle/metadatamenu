@@ -119,11 +119,11 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
             }
             return FM.buildMarkDownLink(this.plugin, this.file, file.basename, undefined, alias)
         })
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
     }
 
     async clearValues() {
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: "" } }], this.file)
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: "" } }], this.file)
     }
 
     renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {

@@ -81,7 +81,7 @@ export default class RawObjectModal extends BaseModal {
 
     public async save(): Promise<void> {
         const newContent = this.editor.state.doc.toString().trim()
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: newContent } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: newContent } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
         this.saved = true
         if (this.previousModal) await this.goToPreviousModal()
         this.close();

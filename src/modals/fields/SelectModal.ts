@@ -40,7 +40,7 @@ export default class ValueSuggestModal extends BaseSelecttModal {
     }
 
     async saveItem(item: string): Promise<void> {
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: item.toString() } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: item.toString() } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
     }
 
     async onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {

@@ -190,19 +190,19 @@ export default class DateField extends FieldManager {
         const newValue = await this.getNewDateValue(currentShift, file, indexedPath)
         //Since nextIntervalField path are limited to root, we can pass the field id as an argument for post values
         if (nextIntervalField && nextShift) {
-            await postValues(this.plugin, [{ id: nextIntervalField.id, payload: { value: nextShift } }], file.path)
+            await postValues(this.plugin, [{ indexedPath: nextIntervalField.id, payload: { value: nextShift } }], file.path)
         }
         const linkFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath || "" + newValue.format(dateFormat), file.path)
         const formattedValue = DateField.stringToBoolean(defaultInsertAsLink) ?
             `[[${linkPath || ""}${newValue}${linkFile ? "|" + linkFile.basename : ""}]]` :
             newValue
-        await postValues(this.plugin, [{ id: indexedPath, payload: { value: formattedValue } }], file)
+        await postValues(this.plugin, [{ indexedPath: indexedPath, payload: { value: formattedValue } }], file)
 
     }
 
     public async clearDate(file: TFile, indexedPath?: string): Promise<void> {
         if (!indexedPath) return
-        await postValues(this.plugin, [{ id: indexedPath, payload: { value: "" } }], file)
+        await postValues(this.plugin, [{ indexedPath: indexedPath, payload: { value: "" } }], file)
     }
 
     public createDvField(

@@ -94,10 +94,10 @@ export default class ObjectModal extends BaseSuggestModal<ExistingField | Field>
         } else {
             //insert field
             if (item.type === FieldType.ObjectList) {
-                await postValues(this.plugin, [{ id: `${this.indexedPath}____${item.id}`, payload: { value: "" } }], this.file)
+                await postValues(this.plugin, [{ indexedPath: `${this.indexedPath}____${item.id}`, payload: { value: "" } }], this.file)
                 this.open()
             } else if (item.type === FieldType.Object) {
-                await postValues(this.plugin, [{ id: `${this.indexedPath}____${item.id}`, payload: { value: "" } }], this.file)
+                await postValues(this.plugin, [{ indexedPath: `${this.indexedPath}____${item.id}`, payload: { value: "" } }], this.file)
                 await this.plugin.fieldIndex.indexFields()
                 const fieldManager = new FieldManager[item.type](this.plugin, item) as F
                 fieldManager.createAndOpenFieldModal(this.file, item.name, undefined, `${this.indexedPath}____${item.id}`, this.lineNumber, this.asList, this.asBlockquote, this)

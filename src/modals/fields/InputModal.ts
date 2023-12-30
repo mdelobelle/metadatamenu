@@ -119,7 +119,7 @@ export default class InputModal extends BaseModal {
     };
 
     public async save(): Promise<void> {
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: this.newValue } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: this.newValue } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
         this.saved = true
         if (this.previousModal) await this.goToPreviousModal()
         this.close()

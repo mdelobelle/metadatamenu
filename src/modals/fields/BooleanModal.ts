@@ -60,7 +60,7 @@ export default class BooleanModal extends BaseModal {
 
     public async save(): Promise<void> {
         const value = this.value.toString()
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
         this.saved = true
         if (this.previousModal) await this.goToPreviousModal()
         this.close();

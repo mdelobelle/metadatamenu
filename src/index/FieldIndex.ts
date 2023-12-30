@@ -1,4 +1,4 @@
-import { Notice, TFile, TFolder, debounce } from "obsidian"
+import { Notice, TFile } from "obsidian"
 import MetadataMenu from "main"
 import Field from "../fields/Field";
 import { FileClass } from "src/fileClass/fileClass";
@@ -167,8 +167,8 @@ export default class FieldIndex extends FieldIndexBuilder {
             .get(filePath) || { status: "toProcess", fieldsPayload: [] }
         for (const fieldPayload of fieldsPayloadToUpdate) {
             currentFieldsPayloadToUpdate.status = "toProcess"
-            const { id, payload } = fieldPayload
-            const currentField = currentFieldsPayloadToUpdate?.fieldsPayload.find(item => item.id === id)
+            const { indexedPath, payload } = fieldPayload
+            const currentField = currentFieldsPayloadToUpdate?.fieldsPayload.find(item => item.indexedPath === indexedPath)
             if (currentField) currentField.payload = payload;
             else currentFieldsPayloadToUpdate.fieldsPayload.push(fieldPayload)
             this.dVRelatedFieldsToUpdate.set(filePath, currentFieldsPayloadToUpdate)
@@ -184,7 +184,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                         await postValues(this.plugin, fieldsPayload, filePath)
                         fieldsPayload.forEach(fieldPayload => {
                             const field = this.filesFields
-                                .get(filePath)?.find(_f => _f.isRoot() && _f.id === fieldPayload.id)
+                                .get(filePath)?.find(_f => _f.isRoot() && _f.id === fieldPayload.indexedPath)
                             if (field && field.type === FieldType.Lookup) this.fileLookupFieldsStatus
                                 .set(`${filePath}__${field.name}`, LookupStatus.upToDate)
                             if (field && field.type === FieldType.Formula) this.fileFormulaFieldsStatus

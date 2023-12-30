@@ -7,7 +7,6 @@ import * as FieldType from "src/types/fieldTypes"
 import { FieldManager as FM } from "src/types/fieldTypes";
 import { FieldManager as F, FieldManager } from "src/fields/FieldManager";
 import { insertMissingFields } from "src/commands/insertMissingFields";
-import { FileClass } from "src/fileClass/fileClass";
 import { FileClassViewManager } from "./FileClassViewManager";
 import { Note } from "src/note/note";
 import { ExistingField } from "src/fields/ExistingField";
@@ -194,7 +193,7 @@ export class FieldsModal extends Modal {
             fieldBtn.onClick(async () => {
                 //Object and ObjectList go straight to frontmatter
                 if (FieldType.objectTypes.includes(field.type) && this.note) {
-                    await postValues(this.plugin, [{ id: `${newIndexedPath}`, payload: { value: "" } }], this.file)
+                    await postValues(this.plugin, [{ indexedPath: `${newIndexedPath}`, payload: { value: "" } }], this.file)
                     this.indexedPath = `${newIndexedPath}`
                     //Other fields go straight to frontmatter if their path is not emplty
                 } else {

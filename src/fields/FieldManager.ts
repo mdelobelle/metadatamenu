@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { Debouncer, Menu, TextComponent, TFile } from "obsidian";
+import { Menu, TextComponent, TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import FCSM from "src/options/FieldCommandSuggestModal";
 import { FieldOptions } from "src/components/NoteFields";
@@ -10,7 +10,6 @@ import Field from "./Field";
 import { ExistingField } from "./ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
-import { FieldSet } from "src/fileClass/views/tableViewComponents/tableViewFieldSet";
 
 export const enum SettingLocation {
     "PluginSettings",
@@ -99,7 +98,7 @@ export abstract class FieldManager {
     public static async replaceValues(plugin: MetadataMenu, path: string, id: string, value: string): Promise<void> {
         const file = plugin.app.vault.getAbstractFileByPath(path)
         if (file instanceof TFile && file.extension == "md") {
-            await postValues(plugin, [{ id: id, payload: { value: value } }], file)
+            await postValues(plugin, [{ indexedPath: id, payload: { value: value } }], file)
         }
     }
 

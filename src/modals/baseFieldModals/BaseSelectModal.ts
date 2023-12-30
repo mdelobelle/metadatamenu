@@ -126,7 +126,7 @@ export default class BaseSelecttModal extends SuggestModal<string> {
     }
 
     async clearValues() {
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
     }
 
     getSuggestions(query: string): string[] {

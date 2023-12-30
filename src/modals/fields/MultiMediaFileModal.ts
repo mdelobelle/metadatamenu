@@ -90,11 +90,11 @@ export class MultiMediaFileModal extends BaseMediaFileModal {
             const alias = extensionMediaTypes[file.extension] === MediaType.Image ? this.field.options.thumbnailSize : undefined
             return AbstractMediaField.buildLink(this.plugin, this.file, file.path, alias)
         })
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
     }
 
     async clearValues() {
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: "" } }], this.file)
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: "" } }], this.file)
     }
 
     renderSelected() {

@@ -252,17 +252,17 @@ export async function updateCanvas(
                 cumulatedLinksFields.forEach((linkNodes, name) => {
                     const field = fields.find(_f => _f.name === name)
                     const values = linkNodes.map((node: CanvasFileData) => FieldManager.buildMarkDownLink(plugin, file, node.file, node.subpath))
-                    if (field) payload.push({ id: field.id, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
+                    if (field) payload.push({ indexedPath: field.id, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
                 })
                 cumulatedGroupsFields.forEach((groupNodes, name) => {
                     const field = fields.find(_f => _f.name === name)
                     const values = groupNodes.map((group: CanvasGroupData) => group.label)
-                    if (field) payload.push({ id: field.id, payload: { value: values ? [...(new Set(values.filter(v => !!v)))].join(",") : "" } })
+                    if (field) payload.push({ indexedPath: field.id, payload: { value: values ? [...(new Set(values.filter(v => !!v)))].join(",") : "" } })
                 })
                 cumulatedGroupsLinksFields.forEach((linkNodes, name) => {
                     const field = fields.find(_f => _f.name === name)
                     const values = linkNodes.map((node: CanvasFileData) => FieldManager.buildMarkDownLink(plugin, file, node.file, node.subpath))
-                    if (field) payload.push({ id: field.id, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
+                    if (field) payload.push({ indexedPath: field.id, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
                 })
                 if (payload.length) await postValues(plugin, payload, file)
             }
@@ -278,19 +278,19 @@ export async function updateCanvas(
                     field.type === FieldType.Canvas
                     && field.options.canvasPath === canvas.path
                 )
-                canvasFields?.forEach(field => { payload.push({ id: field.id, payload: { value: "" } }) })
+                canvasFields?.forEach(field => { payload.push({ indexedPath: field.id, payload: { value: "" } }) })
                 // canvas group fields
                 const canvasGroupFields = f.filesFields.get(filePath)?.filter(field =>
                     field.type === FieldType.CanvasGroup
                     && field.options.canvasPath === canvas.path
                 )
-                canvasGroupFields?.forEach(field => { payload.push({ id: field.id, payload: { value: "" } }) })
+                canvasGroupFields?.forEach(field => { payload.push({ indexedPath: field.id, payload: { value: "" } }) })
                 // canvas group links fields
                 const canvasGroupLinksFields = f.filesFields.get(filePath)?.filter(field =>
                     field.type === FieldType.CanvasGroupLink
                     && field.options.canvasPath === canvas.path
                 )
-                canvasGroupLinksFields?.forEach(field => { payload.push({ id: field.id, payload: { value: "" } }) })
+                canvasGroupLinksFields?.forEach(field => { payload.push({ indexedPath: field.id, payload: { value: "" } }) })
                 if (payload.length) await postValues(plugin, payload, targetFile)
             }
         })

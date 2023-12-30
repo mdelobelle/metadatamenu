@@ -47,7 +47,7 @@ export default class CanvasField extends AbstractCanvasBasedField {
 
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField, indexedPath?: string,
         lineNumber?: number, asList?: boolean, asBlockquote?: boolean): Promise<void> {
-        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file,
+        await postValues(this.plugin, [{ indexedPath: indexedPath || this.field.id, payload: { value: "" } }], file,
             lineNumber, asList, asBlockquote)
     }
 
