@@ -53,7 +53,6 @@ export class LineNode {
     private defineLinePrefixAttributes(parsedContent: RegExpMatchArray | null) {
         if (parsedContent?.groups) {
             if (parsedContent.groups.indentation) {
-
                 this.indentationLevel = parsedContent.groups.indentation.length / 2
                 if (parsedContent.groups.list) {
                     this.indentationLevel += 1;
@@ -109,8 +108,8 @@ export class LineNode {
                             } else {
                                 indexedId = field.id
                             }
-                            if (field.path && indexedId !== `${field.path}____${field.id}`) continue
 
+                            if (field.path && indexedId !== `${field.path}____${field.id}`) continue
                             this.indexedId = indexedId
                             const existingField = new ExistingField(field, this.value, this.indexedId)
                             if (field.path) {
@@ -128,10 +127,8 @@ export class LineNode {
                                             lastObject?.push(this.line)
                                         }
                                         const index = objectListLines.length - 1
-                                        this.indexedId = `${this.field.id}`
                                         this.indexedPath = `${parentNode?.indexedPath}[${index}]____${this.field.id}`
                                     } else {
-                                        this.indexedId = `${this.field.id}`
                                         this.indexedPath = `${parentNode?.indexedPath}____${this.field.id}`
                                     }
                                     this.value = Field.getValueFromIndexedPath(this.field, this.line.note.frontmatter!, this.indexedPath)

@@ -3,7 +3,7 @@ import { TFile } from "obsidian";
 import Field from "src/fields/Field";
 import { FieldManager } from "src/fields/FieldManager";
 import * as Lookup from "src/types/lookupTypes";
-import { FieldsPayload, postValues } from "./postValues";
+import { IndexedFieldsPayload, postValues } from "./postValues";
 
 export function arraysAsStringAreEqual(a: string, b: string) {
     const aAsArray = typeof a === "string" ? a.split(",").map(v => v.trim()) : (Array.isArray(a) ? a : [])
@@ -83,7 +83,7 @@ export async function updateLookups(
     const start = Date.now()
     const f = plugin.fieldIndex;
     const renderingErrors: string[] = []
-    const payloads: Record<string, FieldsPayload> = {}
+    const payloads: Record<string, IndexedFieldsPayload> = {}
     const updatedFields: string[] = []
     await Promise.all([...f.fileLookupFiles.keys()].map(async lookupFileId => {
         const matchRegex = /(?<filePath>.*)__related__(?<fileClassName>.*)___(?<fieldName>.*)/

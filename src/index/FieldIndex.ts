@@ -13,7 +13,7 @@ import { updateCanvas, updateCanvasAfterFileClass } from "src/commands/updateCan
 import { CanvasData } from "obsidian/canvas";
 import { V1FileClassMigration } from "src/fileClass/fileClassMigration";
 import { BookmarkItem } from "src/typings/types";
-import { FieldsPayload, postValues } from "src/commands/postValues";
+import { IndexedFieldsPayload, postValues } from "src/commands/postValues";
 import { cFileWithGroups, cFileWithTags, FieldIndexBuilder, FieldsPayloadToProcess, IndexedExistingField } from "./FieldIndexBuilder";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
 
@@ -162,7 +162,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         DEBUG && console.log("indexed FIELDS for ", indexedFiles, " files in ", (Date.now() - start) / 1000, "s")
     }
 
-    public pushPayloadToUpdate(filePath: string, fieldsPayloadToUpdate: FieldsPayload) {
+    public pushPayloadToUpdate(filePath: string, fieldsPayloadToUpdate: IndexedFieldsPayload) {
         const currentFieldsPayloadToUpdate: FieldsPayloadToProcess = this.dVRelatedFieldsToUpdate
             .get(filePath) || { status: "toProcess", fieldsPayload: [] }
         for (const fieldPayload of fieldsPayloadToUpdate) {

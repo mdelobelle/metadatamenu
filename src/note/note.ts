@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { EditorPosition, Notice, parseYaml, TFile } from "obsidian";
-import { FieldPayload, FieldsPayload } from "src/commands/postValues";
+import { FieldPayload, IndexedFieldsPayload } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
 import YAMLField from "src/fields/fieldManagers/YAMLField";
@@ -329,7 +329,7 @@ export class Note {
     }
 
     public async createOrUpdateFields(
-        fields: FieldsPayload,
+        fields: IndexedFieldsPayload,
         lineNumber?: number,
         asList: boolean = false,
         asBlockquote: boolean = false

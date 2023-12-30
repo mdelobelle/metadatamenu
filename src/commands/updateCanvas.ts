@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { Notice, TFile } from "obsidian";
 import { AllCanvasNodeData, CanvasData, CanvasEdgeData, CanvasFileData, CanvasGroupData, CanvasNodeData } from "obsidian/canvas"
 import { FieldType } from "src/types/fieldTypes";
-import { FieldsPayload, postValues } from "./postValues";
+import { IndexedFieldsPayload, postValues } from "./postValues";
 import { FieldManager } from "src/fields/FieldManager";
 import Field from "src/fields/Field";
 
@@ -248,7 +248,7 @@ export async function updateCanvas(
             const file = plugin.app.vault.getAbstractFileByPath(filePath)
             if (file && file instanceof TFile) {
                 const fields = plugin.fieldIndex.filesFields.get(file.path) || []
-                const payload: FieldsPayload = []
+                const payload: IndexedFieldsPayload = []
                 cumulatedLinksFields.forEach((linkNodes, name) => {
                     const field = fields.find(_f => _f.name === name)
                     const values = linkNodes.map((node: CanvasFileData) => FieldManager.buildMarkDownLink(plugin, file, node.file, node.subpath))
@@ -272,7 +272,7 @@ export async function updateCanvas(
         previousFilesPaths.filter(f => !currentFilesPaths.includes(f)).forEach(async filePath => {
             const targetFile = app.vault.getAbstractFileByPath(filePath)
             if (targetFile && targetFile instanceof TFile) {
-                const payload: FieldsPayload = []
+                const payload: IndexedFieldsPayload = []
                 // canvas fields
                 const canvasFields = f.filesFields.get(filePath)?.filter(field =>
                     field.type === FieldType.Canvas

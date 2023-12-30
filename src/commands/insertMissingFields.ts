@@ -3,7 +3,7 @@ import { TFile } from "obsidian";
 import Field from "src/fields/Field";
 import { Note } from "src/note/note";
 import { getFileFromFileOrPath } from "src/utils/fileUtils";
-import { FieldsPayload, postValues } from "./postValues";
+import { IndexedFieldsPayload, postValues } from "./postValues";
 
 export async function insertMissingFields(
     plugin: MetadataMenu,
@@ -23,7 +23,7 @@ export async function insertMissingFields(
     const f = plugin.fieldIndex;
     const fields = f.filesFields.get(file.path)
     const filteredClassFields = fileClassName ? plugin.fieldIndex.fileClassesFields.get(fileClassName)?.filter(field => field.fileClassName === fileClassName) || undefined : undefined
-    const fieldsToInsert: FieldsPayload = []
+    const fieldsToInsert: IndexedFieldsPayload = []
     if (!indexedPath) {
         fields?.filter(field => field.isRoot() && !note.existingFields.map(_f => _f.field.id).includes(field.id))
             .filter(field => filteredClassFields ? filteredClassFields.map(f => f.id).includes(field.id) : true)
