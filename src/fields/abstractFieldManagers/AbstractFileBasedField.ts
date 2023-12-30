@@ -190,19 +190,23 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
         attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
     ): void {
         attrs.cls = "value-container"
-        fieldContainer.appendChild(dv.el('span', p[this.field.name] || "", attrs))
+        const values = p[this.field.name]
+        if (Array.isArray(values)) {
+            values.forEach(value => {
+                fieldContainer.appendChild(dv.el('span', value || "", attrs))
+            })
+        } else {
+            fieldContainer.appendChild(dv.el('span', p[this.field.name] || "", attrs))
+        }
         const searchBtn = fieldContainer.createEl("button")
         setIcon(searchBtn, FieldIcon[FieldType.File])
         const spacer = fieldContainer.createEl("div", { cls: "spacer-1" })
-
         const file = this.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
         if (file instanceof TFile && file.extension == "md") {
-            searchBtn.onclick = async () => await this.buildAndOpenModal(file)
+            searchBtn.onclick = async () => await this.buildAndOpenModal(file, this.field.id)
         } else {
             searchBtn.onclick = async () => { }
         }
-
-
         if (!attrs?.options?.alwaysOn) {
             searchBtn.hide()
             spacer.show()

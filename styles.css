@@ -2014,6 +2014,9 @@ span.flatpickr-weekday {
   align-items: flex-end;
   justify-content: center;
 }
+.prompt.media-as-cards .prompt-results .value-container.value-checked {
+  border: 1px solid var(--color-accent);
+}
 .prompt.media-as-cards .prompt-results .value-container .media-item {
   flex-direction: column;
 }

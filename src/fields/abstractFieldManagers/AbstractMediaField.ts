@@ -44,7 +44,6 @@ export abstract class AbstractMediaField extends AbstractFileBasedField<MediaFil
         const files = this.plugin.app.vault.getFiles()
             .filter(f => !folders?.length || folders.some(folder => f.path.startsWith(folder)))
             .filter(f => !["md", "canvas"].includes(f.extension))
-        console.log(files)
         return files
     }
 
@@ -76,9 +75,10 @@ export abstract class AbstractMediaField extends AbstractFileBasedField<MediaFil
 
     }
 
-    public createAddButton(valuesList: HTMLDivElement, valuesListBody: HTMLDivElement): void {
-        const valuesListFooter = valuesList.createDiv();
-        const addValue = valuesListFooter.createEl('button');
+    public createAddButton(valuesListHeader: HTMLDivElement, valuesListBody: HTMLDivElement): void {
+        valuesListHeader.createDiv({ cls: "label", text: "Add a folder containing media files" })
+        valuesListHeader.createDiv({ cls: "spacer" })
+        const addValue = valuesListHeader.createEl('button');
         addValue.type = 'button';
         addValue.textContent = 'Add a value';
         addValue.onClickEvent(async (evt: MouseEvent) => {
@@ -87,13 +87,11 @@ export abstract class AbstractMediaField extends AbstractFileBasedField<MediaFil
             this.field.options.folders[newKeyNumber] = "";
             this.foldersInputComponents.push(this.createFolderContainer(valuesListBody, newKeyNumber))
         });
-        valuesList.createEl("hr");
     }
 
     public createFolderContainer(parentNode: HTMLDivElement, key: number): TextComponent {
         const values = this.field.options.folders || {};
         const presetFolder = values[key];
-        console.log(key, presetFolder)
         const valueContainer = parentNode.createDiv({ cls: 'field-container', });
         const input = new TextComponent(valueContainer);
         input.inputEl.addClass("full-width");
@@ -111,7 +109,7 @@ export abstract class AbstractMediaField extends AbstractFileBasedField<MediaFil
             .onClick((evt: MouseEvent) => {
                 evt.preventDefault();
                 FieldSettingsModal.removeValidationError(input);
-                this.field.options.folders = this.field.options.folders.filter((f: string) => f !== input.getValue())
+                this.field.options.folders = this.field.options.folders.filter((f: string) => f !== input.getValue()).filter((f: string | null) => !!f)
                 parentNode.removeChild(valueContainer);
                 this.foldersInputComponents.remove(input);
             });
@@ -119,13 +117,14 @@ export abstract class AbstractMediaField extends AbstractFileBasedField<MediaFil
     };
 
     public createFoldersListContainer(parentContainer: HTMLDivElement): HTMLDivElement {
+        const valuesListHeader = parentContainer.createDiv({ cls: "field-container" });
         const presetFoldersFields = parentContainer.createDiv()
         const foldersList = presetFoldersFields.createDiv();
         const foldersListContainer = foldersList.createDiv();
+        this.createAddButton(valuesListHeader, foldersListContainer)
         this.field.options.folders?.forEach((folder: string, index: number) => {
             this.foldersInputComponents.push(this.createFolderContainer(foldersListContainer, index));
         });
-        this.createAddButton(foldersList, foldersListContainer)
         return presetFoldersFields;
     }
 
