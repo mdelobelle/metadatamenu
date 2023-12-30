@@ -13,7 +13,7 @@ import {
 import { FieldManager, FieldType, MultiDisplayType } from "src/types/fieldTypes";
 import { genericFieldRegex, getLineFields, encodeLink } from "../utils/parser";
 import FileField from "src/fields/fieldManagers/FileField";
-import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
+import AbstractListBasedField from "src/fields/abstractFieldManagers/AbstractListBasedField";
 import Field from "src/fields/Field";
 
 interface IValueCompletion {

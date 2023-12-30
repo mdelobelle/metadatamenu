@@ -31,16 +31,16 @@ export class FieldInfo {
         const field = this.eF.field
         const fieldManager = new FieldManager[field.type](this.plugin, field);
         return {
-            ignoredInMenu: this.plugin.settings.globallyIgnoredFields.includes(this.eF.field.name),
-            isValid: fieldManager.validateValue(this.eF.value),
+            indexedPath: this.eF.indexedPath,
+            name: this.eF.field.name,
+            value: this.eF.value,
             fileClassName: this.eF.field.fileClassName,
             type: this.eF.field.type,
+            isValid: fieldManager.validateValue(this.eF.value),
+            id: this.eF.field.id,
+            ignoredInMenu: this.plugin.settings.globallyIgnoredFields.includes(this.eF.field.name),
             options: this.eF.field.options,
             sourceType: this.eF.field.fileClassName ? "fileClass" : "settings",
-            indexedPath: this.eF.indexedPath,
-            id: this.eF.field.id,
-            name: this.eF.field.name,
-            value: this.eF.value
         }
     }
 }

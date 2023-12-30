@@ -4,7 +4,7 @@ import { postValues } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
 import { cleanActions } from "src/utils/modals";
-import BaseModal from "../BaseModal";
+import BaseModal from "../baseFieldModals/BaseModal";
 import ObjectListModal from "./ObjectListModal";
 import ObjectModal from "./ObjectModal";
 
@@ -119,7 +119,7 @@ export default class InputModal extends BaseModal {
     };
 
     public async save(): Promise<void> {
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: this.newValue } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: this.newValue } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
         this.saved = true
         if (this.previousModal) await this.goToPreviousModal()
         this.close()

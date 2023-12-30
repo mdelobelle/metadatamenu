@@ -3,7 +3,7 @@ import { TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import Field from "src/fields/Field";
 import { cleanActions } from "src/utils/modals";
-import BaseModal from "../BaseModal";
+import BaseModal from "../baseFieldModals/BaseModal";
 import { EditorView, basicSetup } from "codemirror"
 import { lintGutter } from "@codemirror/lint";
 import { StateField, EditorState } from "@codemirror/state"
@@ -81,7 +81,7 @@ export default class RawObjectModal extends BaseModal {
 
     public async save(): Promise<void> {
         const newContent = this.editor.state.doc.toString().trim()
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: newContent } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: newContent } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
         this.saved = true
         if (this.previousModal) await this.goToPreviousModal()
         this.close();

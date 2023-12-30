@@ -6,7 +6,7 @@ import Field from "src/fields/Field";
 import NumberField from "src/fields/fieldManagers/NumberField";
 import { FieldManager } from "src/types/fieldTypes";
 import { cleanActions } from "src/utils/modals";
-import BaseModal from "../BaseModal";
+import BaseModal from "../baseFieldModals/BaseModal";
 import ObjectListModal from "./ObjectListModal";
 import ObjectModal from "./ObjectModal";
 
@@ -135,7 +135,7 @@ export default class NumberModal extends BaseModal {
             this.numberInput.inputEl.setAttr("class", "is-invalid")
             return
         }
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: inputValue } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: inputValue } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
         this.saved = true
         if (this.previousModal) await this.goToPreviousModal()
         this.close()

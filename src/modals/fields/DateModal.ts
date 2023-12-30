@@ -7,7 +7,7 @@ import MetadataMenu from "main";
 import { FieldIcon, FieldType, FieldManager } from "src/types/fieldTypes";
 import DateField from "src/fields/fieldManagers/DateField";
 import { postValues } from "src/commands/postValues";
-import BaseModal from "../BaseModal";
+import BaseModal from "../baseFieldModals/BaseModal";
 import { cleanActions } from "src/utils/modals";
 import { ExistingField } from "src/fields/ExistingField";
 import ObjectModal from "./ObjectModal";
@@ -97,16 +97,16 @@ export default class DateModal extends BaseModal {
             const renderedPath = this.buildPath(newValue)
             const linkPath = this.plugin.app.metadataCache.getFirstLinkpathDest(renderedPath || "" + newValue.format(this.format), this.file.path)
             const formattedValue = this.insertAsLink ? `[[${renderedPath || ""}${newValue.format(this.format)}${linkPath ? "|" + linkPath.basename : ""}]]` : newValue.format(this.format)
-            await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: formattedValue } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
+            await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: formattedValue } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
             this.saved = true
             if (this.previousModal) await this.goToPreviousModal()
             if (this.nextIntervalField && this.pushNextInterval && this.nextShift) {
-                await postValues(this.plugin, [{ id: this.nextIntervalField!.id, payload: { value: this.nextShift! } }], this.file.path)
+                await postValues(this.plugin, [{ indexedPath: this.nextIntervalField!.id, payload: { value: this.nextShift! } }], this.file.path)
                 this.close()
             }
             this.close();
         } else if (!this.value) {
-            await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
+            await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
             this.saved = true
             if (this.previousModal) await this.goToPreviousModal()
             this.close()

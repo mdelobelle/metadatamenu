@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { Component, TFile } from "obsidian";
-import { FieldsPayload } from "src/commands/postValues";
+import { IndexedFieldsPayload } from "src/commands/postValues";
 import Field from "src/fields/Field";
 import { FileClass } from "src/fileClass/fileClass";
 import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
@@ -32,7 +32,7 @@ export interface cFileWithGroups {
 
 export interface FieldsPayloadToProcess {
     status: "toProcess" | "processed",
-    fieldsPayload: FieldsPayload
+    fieldsPayload: IndexedFieldsPayload
 }
 
 export type NewType = LookupStatus;

@@ -13,6 +13,8 @@ Available types are:
 - [Cycle](fields.md#cycle): a field that will `Cycle through values from a list`
 - [File](fields.md#file): a field that will `Accept a link to a file from your vault`
 - [MultiFile](fields.md#multi-file): a field that will `Accept multiple links`
+- [Media](fields.md#media): a field that will `Accept a link to a media file from your vault`
+- [MultiMedia](fields.md#multi-media): a field that will `Accept multiple links to media files`
 - [Date](fieldsmd.#date): a field that will `Accept a date`
 - [Lookup](fields.md#lookup): a field that will `Accept a lookup query`
 - [Formula](fields.md#formula): a field that will `Make Calculation based on note's fields`

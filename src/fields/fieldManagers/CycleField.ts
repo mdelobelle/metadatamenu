@@ -4,7 +4,7 @@ import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import SelectModal from "src/modals/fields/SelectModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../Field";
-import AbstractListBasedField from "./AbstractListBasedField";
+import AbstractListBasedField from "../abstractFieldManagers/AbstractListBasedField";
 import { FieldOptions } from "src/components/NoteFields";
 import { postValues } from "src/commands/postValues";
 import { SettingLocation } from "../FieldManager";
@@ -65,7 +65,7 @@ export default class CycleField extends AbstractListBasedField {
     public async next(name: string, file: TFile, indexedPath?: string): Promise<void> {
         const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
         const value = eF?.value || ""
-        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: this.nextOption(value).toString() } }], file)
+        await postValues(this.plugin, [{ indexedPath: indexedPath || this.field.id, payload: { value: this.nextOption(value).toString() } }], file)
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {

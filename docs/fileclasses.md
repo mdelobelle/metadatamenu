@@ -126,6 +126,7 @@ fields:
   - name: teacher
     type: Input
     id: ....
+    path: ....
     ...
   - name: grade
     type: Select
@@ -134,6 +135,7 @@ fields:
       - "1": "B"
       - "2": "C"
     id: ...
+    path: ....
   - name: type
     type: Select
     options:
@@ -141,6 +143,7 @@ fields:
       - "1": "online"
       - "2": "personal teacher at home"
     id: ...
+    path: ....
   
 ---
 
@@ -159,11 +162,13 @@ fields:
       - "1": Geometry
       - "2": Statistics
     id: ...
+    path: ....
   - name: to do next
     type: File
     options:
       dvQueryString: "dv.pages('\"Courses\"')"
     id: ...
+    path: ....
 ---
 ```
 
@@ -181,6 +186,7 @@ extends: course
       - "1": Optics
       - "2": Electricity
     id: ...
+    path: ....
 ---
 ```
 
@@ -203,12 +209,14 @@ extends: course
       - "1": Optics
       - "2": Electricity
     id: ...
+    path: ....
   - name: type
     type: Select
     options:
       - "0": "at school"
       - "1": "online"
     id: ...
+    path: ....
 
 ---
 ```

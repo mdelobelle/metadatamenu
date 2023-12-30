@@ -4,7 +4,7 @@ import MetadataMenu from "main";
 import { ExistingField } from "src/fields/ExistingField";
 import ObjectModal from "./ObjectModal";
 import ObjectListModal from "./ObjectListModal";
-import BaseSelecttModal from "../BaseSelectModal";
+import BaseSelecttModal from "../baseFieldModals/BaseSelectModal";
 import { postValues } from "src/commands/postValues";
 
 export default class ValueSuggestModal extends BaseSelecttModal {
@@ -40,7 +40,7 @@ export default class ValueSuggestModal extends BaseSelecttModal {
     }
 
     async saveItem(item: string): Promise<void> {
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: item.toString() } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: item.toString() } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
     }
 
     async onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {

@@ -8,7 +8,7 @@ import { FieldType } from "src/types/fieldTypes"
 import { ExistingField } from "../ExistingField"
 import Field from "../Field"
 import { SettingLocation } from "../FieldManager"
-import AbstractCanvasBasedField from "./AbstractCanvasBasedField"
+import AbstractCanvasBasedField from "../abstractFieldManagers/AbstractCanvasBasedField"
 
 export default class CanvasGroupLinkField extends AbstractCanvasBasedField {
 
@@ -24,7 +24,7 @@ export default class CanvasGroupLinkField extends AbstractCanvasBasedField {
 
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField,
         indexedPath?: string, lineNumber?: number, asList?: boolean, asBlockquote?: boolean): Promise<void> {
-        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file, lineNumber, asList, asBlockquote)
+        await postValues(this.plugin, [{ indexedPath: indexedPath || this.field.id, payload: { value: "" } }], file, lineNumber, asList, asBlockquote)
     }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined }): void {

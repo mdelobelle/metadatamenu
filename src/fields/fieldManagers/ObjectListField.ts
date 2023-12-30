@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { FieldIcon, FieldType, FieldManager as F } from "src/types/fieldTypes";
 import { FieldManager, SettingLocation } from "../FieldManager";
 import Field from "../Field";
-import { TFile, Menu, DropdownComponent, setIcon } from "obsidian";
+import { TFile, Menu, setIcon } from "obsidian";
 import NoteFieldsComponent, { FieldOptions } from "src/components/NoteFields";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { postValues } from "src/commands/postValues";
@@ -95,7 +95,7 @@ export default class ObjectListField extends FieldManager {
         //search for object's value in note
         const value = eF?.value
         const indexForNew = !value || value.length === 0 ? 0 : value.length
-        if (indexedPath) await postValues(this.plugin, [{ id: `${indexedPath}[${indexForNew}]`, payload: { value: "" } }], file, -1)
+        if (indexedPath) await postValues(this.plugin, [{ indexedPath: `${indexedPath}[${indexForNew}]`, payload: { value: "" } }], file, -1)
     }
 
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField, indexedPath?: string,

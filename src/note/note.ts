@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { EditorPosition, Notice, parseYaml, TFile } from "obsidian";
-import { FieldPayload, FieldsPayload } from "src/commands/postValues";
+import { FieldPayload, IndexedFieldsPayload } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
 import YAMLField from "src/fields/fieldManagers/YAMLField";
@@ -42,7 +42,7 @@ export class Note {
 
     public renderValueString(_rawValue: string, fieldType?: FieldType, indentationLevel: number = 0): string {
         if (_rawValue) {
-            if (_rawValue.startsWith("[[")) {
+            if (_rawValue.startsWith("[[") || _rawValue.startsWith("![[")) {
                 return `"${_rawValue}"`
             } else if (_rawValue.startsWith("#")) {
                 return `${_rawValue}`;
@@ -78,7 +78,8 @@ export class Note {
                 switch (type) {
                     case FieldType.Lookup: return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
                     case FieldType.Multi: return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
-                    case FieldType.MultiFile: return this.renderMultiFields(rawValue, (item) => `"${item}"`);
+                    case FieldType.MultiFile: return this.renderMultiFields(rawValue, (item) => `"${item}"`);;
+                    case FieldType.MultiMedia: return this.renderMultiFields(rawValue, (item) => `"${item}"`);
                     case FieldType.Canvas: return this.renderMultiFields(rawValue, (item) => item ? `"${item}"` : "");
                     case FieldType.CanvasGroup: return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
                     case FieldType.CanvasGroupLink: return this.renderMultiFields(rawValue, (item) => item ? `"${item}"` : "");
@@ -329,18 +330,18 @@ export class Note {
     }
 
     public async createOrUpdateFields(
-        fields: FieldsPayload,
+        fields: IndexedFieldsPayload,
         lineNumber?: number,
         asList: boolean = false,
         asBlockquote: boolean = false
     ): Promise<void> {
         fields.forEach(field => {
-            const node = this.getNodeForIndexedPath(field.id)
+            const node = this.getNodeForIndexedPath(field.indexedPath)
             if (node && node.field) {
                 node.createFieldNodeContent(node.field, field.payload.value, node.line.position, asList, asBlockquote)
                 node.line.renderLine(asList, asBlockquote)
             } else {
-                this.insertField(field.id, field.payload, lineNumber, asList, asBlockquote)
+                this.insertField(field.indexedPath, field.payload, lineNumber, asList, asBlockquote)
             }
         })
         await this.plugin.app.vault.modify(this.file, this.renderNote())

@@ -1,10 +1,9 @@
 import MetadataMenu from "main";
-import { Notice, TFile } from "obsidian";
+import { TFile } from "obsidian";
 import Field from "src/fields/Field";
 import { FieldManager } from "src/fields/FieldManager";
 import * as Lookup from "src/types/lookupTypes";
-import { FieldsPayload, postValues } from "./postValues";
-import { ExistingField } from "src/fields/ExistingField";
+import { IndexedFieldsPayload, postValues } from "./postValues";
 
 export function arraysAsStringAreEqual(a: string, b: string) {
     const aAsArray = typeof a === "string" ? a.split(",").map(v => v.trim()) : (Array.isArray(a) ? a : [])
@@ -84,7 +83,7 @@ export async function updateLookups(
     const start = Date.now()
     const f = plugin.fieldIndex;
     const renderingErrors: string[] = []
-    const payloads: Record<string, FieldsPayload> = {}
+    const payloads: Record<string, IndexedFieldsPayload> = {}
     const updatedFields: string[] = []
     await Promise.all([...f.fileLookupFiles.keys()].map(async lookupFileId => {
         const matchRegex = /(?<filePath>.*)__related__(?<fileClassName>.*)___(?<fieldName>.*)/
@@ -128,7 +127,7 @@ export async function updateLookups(
                 f.fileLookupFieldLastOutputType.set(lookupFileId, outputType);
             }// make sure that this is set at first indexing}
             if (shouldCheckForUpdate && (valueHasChanged || formatHasChanged)) {
-                payloads[filePath].push({ id: field.id, payload: { value: newValue } })
+                payloads[filePath].push({ indexedPath: field.id, payload: { value: newValue } })
                 updatedFields.push(`${filePath}__${fieldName}`)
             }
             if (!valueHasChanged && !formatHasChanged) {

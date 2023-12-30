@@ -7,7 +7,7 @@ import { Note } from "src/note/note";
 import { FieldManager } from "src/types/fieldTypes";
 import ObjectModal from "./ObjectModal";
 import { postValues } from "src/commands/postValues";
-import BaseSuggestModal from "../BaseObjectModal";
+import BaseSuggestModal from "../baseFieldModals/BaseObjectModal";
 export default class ObjectListModal extends BaseSuggestModal<ObjectListItem> {
     private toRemove?: ObjectListItem;
     private objects: ObjectListItem[] = []
@@ -45,7 +45,7 @@ export default class ObjectListModal extends BaseSuggestModal<ObjectListItem> {
             this.open()
         } else if (this.indexedPath) {
             //first insert the empty object list
-            await postValues(this.plugin, [{ id: this.indexedPath, payload: { value: "" } }], this.file)
+            await postValues(this.plugin, [{ indexedPath: this.indexedPath, payload: { value: "" } }], this.file)
             this.close()
             this.open()
         }

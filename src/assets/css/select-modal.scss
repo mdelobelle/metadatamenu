@@ -156,10 +156,72 @@
     .empty{
         color: var(--text-faint)
     }
+
+    .media-item{
+        display: flex;
+        align-items: center;
+
+        .media-info-container{
+            display: flex;
+        }
+
+        .thumbnail-container {
+            img.thumbnail{
+                width: 100%;
+            }
+            color: var(--text-faint);
+        }
+    }
 }
 
 .suggestion-item.suggest-separator{
     border-bottom: 1px solid var(--divider-color);
     border-radius: 0px;
     padding: 1px;
+}
+
+.prompt.media-as-cards{
+    width: 100%;
+    .prompt-results{
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-gap: 10px;
+
+        @media screen and (max-width: 400px) {
+            grid-template-columns: auto;
+        }
+        @media (max-width: 780px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        @media (min-width: 780px) and (max-width: 1020px) {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        @media (min-width: 1020px) and (max-width: 1280px){
+            grid-template-columns: repeat(4, 1fr);
+        }
+        @media (min-width: 1280px){
+            grid-template-columns: repeat(5, 1fr);
+        }
+    
+        .value-container{
+            align-items: flex-end;
+            justify-content: center;
+
+            &.value-checked{
+                border: 1px solid var(--color-accent);
+            }
+            
+            .media-item{
+                flex-direction: column;
+    
+                .file-name{
+                    width: 100%;
+                    text-align: center;
+                    font-size: smaller;
+                }
+            }
+            
+        }
+    }
+    
 }

@@ -3,14 +3,14 @@ import Field from "src/fields/Field";
 import MetadataMenu from "main";
 import * as selectValuesSource from "src/types/selectValuesSourceTypes"
 import { FieldManager } from "src/types/fieldTypes";
-import AbstractListBasedField from "src/fields/fieldManagers/AbstractListBasedField";
+import AbstractListBasedField from "src/fields/abstractFieldManagers/AbstractListBasedField";
 import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
 import { ExistingField } from "src/fields/ExistingField";
-import ObjectModal from "./fields/ObjectModal";
-import ObjectListModal from "./fields/ObjectListModal";
+import ObjectModal from "../fields/ObjectModal";
+import ObjectListModal from "../fields/ObjectListModal";
 
-export default class BaseSelecttModal extends SuggestModal<string>{
+export default class BaseSelecttModal extends SuggestModal<string> {
 
     public addButton: ButtonComponent;
 
@@ -126,7 +126,7 @@ export default class BaseSelecttModal extends SuggestModal<string>{
     }
 
     async clearValues() {
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: "" } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
     }
 
     getSuggestions(query: string): string[] {

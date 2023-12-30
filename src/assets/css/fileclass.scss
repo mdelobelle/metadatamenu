@@ -56,10 +56,11 @@
         
         .fv-menu-item{
             display: flex;
-            margin: 0.5em 1em 0.5em 0em;
+            margin: 0em 1em 0.5em 0em;
             color: var(--text-muted);
 
             h2 {
+                margin-top: 0em;
                 margin-block-end: 0em;
             }
 

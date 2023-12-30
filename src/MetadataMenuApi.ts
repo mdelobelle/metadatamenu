@@ -4,7 +4,8 @@ import { fieldModifier } from "./commands/fieldModifier";
 import { IFieldInfo, fileFields } from "./commands/fileFields";
 import { getValues, getValuesForIndexedPath } from "./commands/getValues";
 import { insertMissingFields } from "./commands/insertMissingFields";
-import { FieldsPayload, postValues } from "./commands/postValues";
+import { IndexedFieldsPayload, postValues } from "./commands/postValues";
+import { NamedFieldsPayload, postNamedFieldsValues } from "./commands/postNamedFieldsValues";
 
 export interface IMetadataMenuApi {
     getValues: (fileOrFilePath: TFile | string, attribute: string) => Promise<string[]>;
@@ -12,7 +13,8 @@ export interface IMetadataMenuApi {
     fileFields: (fileOrFilePath: TFile | string) => Promise<Record<string, IFieldInfo>>;
     fieldModifier: (dv: any, p: any, fieldName: string, attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }) => HTMLElement;
     insertMissingFields: (fileOrFilePath: string | TFile, lineNumber: number, asList: boolean, asBlockquote: boolean, fileClassName?: string) => Promise<void>;
-    postValues: (fileOrFilePath: TFile | string, payload: FieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => Promise<void>;
+    postValues: (fileOrFilePath: TFile | string, payload: IndexedFieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => Promise<void>;
+    postNamedFieldsValues: (fileOrFilePath: TFile | string, payload: NamedFieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => Promise<void>;
 }
 
 export class MetadataMenuApi {
@@ -27,6 +29,7 @@ export class MetadataMenuApi {
             fileFields: this.fileFields(),
             insertMissingFields: this.insertMissingFields(),
             postValues: this.postValues(),
+            postNamedFieldsValues: this.postNamedFieldsValues()
         };
     }
 
@@ -51,7 +54,12 @@ export class MetadataMenuApi {
         return async (fileOrFilePath: string | TFile, lineNumber: number, asList: boolean, asBlockquote: boolean, fileClassName?: string) => insertMissingFields(this.plugin, fileOrFilePath, lineNumber, asList, asBlockquote, fileClassName)
     }
 
-    private postValues(): (fileOrFilePath: string | TFile, payload: FieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => Promise<void> {
-        return async (fileOrFilePath: string | TFile, payload: FieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => postValues(this.plugin, payload, fileOrFilePath, lineNumber, asList, asBlockquote)
+    private postValues(): (fileOrFilePath: string | TFile, payload: IndexedFieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => Promise<void> {
+        return async (fileOrFilePath: string | TFile, payload: IndexedFieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => postValues(this.plugin, payload, fileOrFilePath, lineNumber, asList, asBlockquote)
     }
+
+    private postNamedFieldsValues(): (fileOrFilePath: string | TFile, payload: NamedFieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => Promise<void> {
+        return async (fileOrFilePath: string | TFile, payload: NamedFieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => postNamedFieldsValues(this.plugin, payload, fileOrFilePath, lineNumber, asList, asBlockquote)
+    }
+
 }

@@ -9,7 +9,7 @@ import { getLink } from "src/utils/parser"
 import { ExistingField } from "../ExistingField"
 import Field from "../Field"
 import { SettingLocation } from "../FieldManager"
-import AbstractCanvasBasedField from "./AbstractCanvasBasedField"
+import AbstractCanvasBasedField from "../abstractFieldManagers/AbstractCanvasBasedField"
 
 export default class CanvasField extends AbstractCanvasBasedField {
 
@@ -47,7 +47,7 @@ export default class CanvasField extends AbstractCanvasBasedField {
 
     async createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField, indexedPath?: string,
         lineNumber?: number, asList?: boolean, asBlockquote?: boolean): Promise<void> {
-        await postValues(this.plugin, [{ id: indexedPath || this.field.id, payload: { value: "" } }], file,
+        await postValues(this.plugin, [{ indexedPath: indexedPath || this.field.id, payload: { value: "" } }], file,
             lineNumber, asList, asBlockquote)
     }
 

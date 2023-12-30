@@ -9,7 +9,7 @@ import { ExistingField } from "src/fields/ExistingField";
 import ObjectModal from "./ObjectModal";
 import ObjectListModal from "./ObjectListModal";
 import MultiField from "src/fields/fieldManagers/MultiField";
-import BaseSelecttModal from "../BaseSelectModal";
+import BaseSelecttModal from "../baseFieldModals/BaseSelectModal";
 
 export default class MultiSuggestModal extends BaseSelecttModal {
 
@@ -86,7 +86,7 @@ export default class MultiSuggestModal extends BaseSelecttModal {
 
     async replaceValues() {
         const options = this.selectedOptions;
-        await postValues(this.plugin, [{ id: this.indexedPath || this.field.id, payload: { value: options.join(", ") } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
+        await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: options.join(", ") } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
         this.close();
     }
 

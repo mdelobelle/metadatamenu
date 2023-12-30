@@ -1,43 +1,191 @@
-# 0.6.0
-Metadata Menu 0.6.0 public beta is out 👨‍🔬
+# 0.7.0-beta-1
+## New types: Media and MultiMedia
+Like `File` and `MultiFile` field type but for non `.md` files
+Select the folder to search your media files
+Choose an embed size for images
+Choose a gallery or list mode for Media modal search
 
-_an attempt to manage nested properties_
+## Improved field settings
+Better field type selector
+Better field parent selector
 
-🧰 **New field types**
-- JSON: edit the value with a JSON editor
-- Yaml: edit the value with a Yaml editor
-- Object: nest fields in the frontmatter (aka **nested properties** 🥳)
-- Object List: list of nested fields-sets in the frontmatter
-
-Combining Object, Object List with other types you can infinitely nest your fields int the frontmatter and virtually fully "type" your yaml properties
-
-💈 **Commands**
-
-Improved UI for managing the fields now fully manageable with keyboard and hotkeys.
-
-Modal Navigation in nested fields
-
-Metadata menu button now appears in the property section
-
-Metadata menu fields commands are added to the property section
-
-🗺️ **Fileclass improvements**
-
-Now you can map fileclasses with folders, bookmark groups
-
-You can exclude folders, file name patterns and file extensions from being mapped with fileclasses and from being indexed by the plugin (to improve performance)
-
-The fileclass tableview now displays every file mapped with a fileclass (through the fileclass prop, but also mapped with tags, bookmarks, fileclass queries, folders....)
+## Api method
+`postValues`: `id` argument has been replaced by `indexedPath` to match the field setting definition
+`postNamedFieldValues`: create or modify fields by name (instead of indexedPath). Easier to manipulate but less precise in case of multiple fields having the same name
 
 
+# 0.6.11
+Performance improvements:
 
-Fileclass fields button specific icons
+Table views and MDM code blocks won't include "insert field" buttons by default anymore to increase speed.
+new "Show inser field" Button in table view to display insert fields buttons
+new "showAddField" option in mdm code block, set it to showAddField: true to display insert fields in display insert buttons in the table
+Table view rebuild has been optimized so as not be triggered automatically
+When there's a change in a fileClass, a refresh button will be highlighted in the table view. Click on it to rebuild the table
 
-🚂 **engine**
+# 0.6.10
+Performance improvement for codeblocks and tableviews
 
-New indexing engine. May be slower to index at plugin's launch but faster afterwards
+# Metadata Menu 0.6.9
 
-Metadata Menu index status in the status bar. This status will also inform about formulas or lookups whose values have changed and that should be manually updated.
+complete walk-through by Danny Hatcher : https://www.youtube.com/watch?v=qi4Uz7TZLOM
+
+## Improvement
+
+- code block for fileclass table view
+- fileclass view reopening at start
+- existing saved view can now be modified
+- choose fileclass at filecreation
+- add fileclass to file command
+- global formula and lookup auto-calculation toggler in settings
+- fileclass default icon refactoring
+- extend fileclass views with child fileclasses
+
+syntax for codeblock:
+
+~~~
+```mdm
+fileClass: <your file class> mandatory
+view: <your saved view> optional
+files per page:  <a number> optional
+start: <a number> optional
+``` 
+~~~
+
+## Fix
+- formula not updating on click
+- single char field not parsed
+
+
+# 0.6.7
+Fix for icon in table view
+
+# 📆 MetadataMenu 0.6.6
+_I should have named this plugin with a shorter name 😅. I'll abbreviate it to MDM below_
+
+## improvements
+
+- linkPath for datefield accepts a template: You can use templates to build your path with the formating token syntax of moment.js . For example `Daily/Notes/{{YYYY}}/{{MM}}` will render `[[Daily/Notes/2024/01/2024-01-01]]`. That can be useful if you have split your daily notes by subfolders for example
+- MDM icon displayed before the link in tables
+- map fileClass with folder now matches subfolders
+
+## Fix
+
+- MDM icon show up for fileClass links in preview mode
+- click on a link in the fileClass table view now includes the full path to open the file
+- file links in canvas field now correctly rendered in frontmatter
+
+
+# 0.6.5
+Improvements:
+- Fileclass table view: Each filter now comes with a value selector with values depending on the type of the field
+- Fileclass table view: Filters now accept regex pattern
+- Fileclass table view: Page ranges are folded when there are too many pages ranges resulting in a cluttered view
+- Date field: new command to clear the value of the field. Bug fix when the date entered wasn't parsed by natural language dates plugin
+- Boolean fields: less ambiguous icon to toggle the value of the field
+
+Fix:
+- dataview first index not causing competing queries recalculation anymore
+- slash command not working at start
+
+# 0.6.4
+Improvements
+- replaced "add new field" by "insert missing field" in fields options
+- enable overriding field name in children fileclasses
+- fileClass add button is now bound to "show button in file explorer" setting
+
+Performance
+- queries resolution are made asynchronously
+- new setting to scope the plugin to the frontmatter only
+- removed values indexing
+
+Fix
+- input field with templates not broken when overriding text
+
+# 0.6.3
+Fixes
+- btn in property section for IPadOS
+- updateFormulas and updateLookups not recalculating at start anymore → improves launch time
+- dvField for date not broken anymore
+
+# 0.6.2
+New display for formula field errors: the icon will be displayed in red instead of a Notice popping up
+
+# 0.6.1
+New Fields types:
+- JSON
+- YAML (frontmatter only)
+- Object (collection of fields) enabling nested fields in frontmatter
+- Object List (list of collection of fields) enabling nested fields in frontmatter
+- All fields can define a "Parent" in their setting among the Object or ObjectList fields defined for the fileclass (or globally in the settings)
+
+example 1 : Object field
+```yaml
+---
+address:                 # Object field
+  street: avenue Foch    # Input field with <address> as parent field
+  number: 40             # Number field with <address> as parent field
+  city: "[[Paris]]"      # File field with <address> as parent field
+---
+```
+
+example 2 : Object List field
+```yaml
+---
+players:                 # ObjectList field
+  - name: Mathieu        # Input field  with <players> as parent field
+    grade: beginner      # Select Field  with <players> as parent field
+  - name: Jules          # Input field (the same definition as above)
+    grade: advanced      # Select Field (the same definition as above)
+---
+```
+
+example 3: Mixing ObjectList and Object
+```yaml
+---
+players:                     # ObjectList field
+  - name: Mathieu            # Input field   with <players> as parent field
+    grade: beginner          # Select Field  with <players> as parent field
+    address:                 # Object field  with <players> as parent field
+      street: avenue Foch    # Input field with <address> as parent field
+      number: 40             # Number field with <address> as parent field
+      city: "[[Paris]]"      # File field with <address> as parent field
+  - name: Jules              # Input field (the same definition as above)
+    grade: advanced          # Select Field (the same definition as above)
+    address:                 # Object field (the same definition as above)
+      street: av de la paix  # Input field (the same definition as above)
+      number: 25             # Number field (the same definition as above)
+      city: "[[Paris]]"      # File field (the same definition as above)
+---
+```
+
+Fileclass:
+- globally Exclude folders from fileClass mapping
+- map a fileclass with folders in your vault (associate their path in the fileclass setting view)
+- map a fileclass with bookmark groups in your vault (associate their path in the fileclass setting view)
+- exclude folders, extensions, regex from indexing
+- Fileclass creation: button next to the fileclass folder to facilitate the fileclass creation (removes 2 steps)
+- open fileclass settings after fileclass creation (removes 4 steps)
+- Button to directly Insert missing fields in frontmatter from the metadata menu modal (removes 1 step)
+- fileclass table views can be sorted by multiple columns by order, their column can be ordered and hidden. Your custom filtering/sorting/column arrangement can be saved in a "saved view". You can define a favorite saved view that will show up when hitting the fileclass icon
+- field modifier for object and objectlist fields in dataview tables
+
+Commands and Menus:
+- removed the "per field" options in the menu
+- added an "Index Metadata Menu fields" command to force-reindex in case some data is incosistent in the modals
+- Two way to nagivate in the 
+- Metadata menu commands in the property section (with an option to deactivate it)
+- fields modal can be called in properties section (manage field at cursor)
+
+Others:
+- manage lookup field manual change (manually changed fields are skipped in update lookups so as not to be overwritten
+
+Indexing:
+- new indexing mecanism - independent from dataview and obsidian
+- new index status in the status bar showing a rotating icon when the plugin is indeing data (meaning some values could be not up to date until the indexing is finished)
+- the index status shows if there are Formulas or Lookup that have changed in a note and that haven't been automatically updated (when autoupdate is set to false in their setting). click on the icon to update all formulas and lookups in this note
+- the metadatmenu button is displayed in a specific color (--text-warning) if there are Formulas or Lookup that have changed in a note and that haven't been automatically updated (when autoupdate is set to false in their setting). click on the index status icon to update all at once or open the Note Fields Modal to update them one by one 
+
 
 🧹**deprecated functions**
 - api : insertValues

@@ -99,7 +99,7 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
         const fileClassAlias = this.plugin.settings.fileClassAlias
         const currentFileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path)
         const newValue = currentFileClasses ? [...currentFileClasses.map(fc => fc.name), value].join(", ") : value
-        await postValues(this.plugin, [{ id: `fileclass-field-${fileClassAlias}`, payload: { value: newValue } }], this.file, -1)
+        await postValues(this.plugin, [{ indexedPath: `fileclass-field-${fileClassAlias}`, payload: { value: newValue } }], this.file, -1)
         if (this.plugin.settings.autoInsertFieldsAtFileClassInsertion) {
             insertMissingFields(this.plugin, this.file, -1)
         }

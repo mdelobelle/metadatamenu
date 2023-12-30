@@ -2,10 +2,10 @@ import MetadataMenu from "main";
 import { ButtonComponent, SuggestModal, TFile } from "obsidian";
 import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
-import ObjectListModal from "./fields/ObjectListModal";
-import ObjectModal from "./fields/ObjectModal";
+import ObjectListModal from "../fields/ObjectListModal";
+import ObjectModal from "../fields/ObjectModal";
 
-export default abstract class BaseSuggestModal<T> extends SuggestModal<T>{
+export default abstract class BaseSuggestModal<T> extends SuggestModal<T> {
     constructor(
         public plugin: MetadataMenu,
         public file: TFile,

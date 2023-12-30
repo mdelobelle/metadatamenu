@@ -7,7 +7,7 @@ import { FieldType } from "src/types/fieldTypes";
 import { displayLinksOrText } from "src/utils/linksUtils";
 import { ExistingField } from "../ExistingField";
 import Field from "../Field";
-import AbstractFileBasedField from "./AbstractFileBasedField";
+import AbstractFileBasedField from "../abstractFieldManagers/AbstractFileBasedField";
 
 export default class MultiFileField extends AbstractFileBasedField<MultiFileModal> {
 

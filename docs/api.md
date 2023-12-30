@@ -15,7 +15,7 @@ This is an asynchronous function, so you should await it.
 
 `getValuesForIndexedPath(fileOrFilePath: TFile | string, indexedPath: string)`
 
-Takes a TFile containing the field and a string for the related field's [indexedPath](fileclasses#id-and-indexedpath)
+Takes a TFile containing the field and a string for the related field's [indexedPath](fields#indexed-path)
 
 Returns the value of the field for this indexedPath
 
@@ -28,7 +28,7 @@ creates or updates fields with values in the target note
 #### parameters:
 
 - `fileOrFilePath: TFile | string` : the target file where to create or update the fields
-- `payload: FieldsPayload`: list of fields and values to create or update (see type definition below) 
+- `payload: FieldsPayload`: list of fields and values to create or update (see type definition below and [indexed path](fields.md#indexed-path) section of the field settings) 
 - `lineNumber?: number` : optional line number where to create fields if it doesn't exist. If the field already exists, this attribute won't do anything. If line number is undefined and the field doesn't exist yet, it will be included in frontmatter
 - `after?: boolean` : optional parameter to create new fields after or before the line number. Defaults to `true`
 - `asList?: boolean`: optional parameter to create new fields as list (insert a `- ` before the field's name) . Defaults to `false`
@@ -42,7 +42,7 @@ export type FieldPayload = {
 }
 
 export type FieldsPayload = Array<{
-    id: string, //the indexedPath of the field
+    indexedPath: string, //the indexedPath of the field
     payload: FieldPayload
 }>
 ```
@@ -79,7 +79,7 @@ Takes a TFile or e filePath and returns all the fields in the document, both fro
         sourceType: "fileClass" | "settings" | undefined,
 
         /* the type of the field according to the plugin settings or the fileClass  */
-        type: "Input" | "Select" | "Multi" | "Cycle" | "Boolean" | "Number" | "File" | "MultiFile" | "Date" | "Lookup" | "Formula" | "Canvas" | "CanvasGroup" | "CanvasGroupLink" | "YAML" | "JSON" | "Object" | "ObjectList"
+        type: "Input" | "Select" | "Multi" | "Cycle" | "Boolean" | "Number" | "File" | "MultiFile" | "Media" | "MultiMedia" | "Date" | "Lookup" | "Formula" | "Canvas" | "CanvasGroup" | "CanvasGroupLink" | "YAML" | "JSON" | "Object" | "ObjectList"
 
         /* the unique identifier of the field definition in the vault */
         id: string

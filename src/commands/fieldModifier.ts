@@ -3,8 +3,6 @@ import { FieldManager } from "src/types/fieldTypes";
 import { FieldManager as F } from "src/fields/FieldManager";
 import chooseSectionModal from "src/modals/chooseSectionModal";
 import { setIcon, TFile } from "obsidian";
-import { insertMissingFields } from "./insertMissingFields";
-import { postValues } from "./postValues";
 
 function buildAndOpenModal(
     plugin: MetadataMenu,

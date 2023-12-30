@@ -1,31 +1,30 @@
-import { TFile, FuzzySuggestModal, FuzzyMatch, ButtonComponent, setIcon } from "obsidian";
-import Field from "src/fields/Field";
-import { FieldManager } from "src/types/fieldTypes";
-import { FieldManager as FM } from "src/fields/FieldManager";
 import MetadataMenu from "main";
+import { ButtonComponent, FuzzyMatch, TFile, setIcon } from "obsidian";
 import { postValues } from "src/commands/postValues";
+import { ExistingField } from "src/fields/ExistingField";
+import Field from "src/fields/Field";
+import { MediaType, extensionMediaTypes } from "src/types/fieldTypes";
 import { cleanActions } from "src/utils/modals";
 import { extractLinks, getLink } from "src/utils/parser";
-import { ExistingField } from "src/fields/ExistingField";
-import ObjectModal from "./ObjectModal";
+import { BaseMediaFileModal } from "../baseFieldModals/BaseMediaModal";
 import ObjectListModal from "./ObjectListModal";
+import ObjectModal from "./ObjectModal";
+import { AbstractMediaField } from "src/fields/abstractFieldManagers/AbstractMediaField";
 
-export default class MultiFileModal extends FuzzySuggestModal<TFile> {
-
-    private selectedFiles: TFile[] = [];
+export class MultiMediaFileModal extends BaseMediaFileModal {
 
     constructor(
-        private plugin: MetadataMenu,
-        private file: TFile,
-        private field: Field,
-        private eF?: ExistingField,
-        private indexedPath?: string,
-        private lineNumber: number = -1,
-        private asList: boolean = false,
-        private asBlockquote: boolean = false,
-        private previousModal?: ObjectModal | ObjectListModal
+        public plugin: MetadataMenu,
+        public file: TFile,
+        public field: Field,
+        public eF?: ExistingField,
+        public indexedPath?: string,
+        public lineNumber: number = -1,
+        public asList: boolean = false,
+        public asBlockquote: boolean = false,
+        public previousModal?: ObjectModal | ObjectListModal
     ) {
-        super(plugin.app);
+        super(plugin, file, field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal);
         const initialOptions: string | string[] = this.eF?.value || []
         if (initialOptions) {
             if (Array.isArray(initialOptions)) {
@@ -51,7 +50,6 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
         } else {
             this.selectedFiles = [];
         }
-        this.containerEl.addClass("metadata-menu")
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter" && e.altKey) {
                 e.preventDefault();
@@ -87,66 +85,16 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
         this.modalEl.appendChild(buttonContainer)
     }
 
-    onOpen() {
-        super.onOpen()
-    }
-
-    onClose(): void {
-        this.previousModal?.open()
-    }
-
-    getItems(): TFile[] {
-        const sortingMethod = new Function("a", "b", `return ${this.field.options.customSorting}`) || function (a: TFile, b: TFile) { return a.basename < b.basename ? -1 : 1 }
-        try {
-            const fileManager = new FieldManager[this.field.type](this.plugin, this.field);
-            return fileManager.getFiles(this.file).sort(sortingMethod);
-        } catch (error) {
-            this.close();
-            throw (error);
-        }
-    }
-
-    getItemText(item: TFile): string {
-        return item.basename;
-    }
-
     async replaceValues() {
         const result = this.selectedFiles.map(file => {
-            const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-            let alias: string | undefined = undefined;
-            if (dvApi && this.field.options.customRendering) {
-                alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(file.path))
-            }
-            return FM.buildMarkDownLink(this.plugin, this.file, file.basename, undefined, alias)
+            const alias = extensionMediaTypes[file.extension] === MediaType.Image ? this.field.options.thumbnailSize : undefined
+            return AbstractMediaField.buildLink(this.plugin, this.file, file.path, alias)
         })
         await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
     }
 
     async clearValues() {
         await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: "" } }], this.file)
-    }
-
-    renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        if (dvApi && this.field.options.customRendering) {
-            const suggestionContainer = el.createDiv({ cls: "item-with-add-on" });
-            suggestionContainer.createDiv({
-                text: new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(value.item.path))
-            })
-            const filePath = suggestionContainer.createDiv({ cls: "add-on" })
-            filePath.setText(value.item.path)
-        } else {
-            el.setText(value.item.basename)
-        }
-        el.addClass("value-container")
-        const spacer = this.containerEl.createDiv({ cls: "spacer" })
-        el.appendChild(spacer)
-
-        if (this.selectedFiles.some(file => file.path === value.item.path)) {
-            el.addClass("value-checked")
-            const iconContainer = el.createDiv({ cls: "icon-container" })
-            setIcon(iconContainer, "check-circle")
-        }
     }
 
     renderSelected() {
@@ -177,9 +125,4 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
         }
         this.renderSelected()
     }
-
-    async onChooseItem(item: TFile): Promise<void> {
-
-    }
-
 }
