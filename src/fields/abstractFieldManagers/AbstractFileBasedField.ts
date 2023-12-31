@@ -11,6 +11,7 @@ import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
+import { AbstractMediaField } from "./AbstractMediaField";
 
 const convertDataviewArrayOfLinkToArrayOfPath = (arr: (Link | any)[]) => {
     return arr.reduce((acc, cur) => {
@@ -193,7 +194,11 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
         const values = p[this.field.name]
         if (Array.isArray(values)) {
             values.forEach(value => {
-                fieldContainer.appendChild(dv.el('span', value || "", attrs))
+                if ([FieldType.Media, FieldType.MultiMedia].includes(this.field.type)) {
+                    fieldContainer.appendChild(dv.el('img', value || "", attrs))
+                } else {
+                    fieldContainer.appendChild(dv.el('span', value || "", attrs))
+                }
             })
         } else {
             fieldContainer.appendChild(dv.el('span', p[this.field.name] || "", attrs))

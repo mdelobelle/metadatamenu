@@ -58,6 +58,8 @@ Available types are:
 - `Cycle`: a field that will `Cycle through values from a list`
 - `File`: a field that will `Accept a link to a file from your vault`
 - `MultiFile`: a field that will `Accept multiple links`
+- `Media`: a field that will `Accept a link to a media file from your vault`
+- `MultiMedia`: a field that will `Accept multiple links to media files`
 - `Date`: a field that will `Accept a date`
 - `Lookup`: a field that will `Accept a lookup query`
 - `Canvas`: a field that will `Update with links in a canvas`

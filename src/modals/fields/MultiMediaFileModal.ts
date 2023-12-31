@@ -86,9 +86,11 @@ export class MultiMediaFileModal extends BaseMediaFileModal {
     }
 
     async replaceValues() {
+        const embed = this.field.options.embed
         const result = this.selectedFiles.map(file => {
             const alias = extensionMediaTypes[file.extension] === MediaType.Image ? this.field.options.thumbnailSize : undefined
-            return AbstractMediaField.buildLink(this.plugin, this.file, file.path, alias)
+            const value = AbstractMediaField.buildLink(this.plugin, this.file, file.path, embed ? alias : undefined)
+            return embed ? value : value.replace(/^\!/, "")
         })
         await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
     }

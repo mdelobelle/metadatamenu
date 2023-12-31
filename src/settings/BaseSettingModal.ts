@@ -210,7 +210,8 @@ export abstract class BaseSettingModal extends Modal {
         this.buildTypeSelectContainer()
     }
 
-    private buildParentSelectContainer(parent?: Field): void {
+    private buildParentSelectContainer(_parent?: Field): void {
+        const parent = _parent || this.field.getFirstAncestor()
         this.parentSelectContainer.replaceChildren()
         const compatibleParents = this.field.getCompatibleParents()
         const parentName = parent
