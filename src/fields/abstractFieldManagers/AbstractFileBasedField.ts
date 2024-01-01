@@ -192,17 +192,23 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
     ): void {
         attrs.cls = "value-container"
         const values = p[this.field.name]
-        if (Array.isArray(values)) {
-            values.forEach(value => {
-                if ([FieldType.Media, FieldType.MultiMedia].includes(this.field.type)) {
-                    fieldContainer.appendChild(dv.el('img', value || "", attrs))
+        const buildItem = (_value: Link) => {
+            if (_value?.path && [FieldType.Media, FieldType.MultiMedia].includes(this.field.type)) {
+                const src = this.plugin.app.vault.adapter.getResourcePath(_value.path)
+                if (src) {
+                    const image = fieldContainer.createEl("img")
+                    image.src = src
+                    fieldContainer.appendChild(image)
                 } else {
-                    fieldContainer.appendChild(dv.el('span', value || "", attrs))
+                    fieldContainer.appendChild(dv.el('span', "?"))
                 }
-            })
-        } else {
-            fieldContainer.appendChild(dv.el('span', p[this.field.name] || "", attrs))
+            } else {
+                fieldContainer.appendChild(dv.el('span', _value || "", attrs))
+            }
         }
+        if (Array.isArray(values)) values.forEach(value => buildItem(value))
+        else buildItem(values)
+
         const searchBtn = fieldContainer.createEl("button")
         setIcon(searchBtn, FieldIcon[FieldType.File])
         const spacer = fieldContainer.createEl("div", { cls: "spacer-1" })
