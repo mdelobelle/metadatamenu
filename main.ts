@@ -87,7 +87,7 @@ export default class MetadataMenu extends Plugin {
 		this.registerEvent(
 			this.app.vault.on("create", (file) => {
 				if (!this.fieldIndex.fileClassesName.size) return
-				if (file instanceof TFile && this.settings.chooseFileClassAtFileCreation) {
+				if (file instanceof TFile && file.extension === "md" && this.settings.chooseFileClassAtFileCreation) {
 					const modal = new AddFileClassToFileModal(this, file)
 					modal.open()
 				}

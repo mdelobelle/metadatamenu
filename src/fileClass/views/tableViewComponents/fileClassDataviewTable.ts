@@ -15,6 +15,7 @@ export class FileClassDataviewTable {
     public limitWrapped: boolean = false
     public limit: number
     public plugin: MetadataMenu
+    public observer: MutationObserver;
     constructor(
         public viewConfiguration: ViewConfiguration,
         public view: FileClassTableView | FileClassCodeBlockView,
@@ -100,6 +101,34 @@ export class FileClassDataviewTable {
         }
     }
 
+    public setTableViewObserver(observed: HTMLDivElement) {
+        // Selectionne le noeud dont les mutations seront observées
+        var targetNode = observed
+        // Options de l'observateur (quelles sont les mutations à observer)
+        var config = { attributes: true, childList: true };
+
+        // Fonction callback à éxécuter quand une mutation est observée
+        var callback = function (mutationsList: MutationRecord[], table: FileClassDataviewTable) {
+            for (var mutation of mutationsList) {
+                if (mutation.type == "childList") {
+                    for (const node of mutation.addedNodes) {
+                        //@ts-ignore
+                        if ("className" in node && (node.className as string).includes('field-name')) {
+                            const fileLink = (node as HTMLElement).querySelector("span a.internal-link");
+                            if (fileLink) table.addClickEventToLink(fileLink as HTMLLinkElement)
+                        }
+                    }
+                }
+            }
+        };
+
+        // Créé une instance de l'observateur lié à la fonction de callback
+        this.observer = new MutationObserver(mutationList => callback(mutationList, this));
+
+        // Commence à observer le noeud cible pour les mutations précédemment configurées
+        if (targetNode) this.observer.observe(targetNode, config);
+    }
+
     public buildTable(tableContainer: HTMLDivElement): void {
         tableContainer.onscroll = (e) => {
             const table = tableContainer
@@ -132,7 +161,10 @@ export class FileClassDataviewTable {
             dvApi.executeJs(this.buildDvJSRendering(), tableContainer, this.view.manager, this.fileClass.getClassFile().path)
         }
         // links aren't clickable anymore, rebinding them to click event
-        if (this.view instanceof FileClassTableView) this.addClickEventToLink(tableContainer)
+        if (this.view instanceof FileClassTableView) {
+            for (const link of tableContainer.querySelectorAll("a.internal-link") as NodeListOf<HTMLLinkElement>) this.addClickEventToLink(link)
+            this.setTableViewObserver(tableContainer)
+        }
     }
 
     public buidFileClassViewBtn(): void {
@@ -157,16 +189,13 @@ export class FileClassDataviewTable {
         }
     }
 
-    private addClickEventToLink(tableContainer: HTMLDivElement): void {
-        tableContainer.querySelectorAll("a.internal-link")
-            .forEach((link: HTMLLinkElement) => {
-                link.addEventListener("click", () => this.plugin.app.workspace.openLinkText(
-                    //@ts-ignore
-                    link.getAttr("data-href")?.replace(/(.*).md/, "$1"),
-                    this.fileClass.getClassFile().path,
-                    'tab'
-                ))
-            })
+    private addClickEventToLink(link: HTMLLinkElement): void {
+        link.addEventListener("click", () => this.plugin.app.workspace.openLinkText(
+            //@ts-ignore
+            link.getAttr("data-href")?.replace(/(.*).md/, "$1"),
+            this.fileClass.getClassFile().path,
+            'tab'
+        ))
     }
 
     private buildFilterQuery(): string {
