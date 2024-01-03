@@ -1,6 +1,6 @@
 import { FileClassAttribute } from "./fileClassAttribute";
 import MetadataMenu from "main";
-import { SuggestModal, TFile } from "obsidian";
+import { Notice, SuggestModal, TFile } from "obsidian";
 import { FieldType, FieldTypeLabelMapping, MultiDisplayType } from "src/types/fieldTypes";
 import { capitalize } from "src/utils/textUtils";
 import Field, { FieldCommand } from "src/fields/Field";
@@ -23,8 +23,16 @@ const options: Record<string, { name: string, toValue: (value: any) => any }> = 
     "excludes": { name: "excludes", toValue: (values: FileClassAttribute[]) => values.length ? values.map(attr => attr.name) : null },
     "parent": { name: "extends", toValue: (value: FileClass) => value?.name || null },
     "savedViews": { name: "savedViews", toValue: (value: SavedView[]) => value },
-    "favoriteView": { name: "favoriteView", toValue: (value?: string) => value || null }
+    "favoriteView": { name: "favoriteView", toValue: (value?: string) => value || null },
+    "fieldsOrder": { name: "fieldsOrder", toValue: (value?: Field['id'][]) => value || [] }
 }
+
+//TODO
+/*
+isOrderValid au cas où on a changé le path
+si pas isOrderValid, on reconstruit un ordre rationnel (comme on le fait pour la fileClassFieldsView)
+fieldsOrder = Array<fields ids>
+*/
 
 export interface FileClassChild {
     name: string,
@@ -43,6 +51,7 @@ export interface FileClassOptions {
     bookmarksGroups?: string[],
     savedViews?: SavedView[],
     favoriteView?: string | null
+    fieldsOrder?: Field['id'][]
 }
 
 export class FileClassOptions {
@@ -57,7 +66,8 @@ export class FileClassOptions {
         public filesPaths?: string[],
         public bookmarksGroups?: string[],
         public savedViews?: SavedView[],
-        public favoriteView?: string | null
+        public favoriteView?: string | null,
+        public fieldsOrder?: Field['id'][]
     ) {
 
     }
@@ -122,7 +132,8 @@ class FileClass {
             bookmarksGroups: _bookmarksGroups,
             icon: _icon,
             savedViews: _savedViews,
-            favoriteView: _favoriteView
+            favoriteView: _favoriteView,
+            fieldsOrder: _fieldsOrder
         } = this.plugin.app.metadataCache.getFileCache(this.getClassFile())?.frontmatter as Record<string, any> || {}
         const index = this.plugin.fieldIndex
         const parent = index.fileClassesName.get(_parent);
@@ -142,7 +153,8 @@ class FileClass {
         const icon = typeof (_icon) === 'string' ? _icon : this.plugin.settings.fileClassIcon
         const savedViews: SavedView[] = _savedViews || [];
         const favoriteView: string | null = (typeof _favoriteView === "string" && _favoriteView !== "") ? _favoriteView : null
-        return new FileClassOptions(limit, icon, parent, excludes, tagNames, mapWithTag, filesPaths, bookmarksGroups, savedViews, favoriteView);
+        const fieldsOrder: Field['id'][] = _fieldsOrder || FileClass.buildSortedAttributes(this.plugin, this).map(sAttr => sAttr.id)
+        return new FileClassOptions(limit, icon, parent, excludes, tagNames, mapWithTag, filesPaths, bookmarksGroups, savedViews, favoriteView, fieldsOrder);
     }
 
     public isMappedWithTag(): boolean {
@@ -200,6 +212,37 @@ class FileClass {
         if (!name) return []
         const childrenNames = this.getFileClassOptions().savedViews?.find(_view => _view.name === name)?.children || []
         return this.getChildren().filter(c => childrenNames.includes(c.name))
+    }
+
+    static buildSortedAttributes(plugin: MetadataMenu, fileClass: FileClass): FileClassAttribute[] {
+        const attributes = FileClass.getFileClassAttributes(plugin, fileClass);
+        const sortedAttributes = attributes.filter(attr => !attr.path)
+        let hasError: boolean = false
+        while (sortedAttributes.length < attributes.length) {
+            const _initial = [...sortedAttributes]
+            sortedAttributes.forEach((sAttr, parentIndex) => {
+                for (const attr of attributes) {
+                    if (
+                        attr.path?.split("____").last() === sAttr.id &&
+                        !sortedAttributes.includes(attr)
+                    ) {
+                        //insert before next field at same or lower level as parent
+                        const parentLevel = sAttr.getLevel()
+                        const parentSibling = sortedAttributes.slice(parentIndex + 1).find(oAttr => oAttr.getLevel() <= parentLevel)
+                        const parentSiblingIndex = parentSibling ? sortedAttributes.indexOf(parentSibling) : sortedAttributes.length
+                        sortedAttributes.splice(parentSiblingIndex, 0, attr)
+                        break
+                    }
+                }
+            })
+            if (_initial.length === sortedAttributes.length) {
+                console.error("Impossible to restore field hierarchy, check you fileclass configuration")
+                new Notice("Impossible to restore field hierarchy, check you fileclass configuration")
+                hasError = true
+                return attributes
+            }
+        }
+        return sortedAttributes
     }
 
     static getFileClassAttributes(plugin: MetadataMenu, fileClass: FileClass, excludes?: string[]): FileClassAttribute[] {

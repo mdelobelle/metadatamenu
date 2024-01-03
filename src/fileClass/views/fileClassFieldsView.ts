@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { ButtonComponent, setIcon } from "obsidian";
+import { ButtonComponent, Notice, setIcon } from "obsidian";
 import { removeFileClassAttributeWithId } from "src/commands/removeFileClassAttribute";
 import { FieldTypeTagClass } from "src/types/fieldTypes";
 import { FileClass } from "../fileClass";
@@ -88,44 +88,14 @@ export class FileClassFieldsView {
         }
     }
 
+
     buildSettings(): void {
         this.container.replaceChildren();
         const fieldsContainer = this.container.createDiv({ cls: "fields-container" })
-        const attributes = FileClass.getFileClassAttributes(this.plugin, this.fileClass);
-        const sortedAttributes = attributes.filter(attr => !attr.path)
-        let hasError: boolean = false
-        while (sortedAttributes.length < attributes.length) {
-            const _initial = [...sortedAttributes]
-            sortedAttributes.forEach((sAttr, parentIndex) => {
-                for (const attr of attributes) {
-                    if (
-                        attr.path?.split("____").last() === sAttr.id &&
-                        !sortedAttributes.includes(attr)
-                    ) {
-                        //insert before next field at same or lower level as parent
-                        const parentLevel = sAttr.getLevel()
-                        const parentSibling = sortedAttributes.slice(parentIndex + 1).find(oAttr => oAttr.getLevel() <= parentLevel)
-                        const parentSiblingIndex = parentSibling ? sortedAttributes.indexOf(parentSibling) : sortedAttributes.length
-                        sortedAttributes.splice(parentSiblingIndex, 0, attr)
-                        break
-                    }
-                }
-            })
-            if (_initial.length === sortedAttributes.length) {
-                console.error("Impossible to restore field hierarchy, check you fileclass configuration")
-                hasError = true
-                break
-            }
-        }
-        if (hasError) {
-            attributes.forEach(attribute => {
-                new FileClassFieldSetting(fieldsContainer, this.fileClass, attribute, this.plugin);
-            });
-        } else {
-            sortedAttributes.forEach(attribute => {
-                new FileClassFieldSetting(fieldsContainer, this.fileClass, attribute, this.plugin);
-            });
-        }
+        const sortedAttributes = FileClass.buildSortedAttributes(this.plugin, this.fileClass)
+        sortedAttributes.forEach(attribute => {
+            new FileClassFieldSetting(fieldsContainer, this.fileClass, attribute, this.plugin);
+        });
         this.builAddBtn();
     }
 }
