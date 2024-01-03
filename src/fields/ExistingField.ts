@@ -18,7 +18,8 @@ export class ExistingField {
     }
 
     public isRoot() {
-        return this.indexedId === this.indexedPath
+        return this.field.path === ""
+        //return this.indexedId === this.indexedPath
     }
 
     public async getChildrenFields(plugin: MetadataMenu, file: TFile): Promise<ObjectListItem[]> {

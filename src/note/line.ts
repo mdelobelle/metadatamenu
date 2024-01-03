@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { Note } from "./note"
 import { LineNode } from "./lineNode";
 import { getLineFields } from "src/utils/parser";
-import { frontmatterOnlyTypes } from "src/types/fieldTypes";
+import { FieldType, frontmatterOnlyTypes } from "src/types/fieldTypes";
 
 export class Line {
     public nodes: LineNode[] = []
@@ -96,7 +96,11 @@ export class Line {
         let lastChildLine: Line = this
         for (const line of this.note.lines.filter(_l => _l.number > this.number)) {
             if (line.indentationLevel === 0) break
-            if (line.indentationLevel > this.indentationLevel || (line.indentationLevel === this.indentationLevel && !line.isNewListItem)) {
+            if (line.indentationLevel > this.indentationLevel || (
+                line.indentationLevel === this.indentationLevel &&
+                line.nodes[0]?.field?.type === FieldType.ObjectList &&
+                !line.isNewListItem
+            )) {
                 lastChildLine = line
             } else {
                 break
