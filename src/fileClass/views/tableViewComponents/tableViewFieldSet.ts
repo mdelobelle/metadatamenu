@@ -253,5 +253,4 @@ export class FieldSet {
         }
         this.reorderFields()
     }
-
 }
