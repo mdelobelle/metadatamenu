@@ -27,6 +27,7 @@ export async function insertMissingFields(
     if (!indexedPath) {
         fields?.filter(field => field.isRoot() && !note.existingFields.map(_f => _f.field.id).includes(field.id))
             .filter(field => filteredClassFields ? filteredClassFields.map(f => f.id).includes(field.id) : true)
+            .reverse()
             .forEach(field => {
                 fieldsToInsert.push({ indexedPath: field.id, payload: { value: "" } })
             })
@@ -40,7 +41,7 @@ export async function insertMissingFields(
         })
         const missingFields = note?.fields
             .filter(_f => _f.getFirstAncestor()?.id === id)
-            .filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
+            .filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)).reverse() || []
         //FIXME inserting is done in a  strange way when mixing frontmatter and inline insertion
         missingFields.forEach(field => {
             fieldsToInsert.push({ indexedPath: `${indexedPath}____${field.id}`, payload: { value: "" } })

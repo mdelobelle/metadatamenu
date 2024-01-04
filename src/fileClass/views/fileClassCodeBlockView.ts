@@ -34,8 +34,8 @@ export class FileClassCodeBlockView {
             position: 0
         }]
 
-        const fields = this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.filter(f => f.isRoot()) || []
-        for (const [_index, f] of fields.entries()) {
+        const sortedFields = FileClass.getSortedRootFields(this.plugin, this.fileClass)
+        for (const [_index, f] of sortedFields.entries()) {
             columns.push({
                 id: `${this.fileClass.name}____${f.name}`,
                 name: f.name,

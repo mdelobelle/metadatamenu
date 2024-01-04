@@ -18,7 +18,7 @@ export class RowSorterComponent {
         public priority?: number,
         public customOrder?: string[],
     ) {
-        this.id = `${this.fileClass}____${this.name}`
+        this.id = `${this.fileClass.name}____${this.name}`
         this.ascBtn = this.buildSorterBtn('asc')
         this.descBtn = this.buildSorterBtn('desc')
         this.customOrderBtn = new ButtonComponent(fieldContainer)
@@ -91,7 +91,8 @@ export class RowSorterComponent {
     }
 
     private getMaxRowSorterPriority() {
-        return Object.values(this.parentFieldset.rowSorters)
+        const maxPrio = Object.values(this.parentFieldset.rowSorters)
             .reduce((intermediateMax, currentSorter) => Math.max(intermediateMax, currentSorter.priority || 0), 0)
+        return maxPrio
     }
 }

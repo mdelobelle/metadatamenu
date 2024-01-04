@@ -269,6 +269,7 @@ export class FileClassDataviewTable {
             return `basename(p${index}${fieldKey})`
         }
         const sorters = Object.entries(this.viewConfiguration.sorters)
+            //TODO if field type is number, parseFloat before sorting
             .sort((s1, s2) => (s1[1].priority || 0) < (s2[1].priority || 0) ? -1 : 1)
             .filter(s => s[1].direction)
             .map(s => {

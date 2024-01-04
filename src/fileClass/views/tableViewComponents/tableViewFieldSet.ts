@@ -78,19 +78,22 @@ export class FieldSet {
         this.children = children || this.fileClass.getViewChildren(this.tableView.manager.selectedView)
         this.fileClasses = [this.fileClass, ...this.children.map(c => c.fileClass)]
         this.container.replaceChildren()
+        this.buildFieldComponents()
+    }
+
+    public buildFieldComponents() {
         this.fieldComponents = []
         const fileFieldContainer = this.container.createDiv({ cls: "field-container" })
         const fieldComponent = new FieldComponent(this.fileClass, fileFieldContainer, this, "file", "File Name", 0)
         this.fieldComponents.push(fieldComponent);
         let index = 0;
-        [this.fileClass, ...this.children.map(c => c.fileClass)].forEach(_fC => {
-            const fields = this.plugin.fieldIndex.fileClassesFields
-                .get(_fC.name)?.filter(_f => _f.isRoot()) || [];
-            for (const [_index, field] of fields.entries()) {
+        this.fileClasses.forEach(_fC => {
+            const sortedFields = FileClass.getSortedRootFields(this.plugin, _fC)
+            for (const [_index, field] of sortedFields.entries()) {
                 const fieldContainer = this.container.createDiv({ cls: "field-container" })
                 this.fieldComponents.push(new FieldComponent(_fC, fieldContainer, this, field.name, field.name, _index + index + 1))
             }
-            index += fields.length
+            index += sortedFields.length
         })
     }
 
@@ -250,5 +253,4 @@ export class FieldSet {
         }
         this.reorderFields()
     }
-
 }

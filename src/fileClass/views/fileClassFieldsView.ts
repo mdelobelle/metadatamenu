@@ -1,10 +1,11 @@
 import MetadataMenu from "main";
-import { ButtonComponent, setIcon } from "obsidian";
+import { ButtonComponent, Notice, setIcon } from "obsidian";
 import { removeFileClassAttributeWithId } from "src/commands/removeFileClassAttribute";
 import { FieldTypeTagClass } from "src/types/fieldTypes";
 import { FileClass } from "../fileClass";
 import { FileClassAttribute } from "../fileClassAttribute";
 import { FileClassAttributeModal } from "../FileClassAttributeModal";
+import Field from "src/fields/Field";
 
 class FileClassFieldSetting {
     private plugin: MetadataMenu;
@@ -33,6 +34,8 @@ class FileClassFieldSetting {
         const fieldButtonsContainer = this.container.createDiv({ cls: "buttons-container" })
         this.addEditButton(fieldButtonsContainer)
         this.addDeleteButton(fieldButtonsContainer);
+        this.addMoveBtn(fieldButtonsContainer, "asc", this.fileClassAttribute.id)
+        this.addMoveBtn(fieldButtonsContainer, "desc", this.fileClassAttribute.id)
         const fieldOptionsContainer = this.container.createDiv({ cls: "options-container" })
         fieldOptionsContainer.createEl("span", { cls: "description", text: `${fCA.getOptionsString(this.plugin)}` })
     };
@@ -61,6 +64,16 @@ class FileClassFieldSetting {
             removeFileClassAttributeWithId(this.plugin, this.fileClass, this.fileClassAttribute.id)
         })
     };
+
+    private addMoveBtn(container: HTMLElement, dir: "asc" | "desc", id: string) {
+        const btn = new ButtonComponent(container);
+        btn.setIcon(dir === "asc" ? "chevron-up" : "chevron-down");
+        btn.setTooltip(dir === "asc" ? "Move up" : "Move down");
+        btn.setClass("cell")
+        btn.onClick(() => {
+            this.fileClass.moveField(id, dir === "asc" ? "upwards" : "downwards")
+        })
+    }
 }
 
 export class FileClassFieldsView {
@@ -91,41 +104,10 @@ export class FileClassFieldsView {
     buildSettings(): void {
         this.container.replaceChildren();
         const fieldsContainer = this.container.createDiv({ cls: "fields-container" })
-        const attributes = FileClass.getFileClassAttributes(this.plugin, this.fileClass);
-        const sortedAttributes = attributes.filter(attr => !attr.path)
-        let hasError: boolean = false
-        while (sortedAttributes.length < attributes.length) {
-            const _initial = [...sortedAttributes]
-            sortedAttributes.forEach((sAttr, parentIndex) => {
-                for (const attr of attributes) {
-                    if (
-                        attr.path?.split("____").last() === sAttr.id &&
-                        !sortedAttributes.includes(attr)
-                    ) {
-                        //insert before next field at same or lower level as parent
-                        const parentLevel = sAttr.getLevel()
-                        const parentSibling = sortedAttributes.slice(parentIndex + 1).find(oAttr => oAttr.getLevel() <= parentLevel)
-                        const parentSiblingIndex = parentSibling ? sortedAttributes.indexOf(parentSibling) : sortedAttributes.length
-                        sortedAttributes.splice(parentSiblingIndex, 0, attr)
-                        break
-                    }
-                }
-            })
-            if (_initial.length === sortedAttributes.length) {
-                console.error("Impossible to restore field hierarchy, check you fileclass configuration")
-                hasError = true
-                break
-            }
-        }
-        if (hasError) {
-            attributes.forEach(attribute => {
-                new FileClassFieldSetting(fieldsContainer, this.fileClass, attribute, this.plugin);
-            });
-        } else {
-            sortedAttributes.forEach(attribute => {
-                new FileClassFieldSetting(fieldsContainer, this.fileClass, attribute, this.plugin);
-            });
-        }
+        const sortedAttributes = FileClass.buildSortedAttributes(this.plugin, this.fileClass)
+        sortedAttributes.forEach(attribute => {
+            new FileClassFieldSetting(fieldsContainer, this.fileClass, attribute, this.plugin);
+        });
         this.builAddBtn();
     }
 }

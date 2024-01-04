@@ -26,6 +26,7 @@ these options are accessible from:
 ### Open fields modal
 
 Will open a modal to manage the fields and fileclasses of this note with a compact UI
+The order of the fields in the modal will be the order of the fields in the file for existing field and the order of the fields defined in the [fileclass fields settings view](fileclasses.md#fileclass-fields) for missing fields
 
 ### Manage Fields
 
@@ -50,6 +51,9 @@ In live preview, you can add a field at cursor without having to choose the sect
 When fileClasses are defined for a note, you can bulk insert all fields defined in those fileClasses that aren't yet included in the note
 
 You can also insert missing fields on a fileClass per fileClass mode : this option is also available in fileClass sub-menu, or next to fileClasses in the Metadata Menu modal (see [Metadata Menu button](#metadata-menu-button--metadata-menu-modal))
+
+Missing fields will be inserted at the specified line number or at the end of the frontmatter if no line is specified.
+The missing fields will be inserted in the order defined in the [fileclass view fields settings](fileclasses.md#fileclass-fields)
 
 ## Control field from dataview tables with dataviewjs
 

@@ -282,6 +282,7 @@ Managed by the system
 
 In this view, as in the [preset fields](settings.md#preset-field-settings) settings, you can add, edit and remove [fields definition](fields.md) for this fileclass:
 - "list plus" button to add a new field
+- arrow-up / arrow-down to change the order in which the fields are inserted in a note
 - "pencil" button to edit a field's definition
 - "trash" button to remove a field
 

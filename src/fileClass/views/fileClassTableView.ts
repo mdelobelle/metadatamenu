@@ -67,7 +67,6 @@ export class FileClassTableView {
     }
 
     public update(maxRows?: number, sliceStart: number = 0): void {
-        //FIXME called 3 times when opening a fileClassView. this can be optimized
         this.manager._children.forEach(child => this.manager.removeChild(child))
         this.fileClassDataviewTable = new FileClassDataviewTable(
             this.fieldSet.getParams(), this, this.fileClass, maxRows, sliceStart)
@@ -271,7 +270,8 @@ export class FileClassTableView {
         this.refreshBtn.buttonEl.hide()
         this.refreshBtn.onClick(() => {
             this.refreshBtn.removeCta();
-            this.update();
+            this.build();
+            //this.update();
             this.refreshBtn.buttonEl.hide()
         })
     }
