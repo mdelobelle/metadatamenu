@@ -246,6 +246,18 @@ class FileClass {
         return this.getChildren().filter(c => childrenNames.includes(c.name))
     }
 
+    static getSortedRootFields(plugin: MetadataMenu, fileClass: FileClass): Field[] {
+        const fieldsOrder = fileClass.fieldsOrder ||
+            FileClass.buildSortedAttributes(plugin, fileClass).map(attr => attr.id)
+        const iFinder = (f: Field) => { return (id: string) => f.id === id }
+        const fields = plugin.fieldIndex.fileClassesFields
+            .get(fileClass.name)?.filter(_f => _f.isRoot()) || [];
+        const sortedFields = fields.sort((f1, f2) => {
+            return fieldsOrder.findIndex(iFinder(f1)) < fieldsOrder.findIndex(iFinder(f2)) ? -1 : 1
+        })
+        return sortedFields
+    }
+
     static buildSortedAttributes(plugin: MetadataMenu, fileClass: FileClass): FileClassAttribute[] {
         const attributes = FileClass.getFileClassAttributes(plugin, fileClass);
         const options = fileClass.getFileClassOptions()
