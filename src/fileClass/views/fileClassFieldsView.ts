@@ -5,6 +5,7 @@ import { FieldTypeTagClass } from "src/types/fieldTypes";
 import { FileClass } from "../fileClass";
 import { FileClassAttribute } from "../fileClassAttribute";
 import { FileClassAttributeModal } from "../FileClassAttributeModal";
+import Field from "src/fields/Field";
 
 class FileClassFieldSetting {
     private plugin: MetadataMenu;
@@ -33,6 +34,8 @@ class FileClassFieldSetting {
         const fieldButtonsContainer = this.container.createDiv({ cls: "buttons-container" })
         this.addEditButton(fieldButtonsContainer)
         this.addDeleteButton(fieldButtonsContainer);
+        this.addMoveBtn(fieldButtonsContainer, "asc", this.fileClassAttribute.id)
+        this.addMoveBtn(fieldButtonsContainer, "desc", this.fileClassAttribute.id)
         const fieldOptionsContainer = this.container.createDiv({ cls: "options-container" })
         fieldOptionsContainer.createEl("span", { cls: "description", text: `${fCA.getOptionsString(this.plugin)}` })
     };
@@ -61,6 +64,16 @@ class FileClassFieldSetting {
             removeFileClassAttributeWithId(this.plugin, this.fileClass, this.fileClassAttribute.id)
         })
     };
+
+    private addMoveBtn(container: HTMLElement, dir: "asc" | "desc", id: string) {
+        const btn = new ButtonComponent(container);
+        btn.setIcon(dir === "asc" ? "chevron-up" : "chevron-down");
+        btn.setTooltip(dir === "asc" ? "Move up" : "Move down");
+        btn.setClass("cell")
+        btn.onClick(() => {
+            this.fileClass.moveField(id, dir === "asc" ? "upwards" : "downwards")
+        })
+    }
 }
 
 export class FileClassFieldsView {
@@ -87,7 +100,6 @@ export class FileClassFieldsView {
             fileClassAttributeModal.open()
         }
     }
-
 
     buildSettings(): void {
         this.container.replaceChildren();
