@@ -858,6 +858,12 @@ span.flatpickr-weekday {
 .metadata-menu .chip.date {
   background-color: var(--color-pink);
 }
+.metadata-menu .chip.datetime {
+  background-color: var(--color-pink);
+}
+.metadata-menu .chip.time {
+  background-color: var(--color-pink);
+}
 .metadata-menu .chip.lookup {
   background-color: var(--color-red);
 }

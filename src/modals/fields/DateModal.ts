@@ -3,7 +3,7 @@ import Field from "src/fields/Field";
 import { FieldManager as FM } from "src/fields/FieldManager";
 import { moment } from "obsidian";
 import MetadataMenu from "main";
-import { FieldManager } from "src/types/fieldTypes";
+import { FieldManager, FieldType } from "src/types/fieldTypes";
 import DateField from "src/fields/fieldManagers/DateField";
 import { postValues } from "src/commands/postValues";
 import BaseModal from "../baseFieldModals/BaseModal";
@@ -12,6 +12,11 @@ import { ExistingField } from "src/fields/ExistingField";
 import ObjectModal from "./ObjectModal";
 import ObjectListModal from "./ObjectListModal";
 import { HTMLDateInputElement } from "src/typings/types";
+
+const inputType: Record<FieldType.Date | FieldType.DateTime, string> = {
+    "Date": "date",
+    "DateTime": "datetime-local"
+}
 
 export default class DateModal extends BaseModal {
     private pathTemplateItems: Record<string, string> = {}
@@ -180,7 +185,13 @@ export default class DateModal extends BaseModal {
             this.toggleButton(shiftFromTodayBtn, value)
         });
         const pickerContainer = wrapper.createDiv({ cls: "picker-container" })
-        const calendarInput = pickerContainer.createEl("input", { type: "date", cls: "date-picker" })
+        const calendarInput = pickerContainer.createEl(
+            "input",
+            {
+                type: inputType[(this.field.type as FieldType.Date | FieldType.DateTime)],
+                cls: "date-picker"
+            }
+        )
         calendarInput.oninput = (e) => {
             const newValue = moment((e.target as HTMLInputElement)?.value, "YYYY-MM-DD").format(this.format)
             this.inputEl.setValue(newValue)

@@ -3,9 +3,9 @@ import AbstractDateBasedField from "../abstractFieldManagers/AbstractDateBasedFi
 import Field from "../Field";
 import { FieldType } from "src/types/fieldTypes";
 
-export default class DateField extends AbstractDateBasedField {
+export default class DateTimeField extends AbstractDateBasedField {
     constructor(plugin: MetadataMenu, field: Field) {
-        super(plugin, field, FieldType.Date)
+        super(plugin, field, FieldType.DateTime)
         this.showModalOption = false;
     }
 }
