@@ -11,6 +11,7 @@ import { cleanActions } from "src/utils/modals";
 import { ExistingField } from "src/fields/ExistingField";
 import ObjectModal from "./ObjectModal";
 import ObjectListModal from "./ObjectListModal";
+import { HTMLDateInputElement } from "src/typings/types";
 
 export default class DateModal extends BaseModal {
     private pathTemplateItems: Record<string, string> = {}
@@ -77,11 +78,9 @@ export default class DateModal extends BaseModal {
     }
 
     public async save(): Promise<void> {
-        //e.preventDefault();
         let newValue: moment.Moment;
         //try natural language date
         if (this.plugin.app.plugins.enabledPlugins.has('nldates-obsidian')) {
-            //@ts-ignore
             try {
                 const nldates = this.plugin.app.plugins.plugins['nldates-obsidian'];
                 const parsedDate = nldates.parseDate(`${this.value}`)
@@ -191,7 +190,7 @@ export default class DateModal extends BaseModal {
             .setClass("date-picker-button")
             .setIcon("calendar")
             .onClick(() => {
-                calendarInput.showPicker()
+                (calendarInput as HTMLDateInputElement).showPicker()
             })
 
         const shiftFromTodayBtn = new ButtonComponent(container)
