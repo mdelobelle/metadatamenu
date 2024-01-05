@@ -36,7 +36,7 @@ export default abstract class AbstractDateBasedField extends FieldManager {
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
         const name = this.field.name
-        const dateIconName = FieldIcon[FieldType.Date];
+        const dateIconName = FieldIcon[this.field.type];
         const dateModalAction = async () => await this.buildAndOpenModal(file, indexedPath);
         const shiftDateAction = async () => await this.shiftDate(file, indexedPath);
         const clearDateAction = async () => await this.clearDate(file, indexedPath)
@@ -195,7 +195,7 @@ export default abstract class AbstractDateBasedField extends FieldManager {
         const linkFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath || "" + newValue.format(dateFormat), file.path)
         const formattedValue = AbstractDateBasedField.stringToBoolean(defaultInsertAsLink) ?
             `[[${linkPath || ""}${newValue}${linkFile ? "|" + linkFile.basename : ""}]]` :
-            newValue
+            newValue.format(dateFormat)
         await postValues(this.plugin, [{ indexedPath: indexedPath, payload: { value: formattedValue } }], file)
 
     }
