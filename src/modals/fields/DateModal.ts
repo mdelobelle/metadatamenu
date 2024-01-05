@@ -2,9 +2,8 @@ import { TextComponent, TFile, ButtonComponent } from "obsidian";
 import Field from "src/fields/Field";
 import { FieldManager as FM } from "src/fields/FieldManager";
 import { moment } from "obsidian";
-import flatpickr from "flatpickr";
 import MetadataMenu from "main";
-import { FieldIcon, FieldType, FieldManager } from "src/types/fieldTypes";
+import { FieldManager } from "src/types/fieldTypes";
 import DateField from "src/fields/fieldManagers/DateField";
 import { postValues } from "src/commands/postValues";
 import BaseModal from "../baseFieldModals/BaseModal";
@@ -149,7 +148,8 @@ export default class DateModal extends BaseModal {
         clearBtn.setTooltip(`Clear ${this.field.name}'s date`)
         clearBtn.onClick(() => {
             this.value = "";
-            this.inputEl.setPlaceholder("")
+            this.inputEl.setValue("")
+            this.inputEl.setPlaceholder("Empty")
         })
     }
 
@@ -164,7 +164,8 @@ export default class DateModal extends BaseModal {
 
     private async buildInputEl(container: HTMLDivElement): Promise<void> {
         [this.currentShift, this.nextIntervalField, this.nextShift] = await this.dateManager.shiftDuration(this.file);
-        this.inputEl = new TextComponent(container);
+        const wrapper = container.createDiv({ cls: "date-input-wrapper" })
+        this.inputEl = new TextComponent(wrapper);
         this.inputEl.inputEl.focus();
 
         this.inputEl.setPlaceholder(
@@ -172,40 +173,30 @@ export default class DateModal extends BaseModal {
                 moment(this.initialValue, this.field.options.dateFormat).format(this.field.options.dateFormat)
                 : "");
         this.inputEl.onChange(value => {
+            console.log(value)
             this.inputEl.inputEl.removeClass("is-invalid")
             this.errorField.hide();
             this.errorField.setText("");
             this.value = value
             this.toggleButton(shiftFromTodayBtn, value)
         });
-        const calendarDisplayBtn = new ButtonComponent(container)
-        calendarDisplayBtn.setIcon(FieldIcon[FieldType.Date])
-        calendarDisplayBtn.setTooltip("open date picker")
+        const pickerContainer = wrapper.createDiv({ cls: "picker-container" })
+        const calendarInput = pickerContainer.createEl("input", { type: "date", cls: "date-picker" })
+        calendarInput.oninput = (e) => {
+            const newValue = moment((e.target as HTMLInputElement)?.value, "YYYY-MM-DD").format(this.format)
+            this.inputEl.setValue(newValue)
+            this.value = newValue
+        }
+        new ButtonComponent(wrapper)
+            .setClass("date-picker-button")
+            .setIcon("calendar")
+            .onClick(() => {
+                calendarInput.showPicker()
+            })
+
         const shiftFromTodayBtn = new ButtonComponent(container)
         shiftFromTodayBtn.setIcon("skip-forward")
         shiftFromTodayBtn.setTooltip(`Shift ${this.field.name} ${this.currentShift || "1 day"} ahead`)
-
-        const datePickerContainer = container.createDiv();
-
-        const datePicker = flatpickr(datePickerContainer, {
-            locale: {
-                firstDayOfWeek: this.plugin.settings.firstDayOfWeek
-            },
-            defaultDate: moment(Date.now()).format("YYYY-MM-DD")
-        });
-        datePicker.config.onChange.push((value) => {
-            const newDate = moment(value.toString()).format(this.format);
-            this.inputEl.setValue(newDate);
-            this.value = newDate;
-            this.toggleButton(shiftFromTodayBtn, this.value)
-        })
-
-        calendarDisplayBtn.onClick((e: MouseEvent) => {
-            e.preventDefault();
-            datePicker.setDate(datePicker.parseDate(this.inputEl.getValue()) || new Date())
-            datePicker.open();
-        })
-
         shiftFromTodayBtn.onClick(async (e: MouseEvent) => {
             const newValue = await this.dateManager.getNewDateValue(this.currentShift, this.file, this.indexedPath)
             this.inputEl.setValue(newValue);
