@@ -1,4 +1,21 @@
-# 0.7.0-beta-1
+# 0.7.2
+Native date picker
+New Datetime field type
+New Time field type
+
+Better management of Number field increment and decrement
+
+# 0.7.1
+↕️ **Change the order of fields for fileClasses in the field settings tab** to apply on:
+- Missing fields insertion
+- MDM icon modal fields order (if the note has already fields in it, the order of the fields in the note will have higher priority over the settings order)
+- Fileclass tableview columns default order
+- MDM Code block columns default order
+
+🩹 **Fixed**:
+Insert missing fields not inserted in reverse order anymore
+
+# 0.7.0
 ## New types: Media and MultiMedia
 Like `File` and `MultiFile` field type but for non `.md` files
 Select the folder to search your media files
