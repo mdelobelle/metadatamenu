@@ -90,6 +90,8 @@ Metadata Menu can manage several field types. Choose them depending on the kind 
 - [Media](fields.md#media): a field that will `Accept a link to a media file from your vault`
 - [MultiMedia](fields.md#multi-media): a field that will `Accept multiple links to media files`
 - [Date](fields.md#date): a field that will `Accept a date`
+- [DateTime](fieldsmd.#datetime): a field that will `Accept a date with time`
+- [Time](fieldsmd.#time): a field that will `Accept a time`
 - [Lookup](fields.md#lookup): a field that will `Accept a lookup query`
 - [Formula](fields.md#formula): a field that will `Make Calculation based on note's fields`
 - [Canvas](fields.md#canvas): a field that will `Update with links in a canvas`
@@ -287,6 +289,42 @@ You can use templates to build your path with the formating token syntax of [mom
 - Dataview table: open field modal
 
 if the plugin [Natural Language Dates](https://github.com/argenos/nldates-obsidian) is installed, you can use it in the field modal when typing the date in the input field
+
+## Datetime
+
+A type that accepts a date with time
+
+### options
+You can define:
+- the time format as defined in [moment.js](https://momentjs.com/docs/#/displaying/format/) library
+- Define a shift interval: a value in [moment.js duration notation](https://momentjs.com/docs/#/durations/creating/)
+- Choose a [cycle field](#cycle) belonging to this fileclass or preset fields that contains duration values. Each time you shift the date, the time will be added the current value, and the cycle field will be updated with the next value in the list. This "Interval field" can't be a [nested field](#nesting-fields)
+
+### controls
+- Field modal: input a date, choose a date from a datepicker, insert as link/as raw text, shift ahead
+- Command palette: open field modal
+- Note modal: open field modal
+- Dataview table: open field modal
+
+
+## Time
+
+A type that accepts a time (hours, minutes, seconds, milliseconds)
+
+
+
+### options
+You can define:
+- the date and time format as defined in [moment.js](https://momentjs.com/docs/#/displaying/format/) library
+- Define a shift interval: a value in [moment.js duration notation](https://momentjs.com/docs/#/durations/creating/)
+- Choose a [cycle field](#cycle) belonging to this fileclass or preset fields that contains duration values. Each time you shift the date, the date will be added the current value, and the cycle field will be updated with the next value in the list. This "Interval field" can't be a [nested field](#nesting-fields)
+
+### controls
+- Field modal: input a date, choose a date from a datepicker, insert as link/as raw text, shift ahead
+- Command palette: open field modal
+- Note modal: open field modal
+- Dataview table: open field modal
+
 
 ## File
 

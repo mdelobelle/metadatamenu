@@ -61,6 +61,8 @@ Available types are:
 - `Media`: a field that will `Accept a link to a media file from your vault`
 - `MultiMedia`: a field that will `Accept multiple links to media files`
 - `Date`: a field that will `Accept a date`
+- `DateTime`: a field that will `Accept a date with time`
+- `Time`: a field that will `Accept a time`
 - `Lookup`: a field that will `Accept a lookup query`
 - `Canvas`: a field that will `Update with links in a canvas`
 - `Canvas Group`: a field that will `Update with groups in a canvas`
