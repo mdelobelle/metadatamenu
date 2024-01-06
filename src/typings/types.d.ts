@@ -9,6 +9,10 @@ interface InternalPlugin {
     enabled: boolean;
 }
 
+interface HTMLDateInputElement extends HTMLInputElement {
+    showPicker: () => void
+}
+
 interface BookmarkItem {
     ctime: number;
     type: 'file' | 'folder' | 'group';
@@ -34,6 +38,7 @@ interface Property {
     type: string,
     value: string
 }
+
 
 declare module "obsidian" {
 

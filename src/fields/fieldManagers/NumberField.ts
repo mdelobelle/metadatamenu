@@ -15,7 +15,6 @@ import { Note } from "src/note/note";
 
 export default class NumberField extends FieldManager {
 
-    private numberValidatorField: HTMLDivElement;
     private numberStepValue: TextComponent;
     private numberMinValue: TextComponent;
     private numberMaxValue: TextComponent;
@@ -39,8 +38,8 @@ export default class NumberField extends FieldManager {
             !isNaN(fMin) &&
             (
                 !isNaN(fStep) && (
-                    parseFloat(value) - fStep < fMin ||
-                    parseFloat(value) - 1 < fMin
+                    (parseFloat(value) || 0) - fStep < fMin ||
+                    (parseFloat(value) || 0) - 1 < fMin
                 )
             )
         )
@@ -55,8 +54,8 @@ export default class NumberField extends FieldManager {
             !isNaN(fMax) &&
             (
                 !isNaN(fStep) && (
-                    parseFloat(value) + fStep > fMax ||
-                    parseFloat(value) + 1 > fMax
+                    (parseFloat(value) || 0) + fStep > fMax ||
+                    (parseFloat(value) || 0) + 1 > fMax
                 )
             )
         )
@@ -86,23 +85,20 @@ export default class NumberField extends FieldManager {
         const fStep = parseFloat(step)
         const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
         const value = eF?.value || ""
-        const fValue = parseFloat(value)
-        if (!isNaN(fValue)) {
-            switch (direction) {
-                case "decrease":
-                    if (!isNaN(fMin) && fValue - fStep >= fMin) {
-                        await postValues(this.plugin, [{ indexedPath: indexedPath || this.field.id, payload: { value: (fValue - fStep).toString() } }], file)
-                    }
-                    break;
-                case "increase":
-                    if (!isNaN(fMax) && fValue + fStep <= fMax) {
-                        await postValues(this.plugin, [{ indexedPath: indexedPath || this.field.id, payload: { value: (fValue + fStep).toString() } }], file)
-                    }
+        const fValue = parseFloat(value) || 0
+        switch (direction) {
+            case "decrease":
+                if (!isNaN(fMin) && fValue - fStep >= fMin) {
+                    await postValues(this.plugin, [{ indexedPath: indexedPath || this.field.id, payload: { value: (fValue - fStep).toString() } }], file)
+                }
+                break;
+            case "increase":
+                if (!isNaN(fMax) && fValue + fStep <= fMax) {
+                    await postValues(this.plugin, [{ indexedPath: indexedPath || this.field.id, payload: { value: (fValue + fStep).toString() } }], file)
+                }
 
-                default:
-                    break;
-            }
-
+            default:
+                break;
         }
 
     }
@@ -136,21 +132,21 @@ export default class NumberField extends FieldManager {
         numberStepValueContainer.createDiv({ cls: "spacer" });
         this.numberStepValue = new TextComponent(numberStepValueContainer)
         this.numberStepValue.inputEl.addClass("with-label")
-        this.numberStepValue.setValue(`${this.field.options.step}` || "")
+        this.numberStepValue.setValue(`${this.field.options.step || ""}`)
 
         const numberMinValueContainer = container.createDiv({ cls: "field-container" });
         numberMinValueContainer.createEl("span", { text: "Min value (optional)", cls: 'label' })
         this.numberMinValue = new TextComponent(numberMinValueContainer)
         this.numberMinValue.inputEl.addClass("full-width");
         this.numberMinValue.inputEl.addClass("with-label")
-        this.numberMinValue.setValue(`${this.field.options.min}` || "")
+        this.numberMinValue.setValue(`${this.field.options.min || ""}`)
 
         const numberMaxValueContainer = container.createDiv({ cls: "field-container" });
         numberMaxValueContainer.createEl("span", { text: "Max value (optional)", cls: 'label' })
         this.numberMaxValue = new TextComponent(numberMaxValueContainer)
         this.numberMaxValue.inputEl.addClass("full-width");
         this.numberMaxValue.inputEl.addClass("with-label")
-        this.numberMaxValue.setValue(`${this.field.options.max}` || "")
+        this.numberMaxValue.setValue(`${this.field.options.max || ""}`)
         this.numberStepValue.onChange(value => {
             this.field.options.step = parseFloat(value);
             FieldSettingsModal.removeValidationError(this.numberStepValue);

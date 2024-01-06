@@ -6,6 +6,8 @@ import Cycle from './CycleField'
 import Multi from './MultiField'
 import File from './FileField'
 import Date from './DateField'
+import DateTime from './DateTimeField'
+import Time from './TimeField'
 import MultiFile from './MultiFileField'
 import Media from './MediaField'
 import MultiMedia from './MultiMediaField'
@@ -28,6 +30,8 @@ const Managers = {
     Multi,
     File,
     Date,
+    DateTime,
+    Time,
     Media,
     MultiMedia,
     MultiFile,

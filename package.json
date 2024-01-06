@@ -44,7 +44,6 @@
 		"@types/uuid": "^9.0.4",
 		"codemirror": "^6.0.1",
 		"crypto-random-string": "^5.0.0",
-		"flatpickr": "^4.6.13",
 		"yaml": "^2.3.2"
 	}
 }

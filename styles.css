@@ -858,6 +858,12 @@ span.flatpickr-weekday {
 .metadata-menu .chip.date {
   background-color: var(--color-pink);
 }
+.metadata-menu .chip.datetime {
+  background-color: var(--color-pink);
+}
+.metadata-menu .chip.time {
+  background-color: var(--color-pink);
+}
 .metadata-menu .chip.lookup {
   background-color: var(--color-red);
 }
@@ -1111,6 +1117,40 @@ span.flatpickr-weekday {
 }
 .metadata-menu.modal-container .field-container input:last-child, .metadata-menu.modal-container .field-container textarea:last-child {
   margin-right: 0;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper {
+  display: flex;
+  background: var(--background-modifier-form-field);
+  border: var(--input-border-width) solid var(--background-modifier-border);
+  color: var(--text-normal);
+  font-family: inherit;
+  font-size: var(--font-ui-small);
+  border-radius: var(--input-radius);
+  outline: none;
+  margin-right: 1em;
+  padding: 0;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper:focus {
+  box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper input {
+  border: none;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper input:focus {
+  box-shadow: none;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper .date-picker {
+  visibility: hidden;
+  width: 0;
+  padding: 0em;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper .date-picker-button {
+  border: none;
+  box-shadow: none;
+  size: 1em;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper .date-picker-button:hover {
+  background-color: inherit;
 }
 .metadata-menu.modal-container .field-container textarea.full-width {
   width: 100%;
@@ -1586,6 +1626,40 @@ span.flatpickr-weekday {
 }
 .metadata-menu.modal-container .field-container input:last-child, .metadata-menu.modal-container .field-container textarea:last-child {
   margin-right: 0;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper {
+  display: flex;
+  background: var(--background-modifier-form-field);
+  border: var(--input-border-width) solid var(--background-modifier-border);
+  color: var(--text-normal);
+  font-family: inherit;
+  font-size: var(--font-ui-small);
+  border-radius: var(--input-radius);
+  outline: none;
+  margin-right: 1em;
+  padding: 0;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper:focus {
+  box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper input {
+  border: none;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper input:focus {
+  box-shadow: none;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper .date-picker {
+  visibility: hidden;
+  width: 0;
+  padding: 0em;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper .date-picker-button {
+  border: none;
+  box-shadow: none;
+  size: 1em;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper .date-picker-button:hover {
+  background-color: inherit;
 }
 .metadata-menu.modal-container .field-container textarea.full-width {
   width: 100%;
