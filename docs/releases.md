@@ -1,3 +1,9 @@
+# 0.7.5
+fix mobile date and time picker
+
+# 0.7.4
+fix nested object fields
+
 # 0.7.2
 Native date picker
 New Datetime field type

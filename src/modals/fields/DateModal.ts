@@ -170,6 +170,8 @@ export default class DateModal extends BaseModal {
         [this.currentShift, this.nextIntervalField, this.nextShift] = await this.dateManager.shiftDuration(this.file);
         const wrapper = container.createDiv({ cls: "date-input-wrapper" })
         this.inputEl = new TextComponent(wrapper);
+        this.inputEl.inputEl.addClass("master-input")
+        this.inputEl.inputEl.addClass(this.field.type.toLowerCase())
         this.inputEl.inputEl.focus();
 
         this.inputEl.setPlaceholder(
@@ -183,8 +185,8 @@ export default class DateModal extends BaseModal {
             this.value = value
             this.toggleButton(shiftFromTodayBtn, value)
         });
-        const pickerContainer = wrapper.createDiv({ cls: "picker-container" })
-        const calendarInput = pickerContainer.createEl(
+
+        const calendarInput = wrapper.createEl(
             "input",
             {
                 type: inputType[(this.field.type as FieldType.Date | FieldType.DateTime)],
@@ -199,13 +201,6 @@ export default class DateModal extends BaseModal {
             this.inputEl.setValue(newValue)
             this.value = newValue
         }
-        new ButtonComponent(wrapper)
-            .setClass("date-picker-button")
-            .setIcon("calendar")
-            .onClick(() => {
-                (calendarInput as HTMLDateInputElement).showPicker()
-            })
-
         const shiftFromTodayBtn = new ButtonComponent(container)
         shiftFromTodayBtn.setIcon("skip-forward")
         shiftFromTodayBtn.setTooltip(`Shift ${this.field.name} ${this.currentShift || "1 day"} ahead`)

@@ -103,6 +103,10 @@
             font-size: x-small;
             font-style: italic;
             color: var(--color-accent);
+
+            @media screen and (max-width: 400px) {
+                display: none;
+            }
         }
         
         .label {
@@ -165,6 +169,7 @@
         }
         .date-input-wrapper{
             display: flex;
+        
             background: var(--background-modifier-form-field);
             border: var(--input-border-width) solid var(--background-modifier-border);
             color: var(--text-normal);
@@ -184,10 +189,36 @@
                 }
             }
 
+            .master-input{
+                margin-right: 0;
+
+                &.time{
+                    width: 7em;
+                }
+
+                &.date{
+                    width: 14em;
+                }
+
+                &.datetime{
+                    width: 14em;
+                }
+
+
+                @media screen and (max-width: 400px) {
+                    display: none;
+                }
+            }
+
             .date-picker{
-                visibility: hidden;
                 width: 0;
-                padding: 0em;
+                margin-right: 0;
+            }
+
+            .time-picker{
+                width: 2em;
+                margin-right: 0.5em;
+                font-size: large;
             }
             
             .date-picker-button{
@@ -202,7 +233,6 @@
         }
 
         textarea {
-
             &.full-width{
                 width: 100%;
             }

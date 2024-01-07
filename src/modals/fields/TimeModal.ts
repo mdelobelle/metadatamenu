@@ -109,7 +109,9 @@ export default class TimeModal extends BaseModal {
     private async buildInputEl(container: HTMLDivElement): Promise<void> {
         [this.currentShift, this.nextIntervalField, this.nextShift] = await this.timeManager.shiftDuration(this.file);
         const wrapper = container.createDiv({ cls: "date-input-wrapper" })
-        this.inputEl = new TextComponent(wrapper);
+        this.inputEl = new TextComponent(wrapper)
+        this.inputEl.inputEl.addClass("master-input")
+        this.inputEl.inputEl.addClass("time")
         this.inputEl.inputEl.focus();
         this.inputEl.setPlaceholder(
             this.initialValue ?
@@ -122,12 +124,11 @@ export default class TimeModal extends BaseModal {
             this.value = value
             this.toggleButton(shiftFromTodayBtn, value)
         });
-        const pickerContainer = wrapper.createDiv({ cls: "picker-container" })
-        const calendarInput = pickerContainer.createEl(
+        const calendarInput = wrapper.createEl(
             "input",
             {
                 type: "time",
-                cls: "date-picker"
+                cls: "time-picker"
             }
         )
         calendarInput.value = this.initialValue ?
@@ -138,13 +139,6 @@ export default class TimeModal extends BaseModal {
             this.inputEl.setValue(newValue)
             this.value = newValue
         }
-        new ButtonComponent(wrapper)
-            .setClass("date-picker-button")
-            .setIcon("clock-4")
-            .onClick(() => {
-                (calendarInput as HTMLDateInputElement).showPicker()
-            })
-
         const shiftFromTodayBtn = new ButtonComponent(container)
         shiftFromTodayBtn.setIcon("skip-forward")
         shiftFromTodayBtn.setTooltip(`Shift ${this.field.name} ${this.currentShift || "1 hour"} ahead`)

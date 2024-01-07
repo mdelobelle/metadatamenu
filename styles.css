@@ -1070,6 +1070,11 @@ span.flatpickr-weekday {
   font-style: italic;
   color: var(--color-accent);
 }
+@media screen and (max-width: 400px) {
+  .metadata-menu.modal-container .field-container .info {
+    display: none;
+  }
+}
 .metadata-menu.modal-container .field-container .label {
   white-space: nowrap;
 }
@@ -1139,10 +1144,31 @@ span.flatpickr-weekday {
 .metadata-menu.modal-container .field-container .date-input-wrapper input:focus {
   box-shadow: none;
 }
+.metadata-menu.modal-container .field-container .date-input-wrapper .master-input {
+  margin-right: 0;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper .master-input.time {
+  width: 7em;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper .master-input.date {
+  width: 14em;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper .master-input.datetime {
+  width: 14em;
+}
+@media screen and (max-width: 400px) {
+  .metadata-menu.modal-container .field-container .date-input-wrapper .master-input {
+    display: none;
+  }
+}
 .metadata-menu.modal-container .field-container .date-input-wrapper .date-picker {
-  visibility: hidden;
   width: 0;
-  padding: 0em;
+  margin-right: 0;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper .time-picker {
+  width: 2em;
+  margin-right: 0.5em;
+  font-size: large;
 }
 .metadata-menu.modal-container .field-container .date-input-wrapper .date-picker-button {
   border: none;
@@ -1579,6 +1605,11 @@ span.flatpickr-weekday {
   font-style: italic;
   color: var(--color-accent);
 }
+@media screen and (max-width: 400px) {
+  .metadata-menu.modal-container .field-container .info {
+    display: none;
+  }
+}
 .metadata-menu.modal-container .field-container .label {
   white-space: nowrap;
 }
@@ -1648,10 +1679,31 @@ span.flatpickr-weekday {
 .metadata-menu.modal-container .field-container .date-input-wrapper input:focus {
   box-shadow: none;
 }
+.metadata-menu.modal-container .field-container .date-input-wrapper .master-input {
+  margin-right: 0;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper .master-input.time {
+  width: 7em;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper .master-input.date {
+  width: 14em;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper .master-input.datetime {
+  width: 14em;
+}
+@media screen and (max-width: 400px) {
+  .metadata-menu.modal-container .field-container .date-input-wrapper .master-input {
+    display: none;
+  }
+}
 .metadata-menu.modal-container .field-container .date-input-wrapper .date-picker {
-  visibility: hidden;
   width: 0;
-  padding: 0em;
+  margin-right: 0;
+}
+.metadata-menu.modal-container .field-container .date-input-wrapper .time-picker {
+  width: 2em;
+  margin-right: 0.5em;
+  font-size: large;
 }
 .metadata-menu.modal-container .field-container .date-input-wrapper .date-picker-button {
   border: none;
