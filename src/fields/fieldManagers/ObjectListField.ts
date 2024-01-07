@@ -109,7 +109,7 @@ export default class ObjectListField extends FieldManager {
         if (Array.isArray(value)) {
             const items = fields?.filter(_f => (
                 (this.field.isRoot() && _f.path === this.field.id) ||
-                (!this.field.isRoot() && Field.upperPath(_f.path) === this.field.path)
+                (!this.field.isRoot() && this.field.path + "____" + this.field.id === _f.path)
             ) && _f.path !== ""
             ).map(_f => _f.name) || []
             container.setText(`${value.length} item${value.length !== 1 ? "(s)" : ""}: [${items.join(" | ")}]`)

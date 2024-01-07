@@ -30,12 +30,12 @@ export default class ObjectModal extends BaseSuggestModal<ExistingField | Field>
 
     async onOpen() {
         if (this.indexedPath) {
-            const upperPath = Field.upperIndexedPathObjectPath(this.indexedPath)
-            const { index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
+
             const { existingFields, missingFields } = await ObjectField.getExistingAndMissingFields(
-                this.plugin, this.file, upperFieldIndex !== undefined ? upperPath : this.indexedPath)
+                this.plugin, this.file, this.indexedPath)
             this.existingFields = existingFields
             this.missingFields = missingFields
+
         }
         super.onOpen()
     };

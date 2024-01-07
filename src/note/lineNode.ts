@@ -219,7 +219,7 @@ export class LineNode {
     public buildIndentedListItem = (value: any, shift: number = 0) => {
         if (!this.field) return ""
         const ancestors = this.field.getAncestors();
-        const level = ancestors.length
+        const level = ancestors.map(a => a.type === FieldType.ObjectList ? 2 : 1).reduce((p, c) => p + c, 0)
         return `${"  ".repeat(level + 1 + shift)}- ${value}`
     }
 

@@ -71,7 +71,6 @@ export async function postNamedFieldsValues(
             }
         }
     })
-    //console.log(toYaml, toCreateInline, toUpdateInline)
 
     if (Object.keys(toYaml).length) {
         await plugin.app.fileManager.processFrontMatter(file, (fm) => {
@@ -177,10 +176,8 @@ export async function postFieldsInline(
         newContent = updateContentWithField(newContent, fieldName, payload)
     })
 
-    //console.log("started writing...", input)
     const updatedFile = newContent.filter((line, i) => !skippedLines.includes(i)).join('\n')
     await plugin.app.vault.modify(file, updatedFile);
-    //console.log("finished writing...", input)
     const editor = plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor
     if (editor) {
         const lineNumber = editor.getCursor().line

@@ -236,7 +236,6 @@ export class Note {
         asBlockquote: boolean = false
     ): void {
         const upperPath = Field.upperIndexedPathObjectPath(indexedPath)
-
         const { id, index } = Field.getIdAndIndex(indexedPath.split("____").last())
         const { id: upperFieldId, index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
         if (lineNumber === -1 && !this.frontmatter) this.initFrontmatter()
@@ -248,79 +247,90 @@ export class Note {
                 newLine.renderLine(asList, asBlockquote)
 
             }
-        } else if (id.startsWith("new-field-")) {
+            return
+        }
+
+        if (!upperFieldIndex) {
+            DEBUG && console.log("Not an item of objectlist")
+            const field = this.getField(id)
+            if (!field) return
+            // initialize frontmatter and get insertion line and position
+            if (frontmatterOnlyTypes.includes(field.type) && !this.frontmatter) this.initFrontmatter()
             const frontmatterEnd = this.frontmatterEnd()
-            const position = frontmatterEnd && ((lineNumber || this.lines.length) <= frontmatterEnd) ? "yaml" : "inline"
-            const _ = position === "yaml" ? ":" : "::"
-            const fR = id.match(/new-field-(?<fieldName>.*)/)
-            if (fR?.groups?.fieldName) {
-                const content = `${fR.groups.fieldName}${_} ${payload.value}`
-                const newLine = new Line(this.plugin, this, position, content, lineNumber || this.lines.length)
-                newLine.renderLine(asList, asBlockquote)
-            }
-        } else {
-            if (upperFieldIndex) {
-                const i = parseInt(upperFieldIndex)
-                //we are in an Item of an ObjectList
-                const parentFieldIndexedPath = upperPath.replace(/\[\w+\]$/, '')
-                const parentNode = this.getNodeForIndexedPath(parentFieldIndexedPath)
-                //if the parent field doesn't exist, lets quit
-                if (!parentNode) {
-                    new Notice("A parent field is missing, this field can't be added")
-                    return
-                }
-                const field = this.getField(id)
-                const lastItemLine = parentNode.line.objectListLines[i].last()
-                if (lastItemLine) {
-                    //if line is " .... - " it is a place holder for fields, let's replace the content of this line's node
-                    if (/-(\s+)?$/.test(parentNode.line.objectListLines[i].last()?.rawContent || "") && field) {
-                        const node = lastItemLine.nodes[0]
-                        node.createFieldNodeContent(field, payload.value, "yaml");
-                        node.line.renderLine(asList, asBlockquote)
-                    } else {
-                        //lastItemLineNumber+1 doesn't work.... it can be an object of objectList and therefore have multiple sublists
-                        const lastChildLine = lastItemLine.getLastChildLine()
-                        this.createLine(payload.value, "yaml", lastChildLine ? lastChildLine.number + 1 : 1, field, asList, asBlockquote)
-                    }
+            let insertLineNumber =
+                (lineNumber ? Math.max(lineNumber, 0) : undefined) ||
+                frontmatterEnd ||
+                this.lines.last()?.number ||
+                0
+            if (frontmatterOnlyTypes.includes(field.type)) insertLineNumber = frontmatterEnd!
+            const position = frontmatterEnd && (insertLineNumber <= frontmatterEnd) ? "yaml" : "inline"
+
+            if (field.type !== FieldType.ObjectList) {
+                DEBUG && console.log("Not an ObjectList")
+                const parentField = this.existingFields.find(eF => eF.indexedPath === upperPath)
+                if (parentField?.field.type === FieldType.Object) {
+                    DEBUG && console.log("child of an object")
+                    const parentLine = this.getNodeForIndexedPath(upperPath)?.line
+                    const lastChildLine = parentLine?.getLastChildLine()
+                    this.createLine(payload.value, "yaml", lastChildLine ? lastChildLine.number + 1 : 1, field, asList, asBlockquote)
+                } else {
+                    DEBUG && console.log("No parent field or parent not an object")
+                    this.createLine(payload.value, position, insertLineNumber, field, asList, asBlockquote)
                 }
             } else {
-                const field = this.getField(id)
-                if (!field) return
-                if (frontmatterOnlyTypes.includes(field.type) && !this.frontmatter) this.initFrontmatter()
-                const frontmatterEnd = this.frontmatterEnd()
-                let insertLineNumber =
-                    (lineNumber ? Math.max(lineNumber, 0) : undefined) ||
-                    frontmatterEnd ||
-                    this.lines.last()?.number ||
-                    0
-                if (frontmatterOnlyTypes.includes(field.type)) insertLineNumber = frontmatterEnd!
-                const position = frontmatterEnd && (insertLineNumber <= frontmatterEnd) ? "yaml" : "inline"
-                if (field.type === FieldType.ObjectList) {
-                    //specific case where the field is object but the upperIndex is unknown
-                    //it mean that we have to insert a new ObjectListItem
-                    const node = this.getNodeForIndexedPath(upperPath)
-                    if (node) {
-                        const newItemLine = new Line(this.plugin, node.line.note, position, "", node.line.number! + 1)
-                        // if field is not in a list, shift of 0, else shift 1
-                        const shift = /^(\s+)-(\s+)?(.*)/.test(node.rawContent) ? 1 : 0
-                        new LineNode(this.plugin, newItemLine, node.buildIndentedListItem("", shift))
-                        newItemLine.renderLine(asList, asBlockquote)
-                    } else {
-                        const objectListHeaderLine = new Line(this.plugin, this, position, `${field.name}:`, insertLineNumber)
-                        objectListHeaderLine.renderLine()
-                    }
+
+                DEBUG && console.log("An ObjectList")
+                //specific case where the field is object but the upperIndex is unknown
+                //it mean that we have to insert a new ObjectList Header
+                const upperNode = this.getNodeForIndexedPath(upperPath)
+                if (!upperNode) {
+
+                    DEBUG && console.log("no upper node (shouldnt exist)")
+                    const objectListHeaderLine = new Line(this.plugin, this, position, `${field.name}:`, insertLineNumber)
+                    objectListHeaderLine.renderLine()
                 } else {
-                    const parentField = this.existingFields.find(eF => eF.indexedPath === upperPath)
-                    if (parentField?.field.type === FieldType.Object) {
-                        const parentLine = this.getNodeForIndexedPath(upperPath)?.line
-                        const lastChildLine = parentLine?.getLastChildLine()
-                        this.createLine(payload.value, "yaml", lastChildLine ? lastChildLine.number + 1 : 1, field, asList, asBlockquote)
+                    if (upperNode.field?.id !== field.id) {
+                        DEBUG && console.log("upper node indexed path !==  this indexed path we are adding the header and a first item")
+                        const objectListHeaderLine = new Line(this.plugin, this, position, "", upperNode.line.number! + 1)
+                        const node = new LineNode(this.plugin, objectListHeaderLine, "")
+                        node.createFieldNodeContent(field, "", "yaml")
+                        node.line.renderLine()
                     } else {
-                        this.createLine(payload.value, position, insertLineNumber, field, asList, asBlockquote)
+                        DEBUG && console.log("the object list doesn't have a first item, let's create it")
+                        const newItemLine = new Line(this.plugin, upperNode.line.note, position, "", upperNode.line.number! + 1)
+                        // if field is not in a list, shift of 0, else shift 1
+                        const shift = /^(\s+)-(\s+)?(.*)/.test(upperNode.rawContent) ? 1 : 0
+                        new LineNode(this.plugin, newItemLine, upperNode.buildIndentedListItem("", shift))
+                        newItemLine.renderLine()
                     }
+                }
+            }
+        } else {
+            DEBUG && console.log("in an existing item of an object list")
+            const i = parseInt(upperFieldIndex)
+            const parentFieldIndexedPath = upperPath.replace(/\[\w+\]$/, '')
+            const parentNode = this.getNodeForIndexedPath(parentFieldIndexedPath)
+            if (!parentNode) {
+                new Notice("A parent field is missing, this field can't be added")
+                return
+            }
+            const field = this.getField(id)
+            const lastItemLine = parentNode.line.objectListLines[i].last()
+            if (lastItemLine) {
+                DEBUG && console.log("we have a last object for item")
+                if (/-(\s+)?$/.test(parentNode.line.objectListLines[i].last()?.rawContent || "") && field) {
+                    DEBUG && console.log("replace the placeholder")
+                    const node = lastItemLine.nodes[0]
+                    node.createFieldNodeContent(field, payload.value, "yaml");
+                    node.line.renderLine(asList, asBlockquote)
+                } else {
+                    DEBUG && console.log("add the field at the end")
+                    const lastChildLine = lastItemLine.getLastChildLine()
+                    this.createLine(payload.value, "yaml", lastChildLine ? lastChildLine.number + 1 : 1, field, asList, asBlockquote)
                 }
             }
         }
+
     }
 
     public async removeObject(indexedPath: string): Promise<void> {
