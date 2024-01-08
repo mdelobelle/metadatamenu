@@ -66,6 +66,12 @@ export class Note {
         return values.length ? values : ""
     }
 
+    public renderMultiFilesFields = (rawValue: string, itemRendering: (itemValue: string) => any) => {
+        const values = ((rawValue.match(/\!?\[(?:\[??[^\[]*?\]\])/g) || []) as string[])
+            .map(value => itemRendering(value));
+        return values?.length ? values : ""
+    }
+
     public renderFieldValue(
         field: Field,
         rawValue: string,
@@ -76,13 +82,13 @@ export class Note {
         switch (location) {
             case "yaml":
                 switch (type) {
-                    case FieldType.Lookup: return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
+                    case FieldType.Lookup: return this.renderMultiFilesFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
                     case FieldType.Multi: return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
-                    case FieldType.MultiFile: return this.renderMultiFields(rawValue, (item) => `"${item}"`);;
-                    case FieldType.MultiMedia: return this.renderMultiFields(rawValue, (item) => `"${item}"`);
-                    case FieldType.Canvas: return this.renderMultiFields(rawValue, (item) => item ? `"${item}"` : "");
+                    case FieldType.MultiFile: return this.renderMultiFilesFields(rawValue, (item) => `"${item}"`);;
+                    case FieldType.MultiMedia: return this.renderMultiFilesFields(rawValue, (item) => `"${item}"`);
+                    case FieldType.Canvas: return this.renderMultiFilesFields(rawValue, (item) => item ? `"${item}"` : "");
                     case FieldType.CanvasGroup: return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
-                    case FieldType.CanvasGroupLink: return this.renderMultiFields(rawValue, (item) => item ? `"${item}"` : "");
+                    case FieldType.CanvasGroupLink: return this.renderMultiFilesFields(rawValue, (item) => item ? `"${item}"` : "");
                     case undefined: if ([...ReservedMultiAttributes, this.plugin.settings.fileClassAlias].includes(field.name)) {
                         return this.renderMultiFields(rawValue, (item) => `${item}`)
                     } else {

@@ -1,3 +1,6 @@
+# 0.7.7
+fix multi file fields broken when some file names include a comma
+
 # 0.7.5
 fix mobile date and time picker
 
