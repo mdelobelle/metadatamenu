@@ -4,8 +4,11 @@ import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/Field";
 import ObjectListModal from "../fields/ObjectListModal";
 import ObjectModal from "../fields/ObjectModal";
+import { FieldManager as FM } from "src/types/fieldTypes";
+import ObjectField from "src/fields/fieldManagers/ObjectField";
+import ObjectListField from "src/fields/fieldManagers/ObjectListField";
 
-export default abstract class BaseSuggestModal<T> extends SuggestModal<T> {
+export default abstract class BaseObjectModal<T> extends SuggestModal<T> {
     constructor(
         public plugin: MetadataMenu,
         public file: TFile,
@@ -57,17 +60,22 @@ export default abstract class BaseSuggestModal<T> extends SuggestModal<T> {
     }
 
     buildTitle(container: HTMLDivElement) {
-        let title: string = ""
-        if (this.eF) {
-            title = this.eF.field.name
-        } else if (this.indexedPath) {
-            //indexedPath of form aaaaa[n]
-            const { id: objectId, index: objectIndex } = Field.getIdAndIndex(this.indexedPath.split("____").last())
-            const upperObject = this.plugin.fieldIndex.filesFields.get(this.file.path)?.find(_f => _f.id === objectId)
-            title = `${upperObject?.name}${objectIndex ? " [" + objectIndex + "]" : ""}` || "unknown field"
-        }
         const titleContainer = container.createDiv({ cls: "suggester-title" })
-        titleContainer.innerHTML = `<b>${title}</b> fields`
+        const indexedPath = this.indexedPath || ""
+        const { id, index } = Field.getIdAndIndex(indexedPath?.split("____").last())
+
+        if (!this.eF) {
+            const upperPath = Field.upperIndexedPathObjectPath(this.indexedPath || "")
+            const { id: upperId, index: upperIndex } = Field.getIdAndIndex(upperPath.split("____").last())
+            const field = this.plugin.fieldIndex.filesFields.get(this.file.path)?.find(f => f.id === upperId)
+            titleContainer.setText(`${field?.name || "unknown"}${index ? " [" + index + "]" : ""}`)
+        } else {
+            if (index) {
+                titleContainer.setText(`${this.eF.name}[${index}]`)
+            } else {
+                titleContainer.setText(`${this.eF?.name}`)
+            }
+        }
     }
 
 }

@@ -7,8 +7,10 @@ import { Note } from "src/note/note";
 import { FieldManager } from "src/types/fieldTypes";
 import ObjectModal from "./ObjectModal";
 import { postValues } from "src/commands/postValues";
-import BaseSuggestModal from "../baseFieldModals/BaseObjectModal";
-export default class ObjectListModal extends BaseSuggestModal<ObjectListItem> {
+import BaseObjectModal from "../baseFieldModals/BaseObjectModal";
+import { FieldManager as FM } from "src/types/fieldTypes";
+
+export default class ObjectListModal extends BaseObjectModal<ObjectListItem> {
     private toRemove?: ObjectListItem;
     private objects: ObjectListItem[] = []
 
@@ -66,17 +68,10 @@ export default class ObjectListModal extends BaseSuggestModal<ObjectListItem> {
         const container = el.createDiv({ cls: "value-container" })
         const index = container.createDiv({ cls: "index-container" })
         index.setText(`${item.indexInList}`)
-        const valueContainer = container.createDiv({})
+        const valueContainer = container.createDiv()
         if (item.fields.length) {
-            valueContainer.setText(item.fields.map(eF => {
-                if (Array.isArray(eF.value)) {
-                    return `${eF.value.length} ${eF.field.name}`
-                } else if (typeof eF.value === 'object') {
-                    return `${eF.field.name}: {...}`
-                } else {
-                    return `${eF.field.name}: ${eF.value}`
-                }
-            }).join(" | "))
+            const fM = new FM[this.field.type](this.plugin, this.field) as ObjectListField
+            valueContainer.setText(fM.displayItem(this.eF?.value[item.indexInList], item.indexInList))
         } else {
             valueContainer.setText("<--empty-->")
             valueContainer.addClass("empty")

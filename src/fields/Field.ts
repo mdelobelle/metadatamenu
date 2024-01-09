@@ -51,6 +51,17 @@ class Field {
 
     }
 
+    public getChildren(): Field[] {
+        if (this.fileClassName) {
+            return this.plugin.fieldIndex.fileClassesName
+                .get(this.fileClassName)?.attributes
+                .map(attr => attr.getField())
+                .filter(f => f.path.split("____").last() === this.id) || []
+        } else {
+            return Field.presetFields(this.plugin).filter(f => f.path.split("____").last() === this.id)
+        }
+    }
+
     public getFirstAncestor(): Field | undefined {
         const ancestors = this.getAncestors()
         return ancestors.last()
@@ -287,6 +298,13 @@ class Field {
         } catch (e) {
             return ""
         }
+    }
+
+    static presetFields(plugin: MetadataMenu): Field[] {
+        return plugin.presetFields.map(prop => {
+            const property = new Field(plugin);
+            return Object.assign(property, prop);
+        });
     }
 
     static getValueFromPath(obj: any, path: string): string {

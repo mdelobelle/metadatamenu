@@ -21,6 +21,12 @@ interface BookmarkItem {
     items?: BookmarkItem[];
 }
 
+type FrontmatterValue = string | number | boolean | FrontmatterObject;
+
+interface FrontmatterObject {
+    [key: string]: FrontmatterValue;
+}
+
 interface BookmarkInternalPlugin extends InternalPlugin {
     instance: {
         items: BookmarkItem[];

@@ -10,9 +10,10 @@ import { insertMissingFields } from "src/commands/insertMissingFields";
 import { FileClassViewManager } from "./FileClassViewManager";
 import { Note } from "src/note/note";
 import { ExistingField } from "src/fields/ExistingField";
-import ObjectListField from "src/fields/fieldManagers/ObjectListField";
+import ObjectListField, { ObjectListItem } from "src/fields/fieldManagers/ObjectListField";
 import { postValues } from "src/commands/postValues";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
+import ObjectField from "src/fields/fieldManagers/ObjectField";
 
 export class FieldOptions {
 
@@ -85,11 +86,14 @@ export class FieldsModal extends Modal {
         } else {
             const baseTitle = `Fields of ${this.file.basename} ${indexedPath?.split("____").length > 1 ? " > ... > " : " > "}`
             if (index) {
-                const field = this.note.getExistingFieldForIndexedPath(indexedPath.replace(/\[\w+\]$/, ''))
-                this.titleEl.setText(`${baseTitle} ${field?.name} [${index}]`)
+                //this is an object list item
+                const objectListIndexedPath = Field.upperIndexedPathObjectPath(this.indexedPath || "")
+                const eF = this.note.getExistingFieldForIndexedPath(objectListIndexedPath)!
+                const display = `${eF.name}[${index}]`
+                this.titleEl.setText(`${baseTitle} ${display}`)
             } else {
-                const field = this.note.getExistingFieldForIndexedPath(indexedPath)
-                this.titleEl.setText(`${baseTitle} ${field?.name}`)
+                const eF = this.note.getExistingFieldForIndexedPath(indexedPath)
+                this.titleEl.setText(`${baseTitle} ${eF?.name}`)
             }
         }
         this.existingFields = this.note.existingFields.filter(_f => {
@@ -124,17 +128,32 @@ export class FieldsModal extends Modal {
     }
 
     private buildNavigation(): void {
-        const fileName = this.file.name.replace(/(.*).md$/, "$1")
-        const upperPath = Field.upperIndexedPathObjectPath(this.indexedPath || "")
-        const { id: upperId, index: upperIndex } = Field.getIdAndIndex(upperPath.split("____").last())
-        const upperObject = this.note.existingFields.find(eF => eF.field.id === upperId)?.field
-        const upperObjectName = upperObject ? upperObject.name : fileName
-
         const backBtnWrapper = this.contentEl.createDiv({ cls: "back-button-wrapper" })
         const backBtn = new ButtonComponent(backBtnWrapper)
         backBtn.setIcon("chevron-left")
-        backBtn.setTooltip(`Go to ${upperObjectName} fields`)
-        backBtnWrapper.createSpan({ text: `${upperObjectName}${upperIndex ? " [" + upperIndex + "]" : ""}` })
+
+        const upperPath = Field.upperIndexedPathObjectPath(this.indexedPath || "")
+        const { id: upperId, index: upperIndex } = Field.getIdAndIndex(upperPath.split("____").last())
+        const upperExistingField = this.note.existingFields.find(eF => eF.field.id === upperId)
+        const upperObject = upperExistingField?.field
+
+        if (upperObject) {
+            const numIndex = parseInt(upperIndex || "")
+            //backBtnWrapper.createSpan({ text: fieldManager.getObjectDescription(upperObjectValue) })
+            if (!isNaN(numIndex)) {
+                const display = `${upperObject.name} [${numIndex}]`
+                backBtnWrapper.createSpan({ text: display })
+                backBtn.setTooltip(`Go to ${display}`)
+            } else {
+                backBtnWrapper.createSpan({ text: upperObject.name })
+                backBtn.setTooltip(`Go to ${upperObject.name} fields`)
+            }
+
+        } else {
+            const fileName = this.file.name.replace(/(.*).md$/, "$1")
+            backBtnWrapper.createSpan({ text: fileName })
+            backBtn.setTooltip(`Go to ${fileName} fields`)
+        }
         backBtnWrapper.onclick = async () => { await this.noteFields.moveToObject(upperPath) }
     }
     //
@@ -216,17 +235,13 @@ export class FieldsModal extends Modal {
 
 
     private buildObjectListItemContainer(container: HTMLDivElement, field: Field, item: any, itemIndexedPath: string) {
-        const fieldManager = new FM[field.type](this.plugin, field)
-        const { id, index } = Field.getIdAndIndex(itemIndexedPath.split("____").last())
-        const value = Object.keys(item || {}).map(key => {
-            if (Array.isArray(item[key])) {
-                return `${item[key].length} ${key}`
-            } else if (typeof item[key] === 'object') {
-                return `${key}: {...}`
-            } else {
-                return `${key}: ${item[key]}`
-            }
-        }).join(" | ")
+        const fieldManager = new FM[field.type](this.plugin, field) as ObjectListField
+        const { index } = Field.getIdAndIndex(itemIndexedPath.split("____").last())
+        let value: string = ""
+        if (this.indexedPath && index) {
+            const eF = this.note.getExistingFieldForIndexedPath(this.indexedPath)
+            value = eF?.getItemDisplayForIndex(this.plugin, index) || ""
+        }
         const fieldNameWrapper = container.createDiv({ cls: "field-name-wrapper" })
         const fieldNameContainer = fieldNameWrapper.createDiv({ text: `${field.name} [${index}]`, cls: "field-item field-name" });
         const fieldSettingsWrapper = container.createDiv({ cls: "field-settings-wrapper" });

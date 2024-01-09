@@ -1,8 +1,8 @@
 import MetadataMenu from "main";
-import { FieldIcon, FieldType, FieldManager as F } from "src/types/fieldTypes";
+import { FieldIcon, FieldType, FieldManager as F, objectTypes } from "src/types/fieldTypes";
 import { FieldManager, SettingLocation } from "../FieldManager";
 import Field from "../Field";
-import { TFile, Menu, setIcon } from "obsidian";
+import { TFile, Menu, setIcon, TextAreaComponent } from "obsidian";
 import NoteFieldsComponent, { FieldOptions } from "src/components/NoteFields";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { postValues } from "src/commands/postValues";
@@ -10,6 +10,10 @@ import { Note } from "src/note/note";
 import { ExistingField } from "../ExistingField";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import ObjectModal from "src/modals/fields/ObjectModal";
+import FieldSettingsModal from "src/settings/FieldSettingsModal";
+import { FieldManager as FM } from "src/types/fieldTypes";
+import ObjectField from "./ObjectField";
+import { FrontmatterObject } from "src/typings/types";
 
 
 export interface ObjectListItem {
@@ -72,7 +76,41 @@ export default class ObjectListField extends FieldManager {
     validateOptions(): boolean {
         return true
     }
-    createSettingContainer(container: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void { }
+
+    createSettingContainer(container: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
+        const objectDisplayTemplateTopContainer = container.createDiv({ cls: "vstacked" });
+        objectDisplayTemplateTopContainer.createEl("span", { text: "Object display template", cls: 'label' });
+        objectDisplayTemplateTopContainer.createEl("span", { text: "The number of items is referenced by the keyword 'itemsCount'", cls: 'sub-text' });
+        const objectDisplayTemplateContainer = objectDisplayTemplateTopContainer.createDiv({ cls: "field-container" });
+        const objectTemplate = new TextAreaComponent(objectDisplayTemplateContainer);
+        objectTemplate.inputEl.addClass("full-width");
+        objectTemplate.inputEl.cols = 50;
+        objectTemplate.inputEl.rows = 4;
+        objectTemplate.setValue(this.field.options.displayTemplate || "");
+        objectTemplate.setPlaceholder("example: {{itemsCount}} items");
+
+        objectTemplate.onChange(value => {
+            this.field.options.displayTemplate = value;
+            FieldSettingsModal.removeValidationError(objectTemplate);
+        })
+
+
+        const itemDisplayTemplateTopContainer = container.createDiv({ cls: "vstacked" });
+        itemDisplayTemplateTopContainer.createEl("span", { text: "Item display template", cls: 'label' });
+        itemDisplayTemplateTopContainer.createEl("span", { text: "all child fields are available with their name enclosed in curly braces. Their index is referenced by the keyword 'itemIndex'", cls: 'sub-text' });
+        const itemDisplayTemplateContainer = itemDisplayTemplateTopContainer.createDiv({ cls: "field-container" });
+        const template = new TextAreaComponent(itemDisplayTemplateContainer);
+        template.inputEl.addClass("full-width");
+        template.inputEl.cols = 50;
+        template.inputEl.rows = 4;
+        template.setValue(this.field.options.itemDisplayTemplate || "");
+        template.setPlaceholder("example: {{itemIndex}}: {{subfieldA}} - {{subfieldC}}");
+
+        template.onChange(value => {
+            this.field.options.itemDisplayTemplate = value;
+            FieldSettingsModal.removeValidationError(template);
+        })
+    }
 
     createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: { cls?: string | undefined; attr?: Record<string, string> | undefined; options?: Record<string, string> | undefined; }): void {
         const fieldValue = dv.el('span', "{...}", { ...attrs, cls: "value-container" });
@@ -104,15 +142,65 @@ export default class ObjectListField extends FieldManager {
         fieldModal.open();
     }
 
-    public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {
-        const fields = this.plugin.fieldIndex.filesFields.get(file.path)
-        if (Array.isArray(value)) {
-            const items = fields?.filter(_f => (
-                (this.field.isRoot() && _f.path === this.field.id) ||
-                (!this.field.isRoot() && this.field.path + "____" + this.field.id === _f.path)
-            ) && _f.path !== ""
-            ).map(_f => _f.name) || []
-            container.setText(`${value.length} item${value.length !== 1 ? "(s)" : ""}: [${items.join(" | ")}]`)
+    public getObjectDescription(value: FrontmatterObject = {}): string {
+        let template = this.field.options.displayTemplate as string || undefined
+        const itemsCount = Object.keys(value).length
+        if (!template) return `<${this.field.getChildren().map(f => f.name).join(", ")}>(*${itemsCount})`
+        template = template.replace(`{{itemsCount}}`, `${itemsCount}`)
+        return template
+    }
+
+    public displayItem(value: any, itemIndex: number): string {
+        let template = this.field.options.itemDisplayTemplate as string || undefined
+        const items: { pattern: string, value: string }[] = []
+        const defaultDisplay = (pattern: string) => {
+            items.push({ pattern: pattern, value: `(${pattern}?)` })
         }
+        if (!template || !value) return `<${this.field.getChildren().map(f => f.name).join(", ")}>[${itemIndex}]`
+        else {
+            const children = this.field.getChildren()
+            const childrenNames = children.map(c => c.name)
+            const templatePathRegex = new RegExp(`\\{\\{(?<pattern>[^\\}]+?)\\}\\}`, "gu");
+            const tP = template.matchAll(templatePathRegex)
+            let next = tP.next();
+            while (!next.done) {
+                if (next.value.groups) {
+                    const pattern = next.value.groups.pattern
+                    if (pattern === 'itemIndex') {
+                        items.push({ pattern: "itemIndex", value: `${itemIndex}` })
+                    } else if (childrenNames.includes(pattern)) {
+                        try {
+                            const _value = (new Function("value", `return value['${pattern}']`))(value)
+                            if (["number", "string", "boolean"].includes(typeof _value)) {
+                                items.push({ pattern: pattern, value: _value })
+                            } else if (typeof _value === "object") {
+                                const child = children.find(c => c.name === pattern)!
+                                if (objectTypes.includes(child.type)) {
+                                    const cFM = new FM[child.type](this.plugin, child) as ObjectField | ObjectListField
+                                    items.push({ pattern: pattern, value: cFM.getObjectDescription(_value) })
+                                } else {
+                                    defaultDisplay(pattern)
+                                }
+                            } else {
+                                defaultDisplay(pattern)
+                            }
+                        } catch (e) {
+                            defaultDisplay(pattern)
+                        }
+                    } else {
+                        defaultDisplay(pattern)
+                    }
+                }
+                next = tP.next()
+            }
+        }
+        for (const item of items) {
+            template = template.replace(`{{${item.pattern}}}`, item.value)
+        }
+        return template
+    }
+
+    public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked?: () => void): void {
+        container.setText(this.getObjectDescription(value))
     }
 }

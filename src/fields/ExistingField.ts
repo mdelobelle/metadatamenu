@@ -1,8 +1,10 @@
 import { TFile } from "obsidian"
 import Field from "./Field"
 import MetadataMenu from "main"
-import { ObjectListItem } from "./fieldManagers/ObjectListField"
+import ObjectListField, { ObjectListItem } from "./fieldManagers/ObjectListField"
 import { Note } from "src/note/note"
+import { FieldType } from "src/types/fieldTypes"
+import { FieldManager as FM } from "src/types/fieldTypes";
 
 export class ExistingField {
     public name: string
@@ -37,5 +39,22 @@ export class ExistingField {
             })
         }))
         return items
+    }
+
+    public getItemDisplayForIndex(plugin: MetadataMenu, index: string | number) {
+        if (this.field.type !== FieldType.ObjectList) return ""
+        let numIndex: number
+        if (typeof index === "string") {
+            numIndex = parseInt(index)
+        } else {
+            numIndex = index
+        }
+        if (!isNaN(numIndex) && this.field) {
+            const item = (this.value)[numIndex]
+            const fieldManager = new FM[this.field.type](plugin, this.field) as ObjectListField
+            return fieldManager.displayItem(item, numIndex)
+        } else {
+            return `${this.name}[${index}]`
+        }
     }
 }
