@@ -61,7 +61,7 @@ export class FileClassCodeBlockView {
     public update(maxRows?: number, sliceStart: number = 0): void {
         this.fileClassDataviewTable = new FileClassDataviewTable(
             this.viewConfiguration, this, this.fileClass, maxRows, sliceStart, this.ctx)
-        this.fileClassDataviewTable.buildTable(this.tableContainer);
         this.fileClassDataviewTable.buildPaginationManager(this.paginationContainer);
+        this.fileClassDataviewTable.buildTable(this.tableContainer);
     }
 }

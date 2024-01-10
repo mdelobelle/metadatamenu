@@ -2254,10 +2254,6 @@ span.flatpickr-weekday {
   right: calc(var(--size-2-2) + 2em);
 }
 
-.first-col-header-container {
-  display: flex;
-}
-
 .metadata-menu.fileclass-view .fv-menu, .metadata-menu.fileclass-codeblock-view .fv-menu {
   display: flex;
 }
@@ -2673,6 +2669,19 @@ span.flatpickr-weekday {
 .metadata-menu.fileclass-view .fv-table div[id^=table-container], .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] {
   overflow: scroll;
 }
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] .first-col-header-cell, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] .first-col-header-cell {
+  padding-left: var(--table-cell-padding);
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] .first-col-header-cell .first-col-header-container, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] .first-col-header-cell .first-col-header-container {
+  display: flex;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] .first-col-header-cell .first-col-header-container .fileclass-icon, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] .first-col-header-cell .first-col-header-container .fileclass-icon {
+  margin: 0 0.3em;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] .first-col-header-cell .first-col-header-container .fileclass-icon svg, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] .first-col-header-cell .first-col-header-container .fileclass-icon svg {
+  height: calc(var(--icon-size) * 0.935);
+  width: calc(var(--icon-size) * 0.935);
+}
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] .field-name .field-sub-container, .metadata-menu.fileclass-view .fv-table div[id^=table-container] .value-container .field-sub-container, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] .field-name .field-sub-container, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] .value-container .field-sub-container {
   display: flex;
 }
@@ -2694,8 +2703,25 @@ span.flatpickr-weekday {
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th:first-child, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th:first-child {
   left: 0;
   z-index: 2;
+  display: flex;
+  height: var(--line-height);
 }
-.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th:first-child span.dataview.small-text, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th:first-child span.dataview.small-text {
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th:first-child span:first-child, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th:first-child span:first-child {
+  margin-left: 0.375em;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th:first-child.modifier-selector, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th:first-child.modifier-selector {
+  min-width: 0;
+  margin: 0;
+  padding-right: 0;
+  text-align: center;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th:first-child.modifier-selector input, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th:first-child.modifier-selector input {
+  vertical-align: middle;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th:first-child.table-view-th.first-col-header-cell, .metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th.table-view-th.first-col-header-cell, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th:first-child.table-view-th.first-col-header-cell, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th.table-view-th.first-col-header-cell {
+  padding-left: 0;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th:first-child span.dataview.small-text, .metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th span.dataview.small-text, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th:first-child span.dataview.small-text, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th span.dataview.small-text {
   display: none;
 }
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr > td:first-child, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] tbody > tr > td:first-child {
@@ -2704,6 +2730,20 @@ span.flatpickr-weekday {
   z-index: 1;
   max-width: 100%;
   background-color: inherit;
+  display: flex;
+  height: var(--line-height);
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr > td:first-child.modifier-selector, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] tbody > tr > td:first-child.modifier-selector {
+  min-width: 0;
+  margin: 0;
+  padding-right: 0;
+  text-align: center;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr > td:first-child.modifier-selector input, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] tbody > tr > td:first-child.modifier-selector input {
+  vertical-align: middle;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr > td:nth-child(2), .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] tbody > tr > td:nth-child(2) {
+  padding-left: 0;
 }
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] tbody > tr:nth-child(odd):hover > td:first-child, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] tbody > tr:nth-child(odd):hover > td:first-child {
   background-color: var(--odd-color);

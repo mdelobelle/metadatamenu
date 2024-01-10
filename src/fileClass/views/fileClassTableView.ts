@@ -70,9 +70,9 @@ export class FileClassTableView {
         this.manager._children.forEach(child => this.manager.removeChild(child))
         this.fileClassDataviewTable = new FileClassDataviewTable(
             this.fieldSet.getParams(), this, this.fileClass, maxRows, sliceStart)
-        this.buildTable();
         this.buildPaginationManager(this.paginationContainer);
         this.buildViewSelector()
+        this.buildTable();
     }
 
     /*
