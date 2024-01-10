@@ -20,6 +20,7 @@ import { IndexDatabase } from 'src/db/DatabaseManager';
 import { FileClassCodeBlockManager } from 'src/components/FileClassCodeBlockManager';
 import { AddFileClassToFileModal } from 'src/fileClass/fileClass';
 import { FileClassCodeBlockListManager } from 'src/components/FileClassCodeBlockListManager';
+import { IndexedFieldsPayload } from 'src/commands/postValues';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -101,18 +102,18 @@ export default class MetadataMenu extends Plugin {
 		)
 
 		this.registerEvent(
-			this.app.workspace.on('metadata-menu:indexed', () => {
+			this.app.workspace.on("file-open", (file) => {
+				updatePropertiesSection(this)
+			})
+		)
+
+		this.registerEvent(
+			this.app.metadataCache.on('metadata-menu:indexed', () => {
 				this.indexStatus.setState("indexed")
 				const currentView = this.app.workspace.getActiveViewOfType(MarkdownView)
 				if (currentView) this.indexStatus.checkForUpdate(currentView)
 				updatePropertiesSection(this)
 				FileClassViewManager.reloadViews(this)
-			})
-		)
-
-		this.registerEvent(
-			this.app.workspace.on("file-open", (file) => {
-				updatePropertiesSection(this)
 			})
 		)
 

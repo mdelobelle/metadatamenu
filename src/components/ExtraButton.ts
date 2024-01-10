@@ -34,7 +34,7 @@ export default class ExtraButton extends Component {
 
         // Initialization
         this.registerEvent(this.plugin.app.metadataCache.on('changed', debounce(this.updateLinks, 100, true)));
-        this.registerEvent(this.plugin.app.workspace.on('metadata-menu:indexed', debounce(this.updateLinks, 100, true)));
+        this.registerEvent(this.plugin.app.metadataCache.on('metadata-menu:indexed', debounce(this.updateLinks, 100, true)));
         this.registerEvent(this.plugin.app.workspace.on("layout-change", debounce(this.updateLinks, 10, true)));
         this.registerEvent(this.plugin.app.workspace.on("window-open", (window, win) => this.initModalObservers(window.getContainer()!.doc)));
         this.registerEvent(this.plugin.app.workspace.on("layout-change", () => this.initViewObservers()));

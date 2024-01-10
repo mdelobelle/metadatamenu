@@ -4,6 +4,7 @@ import { EventRef } from "obsidian";
 //@ts-ignore
 import { DataviewApi } from "obsidian-dataview";
 import { IMetadataMenuApi } from "src/MetadataMenuApi";
+import { IndexedFieldsPayload } from "src/commands/postValues";
 
 interface InternalPlugin {
     enabled: boolean;
@@ -139,10 +140,29 @@ declare module "obsidian" {
             callback: () => any,
             ctx?: any
         ): EventRef;
+        on(
+            name: "metadata-menu:indexed",
+            callback: () => void,
+            ctx?: any
+        ): EventRef;
+        on(
+            name: "metadata-menu:fileclass-indexed",
+            callback: () => void,
+            ctx?: any
+        ): EventRef;
+        on(
+            name: "metadata-menu:fileclass-indexed",
+            callback: () => void,
+            ctx?: any
+        ): EventRef;
+        on(
+            name: "metadata-menu:fields-changed",
+            callback: (data: { file: TFile, payload: IndexedFieldsPayload }) => void,
+            ctx?: any
+        ): EventRef;
+
     }
     interface Workspace {
-        on(name: "metadata-menu:indexed", callback: () => void, ctx?: any): EventRef;
-        on(name: "metadata-menu:fileclass-indexed", callback: () => void, ctx?: any): EventRef;
         on(name: "layout-ready", callback: () => void, ctx?: any): EventRef;
         on(name: "layout-change", callback: Debouncer<[_file: TFile], void>, ctx?: any): EventRef;
     }

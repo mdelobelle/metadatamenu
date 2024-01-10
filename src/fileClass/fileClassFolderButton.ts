@@ -24,7 +24,7 @@ export class FileClassFolderButton extends Component {
             })
         )
         this.registerEvent(
-            this.plugin.app.workspace.on("metadata-menu:indexed", () => {
+            this.plugin.app.metadataCache.on("metadata-menu:indexed", () => {
                 this.addButton()
             })
         )

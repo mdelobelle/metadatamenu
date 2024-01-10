@@ -3,7 +3,7 @@ import { TFile } from "obsidian";
 import Field from "src/fields/Field";
 import { FieldManager } from "src/fields/FieldManager";
 import * as Lookup from "src/types/lookupTypes";
-import { IndexedFieldsPayload, postValues } from "./postValues";
+import { IndexedFieldsPayload } from "./postValues";
 
 export function arraysAsStringAreEqual(a: string, b: string) {
     const aAsArray = typeof a === "string" ? a.split(",").map(v => v.trim()) : (Array.isArray(a) ? a : [])

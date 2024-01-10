@@ -454,7 +454,7 @@ export default class NoteFieldsComponent extends Component {
 
     onload(): void {
         this.registerEvent(
-            this.plugin.app.workspace.on('metadata-menu:indexed', async () => {
+            this.plugin.app.metadataCache.on('metadata-menu:indexed', async () => {
                 await this.fieldsModal.buildNote();
                 this.fieldsModal.build();
             })

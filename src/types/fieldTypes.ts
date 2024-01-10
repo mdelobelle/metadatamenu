@@ -1,4 +1,4 @@
-import Managers from "src/fields/fieldManagers/Managers";
+import Managers from "src/fields/Managers";
 
 export enum FieldType {
     'Input' = "Input",

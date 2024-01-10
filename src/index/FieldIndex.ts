@@ -35,7 +35,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                     if (this.lastBookmarkChange === undefined || updateTime > this.lastBookmarkChange) {
                         await this.indexFields()
                         this.lastBookmarkChange = updateTime
-                        this.plugin.app.workspace.trigger("metadata-menu:indexed"); //to rebuild the button
+                        this.plugin.app.metadataCache.trigger("metadata-menu:indexed"); //to rebuild the button
                     }
                 }
             })
@@ -72,11 +72,11 @@ export default class FieldIndex extends FieldIndexBuilder {
             this.plugin.app.metadataCache.on('resolved', async () => {
                 if (this.plugin.app.metadataCache.inProgressTaskCount === 0 && this.plugin.launched) {
                     if (this.changedFiles.every(file => this.classFilesPath && file.path.startsWith(this.classFilesPath))) {
-                        this.plugin.app.workspace.trigger("metadata-menu:fileclass-indexed");
+                        this.plugin.app.metadataCache.trigger("metadata-menu:fileclass-indexed");
                         await updateCanvasAfterFileClass(this.plugin, this.changedFiles)
                     }
                     await this.indexFields()
-                    this.plugin.app.workspace.trigger("metadata-menu:indexed");
+                    this.plugin.app.metadataCache.trigger("metadata-menu:indexed");
                     this.changedFiles = []
                 }
             })
@@ -140,7 +140,7 @@ export default class FieldIndex extends FieldIndexBuilder {
             this.resolveAndUpdateDVQueriesBasedFields(forceUpdateAll);  //asynchronous
         }
         if (this.remainingLegacyFileClasses) await this.migrateFileClasses();
-        this.plugin.app.workspace.trigger("metadata-menu:indexed");
+        this.plugin.app.metadataCache.trigger("metadata-menu:indexed");
     }
 
     public async indexFields(): Promise<void> {
@@ -209,7 +209,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         await updateLookups(this.plugin, forceUpdateOne, force_update_all)
         await updateFormulas(this.plugin, forceUpdateOne, force_update_all);
         await this.applyUpdates()
-        this.plugin.app.workspace.trigger("metadata-menu:indexed");
+        this.plugin.app.metadataCache.trigger("metadata-menu:indexed");
         DEBUG && console.log("Resolved dvQ in ", (Date.now() - start) / 1000, "s")
     }
 
