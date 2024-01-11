@@ -2705,6 +2705,7 @@ span.flatpickr-weekday {
   z-index: 2;
   display: flex;
   height: var(--line-height);
+  padding: var(--table-cell-padding);
 }
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th:first-child span:first-child, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th:first-child span:first-child {
   margin-left: 0.375em;
@@ -2755,7 +2756,7 @@ span.flatpickr-weekday {
   .metadata-menu.fileclass-view .fv-table div[id^=table-container].scrolled tbody > tr > td:first-child, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container].scrolled tbody > tr > td:first-child {
     overflow: hidden;
     text-overflow: ellipsis;
-    background-color: white;
+    background-color: inherit;
   }
   .metadata-menu.fileclass-view .fv-table div[id^=table-container].scrolled tbody > tr > td:first-child a.internal-link, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container].scrolled tbody > tr > td:first-child a.internal-link {
     white-space: nowrap;

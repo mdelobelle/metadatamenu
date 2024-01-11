@@ -7,6 +7,7 @@ import { FileClassTableView } from "../fileClassTableView";
 import { FileClassCodeBlockView } from "../fileClassCodeBlockView";
 import { MarkdownPostProcessorContext, setIcon } from "obsidian";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
+import Field from "src/fields/Field";
 
 export class FileClassDataviewTable {
     private firstCollWidth: number;
@@ -16,6 +17,7 @@ export class FileClassDataviewTable {
     public limit: number
     public plugin: MetadataMenu
     public count: number;
+    public columnsFileClassField: Record<string, { fileClassName: string, fieldName: string }> = {}
 
     constructor(
         public viewConfiguration: ViewConfiguration,
@@ -124,10 +126,73 @@ export class FileClassDataviewTable {
     }
 
     public buildBulkModifiers(observed: HTMLDivElement) {
+
+        const processFilesFieldChange = (dvTable: FileClassDataviewTable, selectedFiles: string[], allFilesSelected: boolean, columndId: string) => {
+            const { fileClassName, fieldName } = dvTable.columnsFileClassField[columndId]
+            const fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
+            const field = this.plugin.fieldIndex.fileClassesFields.get(fileClassName)?.find(f => f.isRoot() && f.name === fieldName)
+            console.log(fileClass, field, selectedFiles, allFilesSelected)
+        }
+
+        const buildCellCheckBox = (
+            cell: HTMLTableCellElement,
+            filesCheckboxes: HTMLInputElement[],
+            headerCheckbox: HTMLInputElement | null,
+            allFilesSelected: boolean,
+            selectedFiles: string[]
+        ) => {
+            const checkBoxContainer = cell.createDiv({ cls: "modifier-selector" })
+            const checkBox = checkBoxContainer.createEl("input", { type: "checkbox" })
+            if (cell.tagName === "TH") headerCheckbox = checkBox
+            else filesCheckboxes.push(checkBox)
+            checkBox.onclick = (e) => {
+                e.stopPropagation();
+                checkBox.toggleAttribute("checked")
+                if (cell!.tagName === "TH") {
+                    allFilesSelected = checkBox.checkVisibility()
+                    for (const cB of filesCheckboxes) cB.checked = false
+                    selectedFiles.splice(0)
+                } else {
+                    if (headerCheckbox) {
+                        headerCheckbox.checked = false
+                        allFilesSelected = false
+                    }
+                    const name = cell!.querySelector("div.field-name a.internal-link")?.getAttr("data-href")
+                    if (checkBox.checked && name) selectedFiles.push(name)
+                    else if (name) selectedFiles.remove(name)
+                }
+            }
+            checkBoxContainer.hide()
+            cell.prepend(checkBoxContainer)
+        }
+
+        const buildHeaderCols = (
+            dvTable: FileClassDataviewTable,
+            table: HTMLTableElement,
+            selectedFiles: string[],
+            allFilesSelected: boolean
+        ) => {
+            const header = table.rows[0]
+            for (const [index, column] of Object.entries(header.cells)) {
+                column.onclick = (e) => {
+                    if (index === "0") {
+                        const cells = table.querySelectorAll('.modifier-selector') as NodeListOf<HTMLTableCellElement>
+                        for (const cell of cells) {
+                            if (!cell.checkVisibility()) cell.show()
+                            else cell.hide()
+                        }
+                    } else {
+                        const columnId = (column.querySelector('input.column-id') as HTMLInputElement).value
+                        processFilesFieldChange(dvTable, selectedFiles, allFilesSelected, columnId)
+                    }
+                }
+            }
+        }
+
         var callback = function (mutationsList: MutationRecord[], dvTable: FileClassDataviewTable) {
             const selectedFiles: string[] = []
             let allFilesSelected: boolean = false
-            let headerCheckbox: HTMLInputElement | null
+            let headerCheckbox: HTMLInputElement | null = null
             const filesCheckboxes: HTMLInputElement[] = []
             for (var mutation of mutationsList) {
                 if (mutation.type == "childList") {
@@ -140,48 +205,9 @@ export class FileClassDataviewTable {
                             const table = node as HTMLTableElement
                             for (const row of table.rows) {
                                 const cell = row.cells.item(0)
-                                if (cell) {
-                                    const checkBoxContainer = cell.createDiv({ cls: "modifier-selector" })
-                                    const checkBox = checkBoxContainer.createEl("input", { type: "checkbox" })
-                                    if (cell.tagName === "TH") headerCheckbox = checkBox
-                                    else filesCheckboxes.push(checkBox)
-                                    checkBox.onclick = (e) => {
-                                        e.stopPropagation();
-                                        checkBox.toggleAttribute("checked")
-                                        if (cell!.tagName === "TH") {
-                                            allFilesSelected = checkBox.checkVisibility()
-                                            for (const cB of filesCheckboxes) cB.checked = false
-                                            selectedFiles.splice(0)
-                                        } else {
-                                            if (headerCheckbox) {
-                                                headerCheckbox.checked = false
-                                                allFilesSelected = false
-                                            }
-                                            const name = cell!.querySelector("div.field-name a.internal-link")?.getAttr("data-href")
-                                            if (checkBox.checked && name) selectedFiles.push(name)
-                                            else if (name) selectedFiles.remove(name)
-                                        }
-                                    }
-                                    checkBoxContainer.hide()
-                                    cell.prepend(checkBoxContainer)
-                                }
+                                if (cell) buildCellCheckBox(cell, filesCheckboxes, headerCheckbox, allFilesSelected, selectedFiles)
                             }
-                            if (table.tHead) {
-                                const header = table.rows[0]
-                                for (const [index, column] of Object.entries(header.cells)) {
-                                    column.onclick = (e) => {
-                                        if (index === "0") {
-                                            const cells = table.querySelectorAll('.modifier-selector') as NodeListOf<HTMLTableCellElement>
-                                            for (const cell of cells) {
-                                                if (!cell.checkVisibility()) cell.show()
-                                                else cell.hide()
-                                            }
-                                        } else {
-                                            console.log(selectedFiles, allFilesSelected)
-                                        }
-                                    }
-                                }
-                            }
+                            if (table.tHead) buildHeaderCols(dvTable, table, selectedFiles, allFilesSelected)
                         }
                     }
                 }
@@ -246,7 +272,6 @@ export class FileClassDataviewTable {
                 fileClassViewManager.build()
             }
             const checkBoxContainer = firstColHeaderContainer.querySelector(".modifier-selector")
-            console.log(checkBoxContainer)
             if (checkBoxContainer) firstColHeaderContainer?.insertAfter(button, checkBoxContainer)
             else firstColHeaderContainer.prepend(button)
         }
@@ -368,9 +393,17 @@ export class FileClassDataviewTable {
 
     private buildDvJSRendering(): string {
         const buildColumnName = (column: Column) => {
+            const hasChildren = this.viewConfiguration.children.length
             if (column.name === "file") return `${this.fileClass.name}${this.count ? " (" + this.count + ")" : ""}`
-            if (this.viewConfiguration.children.length) return column.id.replace("____", ": ")
-            else return column.name
+            let columnId: string | null
+            if (hasChildren) {
+                columnId = column.id
+                column.name
+            }
+            else columnId = `${this.fileClass.name}____${column.id}`
+            const [fileClassName, fieldName] = columnId.split("____")
+            this.columnsFileClassField[columnId] = { fileClassName, fieldName }
+            return `${hasChildren ? column.id.replace("____", ": ") : column.name} <input class='column-id' type='hidden' value='${columnId}'/>`
         }
         const columns = this.viewConfiguration.columns
             .filter(f => !this.viewConfiguration.columns.find(_f => _f.id === f.id)?.hidden)

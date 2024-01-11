@@ -506,7 +506,7 @@
                 z-index: 2;
                 display: flex;
                 height: var(--line-height);
-                
+                padding: var(--table-cell-padding);
                 span:first-child{
                     margin-left: 0.375em;
                 }
@@ -557,7 +557,7 @@
                     @media screen and (max-width: 390px) {
                         overflow: hidden;
                         text-overflow: ellipsis;
-                        background-color: white;
+                        background-color: inherit;
                         a.internal-link{
                             white-space: nowrap;
                             text-overflow: ellipsis;
