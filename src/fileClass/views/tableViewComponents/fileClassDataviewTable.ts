@@ -2,12 +2,12 @@ import MetadataMenu from "main";
 import { Column, ViewConfiguration } from "./tableViewFieldSet"
 import { FileClass } from "../../fileClass";
 import { fieldStates } from "./OptionsMultiSelectModal";
-import { FieldType } from "src/types/fieldTypes";
+import { FieldManager as FM, FieldType } from "src/types/fieldTypes";
 import { FileClassTableView } from "../fileClassTableView";
 import { FileClassCodeBlockView } from "../fileClassCodeBlockView";
-import { MarkdownPostProcessorContext, setIcon } from "obsidian";
+import { MarkdownPostProcessorContext, TFile, setIcon } from "obsidian";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
-import Field from "src/fields/Field";
+import { FieldManager } from "src/fields/FieldManager";
 
 export class FileClassDataviewTable {
     private firstCollWidth: number;
@@ -31,20 +31,8 @@ export class FileClassDataviewTable {
         this.limit = maxRow || this.fileClass.options.limit || this.plugin.settings.tableViewMaxRecords
     }
 
-    public buildPaginationManager(container: HTMLDivElement): void {
-        container.replaceChildren();
-        this.ranges = []
-        const toggleRanges = (rangesCount: number) => {
-            for (const [index, rangeComponent] of this.ranges.entries()) {
-                if (rangesCount >= 5 && index > 2 && index < rangesCount - 2) {
-                    if (this.limitWrapped) rangeComponent.show()
-                    else rangeComponent.hide()
-                }
-            }
-            this.limitWrapped = !this.limitWrapped
-        }
+    public getFilteredFiles(): any {
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-
         if (dvApi) {
             try {
                 const current = this.ctx ? dvApi.page(this.ctx.sourcePath) : {}
@@ -63,45 +51,66 @@ export class FileClassDataviewTable {
                     `return ${this.buildDvJSQuery()}`)
                 )(dvApi, current, fileClassFiles, hasFileClass)
                 const values = query.values;
-                this.count = values.length;
-                const rangesCount = Math.floor(this.count / this.limit) + 1
-                if (rangesCount < 2) return
-                for (let i = 0; i < rangesCount; i++) {
-                    if (i * this.limit < this.count) {
-                        const rangeComponent = container.createDiv({
-                            cls: `range ${i === this.sliceStart / this.limit ? "active" : ""}`,
-                            text: `${i * this.limit + 1} - ${Math.min((i + 1) * this.limit, this.count)}`
-                        })
-                        rangeComponent.onclick = () => {
-                            this.sliceStart = i * this.limit;
-                            this.view.update(this.limit, this.sliceStart);
-                        }
-                        this.ranges.push(rangeComponent)
-                    }
-                    if (rangesCount >= 5 && i === 2) {
-                        const rangeExpander = container.createDiv({
-                            cls: `range`,
-                            text: `< ... >`
-                        })
-                        rangeExpander.onclick = () => {
-                            if (rangeExpander.hasClass("active")) {
-                                rangeExpander.removeClass("active")
-                                rangeExpander.setText("< ... >")
-                            } else {
-                                rangeExpander.addClass("active")
-                                rangeExpander.setText("> ... <")
-                            }
-                            toggleRanges(rangesCount)
-                        }
-                    }
-                }
-                const activeRange = this.ranges.find(r => r.hasClass("active"))
-                if (activeRange && this.ranges.indexOf(activeRange) < 2) toggleRanges(rangesCount)
+                return values
             } catch (e) {
                 console.log(e)
                 console.error("unable to build the list of files")
             }
+        } else {
+            return []
         }
+    }
+
+    public buildPaginationManager(container: HTMLDivElement): void {
+        container.replaceChildren();
+        this.ranges = []
+        const toggleRanges = (rangesCount: number) => {
+            for (const [index, rangeComponent] of this.ranges.entries()) {
+                if (rangesCount >= 5 && index > 2 && index < rangesCount - 2) {
+                    if (this.limitWrapped) rangeComponent.show()
+                    else rangeComponent.hide()
+                }
+            }
+            this.limitWrapped = !this.limitWrapped
+        }
+
+
+        const values: any[] = this.getFilteredFiles();
+        this.count = values.length;
+        const rangesCount = Math.floor(this.count / this.limit) + 1
+        if (rangesCount < 2) return
+        for (let i = 0; i < rangesCount; i++) {
+            if (i * this.limit < this.count) {
+                const rangeComponent = container.createDiv({
+                    cls: `range ${i === this.sliceStart / this.limit ? "active" : ""}`,
+                    text: `${i * this.limit + 1} - ${Math.min((i + 1) * this.limit, this.count)}`
+                })
+                rangeComponent.onclick = () => {
+                    this.sliceStart = i * this.limit;
+                    this.view.update(this.limit, this.sliceStart);
+                }
+                this.ranges.push(rangeComponent)
+            }
+            if (rangesCount >= 5 && i === 2) {
+                const rangeExpander = container.createDiv({
+                    cls: `range`,
+                    text: `< ... >`
+                })
+                rangeExpander.onclick = () => {
+                    if (rangeExpander.hasClass("active")) {
+                        rangeExpander.removeClass("active")
+                        rangeExpander.setText("< ... >")
+                    } else {
+                        rangeExpander.addClass("active")
+                        rangeExpander.setText("> ... <")
+                    }
+                    toggleRanges(rangesCount)
+                }
+            }
+        }
+        const activeRange = this.ranges.find(r => r.hasClass("active"))
+        if (activeRange && this.ranges.indexOf(activeRange) < 2) toggleRanges(rangesCount)
+
     }
 
     public addLinkClickEvent(observed: HTMLDivElement) {
@@ -131,7 +140,11 @@ export class FileClassDataviewTable {
             const { fileClassName, fieldName } = dvTable.columnsFileClassField[columndId]
             const fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
             const field = this.plugin.fieldIndex.fileClassesFields.get(fileClassName)?.find(f => f.isRoot() && f.name === fieldName)
-            console.log(fileClass, field, selectedFiles, allFilesSelected)
+            const file = this.plugin.app.vault.getAbstractFileByPath(selectedFiles[0])
+            if (field && file instanceof TFile) {
+                const fM = new FM[field?.type](this.plugin, field) as FieldManager
+                fM.createAndOpenFieldModal(file, field.name)
+            }
         }
 
         const buildCellCheckBox = (
@@ -182,8 +195,8 @@ export class FileClassDataviewTable {
                             else cell.hide()
                         }
                     } else {
-                        const columnId = (column.querySelector('input.column-id') as HTMLInputElement).value
-                        processFilesFieldChange(dvTable, selectedFiles, allFilesSelected, columnId)
+                        const columnId = (column.querySelector('span.column-id') as HTMLInputElement).id
+                        if (selectedFiles.length || allFilesSelected) processFilesFieldChange(dvTable, selectedFiles, allFilesSelected, columnId)
                     }
                 }
             }
@@ -395,15 +408,9 @@ export class FileClassDataviewTable {
         const buildColumnName = (column: Column) => {
             const hasChildren = this.viewConfiguration.children.length
             if (column.name === "file") return `${this.fileClass.name}${this.count ? " (" + this.count + ")" : ""}`
-            let columnId: string | null
-            if (hasChildren) {
-                columnId = column.id
-                column.name
-            }
-            else columnId = `${this.fileClass.name}____${column.id}`
-            const [fileClassName, fieldName] = columnId.split("____")
-            this.columnsFileClassField[columnId] = { fileClassName, fieldName }
-            return `${hasChildren ? column.id.replace("____", ": ") : column.name} <input class='column-id' type='hidden' value='${columnId}'/>`
+            const [fileClassName, fieldName] = column.id.split("____")
+            this.columnsFileClassField[column.id] = { fileClassName, fieldName }
+            return `<span class='column-id' id='${column.id}'/>${hasChildren ? column.id.replace("____", ": ") : column.name} </span>`
         }
         const columns = this.viewConfiguration.columns
             .filter(f => !this.viewConfiguration.columns.find(_f => _f.id === f.id)?.hidden)

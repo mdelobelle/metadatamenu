@@ -56,7 +56,7 @@ export default class OptionsList {
 		}
 	}
 
-	public createAndOpenFieldModal(node: LineNode): void {
+	public createAndOpenNodeFieldModal(node: LineNode): void {
 		const { field, value } = node
 		const rootNode = node?.line?.getParentLineWithField()?.nodes[0]
 		const indexedPath = !field ? rootNode?.indexedPath || node.indexedPath : node.indexedPath
@@ -74,7 +74,6 @@ export default class OptionsList {
 					break;
 				default:
 					const eF = node.line.note.getExistingFieldForIndexedPath(indexedPath)
-					fieldManager.createAndOpenFieldModal(this.file, managedField.name, eF, indexedPath, undefined, undefined, undefined, undefined)
 					break;
 			}
 
@@ -202,7 +201,7 @@ export default class OptionsList {
 					const optionsList = new OptionsList(this.plugin, view.file, "ManageAtCursorCommand")
 					const note = await Note.buildNote(this.plugin, view!.file!)
 					const node = note.getNodeAtPosition(view.editor.getCursor())
-					if (node) optionsList.createAndOpenFieldModal(node)
+					if (node) optionsList.createAndOpenNodeFieldModal(node)
 					else new Notice("No field with definition at this position", 2000)
 				}
 				this.location.addItem((item) => {

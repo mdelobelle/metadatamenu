@@ -128,7 +128,7 @@ function addManageFieldAtCursorCommand(plugin: MetadataMenu) {
                     switch (view.getMode()) {
                         case "source": {
                             const node = note.getNodeAtPosition(editor.getCursor())
-                            if (node) optionsList.createAndOpenFieldModal(node)
+                            if (node) optionsList.createAndOpenNodeFieldModal(node)
                             else new Notice("No field with definition at this position", 2000)
                         }
                             break;
@@ -139,11 +139,11 @@ function addManageFieldAtCursorCommand(plugin: MetadataMenu) {
                                 const field = key && plugin.fieldIndex.filesFields.get(view.file!.path)?.find(_f => _f.isRoot() && _f.name === key)
                                 if (field) {
                                     const node = note.getNodeForIndexedPath(field.id)
-                                    if (node) optionsList.createAndOpenFieldModal(node)
+                                    if (node) optionsList.createAndOpenNodeFieldModal(node)
                                     else new Notice("No field with definition at this position", 2000)
                                 } else if (key === plugin.settings.fileClassAlias) {
                                     const node = note.getNodeForIndexedPath(`fileclass-field-${plugin.settings.fileClassAlias}`)
-                                    if (node) optionsList.createAndOpenFieldModal(node)
+                                    if (node) optionsList.createAndOpenNodeFieldModal(node)
                                     else new Notice("No field with definition at this position", 2000)
                                 }
                             }
