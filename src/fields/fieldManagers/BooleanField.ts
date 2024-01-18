@@ -5,7 +5,7 @@ import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { FieldOptions } from "src/components/NoteFields"
 import BooleanModal from "src/modals/fields/BooleanModal";
 import { FieldType, FieldIcon } from "src/types/fieldTypes";
-import Field from "../Field";
+import Field from "../_Field";
 import { FieldManager } from "../FieldManager";
 import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";

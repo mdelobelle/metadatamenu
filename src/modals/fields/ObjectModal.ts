@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { TFile, SuggestModal, ButtonComponent } from "obsidian";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
 import CycleField from "src/fields/fieldManagers/CycleField";
 import { ExistingField } from "src/fields/ExistingField";

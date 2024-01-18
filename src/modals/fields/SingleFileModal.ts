@@ -1,5 +1,5 @@
 import { TFile, FuzzySuggestModal, FuzzyMatch, setIcon } from "obsidian";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import { FieldManager } from "src/types/fieldTypes";
 import FileField from "src/fields/fieldManagers/FileField";
 import MetadataMenu from "main";

@@ -8,6 +8,7 @@ import { FileClassCodeBlockView } from "../fileClassCodeBlockView";
 import { MarkdownPostProcessorContext, TFile, setIcon } from "obsidian";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
 import { FieldManager } from "src/fields/FieldManager";
+import InputField from "src/fields/fieldManagers/InputField";
 
 export class FileClassDataviewTable {
     private firstCollWidth: number;
@@ -140,10 +141,10 @@ export class FileClassDataviewTable {
             const { fileClassName, fieldName } = dvTable.columnsFileClassField[columndId]
             const fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
             const field = this.plugin.fieldIndex.fileClassesFields.get(fileClassName)?.find(f => f.isRoot() && f.name === fieldName)
-            const file = this.plugin.app.vault.getAbstractFileByPath(selectedFiles[0])
-            if (field && file instanceof TFile) {
-                const fM = new FM[field?.type](this.plugin, field) as FieldManager
-                fM.createAndOpenFieldModal(file, field.name)
+            const files = selectedFiles.map(sF => this.plugin.app.vault.getAbstractFileByPath(sF)).filter(f => f instanceof TFile) as TFile[]
+            if (field?.type === FieldType.Input) {
+                const fM = new FM[field?.type](this.plugin, field) as InputField
+                fM.createAndOpenMultiFilesFieldModal(files, field.name)
             }
         }
 
@@ -187,6 +188,14 @@ export class FileClassDataviewTable {
         ) => {
             const header = table.rows[0]
             for (const [index, column] of Object.entries(header.cells)) {
+
+                if (index === "0") {
+                    column.createDiv({ cls: "spacer" })
+                    const toggleButtonContainer = column.createDiv({ cls: "checkbox-toggler" })
+                    setIcon(toggleButtonContainer, "list-todo")
+
+                }
+
                 column.onclick = (e) => {
                     if (index === "0") {
                         const cells = table.querySelectorAll('.modifier-selector') as NodeListOf<HTMLTableCellElement>
@@ -410,7 +419,7 @@ export class FileClassDataviewTable {
             if (column.name === "file") return `${this.fileClass.name}${this.count ? " (" + this.count + ")" : ""}`
             const [fileClassName, fieldName] = column.id.split("____")
             this.columnsFileClassField[column.id] = { fileClassName, fieldName }
-            return `<span class='column-id' id='${column.id}'/>${hasChildren ? column.id.replace("____", ": ") : column.name} </span>`
+            return `<span class='column-id' id='${column.id}'/>${hasChildren ? column.id.replace("____", ": ") : column.name}</span>`
         }
         const columns = this.viewConfiguration.columns
             .filter(f => !this.viewConfiguration.columns.find(_f => _f.id === f.id)?.hidden)

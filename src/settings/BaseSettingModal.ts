@@ -1,11 +1,12 @@
 import MetadataMenu from "main";
 import { ButtonComponent, DropdownComponent, Modal, Notice, TextComponent, TextAreaComponent, ToggleComponent, setIcon, SuggestModal } from "obsidian";
-import Field, { FieldCommand } from "src/fields/Field";
+import Field, { FieldCommand } from "src/fields/_Field";
 import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
 import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, multiTypes, rootOnlyTypes, frontmatterOnlyTypes, FieldIcon, FieldTypeTagClass } from "src/types/fieldTypes";
 import { FieldHTMLTagMap, FieldStyle, FieldStyleKey } from "src/types/dataviewTypes";
 import { cleanActions } from "src/utils/modals";
 import { addInsertFieldCommand } from "src/commands/paletteCommands";
+import { IField } from "src/fields/Field";
 
 class TypeSelector extends SuggestModal<keyof typeof FieldType> {
     constructor(
@@ -43,7 +44,7 @@ class TypeSelector extends SuggestModal<keyof typeof FieldType> {
     }
 }
 
-class ParentSelector extends SuggestModal<Field> {
+export class ParentSelector extends SuggestModal<Field> {
     constructor(
         private fieldSetting: BaseSettingModal,
         private compatibleParents: Field[],
@@ -84,7 +85,7 @@ class ParentSelector extends SuggestModal<Field> {
         return display
     }
 
-    static getParentPath(item: Field): string {
+    static getParentPath(item: Field | IField): string {
         const path = item.path ? item.path + "____" + item.id : item.id
         return path
     }

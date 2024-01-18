@@ -1,5 +1,5 @@
 import { TextComponent, TFile, ButtonComponent } from "obsidian";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import { FieldManager as FM } from "src/fields/FieldManager";
 import { moment } from "obsidian";
 import MetadataMenu from "main";

@@ -452,8 +452,12 @@
 
             .first-col-header-cell{
                 padding-left: var(--table-cell-padding);
+                span:first-child{
+                    margin-left: 0;
+                }
                 .first-col-header-container{
                     display: flex;
+                    width: 100%;
                     .fileclass-icon{
                         margin: 0 0.3em;
                         svg{
@@ -501,14 +505,30 @@
                     vertical-align: middle;
                 }
             }
-            thead th:first-child {
-                left: 0;
+
+            thead th.table-view-th:first-child {
+                
                 z-index: 2;
                 display: flex;
                 height: var(--line-height);
-                padding: var(--table-cell-padding);
-                span:first-child{
-                    margin-left: 0.375em;
+                width: 100%;
+                align-items: center;
+
+                .checkbox-toggler{
+                    display: flex;
+                    align-items: center;
+                }
+                &.first-col-header-cell{
+                    left: 0;
+                    padding: var(--table-cell-padding);
+                }
+
+                .spacer{
+                    width: 100%;
+                }
+                
+                span:nth-child(2){
+                    margin-left: 0.5em;
                 }
 
                 &.modifier-selector{

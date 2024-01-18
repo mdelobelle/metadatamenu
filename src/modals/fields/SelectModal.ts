@@ -1,5 +1,5 @@
 import { TFile, ButtonComponent } from "obsidian";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import MetadataMenu from "main";
 import { ExistingField } from "src/fields/ExistingField";
 import ObjectModal from "./ObjectModal";

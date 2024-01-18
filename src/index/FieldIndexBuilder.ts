@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { Component, TFile } from "obsidian";
 import { IndexedFieldsPayload } from "src/commands/postValues";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import { FileClass } from "src/fileClass/fileClass";
 import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
 import { Status as LookupStatus, Type as LookupType } from "src/types/lookupTypes";

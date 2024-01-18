@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { MarkdownView, Notice, TFile } from "obsidian";
 import NoteFieldsComponent from "src/components/NoteFields";
-import Field, { FieldCommand } from "src/fields/Field";
+import Field, { FieldCommand } from "src/fields/_Field";
 import { AddFileClassToFileModal, FileClass } from "src/fileClass/fileClass";
 import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
 import chooseSectionModal from "src/modals/chooseSectionModal";
@@ -15,6 +15,7 @@ import { FieldType } from "src/types/fieldTypes";
 import { updateLookups } from "./updateLookups";
 import { updateFormulas } from "./updateFormulas";
 import { Note } from "src/note/note";
+import { IField } from "src/fields/ValueModifier";
 
 function addFileClassAttributeOptions(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
@@ -223,6 +224,43 @@ function addOpenFieldsModalCommand(plugin: MetadataMenu) {
 }
 
 export function addInsertFieldCommand(plugin: MetadataMenu, command: FieldCommand, field: Field, fileClassName?: string) {
+    plugin.addCommand({
+        id: command.id,
+        name: command.label,
+        icon: command.icon,
+        checkCallback: (checking: boolean): boolean | void => {
+            const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
+            const fR = command.id.match(/insert__(?<fieldId>.*)/)
+            const fileClasses = view?.file ? plugin.fieldIndex.filesFileClasses.get(view?.file.path) : undefined
+            const belongsToView = field !== undefined && !!view?.file &&
+                (
+                    !!fileClasses && fileClasses.some(fileClass => fileClass.name === fileClassName) ||
+                    (!fileClasses && !fileClassName)
+                )
+            if (checking) return belongsToView
+            if (view?.file && field) {
+                new chooseSectionModal(
+                    plugin,
+                    view.file,
+                    (
+                        lineNumber: number,
+                        asList: boolean,
+                        asBlockquote: boolean
+                    ) => F.openFieldModal(
+                        plugin,
+                        view.file!,
+                        field.name,
+                        lineNumber,
+                        asList,
+                        asBlockquote
+                    )
+                ).open();
+            }
+        }
+    })
+}
+
+export function addInsertIFieldCommand(plugin: MetadataMenu, command: FieldCommand, field: IField, fileClassName?: string) {
     plugin.addCommand({
         id: command.id,
         name: command.label,

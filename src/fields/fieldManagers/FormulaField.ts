@@ -3,7 +3,7 @@ import { TFile, Menu, TextAreaComponent, ToggleComponent } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldType, FieldIcon } from "src/types/fieldTypes";
-import Field from "../Field";
+import Field from "../_Field";
 import { SettingLocation } from "../FieldManager";
 import { FieldManager } from "../FieldManager";
 import { Status, statusIcon } from "src/types/lookupTypes";

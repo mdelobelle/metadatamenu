@@ -4,7 +4,7 @@ import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import NumberModal from "src/modals/fields/NumberModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
-import Field from "../Field";
+import Field from "../_Field";
 import { FieldManager } from "../FieldManager";
 import { FieldOptions } from "src/components/NoteFields";
 import { postValues } from "src/commands/postValues";

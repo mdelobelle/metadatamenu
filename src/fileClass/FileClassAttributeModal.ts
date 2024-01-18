@@ -1,9 +1,10 @@
 import MetadataMenu from "main";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import { SettingLocation } from "src/fields/FieldManager";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
 import { FileClass } from "src/fileClass/fileClass";
 import { BaseSettingModal } from "src/settings/BaseSettingModal";
+import { openSettings } from "src/fields/BaseSetting";
 
 export class FileClassAttributeModal extends BaseSettingModal {
 
@@ -15,6 +16,11 @@ export class FileClassAttributeModal extends BaseSettingModal {
         super(plugin);
         this.initFieldAndLocation()
         this.initFieldManagerAndCommand()
+    }
+
+    onOpen(): void {
+        //super.onOpen()
+        if (this.attr) openSettings(this.attr.id, this.fileClass.name, this.plugin)
     }
 
     public isNew(): boolean {

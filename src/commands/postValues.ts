@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import { Note } from "src/note/note";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { getFileFromFileOrPath } from "src/utils/fileUtils";

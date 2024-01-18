@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import { FieldManager } from "src/fields/FieldManager";
 import * as Lookup from "src/types/lookupTypes";
 import { IndexedFieldsPayload } from "./postValues";

@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { TFile, TextComponent } from "obsidian";
 import { FieldType } from "src/types/fieldTypes";
-import Field from "../Field";
+import Field from "../_Field";
 import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";

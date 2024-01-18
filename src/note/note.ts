@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { EditorPosition, Notice, parseYaml, TFile } from "obsidian";
 import { FieldPayload, IndexedFieldsPayload } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import YAMLField from "src/fields/fieldManagers/YAMLField";
 import { FieldManager, FieldType, frontmatterOnlyTypes, rawObjectTypes, ReservedMultiAttributes } from "src/types/fieldTypes";
 import { FieldManager as FM } from "src/types/fieldTypes";

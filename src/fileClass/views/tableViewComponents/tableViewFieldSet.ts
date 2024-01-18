@@ -5,7 +5,7 @@ import { FileClassTableView } from "../fileClassTableView"
 import { RowSorterComponent } from "./RowSorterComponent";
 import { FieldComponent } from "./FieldComponent";
 import { FilterComponent } from "./FilterComponent";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 
 export interface ViewConfiguration {
     children: Array<string>,

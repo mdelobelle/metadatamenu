@@ -1,5 +1,5 @@
 import { TFile, ButtonComponent, setIcon } from "obsidian";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import MetadataMenu from "main";
 import { FieldManager } from "src/types/fieldTypes";
 import FileField from "src/fields/fieldManagers/FileField";

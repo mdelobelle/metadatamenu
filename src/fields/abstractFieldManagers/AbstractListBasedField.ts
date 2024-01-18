@@ -1,5 +1,5 @@
 import { FieldType } from "src/types/fieldTypes";
-import Field from "../Field";
+import Field from "../_Field";
 import { FieldManager, SettingLocation } from "../FieldManager";
 import { TextComponent, ButtonComponent, setIcon, DropdownComponent, TextAreaComponent, Debouncer } from "obsidian";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";

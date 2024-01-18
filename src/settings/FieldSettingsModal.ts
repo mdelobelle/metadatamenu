@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import { SettingLocation } from "src/fields/FieldManager";
 import FieldSetting from "src/settings/FieldSetting";
 import { BaseSettingModal } from "./BaseSettingModal";

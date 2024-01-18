@@ -1,7 +1,6 @@
 import { PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal, DropdownComponent, moment, setIcon } from "obsidian";
 import MetadataMenu from "main";
-import FieldSettingsModal from "src/settings/FieldSettingsModal";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import FieldSetting from "src/settings/FieldSetting";
 import { FolderSuggest } from "src/suggester/FolderSuggester";
 import { FileSuggest } from "src/suggester/FileSuggester";
@@ -10,6 +9,7 @@ import FileClassQuerySettingsModal from "./FileClassQuerySettingModal";
 import FileClassQuerySetting from "./FileClassQuerySetting";
 import { MultiDisplayType } from "src/types/fieldTypes";
 import { DEFAULT_SETTINGS } from "./MetadataMenuSettings";
+import { openSettings } from "src/fields/BaseSetting";
 
 class SettingTextWithButtonComponent extends Setting {
 	private newValues: string[] = []
@@ -317,7 +317,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		/* 
 		-----------------------------------------
-		Managing predefined options for properties 
+		Managing predefined fields 
 		-----------------------------------------
 		*/
 		/* Add new property for which we want to preset options*/
@@ -336,8 +336,9 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					.setButtonText("Add new")
 					.setCta()
 					.onClick(async () => {
-						let modal = new FieldSettingsModal(this.plugin, presetFieldsSettings);
-						modal.open();
+						//let modal = new FieldSettingsModal(this.plugin, presetFieldsSettings);
+						//modal.open();
+						openSettings("", undefined, this.plugin, undefined, fieldsContainer)
 					});
 			}).settingEl.addClass("no-border");
 		const fieldsContainer = presetFieldsSettings.createDiv({ cls: "fields-container" })

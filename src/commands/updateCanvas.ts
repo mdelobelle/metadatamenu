@@ -4,7 +4,7 @@ import { AllCanvasNodeData, CanvasData, CanvasEdgeData, CanvasFileData, CanvasGr
 import { FieldType } from "src/types/fieldTypes";
 import { IndexedFieldsPayload, postValues } from "./postValues";
 import { FieldManager } from "src/fields/FieldManager";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 
 export async function updateCanvas(
     plugin: MetadataMenu,

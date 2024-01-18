@@ -14,7 +14,7 @@ import { FieldManager, FieldType, MultiDisplayType } from "src/types/fieldTypes"
 import { genericFieldRegex, getLineFields, encodeLink } from "../utils/parser";
 import FileField from "src/fields/fieldManagers/FileField";
 import AbstractListBasedField from "src/fields/abstractFieldManagers/AbstractListBasedField";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 
 interface IValueCompletion {
     attr: string;

@@ -6,7 +6,7 @@ import ObjectModal from "src/modals/fields/ObjectModal";
 import { FieldType } from "src/types/fieldTypes";
 import { displayLinksOrText } from "src/utils/linksUtils";
 import { ExistingField } from "../ExistingField";
-import Field from "../Field";
+import Field from "../_Field";
 import AbstractFileBasedField from "../abstractFieldManagers/AbstractFileBasedField";
 
 export default class MultiFileField extends AbstractFileBasedField<MultiFileModal> {

@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { ButtonComponent, DropdownComponent, TFile, TextComponent, ToggleComponent } from "obsidian";
 import { FieldType } from "src/types/fieldTypes";
-import Field from "../Field";
+import Field from "../_Field";
 import AbstractFileBasedField from "./AbstractFileBasedField";
 import { getLink } from "src/utils/parser";
 import { ExistingField } from "../ExistingField";

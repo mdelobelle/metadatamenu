@@ -1,21 +1,14 @@
 import MetadataMenu from "main";
 import { ButtonComponent, Modal, TFile } from "obsidian"
-import { ExistingField } from "src/fields/ExistingField";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import { Note } from "src/note/note";
 import { FieldManager } from "src/types/fieldTypes";
 import ObjectListModal from "../fields/ObjectListModal";
 import ObjectModal from "../fields/ObjectModal";
 
-export default class BaseModal extends Modal {
-
-    public saved: boolean = false
-
+class AbstractBaseModal extends Modal {
     constructor(
-        public plugin: MetadataMenu,
-        public file: TFile,
-        public previousModal?: ObjectModal | ObjectListModal,
-        public indexedPath?: string,
+        public plugin: MetadataMenu
     ) {
         super(plugin.app)
     }
@@ -64,6 +57,20 @@ export default class BaseModal extends Modal {
         cancelButton.onClick(() => { this.close(); })
         this.modalEl.appendChild(buttonContainer)
     }
+}
+
+export default class BaseModal extends AbstractBaseModal {
+
+    public saved: boolean = false
+
+    constructor(
+        public plugin: MetadataMenu,
+        public file: TFile,
+        public previousModal?: ObjectModal | ObjectListModal,
+        public indexedPath?: string,
+    ) {
+        super(plugin)
+    }
 
     public async goToPreviousModal() {
         const pM = this.previousModal
@@ -96,5 +103,28 @@ export default class BaseModal extends Modal {
     async onClose() {
         if (!this.saved) this.previousModal?.open()
         this.saved = false
+    }
+}
+
+export class MultiFilesBaseModal extends AbstractBaseModal {
+
+    constructor(
+        public plugin: MetadataMenu,
+        public files: TFile[],
+        public indexedPath?: string
+    ) {
+        super(plugin)
+    }
+
+    onOpen(): void {
+        this.containerEl.onkeydown = async (e) => {
+            if (e.key == "Enter" && e.altKey) {
+                e.preventDefault()
+                await this.save()
+            }
+            if (e.key === "Escape" && e.altKey) {
+                this.close()
+            }
+        }
     }
 }

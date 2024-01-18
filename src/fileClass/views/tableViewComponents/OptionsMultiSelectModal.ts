@@ -1,4 +1,4 @@
-import Field from "../../../fields/Field";
+import Field from "../../../fields/_Field";
 import { FieldManager as FM, FieldManager, FieldType } from "src/types/fieldTypes";
 import { TextComponent, ButtonComponent, setIcon, TFile, SuggestModal } from "obsidian";
 import MetadataMenu from "main";

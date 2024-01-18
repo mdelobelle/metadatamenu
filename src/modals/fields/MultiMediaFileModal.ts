@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { ButtonComponent, FuzzyMatch, TFile, setIcon } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import { MediaType, extensionMediaTypes } from "src/types/fieldTypes";
 import { cleanActions } from "src/utils/modals";
 import { extractLinks, getLink } from "src/utils/parser";

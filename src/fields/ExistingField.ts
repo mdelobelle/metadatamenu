@@ -1,5 +1,5 @@
 import { TFile } from "obsidian"
-import Field from "./Field"
+import Field from "./_Field"
 import MetadataMenu from "main"
 import ObjectListField, { ObjectListItem } from "./fieldManagers/ObjectListField"
 import { Note } from "src/note/note"

@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { FuzzyMatch, FuzzySuggestModal, TFile, setIcon } from "obsidian";
 import { ExistingField } from "src/fields/ExistingField";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import ObjectModal from "../fields/ObjectModal";
 import ObjectListModal from "../fields/ObjectListModal";
 import { FieldManager, MediaType, extensionMediaTypes } from "src/types/fieldTypes";

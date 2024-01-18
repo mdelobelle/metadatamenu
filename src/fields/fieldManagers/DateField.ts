@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import AbstractDateBasedField from "../abstractFieldManagers/AbstractDateBasedField";
-import Field from "../Field";
+import Field from "../_Field";
 import { FieldType } from "src/types/fieldTypes";
 
 export default class DateField extends AbstractDateBasedField {

@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import Field, { FieldCommand } from "src/fields/Field";
+import Field, { FieldCommand } from "src/fields/_Field";
 import FileClassQuery from "src/fileClass/FileClassQuery";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { FieldType, MultiDisplayType } from "src/types/fieldTypes";

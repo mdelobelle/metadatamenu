@@ -3,7 +3,7 @@ import MetadataMenu from "main";
 import { Notice, SuggestModal, TFile } from "obsidian";
 import { FieldType, FieldTypeLabelMapping, MultiDisplayType } from "src/types/fieldTypes";
 import { capitalize } from "src/utils/textUtils";
-import Field, { FieldCommand } from "src/fields/Field";
+import Field, { FieldCommand } from "src/fields/_Field";
 import { FieldManager } from "src/fields/FieldManager";
 import { postValues } from "src/commands/postValues";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
@@ -13,6 +13,8 @@ import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
 import { SavedView } from "./views/tableViewComponents/saveViewModal";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { compareArrays } from "src/utils/array";
+import { FieldType as IFieldType } from "src/fields/BaseField"
+import { IField, getNewFieldId } from "src/fields/Field";
 
 interface ShortId {
     id: string
@@ -480,7 +482,54 @@ class FileClass {
         await this.incrementVersion();
     }
 
+    public async updateIAttribute(
+        attr: IField,
+        newType: IFieldType,
+        newName: string,
+        newOptions?: string[] | Record<string, string>,
+        newCommand?: FieldCommand,
+        newDisplay?: MultiDisplayType,
+        newStyle?: Record<keyof typeof FieldStyleLabel, boolean>,
+        newPath?: string
+    ): Promise<void> {
+        const fileClass = attr && attr.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(attr.fileClassName)! : this
+        const file = fileClass.getClassFile();
+        await this.plugin.app.fileManager.processFrontMatter(file, fm => {
+            fm.fields = fm.fields || []
+            const field = fm.fields.find((f: FileClassAttribute) => f.id === attr.id)
+            if (field) {
+                field.type = newType;
+                if (newOptions) field.options = newOptions;
+                if (newCommand) field.command = newCommand;
+                if (newDisplay) field.display = newDisplay;
+                if (newStyle) field.style = newStyle;
+                if (newName) field.name = newName;
+                if (newPath !== undefined) field.path = newPath
+            } else {
+                fm.fields.push({
+                    name: newName,
+                    type: newType,
+                    options: newOptions,
+                    command: newCommand,
+                    display: newDisplay,
+                    style: newStyle,
+                    path: newPath,
+                    id: getNewFieldId(this.plugin)
+                })
+            }
+        })
+        await this.incrementVersion();
+    }
+
+
     public async removeAttribute(attr: FileClassAttribute): Promise<void> {
+        const file = this.getClassFile();
+        await this.plugin.app.fileManager.processFrontMatter(file, fm => {
+            fm.fields = fm.fields.filter((f: any) => f.id !== attr.id)
+        })
+    }
+
+    public async removeIAttribute(attr: IField): Promise<void> {
         const file = this.getClassFile();
         await this.plugin.app.fileManager.processFrontMatter(file, fm => {
             fm.fields = fm.fields.filter((f: any) => f.id !== attr.id)

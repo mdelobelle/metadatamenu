@@ -1,9 +1,9 @@
 import { setIcon, Setting, TFile } from "obsidian";
 import MetadataMenu from "main";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import { FieldManager, FieldTypeTagClass } from "src/types/fieldTypes";
-import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldManager as F } from "src/fields/FieldManager";
+import { openSettings } from "src/fields/BaseSetting";
 
 export default class FieldSetting extends Setting {
     private fieldNameContainer: HTMLDivElement;
@@ -23,7 +23,6 @@ export default class FieldSetting extends Setting {
     };
 
     public setTextContentWithname(): void {
-
         const manager = new FieldManager[this.field.type](this.plugin, this.field) as F;
         this.infoEl.textContent = "";
         this.infoEl.addClass("setting-item")
@@ -47,8 +46,9 @@ export default class FieldSetting extends Setting {
             b.setIcon("pencil")
                 .setTooltip("Edit")
                 .onClick(() => {
-                    let modal = new FieldSettingsModal(this.plugin, this.containerEl, this, this.field);
-                    modal.open();
+                    openSettings(this.field.id, undefined, this.plugin, this, this.containerEl)
+                    //let modal = new FieldSettingsModal(this.plugin, this.containerEl, this, this.field);
+                    //modal.open();
                 });
         });
     };

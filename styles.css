@@ -2672,8 +2672,12 @@ span.flatpickr-weekday {
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] .first-col-header-cell, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] .first-col-header-cell {
   padding-left: var(--table-cell-padding);
 }
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] .first-col-header-cell span:first-child, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] .first-col-header-cell span:first-child {
+  margin-left: 0;
+}
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] .first-col-header-cell .first-col-header-container, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] .first-col-header-cell .first-col-header-container {
   display: flex;
+  width: 100%;
 }
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] .first-col-header-cell .first-col-header-container .fileclass-icon, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] .first-col-header-cell .first-col-header-container .fileclass-icon {
   margin: 0 0.3em;
@@ -2700,23 +2704,34 @@ span.flatpickr-weekday {
   position: sticky;
   top: 0;
 }
-.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th:first-child, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th:first-child {
-  left: 0;
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th.table-view-th:first-child, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th.table-view-th:first-child {
   z-index: 2;
   display: flex;
   height: var(--line-height);
+  width: 100%;
+  align-items: center;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th.table-view-th:first-child .checkbox-toggler, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th.table-view-th:first-child .checkbox-toggler {
+  display: flex;
+  align-items: center;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th.table-view-th:first-child.first-col-header-cell, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th.table-view-th:first-child.first-col-header-cell {
+  left: 0;
   padding: var(--table-cell-padding);
 }
-.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th:first-child span:first-child, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th:first-child span:first-child {
-  margin-left: 0.375em;
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th.table-view-th:first-child .spacer, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th.table-view-th:first-child .spacer {
+  width: 100%;
 }
-.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th:first-child.modifier-selector, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th:first-child.modifier-selector {
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th.table-view-th:first-child span:nth-child(2), .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th.table-view-th:first-child span:nth-child(2) {
+  margin-left: 0.5em;
+}
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th.table-view-th:first-child.modifier-selector, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th.table-view-th:first-child.modifier-selector {
   min-width: 0;
   margin: 0;
   padding-right: 0;
   text-align: center;
 }
-.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th:first-child.modifier-selector input, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th:first-child.modifier-selector input {
+.metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th.table-view-th:first-child.modifier-selector input, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th.table-view-th:first-child.modifier-selector input {
   vertical-align: middle;
 }
 .metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th:first-child.table-view-th.first-col-header-cell, .metadata-menu.fileclass-view .fv-table div[id^=table-container] thead th.table-view-th.first-col-header-cell, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th:first-child.table-view-th.first-col-header-cell, .metadata-menu.fileclass-codeblock-view .fv-table div[id^=table-container] thead th.table-view-th.first-col-header-cell {

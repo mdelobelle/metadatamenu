@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import { cleanActions } from "src/utils/modals";
 import BaseModal from "../baseFieldModals/BaseModal";
 import { EditorView, basicSetup } from "codemirror"

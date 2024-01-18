@@ -6,7 +6,7 @@ import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
 import FieldSettingsModal from "src/settings/FieldSettingsModal"
 import { FieldType } from "src/types/fieldTypes"
 import { ExistingField } from "../ExistingField"
-import Field from "../Field"
+import Field from "../_Field"
 import { SettingLocation } from "../FieldManager"
 import AbstractCanvasBasedField from "../abstractFieldManagers/AbstractCanvasBasedField"
 

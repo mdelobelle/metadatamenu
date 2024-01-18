@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { ButtonComponent, Component, Modal, TFile } from "obsidian";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
 import ChooseSectionModal from "src/modals/chooseSectionModal"
 import * as FieldType from "src/types/fieldTypes"

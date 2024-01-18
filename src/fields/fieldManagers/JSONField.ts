@@ -3,7 +3,7 @@ import { Diagnostic, linter } from "@codemirror/lint";
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
 import { FieldType } from "src/types/fieldTypes";
-import Field from "../Field";
+import Field from "../_Field";
 import RawObjectField from "../abstractFieldManagers/AbstractRawObjectField";
 
 export default class JSONField extends RawObjectField {

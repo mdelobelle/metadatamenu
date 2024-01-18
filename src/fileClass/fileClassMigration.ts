@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { ExistingField } from "src/fields/ExistingField";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 import { legacyGenuineKeys } from "src/utils/dataviewUtils";
 import { getFrontmatterPosition } from "src/utils/fileUtils";

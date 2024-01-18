@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { ButtonComponent, Modal, TFile } from "obsidian";
 import { FieldSet, btnIcons } from "./tableViewFieldSet";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import { cleanActions } from "src/utils/modals";
 import { RowSorterComponent } from "./RowSorterComponent";
 import { FieldManager as FM, FieldManager, FieldType } from "src/types/fieldTypes";

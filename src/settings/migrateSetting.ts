@@ -1,5 +1,5 @@
 import MetadataMenu from "main"
-import Field from "../fields/Field"
+import Field from "../fields/_Field"
 import { FieldType } from "src/types/fieldTypes"
 import * as selectValuesSource from "../types/selectValuesSourceTypes"
 

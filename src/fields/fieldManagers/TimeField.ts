@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { Menu, setIcon, TextComponent, moment, TFile, ToggleComponent, DropdownComponent } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
-import Field from "../Field";
+import Field from "../_Field";
 import { FieldManager, SettingLocation } from "../FieldManager";
 import CycleField from "../fieldManagers/CycleField";
 import { FieldManager as FM } from "src/types/fieldTypes";

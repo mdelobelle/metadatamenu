@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { ButtonComponent, SuggestModal, TFile } from "obsidian";
 import { ExistingField } from "src/fields/ExistingField";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import ObjectListModal from "../fields/ObjectListModal";
 import ObjectModal from "../fields/ObjectModal";
 import { FieldManager as FM } from "src/types/fieldTypes";

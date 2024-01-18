@@ -1,5 +1,5 @@
 import { TFile, SuggestModal, ButtonComponent } from "obsidian";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import MetadataMenu from "main";
 import * as selectValuesSource from "src/types/selectValuesSourceTypes"
 import { FieldManager } from "src/types/fieldTypes";

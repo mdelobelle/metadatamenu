@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import Field from "src/fields/Field";
+import Field from "src/fields/_Field";
 import { FieldType, frontmatterOnlyTypes, MultiDisplayType, objectTypes } from "src/types/fieldTypes";
 import { Line } from "./line";
 import { frontMatterLineField, parsedField } from "src/utils/parser";

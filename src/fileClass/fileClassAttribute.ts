@@ -1,7 +1,9 @@
 import MetadataMenu from "main";
-import Field, { FieldCommand } from "src/fields/Field";
+import Field, { FieldCommand } from "src/fields/_Field";
+import { FieldParam, isFieldOptions } from "src/fields/BaseField";
+import { buildField, IField } from "src/fields/Field";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
-import { FieldManager, FieldType, MultiDisplayType } from "src/types/fieldTypes";
+import { FieldManager, FieldType, MultiDisplayType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 
 class FileClassAttribute {
 
@@ -34,6 +36,22 @@ class FileClassAttribute {
             options = this.options
         }
         return new Field(this.plugin, this.name, options, this.id, this.type, this.fileClassName, this.command, this.display, this.style, this.path);
+    }
+
+    public getIField(): IField | undefined {
+        let options: Record<string, string> = {};
+        if (Array.isArray(this.options)) {
+            this.options?.forEach((option, index) => {
+                options[index] = option;
+            })
+        } else {
+            options = this.options
+        }
+        if (isFieldOptions([this.type, options])) {
+            const iField = buildField(this.plugin, this.name, this.id, this.path || "", this.fileClassName, this.command, this.display, this.style, ...[this.type, options] as FieldParam)
+            return new iField();
+        }
+
     }
 
     public getOptionsString(plugin: MetadataMenu) {

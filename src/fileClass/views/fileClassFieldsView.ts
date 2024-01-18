@@ -1,11 +1,11 @@
 import MetadataMenu from "main";
-import { ButtonComponent, Notice, setIcon } from "obsidian";
+import { ButtonComponent, setIcon } from "obsidian";
 import { removeFileClassAttributeWithId } from "src/commands/removeFileClassAttribute";
 import { FieldTypeTagClass } from "src/types/fieldTypes";
 import { FileClass } from "../fileClass";
 import { FileClassAttribute } from "../fileClassAttribute";
 import { FileClassAttributeModal } from "../FileClassAttributeModal";
-import Field from "src/fields/Field";
+import { openSettings } from "src/fields/BaseSetting";
 
 class FileClassFieldSetting {
     private plugin: MetadataMenu;
@@ -96,8 +96,9 @@ export class FileClassFieldsView {
         const addBtn = btnContainer.createEl('button');
         setIcon(addBtn, "list-plus")
         addBtn.onclick = async () => {
-            const fileClassAttributeModal = new FileClassAttributeModal(this.plugin, FileClass.createFileClass(this.plugin, this.fileClass.name))
-            fileClassAttributeModal.open()
+            openSettings("", this.fileClass.name, this.plugin)
+            //const fileClassAttributeModal = new FileClassAttributeModal(this.plugin, FileClass.createFileClass(this.plugin, this.fileClass.name))
+            //fileClassAttributeModal.open()
         }
     }
 

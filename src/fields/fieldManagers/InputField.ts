@@ -1,15 +1,16 @@
 import MetadataMenu from "main";
 import { Menu, setIcon, TextAreaComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
-import InputModal from "src/modals/fields/InputModal";
+import InputModal, { MultiFilesInputModal } from "src/modals/fields/InputModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
-import Field from "../Field";
+import Field from "../_Field";
 import { FieldManager } from "../FieldManager";
 import { FieldOptions } from "src/components/NoteFields";
 import { ExistingField } from "../ExistingField";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import { Note } from "src/note/note";
+import { buildFieldValueManager, getFieldConstructor } from "../Field";
 
 export default class InputField extends FieldManager {
 
@@ -23,9 +24,16 @@ export default class InputField extends FieldManager {
 
     private async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
         const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
+        const [field] = getFieldConstructor(this.field.id, this.field.fileClassName, this.plugin)
+        if (!field) return
+        const fieldVM = buildFieldValueManager(field, file, eF?.value, this.plugin)
+        fieldVM.openModal()
+
+        /*
         const modal = new InputModal(this.plugin, file, this.field, eF, indexedPath);
         modal.titleEl.setText(`Change Value for <${this.field.name}>`);
         modal.open()
+        */
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
@@ -77,6 +85,19 @@ export default class InputField extends FieldManager {
         fieldModal.open();
     }
 
+
+    public createAndOpenMultiFilesFieldModal(
+        files: TFile[],
+        selectedFieldName: string,
+        indexedPath?: string,
+        lineNumber?: number,
+        asList?: boolean,
+        asBlockquote?: boolean,
+    ): void {
+        const fieldModal = new MultiFilesInputModal(this.plugin, files, this.field, indexedPath, lineNumber, asList, asBlockquote);
+        fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
+        fieldModal.open();
+    }
     public createDvField(
         dv: any,
         p: any,

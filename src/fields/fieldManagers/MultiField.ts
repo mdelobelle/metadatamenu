@@ -3,7 +3,7 @@ import { Menu, setIcon, TextComponent, TFile } from "obsidian";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import MultiSelectModal from "src/modals/fields/MultiSelectModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
-import Field from "../Field";
+import Field from "../_Field";
 import AbstractListBasedField from "../abstractFieldManagers/AbstractListBasedField";
 import { FieldOptions } from "src/components/NoteFields";
 import { ExistingField } from "../ExistingField";
