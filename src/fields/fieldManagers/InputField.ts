@@ -10,7 +10,7 @@ import { ExistingField } from "../ExistingField";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import { Note } from "src/note/note";
-import { buildFieldValueManager, getFieldConstructor } from "../Field";
+import { openModal } from "../base/BaseModal";
 
 export default class InputField extends FieldManager {
 
@@ -24,10 +24,7 @@ export default class InputField extends FieldManager {
 
     private async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
         const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
-        const [field] = getFieldConstructor(this.field.id, this.field.fileClassName, this.plugin)
-        if (!field) return
-        const fieldVM = buildFieldValueManager(field, file, eF?.value, this.plugin)
-        fieldVM.openModal()
+        openModal(this.field.id, this.field.fileClassName, eF, file, this.plugin)
 
         /*
         const modal = new InputModal(this.plugin, file, this.field, eF, indexedPath);

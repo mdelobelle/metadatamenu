@@ -1,19 +1,18 @@
-import { FieldBase, FieldType, Options } from "../BaseField"
-import { ISettingsModal } from "../BaseSetting"
-import { IManagedField, Target, basicModal } from "../Field"
-import { Constructor } from "../Fields"
+import { IFieldBase, BaseOptions } from "../base/BaseField"
+import { ISettingsModal } from "../base/BaseSetting"
+import { Constructor, FieldType } from "../Fields"
 
-export interface ObjectListOptions extends Options {
+export interface Options extends BaseOptions {
 
 }
 
-export function objectListSettingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
+export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
     return class ObjectListSettingsModal extends Base {
 
     }
 }
 
-export class ObjectListBase extends FieldBase {
+export class Base implements IFieldBase {
     type = FieldType.ObjectList
     tagName = "object-list"
     icon = "boxes"

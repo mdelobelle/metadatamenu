@@ -4,7 +4,7 @@ import { SettingLocation } from "src/fields/FieldManager";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
 import { FileClass } from "src/fileClass/fileClass";
 import { BaseSettingModal } from "src/settings/BaseSettingModal";
-import { openSettings } from "src/fields/BaseSetting";
+import { openSettings } from "src/fields/base/BaseSetting";
 
 export class FileClassAttributeModal extends BaseSettingModal {
 

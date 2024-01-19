@@ -5,7 +5,7 @@ import { FieldTypeTagClass } from "src/types/fieldTypes";
 import { FileClass } from "../fileClass";
 import { FileClassAttribute } from "../fileClassAttribute";
 import { FileClassAttributeModal } from "../FileClassAttributeModal";
-import { openSettings } from "src/fields/BaseSetting";
+import { openSettings } from "src/fields/base/BaseSetting";
 
 class FileClassFieldSetting {
     private plugin: MetadataMenu;

@@ -1,20 +1,19 @@
-import { FieldBase, FieldType, Options } from "../BaseField"
-import { ISettingsModal } from "../BaseSetting"
-import { IManagedField, Target, basicModal } from "../Field"
-import { Constructor } from "../Fields"
+import { IFieldBase, BaseOptions } from "../base/BaseField"
+import { ISettingsModal } from "../base/BaseSetting"
+import { Constructor, FieldType } from "../Fields"
 
-export interface FormulaOptions extends Options {
+export interface Options extends BaseOptions {
     formula: string
     autoUpdate: boolean
 }
 
-export function formulaSettingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
+export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
     return class FormulaSettingsModal extends Base {
 
     }
 }
 
-export class FormulaBase extends FieldBase {
+export class Base implements IFieldBase {
     type = FieldType.Formula
     tagName = "formula"
     icon = "file-code"

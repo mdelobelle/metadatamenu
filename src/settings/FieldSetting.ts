@@ -3,7 +3,7 @@ import MetadataMenu from "main";
 import Field from "src/fields/_Field";
 import { FieldManager, FieldTypeTagClass } from "src/types/fieldTypes";
 import { FieldManager as F } from "src/fields/FieldManager";
-import { openSettings } from "src/fields/BaseSetting";
+import { openSettings } from "src/fields/base/BaseSetting";
 
 export default class FieldSetting extends Setting {
     private fieldNameContainer: HTMLDivElement;

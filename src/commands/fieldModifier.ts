@@ -1,8 +1,10 @@
 import MetadataMenu from "main";
-import { FieldManager } from "src/types/fieldTypes";
+import { FieldManager, FieldType } from "src/types/fieldTypes";
 import { FieldManager as F } from "src/fields/FieldManager";
 import chooseSectionModal from "src/modals/chooseSectionModal";
 import { setIcon, TFile } from "obsidian";
+import { buildField, fieldValueManager, getField, getFieldConstructor } from "src/fields/Field";
+import { createDvField as _createDvField } from "src/fields/Fields";
 
 function buildAndOpenModal(
     plugin: MetadataMenu,
@@ -50,8 +52,14 @@ function createDvField(
         return
     }
     if (field?.type) {
-        const fieldManager = new FieldManager[field.type](plugin, field);
-        fieldManager.createDvField(dv, p, fieldContainer, attrs);
+        if (field.type === FieldType.Input) {
+            const target = plugin.app.vault.getAbstractFileByPath(p.file.path) as TFile
+            const fieldVM = fieldValueManager(field.id, field.fileClassName, target, undefined, plugin)
+            _createDvField(fieldVM, dv, p, fieldContainer)
+        } else {
+            const fieldManager = new FieldManager[field.type](plugin, field);
+            fieldManager.createDvField(dv, p, fieldContainer, attrs);
+        }
     } else {
         const fieldManager = F.createDefault(plugin, fieldName);
         fieldManager.createDvField(dv, p, fieldContainer, attrs);

@@ -1,18 +1,18 @@
 import MetadataMenu from "main"
 import { ButtonComponent, DropdownComponent, Modal, Notice, SuggestModal, TextComponent, ToggleComponent, setIcon } from "obsidian"
-import { FieldCommand } from "./_Field"
+import { FieldCommand } from "../_Field"
 import { FieldIcon, FieldTypeTagClass, FieldTypeTooltip, MultiDisplayType } from "src/types/fieldTypes"
 import { FieldHTMLTagMap, FieldStyle as GFieldStyle, FieldStyleKey } from "src/types/dataviewTypes"
-import { SettingLocation } from "./FieldManager"
+import { SettingLocation } from "../FieldManager"
 import { cleanActions } from "src/utils/modals"
 import GField from "src/fields/_Field"
 import { FileClass } from "src/fileClass/fileClass"
 import { addInsertIFieldCommand } from "src/commands/paletteCommands"
 import FieldSetting from "src/settings/FieldSetting"
 import { incrementVersion } from "src/settings/MetadataMenuSettings"
-import { FieldType, frontmatterOnlyTypes, multiTypes, rootOnlyTypes } from "./BaseField"
-import { Constructor, getFieldSettings, getFieldType } from "./Fields"
-import { IField, buildField, copyProperty, exportIField, getField, getFieldConstructor, getNewFieldId, removeValidationError } from "./Field"
+import { FieldType, frontmatterOnlyTypes, multiTypes, rootOnlyTypes } from "../Fields"
+import { Constructor, getFieldSettings } from "../Fields"
+import { IField, buildField, copyProperty, exportIField, getField, getFieldConstructor, getNewFieldId, removeValidationError } from "../Field"
 
 // Field Types list agnostic
 // Field types specific settings agnostic
@@ -506,7 +506,7 @@ export function buildSettingsModal(
             if (this.fileClass) {
                 await this.fileClass.updateIAttribute(
                     this.field,
-                    getFieldType(this.field.type),
+                    this.field.type,
                     this.field.name,
                     this.field.options,
                     this.field.command,

@@ -7,8 +7,8 @@ import { FileClassTableView } from "../fileClassTableView";
 import { FileClassCodeBlockView } from "../fileClassCodeBlockView";
 import { MarkdownPostProcessorContext, TFile, setIcon } from "obsidian";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
-import { FieldManager } from "src/fields/FieldManager";
 import InputField from "src/fields/fieldManagers/InputField";
+import { fieldValueManager } from "src/fields/Field";
 
 export class FileClassDataviewTable {
     private firstCollWidth: number;
@@ -139,12 +139,11 @@ export class FileClassDataviewTable {
 
         const processFilesFieldChange = (dvTable: FileClassDataviewTable, selectedFiles: string[], allFilesSelected: boolean, columndId: string) => {
             const { fileClassName, fieldName } = dvTable.columnsFileClassField[columndId]
-            const fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
             const field = this.plugin.fieldIndex.fileClassesFields.get(fileClassName)?.find(f => f.isRoot() && f.name === fieldName)
             const files = selectedFiles.map(sF => this.plugin.app.vault.getAbstractFileByPath(sF)).filter(f => f instanceof TFile) as TFile[]
             if (field?.type === FieldType.Input) {
-                const fM = new FM[field?.type](this.plugin, field) as InputField
-                fM.createAndOpenMultiFilesFieldModal(files, field.name)
+                const fieldVM = fieldValueManager(field.id, field.fileClassName, files, undefined, this.plugin)
+                fieldVM?.openModal()
             }
         }
 

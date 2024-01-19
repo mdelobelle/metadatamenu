@@ -8,9 +8,13 @@ import cryptoRandomString from "crypto-random-string"
 import { LineNode } from "src/note/lineNode"
 import GField from "src/fields/_Field"
 import FieldSettingsModal from "src/settings/FieldSettingsModal"
-import { getFieldClass, getFieldModal, getFieldType } from "./Fields"
-import { FieldParam, FieldType, IFieldBase, Options, isFieldOptions, multiTypes, objectTypes, rootOnlyTypes } from "./BaseField"
+import { FieldType, getFieldModal, getFieldType, multiTypes, objectTypes, rootOnlyTypes, getFieldClass } from "./Fields"
+import { FieldParam, IFieldBase, BaseOptions, isFieldOptions } from "./base/BaseField"
 import { postValues } from "src/commands/postValues"
+import { IBaseValueModal } from "./base/BaseModal"
+import { ExistingField } from "./ExistingField"
+import ObjectModal from "src/modals/fields/ObjectModal"
+import ObjectListModal from "src/modals/fields/ObjectListModal"
 
 // Field Types list agnostic
 
@@ -21,11 +25,12 @@ export type Constructor<T> = new (...args: any[]) => T;
 type FieldStyle = Record<keyof typeof FieldStyleLabel, boolean>
 
 export interface IField extends IFieldBase {
+    // a field base with a name, an id, options, a fileclass name....
     plugin: MetadataMenu
     name: string
     id: string
     path: string
-    options: Options
+    options: BaseOptions
     fileClassName?: string
     command?: FieldCommand
     display?: MultiDisplayType
@@ -46,9 +51,7 @@ export interface IField extends IFieldBase {
     validateOptions(): boolean
 }
 
-
-
-export function field<B extends Constructor<IFieldBase>, O extends Options>(
+export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
     plugin: MetadataMenu,
     Base: B,
     name: string = "",
@@ -385,11 +388,20 @@ export function field<B extends Constructor<IFieldBase>, O extends Options>(
     }
 }
 
-export function buildField(plugin: MetadataMenu, name: string, id: string, path: string, fileClassName?: string, command?: FieldCommand, display?: MultiDisplayType, style?: FieldStyle, ...[type, options]: FieldParam): Constructor<IField> {
+export function buildField(
+    plugin: MetadataMenu,
+    name: string,
+    id: string,
+    path: string,
+    fileClassName?: string,
+    command?: FieldCommand,
+    display?: MultiDisplayType,
+    style?: FieldStyle,
+    ...[type, options]: FieldParam
+): Constructor<IField> {
     const _field = field(plugin, getFieldClass(type), name, id, path, options, fileClassName, command, display, style)
     return _field
 }
-
 
 export function exportIField(field: IField): GField {
     const _field = new GField(field.plugin)
@@ -470,22 +482,30 @@ export function getNewFieldId(plugin: MetadataMenu) {
 }
 //#endregion
 
-export interface IManagedField<T> extends IField {
+//#region FieldValueManager
+
+export interface IFieldManager<T> extends IField {
     target: T
     value: any
+    eF?: ExistingField,
+    indexedPath?: string,
+    lineNumber?: number,
+    asList: boolean,
+    asBlockquote: boolean,
+    previousModal?: ObjectModal | ObjectListModal
     openModal: () => void;
-    update: () => void
+    save: () => void
 }
 
 export type Target =
     TFile |
     TFile[]
 
-export function isSingleTargeted(managedField: IManagedField<Target>): managedField is IManagedField<TFile> {
+export function isSingleTargeted(managedField: IFieldManager<Target>): managedField is IFieldManager<TFile> {
     return managedField.target instanceof TFile
 }
 
-export function isMultiTargeted(managedField: IManagedField<Target>): managedField is IManagedField<TFile[]> {
+export function isMultiTargeted(managedField: IFieldManager<Target>): managedField is IFieldManager<TFile[]> {
     const target = managedField.target
     return Array.isArray(target) && target.every(t => t instanceof TFile)
 }
@@ -493,17 +513,24 @@ export function isMultiTargeted(managedField: IManagedField<Target>): managedFie
 function FieldValueManager<F extends Constructor<IField>>(
     Base: F,
     target: Target,
-    value: any,
+    existingField: ExistingField | undefined,
     plugin: MetadataMenu
-): Constructor<IManagedField<Target>> {
+): Constructor<IFieldManager<Target>> {
     return class ManagedField extends Base {
         private _modal: IBaseValueModal<Target>
         public target: Target
         public value: any
+        public eF?: ExistingField
+        public indexedPath?: string
+        public lineNumber: number = -1
+        public asList: boolean = false
+        public asBlockquote: boolean = false
+        public previousModal?: ObjectModal | ObjectListModal
         constructor(...rest: any[]) {
             super()
             this.target = target
-            this.value = value
+            this.eF = existingField
+            this.value = this.eF?.value || ""
         }
         public openModal() {
             this.modal.open()
@@ -514,7 +541,7 @@ function FieldValueManager<F extends Constructor<IField>>(
             return this._modal
         }
 
-        public update() {
+        public save() {
             if (isSingleTargeted(this)) {
                 postValues(plugin, [{ indexedPath: this.id, payload: { value: this.value } }], this.target)
             } else if (isMultiTargeted(this)) {
@@ -526,103 +553,11 @@ function FieldValueManager<F extends Constructor<IField>>(
     }
 }
 
-
-export function buildFieldValueManager(field: Constructor<IField>, target: Target, value: any, plugin: MetadataMenu): IManagedField<Target> {
-    return new (FieldValueManager(field, target, value, plugin))()
+export function fieldValueManager(id: string, fileClassName: string | undefined, target: Target, existingField: ExistingField | undefined, plugin: MetadataMenu): IFieldManager<Target> | undefined {
+    const [field] = getFieldConstructor(id, fileClassName, plugin)
+    if (!field) return
+    return new (FieldValueManager(field, target, existingField, plugin))()
 }
-
-//#endregion
-
-//#region Modals
-
-/*
-** Modals to change the value of a managedField
-*/
-
-interface IBaseValueModal<T extends Target> extends Modal {
-    managedField: IManagedField<T>
-}
-
-interface IListBasedModal<T extends Target> extends IBaseValueModal<T> {
-}
-
-interface IBasicModal<T extends Target> extends IBaseValueModal<T> {
-    targetDisplayContainer: HTMLDivElement
-    valueModifierContainer: HTMLDivElement
-
-}
-
-export type ModalType =
-    IBasicModal<Target> |
-    IListBasedModal<Target>
-
-export function basicModal(managedField: IManagedField<Target>, plugin: MetadataMenu): Constructor<IBasicModal<Target>> {
-    return class BaseValueModal extends Modal {
-        public managedField: IManagedField<Target>
-        public targetDisplayContainer: HTMLDivElement
-        public valueModifierContainer: HTMLDivElement
-        constructor(...rest: any[]) {
-            super(plugin.app)
-            this.managedField = managedField
-            this.titleEl.setText(this.managedField.name)
-            this.targetDisplayContainer = this.contentEl.createDiv()
-            this.valueModifierContainer = this.contentEl.createDiv()
-            this.buildActions()
-            this.buildValueModifier()
-            this.displayTarget()
-        }
-
-        displayTarget() {
-            if (isSingleTargeted(this.managedField)) {
-                this.targetDisplayContainer.setText(this.managedField.target.basename)
-            } else if (isMultiTargeted(this.managedField)) {
-                this.targetDisplayContainer.setText(this.managedField.target.map(f => f.basename).join(", "))
-            }
-        }
-
-        buildValueModifier() {
-            new TextComponent(this.valueModifierContainer)
-                .setValue(this.managedField.value)
-                .onChange((value) => {
-                    this.managedField.value = value
-                })
-        }
-
-        buildActions() {
-
-            new ButtonComponent(this.contentEl)
-                .setIcon("save")
-                .onClick(() => {
-                    this.save()
-                    this.close()
-                })
-        }
-        save() { managedField.update() }
-    }
-}
-
-
-export function listBasedModal(managedField: IManagedField<Target>, plugin: MetadataMenu): Constructor<IListBasedModal<Target>> {
-    return class BaseValueModal extends SuggestModal<string> {
-
-        public managedField: IManagedField<Target>
-        constructor(...rest: any[]) {
-            super(plugin.app)
-            this.managedField = managedField
-        }
-        getSuggestions(query: string): string[] | Promise<string[]> {
-            return Object.values(this.managedField.options.values)
-        }
-        renderSuggestion(value: string, el: HTMLElement) {
-            el.setText(value)
-        }
-        onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
-            this.managedField.value = item
-            managedField.update()
-        }
-    }
-}
-
 
 export function setValidationError(textInput: TextComponent, message?: string) {
     textInput.inputEl.addClass("is-invalid");

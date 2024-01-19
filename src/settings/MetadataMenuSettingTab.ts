@@ -9,7 +9,7 @@ import FileClassQuerySettingsModal from "./FileClassQuerySettingModal";
 import FileClassQuerySetting from "./FileClassQuerySetting";
 import { MultiDisplayType } from "src/types/fieldTypes";
 import { DEFAULT_SETTINGS } from "./MetadataMenuSettings";
-import { openSettings } from "src/fields/BaseSetting";
+import { openSettings } from "src/fields/base/BaseSetting";
 
 class SettingTextWithButtonComponent extends Setting {
 	private newValues: string[] = []

@@ -1,21 +1,35 @@
-import { DropdownComponent } from "obsidian"
-import { FieldType } from "../BaseField"
-import { IManagedField, Target, listBasedModal, isSingleTargeted } from "../Field"
-import { ListBase, listBaseSettingsModal, ListBasedOptions } from "../baseFields/ListBasedField"
-import { ISettingsModal } from "../BaseSetting";
 
+import MetadataMenu from "main";
+import * as List from "./baseModels/ListBasedField"
+import { ISettingsModal } from "../base/BaseSetting";
+import { IFieldManager, Target } from "../Field";
+import { FieldType } from "../Fields";
+import { IFieldBase } from "../base/BaseField";
 
-export type Constructor<T> = new (...args: any[]) => T;
+type Constructor<T> = new (...args: any[]) => T;
 
-export interface SelectOptions extends ListBasedOptions { }
+export interface Options extends List.Options { }
 
-export function selectSettingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
-    return class SelectSettingsModal extends Base {
+export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
+    const base = List.settingsModal(Base)
+    return class ListBaseSettingsModal extends base {
 
     }
 }
 
-export class SelectBase extends ListBase {
+export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<List.IListBasedModal<Target>> {
+    const base = List.valueModal(managedField, plugin)
+    return class ValueModal extends base {
+        async onAdd(): Promise<void> {
+            await this.addNewValueToSettings();
+            this.managedField.value = this.inputEl.value
+            this.managedField.save()
+            this.close(true);
+        }
+    }
+}
+
+export class Base implements IFieldBase {
     type = FieldType.Select
     tagName = "select"
     icon = "arrow"

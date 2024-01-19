@@ -13,7 +13,7 @@ import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
 import { SavedView } from "./views/tableViewComponents/saveViewModal";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { compareArrays } from "src/utils/array";
-import { FieldType as IFieldType } from "src/fields/BaseField"
+import { FieldType as IFieldType } from "src/fields/base/BaseField"
 import { IField, getNewFieldId } from "src/fields/Field";
 
 interface ShortId {

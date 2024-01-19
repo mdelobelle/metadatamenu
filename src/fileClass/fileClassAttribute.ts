@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import Field, { FieldCommand } from "src/fields/_Field";
-import { FieldParam, isFieldOptions } from "src/fields/BaseField";
+import { FieldParam, isFieldOptions } from "src/fields/base/BaseField";
 import { buildField, IField } from "src/fields/Field";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { FieldManager, FieldType, MultiDisplayType, FieldTypeLabelMapping } from "src/types/fieldTypes";
