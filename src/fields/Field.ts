@@ -11,7 +11,7 @@ import FieldSettingsModal from "src/settings/FieldSettingsModal"
 import { FieldType, getFieldModal, getFieldType, multiTypes, objectTypes, rootOnlyTypes, getFieldClass } from "./Fields"
 import { FieldParam, IFieldBase, BaseOptions, isFieldOptions } from "./base/BaseField"
 import { postValues } from "src/commands/postValues"
-import { IBaseValueModal } from "./base/BaseModal"
+import { IBaseValueModal, MultiTargetModificationConfirmModal } from "./base/BaseModal"
 import { ExistingField } from "./ExistingField"
 import ObjectModal from "src/modals/fields/ObjectModal"
 import ObjectListModal from "src/modals/fields/ObjectListModal"
@@ -490,8 +490,8 @@ export interface IFieldManager<T> extends IField {
     eF?: ExistingField,
     indexedPath?: string,
     lineNumber?: number,
-    asList: boolean,
-    asBlockquote: boolean,
+    asList?: boolean,
+    asBlockquote?: boolean,
     previousModal?: ObjectModal | ObjectListModal
     openModal: () => void;
     save: () => void
@@ -511,10 +511,15 @@ export function isMultiTargeted(managedField: IFieldManager<Target>): managedFie
 }
 
 function FieldValueManager<F extends Constructor<IField>>(
+    plugin: MetadataMenu,
     Base: F,
     target: Target,
     existingField: ExistingField | undefined,
-    plugin: MetadataMenu
+    indexedPath?: string,
+    lineNumber?: number,
+    asList?: boolean,
+    asBlockquote?: boolean,
+    previousModal?: ObjectModal | ObjectListModal
 ): Constructor<IFieldManager<Target>> {
     return class ManagedField extends Base {
         private _modal: IBaseValueModal<Target>
@@ -522,15 +527,20 @@ function FieldValueManager<F extends Constructor<IField>>(
         public value: any
         public eF?: ExistingField
         public indexedPath?: string
-        public lineNumber: number = -1
-        public asList: boolean = false
-        public asBlockquote: boolean = false
+        public lineNumber?: number = -1
+        public asList?: boolean = false
+        public asBlockquote?: boolean = false
         public previousModal?: ObjectModal | ObjectListModal
         constructor(...rest: any[]) {
-            super()
+            super(plugin)
             this.target = target
             this.eF = existingField
             this.value = this.eF?.value || ""
+            this.indexedPath = indexedPath
+            this.lineNumber = lineNumber
+            this.asList = asList
+            this.asBlockquote = asBlockquote
+            this.previousModal = previousModal
         }
         public openModal() {
             this.modal.open()
@@ -543,20 +553,40 @@ function FieldValueManager<F extends Constructor<IField>>(
 
         public save() {
             if (isSingleTargeted(this)) {
-                postValues(plugin, [{ indexedPath: this.id, payload: { value: this.value } }], this.target)
+                postValues(plugin, [{ indexedPath: this.id, payload: { value: this.value } }], this.target, this.lineNumber, this.asList, this.asBlockquote)
             } else if (isMultiTargeted(this)) {
-                for (const target of this.target) {
-                    postValues(plugin, [{ indexedPath: this.id, payload: { value: this.value } }], target)
-                }
+                new MultiTargetModificationConfirmModal(this).open()
             }
         }
     }
 }
 
-export function fieldValueManager(id: string, fileClassName: string | undefined, target: Target, existingField: ExistingField | undefined, plugin: MetadataMenu): IFieldManager<Target> | undefined {
+
+export function fieldValueManager(
+    plugin: MetadataMenu,
+    id: string,
+    fileClassName: string | undefined,
+    target: Target,
+    existingField: ExistingField | undefined,
+    indexedPath?: string,
+    lineNumber?: number,
+    asList?: boolean,
+    asBlockquote?: boolean,
+    previousModal?: ObjectModal | ObjectListModal
+): IFieldManager<Target> | undefined {
     const [field] = getFieldConstructor(id, fileClassName, plugin)
     if (!field) return
-    return new (FieldValueManager(field, target, existingField, plugin))()
+    return new (FieldValueManager(
+        plugin,
+        field,
+        target,
+        existingField,
+        indexedPath,
+        lineNumber,
+        asList,
+        asBlockquote,
+        previousModal
+    ))()
 }
 
 export function setValidationError(textInput: TextComponent, message?: string) {

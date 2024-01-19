@@ -116,7 +116,7 @@ export function createDvField(
     attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
 ): void {
     if (!managedField) return
-    managedField.value = p[managedField.name]?.value || ""
+    managedField.value = p[managedField.name] || ""
     switch (managedField.type) {
         case "Input": return Input.createDvField(managedField, dv, p, fieldContainer, attrs)
         case "Select": throw Error("not implemented")

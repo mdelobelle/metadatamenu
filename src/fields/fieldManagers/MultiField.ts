@@ -10,7 +10,7 @@ import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
-import { openModal } from "../base/BaseModal";
+import { fieldValueManager } from "../Field";
 
 export default class MultiField extends AbstractListBasedField {
 
@@ -22,10 +22,7 @@ export default class MultiField extends AbstractListBasedField {
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
         const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
-        // const modal = new MultiSelectModal(this.plugin, file, this.field, eF, indexedPath);
-        // modal.titleEl.setText("Select values");
-        // modal.open()
-        openModal(this.field.id, this.field.fileClassName, eF, file, this.plugin)
+        fieldValueManager(this.plugin, this.field.id, this.field.fileClassName, file, eF, indexedPath)
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {

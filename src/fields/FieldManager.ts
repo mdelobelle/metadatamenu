@@ -10,6 +10,7 @@ import Field from "./_Field";
 import { ExistingField } from "./ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
+import { fieldValueManager } from "./Field";
 
 export const enum SettingLocation {
     "PluginSettings",
@@ -147,7 +148,13 @@ export abstract class FieldManager {
             modal.open();
         } else {
             const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
-            if (field) this.createAndOpenModal(plugin, file, fieldName, field, undefined, undefined, lineNumber, asList, asBlockquote);
+            if (field) {
+                if (field.type === FieldType.Input) {
+                    fieldValueManager(plugin, field.id, field.fileClassName, file, undefined, undefined, lineNumber, asList, asBlockquote)?.openModal()
+                } else {
+                    this.createAndOpenModal(plugin, file, fieldName, field, undefined, undefined, lineNumber, asList, asBlockquote)
+                }
+            }
         }
     }
 

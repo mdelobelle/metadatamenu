@@ -10,7 +10,7 @@ import { ExistingField } from "../ExistingField";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import { Note } from "src/note/note";
-import { openModal } from "../base/BaseModal";
+import { fieldValueManager } from "../Field";
 
 export default class InputField extends FieldManager {
 
@@ -24,13 +24,7 @@ export default class InputField extends FieldManager {
 
     private async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
         const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
-        openModal(this.field.id, this.field.fileClassName, eF, file, this.plugin)
-
-        /*
-        const modal = new InputModal(this.plugin, file, this.field, eF, indexedPath);
-        modal.titleEl.setText(`Change Value for <${this.field.name}>`);
-        modal.open()
-        */
+        fieldValueManager(this.plugin, this.field.id, this.field.fileClassName, file, eF, indexedPath)
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {

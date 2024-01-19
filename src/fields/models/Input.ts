@@ -45,8 +45,7 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
         constructor(...rest: any[]) {
             super(plugin.app)
             this.managedField = managedField
-            this.titleEl.setText(`Change Value for <${this.managedField.name}>`)
-            console.log("ICI", this.managedField.target)
+            this.titleEl.setText(`<PROTO> Change Value for <${this.managedField.name}>`)
             this.build()
         }
 

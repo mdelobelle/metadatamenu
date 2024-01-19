@@ -1,10 +1,10 @@
 
-import { IFieldManager, Target, fieldValueManager, getFieldConstructor } from "../Field"
+import { IFieldManager, Target } from "../Field"
 import MetadataMenu from "main"
-import { Modal, TFile } from "obsidian"
-import { ExistingField } from "../ExistingField";
+import { ButtonComponent, Modal, TFile } from "obsidian"
 import { IListBasedModal } from "../models/baseModels/ListBasedField";
 import { getValuesForIndexedPath } from "src/commands/getValues";
+import { postValues } from "src/commands/postValues";
 
 type Constructor<T> = new (...args: any[]) => T;
 
@@ -33,11 +33,6 @@ export function basicModal(managedField: IFieldManager<Target>, plugin: Metadata
     }
 }
 
-export function openModal(id: string, fileClassName: string | undefined, existingField: ExistingField | undefined, target: Target, plugin: MetadataMenu) {
-    const fieldVM = fieldValueManager(id, fileClassName, target, existingField, plugin)
-    fieldVM?.openModal()
-}
-
 interface TargetValue {
     filePath: string,
     fileName: string,
@@ -45,28 +40,46 @@ interface TargetValue {
 }
 
 
-class MultiTargetModificationConfirmModal extends Modal {
+export class MultiTargetModificationConfirmModal extends Modal {
     constructor(
         public managedField: IFieldManager<TFile[]>,
-        public plugin: MetadataMenu
     ) {
-        super(plugin.app)
-        this.build()
+        super(managedField.plugin.app)
     }
 
     async onOpen() {
-        const values: TargetValue[] = []
+        this.titleEl.setText("Confirm modification")
+        this.contentEl.createDiv({ text: `${this.managedField.name} will be updated with "${this.managedField.value}" in the following ${this.managedField.target.length} files:` })
+        const targets = this.contentEl.createDiv()
+        const targetsList = targets.createEl("ul")
+        const targetValues: TargetValue[] = []
         for (const file of this.managedField.target) {
-            const currentValue = await getValuesForIndexedPath(this.plugin, file, this.managedField.indexedPath || this.managedField.id)
-            values.push({
+            const currentValue = await getValuesForIndexedPath(this.managedField.plugin, file, this.managedField.indexedPath || this.managedField.id)
+            targetValues.push({
                 filePath: file.path,
                 fileName: file.basename,
                 value: currentValue || ""
             })
         }
-    }
-
-    build() {
-        this.titleEl.setText("Confirm modification")
+        for (const value of targetValues) {
+            targetsList.createEl("li", { title: value.fileName, text: `${value.filePath}: $(${value.value ?? "--missing--"}) -> ${this.managedField.value}` })
+        }
+        const footer = this.contentEl.createDiv({ cls: "footer-container" })
+        new ButtonComponent(footer)
+            .setButtonText("Confirm")
+            .setWarning()
+            .onClick(() => {
+                for (const value of targetValues) {
+                    postValues(
+                        this.managedField.plugin,
+                        [{ indexedPath: this.managedField.id, payload: { value: this.managedField.value } }],
+                        value.filePath,
+                        this.managedField.lineNumber,
+                        this.managedField.asList,
+                        this.managedField.asBlockquote
+                    )
+                }
+                this.close()
+            })
     }
 }

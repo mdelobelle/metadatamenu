@@ -54,7 +54,7 @@ function createDvField(
     if (field?.type) {
         if (field.type === FieldType.Input) {
             const target = plugin.app.vault.getAbstractFileByPath(p.file.path) as TFile
-            const fieldVM = fieldValueManager(field.id, field.fileClassName, target, undefined, plugin)
+            const fieldVM = fieldValueManager(plugin, field.id, field.fileClassName, target, undefined)
             _createDvField(fieldVM, dv, p, fieldContainer)
         } else {
             const fieldManager = new FieldManager[field.type](plugin, field);
