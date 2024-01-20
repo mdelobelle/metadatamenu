@@ -149,7 +149,7 @@ export abstract class FieldManager {
         } else {
             const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
             if (field) {
-                if (field.type === FieldType.Input) {
+                if ([FieldType.Media, FieldType.MultiMedia, FieldType.MultiFile, FieldType.File, FieldType.Input, FieldType.Multi, FieldType.Select].includes(field.type)) {
                     fieldValueManager(plugin, field.id, field.fileClassName, file, undefined, undefined, lineNumber, asList, asBlockquote)?.openModal()
                 } else {
                     this.createAndOpenModal(plugin, file, fieldName, field, undefined, undefined, lineNumber, asList, asBlockquote)

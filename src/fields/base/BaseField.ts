@@ -14,7 +14,7 @@ export interface IFieldBase {
 }
 
 export type FieldParam = {
-    [K in keyof TypesOptionsMap]: [type: K, options: TypesOptionsMap[K]]
+    [K in keyof TypesOptionsMap]: [type: K, options: TypesOptionsMap[K] | {}]
 }[keyof TypesOptionsMap];
 
 export function isFieldOptions(param: [string, Record<string, any>]): param is FieldParam {

@@ -4,26 +4,27 @@ import { Constructor } from "src/typings/types"
 import { IFieldBase } from "src/fields/base/BaseField"
 import { FieldType } from "src/fields/Fields"
 import { IFieldManager, Target, isSingleTargeted } from "src/fields/Field"
-import * as FileBasedField from "src/fields/models/baseModels/FileBasedField"
+import * as MediaBasedField from "src/fields/models/baseModels/MediaBasedField"
+import { IFieldBaseSettingModal } from "src/fields/models/baseModels/FileBasedField"
 import { extractLinks, getLink } from "src/utils/parser"
+import { MediaType, extensionMediaTypes } from "src/fields/models/baseModels/MediaBasedField"
 import { cleanActions } from "src/utils/modals"
-import { IFieldBaseSettingModal, buildMarkDownLink } from "src/fields/models/baseModels/FileBasedField"
 import { ISettingsModal } from "../base/BaseSetting"
 
-export class Base extends FileBasedField.Base implements IFieldBase {
-    type = FieldType.MultiFile
-    tooltip = "Accepts multiple internal links"
+export class Base extends MediaBasedField.Base implements IFieldBase {
+    type = FieldType.MultiMedia
+    tooltip = "Accepts multiple links to media files"
 }
 
-export interface Options extends FileBasedField.Options { }
+export interface Options extends MediaBasedField.Options { }
 
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
-    const base = FileBasedField.settingsModal(Base)
+    const base = MediaBasedField.settingsModal(Base)
     return class SettingsModal extends base { }
 }
 
-export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<FileBasedField.Modal<Target>> {
-    const base = FileBasedField.valueModal(managedField, plugin)
+export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<MediaBasedField.Modal<Target>> {
+    const base = MediaBasedField.valueModal(managedField, plugin)
     return class ValueModal extends base {
         private selectedFiles: TFile[] = [];
         constructor(...rest: any[]) {
@@ -44,7 +45,7 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
                         .includes(file.path)
                 ) this.selectedFiles.push(file)
             }
-            if (initialOptions && isSingleTargeted(this.managedField)) {
+            if (initialOptions && isSingleTargeted(managedField)) {
                 if (Array.isArray(initialOptions)) {
                     // in frontmatter it can be a regular array
                     initialOptions.map(item => {
@@ -69,7 +70,6 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
         }
 
         build() {
-            this.containerEl.addClass("metadata-menu")
             this.containerEl.onkeydown = async (e) => {
                 if (e.key == "Enter" && e.altKey) {
                     e.preventDefault();
@@ -106,46 +106,19 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
         }
 
         async replaceValues() {
+            const embed = managedField.options.embed
             const result = this.selectedFiles.map(file => {
-                const dvApi = plugin.app.plugins.plugins.dataview?.api
-                let alias: string | undefined = undefined;
-                if (dvApi && managedField.options.customRendering) {
-                    alias = new Function("page", `return ${managedField.options.customRendering}`)(dvApi.page(file.path))
-                }
-                return buildMarkDownLink(managedField.plugin, file, file.basename, undefined, alias)
+                const alias = extensionMediaTypes[file.extension] === MediaType.Image ? managedField.options.thumbnailSize : undefined
+                const value = MediaBasedField.buildMediaLink(plugin, file, file.path, embed ? alias : undefined)
+                return embed ? value : value.replace(/^\!/, "")
             })
-            managedField.value = result.join(",")
+            managedField.value = result.join(", ")
             managedField.save()
-            this.close()
         }
 
         async clearValues() {
             managedField.value = ""
             managedField.save()
-            this.close()
-        }
-
-        renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {
-            const dvApi = plugin.app.plugins.plugins.dataview?.api
-            if (dvApi && managedField.options.customRendering) {
-                const suggestionContainer = el.createDiv({ cls: "item-with-add-on" });
-                suggestionContainer.createDiv({
-                    text: new Function("page", `return ${managedField.options.customRendering}`)(dvApi.page(value.item.path))
-                })
-                const filePath = suggestionContainer.createDiv({ cls: "add-on" })
-                filePath.setText(value.item.path)
-            } else {
-                el.setText(value.item.basename)
-            }
-            el.addClass("value-container")
-            const spacer = this.containerEl.createDiv({ cls: "spacer" })
-            el.appendChild(spacer)
-
-            if (this.selectedFiles.some(file => file.path === value.item.path)) {
-                el.addClass("value-checked")
-                const iconContainer = el.createDiv({ cls: "icon-container" })
-                setIcon(iconContainer, "check-circle")
-            }
         }
 
         renderSelected() {
@@ -176,10 +149,6 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
             }
             this.renderSelected()
         }
-
-        async onChooseItem(item: TFile): Promise<void> {
-
-        }
     }
 }
 
@@ -190,5 +159,5 @@ export function createDvField(
     fieldContainer: HTMLElement,
     attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
 ): void {
-    return FileBasedField.createDvField(managedField, dv, p, fieldContainer, attrs)
+    return MediaBasedField.createDvField(managedField, dv, p, fieldContainer, attrs)
 }

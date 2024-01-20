@@ -411,22 +411,25 @@ export function buildSettingsModal(
         public setType(fieldType: FieldType, fieldTypeLabelContainer: HTMLDivElement): void {
             fieldTypeLabelContainer.setText(fieldType)
             fieldTypeLabelContainer.className = `chip ${FieldTypeTagClass[fieldType]}`
-
-            this.field = new fieldConstructor();
             this.setFileClassName()
-            copyProperty(this.field, this.initialField);
-            this.field.name = this.namePromptComponent.getValue()
-            this.field.type = fieldType;
-            this.field.path = this.path
-            if (this.field.type !== this.initialField.type &&
-                ![this.field.type, this.initialField.type].every(fieldType =>
+            const Field = buildField(plugin, "", "", "", this.field.fileClassName, undefined, undefined, undefined, fieldType, {})
+            const settingsModal = getFieldSettings(Field, fieldType, plugin, parentSetting, parentSettingContainer)
+            settingsModal.field.name = this.namePromptComponent.getValue()
+            copyProperty(settingsModal.field, this.initialField);
+            settingsModal.field.name = this.namePromptComponent.getValue()
+            settingsModal.field.type = fieldType;
+            settingsModal.field.path = this.path
+            if (settingsModal.field.type !== this.initialField.type &&
+                ![settingsModal.field.type, this.initialField.type].every(fieldType =>
                     ["Multi", "Select", "Cycle"].includes(fieldType)
                 )
             ) {
-                this.field.options = {}
+                settingsModal.field.options = {}
             }
+            settingsModal.open()
+            this.close()
             this.buildParentSelectContainer()
-            if (multiTypes.includes(this.field.type)) {
+            if (multiTypes.includes(settingsModal.field.type)) {
                 this.frontmatterListDisplayContainer.show()
             } else {
                 this.frontmatterListDisplayContainer.hide()
@@ -436,6 +439,7 @@ export function buildSettingsModal(
             }
             this.createSettingContainer()
         }
+
 
         private buildTypeSelectContainer(): void {
             this.typeSelectContainer.replaceChildren()

@@ -40,7 +40,7 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
             }
             this.managedField.value = buildMarkDownLink(plugin, item, item.path, undefined, alias)
             this.managedField.save()
-            this.previousModal?.open()
+            this.close()
         }
 
         renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {

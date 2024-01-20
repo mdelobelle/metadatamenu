@@ -4,6 +4,8 @@ import * as Input from "./models/Input"
 import * as Select from "./models/Select"
 import * as File from "./models/File"
 import * as MultiFile from "./models/MultiFile"
+import * as Media from "./models/Media"
+import * as MultiMedia from "./models/MultiMedia"
 import * as Formula from "./models/Formula"
 import * as ObjectList from "./models/ObjectList"
 import { ISettingsModal, buildSettingsModal } from "./base/BaseSetting"
@@ -13,6 +15,8 @@ import FieldSetting from "src/settings/FieldSetting"
 import { ModalType } from "./base/BaseModal"
 import { IFieldBase } from "./base/BaseField"
 import { Constructor } from "src/typings/types"
+
+//TODO next Media and Multi Media (similar to file)
 
 //#region Types
 
@@ -26,6 +30,8 @@ export enum FieldType {
     Multi = "Multi",
     File = "File",
     MultiFile = "MultiFile",
+    Media = "Media",
+    MultiMedia = "MultiMedia",
     Formula = "Formula",
     ObjectList = "ObjectList"
 }
@@ -36,6 +42,8 @@ export interface TypesOptionsMap {
     Multi: Multi.Options
     File: File.Options
     MultiFile: MultiFile.Options
+    Media: Media.Options
+    MultiMedia: MultiMedia.Options
     Formula: Formula.Options
     ObjectList: ObjectList.Options
 }
@@ -46,13 +54,16 @@ export const fieldTypes: Array<keyof typeof FieldType> = [
     "Multi",
     "File",
     "MultiFile",
+    "Media",
+    "MultiMedia",
     "Formula",
     "ObjectList"
 ]
 
 export const multiTypes = [
     "Multi",
-    "MultiFile"
+    "MultiFile",
+    "MultiMedia"
 ]
 
 export const objectTypes = [
@@ -87,6 +98,8 @@ export function getFieldType(type: keyof typeof FieldType): FieldType {
         case "Select": return FieldType.Select
         case "Multi": return FieldType.Multi
         case "File": return FieldType.File
+        case "Media": return FieldType.Media
+        case "MultiMedia": return FieldType.MultiMedia
         case "MultiFile": return FieldType.MultiFile
         case "Formula": return FieldType.Formula
         case "ObjectList": return FieldType.ObjectList
@@ -105,6 +118,8 @@ export function getFieldSettings(Field: Constructor<IField>,
         case "Multi": return new (Multi.settingsModal(base))()
         case "File": return new (File.settingsModal(base))
         case "MultiFile": return new (MultiFile.settingsModal(base))
+        case "Media": return new (Media.settingsModal(base))
+        case "MultiMedia": return new (MultiMedia.settingsModal(base))
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
     }
@@ -117,6 +132,8 @@ export function getFieldModal(managedField: IFieldManager<Target>, plugin: Metad
         case "Multi": return new (Multi.valueModal(managedField, plugin))()
         case "File": return new (File.valueModal(managedField, plugin))()
         case "MultiFile": return new (MultiFile.valueModal(managedField, plugin))()
+        case "Media": return new (Media.valueModal(managedField, plugin))()
+        case "MultiMedia": return new (MultiMedia.valueModal(managedField, plugin))()
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
     }
@@ -129,6 +146,8 @@ export function getFieldClass(type: keyof typeof FieldType): Constructor<IFieldB
         case "Multi": return Multi.Base
         case "File": return File.Base
         case "MultiFile": return MultiFile.Base
+        case "Media": return Media.Base
+        case "MultiMedia": return MultiMedia.Base
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
     }
@@ -149,6 +168,8 @@ export function createDvField(
         case "Multi": return Multi.createDvField(managedField, dv, p, fieldContainer, attrs)
         case "File": return File.createDvField(managedField, dv, p, fieldContainer, attrs)
         case "MultiFile": return MultiFile.createDvField(managedField, dv, p, fieldContainer, attrs)
+        case "Media": return Media.createDvField(managedField, dv, p, fieldContainer, attrs)
+        case "MultiMedia": return MultiMedia.createDvField(managedField, dv, p, fieldContainer, attrs)
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
     }

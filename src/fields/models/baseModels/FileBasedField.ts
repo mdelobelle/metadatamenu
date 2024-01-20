@@ -23,15 +23,18 @@ export interface Options extends BaseOptions {
     customSorting?: string
 }
 
+export interface IFieldBaseSettingModal extends ISettingsModal {
+    createCustomSortingContainer: (container: HTMLDivElement) => void
+}
 
-export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
-    return class InputSettingModal extends Base {
+export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IFieldBaseSettingModal> {
+    return class SettingModal extends Base {
         createSettingContainer = () => {
             this.createQueryContainer(this.optionsContainer)
             this.createCustomRenderingContainer(this.optionsContainer)
             this.createCustomSortingContainer(this.optionsContainer)
         }
-        public createQueryContainer(container: HTMLDivElement): void {
+        private createQueryContainer(container: HTMLDivElement): void {
             const dvQueryStringTopContainer = container.createDiv({ cls: "vstacked" });
             dvQueryStringTopContainer.createEl("span", { text: "Dataview Query (optional)", cls: 'field-option' });
             const dvQueryStringContainer = dvQueryStringTopContainer.createDiv({ cls: "field-container" });
