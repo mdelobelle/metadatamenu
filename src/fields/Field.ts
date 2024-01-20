@@ -616,4 +616,11 @@ export function removeValidationError(textInput: TextComponent | TextAreaCompone
     if (fieldError) fieldsContainer!.removeChild(fieldError)
 };
 
+export function replaceValues(plugin: MetadataMenu, path: string, id: string, value: string): void {
+    const file = plugin.app.vault.getAbstractFileByPath(path)
+    if (file instanceof TFile && file.extension == "md") {
+        postValues(plugin, [{ indexedPath: id, payload: { value: value } }], file)
+    }
+}
+
 //#endregion

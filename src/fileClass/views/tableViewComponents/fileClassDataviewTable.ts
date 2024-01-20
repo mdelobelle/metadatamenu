@@ -141,7 +141,7 @@ export class FileClassDataviewTable {
             const field = this.plugin.fieldIndex.fileClassesFields.get(fileClassName)?.find(f => f.isRoot() && f.name === fieldName)
             const files = selectedFiles.map(sF => this.plugin.app.vault.getAbstractFileByPath(sF)).filter(f => f instanceof TFile) as TFile[]
 
-            if (field && [FieldType.Input, FieldType.Select, FieldType.Multi].includes(field.type)) {
+            if (field && [FieldType.MultiFile, FieldType.File, FieldType.Input, FieldType.Select, FieldType.Multi].includes(field.type)) {
                 const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, files, undefined)
                 fieldVM?.openModal()
             }

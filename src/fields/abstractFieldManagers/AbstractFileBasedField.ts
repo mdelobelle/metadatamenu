@@ -12,6 +12,7 @@ import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
 import { AbstractMediaField } from "./AbstractMediaField";
+import { fieldValueManager } from "../Field";
 
 const convertDataviewArrayOfLinkToArrayOfPath = (arr: (Link | any)[]) => {
     return arr.reduce((acc, cur) => {
@@ -76,8 +77,9 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
         const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
-        const modal = this.modalFactory(this.plugin, file, this.field, eF, indexedPath)
-        modal.open()
+        fieldValueManager(this.plugin, this.field.id, this.field.fileClassName, file, eF, indexedPath)?.openModal()
+        //const modal = this.modalFactory(this.plugin, file, this.field, eF, indexedPath)
+        //modal.open()
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {

@@ -2,7 +2,7 @@
 import MetadataMenu from "main";
 import * as List from "./baseModels/ListBasedField"
 import { ISettingsModal } from "../base/BaseSetting";
-import { IFieldManager, Target, isSingleTargeted } from "../Field";
+import { IFieldManager, Target, isSingleTargeted, replaceValues } from "../Field";
 import { FieldType, getFieldModal } from "../Fields";
 import { ButtonComponent, TFile, setIcon } from "obsidian";
 import { getLink } from "src/utils/parser";
@@ -10,11 +10,20 @@ import { IFieldBase } from "../base/BaseField";
 import { buildMarkDownLink } from "./baseModels/FileBasedField";
 import { Constructor } from "src/typings/types";
 
+
+export class Base implements IFieldBase {
+    type = FieldType.Multi
+    tagName = "multi"
+    icon = "bullet-list"
+    tooltip = "Accepts multiple values from a list"
+    colorClass = "multi"
+}
+
 export interface Options extends List.Options { }
 
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
     const base = List.settingsModal(Base)
-    return class SelectSettingsModal extends base { }
+    return class SettingsModal extends base { }
 }
 
 export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<List.IListBasedModal<Target>> {
@@ -25,7 +34,7 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
             public preSelectedOptions?: Array<string>
         ) {
             super(plugin);
-            const initialOptions: string | string[] = isSingleTargeted(this.managedField) ? this.managedField.eF?.value || [] : []
+            const initialOptions: string | string[] = isSingleTargeted(this.managedField) ? this.managedField.value || [] : []
             if (initialOptions && isSingleTargeted(this.managedField)) {
                 if (Array.isArray(initialOptions)) {
                     this.selectedOptions = initialOptions.map(item => {
@@ -99,6 +108,7 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
 
         renderSuggestion(value: string, el: HTMLElement) {
             el.setText(value)
+            el.addClass("value-container")
             const spacer = this.containerEl.createDiv({ cls: "spacer" })
             el.appendChild(spacer)
             if (this.selectedOptions.includes(value.toString())) {
@@ -131,8 +141,97 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
     }
 }
 
-export class Base implements IFieldBase {
-    type = FieldType.Multi
-    tagName = "multi"
-    icon = "list"
+
+export function createDvField(
+    managedField: IFieldManager<Target>,
+    dv: any,
+    p: any,
+    fieldContainer: HTMLElement,
+    attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
+): void {
+    let valueHovered = false;
+    let currentValues: string[] = [];
+    if (p[managedField.name]) {
+        if (Object.keys(p[managedField.name]).includes("path")) {
+            currentValues = [`[[${p[managedField.name].path.replace(".md", "")}]]`]
+        } else if (Array.isArray(p[managedField.name])) {
+            p[managedField.name].forEach((item: any) => {
+                if (Object.keys(item).includes("path")) {
+                    currentValues.push(`[[${item.path.replace(".md", "")}]]`)
+                } else {
+                    currentValues.push(item.trim())
+                }
+            })
+        } else {
+            const value = p[managedField.name]
+            currentValues = value ? `${value}`.split(",").map((v: string) => v.trim()) : [];
+        }
+    }
+
+    /* current values container */
+    const valuesContainer = fieldContainer.createDiv({ cls: "values-container" })
+
+    /* current values */
+    currentValues.forEach(v => {
+        const valueContainer = valuesContainer.createDiv({ cls: "item-container" });
+        const valueRemoveBtn = valueContainer.createEl("button");
+        const valueLabel = valueContainer.createDiv({ cls: "label", text: v })
+        setIcon(valueRemoveBtn, "cross")
+        valueRemoveBtn.hide();
+        valueRemoveBtn.onclick = async () => {
+            const remainingValues = currentValues.filter(cV => cV !== v).join(", ")
+            replaceValues(managedField.plugin, p.file.path, managedField.id, remainingValues);
+        }
+
+        valueContainer.onmouseover = () => {
+            valueHovered = true;
+            doubleSpacer.hide();
+            singleSpacer.hide();
+            valueRemoveBtn.show();
+            valueLabel.addClass("hovered");
+        }
+        valueContainer.onmouseout = () => {
+            valueHovered = false;
+            valueRemoveBtn.hide();
+            singleSpacer.show();
+            doubleSpacer.hide();
+            valueLabel.removeClass("hovered");
+        }
+
+    })
+
+    /* button to display input */
+    const addBtn = valuesContainer.createEl("button");
+    setIcon(addBtn, "list-plus");
+    addBtn.onclick = () => managedField.openModal()
+
+    /* end spacer */
+    const singleSpacer = valuesContainer.createDiv({ cls: "spacer-1" });
+    const doubleSpacer = valuesContainer.createDiv({ cls: "spacer-2" });
+
+    if (!attrs?.options?.alwaysOn) {
+        addBtn.hide();
+        fieldContainer.onmouseover = () => {
+            addBtn.show();
+            doubleSpacer.hide();
+            if (!valueHovered) singleSpacer.show();
+        }
+        fieldContainer.onmouseout = () => {
+            addBtn.hide();
+            singleSpacer.hide();
+            doubleSpacer.show();
+        }
+    }
+
+    /* initial state */
+    if (!attrs?.options?.alwaysOn) {
+        singleSpacer.hide();
+        doubleSpacer.show();
+        addBtn.hide();
+    } else {
+        singleSpacer.show();
+        doubleSpacer.hide();
+        addBtn.show();
+    }
+
 }

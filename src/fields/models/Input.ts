@@ -12,6 +12,8 @@ export class Base implements IFieldBase {
     type = FieldType.Input
     tagName = "single"
     icon = "pencil"
+    tooltip = "Accepts any value"
+    colorClass = "single"
 }
 
 export interface Options extends BaseOptions {
@@ -46,7 +48,7 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
         constructor(...rest: any[]) {
             super(plugin.app)
             this.managedField = managedField
-            this.titleEl.setText(`<PROTO> Change Value for <${this.managedField.name}>`)
+            this.titleEl.setText(`Change Value for <${this.managedField.name}>`)
             this.build()
         }
 

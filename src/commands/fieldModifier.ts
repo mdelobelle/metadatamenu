@@ -53,7 +53,7 @@ function createDvField(
         return
     }
     if (field?.type) {
-        if (field.type === FieldType.Input) {
+        if ([FieldType.MultiFile, FieldType.File, FieldType.Input, FieldType.Multi, FieldType.Select].includes(field.type)) {
             const target = plugin.app.vault.getAbstractFileByPath(p.file.path) as TFile
             const fieldVM = fieldValueManager(plugin, field.id, field.fileClassName, target, undefined)
             _createDvField(fieldVM, dv, p, fieldContainer)

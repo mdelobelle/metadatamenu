@@ -453,17 +453,27 @@
                     display: flex;
                     align-items: center;
                     margin: 0 0.375em;
-                    color: var(--text-muted)
+                    color: var(--text-muted);
+
+                    svg {
+                        height: 0.8em;
+                        width: 0.8em;
+                    }
                 }
 
                 .line-number{
-                    color: var(--text-muted)
+                    color: var(--text-muted);
+                    font-size: smaller
                 }
             }
 
             .current-value{
                 color: var(--text-muted);
-                font-style: italic;
+                font-size: smaller;
+                
+                &.empty-or-missing{
+                    font-style: italic;
+                }
             }
         }
     }

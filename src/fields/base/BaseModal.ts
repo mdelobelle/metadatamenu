@@ -143,7 +143,8 @@ export class MultiTargetModificationConfirmModal extends Modal {
             const lineNumber = target.existingField?.lineNumber
             const lineNumberDisplay = locationContainer.createSpan({ cls: "line-number", text: lineNumber ? `(${lineNumber})` : "" })
             if (lineNumber) lineNumberDisplay.ariaLabel = `${this.managedField.name} current line: ${lineNumber}`
-            targetContainer.createDiv({ cls: "current-value", text: getValueDisplay(target.existingField) })
+            const currentValueContainer = targetContainer.createDiv({ cls: "current-value", text: getValueDisplay(target.existingField) })
+            if (!target.existingField?.value) currentValueContainer.addClass("empty-or-missing")
         }
         const footer = this.contentEl.createDiv({ cls: "footer-container" })
         new ButtonComponent(footer)

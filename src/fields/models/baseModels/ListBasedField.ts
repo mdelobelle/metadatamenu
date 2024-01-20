@@ -8,7 +8,6 @@ import { BaseValueModal, IBaseValueModal } from "../../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
 import { Constructor } from "src/typings/types"
 
-
 export enum SourceType {
     "ValuesList" = "ValuesList",
     "ValuesListNotePath" = "ValuesListNotePath",
@@ -280,10 +279,11 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
             return values;
         }
         getSuggestions(query: string): string[] | Promise<string[]> {
-            return this.getOptionsList()
+            return this.getOptionsList().filter(o => o.toLowerCase().includes(query.toLowerCase()))
         }
         renderSuggestion(value: string, el: HTMLElement) {
             el.setText(value)
+            el.addClass("value-container")
         }
         onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
             this.managedField.value = item

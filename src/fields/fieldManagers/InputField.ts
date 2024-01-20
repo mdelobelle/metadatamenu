@@ -24,7 +24,7 @@ export default class InputField extends FieldManager {
 
     private async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
         const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
-        fieldValueManager(this.plugin, this.field.id, this.field.fileClassName, file, eF, indexedPath)
+        fieldValueManager(this.plugin, this.field.id, this.field.fileClassName, file, eF, indexedPath)?.openModal()
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {

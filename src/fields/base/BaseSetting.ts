@@ -192,9 +192,9 @@ export function buildSettingsModal(
 
             this.containerEl.addClass("metadata-menu")
             if (this.field.name == "") {
-                this.titleEl.setText(`<PROTO> Add a field and define options`);
+                this.titleEl.setText(`Add a field and define options`);
             } else {
-                this.titleEl.setText(`<PROTO> Manage settings options for ${this.field.name}`);
+                this.titleEl.setText(`Manage settings options for ${this.field.name}`);
             };
 
             /* Name and parent */

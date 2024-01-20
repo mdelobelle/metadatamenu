@@ -9,6 +9,8 @@ export interface IFieldBase {
     type: keyof typeof FieldType
     tagName: string,
     icon: string,
+    tooltip: string,
+    colorClass: string,
 }
 
 export type FieldParam = {

@@ -2,6 +2,8 @@
 import * as Multi from "./models/Multi"
 import * as Input from "./models/Input"
 import * as Select from "./models/Select"
+import * as File from "./models/File"
+import * as MultiFile from "./models/MultiFile"
 import * as Formula from "./models/Formula"
 import * as ObjectList from "./models/ObjectList"
 import { ISettingsModal, buildSettingsModal } from "./base/BaseSetting"
@@ -12,13 +14,29 @@ import { ModalType } from "./base/BaseModal"
 import { IFieldBase } from "./base/BaseField"
 import { Constructor } from "src/typings/types"
 
-//Types
+//#region Types
+
+/*
+** Types and utils
+*/
+
+export enum FieldType {
+    Input = "Input",
+    Select = "Select",
+    Multi = "Multi",
+    File = "File",
+    MultiFile = "MultiFile",
+    Formula = "Formula",
+    ObjectList = "ObjectList"
+}
 
 export interface TypesOptionsMap {
-    Input: Input.Options,
-    Select: Select.Options,
-    Formula: Formula.Options,
-    Multi: Multi.Options,
+    Input: Input.Options
+    Select: Select.Options
+    Multi: Multi.Options
+    File: File.Options
+    MultiFile: MultiFile.Options
+    Formula: Formula.Options
     ObjectList: ObjectList.Options
 }
 
@@ -26,12 +44,15 @@ export const fieldTypes: Array<keyof typeof FieldType> = [
     "Input",
     "Select",
     "Multi",
+    "File",
+    "MultiFile",
     "Formula",
     "ObjectList"
 ]
 
 export const multiTypes = [
-    "Multi"
+    "Multi",
+    "MultiFile"
 ]
 
 export const objectTypes = [
@@ -52,21 +73,21 @@ export const rootOnlyTypes = [
     "Formula"
 ]
 
-export enum FieldType {
-    'Input' = "Input",
-    'Select' = "Select",
-    'Multi' = "Multi",
-    "Formula" = "Formula",
-    "ObjectList" = "ObjectList"
-}
+//#endregion
 
-// Factories
+//#region Factories
+
+/*
+** Factories from type
+*/
 
 export function getFieldType(type: keyof typeof FieldType): FieldType {
     switch (type) {
         case "Input": return FieldType.Input
         case "Select": return FieldType.Select
         case "Multi": return FieldType.Multi
+        case "File": return FieldType.File
+        case "MultiFile": return FieldType.MultiFile
         case "Formula": return FieldType.Formula
         case "ObjectList": return FieldType.ObjectList
     }
@@ -82,6 +103,8 @@ export function getFieldSettings(Field: Constructor<IField>,
         case "Input": return new (Input.settingsModal(base))()
         case "Select": return new (Select.settingsModal(base))()
         case "Multi": return new (Multi.settingsModal(base))()
+        case "File": return new (File.settingsModal(base))
+        case "MultiFile": return new (MultiFile.settingsModal(base))
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
     }
@@ -92,6 +115,8 @@ export function getFieldModal(managedField: IFieldManager<Target>, plugin: Metad
         case "Input": return new (Input.valueModal(managedField, plugin))()
         case "Select": return new (Select.valueModal(managedField, plugin))()
         case "Multi": return new (Multi.valueModal(managedField, plugin))()
+        case "File": return new (File.valueModal(managedField, plugin))()
+        case "MultiFile": return new (MultiFile.valueModal(managedField, plugin))()
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
     }
@@ -102,6 +127,8 @@ export function getFieldClass(type: keyof typeof FieldType): Constructor<IFieldB
         case "Input": return Input.Base
         case "Select": return Select.Base
         case "Multi": return Multi.Base
+        case "File": return File.Base
+        case "MultiFile": return MultiFile.Base
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
     }
@@ -118,8 +145,10 @@ export function createDvField(
     managedField.value = p[managedField.name] || ""
     switch (managedField.type) {
         case "Input": return Input.createDvField(managedField, dv, p, fieldContainer, attrs)
-        case "Select": throw Error("not implemented")
-        case "Multi": throw Error("not implemented")
+        case "Select": return Select.createDvField(managedField, dv, p, fieldContainer, attrs)
+        case "Multi": return Multi.createDvField(managedField, dv, p, fieldContainer, attrs)
+        case "File": return File.createDvField(managedField, dv, p, fieldContainer, attrs)
+        case "MultiFile": return MultiFile.createDvField(managedField, dv, p, fieldContainer, attrs)
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
     }
@@ -129,4 +158,7 @@ export function getIcon(type: keyof typeof FieldType): string {
     const c = getFieldClass(type)
     return new c().icon
 }
+
+//#endregion
+
 //TODO remplir les create settings container et les fields options

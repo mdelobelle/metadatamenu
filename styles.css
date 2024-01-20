@@ -1404,11 +1404,19 @@ span.flatpickr-weekday {
   margin: 0 0.375em;
   color: var(--text-muted);
 }
+.metadata-menu.modal-container.confirm-modal .target-container .location-container .position-icon svg {
+  height: 0.8em;
+  width: 0.8em;
+}
 .metadata-menu.modal-container.confirm-modal .target-container .location-container .line-number {
   color: var(--text-muted);
+  font-size: smaller;
 }
 .metadata-menu.modal-container.confirm-modal .target-container .current-value {
   color: var(--text-muted);
+  font-size: smaller;
+}
+.metadata-menu.modal-container.confirm-modal .target-container .current-value.empty-or-missing {
   font-style: italic;
 }
 
@@ -1965,11 +1973,19 @@ span.flatpickr-weekday {
   margin: 0 0.375em;
   color: var(--text-muted);
 }
+.metadata-menu.modal-container.confirm-modal .target-container .location-container .position-icon svg {
+  height: 0.8em;
+  width: 0.8em;
+}
 .metadata-menu.modal-container.confirm-modal .target-container .location-container .line-number {
   color: var(--text-muted);
+  font-size: smaller;
 }
 .metadata-menu.modal-container.confirm-modal .target-container .current-value {
   color: var(--text-muted);
+  font-size: smaller;
+}
+.metadata-menu.modal-container.confirm-modal .target-container .current-value.empty-or-missing {
   font-style: italic;
 }
 
