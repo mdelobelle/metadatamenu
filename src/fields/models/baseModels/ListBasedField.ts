@@ -2,11 +2,11 @@ import { ButtonComponent, DropdownComponent, Modal, SuggestModal, TFile, TextAre
 import { BaseOptions } from "../../base/BaseField"
 import { ISettingsModal } from "../../base/BaseSetting"
 import { FileSuggest } from "src/suggester/FileSuggester"
-import { Constructor, FieldType } from "../../Fields"
 import { IFieldManager, Target, isSingleTargeted, removeValidationError } from "../../Field"
 import MetadataMenu from "main"
-import { IBaseValueModal } from "../../base/BaseModal"
+import { BaseValueModal, IBaseValueModal } from "../../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
+import { Constructor } from "src/typings/types"
 
 
 export enum SourceType {
@@ -220,10 +220,11 @@ export interface IListBasedModal<T extends Target> extends IBaseValueModal<T> {
 }
 
 export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<IListBasedModal<Target>> {
-    return class BaseValueModal extends SuggestModal<string> {
+    return class ValueModal extends SuggestModal<string> {
         public managedField: IFieldManager<Target>
         public addButton: ButtonComponent;
-        public previousModal?: Modal
+        public previousModal?: BaseValueModal<Target>
+        public saved: boolean
         constructor(...rest: any[]) {
             super(plugin.app)
             this.managedField = managedField
@@ -257,7 +258,6 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
                     case "ValuesListNotePath":
                         values = plugin.fieldIndex.valuesListNotePathValues
                             .get(this.managedField.options.valuesListNotePath) || [];
-                        console.log(values)
                         break;
                     case "ValuesFromDVQuery":
                         {

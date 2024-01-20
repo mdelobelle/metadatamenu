@@ -22,6 +22,8 @@ interface BookmarkItem {
     items?: BookmarkItem[];
 }
 
+type Constructor<T> = new (...args: any[]) => T
+
 type FrontmatterValue = string | number | boolean | FrontmatterObject;
 
 interface FrontmatterObject {

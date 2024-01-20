@@ -1385,6 +1385,32 @@ span.flatpickr-weekday {
 .metadata-menu.modal-container .footer-actions button:last-child {
   margin-right: 0;
 }
+.metadata-menu.modal-container.confirm-modal .field-name {
+  color: var(--text-accent);
+}
+.metadata-menu.modal-container.confirm-modal .field-value {
+  color: var(--text-accent);
+}
+.metadata-menu.modal-container.confirm-modal .target-container .location-container {
+  display: flex;
+  align-items: center;
+}
+.metadata-menu.modal-container.confirm-modal .target-container .location-container .file-name {
+  font-weight: 600;
+}
+.metadata-menu.modal-container.confirm-modal .target-container .location-container .position-icon {
+  display: flex;
+  align-items: center;
+  margin: 0 0.375em;
+  color: var(--text-muted);
+}
+.metadata-menu.modal-container.confirm-modal .target-container .location-container .line-number {
+  color: var(--text-muted);
+}
+.metadata-menu.modal-container.confirm-modal .target-container .current-value {
+  color: var(--text-muted);
+  font-style: italic;
+}
 
 .metadata-menu.modal-container.note-fields-modal .navigation-separator {
   margin-top: 1em;
@@ -1919,6 +1945,32 @@ span.flatpickr-weekday {
 }
 .metadata-menu.modal-container .footer-actions button:last-child {
   margin-right: 0;
+}
+.metadata-menu.modal-container.confirm-modal .field-name {
+  color: var(--text-accent);
+}
+.metadata-menu.modal-container.confirm-modal .field-value {
+  color: var(--text-accent);
+}
+.metadata-menu.modal-container.confirm-modal .target-container .location-container {
+  display: flex;
+  align-items: center;
+}
+.metadata-menu.modal-container.confirm-modal .target-container .location-container .file-name {
+  font-weight: 600;
+}
+.metadata-menu.modal-container.confirm-modal .target-container .location-container .position-icon {
+  display: flex;
+  align-items: center;
+  margin: 0 0.375em;
+  color: var(--text-muted);
+}
+.metadata-menu.modal-container.confirm-modal .target-container .location-container .line-number {
+  color: var(--text-muted);
+}
+.metadata-menu.modal-container.confirm-modal .target-container .current-value {
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 .sections .item {

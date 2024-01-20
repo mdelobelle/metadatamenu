@@ -7,7 +7,7 @@ import YAMLField from "src/fields/fieldManagers/YAMLField";
 import { FieldManager, FieldType, frontmatterOnlyTypes, rawObjectTypes, ReservedMultiAttributes } from "src/types/fieldTypes";
 import { FieldManager as FM } from "src/types/fieldTypes";
 import * as Lookup from "src/types/lookupTypes";
-import { Line } from "./line";
+import { Line, LinePosition } from "./line";
 import { LineNode } from "./lineNode";
 import ObjectListField from "src/fields/fieldManagers/ObjectListField";
 
@@ -77,7 +77,7 @@ export class Note {
     public renderFieldValue(
         field: Field,
         rawValue: string,
-        location: "yaml" | "inline"
+        location: LinePosition
     ): any {
         const type = field?.type
         const indentationLevel = field?.path ? field.path.split("____").length : 0
@@ -215,7 +215,7 @@ export class Note {
 
     private createLine = (
         value: string,
-        position: "yaml" | "inline",
+        position: LinePosition,
         lineNumber: number,
         field?: Field,
         asList: boolean = false,

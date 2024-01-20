@@ -11,8 +11,9 @@ import { addInsertIFieldCommand } from "src/commands/paletteCommands"
 import FieldSetting from "src/settings/FieldSetting"
 import { incrementVersion } from "src/settings/MetadataMenuSettings"
 import { FieldType, frontmatterOnlyTypes, multiTypes, rootOnlyTypes } from "../Fields"
-import { Constructor, getFieldSettings } from "../Fields"
+import { getFieldSettings } from "../Fields"
 import { IField, buildField, copyProperty, exportIField, getField, getFieldConstructor, getNewFieldId, removeValidationError } from "../Field"
+import { Constructor } from "src/typings/types"
 
 // Field Types list agnostic
 // Field types specific settings agnostic

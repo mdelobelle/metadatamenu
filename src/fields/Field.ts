@@ -1,6 +1,6 @@
 import MetadataMenu from "main"
 
-import { ButtonComponent, Modal, SuggestModal, TFile, TextAreaComponent, TextComponent } from "obsidian"
+import { TFile, TextAreaComponent, TextComponent } from "obsidian"
 import { FieldCommand } from "./_Field"
 import { MultiDisplayType } from "src/types/fieldTypes"
 import { FieldStyleLabel } from "src/types/dataviewTypes"
@@ -15,10 +15,11 @@ import { IBaseValueModal, MultiTargetModificationConfirmModal } from "./base/Bas
 import { ExistingField } from "./ExistingField"
 import ObjectModal from "src/modals/fields/ObjectModal"
 import ObjectListModal from "src/modals/fields/ObjectListModal"
+import { Constructor } from "src/typings/types"
 
 // Field Types list agnostic
 
-export type Constructor<T> = new (...args: any[]) => T;
+//export type Constructor<T> = new (...args: any[]) => T;
 
 //#region Field
 
@@ -262,110 +263,11 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
             return true;
         }
 
-        static createDefault(plugin: MetadataMenu, name: string): IField {
+        static createDefault(plugin: MetadataMenu, name: string): Field {
             const field = new Field(plugin);
-            field.type = "Input";
+            field.type = FieldType.Input;
             field.name = name;
             return field;
-        }
-
-        static existingFields(plugin: MetadataMenu, filePath: string, obj: any, depth: number = 0, path: string = ""): IField[] {
-            const reservedKeys = ["file", "aliases", "tags"]
-            let _obj: any
-            if (depth === 0) {
-                const dvApi = plugin.app.plugins.plugins.dataview?.api
-                if (dvApi) {
-                    _obj = dvApi.page(filePath)
-                } else {
-                    return []
-                }
-            } else {
-                _obj = obj
-            }
-            const _existingFields: IField[] = []
-            if (typeof obj === 'object') {
-                for (const key of obj) {
-                    if (depth === 0 && reservedKeys.includes(key)) continue;
-                    if (typeof obj[key] === 'object' && obj[key] !== null) {
-                        _existingFields.push(...Field.existingFields(plugin, filePath, obj[key], depth + 1, `${path ? path + "." : ""}${key}`).filter(k => !_existingFields.includes(k)))
-                    } else if (!_existingFields.map(k => k.name.toLowerCase().replace(/\s/g, "-")).includes(key.toLowerCase().replace(/\s/g, "-"))) {
-                        _existingFields.push(key)
-                    } else {
-                        if (key !== key.toLowerCase().replace(/\s/g, "-")) {
-                            _existingFields[_existingFields.indexOf(key.toLowerCase().replace(/\s/g, "-"))] = key
-                        }
-                    }
-                }
-            }
-            return _existingFields
-        }
-
-        static getIdAndIndex(indexedId?: string) {
-            const { id, index } = indexedId?.match(/(?<id>[^\[]*)(?:\[(?<index>.*)\])?/)?.groups || { id: "", index: undefined }
-            return { id, index }
-        }
-
-        static upperPath(indexedPath: string): string {
-            const upperIndexedIds = indexedPath?.split("____")
-            upperIndexedIds?.pop()
-            return upperIndexedIds?.join("____") || ""
-        }
-
-        static upperIndexedPathObjectPath(indexedPath: string) {
-            const endingIndex = indexedPath.match(/\[\w+\]$/)
-            if (endingIndex) {
-                return indexedPath.replace(/\[\w+\]$/, '')
-            } else {
-                return Field.upperPath(indexedPath)
-            }
-        }
-
-        static getValueFromIndexedPath(carriageField: IField, obj: any, indexedPath: string): any {
-            //fonction récursive qui part du frontmatter et qui cherche la valeur correspondant à l'indexedPath
-            //l'argument field sert à récupérer la fileclass et à récupérer l'attribute plugin
-
-            if (!indexedPath) return obj;
-            const plugin = carriageField.plugin
-            const fileClassName = carriageField.fileClassName
-            const indexedProps: string[] = indexedPath.split('____');
-
-            try {
-                const indexedProp = indexedProps.shift()!
-                // on récupère l'id et l'éventuel index
-                const { id, index } = Field.getIdAndIndex(indexedProp)
-                // on récupère la définition du field selon son id et sa fileClass
-                const field = getField(id, fileClassName, plugin)
-                if (!field) return "" // s'il n'existe pas, on renvoie vide
-                let value: any
-                if (index !== undefined) {
-                    value = obj[field.name][index]
-                } else {
-                    value = obj[field.name]
-                }
-                if (typeof value === 'object') {
-                    // value est un object, on continue à inspecter
-                    const subValue = Field.getValueFromIndexedPath(field, value, indexedProps.join("____"))
-                    return subValue
-                } else if (Array.isArray(value)) {
-                    if (index && !isNaN(parseInt(index))) {
-                        // on récupère l'élément à l'index voulu.
-                        // par construction c'est un obj...
-                        const subObject = value[parseInt(index)]
-                        const subValue = Field.getValueFromIndexedPath(field, subObject, indexedProps.join("____"))
-                        return subValue
-                    } else {
-                        // c'est "juste" un tableau
-                        // par construction il ne peut pas y avoir sur subProps
-                        // on le renvoie telquel
-                        return value
-                    }
-                } else {
-                    // ni dans le cas d'un sous-objet, ni dans le cas d'une liste de sous objets, on renvoie la value
-                    return value
-                }
-            } catch (e) {
-                return ""
-            }
         }
 
         static presetFields(plugin: MetadataMenu): IField[] {
@@ -373,17 +275,6 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
                 const property = new Field(plugin);
                 return Object.assign(property, prop);
             });
-        }
-
-        static getValueFromPath(obj: any, path: string): string {
-            if (!path) return obj;
-            const properties: string[] = path.split('.');
-            try {
-                const subValue = Field.getValueFromPath(obj[properties.shift()!], properties.join('.'))
-                return subValue
-            } catch (e) {
-                return ""
-            }
         }
     }
 }
@@ -480,6 +371,123 @@ export function getNewFieldId(plugin: MetadataMenu) {
     }
     return id
 }
+
+export function upperIndexedPathObjectPath(indexedPath: string) {
+    const endingIndex = indexedPath.match(/\[\w+\]$/)
+    if (endingIndex) {
+        return indexedPath.replace(/\[\w+\]$/, '')
+    } else {
+        return upperPath(indexedPath)
+    }
+}
+
+export function upperPath(indexedPath: string): string {
+    const upperIndexedIds = indexedPath?.split("____")
+    upperIndexedIds?.pop()
+    return upperIndexedIds?.join("____") || ""
+}
+
+
+export function createDefault(plugin: MetadataMenu, name: string): IField {
+    throw Error("Not implemented")
+    //should return a input without id ....
+}
+
+export function existingFields(plugin: MetadataMenu, filePath: string, obj: any, depth: number = 0, path: string = ""): IField[] {
+    const reservedKeys = ["file", "aliases", "tags"]
+    let _obj: any
+    if (depth === 0) {
+        const dvApi = plugin.app.plugins.plugins.dataview?.api
+        if (dvApi) {
+            _obj = dvApi.page(filePath)
+        } else {
+            return []
+        }
+    } else {
+        _obj = obj
+    }
+    const _existingFields: IField[] = []
+    if (typeof obj === 'object') {
+        for (const key of obj) {
+            if (depth === 0 && reservedKeys.includes(key)) continue;
+            if (typeof obj[key] === 'object' && obj[key] !== null) {
+                _existingFields.push(...existingFields(plugin, filePath, obj[key], depth + 1, `${path ? path + "." : ""}${key}`).filter(k => !_existingFields.includes(k)))
+            } else if (!_existingFields.map(k => k.name.toLowerCase().replace(/\s/g, "-")).includes(key.toLowerCase().replace(/\s/g, "-"))) {
+                _existingFields.push(key)
+            } else {
+                if (key !== key.toLowerCase().replace(/\s/g, "-")) {
+                    _existingFields[_existingFields.indexOf(key.toLowerCase().replace(/\s/g, "-"))] = key
+                }
+            }
+        }
+    }
+    return _existingFields
+}
+
+export function getIdAndIndex(indexedId?: string) {
+    const { id, index } = indexedId?.match(/(?<id>[^\[]*)(?:\[(?<index>.*)\])?/)?.groups || { id: "", index: undefined }
+    return { id, index }
+}
+
+export function getValueFromIndexedPath(carriageField: IField, obj: any, indexedPath: string): any {
+    //fonction récursive qui part du frontmatter et qui cherche la valeur correspondant à l'indexedPath
+    //l'argument field sert à récupérer la fileclass et à récupérer l'attribute plugin
+
+    if (!indexedPath) return obj;
+    const plugin = carriageField.plugin
+    const fileClassName = carriageField.fileClassName
+    const indexedProps: string[] = indexedPath.split('____');
+
+    try {
+        const indexedProp = indexedProps.shift()!
+        // on récupère l'id et l'éventuel index
+        const { id, index } = getIdAndIndex(indexedProp)
+        // on récupère la définition du field selon son id et sa fileClass
+        const field = getField(id, fileClassName, plugin)
+        if (!field) return "" // s'il n'existe pas, on renvoie vide
+        let value: any
+        if (index !== undefined) {
+            value = obj[field.name][index]
+        } else {
+            value = obj[field.name]
+        }
+        if (typeof value === 'object') {
+            // value est un object, on continue à inspecter
+            const subValue = getValueFromIndexedPath(field, value, indexedProps.join("____"))
+            return subValue
+        } else if (Array.isArray(value)) {
+            if (index && !isNaN(parseInt(index))) {
+                // on récupère l'élément à l'index voulu.
+                // par construction c'est un obj...
+                const subObject = value[parseInt(index)]
+                const subValue = getValueFromIndexedPath(field, subObject, indexedProps.join("____"))
+                return subValue
+            } else {
+                // c'est "juste" un tableau
+                // par construction il ne peut pas y avoir sur subProps
+                // on le renvoie telquel
+                return value
+            }
+        } else {
+            // ni dans le cas d'un sous-objet, ni dans le cas d'une liste de sous objets, on renvoie la value
+            return value
+        }
+    } catch (e) {
+        return ""
+    }
+}
+
+export function getValueFromPath(obj: any, path: string): string {
+    if (!path) return obj;
+    const properties: string[] = path.split('.');
+    try {
+        const subValue = getValueFromPath(obj[properties.shift()!], properties.join('.'))
+        return subValue
+    } catch (e) {
+        return ""
+    }
+}
+
 //#endregion
 
 //#region FieldValueManager
@@ -535,7 +543,7 @@ function FieldValueManager<F extends Constructor<IField>>(
             super(plugin)
             this.target = target
             this.eF = existingField
-            this.value = this.eF?.value || ""
+            this.value = this.eF?.value
             this.indexedPath = indexedPath
             this.lineNumber = lineNumber
             this.asList = asList

@@ -3,8 +3,9 @@ import { FieldManager, FieldType } from "src/types/fieldTypes";
 import { FieldManager as F } from "src/fields/FieldManager";
 import chooseSectionModal from "src/modals/chooseSectionModal";
 import { setIcon, TFile } from "obsidian";
-import { buildField, fieldValueManager, getField, getFieldConstructor } from "src/fields/Field";
+import { fieldValueManager } from "src/fields/Field";
 import { createDvField as _createDvField } from "src/fields/Fields";
+import { positionIcon } from "src/note/line";
 
 function buildAndOpenModal(
     plugin: MetadataMenu,
@@ -84,7 +85,7 @@ export function fieldModifier(
             fieldContainer.appendChild(emptyField);
         } else {
             const addFieldBtn = dv.el("button", attrs);
-            setIcon(addFieldBtn, "log-in")
+            setIcon(addFieldBtn, positionIcon.inline)
             addFieldBtn.onclick = async () => {
                 const file = plugin.app.vault.getAbstractFileByPath(p.file.path)
                 if (file instanceof TFile && file.extension == "md") {
@@ -104,7 +105,7 @@ export function fieldModifier(
             }
             fieldContainer.appendChild(addFieldBtn);
             const addInFrontmatterFieldBtn = dv.el("button", attrs);
-            setIcon(addInFrontmatterFieldBtn, "align-vertical-space-around")
+            setIcon(addInFrontmatterFieldBtn, positionIcon.yaml)
             addInFrontmatterFieldBtn.onclick = async () => {
                 const file = plugin.app.vault.getAbstractFileByPath(p.file.path)
                 if (file instanceof TFile && file.extension == "md") {

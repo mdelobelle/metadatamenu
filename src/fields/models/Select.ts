@@ -5,8 +5,7 @@ import { ISettingsModal } from "../base/BaseSetting";
 import { IFieldManager, Target } from "../Field";
 import { FieldType } from "../Fields";
 import { IFieldBase } from "../base/BaseField";
-
-type Constructor<T> = new (...args: any[]) => T;
+import { Constructor } from "src/typings/types";
 
 export interface Options extends List.Options { }
 
@@ -24,7 +23,7 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
             await this.addNewValueToSettings();
             this.managedField.value = this.inputEl.value
             this.managedField.save()
-            this.close(true);
+            this.close();
         }
     }
 }

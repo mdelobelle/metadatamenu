@@ -1,6 +1,7 @@
+import { Constructor } from "src/typings/types"
 import { IFieldBase, BaseOptions } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
-import { Constructor, FieldType } from "../Fields"
+import { FieldType } from "../Fields"
 
 export interface Options extends BaseOptions {
     formula: string

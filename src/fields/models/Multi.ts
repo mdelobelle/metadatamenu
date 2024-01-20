@@ -8,16 +8,13 @@ import { ButtonComponent, TFile, setIcon } from "obsidian";
 import { getLink } from "src/utils/parser";
 import { IFieldBase } from "../base/BaseField";
 import { buildMarkDownLink } from "./baseModels/FileBasedField";
-
-type Constructor<T> = new (...args: any[]) => T;
+import { Constructor } from "src/typings/types";
 
 export interface Options extends List.Options { }
 
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
     const base = List.settingsModal(Base)
-    return class SelectSettingsModal extends base {
-
-    }
+    return class SelectSettingsModal extends base { }
 }
 
 export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<List.IListBasedModal<Target>> {
@@ -61,7 +58,7 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
             this.containerEl.onkeydown = async (e) => {
                 if (e.key == "Enter" && e.altKey) {
                     await this.replaceValues();
-                    this.close(true)
+                    this.close()
                 }
             }
         }
@@ -71,14 +68,14 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
             this.selectedOptions.push(this.inputEl.value)
             const modal = getFieldModal(this.managedField, plugin)
             modal.open()
-            this.close(false)
+            this.close()
         }
 
         async replaceValues() {
             const options = this.selectedOptions;
             this.managedField.value = options.join(", ")
             this.managedField.save()
-            this.close(true);
+            this.close();
         }
 
         renderSelected() {
@@ -128,7 +125,7 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
             confirmButton.setIcon("checkmark")
             confirmButton.onClick(async () => {
                 await this.replaceValues();
-                this.close(true)
+                this.close()
             })
         }
     }

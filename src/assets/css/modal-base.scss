@@ -431,4 +431,40 @@
         @include action-button();
 
     }
+
+    &.confirm-modal{
+        .field-name {
+            color: var(--text-accent)
+        }
+        .field-value {
+            color: var(--text-accent)
+        }
+
+        .target-container{
+
+            .location-container{
+                display: flex;
+                align-items: center;
+
+                .file-name{
+                    font-weight: 600;
+                }
+                .position-icon{
+                    display: flex;
+                    align-items: center;
+                    margin: 0 0.375em;
+                    color: var(--text-muted)
+                }
+
+                .line-number{
+                    color: var(--text-muted)
+                }
+            }
+
+            .current-value{
+                color: var(--text-muted);
+                font-style: italic;
+            }
+        }
+    }
 }

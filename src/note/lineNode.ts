@@ -1,14 +1,14 @@
 import MetadataMenu from "main";
 import Field from "src/fields/_Field";
 import { FieldType, frontmatterOnlyTypes, MultiDisplayType, objectTypes } from "src/types/fieldTypes";
-import { Line } from "./line";
+import { Line, LinePosition } from "./line";
 import { frontMatterLineField, parsedField } from "src/utils/parser";
 import { buildEndStyle, buildStartStyle } from "src/types/dataviewTypes";
 import * as Lookup from "src/types/lookupTypes";
 import { ExistingField } from "src/fields/ExistingField"
 
 
-export const separator: Record<"yaml" | "inline", ":" | "::"> = {
+export const separator: Record<LinePosition, ":" | "::"> = {
     "yaml": ":",
     "inline": "::"
 }
@@ -111,7 +111,7 @@ export class LineNode {
 
                             if (field.path && indexedId !== `${field.path}____${field.id}`) continue
                             this.indexedId = indexedId
-                            const existingField = new ExistingField(field, this.value, this.indexedId)
+                            const existingField = new ExistingField(this, field, this.value, this.indexedId)
                             if (field.path) {
                                 const parentLine = this.line.parentLine
                                 const parentNode = parentLine?.nodes[0]
@@ -164,7 +164,7 @@ export class LineNode {
                         this.field = fileClassField
                         this.indexedPath = fileClassField.id
                         this.value = value
-                        const existingField = new ExistingField(fileClassField, value, this.field.id)
+                        const existingField = new ExistingField(this, fileClassField, value, this.field.id)
                         this.line.note.existingFields.push(existingField)
                     }
                 }
@@ -172,7 +172,7 @@ export class LineNode {
             case "inline":
                 {
                     if (field && !frontmatterOnlyTypes.includes(field.type)) {
-                        const existingField = new ExistingField(field, this.value, field.id)
+                        const existingField = new ExistingField(this, field, this.value, field.id)
                         this.indexedId = field.id
                         this.indexedPath = field.getIndexedPath(this)
                         this.line.note.existingFields.push(existingField)
@@ -264,7 +264,7 @@ export class LineNode {
     public createFieldNodeContent(
         field: Field,
         value: string,
-        location: "yaml" | "inline",
+        location: LinePosition,
         asList: boolean = false,
         asBlockquote: boolean = false
     ) {

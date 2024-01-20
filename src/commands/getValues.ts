@@ -1,5 +1,6 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian"
+import { ExistingField } from "src/fields/ExistingField";
 import { Note } from "src/note/note";
 
 export async function getValues(plugin: MetadataMenu, fileOrfilePath: TFile | string, attribute: string): Promise<string[]> {
@@ -18,7 +19,13 @@ export async function getValues(plugin: MetadataMenu, fileOrfilePath: TFile | st
     return eF.filter(_ef => _ef.field.name === attribute).map(_eF => _eF.value)
 }
 
-export async function getValuesForIndexedPath(plugin: MetadataMenu, fileOrfilePath: TFile | string, indexedPath: string): Promise<string> {
+
+
+export async function getExistingFieldForIndexedPath(
+    plugin: MetadataMenu,
+    fileOrfilePath: TFile | string,
+    indexedPath: string
+): Promise<ExistingField | undefined> {
     let file: TFile;
     if (fileOrfilePath instanceof TFile) {
         file = fileOrfilePath;
@@ -31,5 +38,10 @@ export async function getValuesForIndexedPath(plugin: MetadataMenu, fileOrfilePa
         }
     }
     const eF = await Note.getExistingFieldForIndexedPath(plugin, file, indexedPath)
+    return eF
+}
+
+export async function getValuesForIndexedPath(plugin: MetadataMenu, fileOrfilePath: TFile | string, indexedPath: string): Promise<string> {
+    const eF = await getExistingFieldForIndexedPath(plugin, fileOrfilePath, indexedPath)
     return eF?.value
 }

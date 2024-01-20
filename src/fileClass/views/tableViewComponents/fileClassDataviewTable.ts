@@ -2,12 +2,11 @@ import MetadataMenu from "main";
 import { Column, ViewConfiguration } from "./tableViewFieldSet"
 import { FileClass } from "../../fileClass";
 import { fieldStates } from "./OptionsMultiSelectModal";
-import { FieldManager as FM, FieldType } from "src/types/fieldTypes";
+import { FieldType } from "src/types/fieldTypes";
 import { FileClassTableView } from "../fileClassTableView";
 import { FileClassCodeBlockView } from "../fileClassCodeBlockView";
 import { MarkdownPostProcessorContext, TFile, setIcon } from "obsidian";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
-import InputField from "src/fields/fieldManagers/InputField";
 import { fieldValueManager } from "src/fields/Field";
 
 export class FileClassDataviewTable {
@@ -141,33 +140,45 @@ export class FileClassDataviewTable {
             const { fileClassName, fieldName } = dvTable.columnsFileClassField[columndId]
             const field = this.plugin.fieldIndex.fileClassesFields.get(fileClassName)?.find(f => f.isRoot() && f.name === fieldName)
             const files = selectedFiles.map(sF => this.plugin.app.vault.getAbstractFileByPath(sF)).filter(f => f instanceof TFile) as TFile[]
-            if (field?.type === FieldType.Input) {
+
+            if (field && [FieldType.Input, FieldType.Select, FieldType.Multi].includes(field.type)) {
                 const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, files, undefined)
                 fieldVM?.openModal()
             }
         }
 
         const buildCellCheckBox = (
+            table: HTMLTableElement,
             cell: HTMLTableCellElement,
             filesCheckboxes: HTMLInputElement[],
-            headerCheckbox: HTMLInputElement | null,
             allFilesSelected: boolean,
             selectedFiles: string[]
         ) => {
             const checkBoxContainer = cell.createDiv({ cls: "modifier-selector" })
             const checkBox = checkBoxContainer.createEl("input", { type: "checkbox" })
-            if (cell.tagName === "TH") headerCheckbox = checkBox
+
+            if (cell.tagName === "TH") checkBox.addClass("page-checkbox")
             else filesCheckboxes.push(checkBox)
+
             checkBox.onclick = (e) => {
                 e.stopPropagation();
                 checkBox.toggleAttribute("checked")
                 if (cell!.tagName === "TH") {
-                    allFilesSelected = checkBox.checkVisibility()
+                    allFilesSelected = checkBox.checked
                     for (const cB of filesCheckboxes) cB.checked = false
                     selectedFiles.splice(0)
+                    if (allFilesSelected) {
+                        for (const cell of table.querySelectorAll("div.field-name a.internal-link")) {
+                            const name = cell?.getAttr("data-href");
+                            if (name) selectedFiles.push(name)
+                        }
+                        for (const cB of filesCheckboxes) cB.checked = true
+                    }
+
                 } else {
+                    const headerCheckbox = table.querySelector(".page-checkbox")
                     if (headerCheckbox) {
-                        headerCheckbox.checked = false
+                        (headerCheckbox as HTMLInputElement).checked = false
                         allFilesSelected = false
                     }
                     const name = cell!.querySelector("div.field-name a.internal-link")?.getAttr("data-href")
@@ -213,7 +224,6 @@ export class FileClassDataviewTable {
         var callback = function (mutationsList: MutationRecord[], dvTable: FileClassDataviewTable) {
             const selectedFiles: string[] = []
             let allFilesSelected: boolean = false
-            let headerCheckbox: HTMLInputElement | null = null
             const filesCheckboxes: HTMLInputElement[] = []
             for (var mutation of mutationsList) {
                 if (mutation.type == "childList") {
@@ -226,7 +236,7 @@ export class FileClassDataviewTable {
                             const table = node as HTMLTableElement
                             for (const row of table.rows) {
                                 const cell = row.cells.item(0)
-                                if (cell) buildCellCheckBox(cell, filesCheckboxes, headerCheckbox, allFilesSelected, selectedFiles)
+                                if (cell) buildCellCheckBox(table, cell, filesCheckboxes, allFilesSelected, selectedFiles)
                             }
                             if (table.tHead) buildHeaderCols(dvTable, table, selectedFiles, allFilesSelected)
                         }

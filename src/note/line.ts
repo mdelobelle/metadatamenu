@@ -4,6 +4,13 @@ import { LineNode } from "./lineNode";
 import { getLineFields } from "src/utils/parser";
 import { FieldType, frontmatterOnlyTypes } from "src/types/fieldTypes";
 
+export type LinePosition = "yaml" | "inline"
+
+export const positionIcon: Record<LinePosition, string> = {
+    yaml: "align-vertical-space-around",
+    inline: "log-in"
+}
+
 export class Line {
     public nodes: LineNode[] = []
     public parentLine?: Line
@@ -13,7 +20,7 @@ export class Line {
     constructor(
         public plugin: MetadataMenu,
         public note: Note,
-        public position: "yaml" | "inline",
+        public position: LinePosition,
         public rawContent: string = "",
         public number: number,
         public indentationLevel: number = 0,

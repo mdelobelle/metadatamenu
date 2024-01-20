@@ -1,11 +1,12 @@
-import { ButtonComponent, DropdownComponent, Notice, TFile, TextAreaComponent, TextComponent, setIcon } from "obsidian"
+import { ButtonComponent, DropdownComponent, Notice, TextAreaComponent, TextComponent, setIcon } from "obsidian"
 import { IFieldBase, BaseOptions } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
-import { Constructor, FieldType, getIcon } from "../Fields"
+import { FieldType, getIcon } from "../Fields"
 import { IFieldManager, Target, isSingleTargeted } from "../Field"
 import MetadataMenu from "main"
 import { IBasicModal, basicModal } from "../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
+import { Constructor } from "src/typings/types"
 
 export class Base implements IFieldBase {
     type = FieldType.Input
@@ -38,7 +39,7 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
 export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<IBasicModal<Target>> {
     //TODO inserer le multi target change
     const base = basicModal(managedField, plugin)
-    return class BaseValueModal extends base {
+    return class ValueModal extends base {
         private templateValues: Record<string, string> = {};
         private renderedValue: TextAreaComponent;
         public managedField: IFieldManager<Target>
@@ -157,18 +158,18 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
             confirmButton.setIcon("checkmark")
             confirmButton.onClick(async () => {
                 this.save();
-                this.close(true)
+                this.close()
             })
             //cancel button
             const cancelButton = new ButtonComponent(buttonContainer)
             cancelButton.setIcon("cross")
-            cancelButton.onClick(() => { this.close(true); })
+            cancelButton.onClick(() => { this.close(); })
             this.modalEl.appendChild(buttonContainer)
         }
 
         public async save(): Promise<void> {
             this.managedField.save()
-            this.close(true)
+            this.close()
         }
     }
 }

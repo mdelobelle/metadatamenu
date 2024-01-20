@@ -10,6 +10,7 @@ import MetadataMenu from "main"
 import FieldSetting from "src/settings/FieldSetting"
 import { ModalType } from "./base/BaseModal"
 import { IFieldBase } from "./base/BaseField"
+import { Constructor } from "src/typings/types"
 
 //Types
 
@@ -60,8 +61,6 @@ export enum FieldType {
 }
 
 // Factories
-
-export type Constructor<T> = new (...args: any[]) => T;
 
 export function getFieldType(type: keyof typeof FieldType): FieldType {
     switch (type) {
