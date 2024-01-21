@@ -6,7 +6,7 @@ export type BaseOptions = {
 }
 
 export interface IFieldBase {
-    type: keyof typeof FieldType
+    type: FieldType
     tagName: string,
     icon: string,
     tooltip: string,

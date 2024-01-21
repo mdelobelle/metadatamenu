@@ -1,15 +1,15 @@
-import { ButtonComponent, DropdownComponent, Notice, TextAreaComponent, TextComponent, setIcon } from "obsidian"
+import { ButtonComponent, DropdownComponent, Notice, TFile, TextAreaComponent, TextComponent, setIcon } from "obsidian"
 import { IFieldBase, BaseOptions } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
-import { FieldType, getIcon } from "../Fields"
-import { IFieldManager, Target, isSingleTargeted } from "../Field"
+import { displayValueFunction, getIcon } from "../Fields"
+import { IFieldManager, Target, isSingleTargeted, baseDisplayValue, getOptions } from "../Field"
 import MetadataMenu from "main"
 import { IBasicModal, basicModal } from "../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
 import { Constructor } from "src/typings/types"
 
 export class Base implements IFieldBase {
-    type = FieldType.Input
+    type = <const>"Input"
     tagName = "single"
     icon = "pencil"
     tooltip = "Accepts any value"
@@ -20,8 +20,17 @@ export interface Options extends BaseOptions {
     template?: string
 }
 
+export const DefaultOptions: Options = {}
+
+interface DefaultedOptions extends Options { }
+
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
     return class InputSettingModal extends Base {
+        public options: DefaultedOptions
+        constructor(...rest: any[]) {
+            super()
+            this.options = getOptions(this.field) as DefaultedOptions
+        }
         createSettingContainer = () => {
             const container = this.optionsContainer
             container.createEl("span", { text: "Template", cls: 'label' })
@@ -174,6 +183,10 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
             this.close()
         }
     }
+}
+
+export function displayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked = () => { }) {
+    return baseDisplayValue(managedField, container, onClicked)
 }
 
 export function createDvField(

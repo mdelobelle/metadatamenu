@@ -1,33 +1,35 @@
 
 import MetadataMenu from "main";
-import * as List from "./baseModels/ListBasedField"
+import * as AbstractList from "./abstractModels/AbstractList"
 import { ISettingsModal } from "../base/BaseSetting";
 import { IFieldManager, Target, isSingleTargeted, replaceValues } from "../Field";
 import { FieldType, getFieldModal } from "../Fields";
 import { ButtonComponent, TFile, setIcon } from "obsidian";
 import { getLink } from "src/utils/parser";
 import { IFieldBase } from "../base/BaseField";
-import { buildMarkDownLink } from "./baseModels/FileBasedField";
+import { buildMarkDownLink } from "./abstractModels/AbstractFile";
 import { Constructor } from "src/typings/types";
 
 
 export class Base implements IFieldBase {
-    type = FieldType.Multi
+    type = <const>"Multi"
     tagName = "multi"
     icon = "bullet-list"
     tooltip = "Accepts multiple values from a list"
     colorClass = "multi"
 }
 
-export interface Options extends List.Options { }
+export interface Options extends AbstractList.Options { }
+
+export const DefaultOptions: Options = AbstractList.DefaultOptions
 
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
-    const base = List.settingsModal(Base)
+    const base = AbstractList.settingsModal(Base)
     return class SettingsModal extends base { }
 }
 
-export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<List.IListBasedModal<Target>> {
-    const base = List.valueModal(managedField, plugin)
+export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<AbstractList.IListBasedModal<Target>> {
+    const base = AbstractList.valueModal(managedField, plugin)
     return class ValueModal extends base {
         private selectedOptions: Array<string>;
         constructor(
@@ -41,7 +43,6 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
                         const file = this.managedField.target as TFile
                         const link = getLink(item, file)
                         if (link) {
-
                             return buildMarkDownLink(plugin, file, link.path)
                         } else {
                             return item.toString()
@@ -141,6 +142,9 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
     }
 }
 
+export function displayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked: () => any) {
+    return AbstractList.displayValue(managedField, container, onClicked)
+}
 
 export function createDvField(
     managedField: IFieldManager<Target>,

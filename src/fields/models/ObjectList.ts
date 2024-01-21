@@ -1,7 +1,6 @@
 import { Constructor } from "src/typings/types"
 import { IFieldBase, BaseOptions } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
-import { FieldType } from "../Fields"
 
 export interface Options extends BaseOptions { }
 
@@ -10,7 +9,9 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
 }
 
 export class Base implements IFieldBase {
-    type = FieldType.ObjectList
+    tooltip: "Accepts a list of object fields"
+    colorClass: "lookup"
+    type = <const>"ObjectList"
     tagName = "object-list"
     icon = "boxes"
 }

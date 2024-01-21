@@ -9,12 +9,14 @@ import * as MultiMedia from "./models/MultiMedia"
 import * as Formula from "./models/Formula"
 import * as ObjectList from "./models/ObjectList"
 import { ISettingsModal, buildSettingsModal } from "./base/BaseSetting"
-import { IField, IFieldManager, Target } from "./Field"
+import { IField, IFieldManager, Target, baseDisplayValue } from "./Field"
 import MetadataMenu from "main"
 import FieldSetting from "src/settings/FieldSetting"
 import { ModalType } from "./base/BaseModal"
-import { IFieldBase } from "./base/BaseField"
+import { IFieldBase, BaseOptions } from "./base/BaseField"
 import { Constructor } from "src/typings/types"
+import { FieldType as LegacyFieldType } from "src/types/fieldTypes"
+import { TFile } from "obsidian"
 
 //TODO next Media and Multi Media (similar to file)
 
@@ -24,17 +26,16 @@ import { Constructor } from "src/typings/types"
 ** Types and utils
 */
 
-export enum FieldType {
-    Input = "Input",
-    Select = "Select",
-    Multi = "Multi",
-    File = "File",
-    MultiFile = "MultiFile",
-    Media = "Media",
-    MultiMedia = "MultiMedia",
-    Formula = "Formula",
-    ObjectList = "ObjectList"
-}
+export type FieldType =
+    | "Input"
+    | "Select"
+    | "Multi"
+    | "File"
+    | "MultiFile"
+    | "Media"
+    | "MultiMedia"
+    | "Formula"
+    | "ObjectList"
 
 export interface TypesOptionsMap {
     Input: Input.Options
@@ -48,7 +49,36 @@ export interface TypesOptionsMap {
     ObjectList: ObjectList.Options
 }
 
-export const fieldTypes: Array<keyof typeof FieldType> = [
+export function mapLegacyFieldType(type: FieldType): LegacyFieldType {
+    switch (type) {
+        case "Input": return LegacyFieldType.Input
+        case "Select": return LegacyFieldType.Select
+        case "Multi": return LegacyFieldType.Multi
+        case "File": return LegacyFieldType.File
+        case "MultiFile": return LegacyFieldType.MultiFile
+        case "Media": return LegacyFieldType.Media
+        case "MultiMedia": return LegacyFieldType.MultiMedia
+        case "Formula": throw Error("not implemented")
+        case "ObjectList": throw Error("not implemented")
+    }
+}
+
+export function mapFieldType(type: LegacyFieldType): FieldType {
+    switch (type) {
+        case "Input": return "Input"
+        case "Select": return "Select"
+        case "Multi": return "Multi"
+        case "File": return "File"
+        case "MultiFile": return "MultiFile"
+        case "Media": return "Media"
+        case "MultiMedia": return "MultiMedia"
+        case "Formula": throw Error("not implemented")
+        case "ObjectList": throw Error("not implemented")
+        default: throw Error("not implemented")
+    }
+}
+
+export const fieldTypes: Array<FieldType> = [
     "Input",
     "Select",
     "Multi",
@@ -92,22 +122,23 @@ export const rootOnlyTypes = [
 ** Factories from type
 */
 
-export function getFieldType(type: keyof typeof FieldType): FieldType {
+export function getDefaultOptions(type: FieldType): BaseOptions {
     switch (type) {
-        case "Input": return FieldType.Input
-        case "Select": return FieldType.Select
-        case "Multi": return FieldType.Multi
-        case "File": return FieldType.File
-        case "Media": return FieldType.Media
-        case "MultiMedia": return FieldType.MultiMedia
-        case "MultiFile": return FieldType.MultiFile
-        case "Formula": return FieldType.Formula
-        case "ObjectList": return FieldType.ObjectList
+        case "Input": return Input.DefaultOptions
+        case "Select": return Select.DefaultOptions
+        case "Multi": return Multi.DefaultOptions
+        case "File": return File.DefaultOptions
+        case "MultiFile": return MultiFile.DefaultOptions
+        case "Media": return Media.DefaultOptions
+        case "MultiMedia": return MultiMedia.DefaultOptions
+        // case "Formula": throw Error("not implemented")
+        // case "ObjectList": throw Error("not implemented")
+        default: return baseDisplayValue
     }
 }
 
 export function getFieldSettings(Field: Constructor<IField>,
-    type: keyof typeof FieldType,
+    type: FieldType,
     plugin: MetadataMenu,
     parentSetting?: FieldSetting,
     parentSettingContainer?: HTMLElement): ISettingsModal {
@@ -122,6 +153,7 @@ export function getFieldSettings(Field: Constructor<IField>,
         case "MultiMedia": return new (MultiMedia.settingsModal(base))
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
+        default: throw Error("not implemented")
     }
 }
 
@@ -136,10 +168,11 @@ export function getFieldModal(managedField: IFieldManager<Target>, plugin: Metad
         case "MultiMedia": return new (MultiMedia.valueModal(managedField, plugin))()
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
+        default: throw Error("not implemented")
     }
 }
 
-export function getFieldClass(type: keyof typeof FieldType): Constructor<IFieldBase> {
+export function getFieldClass(type: FieldType): Constructor<IFieldBase> {
     switch (type) {
         case "Input": return Input.Base
         case "Select": return Select.Base
@@ -150,6 +183,24 @@ export function getFieldClass(type: keyof typeof FieldType): Constructor<IFieldB
         case "MultiMedia": return MultiMedia.Base
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
+        default: throw Error("not implemented")
+    }
+}
+
+export type displayValueFunction = (managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked?: () => any) => void
+
+export function displayValue(type: FieldType): displayValueFunction {
+    switch (type) {
+        case "Input": return Input.displayValue
+        case "Select": return Select.displayValue
+        case "Multi": return Multi.displayValue
+        case "File": return File.displayValue
+        case "MultiFile": return MultiFile.displayValue
+        case "Media": return Media.displayValue
+        case "MultiMedia": return MultiMedia.displayValue
+        // case "Formula": throw Error("not implemented")
+        // case "ObjectList": throw Error("not implemented")
+        default: return baseDisplayValue
     }
 }
 
@@ -175,7 +226,7 @@ export function createDvField(
     }
 }
 
-export function getIcon(type: keyof typeof FieldType): string {
+export function getIcon(type: FieldType): string {
     const c = getFieldClass(type)
     return new c().icon
 }

@@ -2,7 +2,7 @@ import MetadataMenu from "main"
 import { TFile } from "obsidian"
 import { extractLinks, getLink } from "./parser"
 
-export const displayLinksOrText = (value: string | string[], file: TFile, container: HTMLDivElement, plugin: MetadataMenu, onClicked: () => {}) => {
+export const displayLinksOrText = (value: string | string[], file: TFile, container: HTMLDivElement, plugin: MetadataMenu, onClicked: () => any) => {
     const links = typeof value === 'string' ? extractLinks(value) : undefined
     if (links) {
         links.forEach((_link, i) => {

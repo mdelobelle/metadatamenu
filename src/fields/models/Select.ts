@@ -1,30 +1,31 @@
 
 import MetadataMenu from "main";
-import * as ListBasedField from "./baseModels/ListBasedField"
+import * as AbstractList from "./abstractModels/AbstractList"
 import { ISettingsModal } from "../base/BaseSetting";
-import { IFieldManager, Target } from "../Field";
-import { FieldType } from "../Fields";
+import { IFieldManager, Target, getOptions } from "../Field";
 import { IFieldBase } from "../base/BaseField";
 import { Constructor } from "src/typings/types";
 import { TFile, setIcon } from "obsidian";
 
 export class Base implements IFieldBase {
-    type = FieldType.Select
+    type = <const>"Select"
     tagName = "select"
     icon = "arrow"
     tooltip = "Accepts a single value from a list"
     colorClass = "select"
 }
 
-export interface Options extends ListBasedField.Options { }
+export interface Options extends AbstractList.Options { }
+
+export const DefaultOptions: Options = AbstractList.DefaultOptions
 
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
-    const base = ListBasedField.settingsModal(Base)
+    const base = AbstractList.settingsModal(Base)
     return class SettingsModal extends base { }
 }
 
-export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<ListBasedField.IListBasedModal<Target>> {
-    const base = ListBasedField.valueModal(managedField, plugin)
+export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<AbstractList.IListBasedModal<Target>> {
+    const base = AbstractList.valueModal(managedField, plugin)
     return class ValueModal extends base {
         async onAdd(): Promise<void> {
             await this.addNewValueToSettings();
@@ -43,6 +44,10 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
             managedField.save()
         }
     }
+}
+
+export function displayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked: () => any) {
+    return AbstractList.displayValue(managedField, container, onClicked)
 }
 
 export function createDvField(

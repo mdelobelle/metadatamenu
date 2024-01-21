@@ -8,7 +8,7 @@ import cryptoRandomString from "crypto-random-string"
 import { LineNode } from "src/note/lineNode"
 import GField from "src/fields/_Field"
 import FieldSettingsModal from "src/settings/FieldSettingsModal"
-import { FieldType, getFieldModal, getFieldType, multiTypes, objectTypes, rootOnlyTypes, getFieldClass } from "./Fields"
+import { FieldType, getFieldModal, multiTypes, objectTypes, rootOnlyTypes, getFieldClass, mapLegacyFieldType, getDefaultOptions } from "./Fields"
 import { FieldParam, IFieldBase, BaseOptions, isFieldOptions } from "./base/BaseField"
 import { postValues } from "src/commands/postValues"
 import { IBaseValueModal, MultiTargetModificationConfirmModal } from "./base/BaseModal"
@@ -265,7 +265,7 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
 
         static createDefault(plugin: MetadataMenu, name: string): Field {
             const field = new Field(plugin);
-            field.type = FieldType.Input;
+            field.type = "Input";
             field.name = name;
             return field;
         }
@@ -278,6 +278,19 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
         }
     }
 }
+
+export function getOptions(field: IField): BaseOptions {
+    const options = field.options
+    if (
+        Object.keys(options).length === 0 &&
+        options.constructor === Object
+    ) {
+        return getDefaultOptions(field.type)
+    } else {
+        return field.options
+    }
+}
+
 
 export function buildField(
     plugin: MetadataMenu,
@@ -295,9 +308,10 @@ export function buildField(
 }
 
 export function exportIField(field: IField): GField {
+
     const _field = new GField(field.plugin)
     _field.id = field.id
-    _field.type = getFieldType(field.type)
+    _field.type = mapLegacyFieldType(field.type)
     _field.name = field.name
     _field.fileClassName = field.fileClassName
     _field.command = field.command
@@ -597,6 +611,10 @@ export function fieldValueManager(
     ))()
 }
 
+//#endregion
+
+//#region utils
+
 export function setValidationError(textInput: TextComponent, message?: string) {
     textInput.inputEl.addClass("is-invalid");
     const fieldContainer = textInput.inputEl.parentElement;
@@ -621,6 +639,18 @@ export function replaceValues(plugin: MetadataMenu, path: string, id: string, va
     if (file instanceof TFile && file.extension == "md") {
         postValues(plugin, [{ indexedPath: id, payload: { value: value } }], file)
     }
+}
+
+export function baseDisplayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked = () => { }) {
+    let valueText: string;
+    switch (managedField.value) {
+        case undefined: valueText = ""; break;
+        case null: valueText = ""; break;
+        case false: valueText = "false"; break;
+        case 0: valueText = "0"; break;
+        default: valueText = managedField.value.toString() || "";
+    }
+    container.createDiv({ text: `<P> ${valueText}` })
 }
 
 //#endregion

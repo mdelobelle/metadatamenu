@@ -14,6 +14,8 @@ import ObjectListField, { ObjectListItem } from "src/fields/fieldManagers/Object
 import { postValues } from "src/commands/postValues";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
 import ObjectField from "src/fields/fieldManagers/ObjectField";
+import { displayValue, mapFieldType } from "src/fields/Fields"
+import { fieldValueManager } from "src/fields/Field";
 
 export class FieldOptions {
 
@@ -190,7 +192,10 @@ export class FieldsModal extends Modal {
         } else if (value === undefined) {
             fieldValueContainer.setText("<missing>");
         } else {
-            fieldManager.displayValue(fieldValueContainer, this.file, value, () => { this.close() })
+            const eF = this.existingFields.find(eF => eF.field.id === field.id)
+            const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, this.file, eF, indexedPath)
+            if (fieldVM) displayValue(mapFieldType(field.type))(fieldVM, fieldValueContainer, () => { this.close() })
+            else fieldManager.displayValue(fieldValueContainer, this.file, value)
         }
         const fieldOptionsWrapper = container.createDiv({ cls: "field-options-wrapper" });
         fieldOptionsWrapper.createDiv({ cls: "field-options-spacer" });

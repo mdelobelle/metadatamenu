@@ -1,13 +1,13 @@
-import { BaseOptions } from "crypto-random-string"
 import MetadataMenu from "main"
 import { ButtonComponent, FuzzySuggestModal, Notice, TFile, TextAreaComponent, setIcon } from "obsidian"
-import { IFieldManager, Target, removeValidationError } from "src/fields/Field"
+import { IFieldManager, Target, baseDisplayValue, getOptions, removeValidationError } from "src/fields/Field"
 import { getIcon } from "src/fields/Fields"
-import { IFieldBase } from "src/fields/base/BaseField"
+import { BaseOptions, IFieldBase } from "src/fields/base/BaseField"
 import { BaseValueModal, IBaseValueModal } from "src/fields/base/BaseModal"
 import { ISettingsModal } from "src/fields/base/BaseSetting"
 import { Link } from "src/types/dataviewTypes"
 import { Constructor } from "src/typings/types"
+import { displayLinksOrText } from "src/utils/linksUtils"
 import { cleanActions } from "src/utils/modals"
 
 export class Base implements Omit<IFieldBase, 'type' | 'tooltip'> {
@@ -23,12 +23,21 @@ export interface Options extends BaseOptions {
     customSorting?: string
 }
 
+export const DefaultOptions: Options = {}
+
+export interface DefaultedOptions extends Options { }
+
 export interface IFieldBaseSettingModal extends ISettingsModal {
     createCustomSortingContainer: (container: HTMLDivElement) => void
 }
 
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IFieldBaseSettingModal> {
     return class SettingModal extends Base {
+        public options: DefaultedOptions
+        constructor(...rest: any[]) {
+            super()
+            this.options = getOptions(this.field) as DefaultedOptions
+        }
         createSettingContainer = () => {
             this.createQueryContainer(this.optionsContainer)
             this.createCustomRenderingContainer(this.optionsContainer)
@@ -197,8 +206,11 @@ export function createDvField(
     }
 }
 
-//#region Utilitary function
+export function displayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked: () => any) {
+    if (managedField.eF) displayLinksOrText(managedField.value, managedField.eF.file, container, managedField.plugin, onClicked)
+}
 
+//#region Utilitary function
 
 export function buildMarkDownLink(plugin: MetadataMenu, file: TFile, path: string, subPath?: string, alias?: string): string {
     const destFile = plugin.app.metadataCache.getFirstLinkpathDest(path, file.path)

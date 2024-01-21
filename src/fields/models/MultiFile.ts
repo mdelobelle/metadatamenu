@@ -1,21 +1,22 @@
-import { ButtonComponent, FuzzyMatch, TFile, setIcon } from "obsidian"
 import MetadataMenu from "main"
-import { Constructor } from "src/typings/types"
-import { IFieldBase } from "src/fields/base/BaseField"
-import { FieldType } from "src/fields/Fields"
+import { ButtonComponent, FuzzyMatch, TFile, setIcon } from "obsidian"
 import { IFieldManager, Target, isSingleTargeted } from "src/fields/Field"
-import * as FileBasedField from "src/fields/models/baseModels/FileBasedField"
-import { extractLinks, getLink } from "src/utils/parser"
+import { IFieldBase } from "src/fields/base/BaseField"
+import * as FileBasedField from "src/fields/models/abstractModels/AbstractFile"
+import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile"
+import { Constructor } from "src/typings/types"
 import { cleanActions } from "src/utils/modals"
-import { IFieldBaseSettingModal, buildMarkDownLink } from "src/fields/models/baseModels/FileBasedField"
+import { extractLinks, getLink } from "src/utils/parser"
 import { ISettingsModal } from "../base/BaseSetting"
 
 export class Base extends FileBasedField.Base implements IFieldBase {
-    type = FieldType.MultiFile
+    type = <const>"MultiFile"
     tooltip = "Accepts multiple internal links"
 }
 
 export interface Options extends FileBasedField.Options { }
+
+export const DefaultOptions: Options = FileBasedField.DefaultOptions
 
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
     const base = FileBasedField.settingsModal(Base)
@@ -191,4 +192,8 @@ export function createDvField(
     attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
 ): void {
     return FileBasedField.createDvField(managedField, dv, p, fieldContainer, attrs)
+}
+
+export function displayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked: () => any) {
+    return FileBasedField.displayValue(managedField, container, onClicked)
 }

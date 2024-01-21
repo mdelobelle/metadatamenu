@@ -2,7 +2,7 @@
 import { IFieldManager, Target, fieldValueManager, getIdAndIndex, isSingleTargeted, upperIndexedPathObjectPath } from "../Field"
 import MetadataMenu from "main"
 import { ButtonComponent, Modal, TFile, setIcon } from "obsidian"
-import { IListBasedModal } from "../models/baseModels/ListBasedField";
+import { IListBasedModal } from "../models/abstractModels/AbstractList";
 import { getExistingFieldForIndexedPath, getValuesForIndexedPath } from "src/commands/getValues";
 import { postValues } from "src/commands/postValues";
 import { Constructor } from "src/typings/types";

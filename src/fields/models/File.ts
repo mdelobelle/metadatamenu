@@ -1,30 +1,29 @@
-import { FuzzyMatch, TFile, TextAreaComponent, setIcon } from "obsidian"
 import MetadataMenu from "main"
-import { Constructor } from "src/typings/types"
-import { BaseValueModal, IBaseValueModal } from "src/fields/base/BaseModal"
-import { BaseOptions, IFieldBase } from "src/fields/base/BaseField"
-import { FieldType } from "src/fields/Fields"
-import { ISettingsModal } from "src/fields/base/BaseSetting"
+import { FuzzyMatch, TFile, setIcon } from "obsidian"
 import { IFieldManager, Target, isSingleTargeted } from "src/fields/Field"
-import * as FileBasedField from "src/fields/models/baseModels/FileBasedField"
-import { buildMarkDownLink } from "src/fields/models/baseModels/FileBasedField"
+import { IFieldBase } from "src/fields/base/BaseField"
+import { ISettingsModal } from "src/fields/base/BaseSetting"
+import * as File from "src/fields/models/abstractModels/AbstractFile"
+import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile"
+import { Constructor } from "src/typings/types"
 import { getLink } from "src/utils/parser"
-import { Link } from "src/types/dataviewTypes"
 
-export class Base extends FileBasedField.Base implements IFieldBase {
-    type = FieldType.File
+export class Base extends File.Base implements IFieldBase {
+    type = <const>"File"
     tooltip = "Accepts an internal link"
 }
 
-export interface Options extends FileBasedField.Options { }
+export interface Options extends File.Options { }
+
+export const DefaultOptions: Options = File.DefaultOptions
 
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
-    const base = FileBasedField.settingsModal(Base)
+    const base = File.settingsModal(Base)
     return class SettingsModal extends base { }
 }
 
-export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<FileBasedField.Modal<Target>> {
-    const base = FileBasedField.valueModal(managedField, plugin)
+export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<File.Modal<Target>> {
+    const base = File.valueModal(managedField, plugin)
     return class ValueModal extends base {
         private selectedFilePath?: string
         constructor(...rest: any[]) {
@@ -65,7 +64,6 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
             }
             this.inputEl.focus()
         }
-
     }
 }
 
@@ -76,5 +74,9 @@ export function createDvField(
     fieldContainer: HTMLElement,
     attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
 ): void {
-    return FileBasedField.createDvField(managedField, dv, p, fieldContainer, attrs)
+    return File.createDvField(managedField, dv, p, fieldContainer, attrs)
+}
+
+export function displayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked: () => any) {
+    return File.displayValue(managedField, container, onClicked)
 }

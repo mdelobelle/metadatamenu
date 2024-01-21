@@ -15,7 +15,10 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
 }
 
 export class Base implements IFieldBase {
-    type = FieldType.Formula
+    colorClass: "lookup"
+    type = <const>"Formula"
     tagName = "formula"
     icon = "file-code"
+    tooltip = "Accepts a formula"
+
 }

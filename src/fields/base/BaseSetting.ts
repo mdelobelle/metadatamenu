@@ -608,7 +608,7 @@ export function buildSettingsModal(
 
 export function openSettings(id: string, fileClassName: string | undefined, plugin: MetadataMenu, parentSetting?: FieldSetting, parentSettingContainer?: HTMLElement) {
     let Field: Constructor<IField> | undefined = undefined
-    let type: FieldType | undefined = FieldType.Input
+    let type: FieldType | undefined = "Input"
     if (!id) {
         Field = buildField(plugin, "", "", "", fileClassName, undefined, undefined, undefined, type, {})
     } else {

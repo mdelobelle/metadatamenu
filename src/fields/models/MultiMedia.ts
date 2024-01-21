@@ -2,30 +2,30 @@ import { ButtonComponent, FuzzyMatch, TFile, setIcon } from "obsidian"
 import MetadataMenu from "main"
 import { Constructor } from "src/typings/types"
 import { IFieldBase } from "src/fields/base/BaseField"
-import { FieldType } from "src/fields/Fields"
 import { IFieldManager, Target, isSingleTargeted } from "src/fields/Field"
-import * as MediaBasedField from "src/fields/models/baseModels/MediaBasedField"
+import * as AbstractMedia from "src/fields/models/abstractModels/AbstractMedia"
 import { extractLinks, getLink } from "src/utils/parser"
-import { MediaType, extensionMediaTypes } from "src/fields/models/baseModels/MediaBasedField"
+import { MediaType, extensionMediaTypes } from "src/fields/models/abstractModels/AbstractMedia"
 import { cleanActions } from "src/utils/modals"
 import { ISettingsModal } from "../base/BaseSetting"
 
-export class Base extends MediaBasedField.Base implements IFieldBase {
-    type = FieldType.MultiMedia
+export class Base extends AbstractMedia.Base implements IFieldBase {
+    type = <const>"MultiMedia"
     tooltip = "Accepts multiple links to media files"
 }
 
-export interface Options extends MediaBasedField.Options { }
+export interface Options extends AbstractMedia.Options { }
+
+export const DefaultOptions: Options = AbstractMedia.DefaultOptions
 
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
-    const base = MediaBasedField.settingsModal(Base)
+    const base = AbstractMedia.settingsModal(Base)
     return class SettingsModal extends base { }
 }
 
-export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<MediaBasedField.Modal<Target>> {
-    const base = MediaBasedField.valueModal(managedField, plugin)
+export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<AbstractMedia.Modal<Target>> {
+    const base = AbstractMedia.valueModal(managedField, plugin)
     return class ValueModal extends base {
-        private selectedFiles: TFile[] = [];
         constructor(...rest: any[]) {
             super()
             this.initValues()
@@ -108,7 +108,7 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
             const embed = managedField.options.embed
             const result = this.selectedFiles.map(file => {
                 const alias = extensionMediaTypes[file.extension] === MediaType.Image ? managedField.options.thumbnailSize : undefined
-                const value = MediaBasedField.buildMediaLink(plugin, file, file.path, embed ? alias : undefined)
+                const value = AbstractMedia.buildMediaLink(plugin, file, file.path, embed ? alias : undefined)
                 return embed ? value : value.replace(/^\!/, "")
             })
             managedField.value = result.join(", ")
@@ -158,5 +158,9 @@ export function createDvField(
     fieldContainer: HTMLElement,
     attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
 ): void {
-    return MediaBasedField.createDvField(managedField, dv, p, fieldContainer, attrs)
+    return AbstractMedia.createDvField(managedField, dv, p, fieldContainer, attrs)
+}
+
+export function displayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked: () => any): void {
+    return AbstractMedia.displayValue(managedField, container, onClicked)
 }

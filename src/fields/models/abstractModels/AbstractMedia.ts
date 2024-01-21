@@ -1,13 +1,15 @@
-import { BaseOptions } from "crypto-random-string"
 import MetadataMenu from "main"
 import { ButtonComponent, DropdownComponent, FuzzyMatch, FuzzySuggestModal, TFile, TextAreaComponent, TextComponent, ToggleComponent, setIcon } from "obsidian"
-import { IFieldManager, Target, removeValidationError } from "src/fields/Field"
+import { IFieldManager, Target, getOptions, removeValidationError } from "src/fields/Field"
 import { IFieldBase } from "src/fields/base/BaseField"
 import { BaseValueModal, IBaseValueModal } from "src/fields/base/BaseModal"
 import { ISettingsModal } from "src/fields/base/BaseSetting"
 import { FolderSuggest } from "src/suggester/FolderSuggester"
 import { Constructor } from "src/typings/types"
-import { createDvField as _createDvField } from "./FileBasedField"
+import { createDvField as _createDvField, Options as FileOptions } from "./AbstractFile"
+import { getLink } from "src/utils/parser"
+
+//#region types
 
 export enum MediaType {
     Audio = "Audio",
@@ -48,29 +50,43 @@ export class Base implements Omit<IFieldBase, 'type' | 'tooltip'> {
     colorClass = "file"
 }
 
+//#endregion
 
-export interface Options extends BaseOptions {
+
+export interface Options extends FileOptions {
     embed: boolean
     folders: string[]
     display: DisplayType
     thumbnailSize: string
 }
 
+export const DefaultOptions: Options = {
+    embed: false,
+    folders: [],
+    display: "card",
+    thumbnailSize: "100"
+}
+
+interface DefaultedOptions extends Options { }
 
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
     return class SettingModal extends Base {
         public foldersInputComponents: Array<TextComponent> = []
+        public options: DefaultedOptions
+        constructor(...rest: any[]) {
+            super()
+            this.options = getOptions(this.field) as DefaultedOptions
+        }
 
         createSettingContainer = () => {
             const container = this.optionsContainer
+
             this.createFoldersListContainer(container)
             this.createEmbedTogglerContainer(container)
             this.createFilesDisplaySelectorContainer(container)
             this.createThumbnailSizeInputContainer(container)
             this.createCustomSortingContainer(container)
         }
-
-        public createFoldersPathContainer(container: HTMLDivElement) { }
 
         public createCustomSortingContainer(container: HTMLDivElement): void {
             const customSortingTopContainer = container.createDiv({ cls: "vstacked" });
@@ -84,13 +100,13 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
             customSorting.inputEl.cols = 50;
             customSorting.inputEl.rows = 4;
             customSorting.inputEl.addClass("full-width");
-            customSorting.setValue(this.field.options.customSorting || "");
+            customSorting.setValue(this.options.customSorting || "");
             customSorting.setPlaceholder("Javascript instruction, " +
                 "(a: TFile, b: TFile): number\n" +
                 "example 1 (alphabetical order): a.basename < b.basename ? 1 : -1 \n" +
                 "example 2 (creation time newer to older): b.stat.ctime - b.stat.ctime")
             customSorting.onChange(value => {
-                this.field.options.customSorting = value;
+                (this.options as Options).customSorting = value;
                 removeValidationError(customSorting);
             })
         }
@@ -104,21 +120,21 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
             addValue.onClickEvent(async (evt: MouseEvent) => {
                 evt.preventDefault();
                 //FIXME doesn't work at field init
-                const newKeyNumber = (this.field.options.folders || []).length + 1;
-                this.field.options.folders[newKeyNumber] = "";
+                const newKeyNumber = (this.options.folders || []).length + 1;
+                this.options.folders[newKeyNumber] = "";
                 this.foldersInputComponents.push(this.createFolderContainer(valuesListBody, newKeyNumber))
             });
         }
 
         private createFolderContainer(parentNode: HTMLDivElement, key: number): TextComponent {
-            const values = this.field.options.folders || {};
+            const values = this.options.folders || {};
             const presetFolder = values[key];
             const valueContainer = parentNode.createDiv({ cls: 'field-container', });
             const input = new TextComponent(valueContainer);
             input.inputEl.addClass("full-width");
             input.setValue(presetFolder);
             input.onChange(value => {
-                this.field.options.folders[key] = value;
+                this.options.folders[key] = value;
                 removeValidationError(input);
             });
             new FolderSuggest(
@@ -130,7 +146,7 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
                 .onClick((evt: MouseEvent) => {
                     evt.preventDefault();
                     removeValidationError(input);
-                    this.field.options.folders = this.field.options.folders.filter((f: string) => f !== input.getValue()).filter((f: string | null) => !!f)
+                    this.options.folders = this.options.folders.filter((f: string) => f !== input.getValue()).filter((f: string | null) => !!f)
                     parentNode.removeChild(valueContainer);
                     this.foldersInputComponents.remove(input);
                 });
@@ -143,7 +159,7 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
             const foldersList = presetFoldersFields.createDiv();
             const foldersListContainer = foldersList.createDiv();
             this.createAddButton(valuesListHeader, foldersListContainer)
-            this.field.options.folders?.forEach((folder: string, index: number) => {
+            this.options.folders?.forEach((folder: string, index: number) => {
                 this.foldersInputComponents.push(this.createFolderContainer(foldersListContainer, index));
             });
             return presetFoldersFields;
@@ -154,8 +170,8 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
             togglerContainer.createDiv({ cls: "label", text: "Inline thumbnail embedded" })
             togglerContainer.createDiv({ cls: "spacer" })
             new ToggleComponent(togglerContainer)
-                .setValue(this.field.options.embed)
-                .onChange((value) => this.field.options.embed = value)
+                .setValue(this.options.embed)
+                .onChange((value) => this.options.embed = value)
         }
 
         private createFilesDisplaySelectorContainer(container: HTMLDivElement) {
@@ -164,8 +180,8 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
             filesDisplaySelectorContainer.createDiv({ cls: "spacer" })
             new DropdownComponent(filesDisplaySelectorContainer)
                 .addOptions(filesDisplay)
-                .setValue(this.field.options.display || "list")
-                .onChange((value) => this.field.options.display = value)
+                .setValue(this.options.display || "list")
+                .onChange((value: DisplayType) => this.options.display = value)
         }
 
         private createThumbnailSizeInputContainer(container: HTMLDivElement) {
@@ -173,18 +189,18 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
             thumbnailSizeInputContainer.createDiv({ cls: "label", text: "Inline embedded thumbnail height (px): " })
             thumbnailSizeInputContainer.createDiv({ cls: "spacer" })
             new TextComponent(thumbnailSizeInputContainer)
-                .setValue(this.field.options.thumbnailSize)
+                .setValue(this.options.thumbnailSize)
                 .onChange((value) => {
-                    if (!value) this.field.options.thumbnailSize = ""
-                    else if (isNaN(parseInt(value))) this.field.options.thumbnailSize = "20"
-                    else this.field.options.thumbnailSize = value
+                    if (!value) this.options.thumbnailSize = ""
+                    else if (isNaN(parseInt(value))) this.options.thumbnailSize = "20"
+                    else this.options.thumbnailSize = value
                 })
         }
     }
 }
 
-
 export interface Modal<T extends Target> extends IBaseValueModal<T> {
+    selectedFiles: TFile[]
 }
 
 export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<Modal<Target>> {
@@ -241,7 +257,6 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
             const suggestionContainer = el.createDiv({ cls: "media-item" });
             const thumbnailContainer = suggestionContainer.createDiv({ cls: "thumbnail-container" })
             if (isImage) {
-
                 const image = thumbnailContainer.createEl("img", { cls: "thumbnail" })
                 const src = plugin.app.vault.adapter.getResourcePath(value.item.path)
                 if (managedField.options.display === "list") {
@@ -275,6 +290,23 @@ export function createDvField(
     attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
 ): void {
     return _createDvField(managedField, dv, p, fieldContainer, attrs)
+}
+
+export function displayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked: () => any): void {
+    const eF = managedField.eF
+    if (!eF) return
+    const link = getLink(eF.value, eF.file)
+    if (link?.path) {
+        const linkText = link.path.split("/").last() || ""
+        const linkEl = container.createEl('a', { text: linkText.replace(/(.*).md/, "$1") });
+        linkEl.onclick = () => {
+            this.plugin.app.workspace.openLinkText(link.path, eF.file.path, true)
+            onClicked();
+        }
+    } else {
+        container.createDiv({ text: eF.value });
+    }
+    container.createDiv();
 }
 
 //#region Media utils

@@ -3,12 +3,11 @@ import MetadataMenu from "main"
 import { Constructor } from "src/typings/types"
 import { BaseValueModal, IBaseValueModal } from "src/fields/base/BaseModal"
 import { BaseOptions, IFieldBase } from "src/fields/base/BaseField"
-import { FieldType } from "src/fields/Fields"
 import { ISettingsModal } from "src/fields/base/BaseSetting"
-import { IFieldManager, Target } from "src/fields/Field"
+import { IFieldManager, Target, getOptions } from "src/fields/Field"
 
 export class Base implements IFieldBase {
-    type = FieldType.Input
+    type = <const>"Input"
     tagName = "single"
     icon = "pencil"
     tooltip = "Accepts any value"
@@ -19,8 +18,17 @@ export interface Options extends BaseOptions {
     template?: string
 }
 
+export const DefaultOptions: Options = {}
+
+interface DefaultedOptions extends Options { }
+
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
     return class InputSettingModal extends Base {
+        public options: DefaultedOptions
+        constructor(...rest: any[]) {
+            super()
+            this.options = getOptions(this.field) as DefaultedOptions
+        }
         createSettingContainer = () => {
 
         }
