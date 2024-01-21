@@ -1,16 +1,13 @@
 import { BaseOptions } from "crypto-random-string"
 import MetadataMenu from "main"
-import { ButtonComponent, DropdownComponent, FuzzyMatch, FuzzySuggestModal, Notice, TFile, TextAreaComponent, TextComponent, ToggleComponent, setIcon } from "obsidian"
+import { ButtonComponent, DropdownComponent, FuzzyMatch, FuzzySuggestModal, TFile, TextAreaComponent, TextComponent, ToggleComponent, setIcon } from "obsidian"
 import { IFieldManager, Target, removeValidationError } from "src/fields/Field"
-import { getIcon } from "src/fields/Fields"
 import { IFieldBase } from "src/fields/base/BaseField"
 import { BaseValueModal, IBaseValueModal } from "src/fields/base/BaseModal"
 import { ISettingsModal } from "src/fields/base/BaseSetting"
-import { Link } from "src/types/dataviewTypes"
-import { Constructor } from "src/typings/types"
-import { cleanActions } from "src/utils/modals"
-import { IFieldBaseSettingModal, createDvField as _createDvField } from "./FileBasedField"
 import { FolderSuggest } from "src/suggester/FolderSuggester"
+import { Constructor } from "src/typings/types"
+import { createDvField as _createDvField } from "./FileBasedField"
 
 export enum MediaType {
     Audio = "Audio",
