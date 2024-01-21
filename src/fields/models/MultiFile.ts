@@ -2,29 +2,29 @@ import MetadataMenu from "main"
 import { ButtonComponent, FuzzyMatch, TFile, setIcon } from "obsidian"
 import { IFieldManager, Target, isSingleTargeted } from "src/fields/Field"
 import { IFieldBase } from "src/fields/base/BaseField"
-import * as FileBasedField from "src/fields/models/abstractModels/AbstractFile"
+import * as AbstractFile from "src/fields/models/abstractModels/AbstractFile"
 import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile"
 import { Constructor } from "src/typings/types"
 import { cleanActions } from "src/utils/modals"
 import { extractLinks, getLink } from "src/utils/parser"
 import { ISettingsModal } from "../base/BaseSetting"
 
-export class Base extends FileBasedField.Base implements IFieldBase {
+export class Base extends AbstractFile.Base implements IFieldBase {
     type = <const>"MultiFile"
     tooltip = "Accepts multiple internal links"
 }
 
-export interface Options extends FileBasedField.Options { }
+export interface Options extends AbstractFile.Options { }
 
-export const DefaultOptions: Options = FileBasedField.DefaultOptions
+export const DefaultOptions: AbstractFile.DefaultedOptions = AbstractFile.DefaultOptions
 
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
-    const base = FileBasedField.settingsModal(Base)
+    const base = AbstractFile.settingsModal(Base)
     return class SettingsModal extends base { }
 }
 
-export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<FileBasedField.Modal<Target>> {
-    const base = FileBasedField.valueModal(managedField, plugin)
+export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<AbstractFile.Modal<Target>> {
+    const base = AbstractFile.valueModal(managedField, plugin)
     return class ValueModal extends base {
         private selectedFiles: TFile[] = [];
         constructor(...rest: any[]) {
@@ -191,9 +191,9 @@ export function createDvField(
     fieldContainer: HTMLElement,
     attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
 ): void {
-    return FileBasedField.createDvField(managedField, dv, p, fieldContainer, attrs)
+    return AbstractFile.createDvField(managedField, dv, p, fieldContainer, attrs)
 }
 
 export function displayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked: () => any) {
-    return FileBasedField.displayValue(managedField, container, onClicked)
+    return AbstractFile.displayValue(managedField, container, onClicked)
 }

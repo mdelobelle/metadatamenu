@@ -67,16 +67,12 @@ export const DefaultOptions: Options = {
     thumbnailSize: "100"
 }
 
-interface DefaultedOptions extends Options { }
+export interface DefaultedOptions extends Options { }
 
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
     return class SettingModal extends Base {
         public foldersInputComponents: Array<TextComponent> = []
         public options: DefaultedOptions
-        constructor(...rest: any[]) {
-            super()
-            this.options = getOptions(this.field) as DefaultedOptions
-        }
 
         createSettingContainer = () => {
             const container = this.optionsContainer

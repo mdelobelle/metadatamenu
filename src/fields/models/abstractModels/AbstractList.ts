@@ -8,6 +8,8 @@ import { BaseValueModal, IBaseValueModal } from "../../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
 import { Constructor } from "src/typings/types"
 
+//#region options values
+
 export enum SourceType {
     "ValuesList" = "ValuesList",
     "ValuesListNotePath" = "ValuesListNotePath",
@@ -26,6 +28,8 @@ export const SourceTypeDisplay: Record<keyof typeof SourceType, string> = {
     "ValuesFromDVQuery": "Values returned from a dataview query"
 }
 
+//#endregion
+
 export interface Options extends BaseOptions {
     valuesNotePath?: string
     valuesList?: Record<string, string>
@@ -35,49 +39,26 @@ export interface Options extends BaseOptions {
 
 export interface DefaultedOptions extends Options {
     valuesList: Record<string, string>
-    sourceType: "ValuesList"
 }
 
 export const DefaultOptions: DefaultedOptions = {
     sourceType: "ValuesList",
-    valuesList: {}
+    valuesList: { "1": "bar" }
 }
 
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
     return class ListBaseSettingsModal extends Base {
         private valuesPromptComponents: TextComponent[] = []
-        public options: DefaultedOptions
-        constructor(...rest: any[]) {
-            super()
-            this.options = getOptions(this.field) as DefaultedOptions
-        }
-
+        public options: DefaultedOptions // to enforce options type checking
         createSettingContainer() {
             const container = this.optionsContainer
-            const field = this.field
             const sourceTypeContainer = container.createDiv({ cls: "field-container" });
             sourceTypeContainer.createDiv({ text: "Values source type", cls: "label" })
             sourceTypeContainer.createDiv({ cls: "spacer" });
             const sourceType = new DropdownComponent(sourceTypeContainer);
 
-            //manage new field and fileClass legacy field
-            if (!field.options.sourceType) {
-                //this is a new field or fileClass legacy field
-                if (typeof field.options === "object" && Object.keys(field.options).every(key => !isNaN(parseInt(key)))) {
-                    //this is a fileClass legacy field
-                    const valuesList: Record<string, string> = {}
-                    Object.keys(field.options).forEach((key: string) => valuesList[key] = field.options[key]);
-                    field.options = {}
-                    field.options.valuesList = valuesList;
-                } else {
-                    field.options = {}
-                }
-                field.options.sourceType = SourceType.ValuesList;
-                field.options.valuesListNotePath = "";
-                field.options.valuesFromDVQuery = "";
-            }
             Object.keys(SourceType).forEach((option: keyof typeof SourceType) => sourceType.addOption(option, SourceTypeDisplay[option]))
-            sourceType.setValue(field.options.sourceType || SourceType.ValuesList)
+            sourceType.setValue(this.options.sourceType || SourceType.ValuesList)
 
             const valuesListNotePathContainer = this.createListNotePathContainer(container);
             const presetValuesFieldsContainer = this.createValuesListContainer(container);
@@ -90,12 +71,11 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
             }
 
             sourceType.onChange((value: keyof typeof SourceType) => {
-                field.options.sourceType = value;
+                this.options.sourceType = value;
                 this.displaySelectedTypeContainer(valuesContainers, value)
             })
-            this.displaySelectedTypeContainer(valuesContainers, field.options.sourceType)
+            this.displaySelectedTypeContainer(valuesContainers, this.options.sourceType)
         }
-
 
         private createListNotePathContainer(container: HTMLDivElement): HTMLDivElement {
             const valuesListNotePathContainer = container.createDiv({ cls: "field-container" });
@@ -119,7 +99,7 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
             const presetValuesFields = parentContainer.createDiv()
             const valuesList = presetValuesFields.createDiv();
             const valuesListBody = valuesList.createDiv();
-            Object.keys(this.options.valuesList || {}).forEach(key => {
+            Object.keys(this.options.valuesList).forEach(key => {
                 this.valuesPromptComponents.push(this.createValueContainer(valuesListBody, key));
             });
             this.createAddButton(valuesList, valuesListBody)
@@ -231,6 +211,7 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
 export interface IListBasedModal<T extends Target> extends IBaseValueModal<T> {
     addNewValueToSettings: () => Promise<void>
     inputEl: HTMLInputElement
+    options: DefaultedOptions
 }
 
 export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<IListBasedModal<Target>> {
@@ -239,9 +220,11 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
         public addButton: ButtonComponent;
         public previousModal?: BaseValueModal<Target>
         public saved: boolean
+        public options: DefaultedOptions
         constructor(...rest: any[]) {
             super(plugin.app)
             this.managedField = managedField
+            this.options = getOptions(this.managedField) as DefaultedOptions
             this.containerEl.addClass("metadata-menu");
             const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
             inputContainer.appendChild(this.inputEl)
@@ -259,13 +242,12 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
 
         public getOptionsList(): string[] {
             let values: string[] = [];
-            if (Array.isArray(this.managedField.options)) {
-                values = this.managedField.options;
-            } else if (!this.managedField.options.sourceType) {
-                values = Object.values(this.managedField.options);
+            if (Array.isArray(this.options)) {
+                values = this.options;
+            } else if (!this.options.sourceType) {
+                values = Object.values(this.options);
             } else {
-                const options = this.managedField.options as Options
-                switch (options.sourceType) {
+                switch (this.options.sourceType) {
                     case "ValuesList":
                         values = Object.values(this.managedField.options.valuesList);
                         break;

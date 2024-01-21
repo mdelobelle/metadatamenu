@@ -12,8 +12,9 @@ import FieldSetting from "src/settings/FieldSetting"
 import { incrementVersion } from "src/settings/MetadataMenuSettings"
 import { FieldType, frontmatterOnlyTypes, multiTypes, rootOnlyTypes } from "../Fields"
 import { getFieldSettings } from "../Fields"
-import { IField, buildField, copyProperty, exportIField, getField, getFieldConstructor, getNewFieldId, removeValidationError } from "../Field"
+import { IField, buildField, copyProperty, exportIField, field, getField, getFieldConstructor, getNewFieldId, getOptions, removeValidationError } from "../Field"
 import { Constructor } from "src/typings/types"
+import { BaseOptions } from "./BaseField"
 
 // Field Types list agnostic
 // Field types specific settings agnostic
@@ -37,6 +38,7 @@ export interface ISettingsModal extends Modal {
     isNew: boolean
     parentSetting?: FieldSetting
     parentSettingContainer?: HTMLElement
+    options: BaseOptions
     getFileClassName(): string | undefined
     setParent(parent: IField | undefined): void
     setType(fieldType: FieldType, fieldTypeLabelContainer: HTMLDivElement): void
@@ -149,38 +151,37 @@ export function buildSettingsModal(
         public isNew: boolean = true;
         public fileClass?: FileClass
         public saved: boolean = false
-        public parentSetting?: FieldSetting
-        public parentSettingContainer?: HTMLElement
+        public options: BaseOptions
         constructor() {
             super(plugin.app)
             this.plugin = plugin
-            this.field = new fieldConstructor()
-            this.parentSetting = parentSetting
-            this.parentSettingContainer = parentSettingContainer
-            this.initFieldAndLocation()
-            this.initFieldManagerAndCommand()
+            this.init()
         }
 
-        onOpen() { this.build() }
-
-        //TODO manage new fields
-        public initFieldAndLocation() {
-
+        private init() {
+            //feed initial field with the optional existing indexed field
+            this.initialField = new fieldConstructor()
+            //create a blank field inbound from the existing indexed field
+            this.field = new (buildField(plugin, "", "", "", this.initialField.fileClassName, undefined, undefined, undefined, this.initialField.type, {}))()
+            // deep copy the properties in this.field
+            copyProperty(this.field, this.initialField)
             this.isNew = !this.field.id
-            this.field.id = this.field.id || getNewFieldId(this.plugin)
-            this.initialField = this.field
-            if (this.field.fileClassName) this.fileClass = this.plugin.fieldIndex.fileClassesName.get(this.field.fileClassName)
+            // feed options with initial field options or default values
+            this.options = getOptions(this.initialField)
+            // get Id or create new
+            this.field.id = this.initialField.id || getNewFieldId(this.plugin)
+
+            if (this.initialField.fileClassName) this.fileClass = this.plugin.fieldIndex.fileClassesName.get(this.initialField.fileClassName)
             if (this.fileClass) {
                 this.location = SettingLocation.FileClassAttributeSettings
             } else {
                 this.location = SettingLocation.PluginSettings
             }
-
-        }
-        public initFieldManagerAndCommand() {
-            this.path = this.field.path
+            // path
+            this.path = this.initialField.path
+            // command
             this.addCommand = this.field.command !== undefined;
-            this.command = this.field.command || {
+            this.command = this.initialField.command || {
                 id: this.field ? `insert__${this.field.id}` : "",
                 icon: "list-plus",
                 label: this.field ? `Insert ${this.field.name} field` : "",
@@ -188,7 +189,9 @@ export function buildSettingsModal(
             }
         }
 
-        build(): void {
+        onOpen() { this.build() }
+
+        private build(): void {
 
             this.containerEl.addClass("metadata-menu")
             if (this.field.name == "") {
@@ -404,14 +407,10 @@ export function buildSettingsModal(
             }
         }
 
-        public setFileClassName() {
-            this.field.fileClassName = this.fileClass?.name
-        }
-
         public setType(fieldType: FieldType, fieldTypeLabelContainer: HTMLDivElement): void {
             fieldTypeLabelContainer.setText(fieldType)
             fieldTypeLabelContainer.className = `chip ${FieldTypeTagClass[fieldType]}`
-            this.setFileClassName()
+            this.field.fileClassName = this.fileClass?.name
             const Field = buildField(plugin, "", "", "", this.field.fileClassName, undefined, undefined, undefined, fieldType, {})
             const settingsModal = getFieldSettings(Field, fieldType, plugin, parentSetting, parentSettingContainer)
             settingsModal.field.name = this.namePromptComponent.getValue()
@@ -491,6 +490,7 @@ export function buildSettingsModal(
                     new Notice("Fix errors before saving.");
                     return;
                 };
+                this.field.options = this.options
                 if (this.addCommand) {
                     this.field.command = this.command
                     addInsertIFieldCommand(this.plugin, this.command, this.field, this.field.fileClassName)
@@ -531,16 +531,14 @@ export function buildSettingsModal(
                     this.plugin.presetFields.push(exportIField(this.field));
                 };
                 copyProperty(this.initialField, this.field)
-                if (this.parentSetting) {
-                    const gField = this.parentSetting.field
-                    console.log(exportIField(this.field))
+                if (parentSetting) {
+                    const gField = parentSetting.field
                     GField.copyProperty(gField, exportIField(this.field));
                 }
-                this.parentSetting?.setTextContentWithname()
+                parentSetting?.setTextContentWithname()
                 incrementVersion(this.plugin)
                 await this.plugin.saveSettings();
             }
-
         }
 
         public onCancel(): void {
@@ -592,13 +590,13 @@ export function buildSettingsModal(
         }
 
         onClose(): void {
-            if (this.parentSettingContainer) {
+            if (parentSettingContainer && this.saved) {
                 Object.assign(this.field, this.initialField);
-                if (!this.isNew && this.parentSetting) {
-                    this.parentSetting.setTextContentWithname()
-                } else if (this.saved) {
+                if (!this.isNew && parentSetting) {
+                    parentSetting.setTextContentWithname()
+                } else {
                     const gField = exportIField(this.field)
-                    new FieldSetting(this.parentSettingContainer, gField, this.plugin);
+                    new FieldSetting(parentSettingContainer, gField, this.plugin);
                 };
             }
         }

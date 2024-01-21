@@ -21,7 +21,7 @@ export class Base implements IFieldBase {
 
 export interface Options extends AbstractList.Options { }
 
-export const DefaultOptions: Options = AbstractList.DefaultOptions
+export const DefaultOptions: AbstractList.DefaultedOptions = AbstractList.DefaultOptions
 
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
     const base = AbstractList.settingsModal(Base)

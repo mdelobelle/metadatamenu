@@ -1,21 +1,20 @@
 import MetadataMenu from "main";
 import { ButtonComponent, Component, Modal, TFile } from "obsidian";
-import Field from "src/fields/_Field";
-import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
-import ChooseSectionModal from "src/modals/chooseSectionModal"
-import * as FieldType from "src/types/fieldTypes"
-import { FieldManager as FM } from "src/types/fieldTypes";
-import { FieldManager as F, FieldManager } from "src/fields/FieldManager";
 import { insertMissingFields } from "src/commands/insertMissingFields";
-import { FileClassViewManager } from "./FileClassViewManager";
-import { Note } from "src/note/note";
-import { ExistingField } from "src/fields/ExistingField";
-import ObjectListField, { ObjectListItem } from "src/fields/fieldManagers/ObjectListField";
 import { postValues } from "src/commands/postValues";
-import BooleanField from "src/fields/fieldManagers/BooleanField";
-import ObjectField from "src/fields/fieldManagers/ObjectField";
-import { displayValue, mapFieldType } from "src/fields/Fields"
+import { ExistingField } from "src/fields/ExistingField";
 import { fieldValueManager } from "src/fields/Field";
+import { FieldManager } from "src/fields/FieldManager";
+import { displayValue, mapFieldType } from "src/fields/Fields";
+import Field from "src/fields/_Field";
+import BooleanField from "src/fields/fieldManagers/BooleanField";
+import ObjectListField from "src/fields/fieldManagers/ObjectListField";
+import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
+import ChooseSectionModal from "src/modals/chooseSectionModal";
+import { Note } from "src/note/note";
+import * as FieldType from "src/types/fieldTypes";
+import { FieldManager as FM } from "src/types/fieldTypes";
+import { FileClassViewManager } from "./FileClassViewManager";
 
 export class FieldOptions {
 

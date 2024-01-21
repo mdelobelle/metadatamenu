@@ -279,7 +279,7 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
     }
 }
 
-export function getOptions(field: IField): BaseOptions {
+export function getOptions(field: IField | IFieldManager<Target>): BaseOptions {
     const options = field.options
     if (
         Object.keys(options).length === 0 &&
@@ -328,16 +328,16 @@ export function getFieldConstructor(id: string, fileClassName: string | undefine
         const fCF = index.fileClassesFields
             .get(fileClassName)?.find(field => field.id === id)
         if (!fCF) return []
-        const { type, options, command, style, display } = fCF
-        if (isFieldOptions([type as FieldType, options])) {
-            return [buildField(plugin, fCF.name, fCF.id, fCF.path, fileClassName, command, display, style, ...[type, options] as FieldParam), type as FieldType]
+
+        if (isFieldOptions([fCF.type as FieldType, fCF.options])) {
+            return [buildField(plugin, fCF.name, fCF.id, fCF.path, fileClassName, fCF.command, fCF.display, fCF.style, ...[fCF.type, fCF.options] as FieldParam), fCF.type as FieldType]
         }
     } else {
         const fS = plugin.settings.presetFields.find(f => f.id === id)
         if (!fS) return []
-        const { type, options, command, style, display } = fS
-        if (isFieldOptions([type, options])) {
-            return [buildField(plugin, fS.name, fS.id, fS.path, undefined, command, display, style, ...[type, options] as FieldParam), type as FieldType]
+
+        if (isFieldOptions([fS.type, fS.options])) {
+            return [buildField(plugin, fS.name, fS.id, fS.path, undefined, fS.command, fS.display, fS.style, ...[fS.type, fS.options] as FieldParam), fS.type as FieldType]
         }
     }
     return []
@@ -351,21 +351,22 @@ export function getField(id: string, fileClassName: string | undefined, plugin: 
 }
 
 export function copyProperty(target: IField, source: IField): void {
-    target.id = source.id;
-    target.name = source.name;
-    target.type = source.type
+    const unbound = (value: any) => value ? JSON.parse(JSON.stringify(value)) : ""
+    target.id = unbound(source.id);
+    target.name = unbound(source.name);
+    target.type = unbound(source.type)
     Object.keys(source.options).forEach(k => {
-        target.options[k] = source.options[k];
+        target.options[k] = unbound(source.options[k]);
     });
     Object.keys(target.options).forEach(k => {
         if (!Object.keys(source.options).includes(k)) {
             delete target.options[k];
         };
     });
-    target.command = source.command
-    target.display = source.display
-    target.style = source.style
-    target.path = source.path
+    target.command = unbound(source.command)
+    target.display = unbound(source.display)
+    target.style = unbound(source.style)
+    target.path = unbound(source.path)
 };
 
 export function getNewFieldId(plugin: MetadataMenu) {

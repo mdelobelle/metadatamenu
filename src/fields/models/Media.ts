@@ -15,7 +15,7 @@ export class Base extends AbstractMedia.Base implements IFieldBase {
 
 export interface Options extends AbstractMedia.Options { }
 
-export const DefaultOptions: Options = AbstractMedia.DefaultOptions
+export const DefaultOptions: AbstractMedia.DefaultedOptions = AbstractMedia.DefaultOptions
 
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
     const base = AbstractMedia.settingsModal(Base)

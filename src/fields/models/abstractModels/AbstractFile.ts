@@ -22,10 +22,10 @@ export interface Options extends BaseOptions {
     customRendering?: string
     customSorting?: string
 }
-
-export const DefaultOptions: Options = {}
-
 export interface DefaultedOptions extends Options { }
+
+export const DefaultOptions: DefaultedOptions = {}
+
 
 export interface IFieldBaseSettingModal extends ISettingsModal {
     createCustomSortingContainer: (container: HTMLDivElement) => void
@@ -33,11 +33,7 @@ export interface IFieldBaseSettingModal extends ISettingsModal {
 
 export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IFieldBaseSettingModal> {
     return class SettingModal extends Base {
-        public options: DefaultedOptions
-        constructor(...rest: any[]) {
-            super()
-            this.options = getOptions(this.field) as DefaultedOptions
-        }
+        public options: DefaultedOptions // to enforce options type checking
         createSettingContainer = () => {
             this.createQueryContainer(this.optionsContainer)
             this.createCustomRenderingContainer(this.optionsContainer)
@@ -50,10 +46,10 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IF
             const dvQueryString = new TextAreaComponent(dvQueryStringContainer);
             dvQueryString.inputEl.cols = 50;
             dvQueryString.inputEl.rows = 4;
-            dvQueryString.setValue(this.field.options.dvQueryString || "");
+            dvQueryString.setValue(this.options.dvQueryString || "");
             dvQueryString.inputEl.addClass("full-width");
             dvQueryString.onChange(value => {
-                this.field.options.dvQueryString = value;
+                this.options.dvQueryString = value;
                 removeValidationError(dvQueryString);
             })
         }
@@ -70,12 +66,12 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IF
             customRendering.inputEl.cols = 50;
             customRendering.inputEl.rows = 4;
             customRendering.inputEl.addClass("full-width");
-            customRendering.setValue(this.field.options.customRendering || "");
+            customRendering.setValue(this.options.customRendering || "");
             customRendering.setPlaceholder("Javascript string, " +
                 "the \"page\" (dataview page type) variable is available\n" +
                 "example 1: page.file.name\nexample 2: `${page.file.name} of gender ${page.gender}`")
             customRendering.onChange(value => {
-                this.field.options.customRendering = value;
+                this.options.customRendering = value;
                 removeValidationError(customRendering);
             })
         }
@@ -92,13 +88,13 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IF
             customSorting.inputEl.cols = 50;
             customSorting.inputEl.rows = 4;
             customSorting.inputEl.addClass("full-width");
-            customSorting.setValue(this.field.options.customSorting || "");
+            customSorting.setValue(this.options.customSorting || "");
             customSorting.setPlaceholder("Javascript instruction, " +
                 "(a: TFile, b: TFile): number\n" +
                 "example 1 (alphabetical order): a.basename < b.basename ? 1 : -1 \n" +
                 "example 2 (creation time newer to older): b.stat.ctime - b.stat.ctime")
             customSorting.onChange(value => {
-                this.field.options.customSorting = value;
+                this.options.customSorting = value;
                 removeValidationError(customSorting);
             })
         }
@@ -108,6 +104,7 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IF
 
 export interface Modal<T extends Target> extends IBaseValueModal<T> {
     inputEl: HTMLInputElement
+    options: DefaultedOptions
 }
 
 export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<Modal<Target>> {
@@ -116,9 +113,11 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
         public addButton: ButtonComponent;
         public previousModal?: BaseValueModal<Target>
         public saved: boolean
+        public options: DefaultedOptions
         constructor(...rest: any[]) {
             super(plugin.app)
             this.managedField = managedField
+            this.options = getOptions(this.managedField) as DefaultedOptions
             this.containerEl.addClass("metadata-menu");
             const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
             inputContainer.appendChild(this.inputEl)
@@ -128,8 +127,8 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
         }
         getItems(): TFile[] {
             try {
-                if (managedField.options.customSorting) {
-                    const sortingMethod = (a: TFile, b: TFile) => (new Function("a", "b", `return ${managedField.options.customSorting}`))(a, b)
+                if (this.options.customSorting) {
+                    const sortingMethod = (a: TFile, b: TFile) => (new Function("a", "b", `return ${this.options.customSorting}`))(a, b)
                     return getFiles(this.managedField).sort(sortingMethod);
                 } else {
                     const sortingMethod = (a: TFile, b: TFile) => { return a.basename < b.basename ? -1 : 1 }
@@ -233,7 +232,8 @@ export function convertDataviewArrayOfLinkToArrayOfPath(arr: (Link | any)[]) {
 }
 
 export function getFiles(managedField: IFieldManager<Target>, currentFile?: TFile): TFile[] {
-    const dvQueryString = managedField.options.dvQueryString
+    const options = getOptions(managedField) as DefaultedOptions
+    const dvQueryString = options.dvQueryString
     //@ts-ignore
     const getResults = (api: DataviewPlugin["api"]) => {
         try {
