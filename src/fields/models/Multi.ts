@@ -21,14 +21,16 @@ export class Base implements IFieldBase {
 
 export interface Options extends AbstractList.Options { }
 
+export interface DefaultedOptions extends AbstractList.DefaultedOptions { }
+
 export const DefaultOptions: AbstractList.DefaultedOptions = AbstractList.DefaultOptions
 
-export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
+export function settingsModal(Base: Constructor<ISettingsModal<AbstractList.DefaultedOptions>>): Constructor<ISettingsModal<Options>> {
     const base = AbstractList.settingsModal(Base)
     return class SettingsModal extends base { }
 }
 
-export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<AbstractList.IListBasedModal<Target>> {
+export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<AbstractList.Modal<Target>> {
     const base = AbstractList.valueModal(managedField, plugin)
     return class ValueModal extends base {
         private selectedOptions: Array<string>;
@@ -36,11 +38,11 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
             public preSelectedOptions?: Array<string>
         ) {
             super(plugin);
-            const initialOptions: string | string[] = isSingleTargeted(this.managedField) ? this.managedField.value || [] : []
-            if (initialOptions && isSingleTargeted(this.managedField)) {
+            const initialOptions: string | string[] = isSingleTargeted(managedField) ? managedField.value || [] : []
+            if (initialOptions && isSingleTargeted(managedField)) {
                 if (Array.isArray(initialOptions)) {
                     this.selectedOptions = initialOptions.map(item => {
-                        const file = this.managedField.target as TFile
+                        const file = managedField.target as TFile
                         const link = getLink(item, file)
                         if (link) {
                             return buildMarkDownLink(plugin, file, link.path)
@@ -54,7 +56,7 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
                 else if (typeof (initialOptions) === "string" && initialOptions.toString().startsWith("[[")) {
                     this.selectedOptions = initialOptions.split(",").map(item => item.trim());
                 } else {
-                    const link = getLink(initialOptions, this.managedField.target as TFile)
+                    const link = getLink(initialOptions, managedField.target as TFile)
                     if (link) {
                         this.selectedOptions = [`[[${link.path.replace(".md", "")}]]`]
                     } else if (typeof (initialOptions) === "string") {
@@ -76,15 +78,15 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
             await this.addNewValueToSettings()
             await plugin.fieldIndex.indexFields();
             this.selectedOptions.push(this.inputEl.value)
-            const modal = getFieldModal(this.managedField, plugin)
+            const modal = getFieldModal(managedField, plugin)
             modal.open()
             this.close()
         }
 
         async replaceValues() {
             const options = this.selectedOptions;
-            this.managedField.value = options.join(", ")
-            this.managedField.save()
+            managedField.value = options.join(", ")
+            managedField.save()
             this.close();
         }
 
@@ -142,12 +144,12 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
     }
 }
 
-export function displayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked: () => any) {
+export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {
     return AbstractList.displayValue(managedField, container, onClicked)
 }
 
 export function createDvField(
-    managedField: IFieldManager<Target>,
+    managedField: IFieldManager<Target, Options>,
     dv: any,
     p: any,
     fieldContainer: HTMLElement,

@@ -1,4 +1,4 @@
-import { ButtonComponent, DropdownComponent, Modal, SuggestModal, TFile, TextAreaComponent, TextComponent, setIcon } from "obsidian"
+import { ButtonComponent, DropdownComponent, SuggestModal, TFile, TextAreaComponent, TextComponent, setIcon } from "obsidian"
 import { BaseOptions } from "../../base/BaseField"
 import { ISettingsModal } from "../../base/BaseSetting"
 import { FileSuggest } from "src/suggester/FileSuggester"
@@ -43,13 +43,14 @@ export interface DefaultedOptions extends Options {
 
 export const DefaultOptions: DefaultedOptions = {
     sourceType: "ValuesList",
-    valuesList: { "1": "bar" }
+    valuesList: {}
 }
 
-export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
-    return class ListBaseSettingsModal extends Base {
+export interface IListBaseSettingModal extends ISettingsModal<Options> { }
+
+export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>>): Constructor<IListBaseSettingModal> {
+    return class SettingsModal extends Base {
         private valuesPromptComponents: TextComponent[] = []
-        public options: DefaultedOptions // to enforce options type checking
         createSettingContainer() {
             const container = this.optionsContainer
             const sourceTypeContainer = container.createDiv({ cls: "field-container" });
@@ -58,7 +59,7 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
             const sourceType = new DropdownComponent(sourceTypeContainer);
 
             Object.keys(SourceType).forEach((option: keyof typeof SourceType) => sourceType.addOption(option, SourceTypeDisplay[option]))
-            sourceType.setValue(this.options.sourceType || SourceType.ValuesList)
+            sourceType.setValue(this.field.options.sourceType || SourceType.ValuesList)
 
             const valuesListNotePathContainer = this.createListNotePathContainer(container);
             const presetValuesFieldsContainer = this.createValuesListContainer(container);
@@ -71,10 +72,10 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
             }
 
             sourceType.onChange((value: keyof typeof SourceType) => {
-                this.options.sourceType = value;
+                this.field.options.sourceType = value;
                 this.displaySelectedTypeContainer(valuesContainers, value)
             })
-            this.displaySelectedTypeContainer(valuesContainers, this.options.sourceType)
+            this.displaySelectedTypeContainer(valuesContainers, this.field.options.sourceType)
         }
 
         private createListNotePathContainer(container: HTMLDivElement): HTMLDivElement {
@@ -88,10 +89,10 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
                 this.plugin,
                 "/"
             )
-            const listNotePath = this.options.valuesListNotePath;
+            const listNotePath = this.field.options.valuesListNotePath;
             input.setValue(listNotePath || "");
             input.setPlaceholder("Path/of/the/note.md");
-            input.onChange(value => this.options.valuesListNotePath = value);
+            input.onChange(value => this.field.options.valuesListNotePath = value);
             return valuesListNotePathContainer;
         }
 
@@ -99,7 +100,7 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
             const presetValuesFields = parentContainer.createDiv()
             const valuesList = presetValuesFields.createDiv();
             const valuesListBody = valuesList.createDiv();
-            Object.keys(this.options.valuesList).forEach(key => {
+            Object.keys(this.field.options.valuesList).forEach(key => {
                 this.valuesPromptComponents.push(this.createValueContainer(valuesListBody, key));
             });
             this.createAddButton(valuesList, valuesListBody)
@@ -107,14 +108,14 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
         }
 
         private createValueContainer(parentNode: HTMLDivElement, key: string): TextComponent {
-            const values = this.options.valuesList || {};
+            const values = this.field.options.valuesList;
             const presetValue = values[key];
             const valueContainer = parentNode.createDiv({ cls: 'field-container', });
             const input = new TextComponent(valueContainer);
             input.inputEl.addClass("full-width");
             input.setValue(presetValue);
             input.onChange(value => {
-                this.options.valuesList[key] = value;
+                this.field.options.valuesList[key] = value;
                 removeValidationError(input);
             });
             const valueRemoveButton = new ButtonComponent(valueContainer);
@@ -126,7 +127,7 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
                     parentNode.removeChild(valueContainer);
                     this.valuesPromptComponents.remove(input);
                 });
-            if (key != Object.keys(this.options)[0]) {
+            if (key != Object.keys(this.field.options)[0]) {
                 const valueUpgradeButton = new ButtonComponent(valueContainer);
                 setIcon(valueUpgradeButton.buttonEl, "up-chevron-glyph");
                 valueUpgradeButton.onClick((evt: MouseEvent) => {
@@ -158,9 +159,9 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
             valuesFromDVQuery.inputEl.cols = 65;
             valuesFromDVQuery.inputEl.rows = 8;
             valuesFromDVQuery.setPlaceholder("ex: dv.pages('#student').map(p => p.name)")
-            valuesFromDVQuery.setValue(this.options.valuesFromDVQuery || "");
+            valuesFromDVQuery.setValue(this.field.options.valuesFromDVQuery || "");
             valuesFromDVQuery.onChange((value) => {
-                this.options.valuesFromDVQuery = value
+                this.field.options.valuesFromDVQuery = value
             })
             return valuesFromDVQueryTopContainer;
         }
@@ -183,13 +184,13 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
             addValue.onClickEvent(async (evt: MouseEvent) => {
                 evt.preventDefault();
                 let newKeyNumber = 1;
-                Object.keys(this.options.valuesList).forEach(key => {
+                Object.keys(this.field.options.valuesList).forEach(key => {
                     if (parseInt(key) && parseInt(key) >= newKeyNumber) {
                         newKeyNumber = parseInt(key) + 1;
                     };
                 });
                 const newKey = newKeyNumber.toString();
-                this.options.valuesList[newKey] = "";
+                this.field.options.valuesList[newKey] = "";
                 this.valuesPromptComponents.push(this.createValueContainer(valuesListBody, newKey))
             });
             valuesList.createEl("hr");
@@ -197,34 +198,31 @@ export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<IS
 
         private removePresetValue(key: string): void {
             let newValues: Record<string, string> = {};
-            for (let _key in this.options.valuesList) {
+            for (let _key in this.field.options.valuesList) {
                 if (key !== _key) {
-                    newValues[_key] = this.options.valuesList[_key];
+                    newValues[_key] = this.field.options.valuesList[_key];
                 };
             };
-            this.options.valuesList = newValues;
+            this.field.options.valuesList = newValues;
         };
     }
 
 }
 
-export interface IListBasedModal<T extends Target> extends IBaseValueModal<T> {
+export interface Modal<T extends Target> extends IBaseValueModal<T> {
     addNewValueToSettings: () => Promise<void>
     inputEl: HTMLInputElement
-    options: DefaultedOptions
 }
 
-export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<IListBasedModal<Target>> {
+export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<Modal<Target>> {
     return class ValueModal extends SuggestModal<string> {
-        public managedField: IFieldManager<Target>
+        public managedField: IFieldManager<Target, Options>
         public addButton: ButtonComponent;
         public previousModal?: BaseValueModal<Target>
         public saved: boolean
-        public options: DefaultedOptions
         constructor(...rest: any[]) {
             super(plugin.app)
             this.managedField = managedField
-            this.options = getOptions(this.managedField) as DefaultedOptions
             this.containerEl.addClass("metadata-menu");
             const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
             inputContainer.appendChild(this.inputEl)
@@ -241,15 +239,16 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
         }
 
         public getOptionsList(): string[] {
+            const options = this.managedField.options
             let values: string[] = [];
-            if (Array.isArray(this.options)) {
-                values = this.options;
-            } else if (!this.options.sourceType) {
-                values = Object.values(this.options);
+            if (Array.isArray(options)) {
+                values = options;
+            } else if (options.sourceType) {
+                values = Object.values(options);
             } else {
-                switch (this.options.sourceType) {
+                switch (options.sourceType) {
                     case "ValuesList":
-                        values = Object.values(this.managedField.options.valuesList);
+                        values = Object.values(options.valuesList || {});
                         break;
                     case "ValuesListNotePath":
                         values = plugin.fieldIndex.valuesListNotePathValues
@@ -260,7 +259,7 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
                             const dvApi = plugin.app.plugins.plugins.dataview?.api
                             if (dvApi) {
                                 //TODO validate this is still working after adding fallback empty object
-                                //values = new Function("dv", "current", `return ${this.options.valuesFromDVQuery}`)(dvApi, dvFile)
+                                //values = new Function("dv", "current", `return ${this.field.options.valuesFromDVQuery}`)(dvApi, dvFile)
                                 const dvFile = isSingleTargeted(this.managedField) ? dvApi.page(this.managedField.target.path) : {}
                                 values = new Function("dv", "current", `return ${this.managedField.options.valuesFromDVQuery}`)(dvApi, dvFile || {})
                             } else {
@@ -299,12 +298,15 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
                     let newOptions: string[] | Record<string, string>
                     options.valuesList
                     newOptions = options.valuesList || {}
+                    //some legacy options were a flat array
                     if (Array.isArray(newOptions)) {
-                        newOptions = [...newOptions, newValue]
+                        const newValues = [...newOptions, newValue]
+                        const newObj: Record<string, string> = {}
+                        for (const [k, v] of newValue) { newObj[`${k}`] = v }
                     } else if (typeof newOptions === "object") {
                         newOptions[`${Object.keys(newOptions).length + 1}`] = newValue
                     }
-                    this.managedField.options = newOptions
+                    this.managedField.options.valuesList = newOptions
                     break;
                 case "ValuesListNotePath":
                     const valuesFile = plugin.app.vault.getAbstractFileByPath((options as Options).valuesListNotePath);
@@ -358,7 +360,7 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
     }
 }
 
-export function displayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked: () => any) {
+export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {
     if (Array.isArray(managedField.value)) {
         container.createDiv({ text: `<P> ${managedField.value.join(", ")}` })
     } else {

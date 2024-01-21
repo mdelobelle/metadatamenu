@@ -14,15 +14,15 @@ export class Base extends AbstractMedia.Base implements IFieldBase {
 }
 
 export interface Options extends AbstractMedia.Options { }
-
+export interface DefaultedOptions extends AbstractMedia.DefaultedOptions { }
 export const DefaultOptions: AbstractMedia.DefaultedOptions = AbstractMedia.DefaultOptions
 
-export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
+export function settingsModal(Base: Constructor<ISettingsModal<AbstractMedia.DefaultedOptions>>): Constructor<ISettingsModal<Options>> {
     const base = AbstractMedia.settingsModal(Base)
     return class SettingsModal extends base { }
 }
 
-export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<AbstractMedia.Modal<Target>> {
+export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<AbstractMedia.Modal<Target>> {
     const base = AbstractMedia.valueModal(managedField, plugin)
     return class ValueModal extends base {
         constructor(...rest: any[]) {
@@ -39,7 +39,6 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
                     ) this.selectedFiles.push(file)
                 }
             }
-            console.log(this.selectedFiles)
         }
 
         async onChooseItem(item: TFile): Promise<void> {
@@ -55,7 +54,7 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
 }
 
 export function createDvField(
-    managedField: IFieldManager<Target>,
+    managedField: IFieldManager<Target, Options>,
     dv: any,
     p: any,
     fieldContainer: HTMLElement,
@@ -64,6 +63,6 @@ export function createDvField(
     return AbstractMedia.createDvField(managedField, dv, p, fieldContainer, attrs)
 }
 
-export function displayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked: () => any): void {
+export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any): void {
     return AbstractMedia.displayValue(managedField, container, onClicked)
 }

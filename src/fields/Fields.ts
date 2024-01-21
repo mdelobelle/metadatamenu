@@ -122,50 +122,48 @@ export const rootOnlyTypes = [
 ** Factories from type
 */
 
-export function getDefaultOptions(type: FieldType): BaseOptions {
+export function getDefaultOptions<O extends BaseOptions>(type: FieldType): O {
     switch (type) {
-        case "Input": return Input.DefaultOptions
-        case "Select": return Select.DefaultOptions
-        case "Multi": return Multi.DefaultOptions
-        case "File": return File.DefaultOptions
-        case "MultiFile": return MultiFile.DefaultOptions
-        case "Media": return Media.DefaultOptions
-        case "MultiMedia": return MultiMedia.DefaultOptions
-        // case "Formula": throw Error("not implemented")
-        // case "ObjectList": throw Error("not implemented")
-        default: return baseDisplayValue
+        case "Input": return Input.DefaultOptions as unknown as O
+        case "Select": return Select.DefaultOptions as unknown as O
+        case "Multi": return Multi.DefaultOptions as unknown as O
+        case "File": return File.DefaultOptions as unknown as O
+        case "MultiFile": return MultiFile.DefaultOptions as unknown as O
+        case "Media": return Media.DefaultOptions as unknown as O
+        case "MultiMedia": return MultiMedia.DefaultOptions as unknown as O
+        case "Formula": throw Error("not implemented")
+        case "ObjectList": throw Error("not implemented")
     }
 }
 
-export function getFieldSettings(Field: Constructor<IField>,
+export function getFieldSettings<O extends BaseOptions>(Field: Constructor<IField<O>>,
     type: FieldType,
     plugin: MetadataMenu,
     parentSetting?: FieldSetting,
-    parentSettingContainer?: HTMLElement): ISettingsModal {
-    const base = buildSettingsModal(Field, plugin, parentSetting, parentSettingContainer)
+    parentSettingContainer?: HTMLElement): ISettingsModal<O> {
+    const base = buildSettingsModal<O>(Field, plugin, parentSetting, parentSettingContainer)
     switch (type) {
-        case "Input": return new (Input.settingsModal(base))()
-        case "Select": return new (Select.settingsModal(base))()
-        case "Multi": return new (Multi.settingsModal(base))()
-        case "File": return new (File.settingsModal(base))
-        case "MultiFile": return new (MultiFile.settingsModal(base))
-        case "Media": return new (Media.settingsModal(base))
-        case "MultiMedia": return new (MultiMedia.settingsModal(base))
+        case "Input": return new (Input.settingsModal(base as unknown as Constructor<ISettingsModal<Input.DefaultedOptions>>))() as unknown as ISettingsModal<O>
+        case "Select": return new (Select.settingsModal(base as unknown as Constructor<ISettingsModal<Select.DefaultedOptions>>))() as unknown as ISettingsModal<O>
+        case "Multi": return new (Multi.settingsModal(base as unknown as Constructor<ISettingsModal<Multi.DefaultedOptions>>))() as unknown as ISettingsModal<O>
+        case "File": return new (File.settingsModal(base as unknown as Constructor<ISettingsModal<File.DefaultedOptions>>))() as unknown as ISettingsModal<O>
+        case "MultiFile": return new (MultiFile.settingsModal(base as unknown as Constructor<ISettingsModal<MultiFile.DefaultedOptions>>))() as unknown as ISettingsModal<O>
+        case "Media": return new (Media.settingsModal(base as unknown as Constructor<ISettingsModal<Media.DefaultedOptions>>))() as unknown as ISettingsModal<O>
+        case "MultiMedia": return new (MultiMedia.settingsModal(base as unknown as Constructor<ISettingsModal<MultiMedia.DefaultedOptions>>))() as unknown as ISettingsModal<O>
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
-        default: throw Error("not implemented")
     }
 }
 
-export function getFieldModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): ModalType {
+export function getFieldModal<O extends BaseOptions>(managedField: IFieldManager<Target, O>, plugin: MetadataMenu): ModalType {
     switch (managedField.type) {
-        case "Input": return new (Input.valueModal(managedField, plugin))()
-        case "Select": return new (Select.valueModal(managedField, plugin))()
-        case "Multi": return new (Multi.valueModal(managedField, plugin))()
-        case "File": return new (File.valueModal(managedField, plugin))()
-        case "MultiFile": return new (MultiFile.valueModal(managedField, plugin))()
-        case "Media": return new (Media.valueModal(managedField, plugin))()
-        case "MultiMedia": return new (MultiMedia.valueModal(managedField, plugin))()
+        case "Input": return new (Input.valueModal(managedField as unknown as IFieldManager<Target, Input.Options>, plugin))()
+        case "Select": return new (Select.valueModal(managedField as unknown as IFieldManager<Target, Select.Options>, plugin))()
+        case "Multi": return new (Multi.valueModal(managedField as unknown as IFieldManager<Target, Multi.Options>, plugin))()
+        case "File": return new (File.valueModal(managedField as unknown as IFieldManager<Target, File.Options>, plugin))()
+        case "MultiFile": return new (MultiFile.valueModal(managedField as unknown as IFieldManager<Target, MultiFile.Options>, plugin))()
+        case "Media": return new (Media.valueModal(managedField as unknown as IFieldManager<Target, Media.Options>, plugin))()
+        case "MultiMedia": return new (MultiMedia.valueModal(managedField as unknown as IFieldManager<Target, MultiMedia.Options>, plugin))()
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
         default: throw Error("not implemented")
@@ -187,7 +185,7 @@ export function getFieldClass(type: FieldType): Constructor<IFieldBase> {
     }
 }
 
-export type displayValueFunction = (managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked?: () => any) => void
+export type displayValueFunction = (managedField: IFieldManager<Target, BaseOptions>, container: HTMLDivElement, onClicked?: () => any) => void
 
 export function displayValue(type: FieldType): displayValueFunction {
     switch (type) {
@@ -204,8 +202,8 @@ export function displayValue(type: FieldType): displayValueFunction {
     }
 }
 
-export function createDvField(
-    managedField: IFieldManager<Target> | undefined,
+export function createDvField<O extends BaseOptions>(
+    managedField: IFieldManager<Target, O> | undefined,
     dv: any,
     p: any,
     fieldContainer: HTMLElement,
@@ -214,13 +212,13 @@ export function createDvField(
     if (!managedField) return
     managedField.value = p[managedField.name] || ""
     switch (managedField.type) {
-        case "Input": return Input.createDvField(managedField, dv, p, fieldContainer, attrs)
-        case "Select": return Select.createDvField(managedField, dv, p, fieldContainer, attrs)
-        case "Multi": return Multi.createDvField(managedField, dv, p, fieldContainer, attrs)
-        case "File": return File.createDvField(managedField, dv, p, fieldContainer, attrs)
-        case "MultiFile": return MultiFile.createDvField(managedField, dv, p, fieldContainer, attrs)
-        case "Media": return Media.createDvField(managedField, dv, p, fieldContainer, attrs)
-        case "MultiMedia": return MultiMedia.createDvField(managedField, dv, p, fieldContainer, attrs)
+        case "Input": return Input.createDvField(managedField as unknown as IFieldManager<Target, Input.Options>, dv, p, fieldContainer, attrs)
+        case "Select": return Select.createDvField(managedField as unknown as IFieldManager<Target, Select.Options>, dv, p, fieldContainer, attrs)
+        case "Multi": return Multi.createDvField(managedField as unknown as IFieldManager<Target, Multi.Options>, dv, p, fieldContainer, attrs)
+        case "File": return File.createDvField(managedField as unknown as IFieldManager<Target, File.Options>, dv, p, fieldContainer, attrs)
+        case "MultiFile": return MultiFile.createDvField(managedField as unknown as IFieldManager<Target, MultiFile.Options>, dv, p, fieldContainer, attrs)
+        case "Media": return Media.createDvField(managedField as unknown as IFieldManager<Target, Media.Options>, dv, p, fieldContainer, attrs)
+        case "MultiMedia": return MultiMedia.createDvField(managedField as unknown as IFieldManager<Target, MultiMedia.Options>, dv, p, fieldContainer, attrs)
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
     }

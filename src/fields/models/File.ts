@@ -14,15 +14,15 @@ export class Base extends AbstractFile.Base implements IFieldBase {
 }
 
 export interface Options extends AbstractFile.Options { }
-
+export interface DefaultedOptions extends AbstractFile.DefaultedOptions { }
 export const DefaultOptions: AbstractFile.DefaultedOptions = AbstractFile.DefaultOptions
 
-export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
+export function settingsModal(Base: Constructor<ISettingsModal<AbstractFile.DefaultedOptions>>): Constructor<ISettingsModal<Options>> {
     const base = AbstractFile.settingsModal(Base)
     return class SettingsModal extends base { }
 }
 
-export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<AbstractFile.Modal<Target>> {
+export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<AbstractFile.Modal<Target>> {
     const base = AbstractFile.valueModal(managedField, plugin)
     return class ValueModal extends base {
         private selectedFilePath?: string
@@ -68,7 +68,7 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
 }
 
 export function createDvField(
-    managedField: IFieldManager<Target>,
+    managedField: IFieldManager<Target, Options>,
     dv: any,
     p: any,
     fieldContainer: HTMLElement,
@@ -77,6 +77,6 @@ export function createDvField(
     return AbstractFile.createDvField(managedField, dv, p, fieldContainer, attrs)
 }
 
-export function displayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked: () => any) {
+export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {
     return AbstractFile.displayValue(managedField, container, onClicked)
 }

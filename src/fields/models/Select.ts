@@ -2,7 +2,7 @@
 import MetadataMenu from "main";
 import * as AbstractList from "./abstractModels/AbstractList"
 import { ISettingsModal } from "../base/BaseSetting";
-import { IFieldManager, Target, getOptions } from "../Field";
+import { IFieldManager, Target } from "../Field";
 import { IFieldBase } from "../base/BaseField";
 import { Constructor } from "src/typings/types";
 import { TFile, setIcon } from "obsidian";
@@ -17,41 +17,43 @@ export class Base implements IFieldBase {
 
 export interface Options extends AbstractList.Options { }
 
+export interface DefaultedOptions extends AbstractList.DefaultedOptions { }
+
 export const DefaultOptions: AbstractList.DefaultedOptions = AbstractList.DefaultOptions
 
-export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
+export function settingsModal(Base: Constructor<ISettingsModal<AbstractList.DefaultedOptions>>): Constructor<ISettingsModal<Options>> {
     const base = AbstractList.settingsModal(Base)
     return class SettingsModal extends base { }
 }
 
-export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<AbstractList.IListBasedModal<Target>> {
+export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<AbstractList.Modal<Target>> {
     const base = AbstractList.valueModal(managedField, plugin)
     return class ValueModal extends base {
         async onAdd(): Promise<void> {
             await this.addNewValueToSettings();
-            this.managedField.value = this.inputEl.value
-            this.managedField.save()
+            managedField.value = this.inputEl.value
+            managedField.save()
             this.close();
         }
 
         renderSuggestion(value: string, el: HTMLElement) {
             el.setText(value)
             el.addClass("value-container")
-            if (value === this.managedField.value) el.addClass("value-checked")
+            if (value === managedField.value) el.addClass("value-checked")
         }
         onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
-            this.managedField.value = item
+            managedField.value = item
             managedField.save()
         }
     }
 }
 
-export function displayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked: () => any) {
+export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {
     return AbstractList.displayValue(managedField, container, onClicked)
 }
 
 export function createDvField(
-    managedField: IFieldManager<Target>,
+    managedField: IFieldManager<Target, Options>,
     dv: any,
     p: any,
     fieldContainer: HTMLElement,

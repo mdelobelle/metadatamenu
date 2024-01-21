@@ -19,11 +19,11 @@ import { BaseOptions } from "./BaseField"
 // Field Types list agnostic
 // Field types specific settings agnostic
 
-export interface ISettingsModal extends Modal {
+export interface ISettingsModal<O extends BaseOptions> extends Modal {
     plugin: MetadataMenu;
     iconName: TextComponent;
     namePromptComponent: TextComponent;
-    initialField: IField;
+    initialField: IField<O>;
     optionsContainer: HTMLDivElement;
     command: FieldCommand;
     addCommand: boolean;
@@ -34,20 +34,19 @@ export interface ISettingsModal extends Modal {
     parentSelectContainer: HTMLDivElement
     typeSelectContainer: HTMLDivElement
     location: SettingLocation
-    field: IField
+    field: IField<O>
     isNew: boolean
     parentSetting?: FieldSetting
     parentSettingContainer?: HTMLElement
-    options: BaseOptions
     getFileClassName(): string | undefined
-    setParent(parent: IField | undefined): void
+    setParent(parent: IField<O> | undefined): void
     setType(fieldType: FieldType, fieldTypeLabelContainer: HTMLDivElement): void
 }
 
-class TypeSelector extends SuggestModal<FieldType> {
+class TypeSelector<O extends BaseOptions> extends SuggestModal<FieldType> {
     constructor(
         private plugin: MetadataMenu,
-        private fieldSetting: ISettingsModal,
+        private fieldSetting: ISettingsModal<O>,
         private labelContainer: HTMLDivElement
     ) {
         super(plugin.app)
@@ -81,23 +80,23 @@ class TypeSelector extends SuggestModal<FieldType> {
     }
 }
 
-class ParentSelector extends SuggestModal<IField> {
+class ParentSelector<O extends BaseOptions> extends SuggestModal<IField<O>> {
     constructor(
         private plugin: MetadataMenu,
-        private fieldSetting: ISettingsModal,
-        private compatibleParents: IField[],
+        private fieldSetting: ISettingsModal<O>,
+        private compatibleParents: IField<O>[],
     ) {
         super(plugin.app)
     }
 
-    getSuggestions(query: string): IField[] | Promise<IField[]> {
+    getSuggestions(query: string): IField<O>[] | Promise<IField<O>[]> {
         const parents = this.compatibleParents.filter(p => p.name.toLowerCase().includes(query.toLowerCase()))
         return parents
     }
 
-    renderSuggestion(parent: IField, el: HTMLElement) {
-        const path = ParentSelector.getParentPath(parent)
-        const display = ParentSelector.getHierarchyDisplay(
+    renderSuggestion(parent: IField<O>, el: HTMLElement) {
+        const path = getParentPath(parent)
+        const display = getHierarchyDisplay(
             this.plugin,
             path,
             this.fieldSetting.getFileClassName()
@@ -105,38 +104,40 @@ class ParentSelector extends SuggestModal<IField> {
         el.setText(display)
     }
 
-    onChooseSuggestion(parent: IField, evt: MouseEvent | KeyboardEvent) {
+    onChooseSuggestion(parent: IField<O>, evt: MouseEvent | KeyboardEvent) {
         this.fieldSetting.setParent(parent)
         //TODO call setting.setParent(item) given that item is the path
     }
 
-    static getHierarchyDisplay(plugin: MetadataMenu, path: string, fileClassName: string | undefined): string {
-        const display = path
-            .split("____")
-            .map(id => getField(id, fileClassName, plugin)?.name || "")
-            .join(" > ")
-        return display
-    }
 
-    static getParentPath(item: IField): string {
-        const path = item.path ? item.path + "____" + item.id : item.id
-        return path
-    }
 
 }
 
-export function buildSettingsModal(
-    fieldConstructor: Constructor<IField>,
+export function getHierarchyDisplay(plugin: MetadataMenu, path: string, fileClassName: string | undefined): string {
+    const display = path
+        .split("____")
+        .map(id => getField(id, fileClassName, plugin)?.name || "")
+        .join(" > ")
+    return display
+}
+
+export function getParentPath<O extends BaseOptions>(item: IField<O>): string {
+    const path = item.path ? item.path + "____" + item.id : item.id
+    return path
+}
+
+export function buildSettingsModal<O extends BaseOptions>(
+    fieldConstructor: Constructor<IField<O>>,
     plugin: MetadataMenu,
     parentSetting?: FieldSetting,
     parentSettingContainer?: HTMLElement
-): Constructor<ISettingsModal> {
-    return class FieldSettingsModal extends Modal implements ISettingsModal {
+): Constructor<ISettingsModal<O>> {
+    return class FieldSettingsModal extends Modal implements ISettingsModal<O> {
         createSettingContainer: () => void
         public plugin: MetadataMenu
         public iconName: TextComponent;
         public namePromptComponent: TextComponent;
-        public initialField: IField;
+        public initialField: IField<O>;
         public optionsContainer: HTMLDivElement;
         public command: FieldCommand;
         public addCommand: boolean;
@@ -147,11 +148,10 @@ export function buildSettingsModal(
         public parentSelectContainer: HTMLDivElement
         public typeSelectContainer: HTMLDivElement
         public location: SettingLocation
-        public field: IField
+        public field: IField<O>
         public isNew: boolean = true;
         public fileClass?: FileClass
         public saved: boolean = false
-        public options: BaseOptions
         constructor() {
             super(plugin.app)
             this.plugin = plugin
@@ -162,12 +162,12 @@ export function buildSettingsModal(
             //feed initial field with the optional existing indexed field
             this.initialField = new fieldConstructor()
             //create a blank field inbound from the existing indexed field
-            this.field = new (buildField(plugin, "", "", "", this.initialField.fileClassName, undefined, undefined, undefined, this.initialField.type, {}))()
+            this.field = new (buildField<O>(plugin, "", "", "", this.initialField.fileClassName, undefined, undefined, undefined, this.initialField.type, {}))()
+            // feed options with initial field options or default values
+            this.initialField.options = getOptions(this.initialField) as O
             // deep copy the properties in this.field
             copyProperty(this.field, this.initialField)
             this.isNew = !this.field.id
-            // feed options with initial field options or default values
-            this.options = getOptions(this.initialField)
             // get Id or create new
             this.field.id = this.initialField.id || getNewFieldId(this.plugin)
 
@@ -254,12 +254,12 @@ export function buildSettingsModal(
             this.namePromptComponent = input
         }
 
-        public setParent(parent: IField | undefined): void {
+        public setParent(parent: IField<O> | undefined): void {
             if (parent === undefined) {
                 this.path = ""
                 this.field.path = ""
             } else {
-                const path = ParentSelector.getParentPath(parent)
+                const path = getParentPath(parent)
                 this.path = path
                 this.field.path = path
             }
@@ -271,14 +271,14 @@ export function buildSettingsModal(
             return this.fileClass?.name
         }
 
-        private buildParentSelectContainer(_parent?: IField): void {
+        private buildParentSelectContainer(_parent?: IField<O>): void {
             const parent = _parent || this.field.getFirstAncestor()
             this.parentSelectContainer.replaceChildren()
             const compatibleParents = this.field.getCompatibleParents()
             const parentName = parent
-                ? ParentSelector.getHierarchyDisplay(
+                ? getHierarchyDisplay(
                     this.plugin,
-                    ParentSelector.getParentPath(parent),
+                    getParentPath(parent),
                     this.getFileClassName())
                 : "-- No parent field selected --"
             this.parentSelectContainer
@@ -490,7 +490,6 @@ export function buildSettingsModal(
                     new Notice("Fix errors before saving.");
                     return;
                 };
-                this.field.options = this.options
                 if (this.addCommand) {
                     this.field.command = this.command
                     addInsertIFieldCommand(this.plugin, this.command, this.field, this.field.fileClassName)
@@ -590,22 +589,25 @@ export function buildSettingsModal(
         }
 
         onClose(): void {
-            if (parentSettingContainer && this.saved) {
-                Object.assign(this.field, this.initialField);
-                if (!this.isNew && parentSetting) {
-                    parentSetting.setTextContentWithname()
-                } else {
-                    const gField = exportIField(this.field)
-                    new FieldSetting(parentSettingContainer, gField, this.plugin);
-                };
+            if (this.saved) {
+                if (parentSettingContainer && this.saved) {
+                    Object.assign(this.field, this.initialField);
+                    if (!this.isNew && parentSetting) {
+                        parentSetting.setTextContentWithname()
+                    } else {
+                        const gField = exportIField(this.field)
+                        new FieldSetting(parentSettingContainer, gField, this.plugin);
+                    };
+                }
             }
+
         }
     }
 }
 
 
-export function openSettings(id: string, fileClassName: string | undefined, plugin: MetadataMenu, parentSetting?: FieldSetting, parentSettingContainer?: HTMLElement) {
-    let Field: Constructor<IField> | undefined = undefined
+export function openSettings<O extends BaseOptions>(id: string, fileClassName: string | undefined, plugin: MetadataMenu, parentSetting?: FieldSetting, parentSettingContainer?: HTMLElement) {
+    let Field: Constructor<IField<O>> | undefined = undefined
     let type: FieldType | undefined = "Input"
     if (!id) {
         Field = buildField(plugin, "", "", "", fileClassName, undefined, undefined, undefined, type, {})

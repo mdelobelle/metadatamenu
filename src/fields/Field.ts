@@ -25,13 +25,13 @@ import { Constructor } from "src/typings/types"
 
 type FieldStyle = Record<keyof typeof FieldStyleLabel, boolean>
 
-export interface IField extends IFieldBase {
+export interface IField<O extends BaseOptions> extends IFieldBase {
     // a field base with a name, an id, options, a fileclass name....
     plugin: MetadataMenu
     name: string
     id: string
     path: string
-    options: BaseOptions
+    options: O
     fileClassName?: string
     command?: FieldCommand
     display?: MultiDisplayType
@@ -39,15 +39,15 @@ export interface IField extends IFieldBase {
     isRoot(): boolean
     getDisplay(): MultiDisplayType
     getIndexedPath(node: LineNode): string
-    getChildren(): IField[]
-    getFirstAncestor(): IField | undefined
+    getChildren(): IField<O>[]
+    getFirstAncestor(): IField<O> | undefined
     getDottedPath(): string
     hasIdAsAncestor(childId: string): boolean
-    getCompatibleParents(): IField[]
-    getAncestors(fieldId: string): IField[]
+    getCompatibleParents(): IField<O>[]
+    getAncestors(fieldId: string): IField<O>[]
     getIndentationLevel(node: LineNode): number
     isFirstItemOfObjectList(node: LineNode): boolean
-    getOtherObjectTypeFields(): IField[]
+    getOtherObjectTypeFields(): IField<O>[]
     validateName(textInput: TextComponent, contentEl: Element): boolean
     validateOptions(): boolean
 }
@@ -58,15 +58,15 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
     name: string = "",
     id: string = "",
     path: string = "",
-    options?: O,
+    options: O,
     fileClassName?: string,
     command?: FieldCommand,
     display?: MultiDisplayType,
     style?: FieldStyle
-): Constructor<IField> {
+): Constructor<IField<O>> {
     return class Field extends Base {
         public plugin: MetadataMenu
-        public options: O | {}
+        public options: O
         public name: string
         public id: string
         public path: string
@@ -77,7 +77,7 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
         constructor(...rest: any[]) {
             super()
             this.plugin = plugin
-            this.options = options || {}
+            this.options = options
             this.name = name
             this.id = id
             this.path = path
@@ -111,13 +111,13 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
 
         }
 
-        public getChildren(): IField[] {
+        public getChildren(): IField<O>[] {
             if (this.fileClassName) {
                 return (
                     this.plugin.fieldIndex.fileClassesName
                         .get(this.fileClassName)?.attributes
                         .map(attr => attr.getIField())
-                        .filter(f => !!f) as IField[]
+                        .filter(f => !!f) as IField<O>[]
                 )
                     .filter(f => f.path.split("____").last() === this.id) || []
             } else {
@@ -125,7 +125,7 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
             }
         }
 
-        public getFirstAncestor(): IField | undefined {
+        public getFirstAncestor(): IField<O> | undefined {
             const ancestors = this.getAncestors()
             return ancestors.last()
         }
@@ -151,7 +151,7 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
             }
         }
 
-        public getCompatibleParents(): IField[] {
+        public getCompatibleParents(): IField<O>[] {
             //Lookups, Formulas and Canvas can't accept objectList as parent
             //because their value depends on outer change that can't know which
             //index they would need to change
@@ -171,14 +171,14 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
             }
         }
 
-        public getAncestors(fieldId: string = this.id): IField[] {
+        public getAncestors(fieldId: string = this.id): IField<O>[] {
             const field = getField(fieldId, this.fileClassName, this.plugin)
-            const ancestors: IField[] = []
+            const ancestors: IField<O>[] = []
             if (!field || !field.path) return ancestors
 
             const ancestorsIds = field.path.split("____")
             for (const id of ancestorsIds) {
-                const ancestor = getField(id, this.fileClassName, this.plugin)
+                const ancestor = getField<O>(id, this.fileClassName, this.plugin)
                 if (ancestor) ancestors.push(ancestor)
             }
             return ancestors
@@ -206,7 +206,7 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
             return false
         }
 
-        public getOtherObjectTypeFields(): IField[] {
+        public getOtherObjectTypeFields(): IField<O>[] {
             let objectFields: GField[]
             if (this.fileClassName) {
                 const index = this.plugin.fieldIndex
@@ -216,7 +216,7 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
                 objectFields = this.plugin.presetFields
                     .filter(field => objectTypes.includes(field.type) && field.id !== this.id)
             }
-            return objectFields.map(f => getField(f.id, f.fileClassName, plugin)).filter(iF => !!iF) as IField[]
+            return objectFields.map(f => getField(f.id, f.fileClassName, plugin)).filter(iF => !!iF) as IField<O>[]
         }
 
         public validateName(textInput: TextComponent, contentEl: Element): boolean {
@@ -270,7 +270,7 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
             return field;
         }
 
-        static presetFields(plugin: MetadataMenu): IField[] {
+        static presetFields(plugin: MetadataMenu): IField<O>[] {
             return plugin.presetFields.map(prop => {
                 const property = new Field(plugin);
                 return Object.assign(property, prop);
@@ -279,20 +279,21 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
     }
 }
 
-export function getOptions(field: IField | IFieldManager<Target>): BaseOptions {
+export function getOptions<O extends BaseOptions>(field: IField<O> | IFieldManager<Target, O>): O {
     const options = field.options
     if (
         Object.keys(options).length === 0 &&
         options.constructor === Object
     ) {
-        return getDefaultOptions(field.type)
+        //TODO fix the casting of getDefaultOptions. try to get if from getDefaultOptions
+        return getDefaultOptions(field.type) as O
     } else {
-        return field.options
+        return field.options as O
     }
 }
 
 
-export function buildField(
+export function buildField<O extends BaseOptions>(
     plugin: MetadataMenu,
     name: string,
     id: string,
@@ -302,12 +303,13 @@ export function buildField(
     display?: MultiDisplayType,
     style?: FieldStyle,
     ...[type, options]: FieldParam
-): Constructor<IField> {
-    const _field = field(plugin, getFieldClass(type), name, id, path, options, fileClassName, command, display, style)
+): Constructor<IField<O>> {
+    const base = getFieldClass(type)
+    const _field = field<typeof base, O>(plugin, base, name, id, path, options as O, fileClassName, command, display, style)
     return _field
 }
 
-export function exportIField(field: IField): GField {
+export function exportIField<O extends BaseOptions>(field: IField<O>): GField {
 
     const _field = new GField(field.plugin)
     _field.id = field.id
@@ -322,7 +324,7 @@ export function exportIField(field: IField): GField {
     return _field
 }
 
-export function getFieldConstructor(id: string, fileClassName: string | undefined, plugin: MetadataMenu): [Constructor<IField>, FieldType] | [] {
+export function getFieldConstructor<O extends BaseOptions>(id: string, fileClassName: string | undefined, plugin: MetadataMenu): [Constructor<IField<O>>, FieldType] | [] {
     if (fileClassName) {
         const index = plugin.fieldIndex
         const fCF = index.fileClassesFields
@@ -343,26 +345,19 @@ export function getFieldConstructor(id: string, fileClassName: string | undefine
     return []
 }
 
-export function getField(id: string, fileClassName: string | undefined, plugin: MetadataMenu): IField | undefined {
-    const [constructor] = getFieldConstructor(id, fileClassName, plugin)
+export function getField<O extends BaseOptions>(id: string, fileClassName: string | undefined, plugin: MetadataMenu): IField<O> | undefined {
+    const [constructor] = getFieldConstructor<O>(id, fileClassName, plugin)
     if (constructor) {
         return new constructor()
     }
 }
 
-export function copyProperty(target: IField, source: IField): void {
+export function copyProperty<O extends BaseOptions>(target: IField<O>, source: IField<O>): void {
     const unbound = (value: any) => value ? JSON.parse(JSON.stringify(value)) : ""
     target.id = unbound(source.id);
     target.name = unbound(source.name);
     target.type = unbound(source.type)
-    Object.keys(source.options).forEach(k => {
-        target.options[k] = unbound(source.options[k]);
-    });
-    Object.keys(target.options).forEach(k => {
-        if (!Object.keys(source.options).includes(k)) {
-            delete target.options[k];
-        };
-    });
+    target.options = unbound(source.options)
     target.command = unbound(source.command)
     target.display = unbound(source.display)
     target.style = unbound(source.style)
@@ -403,12 +398,12 @@ export function upperPath(indexedPath: string): string {
 }
 
 
-export function createDefault(plugin: MetadataMenu, name: string): IField {
+export function createDefault<O extends BaseOptions>(plugin: MetadataMenu, name: string): IField<O> {
     throw Error("Not implemented")
     //should return a input without id ....
 }
 
-export function existingFields(plugin: MetadataMenu, filePath: string, obj: any, depth: number = 0, path: string = ""): IField[] {
+export function existingFields<O extends BaseOptions>(plugin: MetadataMenu, filePath: string, obj: any, depth: number = 0, path: string = ""): IField<O>[] {
     const reservedKeys = ["file", "aliases", "tags"]
     let _obj: any
     if (depth === 0) {
@@ -421,12 +416,12 @@ export function existingFields(plugin: MetadataMenu, filePath: string, obj: any,
     } else {
         _obj = obj
     }
-    const _existingFields: IField[] = []
+    const _existingFields: IField<O>[] = []
     if (typeof obj === 'object') {
         for (const key of obj) {
             if (depth === 0 && reservedKeys.includes(key)) continue;
             if (typeof obj[key] === 'object' && obj[key] !== null) {
-                _existingFields.push(...existingFields(plugin, filePath, obj[key], depth + 1, `${path ? path + "." : ""}${key}`).filter(k => !_existingFields.includes(k)))
+                _existingFields.push(...existingFields<O>(plugin, filePath, obj[key], depth + 1, `${path ? path + "." : ""}${key}`).filter(k => !_existingFields.includes(k)))
             } else if (!_existingFields.map(k => k.name.toLowerCase().replace(/\s/g, "-")).includes(key.toLowerCase().replace(/\s/g, "-"))) {
                 _existingFields.push(key)
             } else {
@@ -444,7 +439,7 @@ export function getIdAndIndex(indexedId?: string) {
     return { id, index }
 }
 
-export function getValueFromIndexedPath(carriageField: IField, obj: any, indexedPath: string): any {
+export function getValueFromIndexedPath<O extends BaseOptions>(carriageField: IField<O>, obj: any, indexedPath: string): any {
     //fonction récursive qui part du frontmatter et qui cherche la valeur correspondant à l'indexedPath
     //l'argument field sert à récupérer la fileclass et à récupérer l'attribute plugin
 
@@ -507,7 +502,7 @@ export function getValueFromPath(obj: any, path: string): string {
 
 //#region FieldValueManager
 
-export interface IFieldManager<T> extends IField {
+export interface IFieldManager<T, O extends BaseOptions> extends IField<O> {
     target: T
     value: any
     eF?: ExistingField,
@@ -524,16 +519,16 @@ export type Target =
     TFile |
     TFile[]
 
-export function isSingleTargeted(managedField: IFieldManager<Target>): managedField is IFieldManager<TFile> {
+export function isSingleTargeted<O extends BaseOptions>(managedField: IFieldManager<Target, O>): managedField is IFieldManager<TFile, O> {
     return managedField.target instanceof TFile
 }
 
-export function isMultiTargeted(managedField: IFieldManager<Target>): managedField is IFieldManager<TFile[]> {
+export function isMultiTargeted<O extends BaseOptions>(managedField: IFieldManager<Target, O>): managedField is IFieldManager<TFile[], O> {
     const target = managedField.target
     return Array.isArray(target) && target.every(t => t instanceof TFile)
 }
 
-function FieldValueManager<F extends Constructor<IField>>(
+function FieldValueManager<O extends BaseOptions, F extends Constructor<IField<O>>>(
     plugin: MetadataMenu,
     Base: F,
     target: Target,
@@ -543,7 +538,7 @@ function FieldValueManager<F extends Constructor<IField>>(
     asList?: boolean,
     asBlockquote?: boolean,
     previousModal?: ObjectModal | ObjectListModal
-): Constructor<IFieldManager<Target>> {
+): Constructor<IFieldManager<Target, O>> {
     return class ManagedField extends Base {
         private _modal: IBaseValueModal<Target>
         public target: Target
@@ -585,7 +580,7 @@ function FieldValueManager<F extends Constructor<IField>>(
 }
 
 
-export function fieldValueManager(
+export function fieldValueManager<O extends BaseOptions>(
     plugin: MetadataMenu,
     id: string,
     fileClassName: string | undefined,
@@ -596,10 +591,10 @@ export function fieldValueManager(
     asList?: boolean,
     asBlockquote?: boolean,
     previousModal?: ObjectModal | ObjectListModal
-): IFieldManager<Target> | undefined {
-    const [field] = getFieldConstructor(id, fileClassName, plugin)
+): IFieldManager<Target, O> | undefined {
+    const [field] = getFieldConstructor<O>(id, fileClassName, plugin)
     if (!field) return
-    return new (FieldValueManager(
+    return new (FieldValueManager<O, Constructor<IField<O>>>(
         plugin,
         field,
         target,
@@ -642,7 +637,7 @@ export function replaceValues(plugin: MetadataMenu, path: string, id: string, va
     }
 }
 
-export function baseDisplayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked = () => { }) {
+export function baseDisplayValue<O extends BaseOptions>(managedField: IFieldManager<Target, O>, container: HTMLDivElement, onClicked = () => { }) {
     let valueText: string;
     switch (managedField.value) {
         case undefined: valueText = ""; break;

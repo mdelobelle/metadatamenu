@@ -20,49 +20,48 @@ export interface Options extends BaseOptions {
     template?: string
 }
 
-interface DefaultedOptions extends Options { }
+export interface DefaultedOptions extends Options { }
 
 export const DefaultOptions: DefaultedOptions = {}
 
-export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
+export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>>): Constructor<ISettingsModal<Options>> {
     return class InputSettingModal extends Base {
-        public options: DefaultedOptions // to enforce options type checking
         createSettingContainer = () => {
             const container = this.optionsContainer
+            this.field.options.template
             container.createEl("span", { text: "Template", cls: 'label' })
             const templateContainer = container.createDiv({ cls: "field-container" });
             const templateValue = new TextAreaComponent(templateContainer)
             templateValue.inputEl.cols = 50;
             templateValue.inputEl.rows = 4;
             templateValue.inputEl.addClass("full-width")
-            templateValue.setValue(this.options.template || "")
+            templateValue.setValue(this.field.options.template || "")
             templateValue.onChange((value: string) => {
-                this.options.template = value;
+                this.field.options.template = value;
             })
         }
     }
 }
 
-export function valueModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<IBasicModal<Target>> {
+export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<IBasicModal<Target>> {
     //TODO inserer le multi target change
     const base = basicModal(managedField, plugin)
     return class ValueModal extends base {
         private templateValues: Record<string, string> = {};
         private renderedValue: TextAreaComponent;
-        public managedField: IFieldManager<Target>
-        public options: DefaultedOptions
+        public managedField: IFieldManager<Target, Options>
         constructor(...rest: any[]) {
             super(plugin.app)
             this.managedField = managedField
-            this.options = getOptions(this.managedField) as DefaultedOptions
             this.titleEl.setText(`Change Value for <${this.managedField.name}>`)
             this.build()
         }
 
         build() {
-            if (this.options.template) {
+            const options = this.managedField.options
+            if (options.template) {
                 const templateFieldRegex = new RegExp(`\\{\\{(?<field>[^\\}]+?)\\}\\}`, "gu");
-                const tF = this.options.template.matchAll(templateFieldRegex)
+                const tF = options.template.matchAll(templateFieldRegex)
                 let next = tF.next();
                 while (!next.done) {
                     if (next.value.groups) {
@@ -72,14 +71,14 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
                         if (optionsString) {
                             try {
                                 const options = JSON.parse(optionsString);
-                                this.buildTemplateSelectItem(this.options.template, this.contentEl.createDiv({ cls: "field-container" }), name, options);
+                                this.buildTemplateSelectItem(options.template, this.contentEl.createDiv({ cls: "field-container" }), name, options);
                             } catch ({ name: errorName, message }) {
                                 const notice = `{{${name}}} field definition is not a valid JSON \n` +
                                     `in <${this.managedField.name}> ${this.managedField.fileClassName ? this.managedField.fileClassName : "Metadata Menu"} settings`
                                 if (errorName === "SyntaxError") new Notice(notice, 5000)
                             }
                         } else {
-                            this.buildTemplateInputItem(this.options.template, this.contentEl.createDiv({ cls: "field-container" }), name);
+                            this.buildTemplateInputItem(options.template, this.contentEl.createDiv({ cls: "field-container" }), name);
                         }
                     }
                     next = tF.next()
@@ -183,12 +182,12 @@ export function valueModal(managedField: IFieldManager<Target>, plugin: Metadata
     }
 }
 
-export function displayValue(managedField: IFieldManager<Target>, container: HTMLDivElement, onClicked = () => { }) {
+export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked = () => { }) {
     return baseDisplayValue(managedField, container, onClicked)
 }
 
 export function createDvField(
-    managedField: IFieldManager<Target>,
+    managedField: IFieldManager<Target, Options>,
     dv: any,
     p: any,
     fieldContainer: HTMLElement,
