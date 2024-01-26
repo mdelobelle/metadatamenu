@@ -45,7 +45,9 @@ export const migratedFieldTypes = [
     FieldType.CanvasGroup,
     FieldType.CanvasGroupLink,
     FieldType.JSON,
-    FieldType.YAML
+    FieldType.YAML,
+    FieldType.Formula,
+    FieldType.Lookup
 ]
 
 
