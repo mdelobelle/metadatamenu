@@ -17,7 +17,7 @@ import { ExistingField } from "./ExistingField"
 import ObjectModal from "src/modals/fields/ObjectModal"
 import ObjectListModal from "src/modals/fields/ObjectListModal"
 import { Constructor } from "src/typings/types"
-import { FieldActions } from "src/components/NoteFields"
+import { FieldActions } from "src/components/FieldsModal"
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
 
 // Field Types list agnostic
@@ -566,7 +566,7 @@ function FieldValueManager<O extends BaseOptions, F extends Constructor<IField<O
     previousModal?: ObjectModal | ObjectListModal
 ): Constructor<IFieldManager<Target, O>> {
     return class ManagedField extends Base {
-        private _modal: IBaseValueModal<Target>
+        private _modal: IBaseValueModal<Target> | undefined
         public target: Target
         public value: any
         public eF?: ExistingField
@@ -587,7 +587,7 @@ function FieldValueManager<O extends BaseOptions, F extends Constructor<IField<O
             this.previousModal = previousModal
         }
         public openModal() {
-            this.modal.open()
+            this.modal?.open()
         }
 
         private get modal() {

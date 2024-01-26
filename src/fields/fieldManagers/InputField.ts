@@ -5,7 +5,7 @@ import InputModal, { MultiFilesInputModal } from "src/modals/fields/InputModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../_Field";
 import { FieldManager } from "../FieldManager";
-import { FieldOptions } from "src/components/NoteFields";
+import { FieldOptions } from "src/components/FieldsModal";
 import { ExistingField } from "../ExistingField";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import ObjectModal from "src/modals/fields/ObjectModal";

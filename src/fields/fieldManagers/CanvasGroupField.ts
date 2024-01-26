@@ -1,7 +1,7 @@
 import MetadataMenu from "main"
 import { TFile, Menu, TextComponent } from "obsidian"
 import { postValues } from "src/commands/postValues"
-import { FieldOptions } from "src/components/NoteFields"
+import { FieldOptions } from "src/components/FieldsModal"
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
 import FieldSettingsModal from "src/settings/FieldSettingsModal"
 import { FieldType } from "src/types/fieldTypes"

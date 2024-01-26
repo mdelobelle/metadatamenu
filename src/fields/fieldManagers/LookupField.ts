@@ -8,7 +8,7 @@ import { SettingLocation } from "../FieldManager";
 import { FieldManager } from "../FieldManager";
 import * as Lookup from "src/types/lookupTypes";
 import { Status } from "src/types/lookupTypes";
-import { FieldOptions } from "src/components/NoteFields";
+import { FieldOptions } from "src/components/FieldsModal";
 import { updateLookups } from "src/commands/updateLookups";
 import { displayLinksOrText } from "src/utils/linksUtils";
 import { ExistingField } from "../ExistingField";

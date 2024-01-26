@@ -40,7 +40,10 @@ export const migratedFieldTypes = [
     FieldType.File,
     FieldType.Input,
     FieldType.Select,
-    FieldType.Multi
+    FieldType.Multi,
+    FieldType.Canvas,
+    FieldType.CanvasGroup,
+    FieldType.CanvasGroupLink
 ]
 
 

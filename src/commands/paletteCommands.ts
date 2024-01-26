@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { MarkdownView, Notice, TFile } from "obsidian";
-import NoteFieldsComponent from "src/components/NoteFields";
+import NoteFieldsComponent from "src/components/FieldsModal";
 import Field, { FieldCommand } from "src/fields/_Field";
 import { AddFileClassToFileModal, FileClass } from "src/fileClass/fileClass";
 import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";

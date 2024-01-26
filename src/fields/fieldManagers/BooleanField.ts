@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { Menu, TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
-import { FieldOptions } from "src/components/NoteFields"
+import { FieldOptions } from "src/components/FieldsModal"
 import BooleanModal from "src/modals/fields/BooleanModal";
 import { FieldType, FieldIcon } from "src/types/fieldTypes";
 import Field from "../_Field";

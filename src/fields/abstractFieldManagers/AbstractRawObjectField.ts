@@ -5,7 +5,7 @@ import RawObjectModal from "src/modals/fields/RawObjectModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../_Field";
 import { FieldManager } from "../FieldManager";
-import { FieldOptions } from "src/components/NoteFields";
+import { FieldOptions } from "src/components/FieldsModal";
 import { LanguageSupport } from "@codemirror/language";
 import { Extension } from "@codemirror/state"
 import { ExistingField } from "../ExistingField";

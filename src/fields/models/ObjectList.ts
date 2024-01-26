@@ -4,7 +4,7 @@ import { ISettingsModal } from "../base/BaseSetting"
 
 export interface Options extends BaseOptions { }
 
-export function settingsModal(Base: Constructor<ISettingsModal>): Constructor<ISettingsModal> {
+export function settingsModal(Base: Constructor<ISettingsModal<Options>>): Constructor<ISettingsModal<Options>> {
     return class ObjectListSettingsModal extends Base { }
 }
 

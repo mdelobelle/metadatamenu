@@ -5,7 +5,7 @@ import MultiSelectModal from "src/modals/fields/MultiSelectModal";
 import { FieldType } from "src/types/fieldTypes";
 import Field from "../_Field";
 import AbstractListBasedField from "../abstractFieldManagers/AbstractListBasedField";
-import { FieldOptions } from "src/components/NoteFields";
+import { FieldOptions } from "src/components/FieldsModal";
 import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";

@@ -7,7 +7,7 @@ import Field from "../_Field";
 import { FieldManager, SettingLocation } from "../FieldManager";
 import CycleField from "../fieldManagers/CycleField";
 import { FieldManager as FM } from "src/types/fieldTypes";
-import { FieldOptions } from "src/components/NoteFields";
+import { FieldOptions } from "src/components/FieldsModal";
 import { postValues } from "src/commands/postValues";
 import { getLink } from "src/utils/parser";
 import { ExistingField } from "../ExistingField";

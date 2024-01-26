@@ -4,7 +4,7 @@ import { RangeSetBuilder } from "@codemirror/state";
 import { syntaxTree } from "@codemirror/language";
 import { tokenClassNodeProp } from "@codemirror/language";
 import MetadataMenu from "main";
-import NoteFieldsComponent from "src/components/NoteFields";
+import NoteFieldsComponent from "src/components/FieldsModal";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
 
 export function buildCMViewPlugin(plugin: MetadataMenu) {

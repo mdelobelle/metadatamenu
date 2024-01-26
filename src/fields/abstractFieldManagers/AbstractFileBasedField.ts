@@ -5,7 +5,7 @@ import { TextAreaComponent, TFile, Notice, setIcon, Menu, Modal, Debouncer } fro
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import MetadataMenu from "main";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
-import { FieldOptions } from "src/components/NoteFields";
+import { FieldOptions } from "src/components/FieldsModal";
 import { Link } from "src/types/dataviewTypes";
 import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";

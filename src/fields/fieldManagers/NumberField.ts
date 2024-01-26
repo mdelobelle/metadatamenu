@@ -6,7 +6,7 @@ import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldIcon, FieldType } from "src/types/fieldTypes";
 import Field from "../_Field";
 import { FieldManager } from "../FieldManager";
-import { FieldOptions } from "src/components/NoteFields";
+import { FieldOptions } from "src/components/FieldsModal";
 import { postValues } from "src/commands/postValues";
 import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";

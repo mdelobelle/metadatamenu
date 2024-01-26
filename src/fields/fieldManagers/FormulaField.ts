@@ -7,7 +7,7 @@ import Field from "../_Field";
 import { SettingLocation } from "../FieldManager";
 import { FieldManager } from "../FieldManager";
 import { Status, statusIcon } from "src/types/lookupTypes";
-import { FieldOptions } from "src/components/NoteFields";
+import { FieldOptions } from "src/components/FieldsModal";
 import { updateFormulas } from "src/commands/updateFormulas";
 import { ExistingField } from "../ExistingField";
 

@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { Menu, TextComponent, TFile } from "obsidian";
 import { postValues } from "src/commands/postValues";
 import FCSM from "src/options/FieldCommandSuggestModal";
-import { FieldOptions } from "src/components/NoteFields";
+import { FieldOptions } from "src/components/FieldsModal";
 import InsertFieldSuggestModal from "src/modals/insertFieldSuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
 import { FieldManager as FM, FieldType } from "src/types/fieldTypes";

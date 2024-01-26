@@ -11,6 +11,9 @@ import * as File from "./models/File"
 import * as MultiFile from "./models/MultiFile"
 import * as Media from "./models/Media"
 import * as MultiMedia from "./models/MultiMedia"
+import * as Canvas from "./models/Canvas"
+import * as CanvasGroup from "./models/CanvasGroup"
+import * as CanvasGroupLink from "./models/CanvasGroupLink"
 import * as Formula from "./models/Formula"
 import * as ObjectList from "./models/ObjectList"
 import { ISettingsModal, buildSettingsModal } from "./base/BaseSetting"
@@ -23,7 +26,7 @@ import { Constructor } from "src/typings/types"
 import { FieldType as LegacyFieldType } from "src/types/fieldTypes"
 import { Menu, TFile } from "obsidian"
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
-import { FieldActions } from "src/components/NoteFields"
+import { FieldActions } from "src/components/FieldsModal"
 
 
 //TODO next Media and Multi Media (similar to file)
@@ -47,6 +50,9 @@ export type FieldType =
     | "MultiFile"
     | "Media"
     | "MultiMedia"
+    | "Canvas"
+    | "CanvasGroup"
+    | "CanvasGroupLink"
     | "Formula"
     | "ObjectList"
 
@@ -63,6 +69,9 @@ export interface TypesOptionsMap {
     MultiFile: MultiFile.Options
     Media: Media.Options
     MultiMedia: MultiMedia.Options
+    Canvas: Canvas.Options
+    CanvasGroup: CanvasGroup.Options
+    CanvasGroupLink: CanvasGroupLink.Options
     Formula: Formula.Options
     ObjectList: ObjectList.Options
 }
@@ -81,6 +90,9 @@ export function mapLegacyFieldType(type: FieldType): LegacyFieldType {
         case "MultiFile": return LegacyFieldType.MultiFile
         case "Media": return LegacyFieldType.Media
         case "MultiMedia": return LegacyFieldType.MultiMedia
+        case "Canvas": return LegacyFieldType.Canvas
+        case "CanvasGroup": return LegacyFieldType.CanvasGroup
+        case "CanvasGroupLink": return LegacyFieldType.CanvasGroupLink
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
     }
@@ -100,6 +112,9 @@ export function mapFieldType(type: LegacyFieldType): FieldType {
         case "MultiFile": return "MultiFile"
         case "Media": return "Media"
         case "MultiMedia": return "MultiMedia"
+        case "Canvas": return "Canvas"
+        case "CanvasGroup": return "CanvasGroup"
+        case "CanvasGroupLink": return "CanvasGroupLink"
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
         default: throw Error("not implemented")
@@ -119,6 +134,9 @@ export const fieldTypes: Array<FieldType> = [
     "MultiFile",
     "Media",
     "MultiMedia",
+    "Canvas",
+    "CanvasGroup",
+    "CanvasGroupLink",
     "Formula",
     "ObjectList"
 ]
@@ -171,6 +189,9 @@ export function getDefaultOptions<O extends BaseOptions>(type: FieldType): O {
         case "MultiFile": return MultiFile.DefaultOptions as unknown as O
         case "Media": return Media.DefaultOptions as unknown as O
         case "MultiMedia": return MultiMedia.DefaultOptions as unknown as O
+        case "Canvas": return Canvas.DefaultOptions as unknown as O
+        case "CanvasGroup": return CanvasGroup.DefaultOptions as unknown as O
+        case "CanvasGroupLink": return CanvasGroupLink.DefaultOptions as unknown as O
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
     }
@@ -195,12 +216,15 @@ export function getFieldSettings<O extends BaseOptions>(Field: Constructor<IFiel
         case "MultiFile": return new (MultiFile.settingsModal(base as unknown as Constructor<ISettingsModal<MultiFile.DefaultedOptions>>))() as unknown as ISettingsModal<O>
         case "Media": return new (Media.settingsModal(base as unknown as Constructor<ISettingsModal<Media.DefaultedOptions>>))() as unknown as ISettingsModal<O>
         case "MultiMedia": return new (MultiMedia.settingsModal(base as unknown as Constructor<ISettingsModal<MultiMedia.DefaultedOptions>>))() as unknown as ISettingsModal<O>
+        case "Canvas": return new (Canvas.settingsModal(base as unknown as Constructor<ISettingsModal<Canvas.DefaultedOptions>>))() as unknown as ISettingsModal<O>
+        case "CanvasGroup": return new (CanvasGroup.settingsModal(base as unknown as Constructor<ISettingsModal<CanvasGroup.DefaultedOptions>>))() as unknown as ISettingsModal<O>
+        case "CanvasGroupLink": return new (CanvasGroupLink.settingsModal(base as unknown as Constructor<ISettingsModal<CanvasGroupLink.DefaultedOptions>>))() as unknown as ISettingsModal<O>
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
     }
 }
 
-export function getFieldModal<O extends BaseOptions>(managedField: IFieldManager<Target, O>, plugin: MetadataMenu): IBaseValueModal<Target> {
+export function getFieldModal<O extends BaseOptions>(managedField: IFieldManager<Target, O>, plugin: MetadataMenu): IBaseValueModal<Target> | undefined {
     switch (managedField.type) {
         case "Input": return new (Input.valueModal(managedField as unknown as IFieldManager<Target, Input.Options>, plugin))()
         case "Select": return new (Select.valueModal(managedField as unknown as IFieldManager<Target, Select.Options>, plugin))()
@@ -214,8 +238,7 @@ export function getFieldModal<O extends BaseOptions>(managedField: IFieldManager
         case "MultiFile": return new (MultiFile.valueModal(managedField as unknown as IFieldManager<Target, MultiFile.Options>, plugin))()
         case "Media": return new (Media.valueModal(managedField as unknown as IFieldManager<Target, Media.Options>, plugin))()
         case "MultiMedia": return new (MultiMedia.valueModal(managedField as unknown as IFieldManager<Target, MultiMedia.Options>, plugin))()
-        case "Formula": throw Error("not implemented")
-        case "ObjectList": throw Error("not implemented")
+        default: return undefined
     }
 }
 
@@ -233,6 +256,9 @@ export function getFieldClass(type: FieldType): Constructor<IFieldBase> {
         case "MultiFile": return MultiFile.Base
         case "Media": return Media.Base
         case "MultiMedia": return MultiMedia.Base
+        case "Canvas": return Canvas.Base
+        case "CanvasGroup": return CanvasGroup.Base
+        case "CanvasGroupLink": return CanvasGroupLink.Base
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
     }
@@ -254,6 +280,9 @@ export function displayValue(type: FieldType): displayValueFunction {
         case "MultiFile": return MultiFile.displayValue
         case "Media": return Media.displayValue
         case "MultiMedia": return MultiMedia.displayValue
+        case "Canvas": return Canvas.displayValue
+        case "CanvasGroup": return CanvasGroup.displayValue
+        case "CanvasGroupLink": return CanvasGroupLink.displayValue
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
     }
@@ -273,10 +302,9 @@ export function getActions(type: FieldType): getActionFunction {
         case "Multi": return Multi.actions
         case "File": return File.actions
         case "MultiFile": return MultiFile.actions
-        case "Media": throw Error("not implemented")
-        case "MultiMedia": throw Error("not implemented")
-        case "Formula": throw Error("not implemented")
-        case "ObjectList": throw Error("not implemented")
+        case "Media": return Media.actions
+        case "MultiMedia": return MultiMedia.actions
+        default: return (...rest: any[]) => { };
     }
 }
 
@@ -305,10 +333,14 @@ export function createDvField<O extends BaseOptions>(
         case "MultiMedia": return MultiMedia.createDvField(managedField as unknown as IFieldManager<Target, MultiMedia.Options>, dv, p, fieldContainer, attrs)
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
+        default: {
+            const fieldValue = dv.el('span', p[managedField.name], attrs);
+            fieldContainer.appendChild(fieldValue);
+        }
     }
 }
 
-export type getOptionStrFunction = (managedField: IFieldManager<Target, BaseOptions>) => void
+export type getOptionStrFunction = (managedField: IFieldManager<Target, BaseOptions>) => string
 
 export function getOptionStr(type: FieldType): getOptionStrFunction {
     switch (type) {
@@ -324,14 +356,13 @@ export function getOptionStr(type: FieldType): getOptionStrFunction {
         case "MultiFile": return MultiFile.getOptionsStr
         case "Media": return Media.getOptionsStr
         case "MultiMedia": return MultiMedia.getOptionsStr
-        case "Formula": throw Error("not implemented")
-        case "ObjectList": throw Error("not implemented")
+        default: return () => ""
     }
 }
 
 export type geValidateValueFunction = (managedField: IFieldManager<Target, BaseOptions>) => void
 
-export function validateValue(type: FieldType): getOptionStrFunction {
+export function validateValue(type: FieldType): geValidateValueFunction {
     switch (type) {
         case "Input": return Input.validateValue
         case "Select": return Select.validateValue
@@ -343,8 +374,11 @@ export function validateValue(type: FieldType): getOptionStrFunction {
         case "Multi": return Multi.validateValue
         case "File": return File.validateValue
         case "MultiFile": return MultiFile.validateValue
-        case "Media": throw Error("not implemented")
-        case "MultiMedia": throw Error("not implemented")
+        case "Media": return Media.validateValue
+        case "MultiMedia": return MultiMedia.validateValue
+        case "Canvas": return Canvas.validateValue
+        case "CanvasGroup": return CanvasGroup.validateValue
+        case "CanvasGroupLink": return CanvasGroupLink.validateValue
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
     }

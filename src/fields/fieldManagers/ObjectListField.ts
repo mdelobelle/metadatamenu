@@ -3,7 +3,7 @@ import { FieldIcon, FieldType, FieldManager as F, objectTypes } from "src/types/
 import { FieldManager, SettingLocation } from "../FieldManager";
 import Field from "../_Field";
 import { TFile, Menu, setIcon, TextAreaComponent } from "obsidian";
-import NoteFieldsComponent, { FieldOptions } from "src/components/NoteFields";
+import NoteFieldsComponent, { FieldOptions } from "src/components/FieldsModal";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import { postValues } from "src/commands/postValues";
 import { Note } from "src/note/note";

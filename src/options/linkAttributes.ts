@@ -1,6 +1,6 @@
 import { App, getLinkpath, LinkCache, MarkdownPostProcessorContext, MarkdownView, TFile, setIcon } from "obsidian"
 import MetadataMenu from "main";
-import NoteFieldsComponent from "../components/NoteFields";
+import NoteFieldsComponent from "../components/FieldsModal";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
 
 export function clearExtraAttributes(link: HTMLElement) {
