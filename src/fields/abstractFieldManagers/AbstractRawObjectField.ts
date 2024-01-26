@@ -12,6 +12,7 @@ import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
+import { fieldValueManager } from "../Field";
 
 export default abstract class RawObjectField extends FieldManager {
 
@@ -29,8 +30,10 @@ export default abstract class RawObjectField extends FieldManager {
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
         const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
-        const modal = new RawObjectModal(this.plugin, file, this.field, eF, indexedPath);
-        modal.open()
+        console.log(eF)
+        fieldValueManager(this.plugin, this.field.id, this.field.fileClassName, file, eF, indexedPath)?.openModal()
+        // const modal = new RawObjectModal(this.plugin, file, this.field, eF, indexedPath);
+        // modal.open()
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {

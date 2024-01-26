@@ -75,6 +75,7 @@ export default class OptionsList {
 					break;
 				default:
 					const eF = node.line.note.getExistingFieldForIndexedPath(indexedPath)
+					console.log(eF)
 					if (!eF) return
 					if (eF && migratedFieldTypes.includes(eF.field.type)) {
 						const { field, file, indexedPath, lineNumber } = eF

@@ -159,8 +159,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             inputEl.onChange(value => this.managedField.value = value)
         };
 
-
-
         private buildFooterBtn() {
             const buttonContainer = this.containerEl.createDiv({ cls: "footer-actions" })
             buttonContainer.createDiv({ cls: "spacer" })

@@ -15,6 +15,8 @@ import * as Canvas from "./models/Canvas"
 import * as CanvasGroup from "./models/CanvasGroup"
 import * as CanvasGroupLink from "./models/CanvasGroupLink"
 import * as Formula from "./models/Formula"
+import * as JSON from "./models/JSON"
+import * as YAML from "./models/YAML"
 import * as ObjectList from "./models/ObjectList"
 import { ISettingsModal, buildSettingsModal } from "./base/BaseSetting"
 import { IField, IFieldManager, Target, LegacyField } from "./Field"
@@ -54,6 +56,8 @@ export type FieldType =
     | "CanvasGroup"
     | "CanvasGroupLink"
     | "Formula"
+    | "JSON"
+    | "YAML"
     | "ObjectList"
 
 export interface TypesOptionsMap {
@@ -73,6 +77,8 @@ export interface TypesOptionsMap {
     CanvasGroup: CanvasGroup.Options
     CanvasGroupLink: CanvasGroupLink.Options
     Formula: Formula.Options
+    JSON: JSON.Options
+    YAML: YAML.Options
     ObjectList: ObjectList.Options
 }
 
@@ -94,6 +100,8 @@ export function mapLegacyFieldType(type: FieldType): LegacyFieldType {
         case "CanvasGroup": return LegacyFieldType.CanvasGroup
         case "CanvasGroupLink": return LegacyFieldType.CanvasGroupLink
         case "Formula": throw Error("not implemented")
+        case "JSON": return LegacyFieldType.JSON
+        case "YAML": return LegacyFieldType.YAML
         case "ObjectList": throw Error("not implemented")
     }
 }
@@ -116,6 +124,8 @@ export function mapFieldType(type: LegacyFieldType): FieldType {
         case "CanvasGroup": return "CanvasGroup"
         case "CanvasGroupLink": return "CanvasGroupLink"
         case "Formula": throw Error("not implemented")
+        case "JSON": return "JSON"
+        case "YAML": return "YAML"
         case "ObjectList": throw Error("not implemented")
         default: throw Error("not implemented")
     }
@@ -138,6 +148,8 @@ export const fieldTypes: Array<FieldType> = [
     "CanvasGroup",
     "CanvasGroupLink",
     "Formula",
+    "JSON",
+    "YAML",
     "ObjectList"
 ]
 
@@ -193,6 +205,8 @@ export function getDefaultOptions<O extends BaseOptions>(type: FieldType): O {
         case "CanvasGroup": return CanvasGroup.DefaultOptions as unknown as O
         case "CanvasGroupLink": return CanvasGroupLink.DefaultOptions as unknown as O
         case "Formula": throw Error("not implemented")
+        case "JSON": return JSON.DefaultOptions as unknown as O
+        case "YAML": return YAML.DefaultOptions as unknown as O
         case "ObjectList": throw Error("not implemented")
     }
 }
@@ -220,6 +234,8 @@ export function getFieldSettings<O extends BaseOptions>(Field: Constructor<IFiel
         case "CanvasGroup": return new (CanvasGroup.settingsModal(base as unknown as Constructor<ISettingsModal<CanvasGroup.DefaultedOptions>>))() as unknown as ISettingsModal<O>
         case "CanvasGroupLink": return new (CanvasGroupLink.settingsModal(base as unknown as Constructor<ISettingsModal<CanvasGroupLink.DefaultedOptions>>))() as unknown as ISettingsModal<O>
         case "Formula": throw Error("not implemented")
+        case "JSON": return new (JSON.settingsModal(base as unknown as Constructor<ISettingsModal<JSON.DefaultedOptions>>))() as unknown as ISettingsModal<O>
+        case "YAML": return new (YAML.settingsModal(base as unknown as Constructor<ISettingsModal<YAML.DefaultedOptions>>))() as unknown as ISettingsModal<O>
         case "ObjectList": throw Error("not implemented")
     }
 }
@@ -238,6 +254,8 @@ export function getFieldModal<O extends BaseOptions>(managedField: IFieldManager
         case "MultiFile": return new (MultiFile.valueModal(managedField as unknown as IFieldManager<Target, MultiFile.Options>, plugin))()
         case "Media": return new (Media.valueModal(managedField as unknown as IFieldManager<Target, Media.Options>, plugin))()
         case "MultiMedia": return new (MultiMedia.valueModal(managedField as unknown as IFieldManager<Target, MultiMedia.Options>, plugin))()
+        case "JSON": return new (JSON.valueModal(managedField as unknown as IFieldManager<Target, JSON.Options>, plugin))()
+        case "YAML": return new (YAML.valueModal(managedField as unknown as IFieldManager<Target, YAML.Options>, plugin))()
         default: return undefined
     }
 }
@@ -260,6 +278,8 @@ export function getFieldClass(type: FieldType): Constructor<IFieldBase> {
         case "CanvasGroup": return CanvasGroup.Base
         case "CanvasGroupLink": return CanvasGroupLink.Base
         case "Formula": throw Error("not implemented")
+        case "JSON": return JSON.Base
+        case "YAML": return YAML.Base
         case "ObjectList": throw Error("not implemented")
     }
 }
@@ -283,6 +303,8 @@ export function displayValue(type: FieldType): displayValueFunction {
         case "Canvas": return Canvas.displayValue
         case "CanvasGroup": return CanvasGroup.displayValue
         case "CanvasGroupLink": return CanvasGroupLink.displayValue
+        case "JSON": return JSON.displayValue
+        case "YAML": return YAML.displayValue
         case "Formula": throw Error("not implemented")
         case "ObjectList": throw Error("not implemented")
     }
@@ -304,6 +326,8 @@ export function getActions(type: FieldType): getActionFunction {
         case "MultiFile": return MultiFile.actions
         case "Media": return Media.actions
         case "MultiMedia": return MultiMedia.actions
+        case "JSON": return JSON.actions
+        case "YAML": return YAML.actions
         default: return (...rest: any[]) => { };
     }
 }
@@ -332,6 +356,8 @@ export function createDvField<O extends BaseOptions>(
         case "Media": return Media.createDvField(managedField as unknown as IFieldManager<Target, Media.Options>, dv, p, fieldContainer, attrs)
         case "MultiMedia": return MultiMedia.createDvField(managedField as unknown as IFieldManager<Target, MultiMedia.Options>, dv, p, fieldContainer, attrs)
         case "Formula": throw Error("not implemented")
+        case "JSON": return JSON.createDvField(managedField as unknown as IFieldManager<Target, JSON.Options>, dv, p, fieldContainer, attrs)
+        case "YAML": return YAML.createDvField(managedField as unknown as IFieldManager<Target, YAML.Options>, dv, p, fieldContainer, attrs)
         case "ObjectList": throw Error("not implemented")
         default: {
             const fieldValue = dv.el('span', p[managedField.name], attrs);
@@ -360,7 +386,7 @@ export function getOptionStr(type: FieldType): getOptionStrFunction {
     }
 }
 
-export type geValidateValueFunction = (managedField: IFieldManager<Target, BaseOptions>) => void
+export type geValidateValueFunction = (managedField: IFieldManager<Target, BaseOptions>) => boolean
 
 export function validateValue(type: FieldType): geValidateValueFunction {
     switch (type) {
@@ -380,6 +406,8 @@ export function validateValue(type: FieldType): geValidateValueFunction {
         case "CanvasGroup": return CanvasGroup.validateValue
         case "CanvasGroupLink": return CanvasGroupLink.validateValue
         case "Formula": throw Error("not implemented")
+        case "JSON": return JSON.validateValue
+        case "YAML": return YAML.validateValue
         case "ObjectList": throw Error("not implemented")
     }
 }

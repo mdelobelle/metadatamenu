@@ -4,7 +4,6 @@ import { insertMissingFields } from "src/commands/insertMissingFields";
 import { postValues } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
 import { fieldValueManager } from "src/fields/Field";
-import { FieldManager } from "src/fields/FieldManager";
 import { displayValue, mapFieldType } from "src/fields/Fields";
 import Field from "src/fields/_Field";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
