@@ -1,9 +1,10 @@
 import MetadataMenu from "main"
 import { ButtonComponent, FuzzySuggestModal, Notice, TFile, TextAreaComponent, setIcon } from "obsidian"
-import { IFieldManager, Target, baseDisplayValue, getOptions, removeValidationError } from "src/fields/Field"
-import { getIcon } from "src/fields/Fields"
-import { BaseOptions, IFieldBase } from "src/fields/base/BaseField"
-import { BaseValueModal, IBaseValueModal } from "src/fields/base/BaseModal"
+import { getExistingFieldForIndexedPath } from "src/fields/ExistingField"
+import { ActionLocation, IFieldManager, LegacyField, Target, baseDisplayValue, fieldValueManager, getOptions, isFieldActions, isSuggest, removeValidationError } from "src/fields/Field"
+import { getIcon, mapFieldType } from "src/fields/Fields"
+import { BaseOptions, IFieldBase, isFieldOptions } from "src/fields/base/BaseField"
+import { BaseValueModal, IBaseValueModal, basicFuzzySuggestModal } from "src/fields/base/BaseModal"
 import { ISettingsModal } from "src/fields/base/BaseSetting"
 import { Link } from "src/types/dataviewTypes"
 import { Constructor } from "src/typings/types"
@@ -38,6 +39,11 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
             this.createCustomRenderingContainer(this.optionsContainer)
             this.createCustomSortingContainer(this.optionsContainer)
         }
+
+        validateOptions(): boolean {
+            return true;
+        }
+
         private createQueryContainer(container: HTMLDivElement): void {
             const dvQueryStringTopContainer = container.createDiv({ cls: "vstacked" });
             dvQueryStringTopContainer.createEl("span", { text: "Dataview Query (optional)", cls: 'field-option' });
@@ -100,16 +106,16 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
     }
 }
 
-
 export interface Modal<T extends Target> extends IBaseValueModal<T> {
     inputEl: HTMLInputElement
 }
 
 export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<Modal<Target>> {
-    return class ValueModal extends FuzzySuggestModal<TFile> {
+    const base = basicFuzzySuggestModal<TFile, Options>(managedField, plugin)
+    return class ValueModal extends base {
         public managedField: IFieldManager<Target, Options>
         public addButton: ButtonComponent;
-        public previousModal?: BaseValueModal<Target>
+        public previousModal?: BaseValueModal<Target, BaseOptions>
         public saved: boolean
         constructor(...rest: any[]) {
             super(plugin.app)
@@ -204,6 +210,33 @@ export function createDvField(
 
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {
     if (managedField.eF) displayLinksOrText(managedField.value, managedField.eF.file, container, managedField.plugin, onClicked)
+}
+
+export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
+    const iconName = getIcon(mapFieldType(field.type));
+    const action = async () => {
+        const eF = await getExistingFieldForIndexedPath(plugin, file, indexedPath)
+        fieldValueManager(plugin, field.id, field.fileClassName, file, eF, indexedPath)?.openModal()
+    };
+    if (isSuggest(location)) {
+        location.options.push({
+            id: `update_${field.name}`,
+            actionLabel: `<span>Update <b>${field.name}</b></span>`,
+            action: action,
+            icon: iconName
+        });
+    } else if (isFieldActions(location)) {
+        location.addOption(iconName, action, `Update ${field.name}'s value`);
+    };
+}
+
+export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
+    return managedField.options.dvQueryString || "";
+}
+
+export function validateValue(managedField: IFieldManager<Target, Options>): boolean {
+    console.error("Not implemented")
+    return false
 }
 
 //#region Utilitary function

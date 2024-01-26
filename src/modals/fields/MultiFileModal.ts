@@ -1,7 +1,6 @@
 import { TFile, FuzzySuggestModal, FuzzyMatch, ButtonComponent, setIcon } from "obsidian";
 import Field from "src/fields/_Field";
 import { FieldManager } from "src/types/fieldTypes";
-import { FieldManager as FM } from "src/fields/FieldManager";
 import MetadataMenu from "main";
 import { postValues } from "src/commands/postValues";
 import { cleanActions } from "src/utils/modals";
@@ -9,6 +8,7 @@ import { extractLinks, getLink } from "src/utils/parser";
 import { ExistingField } from "src/fields/ExistingField";
 import ObjectModal from "./ObjectModal";
 import ObjectListModal from "./ObjectListModal";
+import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile";
 
 export default class MultiFileModal extends FuzzySuggestModal<TFile> {
 
@@ -55,7 +55,7 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter" && e.altKey) {
                 e.preventDefault();
-                await this.replaceValues();
+                await this.save();
                 this.close()
             }
         }
@@ -68,7 +68,7 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
         const confirmButton = new ButtonComponent(buttonContainer)
         confirmButton.setIcon("checkmark")
         confirmButton.onClick(async () => {
-            await this.replaceValues();
+            await this.save();
             this.close()
         })
         //cancel button
@@ -110,14 +110,14 @@ export default class MultiFileModal extends FuzzySuggestModal<TFile> {
         return item.basename;
     }
 
-    async replaceValues() {
+    async save() {
         const result = this.selectedFiles.map(file => {
             const dvApi = this.plugin.app.plugins.plugins.dataview?.api
             let alias: string | undefined = undefined;
             if (dvApi && this.field.options.customRendering) {
                 alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(file.path))
             }
-            return FM.buildMarkDownLink(this.plugin, this.file, file.basename, undefined, alias)
+            return buildMarkDownLink(this.plugin, this.file, file.basename, undefined, alias)
         })
         await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: result.join(", ") } }], this.file, this.lineNumber, this.asList, this.asBlockquote);
     }

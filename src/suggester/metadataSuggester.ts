@@ -15,6 +15,7 @@ import { genericFieldRegex, getLineFields, encodeLink } from "../utils/parser";
 import FileField from "src/fields/fieldManagers/FileField";
 import AbstractListBasedField from "src/fields/abstractFieldManagers/AbstractListBasedField";
 import Field from "src/fields/_Field";
+import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile";
 
 interface IValueCompletion {
     attr: string;
@@ -201,7 +202,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                         .map(f => {
                             return Object({
                                 attr: fieldName,
-                                value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, undefined, this.getAlias(f))
+                                value: buildMarkDownLink(this.plugin, context.file, f.basename, undefined, this.getAlias(f))
                             })
                         });
                     return results;
@@ -212,7 +213,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                             if (dvApi && this.field?.options.customRendering) {
                                 alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(f.path))
                             }
-                            return Object({ attr: fieldName, value: FileField.buildMarkDownLink(this.plugin, context.file, f.basename, undefined, alias) })
+                            return Object({ attr: fieldName, value: buildMarkDownLink(this.plugin, context.file, f.basename, undefined, alias) })
                         });
                 }
             } else {

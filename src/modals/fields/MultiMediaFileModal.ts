@@ -53,7 +53,7 @@ export class MultiMediaFileModal extends BaseMediaFileModal {
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter" && e.altKey) {
                 e.preventDefault();
-                await this.replaceValues();
+                await this.save();
                 this.close()
             }
         }
@@ -66,7 +66,7 @@ export class MultiMediaFileModal extends BaseMediaFileModal {
         const confirmButton = new ButtonComponent(buttonContainer)
         confirmButton.setIcon("checkmark")
         confirmButton.onClick(async () => {
-            await this.replaceValues();
+            await this.save();
             this.close()
         })
         //cancel button
@@ -85,7 +85,7 @@ export class MultiMediaFileModal extends BaseMediaFileModal {
         this.modalEl.appendChild(buttonContainer)
     }
 
-    async replaceValues() {
+    async save() {
         const embed = this.field.options.embed
         const result = this.selectedFiles.map(file => {
             const alias = extensionMediaTypes[file.extension] === MediaType.Image ? this.field.options.thumbnailSize : undefined

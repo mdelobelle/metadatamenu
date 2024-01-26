@@ -1,12 +1,12 @@
 import MetadataMenu from "main"
 import { ButtonComponent, DropdownComponent, FuzzyMatch, FuzzySuggestModal, TFile, TextAreaComponent, TextComponent, ToggleComponent, setIcon } from "obsidian"
-import { IFieldManager, Target, removeValidationError } from "src/fields/Field"
-import { IFieldBase } from "src/fields/base/BaseField"
-import { BaseValueModal, IBaseValueModal } from "src/fields/base/BaseModal"
+import { ActionLocation, IFieldManager, LegacyField, Target, removeValidationError } from "src/fields/Field"
+import { BaseOptions, IFieldBase } from "src/fields/base/BaseField"
+import { BaseValueModal, IBaseValueModal, basicFuzzySuggestModal } from "src/fields/base/BaseModal"
 import { ISettingsModal } from "src/fields/base/BaseSetting"
 import { FolderSuggest } from "src/suggester/FolderSuggester"
 import { Constructor } from "src/typings/types"
-import { createDvField as _createDvField, Options as FileOptions } from "./AbstractFile"
+import { createDvField as _createDvField, Options as FileOptions, actions as fileActions } from "./AbstractFile"
 import { getLink } from "src/utils/parser"
 
 //#region types
@@ -81,6 +81,10 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
             this.createFilesDisplaySelectorContainer(container)
             this.createThumbnailSizeInputContainer(container)
             this.createCustomSortingContainer(container)
+        }
+
+        validateOptions(): boolean {
+            return true;
         }
 
         public createCustomSortingContainer(container: HTMLDivElement): void {
@@ -199,12 +203,12 @@ export interface Modal<T extends Target> extends IBaseValueModal<T> {
 }
 
 export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<Modal<Target>> {
-
-    return class ValueModal extends FuzzySuggestModal<TFile> {
+    const base = basicFuzzySuggestModal<TFile, Options>(managedField, plugin)
+    return class ValueModal extends base {
         public selectedFiles: TFile[] = []
         public managedField: IFieldManager<Target, Options>
         public addButton: ButtonComponent;
-        public previousModal?: BaseValueModal<Target>
+        public previousModal?: BaseValueModal<Target, BaseOptions>
         public saved: boolean
         constructor(...rest: any[]) {
             super(plugin.app)
@@ -304,6 +308,20 @@ export function displayValue(managedField: IFieldManager<Target, Options>, conta
     container.createDiv();
 }
 
+export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
+    return fileActions(plugin, field, file, location, indexedPath)
+}
+
+export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
+    const options = managedField.options
+    return `${options.display} | ${options.embed} | ${options.size} | ${options.folders.join(", ")}`
+}
+
+export function validateValue(managedField: IFieldManager<Target, Options>): boolean {
+    console.error("Not implemented")
+    return false
+}
+
 //#region Media utils
 
 export function buildMediaLink(plugin: MetadataMenu, sourceFile: TFile, destPath: string, thumbnailSize: string | undefined) {
@@ -313,6 +331,14 @@ export function buildMediaLink(plugin: MetadataMenu, sourceFile: TFile, destPath
         return link
     }
     return ""
+}
+
+export function getFiles(managedField: IFieldManager<Target, Options>): TFile[] {
+    const folders = managedField.options.folders as string[]
+    const files = managedField.plugin.app.vault.getFiles()
+        .filter(f => !folders?.length || folders.some(folder => f.path.startsWith(folder)))
+        .filter(f => !["md", "canvas"].includes(f.extension))
+    return files
 }
 
 //#endregion

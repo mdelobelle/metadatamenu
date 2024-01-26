@@ -11,6 +11,7 @@ import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
 import { fieldValueManager } from "../Field";
+import { getActions } from "../Fields";
 
 export default class SelectField extends AbstractListBasedField {
 
@@ -26,18 +27,19 @@ export default class SelectField extends AbstractListBasedField {
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
-        const name = this.field.name
-        const action = async () => await this.buildAndOpenModal(file, indexedPath)
-        if (SelectField.isSuggest(location)) {
-            location.options.push({
-                id: `update_${name}`,
-                actionLabel: `<span>Update <b>${name}</b></span>`,
-                action: action,
-                icon: FieldIcon[FieldType.Select]
-            });
-        } else if (SelectField.isFieldOptions(location)) {
-            location.addOption(FieldIcon[FieldType.Select], action, `Update ${name}'s value`);
-        };
+        return getActions("Select")(this.plugin, this.field, file, location, indexedPath)
+        // const name = this.field.name
+        // const action = async () => await this.buildAndOpenModal(file, indexedPath)
+        // if (SelectField.isSuggest(location)) {
+        //     location.options.push({
+        //         id: `update_${name}`,
+        //         actionLabel: `<span>Update <b>${name}</b></span>`,
+        //         action: action,
+        //         icon: FieldIcon[FieldType.Select]
+        //     });
+        // } else if (SelectField.isFieldOptions(location)) {
+        //     location.addOption(FieldIcon[FieldType.Select], action, `Update ${name}'s value`);
+        // };
     };
 
 

@@ -1,12 +1,13 @@
 import MetadataMenu from "main"
 
-import { TFile, TextAreaComponent, TextComponent } from "obsidian"
+import { Menu, TFile, TextAreaComponent, TextComponent } from "obsidian"
 import { FieldCommand } from "./_Field"
 import { MultiDisplayType } from "src/types/fieldTypes"
 import { FieldStyleLabel } from "src/types/dataviewTypes"
 import cryptoRandomString from "crypto-random-string"
 import { LineNode } from "src/note/lineNode"
 import GField from "src/fields/_Field"
+import FCSM from "src/options/FieldCommandSuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal"
 import { FieldType, getFieldModal, multiTypes, objectTypes, rootOnlyTypes, getFieldClass, mapLegacyFieldType, getDefaultOptions } from "./Fields"
 import { FieldParam, IFieldBase, BaseOptions, isFieldOptions } from "./base/BaseField"
@@ -16,6 +17,8 @@ import { ExistingField } from "./ExistingField"
 import ObjectModal from "src/modals/fields/ObjectModal"
 import ObjectListModal from "src/modals/fields/ObjectListModal"
 import { Constructor } from "src/typings/types"
+import { FieldActions } from "src/components/NoteFields"
+import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
 
 // Field Types list agnostic
 
@@ -49,7 +52,6 @@ export interface IField<O extends BaseOptions> extends IFieldBase {
     isFirstItemOfObjectList(node: LineNode): boolean
     getOtherObjectTypeFields(): IField<O>[]
     validateName(textInput: TextComponent, contentEl: Element): boolean
-    validateOptions(): boolean
 }
 
 export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
@@ -64,6 +66,10 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
     display?: MultiDisplayType,
     style?: FieldStyle
 ): Constructor<IField<O>> {
+    /*
+    ** Get a Field Base and creates a field with 
+    ** - related options
+    */
     return class Field extends Base {
         public plugin: MetadataMenu
         public options: O
@@ -77,6 +83,7 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
         constructor(...rest: any[]) {
             super()
             this.plugin = plugin
+            if (!isFieldOptions([this.type, options])) throw Error("This type isn't compatible with these options")
             this.options = options
             this.name = name
             this.id = id
@@ -207,7 +214,7 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
         }
 
         public getOtherObjectTypeFields(): IField<O>[] {
-            let objectFields: GField[]
+            let objectFields: LegacyField[]
             if (this.fileClassName) {
                 const index = this.plugin.fieldIndex
                 objectFields = index.fileClassesFields
@@ -258,7 +265,6 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
             return !error
         }
 
-        //TODO validateOptions is a fieldBase prop
         public validateOptions(): boolean {
             return true;
         }
@@ -279,20 +285,6 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
     }
 }
 
-export function getOptions<O extends BaseOptions>(field: IField<O> | IFieldManager<Target, O>): O {
-    const options = field.options
-    if (
-        Object.keys(options).length === 0 &&
-        options.constructor === Object
-    ) {
-        //TODO fix the casting of getDefaultOptions. try to get if from getDefaultOptions
-        return getDefaultOptions(field.type) as O
-    } else {
-        return field.options as O
-    }
-}
-
-
 export function buildField<O extends BaseOptions>(
     plugin: MetadataMenu,
     name: string,
@@ -309,7 +301,24 @@ export function buildField<O extends BaseOptions>(
     return _field
 }
 
-export function exportIField<O extends BaseOptions>(field: IField<O>): GField {
+export function buildEmptyField<O extends BaseOptions>(plugin: MetadataMenu, fileClassName: string | undefined, type: FieldType): Constructor<IField<O>> {
+    return buildField<O>(plugin, "", "", "", fileClassName, undefined, undefined, undefined, type, getDefaultOptions(type))
+}
+
+export function getOptions<O extends BaseOptions>(field: IField<O> | IFieldManager<Target, O>): O {
+    const options = field.options
+    if (
+        Object.keys(options).length === 0 &&
+        options.constructor === Object
+    ) {
+        //TODO fix the casting of getDefaultOptions. try to get if from getDefaultOptions
+        return getDefaultOptions(field.type) as O
+    } else {
+        return field.options as O
+    }
+}
+
+export function exportIField<O extends BaseOptions>(field: IField<O>): LegacyField {
 
     const _field = new GField(field.plugin)
     _field.id = field.id
@@ -332,14 +341,16 @@ export function getFieldConstructor<O extends BaseOptions>(id: string, fileClass
         if (!fCF) return []
 
         if (isFieldOptions([fCF.type as FieldType, fCF.options])) {
-            return [buildField(plugin, fCF.name, fCF.id, fCF.path, fileClassName, fCF.command, fCF.display, fCF.style, ...[fCF.type, fCF.options] as FieldParam), fCF.type as FieldType]
+            const { name, id, path, command, display, style, type, options } = fCF
+            return [buildField(plugin, name, id, path, fileClassName, command, display, style, ...[type, options] as FieldParam), type as FieldType]
         }
     } else {
         const fS = plugin.settings.presetFields.find(f => f.id === id)
         if (!fS) return []
 
         if (isFieldOptions([fS.type, fS.options])) {
-            return [buildField(plugin, fS.name, fS.id, fS.path, undefined, fS.command, fS.display, fS.style, ...[fS.type, fS.options] as FieldParam), fS.type as FieldType]
+            const { name, id, path, command, display, style, type, options } = fS
+            return [buildField(plugin, name, id, path, undefined, command, display, style, ...[type, options] as FieldParam), type as FieldType]
         }
     }
     return []
@@ -396,7 +407,6 @@ export function upperPath(indexedPath: string): string {
     upperIndexedIds?.pop()
     return upperIndexedIds?.join("____") || ""
 }
-
 
 export function createDefault<O extends BaseOptions>(plugin: MetadataMenu, name: string): IField<O> {
     throw Error("Not implemented")
@@ -502,6 +512,10 @@ export function getValueFromPath(obj: any, path: string): string {
 
 //#region FieldValueManager
 
+export interface LegacyField extends GField { }
+
+export type ActionLocation = Menu | FieldCommandSuggestModal | FieldActions
+
 export interface IFieldManager<T, O extends BaseOptions> extends IField<O> {
     target: T
     value: any
@@ -512,7 +526,7 @@ export interface IFieldManager<T, O extends BaseOptions> extends IField<O> {
     asBlockquote?: boolean,
     previousModal?: ObjectModal | ObjectListModal
     openModal: () => void;
-    save: () => void
+    save: (value?: any) => void
 }
 
 export type Target =
@@ -526,6 +540,18 @@ export function isSingleTargeted<O extends BaseOptions>(managedField: IFieldMana
 export function isMultiTargeted<O extends BaseOptions>(managedField: IFieldManager<Target, O>): managedField is IFieldManager<TFile[], O> {
     const target = managedField.target
     return Array.isArray(target) && target.every(t => t instanceof TFile)
+}
+
+export function isSuggest(location: Menu | "InsertFieldCommand" | FCSM | FieldActions): location is FCSM {
+    return (location as FCSM).getItems !== undefined;
+};
+
+export function isInsertFieldCommand(location: Menu | "InsertFieldCommand" | FCSM | FieldActions): location is "InsertFieldCommand" {
+    return (location as string) === "InsertFieldCommand";
+}
+
+export function isFieldActions(location: Menu | "InsertFieldCommand" | FCSM | FieldActions): location is FieldActions {
+    return (location as FieldActions).addOption !== undefined;
 }
 
 function FieldValueManager<O extends BaseOptions, F extends Constructor<IField<O>>>(
@@ -569,7 +595,8 @@ function FieldValueManager<O extends BaseOptions, F extends Constructor<IField<O
             return this._modal
         }
 
-        public save() {
+        public save(value?: any) {
+            if (value !== undefined) this.value = value
             if (isSingleTargeted(this)) {
                 postValues(plugin, [{ indexedPath: this.id, payload: { value: this.value } }], this.target, this.lineNumber, this.asList, this.asBlockquote)
             } else if (isMultiTargeted(this)) {
@@ -578,7 +605,6 @@ function FieldValueManager<O extends BaseOptions, F extends Constructor<IField<O
         }
     }
 }
-
 
 export function fieldValueManager<O extends BaseOptions>(
     plugin: MetadataMenu,
@@ -630,13 +656,6 @@ export function removeValidationError(textInput: TextComponent | TextAreaCompone
     if (fieldError) fieldsContainer!.removeChild(fieldError)
 };
 
-export function replaceValues(plugin: MetadataMenu, path: string, id: string, value: string): void {
-    const file = plugin.app.vault.getAbstractFileByPath(path)
-    if (file instanceof TFile && file.extension == "md") {
-        postValues(plugin, [{ indexedPath: id, payload: { value: value } }], file)
-    }
-}
-
 export function baseDisplayValue<O extends BaseOptions>(managedField: IFieldManager<Target, O>, container: HTMLDivElement, onClicked = () => { }) {
     let valueText: string;
     switch (managedField.value) {
@@ -647,6 +666,18 @@ export function baseDisplayValue<O extends BaseOptions>(managedField: IFieldMana
         default: valueText = managedField.value.toString() || "";
     }
     container.createDiv({ text: `<P> ${valueText}` })
+}
+
+export function stringToBoolean(value: string): boolean {
+    let toBooleanValue: boolean = false;
+    if (isBoolean(value)) {
+        toBooleanValue = value;
+    } else if (/true/i.test(value) || /1/.test(value)) {
+        toBooleanValue = true;
+    } else if (/false/i.test(value) || /0/.test(value)) {
+        toBooleanValue = false;
+    };
+    return toBooleanValue;
 }
 
 //#endregion

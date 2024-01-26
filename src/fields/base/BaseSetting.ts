@@ -12,7 +12,7 @@ import FieldSetting from "src/settings/FieldSetting"
 import { incrementVersion } from "src/settings/MetadataMenuSettings"
 import { FieldType, frontmatterOnlyTypes, multiTypes, rootOnlyTypes } from "../Fields"
 import { getFieldSettings } from "../Fields"
-import { IField, buildField, copyProperty, exportIField, field, getField, getFieldConstructor, getNewFieldId, getOptions, removeValidationError } from "../Field"
+import { IField, buildEmptyField, copyProperty, exportIField, field, getField, getFieldConstructor, getNewFieldId, getOptions, removeValidationError } from "../Field"
 import { Constructor } from "src/typings/types"
 import { BaseOptions } from "./BaseField"
 
@@ -134,6 +134,7 @@ export function buildSettingsModal<O extends BaseOptions>(
 ): Constructor<ISettingsModal<O>> {
     return class FieldSettingsModal extends Modal implements ISettingsModal<O> {
         createSettingContainer: () => void
+        validateOptions: () => boolean = () => true
         public plugin: MetadataMenu
         public iconName: TextComponent;
         public namePromptComponent: TextComponent;
@@ -162,14 +163,15 @@ export function buildSettingsModal<O extends BaseOptions>(
             //feed initial field with the optional existing indexed field
             this.initialField = new fieldConstructor()
             //create a blank field inbound from the existing indexed field
-            this.field = new (buildField<O>(plugin, "", "", "", this.initialField.fileClassName, undefined, undefined, undefined, this.initialField.type, {}))()
+            this.field = new (buildEmptyField<O>(plugin, this.initialField.fileClassName, this.initialField.type))()
             // feed options with initial field options or default values
             this.initialField.options = getOptions(this.initialField) as O
             // deep copy the properties in this.field
             copyProperty(this.field, this.initialField)
             this.isNew = !this.field.id
             // get Id or create new
-            this.field.id = this.initialField.id || getNewFieldId(this.plugin)
+            this.initialField.id = this.initialField.id || getNewFieldId(this.plugin)
+            this.field.id = this.initialField.id
 
             if (this.initialField.fileClassName) this.fileClass = this.plugin.fieldIndex.fileClassesName.get(this.initialField.fileClassName)
             if (this.fileClass) {
@@ -192,16 +194,18 @@ export function buildSettingsModal<O extends BaseOptions>(
         onOpen() { this.build() }
 
         private build(): void {
-
             this.containerEl.addClass("metadata-menu")
             if (this.field.name == "") {
                 this.titleEl.setText(`Add a field and define options`);
             } else {
-                this.titleEl.setText(`Manage settings options for ${this.field.name}`);
+                this.titleEl.setText(`<PROTO> Manage settings options for ${this.field.name}`);
             };
 
             /* Name and parent */
             this.createnameInputContainer();
+
+            /* Type */
+            this.typeSelectContainer = this.contentEl.createDiv({ cls: "field-container" });
 
             /* parent select */
             this.parentSelectContainer = this.contentEl.createDiv({ cls: "field-container" })
@@ -212,9 +216,6 @@ export function buildSettingsModal<O extends BaseOptions>(
             this.createCommandContainer();
             this.createFrontmatterListDisplayContainer();
             const styleContainer = this.contentEl.createDiv({ cls: "field-container" })
-
-            /* Type */
-            this.typeSelectContainer = this.contentEl.createDiv({ cls: "field-container" });
             this.contentEl.createEl("hr");
 
             /* Options */
@@ -248,7 +249,7 @@ export function buildSettingsModal<O extends BaseOptions>(
                 this.field.name = value;
                 this.command.id = `insert__${this.field.fileClassName || "presetField"}__${value}`
                 this.command.label = `Insert ${value} field`
-                this.titleEl.setText(`Manage options for ${this.field.name}`);
+                this.titleEl.setText(`<PROTO> Manage settings options for ${this.field.name}`);
                 removeValidationError(input);
             });
             this.namePromptComponent = input
@@ -411,32 +412,11 @@ export function buildSettingsModal<O extends BaseOptions>(
             fieldTypeLabelContainer.setText(fieldType)
             fieldTypeLabelContainer.className = `chip ${FieldTypeTagClass[fieldType]}`
             this.field.fileClassName = this.fileClass?.name
-            const Field = buildField(plugin, "", "", "", this.field.fileClassName, undefined, undefined, undefined, fieldType, {})
+            const Field = buildEmptyField(plugin, this.field.fileClassName, fieldType)
             const settingsModal = getFieldSettings(Field, fieldType, plugin, parentSetting, parentSettingContainer)
             settingsModal.field.name = this.namePromptComponent.getValue()
-            copyProperty(settingsModal.field, this.initialField);
-            settingsModal.field.name = this.namePromptComponent.getValue()
-            settingsModal.field.type = fieldType;
-            settingsModal.field.path = this.path
-            if (settingsModal.field.type !== this.initialField.type &&
-                ![settingsModal.field.type, this.initialField.type].every(fieldType =>
-                    ["Multi", "Select", "Cycle"].includes(fieldType)
-                )
-            ) {
-                settingsModal.field.options = {}
-            }
             settingsModal.open()
             this.close()
-            this.buildParentSelectContainer()
-            if (multiTypes.includes(settingsModal.field.type)) {
-                this.frontmatterListDisplayContainer.show()
-            } else {
-                this.frontmatterListDisplayContainer.hide()
-            }
-            while (this.optionsContainer.firstChild) {
-                this.optionsContainer.removeChild(this.optionsContainer.firstChild);
-            }
-            this.createSettingContainer()
         }
 
 
@@ -477,7 +457,7 @@ export function buildSettingsModal<O extends BaseOptions>(
                 this.namePromptComponent,
                 this.contentEl
             ) &&
-                this.field.validateOptions();
+                this.validateOptions();
         }
 
         private createSaveButton(container: HTMLDivElement): void {
@@ -610,7 +590,7 @@ export function openSettings<O extends BaseOptions>(id: string, fileClassName: s
     let Field: Constructor<IField<O>> | undefined = undefined
     let type: FieldType | undefined = "Input"
     if (!id) {
-        Field = buildField(plugin, "", "", "", fileClassName, undefined, undefined, undefined, type, {})
+        Field = buildEmptyField(plugin, fileClassName, type)
     } else {
         [Field, type] = getFieldConstructor(id, fileClassName, plugin) || []
     }

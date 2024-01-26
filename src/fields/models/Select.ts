@@ -2,7 +2,7 @@
 import MetadataMenu from "main";
 import * as AbstractList from "./abstractModels/AbstractList"
 import { ISettingsModal } from "../base/BaseSetting";
-import { IFieldManager, Target } from "../Field";
+import { ActionLocation, IFieldManager, LegacyField, Target } from "../Field";
 import { IFieldBase } from "../base/BaseField";
 import { Constructor } from "src/typings/types";
 import { TFile, setIcon } from "obsidian";
@@ -10,7 +10,7 @@ import { TFile, setIcon } from "obsidian";
 export class Base implements IFieldBase {
     type = <const>"Select"
     tagName = "select"
-    icon = "arrow"
+    icon = "right-triangle"
     tooltip = "Accepts a single value from a list"
     colorClass = "select"
 }
@@ -22,8 +22,7 @@ export interface DefaultedOptions extends AbstractList.DefaultedOptions { }
 export const DefaultOptions: AbstractList.DefaultedOptions = AbstractList.DefaultOptions
 
 export function settingsModal(Base: Constructor<ISettingsModal<AbstractList.DefaultedOptions>>): Constructor<ISettingsModal<Options>> {
-    const base = AbstractList.settingsModal(Base)
-    return class SettingsModal extends base { }
+    return AbstractList.settingsModal(Base)
 }
 
 export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<AbstractList.Modal<Target>> {
@@ -31,8 +30,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
     return class ValueModal extends base {
         async onAdd(): Promise<void> {
             await this.addNewValueToSettings();
-            managedField.value = this.inputEl.value
-            managedField.save()
+            managedField.save(this.inputEl.value)
             this.close();
         }
 
@@ -42,8 +40,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             if (value === managedField.value) el.addClass("value-checked")
         }
         onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
-            managedField.value = item
-            managedField.save()
+            managedField.save(item)
         }
     }
 }
@@ -84,4 +81,16 @@ export function createDvField(
             spacer.show();
         }
     }
+}
+
+export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
+    return AbstractList.actions(plugin, field, file, location, indexedPath)
+}
+
+export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
+    return AbstractList.getOptionsStr(managedField)
+}
+
+export function validateValue(managedField: IFieldManager<Target, Options>): boolean {
+    return AbstractList.getOptionsList(managedField).includes(managedField.value)
 }

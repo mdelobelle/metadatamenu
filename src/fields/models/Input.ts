@@ -1,12 +1,13 @@
-import { ButtonComponent, DropdownComponent, Notice, TextAreaComponent, TextComponent, setIcon } from "obsidian"
+import { ButtonComponent, DropdownComponent, Menu, Notice, TFile, TextAreaComponent, TextComponent, setIcon } from "obsidian"
 import { IFieldBase, BaseOptions } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
-import { getIcon } from "../Fields"
-import { IFieldManager, Target, isSingleTargeted, baseDisplayValue, getOptions } from "../Field"
+import { getIcon, mapFieldType } from "../Fields"
+import { IFieldManager, Target, isSingleTargeted, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, LegacyField, ActionLocation } from "../Field"
 import MetadataMenu from "main"
 import { IBasicModal, basicModal } from "../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
 import { Constructor } from "src/typings/types"
+import { getExistingFieldForIndexedPath } from "../ExistingField"
 
 export class Base implements IFieldBase {
     type = <const>"Input"
@@ -39,6 +40,10 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
             templateValue.onChange((value: string) => {
                 this.field.options.template = value;
             })
+        }
+
+        validateOptions(): boolean {
+            return true
         }
     }
 }
@@ -219,4 +224,31 @@ export function createDvField(
     editBtn.onclick = async () => {
         managedField.openModal()
     }
+}
+
+export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath?: string): void {
+    const iconName = getIcon(mapFieldType(field.type));
+
+    const action = async () => {
+        const eF = await getExistingFieldForIndexedPath(plugin, file, indexedPath)
+        fieldValueManager(plugin, field.id, field.fileClassName, file, eF, indexedPath)?.openModal()
+    };
+    if (isSuggest(location)) {
+        location.options.push({
+            id: `update_${field.name}`,
+            actionLabel: `<span>Update <b>${field.name}</b></span>`,
+            action: action,
+            icon: iconName
+        });
+    } else if (isFieldActions(location)) {
+        location.addOption(iconName, action, `Update ${field.name}'s value`);
+    }
+}
+
+export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
+    return managedField.options.template || ""
+}
+
+export function validateValue(managedField: IFieldManager<Target, Options>): boolean {
+    return true
 }

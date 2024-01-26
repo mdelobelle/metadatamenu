@@ -1,13 +1,13 @@
 import { TFile, FuzzySuggestModal, FuzzyMatch, setIcon } from "obsidian";
 import Field from "src/fields/_Field";
 import { FieldManager } from "src/types/fieldTypes";
-import FileField from "src/fields/fieldManagers/FileField";
 import MetadataMenu from "main";
 import { postValues } from "src/commands/postValues";
 import { getLink } from "src/utils/parser";
 import { ExistingField } from "src/fields/ExistingField";
 import ObjectModal from "./ObjectModal";
 import ObjectListModal from "./ObjectListModal";
+import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile";
 
 export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
 
@@ -82,7 +82,7 @@ export default class FileFuzzySuggester extends FuzzySuggestModal<TFile> {
         if (dvApi && this.field.options.customRendering) {
             alias = new Function("page", `return ${this.field.options.customRendering}`)(dvApi.page(item.path))
         }
-        const value = FileField.buildMarkDownLink(this.plugin, this.file, item.basename, undefined, alias)
+        const value = buildMarkDownLink(this.plugin, this.file, item.basename, undefined, alias)
         await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: value } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
         this.previousModal?.open()
     }

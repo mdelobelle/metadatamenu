@@ -1,31 +1,41 @@
 
 import { IFieldManager, Target, fieldValueManager, getIdAndIndex, isSingleTargeted, upperIndexedPathObjectPath } from "../Field"
 import MetadataMenu from "main"
-import { ButtonComponent, Modal, TFile, setIcon } from "obsidian"
-import { IListBasedModal } from "../models/abstractModels/AbstractList";
-import { getExistingFieldForIndexedPath, getValuesForIndexedPath } from "src/commands/getValues";
+import { ButtonComponent, FuzzySuggestModal, Modal, SuggestModal, TFile, setIcon } from "obsidian"
+import { Modal as IListBasedModal } from "../models/abstractModels/AbstractList";
+import { Modal as IFileBasedModal } from "../models/abstractModels/AbstractFile";
+import { Modal as IMediaBasedModal } from "../models/abstractModels/AbstractMedia";
+import { getExistingFieldForIndexedPath } from "src/commands/getValues";
 import { postValues } from "src/commands/postValues";
 import { Constructor } from "src/typings/types";
 import { Note } from "src/note/note";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import { ExistingField, getValueDisplay } from "../ExistingField";
 import { positionIcon } from "src/note/line";
+import { BaseOptions } from "./BaseField";
 
-export interface IBaseValueModal<T extends Target> extends Modal {
-    managedField: IFieldManager<T>
-    previousModal?: IBaseValueModal<T> //TODO replace w/ ObjectModal | ObjectListModal
+export interface IBaseValueModal<Target> extends Modal {
+    managedField: IFieldManager<Target, BaseOptions>
+    previousModal?: IBaseValueModal<Target> //TODO replace w/ ObjectModal | ObjectListModal
     saved: boolean
+    goToPreviousModal: () => void | Promise<void>
+    buildSimpleSaveBtn: (fieldContainer: HTMLDivElement) => void
 }
 
-export interface IBasicModal<T extends Target> extends IBaseValueModal<T> { }
+export interface IBasicModal<T extends Target> extends IBaseValueModal<T> {
+
+}
 
 export type ModalType =
     IBasicModal<Target> |
-    IListBasedModal<Target>
+    IListBasedModal<Target> |
+    IFileBasedModal<Target> |
+    IMediaBasedModal<Target>
 
-export class BaseValueModal<T extends Target> extends Modal implements BaseValueModal<T> {
-    public managedField: IFieldManager<T>
-    public previousModal?: BaseValueModal<T> //TODO replace w/ ObjectModal | ObjectListModal
+
+export class BaseValueModal<T extends Target, O extends BaseOptions> extends Modal implements IBaseValueModal<T> {
+    public managedField: IFieldManager<T, O>
+    public previousModal?: BaseValueModal<T, O> //TODO replace w/ ObjectModal | ObjectListModal
     public saved: boolean = false
     onOpen(): void {
         this.containerEl.onkeydown = (e) => {
@@ -75,6 +85,15 @@ export class BaseValueModal<T extends Target> extends Modal implements BaseValue
         }
     }
 
+    public buildSimpleSaveBtn(fieldContainer: HTMLDivElement) {
+        fieldContainer.createDiv({ cls: "spacer" })
+        const infoContainer = fieldContainer.createDiv({ cls: "info" })
+        infoContainer.setText("Alt+Enter to save")
+        const saveBtn = new ButtonComponent(fieldContainer);
+        saveBtn.setIcon("checkmark");
+        saveBtn.onClick(() => { this.managedField.save(); })
+    }
+
     async onClose() {
         if (!this.saved) this.previousModal?.open()
         this.saved = false
@@ -82,15 +101,79 @@ export class BaseValueModal<T extends Target> extends Modal implements BaseValue
 
 }
 
-export function basicModal(managedField: IFieldManager<Target>, plugin: MetadataMenu): Constructor<IBasicModal<Target>> {
-    return class BasicValueModal extends BaseValueModal<Target> {
-        public managedField: IFieldManager<Target>
-        public previousModal: BaseValueModal<Target> | undefined
+export function basicModal<O extends BaseOptions>(managedField: IFieldManager<Target, O>, plugin: MetadataMenu): Constructor<IBasicModal<Target>> {
+    return class BasicValueModal extends BaseValueModal<Target, O> {
+        public managedField: IFieldManager<Target, O>
+        public previousModal: BaseValueModal<Target, O> | undefined
         constructor(...rest: any[]) {
             super(plugin.app)
             this.managedField = managedField
             this.titleEl.setText(this.managedField.name)
         }
+    }
+}
+
+export interface IBasicSuggestModal<U, T extends Target> extends SuggestModal<U> {
+    managedField: IFieldManager<Target, BaseOptions>
+    previousModal?: IBaseValueModal<Target> //TODO replace w/ ObjectModal | ObjectListModal
+    saved: boolean
+    goToPreviousModal: () => void | Promise<void>
+    buildSimpleSaveBtn: (fieldContainer: HTMLDivElement) => void
+}
+
+export function basicSuggestModal<U, O extends BaseOptions>(managedField: IFieldManager<Target, O>, plugin: MetadataMenu): Constructor<IBasicSuggestModal<U, Target>> {
+    return class BasicValueSuggestModal extends SuggestModal<U> {
+        getSuggestions(query: string): U[] | Promise<U[]> {
+            throw new Error("Method not implemented.");
+        }
+        renderSuggestion(value: U, el: HTMLElement) {
+            throw new Error("Method not implemented.");
+        }
+        onChooseSuggestion(item: U, evt: KeyboardEvent | MouseEvent) {
+            throw new Error("Method not implemented.");
+        }
+        public saved: boolean
+        public managedField: IFieldManager<Target, O>
+        public previousModal: BaseValueModal<Target, O> | undefined
+        constructor(...rest: any[]) {
+            super(plugin.app)
+            this.managedField = managedField
+        }
+        goToPreviousModal() { }
+        buildSimpleSaveBtn(fieldContainer: HTMLDivElement) { }
+    }
+}
+
+
+
+export interface IBasicFuzzySuggestModal<U, T extends Target> extends FuzzySuggestModal<U> {
+    managedField: IFieldManager<Target, BaseOptions>
+    previousModal?: IBaseValueModal<Target> //TODO replace w/ ObjectModal | ObjectListModal
+    saved: boolean
+    goToPreviousModal: () => void | Promise<void>
+    buildSimpleSaveBtn: (fieldContainer: HTMLDivElement) => void
+}
+
+export function basicFuzzySuggestModal<U, O extends BaseOptions>(managedField: IFieldManager<Target, O>, plugin: MetadataMenu): Constructor<IBasicFuzzySuggestModal<U, Target>> {
+    return class BasicValueSuggestModal extends FuzzySuggestModal<U> {
+        getItems(): U[] {
+            throw new Error("Method not implemented.");
+        }
+        getItemText(item: U): string {
+            throw new Error("Method not implemented.");
+        }
+        onChooseItem(item: U, evt: KeyboardEvent | MouseEvent): void {
+            throw new Error("Method not implemented.");
+        }
+        public saved: boolean
+        public managedField: IFieldManager<Target, O>
+        public previousModal: BaseValueModal<Target, O> | undefined
+        constructor(...rest: any[]) {
+            super(plugin.app)
+            this.managedField = managedField
+        }
+        goToPreviousModal() { }
+        buildSimpleSaveBtn(fieldContainer: HTMLDivElement) { }
     }
 }
 
@@ -101,9 +184,9 @@ interface TargetedField {
 }
 
 
-export class MultiTargetModificationConfirmModal extends Modal {
+export class MultiTargetModificationConfirmModal<O extends BaseOptions> extends Modal {
     constructor(
-        public managedField: IFieldManager<TFile[]>,
+        public managedField: IFieldManager<TFile[], O>,
     ) {
         super(managedField.plugin.app)
         this.containerEl.classList.add("metadata-menu", "confirm-modal")

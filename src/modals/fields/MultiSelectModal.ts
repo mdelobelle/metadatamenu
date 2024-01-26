@@ -2,7 +2,6 @@ import { TFile, ButtonComponent, setIcon } from "obsidian";
 import Field from "src/fields/_Field";
 import MetadataMenu from "main";
 import { FieldManager } from "src/types/fieldTypes";
-import FileField from "src/fields/fieldManagers/FileField";
 import { postValues } from "src/commands/postValues";
 import { getLink } from "src/utils/parser";
 import { ExistingField } from "src/fields/ExistingField";
@@ -10,6 +9,7 @@ import ObjectModal from "./ObjectModal";
 import ObjectListModal from "./ObjectListModal";
 import MultiField from "src/fields/fieldManagers/MultiField";
 import BaseSelecttModal from "../baseFieldModals/BaseSelectModal";
+import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile";
 
 export default class MultiSuggestModal extends BaseSelecttModal {
 
@@ -34,7 +34,7 @@ export default class MultiSuggestModal extends BaseSelecttModal {
                 this.selectedOptions = initialOptions.map(item => {
                     const link = getLink(item, this.file)
                     if (link) {
-                        return FileField.buildMarkDownLink(this.plugin, this.file, link.path)
+                        return buildMarkDownLink(this.plugin, this.file, link.path)
                     } else {
                         return item.toString()
                     }
@@ -58,7 +58,7 @@ export default class MultiSuggestModal extends BaseSelecttModal {
         this.preSelectedOptions?.forEach(item => { if (!this.selectedOptions.includes(item)) { this.selectedOptions.push(item) } })
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter" && e.altKey) {
-                await this.replaceValues();
+                await this.save();
                 this.close()
             }
         }
@@ -70,7 +70,7 @@ export default class MultiSuggestModal extends BaseSelecttModal {
         const confirmButton = new ButtonComponent(footerActionsContainer)
         confirmButton.setIcon("checkmark")
         confirmButton.onClick(async () => {
-            await this.replaceValues();
+            await this.save();
             this.close()
         })
     }
@@ -84,7 +84,7 @@ export default class MultiSuggestModal extends BaseSelecttModal {
         this.close(false)
     }
 
-    async replaceValues() {
+    async save() {
         const options = this.selectedOptions;
         await postValues(this.plugin, [{ indexedPath: this.indexedPath || this.field.id, payload: { value: options.join(", ") } }], this.file, this.lineNumber, this.asList, this.asBlockquote)
         this.close();

@@ -19,38 +19,177 @@ export const enum SettingLocation {
 
 export abstract class FieldManager {
     abstract addFieldOption(file: TFile, location: Menu | FCSM | FieldOptions, indexedPath?: string, ...args: any): void;
+    //actions
+    // [x] Input
+    // [x] Abstract List
+    // [x] Select
+    // [x] Multi
+    // [x] Abstract File
+    // [x] File
+    // [x] Multi File
+    // [x] Abstract Media
+    // [x] Media
+    // [x] Multi Media
+    // [x] Cycle
+    // [x] Boolean
+    // [ ] Canvas
+    // [ ] CanvasGroup
+    // [ ] CanvasGroupLink
+    // [ ] AbstractDate
+    // [ ] Date
+    // [ ] DateTime
+    // [ ] Time
+    // [ ] Lookup
+    // [ ] Formula
+    // [ ] AbstractRawObject
+    // [ ] JSON
+    // [ ] Yaml
+    // [ ] Object
+    // [ ] ObjectList
+
     abstract validateOptions(): boolean;
+    //actions
+    // [x] Input
+    // [x] Abstract List
+    // [x] Select
+    // [x] Multi
+    // [x] Abstract File
+    // [x] File
+    // [x] Multi File
+    // [x] Abstract Media
+    // [x] Media
+    // [x] Multi Media
+    // [x] Cycle
+    // [x] Boolean
+    // [ ] Canvas
+    // [ ] CanvasGroup
+    // [ ] CanvasGroupLink
+    // [ ] AbstractDate
+    // [ ] Date
+    // [ ] DateTime
+    // [ ] Time
+    // [ ] Lookup
+    // [ ] Formula
+    // [ ] AbstractRawObject
+    // [ ] JSON
+    // [ ] Yaml
+    // [ ] Object
+    // [ ] ObjectList
     abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
-    abstract createDvField(
-        dv: any,
-        p: any,
-        fieldContainer: HTMLElement,
-        attrs?: {
-            cls?: string,
-            attr?: Record<string, string>,
-            options?: Record<string, string>
-        }
-    ): void
+    // [x] Input
+    // [x] Abstract List
+    // [x] Select
+    // [x] Multi
+    // [x] Abstract File
+    // [x] File
+    // [x] Multi File
+    // [x] Abstract Media
+    // [x] Media
+    // [x] Multi Media
+    // [x] Cycle
+    // [x] Boolean
+    // [ ] Canvas
+    // [ ] CanvasGroup
+    // [ ] CanvasGroupLink
+    // [ ] AbstractDate
+    // [ ] Date
+    // [ ] DateTime
+    // [ ] Time
+    // [ ] Lookup
+    // [ ] Formula
+    // [ ] AbstractRawObject
+    // [ ] JSON
+    // [ ] Yaml
+    // [ ] Object
+    // [ ] ObjectList
+    abstract createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: {
+        cls?: string, attr?: Record<string, string>, options?: Record<string, string>
+    }): void
+    // [x] Input
+    // [x] Abstract List
+    // [x] Select
+    // [x] Multi
+    // [x] Abstract File
+    // [x] File
+    // [x] Multi File
+    // [x] Abstract Media
+    // [x] Media
+    // [x] Multi Media
+    // [x] Cycle
+    // [x] Boolean
+    // [ ] Canvas
+    // [ ] CanvasGroup
+    // [ ] CanvasGroupLink
+    // [ ] AbstractDate
+    // [ ] Date
+    // [ ] DateTime
+    // [ ] Time
+    // [ ] Lookup
+    // [ ] Formula
+    // [ ] AbstractRawObject
+    // [ ] JSON
+    // [ ] Yaml
+    // [ ] Object
+    // [ ] ObjectList
     abstract getOptionsStr(): string;
+    // [x] Input
+    // [x] Abstract List
+    // [x] Select
+    // [x] Multi
+    // [x] Abstract File
+    // [x] File
+    // [x] Multi File
+    // [x] Abstract Media
+    // [x] Media
+    // [x] Multi Media
+    // [x] Cycle
+    // [x] Boolean
+    // [ ] Canvas
+    // [ ] CanvasGroup
+    // [ ] CanvasGroupLink
+    // [ ] AbstractDate
+    // [ ] Date
+    // [ ] DateTime
+    // [ ] Time
+    // [ ] Lookup
+    // [ ] Formula
+    // [ ] AbstractRawObject
+    // [ ] JSON
+    // [ ] Yaml
+    // [ ] Object
+    // [ ] ObjectList
     abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField, indexedPath?: string,
         lineNumber?: number, asList?: boolean, asBlockquote?: boolean, previousModal?: ObjectModal | ObjectListModal): void;
+    // Value modal
+    // [x] Input
+    // [x] Abstract List
+    // [x] Select
+    // [x] Multi
+    // [x] Abstract File
+    // [x] File
+    // [x] Multi File
+    // [x] Abstract Media
+    // [x] Media
+    // [x] Multi Media
+    // [x] Cycle
+    // [x] Boolean
+    // [ ] Canvas
+    // [ ] CanvasGroup
+    // [ ] CanvasGroupLink
+    // [ ] AbstractDate
+    // [ ] Date
+    // [ ] DateTime
+    // [ ] Time
+    // [ ] Lookup
+    // [ ] Formula
+    // [ ] AbstractRawObject
+    // [ ] JSON
+    // [ ] Yaml
+    // [ ] Object
+    // [ ] ObjectList
     public showModalOption: boolean = true;
-
     constructor(public plugin: MetadataMenu, public field: Field, public type: FieldType) {
         if (field.type !== type) throw Error(`This field is not of type ${type}`)
-    }
-
-    static buildMarkDownLink(plugin: MetadataMenu, file: TFile, path: string, subPath?: string, alias?: string): string {
-        const destFile = plugin.app.metadataCache.getFirstLinkpathDest(path, file.path)
-        if (destFile) {
-            return plugin.app.fileManager.generateMarkdownLink(
-                destFile,
-                file.path,
-                subPath,
-                alias,
-            )
-        }
-        return ""
     }
 
     public validateName(textInput: TextComponent, contentEl: Element): boolean {
@@ -95,6 +234,33 @@ export abstract class FieldManager {
     public validateValue(value: string): boolean {
         return true;
     }
+    // Value modal
+    // [x] Input
+    // [x] Abstract List
+    // [x] Select
+    // [x] Multi
+    // [x] Abstract File
+    // [x] File
+    // [x] Multi File
+    // [x] Abstract Media
+    // [x] Media
+    // [x] Multi Media
+    // [x] Cycle
+    // [x] Boolean
+    // [ ] Canvas
+    // [ ] CanvasGroup
+    // [ ] CanvasGroupLink
+    // [ ] AbstractDate
+    // [ ] Date
+    // [ ] DateTime
+    // [ ] Time
+    // [ ] Lookup
+    // [ ] Formula
+    // [ ] AbstractRawObject
+    // [ ] JSON
+    // [ ] Yaml
+    // [ ] Object
+    // [ ] ObjectList
 
     public static async replaceValues(plugin: MetadataMenu, path: string, id: string, value: string): Promise<void> {
         const file = plugin.app.vault.getAbstractFileByPath(path)
@@ -115,25 +281,29 @@ export abstract class FieldManager {
         return (location as FieldOptions).addOption !== undefined;
     }
 
-    public static createAndOpenModal(
-        plugin: MetadataMenu,
-        file: TFile,
-        fieldName: string,
-        field: Field | undefined,
-        eF?: ExistingField,
-        indexedPath?: string,
-        lineNumber?: number,
-        asList?: boolean,
-        asBlockquote?: boolean
-    ): void {
-        if (field) {
-            const fieldManager = new FM[field.type](plugin, field);
-            fieldManager.createAndOpenFieldModal(file, fieldName, eF, indexedPath, lineNumber, asList, asBlockquote);
-        } else {
-            const fieldManager = FieldManager.createDefault(plugin, fieldName!);
-            fieldManager.createAndOpenFieldModal(file, fieldName!, eF, indexedPath, lineNumber, asList, asBlockquote);
-        }
-    }
+    // public static createAndOpenModal(
+    //     plugin: MetadataMenu,
+    //     file: TFile,
+    //     fieldName: string,
+    //     field: Field | undefined,
+    //     eF?: ExistingField,
+    //     indexedPath?: string,
+    //     lineNumber?: number,
+    //     asList?: boolean,
+    //     asBlockquote?: boolean
+    // ): void {
+    //     if (field) {
+    //         fieldValueManager(plugin, field.id, field.fileClassName, file, undefined, undefined, lineNumber, asList, asBlockquote)?.openModal()
+
+    //         //const fieldManager = new FM[field.type](plugin, field);
+    //         // fieldManager.createAndOpenFieldModal(file, fieldName, eF, indexedPath, lineNumber, asList, asBlockquote);
+
+    //     } else {
+    //         const fieldManager = FieldManager.createDefault(plugin, fieldName!);
+    //         fieldManager.createAndOpenFieldModal(file, fieldName!, eF, indexedPath, lineNumber, asList, asBlockquote);
+    //     }
+    // }
+
 
     public static openFieldModal(
         plugin: MetadataMenu,
@@ -150,13 +320,11 @@ export abstract class FieldManager {
             const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
             if (field) {
                 fieldValueManager(plugin, field.id, field.fileClassName, file, undefined, undefined, lineNumber, asList, asBlockquote)?.openModal()
-                /*
-                if ([FieldType.Media, FieldType.MultiMedia, FieldType.MultiFile, FieldType.File, FieldType.Input, FieldType.Multi, FieldType.Select].includes(field.type)) {
-                    fieldValueManager(plugin, field.id, field.fileClassName, file, undefined, undefined, lineNumber, asList, asBlockquote)?.openModal()
-                } else {
-                    this.createAndOpenModal(plugin, file, fieldName, field, undefined, undefined, lineNumber, asList, asBlockquote)
-                }
-                */
+                // if ([FieldType.Media, FieldType.MultiMedia, FieldType.MultiFile, FieldType.File, FieldType.Input, FieldType.Multi, FieldType.Select].includes(field.type)) {
+                //     fieldValueManager(plugin, field.id, field.fileClassName, file, undefined, undefined, lineNumber, asList, asBlockquote)?.openModal()
+                // } else {
+                //     this.createAndOpenModal(plugin, file, fieldName, field, undefined, undefined, lineNumber, asList, asBlockquote)
+                // }
             }
         }
     }

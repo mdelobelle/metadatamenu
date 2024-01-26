@@ -32,7 +32,7 @@ const updateProps = async (plugin: MetadataMenu, view: View) => {
             const btn = new ButtonComponent(btnContainer)
             btn.setIcon(FieldIcon[pseudoField.type])
             btn.setClass("property-metadata-menu")
-            btn.onClick(() => { optionsList ? optionsList.createAndOpenFieldModal(node) : null })
+            btn.onClick(() => { optionsList ? optionsList.createAndOpenNodeFieldModal(node) : null })
             item.containerEl.insertBefore(btnContainer, item.valueEl)
         }
     })

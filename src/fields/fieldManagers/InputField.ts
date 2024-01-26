@@ -11,6 +11,7 @@ import ObjectListModal from "src/modals/fields/ObjectListModal";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import { Note } from "src/note/note";
 import { fieldValueManager } from "../Field";
+import { getActions } from "../Fields";
 
 export default class InputField extends FieldManager {
 
@@ -28,6 +29,8 @@ export default class InputField extends FieldManager {
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
+        return getActions("Input")(this.plugin, this.field, file, location, indexedPath)
+        /*
         const name = this.field.name
         const iconName = FieldIcon[FieldType.Input];
         const action = async () => await this.buildAndOpenModal(file, indexedPath);
@@ -41,6 +44,7 @@ export default class InputField extends FieldManager {
         } else if (InputField.isFieldOptions(location)) {
             location.addOption(FieldIcon[FieldType.Input], action, `Update ${name}'s value`);
         }
+        */
     };
 
     public createSettingContainer(container: HTMLDivElement, plugin: MetadataMenu): void {
@@ -89,82 +93,83 @@ export default class InputField extends FieldManager {
         fieldModal.titleEl.setText(`Enter value for ${selectedFieldName}`);
         fieldModal.open();
     }
+
     public createDvField(
         dv: any,
         p: any,
         fieldContainer: HTMLElement,
         attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
     ): void {
-        attrs.cls = "value-container"
-        /* button to display input */
-        const editBtn = fieldContainer.createEl("button");
-        const fieldValue = (dv.el('span', p[this.field.name] || "", attrs) as HTMLDivElement);
-        fieldContainer.appendChild(fieldValue);
-        const inputContainer = fieldContainer.createDiv({});
-        inputContainer.hide();
-        const input = inputContainer.createEl("input");
-        input.value = p[this.field.name];
-        /* end spacer */
-        const spacer = fieldContainer.createDiv({ cls: "spacer-1" });
-        if (attrs.options?.alwaysOn) spacer.hide();
-        setIcon(editBtn, FieldIcon[FieldType.Input]);
-        if (!attrs?.options?.alwaysOn) {
-            editBtn.hide();
-            spacer.show();
-            fieldContainer.onmouseover = () => {
-                if (!inputContainer.isShown()) {
-                    editBtn.show();
-                    spacer.hide();
-                }
-            }
-            fieldContainer.onmouseout = () => {
-                editBtn.hide();
-                if (!attrs.options?.alwaysOn) spacer.show();
-            }
-        }
+        // attrs.cls = "value-container"
+        // /* button to display input */
+        // const editBtn = fieldContainer.createEl("button");
+        // const fieldValue = (dv.el('span', p[this.field.name] || "", attrs) as HTMLDivElement);
+        // fieldContainer.appendChild(fieldValue);
+        // const inputContainer = fieldContainer.createDiv({});
+        // inputContainer.hide();
+        // const input = inputContainer.createEl("input");
+        // input.value = p[this.field.name];
+        // /* end spacer */
+        // const spacer = fieldContainer.createDiv({ cls: "spacer-1" });
+        // if (attrs.options?.alwaysOn) spacer.hide();
+        // setIcon(editBtn, FieldIcon[FieldType.Input]);
+        // if (!attrs?.options?.alwaysOn) {
+        //     editBtn.hide();
+        //     spacer.show();
+        //     fieldContainer.onmouseover = () => {
+        //         if (!inputContainer.isShown()) {
+        //             editBtn.show();
+        //             spacer.hide();
+        //         }
+        //     }
+        //     fieldContainer.onmouseout = () => {
+        //         editBtn.hide();
+        //         if (!attrs.options?.alwaysOn) spacer.show();
+        //     }
+        // }
 
-        const validateIcon = inputContainer.createEl("button");
-        setIcon(validateIcon, "checkmark");
-        validateIcon.onclick = (e) => {
-            InputField.replaceValues(this.plugin, p.file.path, this.field.id, input.value);
-            inputContainer.hide()
-        }
-        const cancelIcon = inputContainer.createEl("button");
-        setIcon(cancelIcon, "cross");
-        cancelIcon.onclick = (e) => {
-            inputContainer.hide();
-            fieldValue.show();
-            editBtn.show();
-            if (!attrs.options?.alwaysOn) spacer.show();
-        }
-        input.focus()
+        // const validateIcon = inputContainer.createEl("button");
+        // setIcon(validateIcon, "checkmark");
+        // validateIcon.onclick = (e) => {
+        //     InputField.replaceValues(this.plugin, p.file.path, this.field.id, input.value);
+        //     inputContainer.hide()
+        // }
+        // const cancelIcon = inputContainer.createEl("button");
+        // setIcon(cancelIcon, "cross");
+        // cancelIcon.onclick = (e) => {
+        //     inputContainer.hide();
+        //     fieldValue.show();
+        //     editBtn.show();
+        //     if (!attrs.options?.alwaysOn) spacer.show();
+        // }
+        // input.focus()
 
-        input.onkeydown = (e) => {
-            if (e.key === "Enter") {
-                InputField.replaceValues(this.plugin, p.file.path, this.field.id, input.value);
-                inputContainer.hide();
-            }
-            if (e.key === 'Escape') {
-                inputContainer.hide();
-                fieldValue.show();
-                editBtn.show();
-                if (!attrs.options?.alwaysOn) spacer.show();
-            }
-        }
-        /* button on click : remove button and field and display input field*/
-        editBtn.onclick = async () => {
-            if (this.field.options.template) {
-                const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path);
-                if (file instanceof TFile && file.extension === 'md') {
-                    await this.buildAndOpenModal(file, this.field.id)
-                }
-            } else {
-                inputContainer.show();
-                input.focus()
-            }
-            fieldValue.hide();
-            editBtn.hide();
-            spacer.hide();
-        }
+        // input.onkeydown = (e) => {
+        //     if (e.key === "Enter") {
+        //         InputField.replaceValues(this.plugin, p.file.path, this.field.id, input.value);
+        //         inputContainer.hide();
+        //     }
+        //     if (e.key === 'Escape') {
+        //         inputContainer.hide();
+        //         fieldValue.show();
+        //         editBtn.show();
+        //         if (!attrs.options?.alwaysOn) spacer.show();
+        //     }
+        // }
+        // //button on click : remove button and field and display input field
+        // editBtn.onclick = async () => {
+        //     if (this.field.options.template) {
+        //         const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path);
+        //         if (file instanceof TFile && file.extension === 'md') {
+        //             await this.buildAndOpenModal(file, this.field.id)
+        //         }
+        //     } else {
+        //         inputContainer.show();
+        //         input.focus()
+        //     }
+        //     fieldValue.hide();
+        //     editBtn.hide();
+        //     spacer.hide();
+        // }
     }
 }

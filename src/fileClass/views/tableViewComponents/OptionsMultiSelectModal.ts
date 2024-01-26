@@ -8,6 +8,7 @@ import FileField from "../../../fields/fieldManagers/FileField";
 import { cleanActions } from "src/utils/modals";
 import AbstractListBasedField from "src/fields/abstractFieldManagers/AbstractListBasedField";
 import MultiFileField from "src/fields/fieldManagers/MultiFileField";
+import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile";
 
 export enum fieldStates {
     __empty__ = "__empty__",
@@ -55,7 +56,7 @@ export class OptionsMultiSelectModal extends SuggestModal<string> {
                 this.selectedOptions = initialOptions.map(item => {
                     const link = getLink(item, fileClassFile)
                     if (link) {
-                        return FileField.buildMarkDownLink(this.plugin, fileClassFile, link.path)
+                        return buildMarkDownLink(this.plugin, fileClassFile, link.path)
                     } else {
                         return item.toString()
                     }
@@ -77,7 +78,7 @@ export class OptionsMultiSelectModal extends SuggestModal<string> {
         }
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter" && e.altKey) {
-                await this.replaceValues();
+                await this.replaceOptionsValues();
                 this.close()
             }
         }
@@ -160,12 +161,12 @@ export class OptionsMultiSelectModal extends SuggestModal<string> {
         const confirmButton = new ButtonComponent(footerActionsContainer)
         confirmButton.setIcon("checkmark")
         confirmButton.onClick(async () => {
-            await this.replaceValues();
+            await this.replaceOptionsValues();
             this.close()
         })
     }
 
-    async replaceValues() {
+    async replaceOptionsValues() {
         const options = this.selectedOptions;
         this.input.inputEl.value = options.join(", ");
         this.parentFieldSet.tableView.update()

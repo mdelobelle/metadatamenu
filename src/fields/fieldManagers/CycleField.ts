@@ -12,6 +12,7 @@ import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
+import { getActions } from "../Fields";
 
 export default class CycleField extends AbstractListBasedField {
 
@@ -69,19 +70,20 @@ export default class CycleField extends AbstractListBasedField {
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
-        const name = this.field.name
-        const iconName = FieldIcon[FieldType.Cycle];
-        const action = async () => this.next(name, file, indexedPath);
-        if (CycleField.isSuggest(location)) {
-            location.options.push({
-                id: `cycle_${name}`,
-                actionLabel: `<span>Cycle <b>${name}</b></span>`,
-                action: action,
-                icon: iconName
-            })
-        } else if (CycleField.isFieldOptions(location)) {
-            location.addOption(iconName, action, `Cycle ${name}`);
-        };
+        return getActions("Cycle")(this.plugin, this.field, file, location, indexedPath)
+        // const name = this.field.name
+        // const iconName = FieldIcon[FieldType.Cycle];
+        // const action = async () => this.next(name, file, indexedPath);
+        // if (CycleField.isSuggest(location)) {
+        //     location.options.push({
+        //         id: `cycle_${name}`,
+        //         actionLabel: `<span>Cycle <b>${name}</b></span>`,
+        //         action: action,
+        //         icon: iconName
+        //     })
+        // } else if (CycleField.isFieldOptions(location)) {
+        //     location.addOption(iconName, action, `Cycle ${name}`);
+        // };
     };
 
     public createAndOpenFieldModal(
@@ -105,36 +107,37 @@ export default class CycleField extends AbstractListBasedField {
         fieldContainer: HTMLElement,
         attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, any> } = {}
     ): void {
-        attrs.cls = "value-container"
-        fieldContainer.appendChild(dv.el('span', p[this.field.name] || "", attrs))
-        const spacer = fieldContainer.createEl("div", { cls: "spacer-1" })
-        /* button to display input */
-        const cycleBtn = fieldContainer.createEl("button")
-        setIcon(cycleBtn, FieldIcon[FieldType.Cycle])
-        if (!attrs?.options?.alwaysOn) {
-            cycleBtn.hide();
-            spacer.show();
-            fieldContainer.onmouseover = () => {
-                cycleBtn.show();
-                spacer.hide();
-            }
-            fieldContainer.onmouseout = () => {
-                cycleBtn.hide();
-                spacer.show();
-            }
-        }
-        const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
-        /* button on click : go to next version*/
-        cycleBtn.onclick = async (e) => {
-            if (!(file instanceof TFile)) return
-            const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, this.field.id)
-            const value = eF?.value || ""
-            const nextOption = this.nextOption(value)
-            CycleField.replaceValues(this.plugin, file.path, this.field.id, nextOption);
-            if (!attrs?.options?.alwaysOn) {
-                cycleBtn.hide();
-                spacer.show();
-            }
-        }
+
+        // attrs.cls = "value-container"
+        // fieldContainer.appendChild(dv.el('span', p[this.field.name] || "", attrs))
+        // const spacer = fieldContainer.createEl("div", { cls: "spacer-1" })
+        // /* button to display input */
+        // const cycleBtn = fieldContainer.createEl("button")
+        // setIcon(cycleBtn, FieldIcon[FieldType.Cycle])
+        // if (!attrs?.options?.alwaysOn) {
+        //     cycleBtn.hide();
+        //     spacer.show();
+        //     fieldContainer.onmouseover = () => {
+        //         cycleBtn.show();
+        //         spacer.hide();
+        //     }
+        //     fieldContainer.onmouseout = () => {
+        //         cycleBtn.hide();
+        //         spacer.show();
+        //     }
+        // }
+        // const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path)
+        // /* button on click : go to next version*/
+        // cycleBtn.onclick = async (e) => {
+        //     if (!(file instanceof TFile)) return
+        //     const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, this.field.id)
+        //     const value = eF?.value || ""
+        //     const nextOption = this.nextOption(value)
+        //     CycleField.replaceValues(this.plugin, file.path, this.field.id, nextOption);
+        //     if (!attrs?.options?.alwaysOn) {
+        //         cycleBtn.hide();
+        //         spacer.show();
+        //     }
+        // }
     }
 }

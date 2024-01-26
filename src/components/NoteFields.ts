@@ -16,8 +16,8 @@ import * as FieldType from "src/types/fieldTypes";
 import { FieldManager as FM } from "src/types/fieldTypes";
 import { FileClassViewManager } from "./FileClassViewManager";
 
-export class FieldOptions {
 
+export class FieldActions {
     constructor(public container: HTMLDivElement) { }
 
     private async setIconAndTooltipAsync(fieldOption: ButtonComponent, file: TFile, indexedPath: string, plugin: MetadataMenu): Promise<void> {
@@ -49,7 +49,10 @@ export class FieldOptions {
         fieldOption.onClick(() => onclick())
 
     }
+
 }
+
+export class FieldOptions extends FieldActions { }
 
 export class FieldsModal extends Modal {
 
@@ -226,11 +229,13 @@ export class FieldsModal extends Modal {
                             this.plugin,
                             this.file,
                             (lineNumber: number, asList: boolean, asBlockquote: boolean
-                            ) => FieldManager.createAndOpenModal(
-                                this.plugin, this.file, field.name, field, undefined, newIndexedPath, lineNumber, asList, asBlockquote)
+                            ) => fieldValueManager(this.plugin, field.id, field.fileClassName, this.file, undefined, newIndexedPath, lineNumber, asList, asBlockquote)?.openModal()
+                            //    ) => FieldManager.createAndOpenModal(
+                            //    this.plugin, this.file, field.name, field, undefined, newIndexedPath, lineNumber, asList, asBlockquote)
                         ).open();
                     } else {
-                        FieldManager.createAndOpenModal(this.plugin, this.file, field.name, field, undefined, newIndexedPath, -1, false, false)
+                        fieldValueManager(this.plugin, field.id, field.fileClassName, this.file, undefined, newIndexedPath, -1, false, false)?.openModal()
+                        //FieldManager.createAndOpenModal(this.plugin, this.file, field.name, field, undefined, newIndexedPath, -1, false, false)
                     }
                 }
             })

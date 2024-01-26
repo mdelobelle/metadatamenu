@@ -1,9 +1,9 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
 import Field from "src/fields/_Field";
-import { FieldManager } from "src/fields/FieldManager";
 import * as Lookup from "src/types/lookupTypes";
 import { IndexedFieldsPayload } from "./postValues";
+import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile";
 
 export function arraysAsStringAreEqual(a: string, b: string) {
     const aAsArray = typeof a === "string" ? a.split(",").map(v => v.trim()) : (Array.isArray(a) ? a : [])
@@ -18,7 +18,7 @@ function renderValue(field: Field, pages: any, plugin: MetadataMenu, tFile: TFil
         case Lookup.Type.LinksBulletList:
             {
                 const newValuesArray = pages?.map((dvFile: any) => {
-                    return FieldManager.buildMarkDownLink(plugin, tFile, dvFile.file.path);
+                    return buildMarkDownLink(plugin, tFile, dvFile.file.path);
                 });
                 newValue = (newValuesArray || []).join(", ");
             }

@@ -92,3 +92,9 @@ export function getValueDisplay(field: ExistingField | undefined): string {
         return field.value || ""
     }
 }
+
+
+export async function getExistingFieldForIndexedPath(plugin: MetadataMenu, file: TFile, indexedPath: string | undefined): Promise<ExistingField | undefined> {
+    const eFs = await Note.getExistingFields(plugin, file)
+    return eFs.find(eF => eF.indexedPath === indexedPath)
+}

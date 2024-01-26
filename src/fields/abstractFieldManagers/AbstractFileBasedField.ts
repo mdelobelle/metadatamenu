@@ -13,6 +13,7 @@ import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
 import { AbstractMediaField } from "./AbstractMediaField";
 import { fieldValueManager } from "../Field";
+import { getActions } from "../Fields";
 
 const convertDataviewArrayOfLinkToArrayOfPath = (arr: (Link | any)[]) => {
     return arr.reduce((acc, cur) => {
@@ -83,6 +84,8 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
+        return getActions("File")(this.plugin, this.field, file, location, indexedPath)
+        /*
         const name = this.field.name
         const action = async () => await this.buildAndOpenModal(file, indexedPath)
         if (AbstractFileBasedField.isSuggest(location)) {
@@ -95,6 +98,7 @@ export default abstract class AbstractFileBasedField<T extends Modal> extends Fi
         } else if (AbstractFileBasedField.isFieldOptions(location)) {
             location.addOption(FieldIcon[FieldType.File], action, `Update ${name}'s value`);
         };
+        */
     }
 
     public createQueryContainer(container: HTMLDivElement): void {

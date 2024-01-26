@@ -11,6 +11,7 @@ import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
+import { actions } from "../models/Boolean";
 
 export default class BooleanField extends FieldManager {
 
@@ -27,28 +28,29 @@ export default class BooleanField extends FieldManager {
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
-        const name = this.field.name
-        const iconName = FieldIcon[FieldType.Boolean]
-        const action = async () => await this.toggle(file, indexedPath)
+        return actions(this.plugin, this.field, file, location, indexedPath)
+        // const name = this.field.name
+        // const iconName = FieldIcon[FieldType.Boolean]
+        // const action = async () => await this.toggle(file, indexedPath)
 
-        if (BooleanField.isSuggest(location)) {
-            location.options.push({
-                id: `update_${name}`,
-                actionLabel: `Toggle <span><b>${name}</b></span>`,
-                action: action,
-                icon: iconName
-            });
-        } else if (BooleanField.isFieldOptions(location)) {
-            location.addOption(
-                iconName,
-                action,
-                `Toggle ${name}`,
-                this.field.fileClassName,
-                file,
-                indexedPath,
-                this.plugin
-            );
-        };
+        // if (BooleanField.isSuggest(location)) {
+        //     location.options.push({
+        //         id: `update_${name}`,
+        //         actionLabel: `Toggle <span><b>${name}</b></span>`,
+        //         action: action,
+        //         icon: iconName
+        //     });
+        // } else if (BooleanField.isFieldOptions(location)) {
+        //     location.addOption(
+        //         iconName,
+        //         action,
+        //         `Toggle ${name}`,
+        //         this.field.fileClassName,
+        //         file,
+        //         indexedPath,
+        //         this.plugin
+        //     );
+        // };
     };
     public getOptionsStr(): string {
         return ""
@@ -93,11 +95,12 @@ export default class BooleanField extends FieldManager {
         fieldContainer: HTMLElement,
         attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
     ): void {
-        const checkbox: HTMLInputElement = dv.el("input", "", { ...attrs, "type": "checkbox" })
-        checkbox.checked = p[this.field.name]
-        fieldContainer.appendChild(checkbox)
-        checkbox.onchange = (value) => {
-            BooleanField.replaceValues(this.plugin, p.file.path, this.field.id, checkbox.checked.toString());
-        }
+
+        // const checkbox: HTMLInputElement = dv.el("input", "", { ...attrs, "type": "checkbox" })
+        // checkbox.checked = p[this.field.name]
+        // fieldContainer.appendChild(checkbox)
+        // checkbox.onchange = (value) => {
+        //     BooleanField.replaceValues(this.plugin, p.file.path, this.field.id, checkbox.checked.toString());
+        // }
     }
 }

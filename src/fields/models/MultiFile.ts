@@ -1,6 +1,6 @@
 import MetadataMenu from "main"
 import { ButtonComponent, FuzzyMatch, TFile, setIcon } from "obsidian"
-import { IFieldManager, Target, isSingleTargeted } from "src/fields/Field"
+import { ActionLocation, IFieldManager, LegacyField, Target, isSingleTargeted } from "src/fields/Field"
 import { IFieldBase } from "src/fields/base/BaseField"
 import * as AbstractFile from "src/fields/models/abstractModels/AbstractFile"
 import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile"
@@ -31,6 +31,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             super()
             this.initValues()
             this.build()
+            console.log(validateValue(this.managedField))
         }
 
         initValues() {
@@ -74,7 +75,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             this.containerEl.onkeydown = async (e) => {
                 if (e.key == "Enter" && e.altKey) {
                     e.preventDefault();
-                    await this.replaceValues();
+                    await this.save();
                     this.close()
                 }
             }
@@ -87,7 +88,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             const confirmButton = new ButtonComponent(buttonContainer)
             confirmButton.setIcon("checkmark")
             confirmButton.onClick(async () => {
-                await this.replaceValues();
+                await this.save();
                 this.close()
             })
             //cancel button
@@ -106,7 +107,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             this.modalEl.appendChild(buttonContainer)
         }
 
-        async replaceValues() {
+        async save() {
             const result = this.selectedFiles.map(file => {
                 const dvApi = plugin.app.plugins.plugins.dataview?.api
                 let alias: string | undefined = undefined;
@@ -115,14 +116,12 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                 }
                 return buildMarkDownLink(managedField.plugin, file, file.basename, undefined, alias)
             })
-            managedField.value = result.join(",")
-            managedField.save()
+            managedField.save(result.join(","))
             this.close()
         }
 
         async clearValues() {
-            managedField.value = ""
-            managedField.save()
+            managedField.save("")
             this.close()
         }
 
@@ -196,4 +195,26 @@ export function createDvField(
 
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {
     return AbstractFile.displayValue(managedField, container, onClicked)
+}
+
+export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
+    return AbstractFile.actions(plugin, field, file, location, indexedPath)
+}
+
+export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
+    return AbstractFile.getOptionsStr(managedField)
+}
+
+export function validateValue(managedField: IFieldManager<Target, Options>): boolean {
+    const filesPaths = AbstractFile.getFiles(managedField).map(f => f.path)
+    if (!Array.isArray(managedField.value)) {
+        return false
+    } else {
+        return managedField.value.every(v => {
+            const link = getLink(v.toString())
+            if (!link) return false
+            else return filesPaths.includes(link.path)
+
+        })
+    }
 }

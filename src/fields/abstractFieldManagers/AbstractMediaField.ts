@@ -39,6 +39,7 @@ export abstract class AbstractMediaField extends AbstractFileBasedField<MediaFil
         previousModal?: ObjectModal | ObjectListModal
     ): MediaFileModal | MultiMediaFileModal
 
+    // [x] abstract media getFiles
     public getFiles = (): TFile[] => {
         const folders = this.field.options.folders as string[]
         const files = this.plugin.app.vault.getFiles()
@@ -47,6 +48,7 @@ export abstract class AbstractMediaField extends AbstractFileBasedField<MediaFil
         return files
     }
 
+    // [x] abstract media buildMediaLink
     static buildLink(plugin: MetadataMenu, sourceFile: TFile, destPath: string, thumbnailSize: string | undefined) {
         const destFile = plugin.app.vault.getAbstractFileByPath(destPath)
         if (destFile instanceof TFile) {
@@ -56,6 +58,7 @@ export abstract class AbstractMediaField extends AbstractFileBasedField<MediaFil
         return ""
     }
 
+    // [x] abstract media displayValue
     public displayValue(container: HTMLDivElement, file: TFile, value: any, onClicked: () => {}): void {
         const link = getLink(value, file)
         if (link?.path) {

@@ -15,7 +15,8 @@ import { FieldType } from "src/types/fieldTypes";
 import { updateLookups } from "./updateLookups";
 import { updateFormulas } from "./updateFormulas";
 import { Note } from "src/note/note";
-import { IField } from "src/fields/ValueModifier";
+import { IField } from "src/fields/Field";
+import { BaseOptions } from "src/fields/base/BaseField";
 
 function addFileClassAttributeOptions(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
@@ -260,7 +261,7 @@ export function addInsertFieldCommand(plugin: MetadataMenu, command: FieldComman
     })
 }
 
-export function addInsertIFieldCommand(plugin: MetadataMenu, command: FieldCommand, field: IField, fileClassName?: string) {
+export function addInsertIFieldCommand<O extends BaseOptions>(plugin: MetadataMenu, command: FieldCommand, field: IField<O>, fileClassName?: string) {
     plugin.addCommand({
         id: command.id,
         name: command.label,

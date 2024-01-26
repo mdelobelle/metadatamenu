@@ -10,12 +10,13 @@ import { AddFileClassToFileModal } from "src/fileClass/fileClass";
 import AddNewFileClassModal from "src/modals/AddNewFileClassModal";
 import { LineNode } from "src/note/lineNode";
 import { Note } from "src/note/note";
-import { FieldManager, FieldType } from "src/types/fieldTypes";
+import { FieldManager, FieldType, migratedFieldTypes } from "src/types/fieldTypes";
 import { genuineKeys } from "src/utils/dataviewUtils";
 import { getFrontmatterPosition } from "src/utils/fileUtils";
 import chooseSectionModal from "../modals/chooseSectionModal";
 import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
 import FileClassOptionsList from "./FileClassOptionsList";
+import { fieldValueManager } from "src/fields/Field";
 
 function isMenu(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal | "ManageAtCursorCommand"): location is Menu {
 	return (location as Menu).addItem !== undefined;
@@ -74,6 +75,13 @@ export default class OptionsList {
 					break;
 				default:
 					const eF = node.line.note.getExistingFieldForIndexedPath(indexedPath)
+					if (!eF) return
+					if (eF && migratedFieldTypes.includes(eF.field.type)) {
+						const { field, file, indexedPath, lineNumber } = eF
+						fieldValueManager(this.plugin, field.id, field.fileClassName, file, eF, indexedPath, lineNumber)?.openModal()
+					} else {
+						fieldManager.createAndOpenFieldModal(this.file, eF.field.name,)
+					}
 					break;
 			}
 
@@ -215,6 +223,7 @@ export default class OptionsList {
 	}
 
 	private buildFieldOptions(): void {
+		console.log(this.note)
 		this.note?.existingFields
 			.filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === this.path)
 			.forEach(eF => {

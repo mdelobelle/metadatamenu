@@ -3,8 +3,8 @@ import { Notice, TFile } from "obsidian";
 import { AllCanvasNodeData, CanvasData, CanvasEdgeData, CanvasFileData, CanvasGroupData, CanvasNodeData } from "obsidian/canvas"
 import { FieldType } from "src/types/fieldTypes";
 import { IndexedFieldsPayload, postValues } from "./postValues";
-import { FieldManager } from "src/fields/FieldManager";
 import Field from "src/fields/_Field";
+import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile";
 
 export async function updateCanvas(
     plugin: MetadataMenu,
@@ -251,7 +251,7 @@ export async function updateCanvas(
                 const payload: IndexedFieldsPayload = []
                 cumulatedLinksFields.forEach((linkNodes, name) => {
                     const field = fields.find(_f => _f.name === name)
-                    const values = linkNodes.map((node: CanvasFileData) => FieldManager.buildMarkDownLink(plugin, file, node.file, node.subpath))
+                    const values = linkNodes.map((node: CanvasFileData) => buildMarkDownLink(plugin, file, node.file, node.subpath))
                     if (field) payload.push({ indexedPath: field.id, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
                 })
                 cumulatedGroupsFields.forEach((groupNodes, name) => {
@@ -261,7 +261,7 @@ export async function updateCanvas(
                 })
                 cumulatedGroupsLinksFields.forEach((linkNodes, name) => {
                     const field = fields.find(_f => _f.name === name)
-                    const values = linkNodes.map((node: CanvasFileData) => FieldManager.buildMarkDownLink(plugin, file, node.file, node.subpath))
+                    const values = linkNodes.map((node: CanvasFileData) => buildMarkDownLink(plugin, file, node.file, node.subpath))
                     if (field) payload.push({ indexedPath: field.id, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
                 })
                 if (payload.length) await postValues(plugin, payload, file)

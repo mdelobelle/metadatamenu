@@ -14,6 +14,8 @@ import { ExistingField } from "../ExistingField";
 import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
+import { fieldValueManager } from "../Field";
+import { getActions, mapFieldType } from "../Fields";
 
 
 
@@ -28,43 +30,46 @@ export default abstract class AbstractDateBasedField extends FieldManager {
     }
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
+        // const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
+        // const modal = new DateModal(this.plugin, file, this.field, eF, indexedPath);
+        // modal.titleEl.setText(`Change date for <${this.field.name}>`);
+        // modal.open()
         const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
-        const modal = new DateModal(this.plugin, file, this.field, eF, indexedPath);
-        modal.titleEl.setText(`Change date for <${this.field.name}>`);
-        modal.open()
+        fieldValueManager(this.plugin, this.field.id, this.field.fileClassName, file, eF, indexedPath)?.openModal()
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
-        const name = this.field.name
-        const dateIconName = FieldIcon[this.field.type];
-        const dateModalAction = async () => await this.buildAndOpenModal(file, indexedPath);
-        const shiftDateAction = async () => await this.shiftDate(file, indexedPath);
-        const clearDateAction = async () => await this.clearDate(file, indexedPath)
-        if (AbstractDateBasedField.isSuggest(location)) {
-            location.options.push({
-                id: `update_${name}`,
-                actionLabel: `<span>Update <b>${name}</b></span>`,
-                action: dateModalAction,
-                icon: dateIconName
-            })
-            if (this.field.options.dateShiftInterval || this.field.options.nextShiftIntervalField) {
-                location.options.push({
-                    id: `update_${name}`,
-                    actionLabel: `<span>Shift <b>${name}</b> ahead</span>`,
-                    action: shiftDateAction,
-                    icon: "skip-forward"
-                })
-            }
-            location.options.push({
-                id: `clear_${name}`,
-                actionLabel: `<span>Clear <b>${name}</b></span>`,
-                action: clearDateAction,
-                icon: "eraser"
-            })
-        } else if (AbstractDateBasedField.isFieldOptions(location)) {
-            location.addOption("skip-forward", shiftDateAction, `Shift ${name} ahead`);
-            location.addOption(dateIconName, dateModalAction, `Set ${name}'s date`);
-        };
+        return getActions(mapFieldType(this.field.type))(this.plugin, this.field, file, location, indexedPath)
+        // const name = this.field.name
+        // const dateIconName = FieldIcon[this.field.type];
+        // const dateModalAction = async () => await this.buildAndOpenModal(file, indexedPath);
+        // const shiftDateAction = async () => await this.shiftDate(file, indexedPath);
+        // const clearDateAction = async () => await this.clearDate(file, indexedPath)
+        // if (AbstractDateBasedField.isSuggest(location)) {
+        //     location.options.push({
+        //         id: `update_${name}`,
+        //         actionLabel: `<span>Update <b>${name}</b></span>`,
+        //         action: dateModalAction,
+        //         icon: dateIconName
+        //     })
+        //     if (this.field.options.dateShiftInterval || this.field.options.nextShiftIntervalField) {
+        //         location.options.push({
+        //             id: `update_${name}`,
+        //             actionLabel: `<span>Shift <b>${name}</b> ahead</span>`,
+        //             action: shiftDateAction,
+        //             icon: "skip-forward"
+        //         })
+        //     }
+        //     location.options.push({
+        //         id: `clear_${name}`,
+        //         actionLabel: `<span>Clear <b>${name}</b></span>`,
+        //         action: clearDateAction,
+        //         icon: "eraser"
+        //     })
+        // } else if (AbstractDateBasedField.isFieldOptions(location)) {
+        //     location.addOption("skip-forward", shiftDateAction, `Shift ${name} ahead`);
+        //     location.addOption(dateIconName, dateModalAction, `Set ${name}'s date`);
+        // };
     }
 
     public createAndOpenFieldModal(
@@ -82,6 +87,7 @@ export default abstract class AbstractDateBasedField extends FieldManager {
         fieldModal.open();
     }
 
+    // OK
     public createSettingContainer(container: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void {
         if (!this.field.options.dateFormat) this.field.options.dateFormat = this.defaultDateFormat
         if (!this.field.options.defaultInsertAsLink) this.field.options.defaultInsertAsLink = "false"
@@ -197,7 +203,6 @@ export default abstract class AbstractDateBasedField extends FieldManager {
             `[[${linkPath || ""}${newValue}${linkFile ? "|" + linkFile.basename : ""}]]` :
             newValue.format(dateFormat)
         await postValues(this.plugin, [{ indexedPath: indexedPath, payload: { value: formattedValue } }], file)
-
     }
 
     public async clearDate(file: TFile, indexedPath?: string): Promise<void> {

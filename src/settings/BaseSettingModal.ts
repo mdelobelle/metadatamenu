@@ -7,6 +7,7 @@ import { FieldHTMLTagMap, FieldStyle, FieldStyleKey } from "src/types/dataviewTy
 import { cleanActions } from "src/utils/modals";
 import { addInsertFieldCommand } from "src/commands/paletteCommands";
 import { IField } from "src/fields/Field";
+import { BaseOptions } from "src/fields/base/BaseField";
 
 class TypeSelector extends SuggestModal<keyof typeof FieldType> {
     constructor(
@@ -85,7 +86,7 @@ export class ParentSelector extends SuggestModal<Field> {
         return display
     }
 
-    static getParentPath(item: Field | IField): string {
+    static getParentPath<O extends BaseOptions>(item: Field | IField<O>): string {
         const path = item.path ? item.path + "____" + item.id : item.id
         return path
     }

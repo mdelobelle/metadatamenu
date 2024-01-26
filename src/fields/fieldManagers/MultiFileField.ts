@@ -29,20 +29,6 @@ export default class MultiFileField extends AbstractFileBasedField<MultiFileModa
         return new MultiFileModal(plugin, file, field, eF, indexedPath, lineNumber, asList, asBlockquote, previousModal);
     }
 
-
-    static buildMarkDownLink(plugin: MetadataMenu, file: TFile, path: string): string {
-        const destFile = plugin.app.metadataCache.getFirstLinkpathDest(path, file.path)
-        if (destFile) {
-            return plugin.app.fileManager.generateMarkdownLink(
-                destFile,
-                file.path,
-                undefined,
-                destFile.basename
-            )
-        }
-        return ""
-    }
-
     public validateValue(value: string | { path: string } | { path: string }[]): boolean {
         //todo : manage both raw links and dv Link objects
         return true

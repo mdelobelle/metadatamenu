@@ -1,12 +1,15 @@
-import { ButtonComponent, DropdownComponent, SuggestModal, TFile, TextAreaComponent, TextComponent, setIcon } from "obsidian"
+import { ButtonComponent, DropdownComponent, Menu, SuggestModal, TFile, TextAreaComponent, TextComponent, setIcon } from "obsidian"
 import { BaseOptions } from "../../base/BaseField"
 import { ISettingsModal } from "../../base/BaseSetting"
 import { FileSuggest } from "src/suggester/FileSuggester"
-import { IFieldManager, Target, baseDisplayValue, getOptions, isSingleTargeted, removeValidationError } from "../../Field"
+import { ActionLocation, IFieldManager, LegacyField, Target, baseDisplayValue, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest, removeValidationError, setValidationError } from "../../Field"
 import MetadataMenu from "main"
-import { BaseValueModal, IBaseValueModal } from "../../base/BaseModal"
+import { BaseValueModal, IBaseValueModal, basicSuggestModal } from "../../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
 import { Constructor } from "src/typings/types"
+import { getIcon, mapFieldType } from "src/fields/Fields"
+import { getExistingFieldForIndexedPath } from "src/fields/ExistingField"
+
 
 //#region options values
 
@@ -46,11 +49,14 @@ export const DefaultOptions: DefaultedOptions = {
     valuesList: {}
 }
 
-export interface IListBaseSettingModal extends ISettingsModal<Options> { }
+export interface IListBaseSettingModal extends ISettingsModal<Options> {
+    createSettingContainer(): void
+}
 
 export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>>): Constructor<IListBaseSettingModal> {
     return class SettingsModal extends Base {
         private valuesPromptComponents: TextComponent[] = []
+
         createSettingContainer() {
             const container = this.optionsContainer
             const sourceTypeContainer = container.createDiv({ cls: "field-container" });
@@ -59,7 +65,7 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
             const sourceType = new DropdownComponent(sourceTypeContainer);
 
             Object.keys(SourceType).forEach((option: keyof typeof SourceType) => sourceType.addOption(option, SourceTypeDisplay[option]))
-            sourceType.setValue(this.field.options.sourceType || SourceType.ValuesList)
+            sourceType.setValue(this.field.options.sourceType)
 
             const valuesListNotePathContainer = this.createListNotePathContainer(container);
             const presetValuesFieldsContainer = this.createValuesListContainer(container);
@@ -76,6 +82,42 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
                 this.displaySelectedTypeContainer(valuesContainers, value)
             })
             this.displaySelectedTypeContainer(valuesContainers, this.field.options.sourceType)
+        }
+
+        validateOptions(): boolean {
+            let error = false;
+            let prevComponent: TextComponent
+            const vPC = this.valuesPromptComponents
+            vPC.forEach((input, i) => {
+                if (vPC.length > 1) {
+                    if (i === 0) {
+                        prevComponent = vPC[vPC.length - 1]
+                    }
+                    if (prevComponent.inputEl.value === input.inputEl.value) {
+                        setValidationError(
+                            input,
+                            "Two adjacent values can't be equal"
+                        );
+                        error = true;
+                    }
+                    prevComponent = input
+                }
+                if (/[,]/gu.test(input.inputEl.value) && input.inputEl.parentElement?.lastElementChild) {
+                    setValidationError(
+                        input,
+                        "Values cannot contain a comma"
+                    );
+                    error = true;
+                };
+                if (input.inputEl.value == "" && input.inputEl.parentElement?.lastElementChild) {
+                    setValidationError(
+                        input,
+                        "Values can't be null."
+                    );
+                    error = true;
+                };
+            });
+            return !error
         }
 
         private createListNotePathContainer(container: HTMLDivElement): HTMLDivElement {
@@ -215,10 +257,11 @@ export interface Modal<T extends Target> extends IBaseValueModal<T> {
 }
 
 export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<Modal<Target>> {
-    return class ValueModal extends SuggestModal<string> {
+    const base = basicSuggestModal<string, Options>(managedField, plugin)
+    return class ValueModal extends base {
         public managedField: IFieldManager<Target, Options>
         public addButton: ButtonComponent;
-        public previousModal?: BaseValueModal<Target>
+        public previousModal?: BaseValueModal<Target, BaseOptions>
         public saved: boolean
         constructor(...rest: any[]) {
             super(plugin.app)
@@ -238,52 +281,15 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             super.close()
         }
 
-        public getOptionsList(): string[] {
-            const options = this.managedField.options
-            let values: string[] = [];
-            if (Array.isArray(options)) {
-                values = options;
-            } else if (options.sourceType) {
-                values = Object.values(options);
-            } else {
-                switch (options.sourceType) {
-                    case "ValuesList":
-                        values = Object.values(options.valuesList || {});
-                        break;
-                    case "ValuesListNotePath":
-                        values = plugin.fieldIndex.valuesListNotePathValues
-                            .get(this.managedField.options.valuesListNotePath) || [];
-                        break;
-                    case "ValuesFromDVQuery":
-                        {
-                            const dvApi = plugin.app.plugins.plugins.dataview?.api
-                            if (dvApi) {
-                                //TODO validate this is still working after adding fallback empty object
-                                //values = new Function("dv", "current", `return ${this.field.options.valuesFromDVQuery}`)(dvApi, dvFile)
-                                const dvFile = isSingleTargeted(this.managedField) ? dvApi.page(this.managedField.target.path) : {}
-                                values = new Function("dv", "current", `return ${this.managedField.options.valuesFromDVQuery}`)(dvApi, dvFile || {})
-                            } else {
-                                values = []
-                            }
-                        }
-                        break;
-                    default:
-                        values = [];
-                        break;
-                }
-            }
-            return values;
-        }
         getSuggestions(query: string): string[] | Promise<string[]> {
-            return this.getOptionsList().filter(o => o.toLowerCase().includes(query.toLowerCase()))
+            return getOptionsList(this.managedField).filter(o => o.toLowerCase().includes(query.toLowerCase()))
         }
         renderSuggestion(value: string, el: HTMLElement) {
             el.setText(value)
             el.addClass("value-container")
         }
         onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
-            this.managedField.value = item
-            managedField.save()
+            managedField.save(item)
         }
 
         async onAdd(): Promise<void> {
@@ -354,8 +360,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         buildConfirm(footerActionsContainer: HTMLDivElement) { }
 
         async clearValues() {
-            this.managedField.value = ""
-            this.managedField.save()
+            this.managedField.save("")
         }
     }
 }
@@ -367,3 +372,69 @@ export function displayValue(managedField: IFieldManager<Target, Options>, conta
         return baseDisplayValue(managedField, container, onClicked)
     }
 }
+
+export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
+    const iconName = getIcon(mapFieldType(field.type));
+    const action = async () => {
+        const eF = await getExistingFieldForIndexedPath(plugin, file, indexedPath)
+        fieldValueManager(plugin, field.id, field.fileClassName, file, eF, indexedPath)?.openModal()
+    };
+    if (isSuggest(location)) {
+        location.options.push({
+            id: `update_${field.name}`,
+            actionLabel: `<span>Update <b>${field.name}</b></span>`,
+            action: action,
+            icon: iconName
+        });
+    } else if (isFieldActions(location)) {
+        location.addOption(iconName, action, `Update ${field.name}'s value`);
+    }
+}
+
+export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
+    return managedField.options.template || ""
+}
+
+export function validateValue(managedField: IFieldManager<Target, Options>): boolean {
+    console.error("Not implemented")
+    return false
+}
+
+//#region utils
+export function getOptionsList(managedField: IFieldManager<Target, Options>): string[] {
+    const options = managedField.options
+    let values: string[] = [];
+    if (Array.isArray(options)) {
+        values = options;
+    } else if (!options.sourceType) {
+        values = Object.values(options);
+    } else {
+        switch (options.sourceType) {
+            case "ValuesList":
+                values = Object.values(options.valuesList || {});
+                break;
+            case "ValuesListNotePath":
+                values = managedField.plugin.fieldIndex.valuesListNotePathValues
+                    .get(managedField.options.valuesListNotePath) || [];
+                break;
+            case "ValuesFromDVQuery":
+                {
+                    const dvApi = managedField.plugin.app.plugins.plugins.dataview?.api
+                    if (dvApi) {
+                        //TODO validate this is still working after adding fallback empty object
+                        //values = new Function("dv", "current", `return ${this.field.options.valuesFromDVQuery}`)(dvApi, dvFile)
+                        const dvFile = isSingleTargeted(managedField) ? dvApi.page(managedField.target.path) : {}
+                        values = new Function("dv", "current", `return ${managedField.options.valuesFromDVQuery}`)(dvApi, dvFile || {})
+                    } else {
+                        values = []
+                    }
+                }
+                break;
+            default:
+                values = [];
+                break;
+        }
+    }
+    return values;
+}
+//#endregion

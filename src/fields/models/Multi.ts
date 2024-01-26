@@ -2,8 +2,8 @@
 import MetadataMenu from "main";
 import * as AbstractList from "./abstractModels/AbstractList"
 import { ISettingsModal } from "../base/BaseSetting";
-import { IFieldManager, Target, isSingleTargeted, replaceValues } from "../Field";
-import { FieldType, getFieldModal } from "../Fields";
+import { ActionLocation, IFieldManager, LegacyField, Target, isSingleTargeted } from "../Field";
+import { getFieldModal } from "../Fields";
 import { ButtonComponent, TFile, setIcon } from "obsidian";
 import { getLink } from "src/utils/parser";
 import { IFieldBase } from "../base/BaseField";
@@ -69,7 +69,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             this.preSelectedOptions?.forEach(item => { if (!this.selectedOptions.includes(item)) { this.selectedOptions.push(item) } })
             this.containerEl.onkeydown = async (e) => {
                 if (e.key == "Enter" && e.altKey) {
-                    await this.replaceValues();
+                    await this.save();
                     this.close()
                 }
             }
@@ -83,10 +83,9 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             this.close()
         }
 
-        async replaceValues() {
+        async save() {
             const options = this.selectedOptions;
-            managedField.value = options.join(", ")
-            managedField.save()
+            managedField.save(options.join(", "))
             this.close();
         }
 
@@ -137,7 +136,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             const confirmButton = new ButtonComponent(footerActionsContainer)
             confirmButton.setIcon("checkmark")
             confirmButton.onClick(async () => {
-                await this.replaceValues();
+                await this.save();
                 this.close()
             })
         }
@@ -186,7 +185,7 @@ export function createDvField(
         valueRemoveBtn.hide();
         valueRemoveBtn.onclick = async () => {
             const remainingValues = currentValues.filter(cV => cV !== v).join(", ")
-            replaceValues(managedField.plugin, p.file.path, managedField.id, remainingValues);
+            managedField.save(remainingValues)
         }
 
         valueContainer.onmouseover = () => {
@@ -240,4 +239,20 @@ export function createDvField(
         addBtn.show();
     }
 
+}
+
+export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
+    return AbstractList.actions(plugin, field, file, location, indexedPath)
+}
+
+export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
+    return AbstractList.getOptionsStr(managedField)
+}
+
+export function validateValue(managedField: IFieldManager<Target, Options>): boolean {
+    if (Array.isArray(managedField.value)) {
+        return managedField.value.every(v => AbstractList.getOptionsList(managedField).includes(v))
+    } else {
+        return AbstractList.getOptionsList(managedField).includes(managedField.value)
+    }
 }

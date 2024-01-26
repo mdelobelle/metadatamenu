@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { Column, ViewConfiguration } from "./tableViewFieldSet"
 import { FileClass } from "../../fileClass";
 import { fieldStates } from "./OptionsMultiSelectModal";
-import { FieldType } from "src/types/fieldTypes";
+import { FieldType, migratedFieldTypes } from "src/types/fieldTypes";
 import { FileClassTableView } from "../fileClassTableView";
 import { FileClassCodeBlockView } from "../fileClassCodeBlockView";
 import { MarkdownPostProcessorContext, TFile, setIcon } from "obsidian";
@@ -18,6 +18,7 @@ export class FileClassDataviewTable {
     public plugin: MetadataMenu
     public count: number;
     public columnsFileClassField: Record<string, { fileClassName: string, fieldName: string }> = {}
+    public observers: MutationObserver[] = []
 
     constructor(
         public viewConfiguration: ViewConfiguration,
@@ -141,7 +142,7 @@ export class FileClassDataviewTable {
             const field = this.plugin.fieldIndex.fileClassesFields.get(fileClassName)?.find(f => f.isRoot() && f.name === fieldName)
             const files = selectedFiles.map(sF => this.plugin.app.vault.getAbstractFileByPath(sF)).filter(f => f instanceof TFile) as TFile[]
 
-            if (field && [FieldType.MultiMedia, FieldType.Media, FieldType.MultiFile, FieldType.File, FieldType.Input, FieldType.Select, FieldType.Multi].includes(field.type)) {
+            if (field && migratedFieldTypes.includes(field.type)) {
                 const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, files, undefined)
                 fieldVM?.openModal()
             }
@@ -159,7 +160,7 @@ export class FileClassDataviewTable {
 
             if (cell.tagName === "TH") checkBox.addClass("page-checkbox")
             else filesCheckboxes.push(checkBox)
-
+            //FIXME when updating pagination, the checkbox are duplicated
             checkBox.onclick = (e) => {
                 e.stopPropagation();
                 checkBox.toggleAttribute("checked")
@@ -245,6 +246,7 @@ export class FileClassDataviewTable {
             }
         };
         const observer = new MutationObserver(mutationList => callback(mutationList, this));
+        this.observers.push(observer)
         if (observed) observer.observe(observed, { childList: true, subtree: true });
     }
 

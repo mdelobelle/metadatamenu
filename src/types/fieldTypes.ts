@@ -25,6 +25,25 @@ export enum FieldType {
     "ObjectList" = "ObjectList"
 }
 
+
+export const migratedFieldTypes = [
+    FieldType.Date,
+    FieldType.DateTime,
+    FieldType.Boolean,
+    FieldType.Cycle,
+    FieldType.Date,
+    FieldType.DateTime,
+    FieldType.Time,
+    FieldType.MultiMedia,
+    FieldType.Media,
+    FieldType.MultiFile,
+    FieldType.File,
+    FieldType.Input,
+    FieldType.Select,
+    FieldType.Multi
+]
+
+
 export const FieldTypeLabelMapping: Record<keyof typeof FieldType, FieldType> = {
     "Input": FieldType.Input,
     "Select": FieldType.Select,

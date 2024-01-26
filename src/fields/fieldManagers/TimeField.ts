@@ -14,6 +14,9 @@ import ObjectModal from "src/modals/fields/ObjectModal";
 import ObjectListModal from "src/modals/fields/ObjectListModal";
 import { Note } from "src/note/note";
 import TimeModal from "src/modals/fields/TimeModal";
+import { fieldValueManager } from "../Field";
+import { getActions, mapFieldType } from "../Fields";
+
 export default class TimeField extends FieldManager {
 
     public defaultTimeFormat: string = "HH:mm"
@@ -25,43 +28,48 @@ export default class TimeField extends FieldManager {
     }
 
     public async buildAndOpenModal(file: TFile, indexedPath?: string): Promise<void> {
+
+        // const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
+        // const modal = new TimeModal(this.plugin, file, this.field, eF, indexedPath);
+        // modal.titleEl.setText(`Change time for <${this.field.name}>`);
+        // modal.open()
+
         const eF = await Note.getExistingFieldForIndexedPath(this.plugin, file, indexedPath)
-        const modal = new TimeModal(this.plugin, file, this.field, eF, indexedPath);
-        modal.titleEl.setText(`Change time for <${this.field.name}>`);
-        modal.open()
+        fieldValueManager(this.plugin, this.field.id, this.field.fileClassName, file, eF, indexedPath)?.openModal()
     }
 
     public addFieldOption(file: TFile, location: Menu | FieldCommandSuggestModal | FieldOptions, indexedPath?: string): void {
-        const name = this.field.name
-        const timeIconName = FieldIcon[this.field.type];
-        const timeModalAction = async () => await this.buildAndOpenModal(file, indexedPath);
-        const shiftTimeAction = async () => await this.shiftTime(file, indexedPath);
-        const clearTimeAction = async () => await this.clearTime(file, indexedPath)
-        if (TimeField.isSuggest(location)) {
-            location.options.push({
-                id: `update_${name}`,
-                actionLabel: `<span>Update <b>${name}</b></span>`,
-                action: timeModalAction,
-                icon: timeIconName
-            })
-            if (this.field.options.timeShiftInterval || this.field.options.nextShiftIntervalField) {
-                location.options.push({
-                    id: `update_${name}`,
-                    actionLabel: `<span>Shift <b>${name}</b> ahead</span>`,
-                    action: shiftTimeAction,
-                    icon: "skip-forward"
-                })
-            }
-            location.options.push({
-                id: `clear_${name}`,
-                actionLabel: `<span>Clear <b>${name}</b></span>`,
-                action: clearTimeAction,
-                icon: "eraser"
-            })
-        } else if (TimeField.isFieldOptions(location)) {
-            location.addOption("skip-forward", shiftTimeAction, `Shift ${name} ahead`);
-            location.addOption(timeIconName, timeModalAction, `Set ${name}'s time`);
-        };
+        return getActions(mapFieldType(this.field.type))(this.plugin, this.field, file, location, indexedPath)
+        // const name = this.field.name
+        // const timeIconName = FieldIcon[this.field.type];
+        // const timeModalAction = async () => await this.buildAndOpenModal(file, indexedPath);
+        // const shiftTimeAction = async () => await this.shiftTime(file, indexedPath);
+        // const clearTimeAction = async () => await this.clearTime(file, indexedPath)
+        // if (TimeField.isSuggest(location)) {
+        //     location.options.push({
+        //         id: `update_${name}`,
+        //         actionLabel: `<span>Update <b>${name}</b></span>`,
+        //         action: timeModalAction,
+        //         icon: timeIconName
+        //     })
+        //     if (this.field.options.timeShiftInterval || this.field.options.nextShiftIntervalField) {
+        //         location.options.push({
+        //             id: `update_${name}`,
+        //             actionLabel: `<span>Shift <b>${name}</b> ahead</span>`,
+        //             action: shiftTimeAction,
+        //             icon: "skip-forward"
+        //         })
+        //     }
+        //     location.options.push({
+        //         id: `clear_${name}`,
+        //         actionLabel: `<span>Clear <b>${name}</b></span>`,
+        //         action: clearTimeAction,
+        //         icon: "eraser"
+        //     })
+        // } else if (TimeField.isFieldOptions(location)) {
+        //     location.addOption("skip-forward", shiftTimeAction, `Shift ${name} ahead`);
+        //     location.addOption(timeIconName, timeModalAction, `Set ${name}'s time`);
+        // };
     }
 
     public createAndOpenFieldModal(

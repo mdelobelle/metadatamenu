@@ -61,7 +61,7 @@ export class BaseMediaFileModal extends FuzzySuggestModal<TFile> {
         return item.basename;
     }
 
-    async replaceValues() {
+    async save() {
         const result = this.selectedFiles.map(file => {
             const alias = extensionMediaTypes[file.extension] === MediaType.Image ? this.field.options.thumbnailSize : undefined
             return MediaField.buildLink(this.plugin, this.file, file.path, alias)

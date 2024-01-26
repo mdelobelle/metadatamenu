@@ -14,10 +14,10 @@ export const inSentenceRegexPar = new RegExp(`\\(${genericFieldRegex}::\\s*(?<va
 
 export const LinkRegex = new RegExp(`\\[\\[(?<target>[^\\|]*)(\\|)?(?<alias>.*)?\\]\\]`)
 
-export const getLink = (linkText: string, source: TFile): { path: string, alias?: string } | undefined => {
+export const getLink = (linkText: string, source?: TFile): { path: string, alias?: string } | undefined => {
     const fR = `${linkText}`?.match(LinkRegex);
     if (fR?.groups?.target) {
-        const path = app.metadataCache.getFirstLinkpathDest(fR?.groups?.target, source.path)?.path
+        const path = app.metadataCache.getFirstLinkpathDest(fR?.groups?.target, source?.path || fR?.groups?.target)?.path
         if (path) {
             return {
                 path: path,

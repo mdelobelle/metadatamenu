@@ -3,7 +3,7 @@ import MetadataMenu from "main"
 import { Constructor } from "src/typings/types"
 import { IFieldBase } from "src/fields/base/BaseField"
 import { ISettingsModal } from "src/fields/base/BaseSetting"
-import { IFieldManager, Target, isSingleTargeted } from "src/fields/Field"
+import { ActionLocation, IFieldManager, LegacyField, Target, isSingleTargeted } from "src/fields/Field"
 import * as AbstractMedia from "src/fields/models/abstractModels/AbstractMedia"
 import { getLink } from "src/utils/parser"
 import { MediaType, extensionMediaTypes } from "src/fields/models/abstractModels/AbstractMedia"
@@ -46,8 +46,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             const alias = extensionMediaTypes[item.extension] === MediaType.Image ? managedField.options.thumbnailSize : undefined
             const baseValue = AbstractMedia.buildMediaLink(plugin, item, item.path, embed ? alias : undefined)
             const value = managedField.options.embed ? baseValue : baseValue.replace(/^\!/, "")
-            managedField.value = value
-            managedField.save()
+            managedField.save(value)
             this.previousModal?.open()
         }
     }
@@ -65,4 +64,24 @@ export function createDvField(
 
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any): void {
     return AbstractMedia.displayValue(managedField, container, onClicked)
+}
+
+export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
+    return AbstractMedia.getOptionsStr(managedField)
+}
+
+export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
+    return AbstractMedia.actions(plugin, field, file, location, indexedPath)
+}
+
+export function validateValue(managedField: IFieldManager<Target, Options>): boolean {
+    if (Array.isArray(managedField.value) && managedField.value.length == 1) {
+        return AbstractMedia.getFiles(managedField).map(f => f.path).includes(managedField.value[0].path)
+    } else if (typeof managedField.value === "string") {
+        return AbstractMedia.getFiles(managedField).map(f => f.path).includes(managedField.value)
+    } else if (managedField.value.hasOwnProperty('path')) {
+        return AbstractMedia.getFiles(managedField).map(f => f.path).includes(managedField.value.path)
+    } else {
+        return false
+    }
 }
