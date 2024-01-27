@@ -1,5 +1,4 @@
 import MetadataMenu from "main";
-import { migratedFieldTypes } from "src/types/fieldTypes";
 import chooseSectionModal from "src/modals/chooseSectionModal";
 import { setIcon, TFile } from "obsidian";
 import { buildField, FieldValueManager, fieldValueManager } from "src/fields/Field";
@@ -52,14 +51,9 @@ function createDvField(
         return
     }
     if (field?.type) {
-        if (migratedFieldTypes.includes(field.type)) {
-            const target = plugin.app.vault.getAbstractFileByPath(p.file.path) as TFile
-            const fieldVM = fieldValueManager(plugin, field.id, field.fileClassName, target, undefined)
-            _createDvField(fieldVM, dv, p, fieldContainer)
-        } else {
-            console.error("Not implemented")
-
-        }
+        const target = plugin.app.vault.getAbstractFileByPath(p.file.path) as TFile
+        const fieldVM = fieldValueManager(plugin, field.id, field.fileClassName, target, undefined)
+        _createDvField(fieldVM, dv, p, fieldContainer)
     } else {
         const field = buildField(plugin, fieldName, "", "", undefined, undefined, undefined, undefined, "Input", {});
         const file = plugin.app.vault.getAbstractFileByPath(p.file.path)

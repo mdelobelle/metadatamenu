@@ -94,30 +94,6 @@ export abstract class FieldManager {
         return (location as FieldOptions).addOption !== undefined;
     }
 
-    // public static createAndOpenModal(
-    //     plugin: MetadataMenu,
-    //     file: TFile,
-    //     fieldName: string,
-    //     field: Field | undefined,
-    //     eF?: ExistingField,
-    //     indexedPath?: string,
-    //     lineNumber?: number,
-    //     asList?: boolean,
-    //     asBlockquote?: boolean
-    // ): void {
-    //     if (field) {
-    //         fieldValueManager(plugin, field.id, field.fileClassName, file, undefined, undefined, lineNumber, asList, asBlockquote)?.openModal()
-
-    //         //const fieldManager = new FM[field.type](plugin, field);
-    //         // fieldManager.createAndOpenFieldModal(file, fieldName, eF, indexedPath, lineNumber, asList, asBlockquote);
-
-    //     } else {
-    //         const fieldManager = FieldManager.createDefault(plugin, fieldName!);
-    //         fieldManager.createAndOpenFieldModal(file, fieldName!, eF, indexedPath, lineNumber, asList, asBlockquote);
-    //     }
-    // }
-
-
     public static openFieldModal(
         plugin: MetadataMenu,
         file: TFile,
@@ -133,11 +109,6 @@ export abstract class FieldManager {
             const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
             if (field) {
                 fieldValueManager(plugin, field.id, field.fileClassName, file, undefined, undefined, lineNumber, asList, asBlockquote)?.openModal()
-                // if ([FieldType.Media, FieldType.MultiMedia, FieldType.MultiFile, FieldType.File, FieldType.Input, FieldType.Multi, FieldType.Select].includes(field.type)) {
-                //     fieldValueManager(plugin, field.id, field.fileClassName, file, undefined, undefined, lineNumber, asList, asBlockquote)?.openModal()
-                // } else {
-                //     this.createAndOpenModal(plugin, file, fieldName, field, undefined, undefined, lineNumber, asList, asBlockquote)
-                // }
             }
         }
     }

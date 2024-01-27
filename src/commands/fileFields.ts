@@ -2,9 +2,8 @@ import MetadataMenu from "main";
 import { TFile } from "obsidian"
 import { ExistingField } from "src/fields/ExistingField";
 import { fieldValueManager } from "src/fields/Field";
-import { validateValue } from "src/fields/Fields";
+import { FieldType, validateValue } from "src/fields/Fields";
 import { Note } from "src/note/note";
-import { FieldType } from "src/types/fieldTypes";
 
 
 export interface IFieldInfo {
