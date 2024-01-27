@@ -47,7 +47,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             const baseValue = AbstractMedia.buildMediaLink(plugin, item, item.path, embed ? alias : undefined)
             const value = managedField.options.embed ? baseValue : baseValue.replace(/^\!/, "")
             managedField.save(value)
-            this.previousModal?.open()
+            this.managedField.previousModal?.open()
         }
     }
 }

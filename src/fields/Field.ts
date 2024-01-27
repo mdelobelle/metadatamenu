@@ -527,7 +527,7 @@ export interface IFieldManager<T, O extends BaseOptions> extends IField<O> {
     asBlockquote?: boolean,
     previousModal?: IObjectBaseModal<Target>
     openModal: () => void;
-    save: (value?: any) => void
+    save: (value?: any) => Promise<void>
 }
 
 export type Target =
@@ -555,7 +555,7 @@ export function isFieldActions(location: Menu | "InsertFieldCommand" | FCSM | Fi
     return (location as FieldActions).addOption !== undefined;
 }
 
-function FieldValueManager<O extends BaseOptions, F extends Constructor<IField<O>>>(
+export function FieldValueManager<O extends BaseOptions, F extends Constructor<IField<O>>>(
     plugin: MetadataMenu,
     Base: F,
     target: Target,
@@ -596,13 +596,14 @@ function FieldValueManager<O extends BaseOptions, F extends Constructor<IField<O
             return this._modal
         }
 
-        public save(value?: any) {
+        public async save(value?: any) {
             if (value !== undefined) this.value = value
             if (isSingleTargeted(this)) {
-                postValues(plugin, [{ indexedPath: this.indexedPath || this.id, payload: { value: this.value } }], this.target, this.lineNumber, this.asList, this.asBlockquote)
+                await postValues(plugin, [{ indexedPath: this.indexedPath || this.id, payload: { value: this.value } }], this.target, this.lineNumber, this.asList, this.asBlockquote)
             } else if (isMultiTargeted(this)) {
                 new MultiTargetModificationConfirmModal(this).open()
             }
+            if (this.previousModal) this.previousModal.open()
         }
     }
 }

@@ -17,7 +17,6 @@ import { BaseOptions } from "./BaseField";
 
 export interface IBaseValueModal<Target> extends Modal {
     managedField: IFieldManager<Target, BaseOptions>
-    previousModal?: IObjectBasedModal<Target>
     saved: boolean
     goToPreviousModal: () => void | Promise<void>
     buildSimpleSaveBtn: (fieldContainer: HTMLDivElement) => void
@@ -33,7 +32,6 @@ export type ModalType =
 
 export class BaseValueModal<T extends Target, O extends BaseOptions> extends Modal implements IBaseValueModal<T> {
     public managedField: IFieldManager<T, O>
-    public previousModal?: IObjectBasedModal<T>
     public saved: boolean = false
     onOpen(): void {
         this.containerEl.onkeydown = (e) => {
@@ -49,8 +47,8 @@ export class BaseValueModal<T extends Target, O extends BaseOptions> extends Mod
     }
 
     public async goToPreviousModal() {
-        const pM = this.previousModal
-
+        const pM = this.managedField.previousModal
+        console.log("ICI")
         if (pM && this.managedField.indexedPath && isSingleTargeted(pM.managedField)) {
             const upperPath = upperIndexedPathObjectPath(this.managedField.indexedPath)
             const { index: upperFieldIndex } = getIdAndIndex(upperPath.split("____").last())
@@ -96,7 +94,7 @@ export class BaseValueModal<T extends Target, O extends BaseOptions> extends Mod
     }
 
     async onClose() {
-        if (!this.saved) this.previousModal?.open()
+        if (!this.saved) this.managedField.previousModal?.open()
         this.saved = false
     }
 
@@ -116,7 +114,6 @@ export function basicModal<O extends BaseOptions>(managedField: IFieldManager<Ta
 
 export interface IBasicSuggestModal<U, T extends Target> extends SuggestModal<U> {
     managedField: IFieldManager<Target, BaseOptions>
-    previousModal?: IObjectBasedModal<Target>
     saved: boolean
     goToPreviousModal: () => void | Promise<void>
     buildSimpleSaveBtn: (fieldContainer: HTMLDivElement) => void
@@ -135,7 +132,6 @@ export function basicSuggestModal<U, O extends BaseOptions>(managedField: IField
         }
         public saved: boolean
         public managedField: IFieldManager<Target, O>
-        public previousModal: BaseValueModal<Target, O> | undefined
         constructor(...rest: any[]) {
             super(plugin.app)
             this.managedField = managedField
@@ -149,7 +145,6 @@ export function basicSuggestModal<U, O extends BaseOptions>(managedField: IField
 
 export interface IBasicFuzzySuggestModal<U, T extends Target> extends FuzzySuggestModal<U> {
     managedField: IFieldManager<Target, BaseOptions>
-    previousModal?: IObjectBasedModal<Target>
     saved: boolean
     goToPreviousModal: () => void | Promise<void>
     buildSimpleSaveBtn: (fieldContainer: HTMLDivElement) => void
@@ -168,7 +163,6 @@ export function basicFuzzySuggestModal<U, O extends BaseOptions>(managedField: I
         }
         public saved: boolean
         public managedField: IFieldManager<Target, O>
-        public previousModal: BaseValueModal<Target, O> | undefined
         constructor(...rest: any[]) {
             super(plugin.app)
             this.managedField = managedField

@@ -261,7 +261,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
     return class ValueModal extends base {
         public managedField: IFieldManager<Target, Options>
         public addButton: ButtonComponent;
-        public previousModal?: BaseValueModal<Target, BaseOptions>
         public saved: boolean
         constructor(...rest: any[]) {
             super(plugin.app)
@@ -277,7 +276,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
 
         public close(openPreviousModal: boolean = true): void {
-            if (openPreviousModal) this.previousModal?.open()
+            if (openPreviousModal) this.managedField.previousModal?.open()
             super.close()
         }
 

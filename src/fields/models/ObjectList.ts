@@ -3,13 +3,14 @@ import { IFieldBase, BaseOptions } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
 import * as AbstractObject from "./abstractModels/AbstractObject"
 import { ButtonComponent, TFile, TextAreaComponent, setIcon } from "obsidian"
-import { ActionLocation, IFieldManager, LegacyField, Target, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest, removeValidationError } from "../Field"
+import { ActionLocation, FieldValueManager, IFieldManager, LegacyField, Target, buildField, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest, removeValidationError } from "../Field"
 import { ExistingField } from "../ExistingField"
 import NoteFieldsComponent from "src/components/FieldsModal"
 import MetadataMenu from "main"
 import { getIcon, mapFieldType, objectTypes } from "../Fields"
 import { Note } from "src/note/note"
 import { postValues } from "src/commands/postValues"
+import { getPseudoObjectValueManagerFromObjectItem } from "./Object"
 
 export class Base implements IFieldBase {
     tooltip: "Accepts a list of object fields"
@@ -144,23 +145,19 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             const reOpen = async () => {
                 const eF = await Note.getExistingFieldForIndexedPath(mF.plugin, mF.target, mF.indexedPath)
                 if (eF) {
-                    fieldValueManager(mF.plugin, mF.id, mF.fileClassName, mF.target, eF, mF.indexedPath, undefined, undefined, undefined, this.previousModal)?.openModal()
-                    // const thisFieldManager = new FieldManager[eF.field.type](this.plugin, eF.field)
-                    // thisFieldManager.createAndOpenFieldModal(this.file, eF.field.name, eF, eF.indexedPath, undefined, undefined, undefined, this.previousModal)
+                    fieldValueManager(mF.plugin, mF.id, mF.fileClassName, mF.target, eF, mF.indexedPath, undefined, undefined, undefined, this.managedField.previousModal)?.openModal()
                 }
             }
             if (this.toRemove) {
+                //OK
                 const note = await Note.buildNote(mF.plugin, mF.target)
                 if (item.indexedPath) {
                     await note.removeObject(item.indexedPath)
                     await reOpen()
                 }
             } else {
-                //list item 
-                fieldValueManager(mF.plugin, mF.id, mF.fileClassName, mF.target, undefined, item.indexedPath, undefined, undefined, undefined, this)?.openModal()
-                // const objectModal = new ObjectModal(this.plugin, this.file, undefined, item.indexedPath,
-                //     undefined, undefined, undefined, this)
-                // objectModal.open()
+                const itemFVM = getPseudoObjectValueManagerFromObjectItem(mF, item, this)
+                itemFVM.openModal()
             }
         }
 

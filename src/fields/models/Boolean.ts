@@ -77,6 +77,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
 
         public async save(): Promise<void> {
             this.managedField.save()
+            //FIXME doesn't close
             this.close()
         }
     }

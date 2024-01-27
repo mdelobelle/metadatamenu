@@ -31,7 +31,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             super()
             this.initValues()
             this.build()
-            console.log(validateValue(this.managedField))
         }
 
         initValues() {

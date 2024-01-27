@@ -119,7 +119,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         public async onAdd() { }
 
         public onEscape() {
-            this.previousModal?.open()
+            this.managedField.previousModal?.open()
             this.close()
         }
 

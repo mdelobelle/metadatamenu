@@ -208,7 +208,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         public selectedFiles: TFile[] = []
         public managedField: IFieldManager<Target, Options>
         public addButton: ButtonComponent;
-        public previousModal?: BaseValueModal<Target, BaseOptions>
         public saved: boolean
         constructor(...rest: any[]) {
             super(plugin.app)
@@ -247,7 +246,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
 
         onClose(): void {
-            this.previousModal?.open()
+            this.managedField.previousModal?.open()
         }
 
         renderSuggestion(value: FuzzyMatch<TFile>, el: HTMLElement) {

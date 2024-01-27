@@ -115,7 +115,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
     return class ValueModal extends base {
         public managedField: IFieldManager<Target, Options>
         public addButton: ButtonComponent;
-        public previousModal?: BaseValueModal<Target, BaseOptions>
         public saved: boolean
         constructor(...rest: any[]) {
             super(plugin.app)
@@ -150,7 +149,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             throw new Error("Method not implemented.")
         }
         onClose(): void {
-            this.previousModal?.open()
+            this.managedField.previousModal?.open()
         }
     }
 }

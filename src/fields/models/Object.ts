@@ -2,7 +2,7 @@ import { ButtonComponent, DropdownComponent, Menu, Notice, TFile, TextAreaCompon
 import { IFieldBase, BaseOptions } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
 import { getIcon, mapFieldType, displayValue as getDisplayValue, TypesOptionsMap, objectTypes } from "../Fields"
-import { IFieldManager, Target, isSingleTargeted, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, LegacyField, ActionLocation } from "../Field"
+import { IFieldManager, Target, isSingleTargeted, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, LegacyField, ActionLocation, buildField, FieldValueManager } from "../Field"
 import MetadataMenu from "main"
 import { IBasicModal, IBasicSuggestModal, basicModal } from "../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
@@ -16,6 +16,7 @@ import * as AbstractObject from "./abstractModels/AbstractObject"
 import GField from "src/fields/_Field"
 import { getNextOption } from "./Cycle"
 import { postValues } from "src/commands/postValues"
+import { ObjectListItem, Options as ObjectListOptions, Modal as ObjectListModal } from "./ObjectList"
 
 export class Base implements IFieldBase {
     type = <const>"Object"
@@ -75,8 +76,8 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             if (item instanceof ExistingField) {
                 container.createDiv({ text: `${item.field.name} :`, cls: "label-container" })
                 const valueContainer = container.createDiv()
-                const fieldVM = fieldValueManager(this.managedField.plugin, item.field.id, item.field.fileClassName, item.file, item, item.indexedPath, item.lineNumber)
-                fieldVM?.value ? getDisplayValue(mapFieldType(item.field.type))(fieldVM, valueContainer,) : valueContainer.setText("<empty>")
+                const fieldVM = fieldValueManager(this.managedField.plugin, item.field.id, item.field.fileClassName, item.file, item, item.indexedPath, item.lineNumber);
+                (fieldVM && fieldVM?.value !== "") ? getDisplayValue(mapFieldType(item.field.type))(fieldVM, valueContainer,) : valueContainer.setText("<empty>")
             } else {
                 container.createDiv({ text: `${item.name} :`, cls: "label-container" })
                 container.createDiv({ text: "<missing>" })
@@ -99,20 +100,24 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             }
             if (item instanceof ExistingField) {
                 // child field exists: go to child field
+                const cF = item.field // child field
+                const cFVM = fieldValueManager(mF.plugin, cF.id, cF.fileClassName, mF.target, item, item.indexedPath, undefined, undefined, undefined, this)
+                if (!cFVM) return
                 switch (item.field.type) {
                     case "Boolean":
-                        this.managedField.save(!this.managedField.value)
+                        //OK
+                        await cFVM?.save(`${!cFVM.value}`)
                         await reOpen()
                         break;
                     case "Cycle":
-                        const nextOptions = getNextOption(this.managedField as IFieldManager<TFile, TypesOptionsMap["Cycle"]>)
-                        this.managedField.save(nextOptions)
+                        //TODO tester
+                        const nextOptions = getNextOption(cFVM as IFieldManager<TFile, TypesOptionsMap["Cycle"]>)
+                        await cFVM.save(`${nextOptions}`)
                         await reOpen()
                         break;
                     default:
-                        const cF = item.field // child field
-                        fieldValueManager(mF.plugin, cF.id, cF.fileClassName, mF.target, item, item.indexedPath, undefined, undefined, undefined, this)?.openModal()
-                        // fieldManager.createAndOpenFieldModal(this.file, field.name, item, item.indexedPath, undefined, undefined, undefined, this)
+                        //OK
+                        cFVM.openModal()
                         break;
                 }
             } else {
@@ -128,7 +133,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                     // const fieldManager = new FieldManager[item.type](this.plugin, item) as F
                     // fieldManager.createAndOpenFieldModal(this.file, item.name, undefined, `${this.indexedPath}____${item.id}`, this.lineNumber, this.asList, this.asBlockquote, this)
                 } else {
-                    fieldValueManager(mF.plugin, item.id, item.fileClassName, mF.target, undefined, `${mF.indexedPath}____${item.id}`, undefined, undefined, undefined, this)
+                    fieldValueManager(mF.plugin, item.id, item.fileClassName, mF.target, undefined, `${mF.indexedPath}____${item.id}`, undefined, undefined, undefined, this)?.openModal()
                     // const fieldManager = new FieldManager[item.type](this.plugin, item) as F
                     // fieldManager.createAndOpenFieldModal(this.file, item.name, undefined, `${this.indexedPath}____${item.id}`, this.lineNumber, this.asList, this.asBlockquote, this)
                 }
@@ -262,6 +267,13 @@ export function getObjectDescription(managedField: IFieldManager<Target, Options
         }
         return template
     }
+}
+
+export function getPseudoObjectValueManagerFromObjectItem(managedField: IFieldManager<Target, ObjectListOptions>, item: ObjectListItem, previousModal: ObjectListModal<Target>) {
+    const mF = managedField
+    const field = buildField(mF.plugin, "", "", mF.path, mF.fileClassName, undefined, undefined, undefined, "Object", {})
+    const itemFVM = new (FieldValueManager(mF.plugin, field, mF.target, undefined, item.indexedPath, undefined, undefined, undefined, previousModal))
+    return itemFVM
 }
 
 //#endregion
