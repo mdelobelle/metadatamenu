@@ -2,7 +2,7 @@ import { ButtonComponent, FuzzyMatch, TFile, setIcon } from "obsidian"
 import MetadataMenu from "main"
 import { Constructor } from "src/typings/types"
 import { IFieldBase } from "src/fields/base/BaseField"
-import { ActionLocation, IFieldManager, LegacyField, Target, isSingleTargeted } from "src/fields/Field"
+import { ActionLocation, IField, IFieldManager, LegacyField, Target, isSingleTargeted } from "src/fields/Field"
 import * as AbstractMedia from "src/fields/models/abstractModels/AbstractMedia"
 import { extractLinks, getLink } from "src/utils/parser"
 import { MediaType, extensionMediaTypes } from "src/fields/models/abstractModels/AbstractMedia"
@@ -163,8 +163,8 @@ export function displayValue(managedField: IFieldManager<Target, Options>, conta
     return AbstractMedia.displayValue(managedField, container, onClicked)
 }
 
-export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
-    return AbstractMedia.getOptionsStr(managedField)
+export function getOptionsStr(field: IField<Options>): string {
+    return AbstractMedia.getOptionsStr(field)
 }
 
 export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {

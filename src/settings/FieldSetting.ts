@@ -1,9 +1,10 @@
 import { setIcon, Setting, TFile } from "obsidian";
 import MetadataMenu from "main";
 import Field from "src/fields/_Field";
-import { FieldManager, FieldTypeTagClass } from "src/types/fieldTypes";
-import { FieldManager as F } from "src/fields/FieldManager";
+import { FieldTypeTagClass } from "src/types/fieldTypes";
 import { openSettings } from "src/fields/base/BaseSetting";
+import { getField } from "src/fields/Field";
+import { getOptionStr } from "src/fields/Fields";
 
 export default class FieldSetting extends Setting {
     private fieldNameContainer: HTMLDivElement;
@@ -23,7 +24,8 @@ export default class FieldSetting extends Setting {
     };
 
     public setTextContentWithname(): void {
-        const manager = new FieldManager[this.field.type](this.plugin, this.field) as F;
+        const field = getField(this.field.id, this.field.fileClassName, this.plugin)
+        if (!field) return
         this.infoEl.textContent = "";
         this.infoEl.addClass("setting-item")
         this.fieldNameContainer = this.infoEl.createDiv({ cls: "name" })
@@ -38,7 +40,7 @@ export default class FieldSetting extends Setting {
         this.typeContainer.setAttr("class", `chip ${FieldTypeTagClass[this.field.type]}`)
         this.typeContainer.setText(this.field.type)
         this.fieldOptionsContainer = this.infoEl.createEl("div")
-        this.fieldOptionsContainer.setText(`${manager.getOptionsStr()}`)
+        this.fieldOptionsContainer.setText(`${getOptionStr(field.type)(field)}`)
     };
 
     private addEditButton(): void {

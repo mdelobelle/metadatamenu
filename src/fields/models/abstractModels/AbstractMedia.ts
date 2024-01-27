@@ -1,6 +1,6 @@
 import MetadataMenu from "main"
 import { ButtonComponent, DropdownComponent, FuzzyMatch, FuzzySuggestModal, TFile, TextAreaComponent, TextComponent, ToggleComponent, setIcon } from "obsidian"
-import { ActionLocation, IFieldManager, LegacyField, Target, removeValidationError } from "src/fields/Field"
+import { ActionLocation, IField, IFieldManager, LegacyField, Target, removeValidationError } from "src/fields/Field"
 import { BaseOptions, IFieldBase } from "src/fields/base/BaseField"
 import { BaseValueModal, IBaseValueModal, basicFuzzySuggestModal } from "src/fields/base/BaseModal"
 import { ISettingsModal } from "src/fields/base/BaseSetting"
@@ -311,8 +311,8 @@ export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, l
     return fileActions(plugin, field, file, location, indexedPath)
 }
 
-export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
-    const options = managedField.options
+export function getOptionsStr(field: IField<Options>): string {
+    const options = field.options
     return `${options.display} | ${options.embed} | ${options.size} | ${options.folders.join(", ")}`
 }
 

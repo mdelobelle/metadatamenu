@@ -2,7 +2,7 @@ import { ButtonComponent, DropdownComponent, Menu, Notice, TFile, TextAreaCompon
 import { IFieldBase, BaseOptions } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
 import { getIcon, mapFieldType } from "../Fields"
-import { IFieldManager, Target, isSingleTargeted, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, LegacyField, ActionLocation } from "../Field"
+import { IFieldManager, Target, isSingleTargeted, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, LegacyField, ActionLocation, IField } from "../Field"
 import MetadataMenu from "main"
 import { IBasicModal, basicModal } from "../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
@@ -243,8 +243,8 @@ export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, l
     }
 }
 
-export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
-    return managedField.options.template || ""
+export function getOptionsStr(field: IField<Options>): string {
+    return field.options.template || ""
 }
 
 export function validateValue(managedField: IFieldManager<Target, Options>): boolean {

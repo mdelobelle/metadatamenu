@@ -31,7 +31,7 @@ import { Constructor } from "src/typings/types"
 import { FieldType as LegacyFieldType } from "src/types/fieldTypes"
 import { Menu, TFile } from "obsidian"
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
-import { FieldActions } from "src/components/FieldsModal"
+import NoteFieldsComponent, { FieldActions } from "src/components/FieldsModal"
 
 
 //TODO next Media and Multi Media (similar to file)
@@ -342,7 +342,7 @@ export function displayValue(type: FieldType): displayValueFunction {
     }
 }
 
-export type getActionFunction = (plugin: MetadataMenu, field: LegacyField, file: TFile, location: Menu | FieldCommandSuggestModal | FieldActions, indexedPath?: string) => void
+export type getActionFunction = (plugin: MetadataMenu, field: LegacyField, file: TFile, location: Menu | FieldCommandSuggestModal | FieldActions | "InsertFieldCommand" | "ManageAtCursorCommand", indexedPath?: string, noteFields?: NoteFieldsComponent) => void
 
 export function getActions(type: FieldType): getActionFunction {
     switch (type) {
@@ -405,7 +405,7 @@ export function createDvField<O extends BaseOptions>(
     }
 }
 
-export type getOptionStrFunction = (managedField: IFieldManager<Target, BaseOptions>) => string
+export type getOptionStrFunction = (field: IField<BaseOptions>) => string
 
 export function getOptionStr(type: FieldType): getOptionStrFunction {
     switch (type) {

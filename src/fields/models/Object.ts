@@ -92,10 +92,8 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                 // because vault.on("modify") is not triggered fast enough
                 const eF = await Note.getExistingFieldForIndexedPath(mF.plugin, mF.target as TFile, mF.indexedPath)
                 if (eF) {
-                    fieldValueManager(mF.plugin, mF.id, mF.fileClassName, mF.target, eF, mF.indexedPath, undefined, undefined, undefined, this.previousModal)?.openModal()
+                    fieldValueManager(mF.plugin, mF.id, mF.fileClassName, mF.target, eF, mF.indexedPath, undefined, undefined, undefined, this.managedField.previousModal)?.openModal()
                     this.close()
-                    // const thisFieldManager = new FieldManager[eF.field.type](this.plugin, eF.field)
-                    // thisFieldManager.createAndOpenFieldModal(this.file, eF.field.name, eF, eF.indexedPath, undefined, undefined, undefined, this.previousModal)
                 }
             }
             if (item instanceof ExistingField) {
@@ -130,12 +128,8 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                     await mF.plugin.fieldIndex.indexFields() // FIXME is it necessary ???
                     const cF = await Note.getExistingFieldForIndexedPath(mF.plugin, mF.target as TFile, `${mF.indexedPath}____${item.id}`)
                     fieldValueManager(mF.plugin, item.id, item.fileClassName, mF.target, cF, cF?.indexedPath, undefined, undefined, undefined, this)?.openModal()
-                    // const fieldManager = new FieldManager[item.type](this.plugin, item) as F
-                    // fieldManager.createAndOpenFieldModal(this.file, item.name, undefined, `${this.indexedPath}____${item.id}`, this.lineNumber, this.asList, this.asBlockquote, this)
                 } else {
                     fieldValueManager(mF.plugin, item.id, item.fileClassName, mF.target, undefined, `${mF.indexedPath}____${item.id}`, undefined, undefined, undefined, this)?.openModal()
-                    // const fieldManager = new FieldManager[item.type](this.plugin, item) as F
-                    // fieldManager.createAndOpenFieldModal(this.file, item.name, undefined, `${this.indexedPath}____${item.id}`, this.lineNumber, this.asList, this.asBlockquote, this)
                 }
             }
         }

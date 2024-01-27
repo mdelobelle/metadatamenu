@@ -35,7 +35,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
     return class ValueModal extends base {
 
         public dumpValue(value: any): string {
-            return `${stringify(value, { lineWidth: 50 }) || ""}`
+            return dumpValue(value)
         }
 
         public getExtraExtensions(): Array<LanguageSupport | Extension> {
@@ -124,4 +124,8 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
     } catch (e) {
         return false
     }
+}
+
+export function dumpValue(value: any): string {
+    return `${stringify(value, { lineWidth: 50 }) || ""}`
 }

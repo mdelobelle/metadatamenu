@@ -20,6 +20,7 @@ import { Constructor } from "src/typings/types"
 import { FieldActions } from "src/components/FieldsModal"
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
 import { Modal as IObjectBaseModal } from "./models/abstractModels/AbstractObject"
+import InsertFieldSuggestModal from "src/modals/insertFieldSuggestModal"
 
 // Field Types list agnostic
 
@@ -613,7 +614,7 @@ export function fieldValueManager<O extends BaseOptions>(
     id: string,
     fileClassName: string | undefined,
     target: Target,
-    existingField: ExistingField | undefined,
+    existingField?: ExistingField,
     indexedPath?: string,
     lineNumber?: number,
     asList?: boolean,
@@ -633,6 +634,25 @@ export function fieldValueManager<O extends BaseOptions>(
         asBlockquote,
         previousModal
     ))()
+}
+
+export function openFieldModal(
+    plugin: MetadataMenu,
+    file: TFile,
+    fieldName: string | undefined,
+    lineNumber: number,
+    asList: boolean,
+    asBlockquote: boolean
+) {
+    if (!fieldName) {
+        const modal = new InsertFieldSuggestModal(plugin, file, lineNumber, asList, asBlockquote);
+        modal.open();
+    } else {
+        const field = plugin.fieldIndex.filesFields.get(file.path)?.find(field => field.name === fieldName)
+        if (field) {
+            fieldValueManager(plugin, field.id, field.fileClassName, file, undefined, undefined, lineNumber, asList, asBlockquote)?.openModal()
+        }
+    }
 }
 
 //#endregion

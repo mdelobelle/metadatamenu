@@ -7,7 +7,7 @@ import { Note } from "src/note/note"
 import { Constructor } from "src/typings/types"
 import { cleanActions } from "src/utils/modals"
 import { getLink } from "src/utils/parser"
-import { ActionLocation, IFieldManager, LegacyField, Target, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest } from "../../Field"
+import { ActionLocation, IField, IFieldManager, LegacyField, Target, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest } from "../../Field"
 import { BaseOptions } from "../../base/BaseField"
 import { IBaseValueModal, IBasicModal, basicModal } from "../../base/BaseModal"
 import { ISettingsModal } from "../../base/BaseSetting"
@@ -308,7 +308,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                     : newValue.format(this.format)
                 this.managedField.save(formattedValue)
                 this.saved = true
-                if (this.previousModal) await this.goToPreviousModal()
+                if (this.managedField.previousModal) await this.goToPreviousModal()
                 if (this.nextIntervalField
                     && this.pushNextInterval
                     && this.nextShift
@@ -318,7 +318,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             } else if (!this.value) {
                 this.managedField.save("")
                 this.saved = true
-                if (this.previousModal) await this.goToPreviousModal()
+                if (this.managedField.previousModal) await this.goToPreviousModal()
                 this.close()
             } else {
                 this.errorField.show();
@@ -499,8 +499,8 @@ export function createDvField(
     fieldContainer.appendChild(spacer);
 }
 
-export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
-    return managedField.options.options.dateFormat;
+export function getOptionsStr(field: IField<Options>): string {
+    return field.options.dateFormat;
 }
 
 export function validateValue(managedField: IFieldManager<Target, Options>): boolean {

@@ -1,8 +1,10 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian"
 import { ExistingField } from "src/fields/ExistingField";
+import { fieldValueManager } from "src/fields/Field";
+import { validateValue } from "src/fields/Fields";
 import { Note } from "src/note/note";
-import { FieldManager, FieldType } from "src/types/fieldTypes";
+import { FieldType } from "src/types/fieldTypes";
 
 
 export interface IFieldInfo {
@@ -29,14 +31,14 @@ export class FieldInfo {
 
     public getInfos(): IFieldInfo {
         const field = this.eF.field
-        const fieldManager = new FieldManager[field.type](this.plugin, field);
+        const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, this.file, undefined)!
         return {
             indexedPath: this.eF.indexedPath,
             name: this.eF.field.name,
             value: this.eF.value,
             fileClassName: this.eF.field.fileClassName,
             type: this.eF.field.type,
-            isValid: fieldManager.validateValue(this.eF.value),
+            isValid: validateValue(fieldVM.type)(fieldVM),
             id: this.eF.field.id,
             ignoredInMenu: this.plugin.settings.globallyIgnoredFields.includes(this.eF.field.name),
             options: this.eF.field.options,

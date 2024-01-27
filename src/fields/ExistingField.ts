@@ -4,9 +4,10 @@ import MetadataMenu from "main"
 import ObjectListField, { ObjectListItem } from "./fieldManagers/ObjectListField"
 import { Note } from "src/note/note"
 import { FieldType } from "src/types/fieldTypes"
-import { FieldManager as FM } from "src/types/fieldTypes";
 import { Line, LinePosition } from "src/note/line"
 import { LineNode } from "src/note/lineNode"
+import { fieldValueManager } from "./Field"
+import { displayItem } from "./models/ObjectList"
 
 interface IExistingField {
     node: LineNode
@@ -74,8 +75,8 @@ export class ExistingField implements IExistingField {
         }
         if (!isNaN(numIndex) && this.field) {
             const item = (this.value)[numIndex]
-            const fieldManager = new FM[this.field.type](plugin, this.field) as ObjectListField
-            return fieldManager.displayItem(item, numIndex)
+            const fieldVM = fieldValueManager(plugin, this.field.id, this.field.fileClassName, this.file, this, this.indexedPath)
+            if (fieldVM) return displayItem(fieldVM, item, numIndex)
         } else {
             return `${this.name}[${index}]`
         }

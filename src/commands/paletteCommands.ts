@@ -9,13 +9,12 @@ import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import FileClassOptionsList from "src/options/FileClassOptionsList";
 import OptionsList from "src/options/OptionsList";
 import { insertMissingFields } from "./insertMissingFields";
-import { FieldManager as F } from "src/fields/FieldManager";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
 import { FieldType } from "src/types/fieldTypes";
 import { updateLookups } from "./updateLookups";
 import { updateFormulas } from "./updateFormulas";
 import { Note } from "src/note/note";
-import { IField } from "src/fields/Field";
+import { IField, fieldValueManager } from "src/fields/Field";
 import { BaseOptions } from "src/fields/base/BaseField";
 
 function fileClassAttributeOptionsCommand(plugin: MetadataMenu) {
@@ -247,14 +246,9 @@ export function insertFieldCommand(plugin: MetadataMenu, command: FieldCommand, 
                         lineNumber: number,
                         asList: boolean,
                         asBlockquote: boolean
-                    ) => F.openFieldModal(
-                        plugin,
-                        view.file!,
-                        field.name,
-                        lineNumber,
-                        asList,
-                        asBlockquote
-                    )
+                    ) => {
+                        fieldValueManager(plugin, field.id, field.fileClassName, view.file!, undefined, undefined, lineNumber, asList, asBlockquote)?.openModal()
+                    }
                 ).open();
             }
         }
@@ -284,14 +278,9 @@ export function insertIFieldCommand<O extends BaseOptions>(plugin: MetadataMenu,
                         lineNumber: number,
                         asList: boolean,
                         asBlockquote: boolean
-                    ) => F.openFieldModal(
-                        plugin,
-                        view.file!,
-                        field.name,
-                        lineNumber,
-                        asList,
-                        asBlockquote
-                    )
+                    ) => {
+                        fieldValueManager(plugin, field.id, field.fileClassName, view.file!, undefined, undefined, lineNumber, asList, asBlockquote)
+                    }
                 ).open();
             }
         }

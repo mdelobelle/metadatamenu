@@ -2,7 +2,7 @@ import { ButtonComponent, DropdownComponent, Menu, Notice, TFile, TextAreaCompon
 import { IFieldBase, BaseOptions } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
 import { getIcon, mapFieldType } from "../Fields"
-import { IFieldManager, Target, isSingleTargeted, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, LegacyField, ActionLocation, removeValidationError } from "../Field"
+import { IFieldManager, Target, isSingleTargeted, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, LegacyField, ActionLocation, removeValidationError, IField } from "../Field"
 import MetadataMenu from "main"
 import { IBasicModal, basicModal } from "../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
@@ -191,7 +191,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             }
             managedField.save()
             this.saved = true
-            if (this.previousModal) await this.goToPreviousModal()
+            if (this.managedField.previousModal) await this.goToPreviousModal()
             this.close()
         }
     }
@@ -251,9 +251,9 @@ export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, l
 
 }
 
-export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
+export function getOptionsStr(field: IField<Options>): string {
     const options: string[] = [];
-    Object.keys(managedField.options).forEach((k) => { if (managedField.options[k]) options.push(`${k}: ${managedField.options[k]}`) })
+    Object.keys(field.options).forEach((k) => { if (field.options[k]) options.push(`${k}: ${field.options[k]}`) })
     return options.join(" | ")
 }
 

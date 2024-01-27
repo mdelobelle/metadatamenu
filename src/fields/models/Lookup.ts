@@ -3,7 +3,7 @@ import { DropdownComponent, TFile, TextAreaComponent, TextComponent, ToggleCompo
 import { updateFormulas } from "src/commands/updateFormulas"
 import { Status, statusIcon } from "src/types/lookupTypes"
 import { Constructor } from "src/typings/types"
-import { ActionLocation, IFieldManager, LegacyField, Target, isFieldActions, isSingleTargeted, isSuggest, removeValidationError } from "../Field"
+import { ActionLocation, IField, IFieldManager, LegacyField, Target, isFieldActions, isSingleTargeted, isSuggest, removeValidationError } from "../Field"
 import { BaseOptions, IFieldBase } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
 import * as Lookup from "src/types/lookupTypes";
@@ -272,12 +272,12 @@ export function createDvField(
     fieldContainer.appendChild(fieldValue);
 }
 
-export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
-    const shortDescription = Lookup.ShortDescription[managedField.options.outputType as Lookup.Type]
+export function getOptionsStr(field: IField<Options>): string {
+    const shortDescription = Lookup.ShortDescription[field.options.outputType as Lookup.Type]
     let complement: string = ""
-    if (managedField.options.outputType === Lookup.Type.BuiltinSummarizing) {
-        complement = ` ${managedField.options.builtinSummarizingFunction}` +
-            `${managedField.options.builtinSummarizingFunction !== Lookup.BuiltinSummarizing.CountAll ? " " + managedField.options.summarizedFieldName : ""}`
+    if (field.options.outputType === Lookup.Type.BuiltinSummarizing) {
+        complement = ` ${field.options.builtinSummarizingFunction}` +
+            `${field.options.builtinSummarizingFunction !== Lookup.BuiltinSummarizing.CountAll ? " " + field.options.summarizedFieldName : ""}`
     }
     return shortDescription + complement
 }

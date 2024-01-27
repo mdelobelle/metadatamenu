@@ -2,7 +2,7 @@ import { ButtonComponent, DropdownComponent, Menu, SuggestModal, TFile, TextArea
 import { BaseOptions } from "../../base/BaseField"
 import { ISettingsModal } from "../../base/BaseSetting"
 import { FileSuggest } from "src/suggester/FileSuggester"
-import { ActionLocation, IFieldManager, LegacyField, Target, baseDisplayValue, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest, removeValidationError, setValidationError } from "../../Field"
+import { ActionLocation, IField, IFieldManager, LegacyField, Target, baseDisplayValue, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest, removeValidationError, setValidationError } from "../../Field"
 import MetadataMenu from "main"
 import { BaseValueModal, IBaseValueModal, basicSuggestModal } from "../../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
@@ -390,8 +390,8 @@ export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, l
     }
 }
 
-export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
-    return managedField.options.template || ""
+export function getOptionsStr(field: IField<Options>): string {
+    return field.options.template || ""
 }
 
 export function validateValue(managedField: IFieldManager<Target, Options>): boolean {

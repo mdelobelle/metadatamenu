@@ -10,12 +10,14 @@ import {
     parseYaml,
     Notice,
 } from "obsidian";
-import { FieldManager, FieldType, MultiDisplayType } from "src/types/fieldTypes";
+import { FieldType, MultiDisplayType } from "src/types/fieldTypes";
 import { genericFieldRegex, getLineFields, encodeLink } from "../utils/parser";
-import FileField from "src/fields/fieldManagers/FileField";
-import AbstractListBasedField from "src/fields/abstractFieldManagers/AbstractListBasedField";
 import Field from "src/fields/_Field";
-import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile";
+import { buildMarkDownLink, getFiles } from "src/fields/models/abstractModels/AbstractFile";
+import { IFieldManager, fieldValueManager } from "src/fields/Field";
+import { getOptionsList } from "src/fields/models/abstractModels/AbstractList";
+import { Options as ListOptions } from "src/fields/models/abstractModels/AbstractList";
+import { Options as FileOptions } from "src/fields/models/abstractModels/AbstractFile";
 
 interface IValueCompletion {
     attr: string;
@@ -127,6 +129,8 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         const matchField: { attribute?: string, values?: string[] } = { attribute: undefined, values: [] }
         const dvApi = this.plugin.app.plugins.plugins.dataview?.api
 
+        const file = this.context?.file
+        if (!file) return []
         const splitValues = (values: string | undefined) => {
             return values?.replace(/^\[|^\s\[|^\(|^\s\(/, '')
                 .replace(/\]$|\)$/, '')
@@ -135,14 +139,15 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         }
 
         const getFilteredOptionsList = (field: Field, firstValues: string[] | undefined, lastValue: string | undefined) => {
-            const fieldManager = new FieldManager[field.type](this.plugin, this.field)
-            const suggestions = (fieldManager as AbstractListBasedField)
-                .getOptionsList(dvApi.page(this.context?.file.path))
+            //TODO tester
+            const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, file)
+            if (!fieldVM || !["Cycle", "Multi", "Select"].includes(fieldVM.type)) return []
+            const options = getOptionsList(fieldVM as IFieldManager<TFile, ListOptions>)
+            return options
                 .filter(option => {
                     return this.filterOption(firstValues, lastValue, option)
                 })
                 .map(_value => Object({ attr: field.name, value: _value }))
-            return suggestions
         }
 
         if (!this.inFrontmatter) {
@@ -193,8 +198,8 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             } else if (this.field && [FieldType.File, FieldType.MultiFile].includes(this.field.type)) {
                 const sortingMethod = new Function("a", "b", `return ${this.field.options.customSorting}`) ||
                     function (a: TFile, b: TFile) { return a.basename < b.basename ? -1 : 1 }
-                const fieldManager: FileField = new FieldManager[this.field.type](this.plugin, this.field)
-                const files = fieldManager.getFiles(this.context?.file).sort(sortingMethod as (a: TFile, b: TFile) => number);
+                const fieldVM = fieldValueManager(this.plugin, this.field.id, this.field.fileClassName, file)
+                const files = getFiles(fieldVM as IFieldManager<TFile, FileOptions>)
                 if (lastValue) {
                     const results = files
                         .filter(f => f.basename.toLowerCase().includes(lastValue.toLowerCase())
@@ -276,10 +281,13 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 let parsedField: Record<string, string | string[] | null> = parseYaml(serializedField)
                 let [attr, pastValues] = Object.entries(parsedField)[0]
                 let newField: string
-                if (this.field && this.field.getDisplay() === MultiDisplayType.asList) {
-                    const fieldManager = new FieldManager[this.field.type](this.plugin, this.field)
-                    const options = (fieldManager as AbstractListBasedField)
-                        .getOptionsList(dvApi.page(this.context?.file.path))
+                if (
+                    this.field
+                    && ["Multi", "Select", "Cycle"].includes(this.field.type)
+                    && this.field.getDisplay() === MultiDisplayType.asList
+                ) {
+                    const fieldVM = fieldValueManager(this.plugin, this.field.id, this.field.fileClassName, file)
+                    const options = getOptionsList(fieldVM as IFieldManager<TFile, ListOptions>)
                     //clean the past values in case the user has typed a comma to insert a new value, and append the new value
                     let valuesArray: string[] = [suggestion.value]
                     if (typeof pastValues == 'string') {

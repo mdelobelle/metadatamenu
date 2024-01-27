@@ -1,7 +1,7 @@
 import MetadataMenu from "main"
 import { ButtonComponent, FuzzySuggestModal, Notice, TFile, TextAreaComponent, setIcon } from "obsidian"
 import { getExistingFieldForIndexedPath } from "src/fields/ExistingField"
-import { ActionLocation, IFieldManager, LegacyField, Target, baseDisplayValue, fieldValueManager, getOptions, isFieldActions, isSuggest, removeValidationError } from "src/fields/Field"
+import { ActionLocation, IField, IFieldManager, LegacyField, Target, baseDisplayValue, fieldValueManager, getOptions, isFieldActions, isSuggest, removeValidationError } from "src/fields/Field"
 import { getIcon, mapFieldType } from "src/fields/Fields"
 import { BaseOptions, IFieldBase, isFieldOptions } from "src/fields/base/BaseField"
 import { BaseValueModal, IBaseValueModal, basicFuzzySuggestModal } from "src/fields/base/BaseModal"
@@ -229,8 +229,8 @@ export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, l
     };
 }
 
-export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
-    return managedField.options.dvQueryString || "";
+export function getOptionsStr(field: IField<Options>): string {
+    return field.options.dvQueryString || "";
 }
 
 export function validateValue(managedField: IFieldManager<Target, Options>): boolean {

@@ -3,8 +3,8 @@ import { ButtonComponent, Component, Modal, TFile } from "obsidian";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { postValues } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
-import { fieldValueManager } from "src/fields/Field";
-import { displayValue, mapFieldType } from "src/fields/Fields";
+import { IFieldManager, fieldValueManager } from "src/fields/Field";
+import { displayValue, getActions, mapFieldType } from "src/fields/Fields";
 import Field from "src/fields/_Field";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
 import ObjectListField from "src/fields/fieldManagers/ObjectListField";
@@ -12,8 +12,8 @@ import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
 import ChooseSectionModal from "src/modals/chooseSectionModal";
 import { Note } from "src/note/note";
 import * as FieldType from "src/types/fieldTypes";
-import { FieldManager as FM } from "src/types/fieldTypes";
 import { FileClassViewManager } from "./FileClassViewManager";
+import { Options as ObjectListOptions, addObjectListItem } from "src/fields/models/ObjectList";
 
 
 export class FieldActions {
@@ -142,7 +142,6 @@ export class FieldsModal extends Modal {
 
         if (upperObject) {
             const numIndex = parseInt(upperIndex || "")
-            //backBtnWrapper.createSpan({ text: fieldManager.getObjectDescription(upperObjectValue) })
             if (!isNaN(numIndex)) {
                 const display = `${upperObject.name} [${numIndex}]`
                 backBtnWrapper.createSpan({ text: display })
@@ -161,12 +160,13 @@ export class FieldsModal extends Modal {
     }
     //
     private buildFieldContainer(container: HTMLDivElement, field: Field, value?: string | null | undefined, indexedPath?: string): void {
-        const fieldManager = new FM[field.type](this.plugin, field)
         const fieldNameWrapper = container.createDiv({ cls: "field-name-wrapper" })
         const fieldNameContainer = fieldNameWrapper.createDiv({ text: `${field.name}`, cls: "field-item field-name" });
         const fieldSettingsWrapper = container.createDiv({ cls: "field-settings-wrapper" });
         fieldSettingsWrapper.createDiv({ cls: "field-settings-spacer" })
         const fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
+        const eF = this.existingFields.find(eF => eF.field.id === field.id)
+        const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, this.file, eF, indexedPath)
         if (fileClass) {
             fieldNameContainer.addClass(`fileClassField__${fileClass.name.replace("/", "___").replaceAll(" ", "_")}`)
         }
@@ -193,19 +193,17 @@ export class FieldsModal extends Modal {
         } else if (value === undefined) {
             fieldValueContainer.setText("<missing>");
         } else {
-            const eF = this.existingFields.find(eF => eF.field.id === field.id)
-            const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, this.file, eF, indexedPath)
             if (fieldVM) displayValue(mapFieldType(field.type))(fieldVM, fieldValueContainer, () => { this.close() })
-            else fieldManager.displayValue(fieldValueContainer, this.file, value)
+            else fieldValueContainer.setText(`${value}`)
         }
         const fieldOptionsWrapper = container.createDiv({ cls: "field-options-wrapper" });
         fieldOptionsWrapper.createDiv({ cls: "field-options-spacer" });
         const fieldOptions = new FieldOptions(fieldOptionsWrapper)
-        if (this.existingFields.map(_f => _f.field.id).includes(field.id)) {
+        if (this.existingFields.map(_f => _f.field.id).includes(field.id) && fieldVM) {
             if (FieldType.objectTypes.includes(field.type)) {
-                fieldManager.addFieldOption(this.file, fieldOptions, indexedPath, this.noteFields);
+                getActions(field.type)(this.plugin, field, this.file, fieldOptions, fieldVM.indexedPath, this.noteFields)
             } else {
-                fieldManager.addFieldOption(this.file, fieldOptions, indexedPath);
+                getActions(field.type)(this.plugin, field, this.file, fieldOptions, fieldVM.indexedPath)
             }
 
         } else {
@@ -223,18 +221,14 @@ export class FieldsModal extends Modal {
                     //Other fields go straight to frontmatter if their path is not emplty
                 } else {
                     if (field.path === "") {
-
                         new ChooseSectionModal(
                             this.plugin,
                             this.file,
                             (lineNumber: number, asList: boolean, asBlockquote: boolean
                             ) => fieldValueManager(this.plugin, field.id, field.fileClassName, this.file, undefined, newIndexedPath, lineNumber, asList, asBlockquote)?.openModal()
-                            //    ) => FieldManager.createAndOpenModal(
-                            //    this.plugin, this.file, field.name, field, undefined, newIndexedPath, lineNumber, asList, asBlockquote)
                         ).open();
                     } else {
                         fieldValueManager(this.plugin, field.id, field.fileClassName, this.file, undefined, newIndexedPath, -1, false, false)?.openModal()
-                        //FieldManager.createAndOpenModal(this.plugin, this.file, field.name, field, undefined, newIndexedPath, -1, false, false)
                     }
                 }
             })
@@ -243,7 +237,7 @@ export class FieldsModal extends Modal {
 
 
     private buildObjectListItemContainer(container: HTMLDivElement, field: Field, item: any, itemIndexedPath: string) {
-        const fieldManager = new FM[field.type](this.plugin, field) as ObjectListField
+        const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, this.file)
         const { index } = Field.getIdAndIndex(itemIndexedPath.split("____").last())
         let value: string = ""
         if (this.indexedPath && index) {
@@ -280,7 +274,7 @@ export class FieldsModal extends Modal {
         const fieldOptionsWrapper = container.createDiv({ cls: "field-options-wrapper" });
         fieldOptionsWrapper.createDiv({ cls: "field-options-spacer" });
         const fieldOptions = new FieldOptions(fieldOptionsWrapper)
-        fieldManager.addFieldOption(this.file, fieldOptions, itemIndexedPath, this.noteFields);
+        if (fieldVM) getActions(fieldVM?.type)(this.plugin, field, this.file, fieldOptions, itemIndexedPath, this.noteFields)
     }
 
 
@@ -405,8 +399,10 @@ export class FieldsModal extends Modal {
         insertNewItemBtn.setIcon("list-plus")
 
         insertNewItemBtn.onClick(async () => {
-            const fieldManager = new FieldType.FieldManager[field.type](this.plugin, field) as ObjectListField
-            if (this.note) fieldManager.addObjectListItem(this.file, undefined, this.indexedPath)
+            if (this.note) {
+                const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, this.file, undefined, this.indexedPath) as IFieldManager<TFile, ObjectListOptions>
+                addObjectListItem(fieldVM)
+            }
             this.indexedPath = indexedPath
         })
     }

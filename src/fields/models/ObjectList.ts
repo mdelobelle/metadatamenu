@@ -3,7 +3,7 @@ import { IFieldBase, BaseOptions } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
 import * as AbstractObject from "./abstractModels/AbstractObject"
 import { ButtonComponent, TFile, TextAreaComponent, setIcon } from "obsidian"
-import { ActionLocation, FieldValueManager, IFieldManager, LegacyField, Target, buildField, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest, removeValidationError } from "../Field"
+import { ActionLocation, FieldValueManager, IField, IFieldManager, LegacyField, Target, buildField, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest, removeValidationError } from "../Field"
 import { ExistingField } from "../ExistingField"
 import NoteFieldsComponent from "src/components/FieldsModal"
 import MetadataMenu from "main"
@@ -92,9 +92,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         public async onAdd() {
             const mF = this.managedField
             if (!isSingleTargeted(mF)) return
-            // const fieldManager = new FieldManager[this.field.type](this.plugin, this.field) as ObjectListField
             if (this.managedField.eF) {
-                // await fieldManager.addObjectListItem(this.file, this.eF, this.indexedPath);
                 await addObjectListItem(mF)
                 this.close()
                 this.open()
@@ -218,8 +216,8 @@ export function createDvField(
     return AbstractObject.createDvField(managedField, dv, p, fieldContainer, attrs)
 }
 
-export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
-    return AbstractObject.getOptionsStr(managedField)
+export function getOptionsStr(field: IField<Options>): string {
+    return AbstractObject.getOptionsStr(field)
 }
 
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked = () => { }) {

@@ -1,9 +1,10 @@
 import MetadataMenu from "main";
 import Field, { FieldCommand } from "src/fields/_Field";
 import { BaseOptions, FieldParam, isFieldOptions } from "src/fields/base/BaseField";
-import { buildField, IField } from "src/fields/Field";
+import { buildField, getField, IField } from "src/fields/Field";
+import { getOptionStr } from "src/fields/Fields";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
-import { FieldManager, FieldType, MultiDisplayType, FieldTypeLabelMapping } from "src/types/fieldTypes";
+import { FieldType, MultiDisplayType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 
 class FileClassAttribute {
 
@@ -55,9 +56,8 @@ class FileClassAttribute {
     }
 
     public getOptionsString(plugin: MetadataMenu) {
-        const field = this.getField()
-        const manager = new FieldManager[field.type](plugin, field)
-        return manager.getOptionsStr()
+        const field = getField(this.id, this.fileClassName, this.plugin)
+        if (field) return getOptionStr(field.type)(field)
     }
 }
 

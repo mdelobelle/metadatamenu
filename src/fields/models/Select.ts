@@ -2,7 +2,7 @@
 import MetadataMenu from "main";
 import * as AbstractList from "./abstractModels/AbstractList"
 import { ISettingsModal } from "../base/BaseSetting";
-import { ActionLocation, IFieldManager, LegacyField, Target } from "../Field";
+import { ActionLocation, IField, IFieldManager, LegacyField, Target } from "../Field";
 import { IFieldBase } from "../base/BaseField";
 import { Constructor } from "src/typings/types";
 import { TFile, setIcon } from "obsidian";
@@ -87,8 +87,8 @@ export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, l
     return AbstractList.actions(plugin, field, file, location, indexedPath)
 }
 
-export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
-    return AbstractList.getOptionsStr(managedField)
+export function getOptionsStr(field: IField<Options>): string {
+    return AbstractList.getOptionsStr(field)
 }
 
 export function validateValue(managedField: IFieldManager<Target, Options>): boolean {

@@ -3,13 +3,11 @@ import { EditorPosition, Notice, parseYaml, TFile } from "obsidian";
 import { FieldPayload, IndexedFieldsPayload } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
 import Field from "src/fields/_Field";
-import YAMLField from "src/fields/fieldManagers/YAMLField";
-import { FieldManager, FieldType, frontmatterOnlyTypes, rawObjectTypes, ReservedMultiAttributes } from "src/types/fieldTypes";
-import { FieldManager as FM } from "src/types/fieldTypes";
+import { FieldType, frontmatterOnlyTypes, rawObjectTypes, ReservedMultiAttributes } from "src/types/fieldTypes";
 import * as Lookup from "src/types/lookupTypes";
 import { Line, LinePosition } from "./line";
 import { LineNode } from "./lineNode";
-import ObjectListField from "src/fields/fieldManagers/ObjectListField";
+import { dumpValue } from "src/fields/models/YAML";
 
 export class Note {
     public lines: Line[] = []
@@ -111,8 +109,7 @@ export class Note {
                     }
                     case FieldType.JSON: return JSON.stringify(JSON.parse(rawValue || "{}"))
                     case FieldType.YAML: {
-                        const fm = new FieldManager[FieldType.YAML](this.plugin, field) as YAMLField
-                        return fm.dumpValue(rawValue)
+                        return dumpValue(rawValue)
                     }
                     default: return rawValue;
                 }

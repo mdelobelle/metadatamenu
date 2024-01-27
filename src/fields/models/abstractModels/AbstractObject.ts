@@ -136,8 +136,8 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
 }
 
 
-export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
-    return managedField.options.displayTemplate || ""
+export function getOptionsStr(field: IField<Options>): string {
+    return field.options.displayTemplate || ""
 }
 
 export function validateValue(managedField: IFieldManager<Target, Options>): boolean {

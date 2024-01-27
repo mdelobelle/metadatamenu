@@ -3,20 +3,19 @@ import { MarkdownView, Menu, Notice, TFile } from "obsidian";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import NoteFieldsComponent from "src/components/FieldsModal";
 import Field from "src/fields/_Field";
-import { FieldManager as F } from "src/fields/FieldManager";
-import BooleanField from "src/fields/fieldManagers/BooleanField";
-import CycleField from "src/fields/fieldManagers/CycleField";
 import { AddFileClassToFileModal } from "src/fileClass/fileClass";
 import AddNewFileClassModal from "src/modals/AddNewFileClassModal";
 import { LineNode } from "src/note/lineNode";
 import { Note } from "src/note/note";
-import { FieldManager, FieldType, migratedFieldTypes } from "src/types/fieldTypes";
+import { FieldType } from "src/types/fieldTypes";
 import { genuineKeys } from "src/utils/dataviewUtils";
 import { getFrontmatterPosition } from "src/utils/fileUtils";
 import chooseSectionModal from "../modals/chooseSectionModal";
 import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
 import FileClassOptionsList from "./FileClassOptionsList";
-import { fieldValueManager } from "src/fields/Field";
+import { IFieldManager, fieldValueManager, openFieldModal } from "src/fields/Field";
+import { getActions, getFieldModal } from "src/fields/Fields";
+import { getNextOption, Options as CycleOptions } from "src/fields/models/Cycle";
 
 function isMenu(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal | "ManageAtCursorCommand"): location is Menu {
 	return (location as Menu).addItem !== undefined;
@@ -62,26 +61,24 @@ export default class OptionsList {
 		const rootNode = node?.line?.getParentLineWithField()?.nodes[0]
 		const indexedPath = !field ? rootNode?.indexedPath || node.indexedPath : node.indexedPath
 		const rootField = rootNode?.field
-		const managedField = field || rootField
+		const mField = field || rootField
 		//-----
-		if (managedField) {
-			const fieldManager = new FieldManager[managedField.type](this.plugin, managedField) as F;
-			switch (fieldManager.type) {
+		if (mField) {
+			const fieldVM = fieldValueManager(this.plugin, mField.id, mField.fileClassName, this.file, undefined, indexedPath)
+			if (!fieldVM) return
+			switch (fieldVM.type) {
 				case FieldType.Boolean:
-					(fieldManager as BooleanField).toggle(this.file, indexedPath)
+					fieldVM.save(!fieldVM.value)
 					break;
 				case FieldType.Cycle:
-					(fieldManager as CycleField).next(managedField.name, this.file, indexedPath)
+					const nextOption = getNextOption(fieldVM as IFieldManager<TFile, CycleOptions>);
+					fieldVM.save(nextOption)
 					break;
 				default:
 					const eF = node.line.note.getExistingFieldForIndexedPath(indexedPath)
 					if (!eF) return
-					if (eF && migratedFieldTypes.includes(eF.field.type)) {
-						const { field, file, indexedPath, lineNumber } = eF
-						fieldValueManager(this.plugin, field.id, field.fileClassName, file, eF, indexedPath, lineNumber)?.openModal()
-					} else {
-						fieldManager.createAndOpenFieldModal(this.file, eF.field.name,)
-					}
+					const { field, file, indexedPath: _iPath, lineNumber } = eF
+					fieldValueManager(this.plugin, field.id, field.fileClassName, file, eF, _iPath, lineNumber)?.openModal()
 					break;
 			}
 
@@ -229,8 +226,8 @@ export default class OptionsList {
 			.forEach(eF => {
 				const field = eF.field
 				if (field) {
-					const fieldManager = new FieldManager[field.type](this.plugin, field);
-					fieldManager.addFieldOption(this.file, this.location, eF.indexedPath);
+					const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, this.file, eF, eF.indexedPath)
+					if (fieldVM) getActions(fieldVM?.type)(this.plugin, field, this.file, this.location, eF.indexedPath)
 				}
 			})
 	}
@@ -243,7 +240,7 @@ export default class OptionsList {
 				lineNumber: number,
 				asList: boolean,
 				asBlockquote: boolean
-			) => F.openFieldModal(
+			) => openFieldModal(
 				this.plugin,
 				this.file,
 				undefined,
@@ -313,7 +310,7 @@ export default class OptionsList {
 					item.setIcon("align-vertical-space-around");
 					item.setTitle("Add field in frontmatter");
 					item.onClick(async (evt: MouseEvent) => {
-						F.openFieldModal(this.plugin, this.file, undefined, -1, false, false)
+						openFieldModal(this.plugin, this.file, undefined, -1, false, false)
 					});
 					item.setSection("metadata-menu");
 				});
@@ -321,7 +318,7 @@ export default class OptionsList {
 				this.location.options.push({
 					id: "add_field_in_frontmatter",
 					actionLabel: "Add a field in frontmatter...",
-					action: () => F.openFieldModal(
+					action: () => openFieldModal(
 						this.plugin, this.file, undefined, -1, false, false),
 					icon: "align-vertical-space-around"
 				})
@@ -344,19 +341,19 @@ export default class OptionsList {
 					item.setIcon("list-plus");
 					item.setTitle("Add field at cursor");
 					item.onClick((evt: MouseEvent) => {
-						F.openFieldModal(
+						openFieldModal(
 							this.plugin, this.file, undefined, lineNumber, false, false)
 					});
 					item.setSection("metadata-menu");
 				});
 			} else if (isInsertFieldCommand(this.location)) {
-				F.openFieldModal(
+				openFieldModal(
 					this.plugin, this.file, undefined, lineNumber, false, false);
 			} else if (isSuggest(this.location)) {
 				this.location.options.push({
 					id: "add_field_at_cursor",
 					actionLabel: "Add field at cursor...",
-					action: () => F.openFieldModal(
+					action: () => openFieldModal(
 						this.plugin, this.file, undefined, lineNumber, false, false),
 					icon: "list-plus"
 				})

@@ -19,174 +19,14 @@ export const enum SettingLocation {
 
 export abstract class FieldManager {
     abstract addFieldOption(file: TFile, location: Menu | FCSM | FieldOptions, indexedPath?: string, ...args: any): void;
-    //actions
-    // [x] Input
-    // [x] Abstract List
-    // [x] Select
-    // [x] Multi
-    // [x] Abstract File
-    // [x] File
-    // [x] Multi File
-    // [x] Abstract Media
-    // [x] Media
-    // [x] Multi Media
-    // [x] Cycle
-    // [x] Boolean
-    // [x] Canvas
-    // [x] CanvasGroup
-    // [x] CanvasGroupLink
-    // [x] AbstractDate
-    // [x] Date
-    // [x] DateTime
-    // [x] Time
-    // [x] Lookup
-    // [x] Formula
-    // [x] AbstractRawObject
-    // [x] JSON
-    // [x] Yaml
-    // [ ] Object
-    // [ ] ObjectList
-
     abstract validateOptions(): boolean;
-    //actions
-    // [x] Input
-    // [x] Abstract List
-    // [x] Select
-    // [x] Multi
-    // [x] Abstract File
-    // [x] File
-    // [x] Multi File
-    // [x] Abstract Media
-    // [x] Media
-    // [x] Multi Media
-    // [x] Cycle
-    // [x] Boolean
-    // [x] Canvas
-    // [x] CanvasGroup
-    // [x] CanvasGroupLink
-    // [x] AbstractDate
-    // [x] Date
-    // [x] DateTime
-    // [x] Time
-    // [x] Lookup
-    // [x] Formula
-    // [x] AbstractRawObject
-    // [x] JSON
-    // [x] Yaml
-    // [ ] Object
-    // [ ] ObjectList
     abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
-    // [x] Input
-    // [x] Abstract List
-    // [x] Select
-    // [x] Multi
-    // [x] Abstract File
-    // [x] File
-    // [x] Multi File
-    // [x] Abstract Media
-    // [x] Media
-    // [x] Multi Media
-    // [x] Cycle
-    // [x] Boolean
-    // [x] Canvas
-    // [x] CanvasGroup
-    // [x] CanvasGroupLink
-    // [x] AbstractDate
-    // [x] Date
-    // [x] DateTime
-    // [x] Time
-    // [x] Lookup
-    // [x] Formula
-    // [x] AbstractRawObject
-    // [x] JSON
-    // [x] Yaml
-    // [ ] Object
-    // [ ] ObjectList
     abstract createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: {
         cls?: string, attr?: Record<string, string>, options?: Record<string, string>
     }): void
-    // [x] Input
-    // [x] Abstract List
-    // [x] Select
-    // [x] Multi
-    // [x] Abstract File
-    // [x] File
-    // [x] Multi File
-    // [x] Abstract Media
-    // [x] Media
-    // [x] Multi Media
-    // [x] Cycle
-    // [x] Boolean
-    // [x] Canvas
-    // [x] CanvasGroup
-    // [x] CanvasGroupLink
-    // [x] AbstractDate
-    // [x] Date
-    // [x] DateTime
-    // [x] Time
-    // [x] Lookup
-    // [x] Formula
-    // [x] AbstractRawObject
-    // [x] JSON
-    // [x] Yaml
-    // [ ] Object
-    // [ ] ObjectList
     abstract getOptionsStr(): string;
-    // [x] Input
-    // [x] Abstract List
-    // [x] Select
-    // [x] Multi
-    // [x] Abstract File
-    // [x] File
-    // [x] Multi File
-    // [x] Abstract Media
-    // [x] Media
-    // [x] Multi Media
-    // [x] Cycle
-    // [x] Boolean
-    // [x] Canvas
-    // [x] CanvasGroup
-    // [x] CanvasGroupLink
-    // [x] AbstractDate
-    // [x] Date
-    // [x] DateTime
-    // [x] Time
-    // [x] Lookup
-    // [x] Formula
-    // [x] AbstractRawObject
-    // [x] JSON
-    // [x] Yaml
-    // [ ] Object
-    // [ ] ObjectList
     abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField, indexedPath?: string,
         lineNumber?: number, asList?: boolean, asBlockquote?: boolean, previousModal?: ObjectModal | ObjectListModal): void;
-    // Value modal
-    // [x] Input
-    // [x] Abstract List
-    // [x] Select
-    // [x] Multi
-    // [x] Abstract File
-    // [x] File
-    // [x] Multi File
-    // [x] Abstract Media
-    // [x] Media
-    // [x] Multi Media
-    // [x] Cycle
-    // [x] Boolean
-    // [x] Canvas
-    // [x] CanvasGroup
-    // [x] CanvasGroupLink
-    // [x] AbstractDate
-    // [x] Date
-    // [x] DateTime
-    // [x] Time
-    // [x] Lookup
-    // [x] Formula
-    // [x] AbstractRawObject
-    // [x] JSON
-    // [x] Yaml
-    // [ ] Object
-    // [ ] ObjectList
     public showModalOption: boolean = true;
     constructor(public plugin: MetadataMenu, public field: Field, public type: FieldType) {
         if (field.type !== type) throw Error(`This field is not of type ${type}`)
@@ -234,33 +74,6 @@ export abstract class FieldManager {
     public validateValue(value: string): boolean {
         return true;
     }
-    // Value modal
-    // [x] Input
-    // [x] Abstract List
-    // [x] Select
-    // [x] Multi
-    // [x] Abstract File
-    // [x] File
-    // [x] Multi File
-    // [x] Abstract Media
-    // [x] Media
-    // [x] Multi Media
-    // [x] Cycle
-    // [x] Boolean
-    // [x] Canvas
-    // [x] CanvasGroup
-    // [x] CanvasGroupLink
-    // [x] AbstractDate
-    // [x] Date
-    // [x] DateTime
-    // [x] Time
-    // [x] Lookup
-    // [x] Formula
-    // [x] AbstractRawObject
-    // [x] JSON
-    // [x] Yaml
-    // [ ] Object
-    // [ ] ObjectList
 
     public static async replaceValues(plugin: MetadataMenu, path: string, id: string, value: string): Promise<void> {
         const file = plugin.app.vault.getAbstractFileByPath(path)

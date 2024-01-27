@@ -1,6 +1,6 @@
 import MetadataMenu from "main"
 import { FuzzyMatch, TFile, setIcon } from "obsidian"
-import { ActionLocation, IFieldManager, LegacyField, Target, isSingleTargeted } from "src/fields/Field"
+import { ActionLocation, IField, IFieldManager, LegacyField, Target, isSingleTargeted } from "src/fields/Field"
 import { IFieldBase } from "src/fields/base/BaseField"
 import { ISettingsModal } from "src/fields/base/BaseSetting"
 import * as AbstractFile from "src/fields/models/abstractModels/AbstractFile"
@@ -85,8 +85,8 @@ export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, l
     return AbstractFile.actions(plugin, field, file, location, indexedPath)
 }
 
-export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
-    return AbstractFile.getOptionsStr(managedField)
+export function getOptionsStr(field: IField<Options>): string {
+    return AbstractFile.getOptionsStr(field)
 }
 
 export function validateValue(managedField: IFieldManager<Target, Options>): boolean {

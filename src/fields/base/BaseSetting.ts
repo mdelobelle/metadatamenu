@@ -3,7 +3,6 @@ import { ButtonComponent, DropdownComponent, Modal, Notice, SuggestModal, TextCo
 import { FieldCommand } from "../_Field"
 import { FieldIcon, FieldTypeTagClass, FieldTypeTooltip, MultiDisplayType } from "src/types/fieldTypes"
 import { FieldHTMLTagMap, FieldStyle as GFieldStyle, FieldStyleKey } from "src/types/dataviewTypes"
-import { SettingLocation } from "../FieldManager"
 import { cleanActions } from "src/utils/modals"
 import GField from "src/fields/_Field"
 import { FileClass } from "src/fileClass/fileClass"
@@ -18,6 +17,10 @@ import { BaseOptions } from "./BaseField"
 
 // Field Types list agnostic
 // Field types specific settings agnostic
+export const enum SettingLocation {
+    "PluginSettings",
+    "FileClassAttributeSettings"
+}
 
 export interface ISettingsModal<O extends BaseOptions> extends Modal {
     plugin: MetadataMenu;

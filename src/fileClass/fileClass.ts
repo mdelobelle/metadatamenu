@@ -4,7 +4,6 @@ import { Notice, SuggestModal, TFile } from "obsidian";
 import { FieldType, FieldTypeLabelMapping, MultiDisplayType } from "src/types/fieldTypes";
 import { capitalize } from "src/utils/textUtils";
 import Field, { FieldCommand } from "src/fields/_Field";
-import { FieldManager } from "src/fields/FieldManager";
 import { postValues } from "src/commands/postValues";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { Note } from "src/note/note";
@@ -13,8 +12,9 @@ import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
 import { SavedView } from "./views/tableViewComponents/saveViewModal";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { compareArrays } from "src/utils/array";
-import { FieldType as IFieldType } from "src/fields/base/BaseField"
-import { IField, getNewFieldId } from "src/fields/Field";
+import { FieldType as IFieldType } from "src/fields/Fields"
+import { IField, getNewFieldId, stringToBoolean } from "src/fields/Field";
+import { BaseOptions } from "src/fields/base/BaseField";
 
 interface ShortId {
     id: string
@@ -154,7 +154,7 @@ class FileClass {
             })
         })
         const limit = typeof (_limit) === 'number' ? _limit : this.plugin.settings.tableViewMaxRecords
-        const mapWithTag = FieldManager.stringToBoolean(_mapWithTag);
+        const mapWithTag = stringToBoolean(_mapWithTag);
         const tagNames = FileClass.getTagNamesFromFrontMatter(_tagNames);
         const filesPaths = FileClass.getFilesPathsFromFrontMatter(_filesPaths);
         const bookmarksGroups = FileClass.getBookmarksGroupsFromFrontMatter(_bookmarksGroups);
@@ -482,8 +482,8 @@ class FileClass {
         await this.incrementVersion();
     }
 
-    public async updateIAttribute(
-        attr: IField,
+    public async updateIAttribute<O extends BaseOptions>(
+        attr: IField<O>,
         newType: IFieldType,
         newName: string,
         newOptions?: string[] | Record<string, string>,
@@ -529,7 +529,7 @@ class FileClass {
         })
     }
 
-    public async removeIAttribute(attr: IField): Promise<void> {
+    public async removeIAttribute<O extends BaseOptions>(attr: IField<O>): Promise<void> {
         const file = this.getClassFile();
         await this.plugin.app.fileManager.processFrontMatter(file, fm => {
             fm.fields = fm.fields.filter((f: any) => f.id !== attr.id)

@@ -2,7 +2,7 @@ import { TFile } from "obsidian"
 import { IFieldBase } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
 import * as AbstractDate from "./abstractModels/AbstractDate"
-import { ActionLocation, IFieldManager, LegacyField, Target } from "../Field"
+import { ActionLocation, IField, IFieldManager, LegacyField, Target } from "../Field"
 import MetadataMenu from "main"
 import { Constructor } from "src/typings/types"
 
@@ -46,8 +46,8 @@ export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, l
     return AbstractDate.actions(plugin, field, file, location, indexedPath)
 }
 
-export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
-    return AbstractDate.getOptionsStr(managedField)
+export function getOptionsStr(field: IField<Options>): string {
+    return AbstractDate.getOptionsStr(field)
 }
 
 export function validateValue(managedField: IFieldManager<Target, Options>): boolean {
