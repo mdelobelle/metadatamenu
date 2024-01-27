@@ -213,7 +213,7 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
 }
 
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked = () => { }) {
-    if (isSingleTargeted(managedField)) displayLinksOrText(managedField.value, managedField.target, container, this.plugin, () => onClicked)
+    if (isSingleTargeted(managedField)) displayLinksOrText(managedField.value, managedField.target, container, managedField.plugin, () => onClicked)
 }
 
 export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath?: string): void {

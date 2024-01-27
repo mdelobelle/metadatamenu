@@ -1,10 +1,11 @@
 
-import * as Multi from "./models/Multi"
 import * as Input from "./models/Input"
+import * as NumberField from "./models/Number"
 import * as Select from "./models/Select"
+import * as Multi from "./models/Multi"
 import * as Cycle from "./models/Cycle"
-import * as Boolean from "./models/Boolean"
-import * as Date from "./models/Date"
+import * as BooleanField from "./models/Boolean"
+import * as DateField from "./models/Date"
 import * as DateTime from "./models/DateTime"
 import * as Time from "./models/Time"
 import * as File from "./models/File"
@@ -16,8 +17,9 @@ import * as CanvasGroup from "./models/CanvasGroup"
 import * as CanvasGroupLink from "./models/CanvasGroupLink"
 import * as Formula from "./models/Formula"
 import * as Lookup from "./models/Lookup"
-import * as JSON from "./models/JSON"
+import * as JSONField from "./models/JSON"
 import * as YAML from "./models/YAML"
+import * as ObjectField from "./models/Object"
 import * as ObjectList from "./models/ObjectList"
 import { ISettingsModal, buildSettingsModal } from "./base/BaseSetting"
 import { IField, IFieldManager, Target, LegacyField } from "./Field"
@@ -42,6 +44,7 @@ import { FieldActions } from "src/components/FieldsModal"
 
 export type FieldType =
     | "Input"
+    | "Number"
     | "Select"
     | "Cycle"
     | "Boolean"
@@ -60,17 +63,19 @@ export type FieldType =
     | "Lookup"
     | "JSON"
     | "YAML"
+    | "Object"
     | "ObjectList"
 
 export interface TypesOptionsMap {
     Input: Input.Options
+    Number: NumberField.Options
     Select: Select.Options
+    Multi: Multi.Options
     Cycle: Cycle.Options
-    Boolean: Boolean.Options
-    Date: Date.Options
+    Boolean: BooleanField.Options
+    Date: DateField.Options
     DateTime: DateTime.Options
     Time: Time.Options
-    Multi: Multi.Options
     File: File.Options
     MultiFile: MultiFile.Options
     Media: Media.Options
@@ -80,21 +85,23 @@ export interface TypesOptionsMap {
     CanvasGroupLink: CanvasGroupLink.Options
     Formula: Formula.Options
     Lookup: Lookup.Options
-    JSON: JSON.Options
+    JSON: JSONField.Options
     YAML: YAML.Options
+    Object: ObjectField.Options
     ObjectList: ObjectList.Options
 }
 
 export function mapLegacyFieldType(type: FieldType): LegacyFieldType {
     switch (type) {
         case "Input": return LegacyFieldType.Input
+        case "Number": return LegacyFieldType.Number
         case "Select": return LegacyFieldType.Select
+        case "Multi": return LegacyFieldType.Multi
         case "Cycle": return LegacyFieldType.Cycle
         case "Boolean": return LegacyFieldType.Boolean
         case "Date": return LegacyFieldType.Date
         case "DateTime": return LegacyFieldType.DateTime
         case "Time": return LegacyFieldType.Time
-        case "Multi": return LegacyFieldType.Multi
         case "File": return LegacyFieldType.File
         case "MultiFile": return LegacyFieldType.MultiFile
         case "Media": return LegacyFieldType.Media
@@ -106,20 +113,22 @@ export function mapLegacyFieldType(type: FieldType): LegacyFieldType {
         case "Lookup": return LegacyFieldType.Lookup
         case "JSON": return LegacyFieldType.JSON
         case "YAML": return LegacyFieldType.YAML
-        case "ObjectList": throw Error("not implemented")
+        case "Object": return LegacyFieldType.Object
+        case "ObjectList": return LegacyFieldType.ObjectList
     }
 }
 
-export function mapFieldType(type: LegacyFieldType): FieldType {
+export function mapFieldType(type: keyof typeof LegacyFieldType): FieldType {
     switch (type) {
         case "Input": return "Input"
+        case "Number": return "Number"
         case "Select": return "Select"
+        case "Multi": return "Multi"
         case "Cycle": return "Cycle"
         case "Boolean": return "Boolean"
         case "Date": return "Date"
         case "DateTime": return "DateTime"
         case "Time": return "Time"
-        case "Multi": return "Multi"
         case "File": return "File"
         case "MultiFile": return "MultiFile"
         case "Media": return "Media"
@@ -131,13 +140,14 @@ export function mapFieldType(type: LegacyFieldType): FieldType {
         case "Lookup": return "Lookup"
         case "JSON": return "JSON"
         case "YAML": return "YAML"
-        case "ObjectList": throw Error("not implemented")
-        default: throw Error("not implemented")
+        case "Object": return "Object"
+        case "ObjectList": return "ObjectList"
     }
 }
 
 export const fieldTypes: Array<FieldType> = [
     "Input",
+    "Number",
     "Select",
     "Cycle",
     "Boolean",
@@ -156,6 +166,7 @@ export const fieldTypes: Array<FieldType> = [
     "Lookup",
     "JSON",
     "YAML",
+    "Object",
     "ObjectList"
 ]
 
@@ -196,10 +207,11 @@ export type DateBasedType = "Date" | "DateTime"
 export function getDefaultOptions<O extends BaseOptions>(type: FieldType): O {
     switch (type) {
         case "Input": return Input.DefaultOptions as unknown as O
+        case "Number": return NumberField.DefaultOptions as unknown as O
         case "Select": return Select.DefaultOptions as unknown as O
         case "Cycle": return Cycle.DefaultOptions as unknown as O
-        case "Boolean": return Boolean.DefaultOptions as unknown as O
-        case "Date": return Date.DefaultOptions as unknown as O
+        case "Boolean": return BooleanField.DefaultOptions as unknown as O
+        case "Date": return DateField.DefaultOptions as unknown as O
         case "DateTime": return DateTime.DefaultOptions as unknown as O
         case "Time": return Time.DefaultOptions as unknown as O
         case "Multi": return Multi.DefaultOptions as unknown as O
@@ -212,9 +224,10 @@ export function getDefaultOptions<O extends BaseOptions>(type: FieldType): O {
         case "CanvasGroupLink": return CanvasGroupLink.DefaultOptions as unknown as O
         case "Formula": return Formula.DefaultOptions as unknown as O
         case "Lookup": return Lookup.DefaultOptions as unknown as O
-        case "JSON": return JSON.DefaultOptions as unknown as O
+        case "JSON": return JSONField.DefaultOptions as unknown as O
         case "YAML": return YAML.DefaultOptions as unknown as O
-        case "ObjectList": throw Error("not implemented")
+        case "Object": return ObjectField.DefaultOptions as unknown as O
+        case "ObjectList": return ObjectList.DefaultOptions as unknown as O
     }
 }
 
@@ -226,10 +239,11 @@ export function getFieldSettings<O extends BaseOptions>(Field: Constructor<IFiel
     const base = buildSettingsModal<O>(Field, plugin, parentSetting, parentSettingContainer)
     switch (type) {
         case "Input": return new (Input.settingsModal(base as unknown as Constructor<ISettingsModal<Input.DefaultedOptions>>))() as unknown as ISettingsModal<O>
+        case "Number": return new (NumberField.settingsModal(base as unknown as Constructor<ISettingsModal<NumberField.DefaultedOptions>>))() as unknown as ISettingsModal<O>
         case "Select": return new (Select.settingsModal(base as unknown as Constructor<ISettingsModal<Select.DefaultedOptions>>))() as unknown as ISettingsModal<O>
         case "Cycle": return new (Cycle.settingsModal(base as unknown as Constructor<ISettingsModal<Cycle.DefaultedOptions>>))() as unknown as ISettingsModal<O>
-        case "Boolean": return new (Boolean.settingsModal(base as unknown as Constructor<ISettingsModal<Boolean.DefaultedOptions>>))() as unknown as ISettingsModal<O>
-        case "Date": return new (Date.settingsModal(base as unknown as Constructor<ISettingsModal<Date.DefaultedOptions>>))() as unknown as ISettingsModal<O>
+        case "Boolean": return new (BooleanField.settingsModal(base as unknown as Constructor<ISettingsModal<BooleanField.DefaultedOptions>>))() as unknown as ISettingsModal<O>
+        case "Date": return new (DateField.settingsModal(base as unknown as Constructor<ISettingsModal<DateField.DefaultedOptions>>))() as unknown as ISettingsModal<O>
         case "DateTime": return new (DateTime.settingsModal(base as unknown as Constructor<ISettingsModal<DateTime.DefaultedOptions>>))() as unknown as ISettingsModal<O>
         case "Time": return new (Time.settingsModal(base as unknown as Constructor<ISettingsModal<Time.DefaultedOptions>>))() as unknown as ISettingsModal<O>
         case "Multi": return new (Multi.settingsModal(base as unknown as Constructor<ISettingsModal<Multi.DefaultedOptions>>))() as unknown as ISettingsModal<O>
@@ -242,19 +256,21 @@ export function getFieldSettings<O extends BaseOptions>(Field: Constructor<IFiel
         case "CanvasGroupLink": return new (CanvasGroupLink.settingsModal(base as unknown as Constructor<ISettingsModal<CanvasGroupLink.DefaultedOptions>>))() as unknown as ISettingsModal<O>
         case "Formula": return new (Formula.settingsModal(base as unknown as Constructor<ISettingsModal<Formula.DefaultedOptions>>))() as unknown as ISettingsModal<O>
         case "Lookup": return new (Lookup.settingsModal(base as unknown as Constructor<ISettingsModal<Lookup.DefaultedOptions>>))() as unknown as ISettingsModal<O>
-        case "JSON": return new (JSON.settingsModal(base as unknown as Constructor<ISettingsModal<JSON.DefaultedOptions>>))() as unknown as ISettingsModal<O>
+        case "JSON": return new (JSONField.settingsModal(base as unknown as Constructor<ISettingsModal<JSONField.DefaultedOptions>>))() as unknown as ISettingsModal<O>
         case "YAML": return new (YAML.settingsModal(base as unknown as Constructor<ISettingsModal<YAML.DefaultedOptions>>))() as unknown as ISettingsModal<O>
-        case "ObjectList": throw Error("not implemented")
+        case "Object": return new (ObjectField.settingsModal(base as unknown as Constructor<ISettingsModal<ObjectField.DefaultedOptions>>))() as unknown as ISettingsModal<O>
+        case "ObjectList": return new (ObjectList.settingsModal(base as unknown as Constructor<ISettingsModal<ObjectList.DefaultedOptions>>))() as unknown as ISettingsModal<O>
     }
 }
 
 export function getFieldModal<O extends BaseOptions>(managedField: IFieldManager<Target, O>, plugin: MetadataMenu): IBaseValueModal<Target> | undefined {
     switch (managedField.type) {
         case "Input": return new (Input.valueModal(managedField as unknown as IFieldManager<Target, Input.Options>, plugin))()
+        case "Number": return new (NumberField.valueModal(managedField as unknown as IFieldManager<Target, NumberField.Options>, plugin))()
         case "Select": return new (Select.valueModal(managedField as unknown as IFieldManager<Target, Select.Options>, plugin))()
         case "Cycle": return new (Cycle.valueModal(managedField as unknown as IFieldManager<Target, Cycle.Options>, plugin))()
-        case "Boolean": return new (Boolean.valueModal(managedField as unknown as IFieldManager<Target, Boolean.Options>, plugin))()
-        case "Date": return new (Date.valueModal(managedField as unknown as IFieldManager<Target, Date.Options>, plugin))()
+        case "Boolean": return new (BooleanField.valueModal(managedField as unknown as IFieldManager<Target, BooleanField.Options>, plugin))()
+        case "Date": return new (DateField.valueModal(managedField as unknown as IFieldManager<Target, DateField.Options>, plugin))()
         case "DateTime": return new (DateTime.valueModal(managedField as unknown as IFieldManager<Target, DateTime.Options>, plugin))()
         case "Time": return new (Time.valueModal(managedField as unknown as IFieldManager<Target, Time.Options>, plugin))()
         case "Multi": return new (Multi.valueModal(managedField as unknown as IFieldManager<Target, Multi.Options>, plugin))()
@@ -262,8 +278,10 @@ export function getFieldModal<O extends BaseOptions>(managedField: IFieldManager
         case "MultiFile": return new (MultiFile.valueModal(managedField as unknown as IFieldManager<Target, MultiFile.Options>, plugin))()
         case "Media": return new (Media.valueModal(managedField as unknown as IFieldManager<Target, Media.Options>, plugin))()
         case "MultiMedia": return new (MultiMedia.valueModal(managedField as unknown as IFieldManager<Target, MultiMedia.Options>, plugin))()
-        case "JSON": return new (JSON.valueModal(managedField as unknown as IFieldManager<Target, JSON.Options>, plugin))()
+        case "JSON": return new (JSONField.valueModal(managedField as unknown as IFieldManager<Target, JSONField.Options>, plugin))()
         case "YAML": return new (YAML.valueModal(managedField as unknown as IFieldManager<Target, YAML.Options>, plugin))()
+        case "Object": return new (ObjectField.valueModal(managedField as unknown as IFieldManager<Target, ObjectField.Options>, plugin))()
+        case "ObjectList": return new (ObjectList.valueModal(managedField as unknown as IFieldManager<Target, ObjectList.Options>, plugin))()
         default: return undefined
     }
 }
@@ -271,10 +289,11 @@ export function getFieldModal<O extends BaseOptions>(managedField: IFieldManager
 export function getFieldClass(type: FieldType): Constructor<IFieldBase> {
     switch (type) {
         case "Input": return Input.Base
+        case "Number": return NumberField.Base
         case "Select": return Select.Base
         case "Cycle": return Cycle.Base
-        case "Boolean": return Boolean.Base
-        case "Date": return Date.Base
+        case "Boolean": return BooleanField.Base
+        case "Date": return DateField.Base
         case "DateTime": return DateTime.Base
         case "Time": return Time.Base
         case "Multi": return Multi.Base
@@ -287,9 +306,10 @@ export function getFieldClass(type: FieldType): Constructor<IFieldBase> {
         case "CanvasGroupLink": return CanvasGroupLink.Base
         case "Formula": return Formula.Base
         case "Lookup": return Lookup.Base
-        case "JSON": return JSON.Base
+        case "JSON": return JSONField.Base
         case "YAML": return YAML.Base
-        case "ObjectList": throw Error("not implemented")
+        case "Object": return ObjectField.Base
+        case "ObjectList": return ObjectList.Base
     }
 }
 
@@ -298,10 +318,11 @@ export type displayValueFunction = (managedField: IFieldManager<Target, BaseOpti
 export function displayValue(type: FieldType): displayValueFunction {
     switch (type) {
         case "Input": return Input.displayValue
+        case "Number": return NumberField.displayValue
         case "Select": return Select.displayValue
         case "Cycle": return Cycle.displayValue
-        case "Boolean": return Boolean.displayValue
-        case "Date": return Date.displayValue
+        case "Boolean": return BooleanField.displayValue
+        case "Date": return DateField.displayValue
         case "DateTime": return DateTime.displayValue
         case "Time": return Time.displayValue
         case "Multi": return Multi.displayValue
@@ -312,11 +333,12 @@ export function displayValue(type: FieldType): displayValueFunction {
         case "Canvas": return Canvas.displayValue
         case "CanvasGroup": return CanvasGroup.displayValue
         case "CanvasGroupLink": return CanvasGroupLink.displayValue
-        case "JSON": return JSON.displayValue
+        case "JSON": return JSONField.displayValue
         case "YAML": return YAML.displayValue
         case "Formula": return Formula.displayValue
         case "Lookup": return Lookup.displayValue
-        case "ObjectList": throw Error("not implemented")
+        case "Object": return ObjectField.displayValue
+        case "ObjectList": return ObjectList.displayValue
     }
 }
 
@@ -325,10 +347,11 @@ export type getActionFunction = (plugin: MetadataMenu, field: LegacyField, file:
 export function getActions(type: FieldType): getActionFunction {
     switch (type) {
         case "Input": return Input.actions
+        case "Number": return NumberField.actions
         case "Select": return Select.actions
         case "Cycle": return Cycle.actions
-        case "Boolean": return Boolean.actions
-        case "Date": return Date.actions
+        case "Boolean": return BooleanField.actions
+        case "Date": return DateField.actions
         case "DateTime": return DateTime.actions
         case "Time": return Time.actions
         case "Multi": return Multi.actions
@@ -336,10 +359,12 @@ export function getActions(type: FieldType): getActionFunction {
         case "MultiFile": return MultiFile.actions
         case "Media": return Media.actions
         case "MultiMedia": return MultiMedia.actions
-        case "JSON": return JSON.actions
+        case "JSON": return JSONField.actions
         case "YAML": return YAML.actions
         case "Formula": return Formula.actions
         case "Lookup": return Lookup.actions
+        case "Object": return ObjectField.actions
+        case "ObjectList": return ObjectList.actions
         default: return (...rest: any[]) => { };
     }
 }
@@ -356,10 +381,11 @@ export function createDvField<O extends BaseOptions>(
     managedField.value = p[managedField.name] || ""
     switch (managedField.type) {
         case "Input": return Input.createDvField(managedField as unknown as IFieldManager<Target, Input.Options>, dv, p, fieldContainer, attrs)
+        case "Number": return NumberField.createDvField(managedField as unknown as IFieldManager<Target, NumberField.Options>, dv, p, fieldContainer, attrs)
         case "Select": return Select.createDvField(managedField as unknown as IFieldManager<Target, Select.Options>, dv, p, fieldContainer, attrs)
         case "Cycle": return Cycle.createDvField(managedField as unknown as IFieldManager<Target, Cycle.Options>, dv, p, fieldContainer, attrs)
-        case "Boolean": return Boolean.createDvField(managedField as unknown as IFieldManager<Target, Boolean.Options>, dv, p, fieldContainer, attrs)
-        case "Date": return Date.createDvField(managedField as unknown as IFieldManager<Target, Date.Options>, dv, p, fieldContainer, attrs)
+        case "Boolean": return BooleanField.createDvField(managedField as unknown as IFieldManager<Target, BooleanField.Options>, dv, p, fieldContainer, attrs)
+        case "Date": return DateField.createDvField(managedField as unknown as IFieldManager<Target, DateField.Options>, dv, p, fieldContainer, attrs)
         case "DateTime": return DateTime.createDvField(managedField as unknown as IFieldManager<Target, DateTime.Options>, dv, p, fieldContainer, attrs)
         case "Time": return Time.createDvField(managedField as unknown as IFieldManager<Target, Time.Options>, dv, p, fieldContainer, attrs)
         case "Multi": return Multi.createDvField(managedField as unknown as IFieldManager<Target, Multi.Options>, dv, p, fieldContainer, attrs)
@@ -368,9 +394,10 @@ export function createDvField<O extends BaseOptions>(
         case "Media": return Media.createDvField(managedField as unknown as IFieldManager<Target, Media.Options>, dv, p, fieldContainer, attrs)
         case "MultiMedia": return MultiMedia.createDvField(managedField as unknown as IFieldManager<Target, MultiMedia.Options>, dv, p, fieldContainer, attrs)
         case "Lookup": return Lookup.createDvField(managedField as unknown as IFieldManager<Target, Lookup.Options>, dv, p, fieldContainer, attrs)
-        case "JSON": return JSON.createDvField(managedField as unknown as IFieldManager<Target, JSON.Options>, dv, p, fieldContainer, attrs)
+        case "JSON": return JSONField.createDvField(managedField as unknown as IFieldManager<Target, JSONField.Options>, dv, p, fieldContainer, attrs)
         case "YAML": return YAML.createDvField(managedField as unknown as IFieldManager<Target, YAML.Options>, dv, p, fieldContainer, attrs)
-        case "ObjectList": throw Error("not implemented")
+        case "Object": return ObjectField.createDvField(managedField as unknown as IFieldManager<Target, ObjectField.Options>, dv, p, fieldContainer, attrs)
+        case "ObjectList": return ObjectList.createDvField(managedField as unknown as IFieldManager<Target, ObjectList.Options>, dv, p, fieldContainer, attrs)
         default: {
             const fieldValue = dv.el('span', p[managedField.name], attrs);
             fieldContainer.appendChild(fieldValue);
@@ -383,10 +410,11 @@ export type getOptionStrFunction = (managedField: IFieldManager<Target, BaseOpti
 export function getOptionStr(type: FieldType): getOptionStrFunction {
     switch (type) {
         case "Input": return Input.getOptionsStr
+        case "Number": return NumberField.getOptionsStr
         case "Select": return Select.getOptionsStr
         case "Cycle": return Cycle.getOptionsStr
-        case "Boolean": return Boolean.getOptionsStr
-        case "Date": return Date.getOptionsStr
+        case "Boolean": return BooleanField.getOptionsStr
+        case "Date": return DateField.getOptionsStr
         case "DateTime": return DateTime.getOptionsStr
         case "Time": return Time.getOptionsStr
         case "Multi": return Multi.getOptionsStr
@@ -395,6 +423,8 @@ export function getOptionStr(type: FieldType): getOptionStrFunction {
         case "Media": return Media.getOptionsStr
         case "MultiMedia": return MultiMedia.getOptionsStr
         case "Lookup": return Lookup.getOptionsStr
+        case "Object": return ObjectField.getOptionsStr
+        case "ObjectList": return ObjectList.getOptionsStr
         default: return () => ""
     }
 }
@@ -404,10 +434,11 @@ export type geValidateValueFunction = (managedField: IFieldManager<Target, BaseO
 export function validateValue(type: FieldType): geValidateValueFunction {
     switch (type) {
         case "Input": return Input.validateValue
+        case "Number": return NumberField.validateValue
         case "Select": return Select.validateValue
         case "Cycle": return Cycle.validateValue
-        case "Boolean": return Boolean.validateValue
-        case "Date": return Date.validateValue
+        case "Boolean": return BooleanField.validateValue
+        case "Date": return DateField.validateValue
         case "DateTime": return DateTime.validateValue
         case "Time": return Time.validateValue
         case "Multi": return Multi.validateValue
@@ -420,9 +451,10 @@ export function validateValue(type: FieldType): geValidateValueFunction {
         case "CanvasGroupLink": return CanvasGroupLink.validateValue
         case "Formula": return Formula.validateValue
         case "Lookup": return Lookup.validateValue
-        case "JSON": return JSON.validateValue
+        case "JSON": return JSONField.validateValue
         case "YAML": return YAML.validateValue
-        case "ObjectList": throw Error("not implemented")
+        case "Object": return ObjectField.validateValue
+        case "ObjectList": return ObjectList.validateValue
     }
 }
 

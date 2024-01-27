@@ -22,6 +22,7 @@ export const sides = [
 export type Direction = "incoming" | "outgoing" | "bothsides"
 
 export interface Options extends BaseOptions {
+    canvasPath: string
     direction?: Direction
     nodeColors?: string[]
     edgeColors?: string[]
@@ -42,6 +43,7 @@ const directionOptions: Record<Direction, string> = {
 }
 
 export const DefaultOptions: DefaultedOptions = {
+    canvasPath: ""
 }
 
 export interface ICanvasBaseSettingModal extends ISettingsModal<Options> {
@@ -230,7 +232,7 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
 
 export function validateValue(managedField: IFieldManager<Target, Options>) {
     let error = false;
-    if (!(this.field.options.canvasPath as string)?.endsWith(".canvas")) {
+    if (!(managedField.options.canvasPath as string)?.endsWith(".canvas")) {
         error = true;
     }
     return !error

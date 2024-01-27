@@ -7,7 +7,7 @@ import { SettingLocation } from "../FieldManager"
 import { cleanActions } from "src/utils/modals"
 import GField from "src/fields/_Field"
 import { FileClass } from "src/fileClass/fileClass"
-import { addInsertIFieldCommand } from "src/commands/paletteCommands"
+import { insertIFieldCommand } from "src/commands/paletteCommands"
 import FieldSetting from "src/settings/FieldSetting"
 import { incrementVersion } from "src/settings/MetadataMenuSettings"
 import { FieldType, frontmatterOnlyTypes, multiTypes, rootOnlyTypes } from "../Fields"
@@ -182,7 +182,9 @@ export function buildSettingsModal<O extends BaseOptions>(
             // path
             this.path = this.initialField.path
             // command
-            this.addCommand = this.field.command !== undefined;
+            console.log(this.field)
+            //this.addCommand = this.field.command !== undefined;
+            this.addCommand = !!this.field.command
             this.command = this.initialField.command || {
                 id: this.field ? `insert__${this.field.id}` : "",
                 icon: "list-plus",
@@ -472,7 +474,7 @@ export function buildSettingsModal<O extends BaseOptions>(
                 };
                 if (this.addCommand) {
                     this.field.command = this.command
-                    addInsertIFieldCommand(this.plugin, this.command, this.field, this.field.fileClassName)
+                    insertIFieldCommand(this.plugin, this.command, this.field, this.field.fileClassName)
                 } else {
                     delete this.field.command
                 }

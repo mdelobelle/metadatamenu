@@ -299,7 +299,7 @@ export function displayValue(managedField: IFieldManager<Target, Options>, conta
         const linkText = link.path.split("/").last() || ""
         const linkEl = container.createEl('a', { text: linkText.replace(/(.*).md/, "$1") });
         linkEl.onclick = () => {
-            this.plugin.app.workspace.openLinkText(link.path, eF.file.path, true)
+            managedField.plugin.app.workspace.openLinkText(link.path, eF.file.path, true)
             onClicked();
         }
     } else {

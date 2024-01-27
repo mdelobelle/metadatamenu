@@ -5,7 +5,7 @@ import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
 import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, multiTypes, rootOnlyTypes, frontmatterOnlyTypes, FieldIcon, FieldTypeTagClass } from "src/types/fieldTypes";
 import { FieldHTMLTagMap, FieldStyle, FieldStyleKey } from "src/types/dataviewTypes";
 import { cleanActions } from "src/utils/modals";
-import { addInsertFieldCommand } from "src/commands/paletteCommands";
+import { insertFieldCommand } from "src/commands/paletteCommands";
 import { IField } from "src/fields/Field";
 import { BaseOptions } from "src/fields/base/BaseField";
 
@@ -430,7 +430,7 @@ export abstract class BaseSettingModal extends Modal {
             };
             if (this.addCommand) {
                 this.field.command = this.command
-                addInsertFieldCommand(this.plugin, this.command, this.field, this.field.fileClassName)
+                insertFieldCommand(this.plugin, this.command, this.field, this.field.fileClassName)
             } else {
                 delete this.field.command
             }

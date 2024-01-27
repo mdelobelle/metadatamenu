@@ -29,16 +29,15 @@ export enum FieldType {
 export const migratedFieldTypes = [
     FieldType.Date,
     FieldType.DateTime,
+    FieldType.Time,
     FieldType.Boolean,
     FieldType.Cycle,
-    FieldType.Date,
-    FieldType.DateTime,
-    FieldType.Time,
     FieldType.MultiMedia,
     FieldType.Media,
     FieldType.MultiFile,
     FieldType.File,
     FieldType.Input,
+    FieldType.Number,
     FieldType.Select,
     FieldType.Multi,
     FieldType.Canvas,
@@ -46,6 +45,8 @@ export const migratedFieldTypes = [
     FieldType.CanvasGroupLink,
     FieldType.JSON,
     FieldType.YAML,
+    FieldType.Object,
+    FieldType.ObjectList,
     FieldType.Formula,
     FieldType.Lookup
 ]

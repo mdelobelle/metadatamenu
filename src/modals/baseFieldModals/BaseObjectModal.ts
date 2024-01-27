@@ -77,5 +77,4 @@ export default abstract class BaseObjectModal<T> extends SuggestModal<T> {
             }
         }
     }
-
 }

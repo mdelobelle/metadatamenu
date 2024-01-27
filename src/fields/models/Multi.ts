@@ -79,7 +79,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             await plugin.fieldIndex.indexFields();
             this.selectedOptions.push(this.inputEl.value)
             const modal = getFieldModal(managedField, plugin)
-            modal.open()
+            modal?.open()
             this.close()
         }
 

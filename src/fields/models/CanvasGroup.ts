@@ -14,9 +14,7 @@ export class Base implements IFieldBase {
     colorClass = "file"
 }
 
-export interface Options extends Omit<AbstractCanvas.Options, 'direction' | 'nodeColors' | 'edgeColors' | 'edgeFromSides' | 'edgeToSides' | 'edgeLabels'> {
-    groupColors?: string[]
-    groupLabels?: string[]
+export interface Options extends AbstractCanvas.Options {
 }
 
 export interface DefaultedOptions extends Options {
@@ -25,6 +23,7 @@ export interface DefaultedOptions extends Options {
 }
 
 export const DefaultOptions: DefaultedOptions = {
+    ...AbstractCanvas.DefaultOptions,
     groupColors: [],
     groupLabels: []
 }

@@ -104,11 +104,7 @@ export function createDvField(
 
     /* button on click : remove button and field and display input field*/
     editBtn.onclick = async () => {
-
-        const file = this.plugin.app.vault.getAbstractFileByPath(p.file.path);
-        if (file instanceof TFile && file.extension === 'md') {
-            await this.buildAndOpenModal(file)
-        }
+        managedField.openModal()
         fieldValue.hide();
         editBtn.hide();
         spacer.hide();

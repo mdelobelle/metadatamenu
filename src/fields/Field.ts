@@ -19,6 +19,7 @@ import ObjectListModal from "src/modals/fields/ObjectListModal"
 import { Constructor } from "src/typings/types"
 import { FieldActions } from "src/components/FieldsModal"
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
+import { Modal as IObjectBaseModal } from "./models/abstractModels/AbstractObject"
 
 // Field Types list agnostic
 
@@ -524,7 +525,7 @@ export interface IFieldManager<T, O extends BaseOptions> extends IField<O> {
     lineNumber?: number,
     asList?: boolean,
     asBlockquote?: boolean,
-    previousModal?: ObjectModal | ObjectListModal
+    previousModal?: IObjectBaseModal<Target>
     openModal: () => void;
     save: (value?: any) => void
 }
@@ -563,7 +564,7 @@ function FieldValueManager<O extends BaseOptions, F extends Constructor<IField<O
     lineNumber?: number,
     asList?: boolean,
     asBlockquote?: boolean,
-    previousModal?: ObjectModal | ObjectListModal
+    previousModal?: IObjectBaseModal<Target>
 ): Constructor<IFieldManager<Target, O>> {
     return class ManagedField extends Base {
         private _modal: IBaseValueModal<Target> | undefined
@@ -574,7 +575,7 @@ function FieldValueManager<O extends BaseOptions, F extends Constructor<IField<O
         public lineNumber?: number = -1
         public asList?: boolean = false
         public asBlockquote?: boolean = false
-        public previousModal?: ObjectModal | ObjectListModal
+        public previousModal?: IObjectBaseModal<Target>
         constructor(...rest: any[]) {
             super(plugin)
             this.target = target
@@ -598,7 +599,7 @@ function FieldValueManager<O extends BaseOptions, F extends Constructor<IField<O
         public save(value?: any) {
             if (value !== undefined) this.value = value
             if (isSingleTargeted(this)) {
-                postValues(plugin, [{ indexedPath: this.id, payload: { value: this.value } }], this.target, this.lineNumber, this.asList, this.asBlockquote)
+                postValues(plugin, [{ indexedPath: this.indexedPath || this.id, payload: { value: this.value } }], this.target, this.lineNumber, this.asList, this.asBlockquote)
             } else if (isMultiTargeted(this)) {
                 new MultiTargetModificationConfirmModal(this).open()
             }
@@ -616,7 +617,7 @@ export function fieldValueManager<O extends BaseOptions>(
     lineNumber?: number,
     asList?: boolean,
     asBlockquote?: boolean,
-    previousModal?: ObjectModal | ObjectListModal
+    previousModal?: IObjectBaseModal<Target>
 ): IFieldManager<Target, O> | undefined {
     const [field] = getFieldConstructor<O>(id, fileClassName, plugin)
     if (!field) return

@@ -5,6 +5,7 @@ import { ButtonComponent, FuzzySuggestModal, Modal, SuggestModal, TFile, setIcon
 import { Modal as IListBasedModal } from "../models/abstractModels/AbstractList";
 import { Modal as IFileBasedModal } from "../models/abstractModels/AbstractFile";
 import { Modal as IMediaBasedModal } from "../models/abstractModels/AbstractMedia";
+import { Modal as IObjectBasedModal } from "../models/abstractModels/AbstractObject";
 import { getExistingFieldForIndexedPath } from "src/commands/getValues";
 import { postValues } from "src/commands/postValues";
 import { Constructor } from "src/typings/types";
@@ -16,15 +17,13 @@ import { BaseOptions } from "./BaseField";
 
 export interface IBaseValueModal<Target> extends Modal {
     managedField: IFieldManager<Target, BaseOptions>
-    previousModal?: IBaseValueModal<Target> //TODO replace w/ ObjectModal | ObjectListModal
+    previousModal?: IObjectBasedModal<Target>
     saved: boolean
     goToPreviousModal: () => void | Promise<void>
     buildSimpleSaveBtn: (fieldContainer: HTMLDivElement) => void
 }
 
-export interface IBasicModal<T extends Target> extends IBaseValueModal<T> {
-
-}
+export interface IBasicModal<T extends Target> extends IBaseValueModal<T> { }
 
 export type ModalType =
     IBasicModal<Target> |
@@ -32,10 +31,9 @@ export type ModalType =
     IFileBasedModal<Target> |
     IMediaBasedModal<Target>
 
-
 export class BaseValueModal<T extends Target, O extends BaseOptions> extends Modal implements IBaseValueModal<T> {
     public managedField: IFieldManager<T, O>
-    public previousModal?: BaseValueModal<T, O> //TODO replace w/ ObjectModal | ObjectListModal
+    public previousModal?: IObjectBasedModal<T>
     public saved: boolean = false
     onOpen(): void {
         this.containerEl.onkeydown = (e) => {
@@ -62,9 +60,12 @@ export class BaseValueModal<T extends Target, O extends BaseOptions> extends Mod
             const pIndexedPath = pM.managedField.indexedPath
             if (upperFieldIndex && isSingleTargeted(this.managedField)) {
                 pM.close()
-                const objectModal = new ObjectModal(this.managedField.plugin, this.managedField.target, undefined, upperPath,
-                    undefined, undefined, undefined, pM.managedField.previousModal)
-                objectModal.open()
+                const uEF = await Note.getExistingFieldForIndexedPath(this.managedField.plugin, this.managedField.target, upperPath)
+                if (uEF) fieldValueManager(this.managedField.plugin, uEF.field.id, uEF.field.fileClassName, this.managedField.target, uEF, uEF.indexedPath)?.openModal()
+                // jardinerie ultime.... à tester
+                // const objectModal = new ObjectModal(this.managedField.plugin, this.managedField.target, undefined, upperPath,
+                //     undefined, undefined, undefined, pM.previousModal)
+                // objectModal.open()
             } else if (pField && pFile) {
                 pM.close()
                 fieldValueManager(
@@ -115,7 +116,7 @@ export function basicModal<O extends BaseOptions>(managedField: IFieldManager<Ta
 
 export interface IBasicSuggestModal<U, T extends Target> extends SuggestModal<U> {
     managedField: IFieldManager<Target, BaseOptions>
-    previousModal?: IBaseValueModal<Target> //TODO replace w/ ObjectModal | ObjectListModal
+    previousModal?: IObjectBasedModal<Target>
     saved: boolean
     goToPreviousModal: () => void | Promise<void>
     buildSimpleSaveBtn: (fieldContainer: HTMLDivElement) => void
@@ -148,7 +149,7 @@ export function basicSuggestModal<U, O extends BaseOptions>(managedField: IField
 
 export interface IBasicFuzzySuggestModal<U, T extends Target> extends FuzzySuggestModal<U> {
     managedField: IFieldManager<Target, BaseOptions>
-    previousModal?: IBaseValueModal<Target> //TODO replace w/ ObjectModal | ObjectListModal
+    previousModal?: IObjectBasedModal<Target>
     saved: boolean
     goToPreviousModal: () => void | Promise<void>
     buildSimpleSaveBtn: (fieldContainer: HTMLDivElement) => void

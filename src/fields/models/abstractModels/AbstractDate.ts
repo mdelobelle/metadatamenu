@@ -495,7 +495,7 @@ export function createDvField(
     /* initial state */
     fieldContainer.appendChild(fieldValue);
     fieldContainer.appendChild(dateBtn);
-    if (this.shiftBtn) fieldContainer.appendChild(this.shiftBtn);
+    if (shiftBtn) fieldContainer.appendChild(shiftBtn);
     fieldContainer.appendChild(spacer);
 }
 
@@ -511,13 +511,13 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
         if (typeof (value) == 'string') {
             return moment(
                 value.replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last(),
-                this.field.options.dateFormat
+                managedField.options.dateFormat
             ).isValid()
         } else {
             return moment(
                 (value as { path: string })
                     .path.replace(/^\[\[/g, "").replace(/\]\]$/g, "").split("|").first()?.split("/").last(),
-                this.field.options.dateFormat
+                managedField.options.dateFormat
             ).isValid()
         }
     }

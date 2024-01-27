@@ -32,18 +32,18 @@ export abstract class FieldManager {
     // [x] Multi Media
     // [x] Cycle
     // [x] Boolean
-    // [ ] Canvas
-    // [ ] CanvasGroup
-    // [ ] CanvasGroupLink
-    // [ ] AbstractDate
-    // [ ] Date
-    // [ ] DateTime
-    // [ ] Time
-    // [ ] Lookup
-    // [ ] Formula
-    // [ ] AbstractRawObject
-    // [ ] JSON
-    // [ ] Yaml
+    // [x] Canvas
+    // [x] CanvasGroup
+    // [x] CanvasGroupLink
+    // [x] AbstractDate
+    // [x] Date
+    // [x] DateTime
+    // [x] Time
+    // [x] Lookup
+    // [x] Formula
+    // [x] AbstractRawObject
+    // [x] JSON
+    // [x] Yaml
     // [ ] Object
     // [ ] ObjectList
 
@@ -61,18 +61,18 @@ export abstract class FieldManager {
     // [x] Multi Media
     // [x] Cycle
     // [x] Boolean
-    // [ ] Canvas
-    // [ ] CanvasGroup
-    // [ ] CanvasGroupLink
-    // [ ] AbstractDate
-    // [ ] Date
-    // [ ] DateTime
-    // [ ] Time
-    // [ ] Lookup
-    // [ ] Formula
-    // [ ] AbstractRawObject
-    // [ ] JSON
-    // [ ] Yaml
+    // [x] Canvas
+    // [x] CanvasGroup
+    // [x] CanvasGroupLink
+    // [x] AbstractDate
+    // [x] Date
+    // [x] DateTime
+    // [x] Time
+    // [x] Lookup
+    // [x] Formula
+    // [x] AbstractRawObject
+    // [x] JSON
+    // [x] Yaml
     // [ ] Object
     // [ ] ObjectList
     abstract createSettingContainer(parentContainer: HTMLDivElement, plugin: MetadataMenu, location?: SettingLocation): void;
@@ -88,18 +88,18 @@ export abstract class FieldManager {
     // [x] Multi Media
     // [x] Cycle
     // [x] Boolean
-    // [ ] Canvas
-    // [ ] CanvasGroup
-    // [ ] CanvasGroupLink
-    // [ ] AbstractDate
-    // [ ] Date
-    // [ ] DateTime
-    // [ ] Time
-    // [ ] Lookup
-    // [ ] Formula
-    // [ ] AbstractRawObject
-    // [ ] JSON
-    // [ ] Yaml
+    // [x] Canvas
+    // [x] CanvasGroup
+    // [x] CanvasGroupLink
+    // [x] AbstractDate
+    // [x] Date
+    // [x] DateTime
+    // [x] Time
+    // [x] Lookup
+    // [x] Formula
+    // [x] AbstractRawObject
+    // [x] JSON
+    // [x] Yaml
     // [ ] Object
     // [ ] ObjectList
     abstract createDvField(dv: any, p: any, fieldContainer: HTMLElement, attrs?: {
@@ -117,18 +117,18 @@ export abstract class FieldManager {
     // [x] Multi Media
     // [x] Cycle
     // [x] Boolean
-    // [ ] Canvas
-    // [ ] CanvasGroup
-    // [ ] CanvasGroupLink
-    // [ ] AbstractDate
-    // [ ] Date
-    // [ ] DateTime
-    // [ ] Time
-    // [ ] Lookup
-    // [ ] Formula
-    // [ ] AbstractRawObject
-    // [ ] JSON
-    // [ ] Yaml
+    // [x] Canvas
+    // [x] CanvasGroup
+    // [x] CanvasGroupLink
+    // [x] AbstractDate
+    // [x] Date
+    // [x] DateTime
+    // [x] Time
+    // [x] Lookup
+    // [x] Formula
+    // [x] AbstractRawObject
+    // [x] JSON
+    // [x] Yaml
     // [ ] Object
     // [ ] ObjectList
     abstract getOptionsStr(): string;
@@ -144,18 +144,18 @@ export abstract class FieldManager {
     // [x] Multi Media
     // [x] Cycle
     // [x] Boolean
-    // [ ] Canvas
-    // [ ] CanvasGroup
-    // [ ] CanvasGroupLink
-    // [ ] AbstractDate
-    // [ ] Date
-    // [ ] DateTime
-    // [ ] Time
-    // [ ] Lookup
-    // [ ] Formula
-    // [ ] AbstractRawObject
-    // [ ] JSON
-    // [ ] Yaml
+    // [x] Canvas
+    // [x] CanvasGroup
+    // [x] CanvasGroupLink
+    // [x] AbstractDate
+    // [x] Date
+    // [x] DateTime
+    // [x] Time
+    // [x] Lookup
+    // [x] Formula
+    // [x] AbstractRawObject
+    // [x] JSON
+    // [x] Yaml
     // [ ] Object
     // [ ] ObjectList
     abstract createAndOpenFieldModal(file: TFile, selectedFieldName: string, eF?: ExistingField, indexedPath?: string,
@@ -173,18 +173,18 @@ export abstract class FieldManager {
     // [x] Multi Media
     // [x] Cycle
     // [x] Boolean
-    // [ ] Canvas
-    // [ ] CanvasGroup
-    // [ ] CanvasGroupLink
-    // [ ] AbstractDate
-    // [ ] Date
-    // [ ] DateTime
-    // [ ] Time
-    // [ ] Lookup
-    // [ ] Formula
-    // [ ] AbstractRawObject
-    // [ ] JSON
-    // [ ] Yaml
+    // [x] Canvas
+    // [x] CanvasGroup
+    // [x] CanvasGroupLink
+    // [x] AbstractDate
+    // [x] Date
+    // [x] DateTime
+    // [x] Time
+    // [x] Lookup
+    // [x] Formula
+    // [x] AbstractRawObject
+    // [x] JSON
+    // [x] Yaml
     // [ ] Object
     // [ ] ObjectList
     public showModalOption: boolean = true;
@@ -247,18 +247,18 @@ export abstract class FieldManager {
     // [x] Multi Media
     // [x] Cycle
     // [x] Boolean
-    // [ ] Canvas
-    // [ ] CanvasGroup
-    // [ ] CanvasGroupLink
-    // [ ] AbstractDate
-    // [ ] Date
-    // [ ] DateTime
-    // [ ] Time
-    // [ ] Lookup
-    // [ ] Formula
-    // [ ] AbstractRawObject
-    // [ ] JSON
-    // [ ] Yaml
+    // [x] Canvas
+    // [x] CanvasGroup
+    // [x] CanvasGroupLink
+    // [x] AbstractDate
+    // [x] Date
+    // [x] DateTime
+    // [x] Time
+    // [x] Lookup
+    // [x] Formula
+    // [x] AbstractRawObject
+    // [x] JSON
+    // [x] Yaml
     // [ ] Object
     // [ ] ObjectList
 
