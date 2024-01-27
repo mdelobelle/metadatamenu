@@ -1,9 +1,8 @@
 import { setIcon, Setting, TFile } from "obsidian";
 import MetadataMenu from "main";
-import Field from "src/fields/_Field";
 import { FieldTypeTagClass } from "src/types/fieldTypes";
 import { openSettings } from "src/fields/base/BaseSetting";
-import { getField } from "src/fields/Field";
+import { getField, Field } from "src/fields/Field";
 import { getOptionStr } from "src/fields/Fields";
 
 export default class FieldSetting extends Setting {

@@ -3,7 +3,7 @@ import { TFile, TextAreaComponent, ToggleComponent } from "obsidian"
 import { updateFormulas } from "src/commands/updateFormulas"
 import { Status, statusIcon } from "src/types/lookupTypes"
 import { Constructor } from "src/typings/types"
-import { ActionLocation, IFieldManager, LegacyField, Target, isFieldActions, isSingleTargeted, isSuggest, removeValidationError } from "../Field"
+import { ActionLocation, IField, IFieldManager, Target, isFieldActions, isSingleTargeted, isSuggest, removeValidationError } from "../Field"
 import { BaseOptions, IFieldBase } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
 
@@ -65,7 +65,7 @@ export function displayValue(managedField: IFieldManager<Target, Options>, conta
     container.createDiv({ text: managedField.plugin.fieldIndex.fileFormulaFieldLastValue.get(`${managedField.target.path}__calculated__${fileClassName}___${managedField.name}`) })
 }
 
-export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath?: string): void {
+export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath?: string): void {
     const name = field.name;
     const f = plugin.fieldIndex;
     const id = `${file.path}__${name}`;

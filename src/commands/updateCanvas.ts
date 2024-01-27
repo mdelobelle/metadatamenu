@@ -3,8 +3,8 @@ import { Notice, TFile } from "obsidian";
 import { AllCanvasNodeData, CanvasData, CanvasEdgeData, CanvasFileData, CanvasGroupData, CanvasNodeData } from "obsidian/canvas"
 import { FieldType } from "src/types/fieldTypes";
 import { IndexedFieldsPayload, postValues } from "./postValues";
-import Field from "src/fields/_Field";
 import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile";
+import { Field } from "src/fields/Field";
 
 export async function updateCanvas(
     plugin: MetadataMenu,
@@ -302,13 +302,14 @@ export async function updateCanvas(
 export async function updateCanvasAfterFileClass(plugin: MetadataMenu, files: TFile[] = []): Promise<void> {
     for (const file of files) {
         const index = plugin.fieldIndex
-        if (index.classFilesPath && file.path.startsWith(this.classFilesPath)) {
+        //if (index.classFilesPath && file.path.startsWith(this.classFilesPath)) {
+        if (index.classFilesPath && !file.path.startsWith(index.classFilesPath)) {
             const fileClassName = index.fileClassesPath.get(file.path)?.name
             const canvasFields = (fileClassName && index.fileClassesFields.get(fileClassName)?.filter(field => field.type === FieldType.Canvas)) || []
             await Promise.all(canvasFields.map(async field => {
-                const canvasFile = this.plugin.app.vault.getAbstractFileByPath(field.options.canvasPath)
+                const canvasFile = plugin.app.vault.getAbstractFileByPath(field.options.canvasPath)
                 if (canvasFile instanceof TFile && canvasFile.extension === "canvas") {
-                    await updateCanvas(this.plugin, { canvas: canvasFile })
+                    await updateCanvas(plugin, { canvas: canvasFile })
                 }
             }))
         }

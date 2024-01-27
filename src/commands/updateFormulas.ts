@@ -1,9 +1,9 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
-import Field from "src/fields/_Field";
 import { FieldType } from "src/types/fieldTypes";
 import { Status } from "src/types/lookupTypes";
 import { arraysAsStringAreEqual } from "./updateLookups";
+import { Field } from "src/fields/Field";
 
 
 export function cleanRemovedFormulasFromIndex(

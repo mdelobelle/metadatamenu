@@ -1,7 +1,7 @@
 import { ButtonComponent, ColorComponent, DropdownComponent, TextAreaComponent, TextComponent, ToggleComponent, setIcon } from "obsidian"
 import { FileSuggest } from "src/suggester/FileSuggester"
 import { Constructor } from "src/typings/types"
-import { IFieldManager, Target, removeValidationError, setValidationError } from "../../Field"
+import { IFieldManager, Target, removeValidationError } from "../../Field"
 import { BaseOptions } from "../../base/BaseField"
 import { ISettingsModal } from "../../base/BaseSetting"
 

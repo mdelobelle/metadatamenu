@@ -1,7 +1,6 @@
 import MetadataMenu from "main";
 import { MarkdownView, Notice, TFile } from "obsidian";
 import NoteFieldsComponent from "src/components/FieldsModal";
-import Field, { FieldCommand } from "src/fields/_Field";
 import { AddFileClassToFileModal, FileClass } from "src/fileClass/fileClass";
 import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
 import chooseSectionModal from "src/modals/chooseSectionModal";
@@ -14,7 +13,7 @@ import { FieldType } from "src/types/fieldTypes";
 import { updateLookups } from "./updateLookups";
 import { updateFormulas } from "./updateFormulas";
 import { Note } from "src/note/note";
-import { IField, fieldValueManager } from "src/fields/Field";
+import { FieldCommand, Field, fieldValueManager } from "src/fields/Field";
 import { BaseOptions } from "src/fields/base/BaseField";
 
 function fileClassAttributeOptionsCommand(plugin: MetadataMenu) {
@@ -255,7 +254,7 @@ export function insertFieldCommand(plugin: MetadataMenu, command: FieldCommand, 
     })
 }
 
-export function insertIFieldCommand<O extends BaseOptions>(plugin: MetadataMenu, command: FieldCommand, field: IField<O>, fileClassName?: string) {
+export function insertIFieldCommand(plugin: MetadataMenu, command: FieldCommand, field: Field, fileClassName?: string) {
     plugin.addCommand({
         id: command.id,
         name: command.label,

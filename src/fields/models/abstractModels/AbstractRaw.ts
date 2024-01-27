@@ -5,7 +5,7 @@ import { LanguageSupport } from "@codemirror/language"
 import { Extension } from "@codemirror/state"
 import { StateField, EditorState } from "@codemirror/state"
 import { IBaseValueModal, IBasicModal, basicModal } from "src/fields/base/BaseModal"
-import { ActionLocation, IFieldManager, LegacyField, Target, fieldValueManager, isFieldActions, isSuggest } from "src/fields/Field"
+import { ActionLocation, IField, IFieldManager, Target, fieldValueManager, isFieldActions, isSuggest } from "src/fields/Field"
 import MetadataMenu from "main"
 import { EditorView, basicSetup } from "codemirror"
 import { cleanActions } from "src/utils/modals"
@@ -110,13 +110,13 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             const newContent = this.editor.state.doc.toString().trim()
             this.managedField.save(newContent)
             this.saved = true
-            if (this.previousModal) await this.goToPreviousModal()
+            if (this.managedField.previousModal) await this.goToPreviousModal()
             this.close();
         }
     }
 }
 
-export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath?: string): void {
+export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath?: string): void {
     const iconName = getIcon(mapFieldType(field.type));
 
     const action = async () => {

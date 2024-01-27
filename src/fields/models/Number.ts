@@ -1,8 +1,8 @@
-import { ButtonComponent, DropdownComponent, Menu, Notice, TFile, TextAreaComponent, TextComponent, setIcon } from "obsidian"
+import { ButtonComponent, TFile, TextComponent } from "obsidian"
 import { IFieldBase, BaseOptions } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
 import { getIcon, mapFieldType } from "../Fields"
-import { IFieldManager, Target, isSingleTargeted, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, LegacyField, ActionLocation, removeValidationError, IField } from "../Field"
+import { IFieldManager, Target, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, ActionLocation, removeValidationError, IField } from "../Field"
 import MetadataMenu from "main"
 import { IBasicModal, basicModal } from "../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
@@ -216,7 +216,7 @@ export function createDvField(
 
 }
 
-export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath?: string): void {
+export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath?: string): void {
     const iconName = getIcon(mapFieldType(field.type));
     const name = field.name
     const { step } = field.options

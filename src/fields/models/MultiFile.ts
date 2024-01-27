@@ -1,6 +1,6 @@
 import MetadataMenu from "main"
 import { ButtonComponent, FuzzyMatch, TFile, setIcon } from "obsidian"
-import { ActionLocation, IField, IFieldManager, LegacyField, Target, isSingleTargeted } from "src/fields/Field"
+import { ActionLocation, IField, IFieldManager, Target, isSingleTargeted } from "src/fields/Field"
 import { IFieldBase } from "src/fields/base/BaseField"
 import * as AbstractFile from "src/fields/models/abstractModels/AbstractFile"
 import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile"
@@ -196,7 +196,7 @@ export function displayValue(managedField: IFieldManager<Target, Options>, conta
     return AbstractFile.displayValue(managedField, container, onClicked)
 }
 
-export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
+export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
     return AbstractFile.actions(plugin, field, file, location, indexedPath)
 }
 

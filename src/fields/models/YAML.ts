@@ -8,7 +8,7 @@ import { TFile, setIcon } from "obsidian";
 import { IFieldBase } from "../base/BaseField";
 import { ISettingsModal } from "../base/BaseSetting";
 import { Constructor } from "src/typings/types";
-import { ActionLocation, IFieldManager, LegacyField, Target } from "../Field";
+import { ActionLocation, IField, IFieldManager, Target } from "../Field";
 import { Extension } from "@codemirror/state"
 import { getIcon } from "../Fields";
 
@@ -113,7 +113,7 @@ export function createDvField(
     }
 }
 
-export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
+export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
     return AbstractRaw.actions(plugin, field, file, location, indexedPath)
 }
 

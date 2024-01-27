@@ -2,12 +2,12 @@ import MetadataMenu from "main";
 import { EditorPosition, Notice, parseYaml, TFile } from "obsidian";
 import { FieldPayload, IndexedFieldsPayload } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
-import Field from "src/fields/_Field";
-import { FieldType, frontmatterOnlyTypes, rawObjectTypes, ReservedMultiAttributes } from "src/types/fieldTypes";
 import * as Lookup from "src/types/lookupTypes";
 import { Line, LinePosition } from "./line";
 import { LineNode } from "./lineNode";
 import { dumpValue } from "src/fields/models/YAML";
+import { getIdAndIndex, Field, upperIndexedPathObjectPath } from "src/fields/Field";
+import { FieldType, frontmatterOnlyTypes, rawObjectTypes, ReservedMultiAttributes } from "src/fields/Fields";
 
 export class Note {
     public lines: Line[] = []
@@ -82,13 +82,13 @@ export class Note {
         switch (location) {
             case "yaml":
                 switch (type) {
-                    case FieldType.Lookup: return this.renderMultiFilesFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
-                    case FieldType.Multi: return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
-                    case FieldType.MultiFile: return this.renderMultiFilesFields(rawValue, (item) => `"${item}"`);;
-                    case FieldType.MultiMedia: return this.renderMultiFilesFields(rawValue, (item) => `"${item}"`);
-                    case FieldType.Canvas: return this.renderMultiFilesFields(rawValue, (item) => item ? `"${item}"` : "");
-                    case FieldType.CanvasGroup: return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
-                    case FieldType.CanvasGroupLink: return this.renderMultiFilesFields(rawValue, (item) => item ? `"${item}"` : "");
+                    case "Lookup": return this.renderMultiFilesFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
+                    case "Multi": return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
+                    case "MultiFile": return this.renderMultiFilesFields(rawValue, (item) => `"${item}"`);;
+                    case "MultiMedia": return this.renderMultiFilesFields(rawValue, (item) => `"${item}"`);
+                    case "Canvas": return this.renderMultiFilesFields(rawValue, (item) => item ? `"${item}"` : "");
+                    case "CanvasGroup": return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
+                    case "CanvasGroupLink": return this.renderMultiFilesFields(rawValue, (item) => item ? `"${item}"` : "");
                     case undefined: if ([...ReservedMultiAttributes, this.plugin.settings.fileClassAlias].includes(field.name)) {
                         return this.renderMultiFields(rawValue, (item) => `${item}`)
                     } else {
@@ -98,7 +98,7 @@ export class Note {
                 }
             case "inline":
                 switch (type) {
-                    case FieldType.Lookup: {
+                    case "Lookup": {
                         if (field &&
                             Lookup.bulletListLookupTypes.includes(field.options.outputType as Lookup.Type)
                         ) {
@@ -107,8 +107,8 @@ export class Note {
                             return rawValue;
                         }
                     }
-                    case FieldType.JSON: return JSON.stringify(JSON.parse(rawValue || "{}"))
-                    case FieldType.YAML: {
+                    case "JSON": return JSON.stringify(JSON.parse(rawValue || "{}"))
+                    case "YAML": {
                         return dumpValue(rawValue)
                     }
                     default: return rawValue;
@@ -240,9 +240,9 @@ export class Note {
         asList: boolean = false,
         asBlockquote: boolean = false
     ): void {
-        const upperPath = Field.upperIndexedPathObjectPath(indexedPath)
-        const { id, index } = Field.getIdAndIndex(indexedPath.split("____").last())
-        const { id: upperFieldId, index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
+        const upperPath = upperIndexedPathObjectPath(indexedPath)
+        const { id, index } = getIdAndIndex(indexedPath.split("____").last())
+        const { id: upperFieldId, index: upperFieldIndex } = getIdAndIndex(upperPath.split("____").last())
         if (lineNumber === -1 && !this.frontmatter) this.initFrontmatter()
         if (id.startsWith("fileclass-field")) {
             const fR = id.match(/fileclass-field-(?<fileClassAlias>.*)/)
@@ -270,10 +270,10 @@ export class Note {
             if (frontmatterOnlyTypes.includes(field.type)) insertLineNumber = frontmatterEnd!
             const position = frontmatterEnd && (insertLineNumber <= frontmatterEnd) ? "yaml" : "inline"
 
-            if (field.type !== FieldType.ObjectList) {
+            if (field.type !== "ObjectList") {
                 //DEBUG && console.log("Not an ObjectList")
                 const parentField = this.existingFields.find(eF => eF.indexedPath === upperPath)
-                if (parentField?.field.type === FieldType.Object) {
+                if (parentField?.field.type === "Object") {
                     //DEBUG && console.log("child of an object")
                     const parentLine = this.getNodeForIndexedPath(upperPath)?.line
                     const lastChildLine = parentLine?.getLastChildLine()

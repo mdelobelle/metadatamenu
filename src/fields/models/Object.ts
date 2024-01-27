@@ -1,22 +1,19 @@
-import { ButtonComponent, DropdownComponent, Menu, Notice, TFile, TextAreaComponent, TextComponent, setIcon } from "obsidian"
-import { IFieldBase, BaseOptions } from "../base/BaseField"
-import { ISettingsModal } from "../base/BaseSetting"
-import { getIcon, mapFieldType, displayValue as getDisplayValue, TypesOptionsMap, objectTypes } from "../Fields"
-import { IFieldManager, Target, isSingleTargeted, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, LegacyField, ActionLocation, buildField, FieldValueManager } from "../Field"
 import MetadataMenu from "main"
-import { IBasicModal, IBasicSuggestModal, basicModal } from "../base/BaseModal"
-import { cleanActions } from "src/utils/modals"
-import { Constructor, FrontmatterObject } from "src/typings/types"
-import { ExistingField, getExistingFieldForIndexedPath, getValueDisplay } from "../ExistingField"
+import { TFile } from "obsidian"
+import { postValues } from "src/commands/postValues"
+import NoteFieldsComponent from "src/components/FieldsModal"
 import { Note } from "src/note/note"
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
 import OptionsList from "src/options/OptionsList"
-import NoteFieldsComponent from "src/components/FieldsModal"
-import * as AbstractObject from "./abstractModels/AbstractObject"
-import GField from "src/fields/_Field"
+import { Constructor, FrontmatterObject } from "src/typings/types"
+import { ExistingField } from "../ExistingField"
+import { ActionLocation, Field, FieldValueManager, IField, IFieldManager, Target, buildField, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest } from "../Field"
+import { TypesOptionsMap, displayValue as getDisplayValue, getIcon, mapFieldType, objectTypes } from "../Fields"
+import { IFieldBase } from "../base/BaseField"
+import { ISettingsModal } from "../base/BaseSetting"
 import { getNextOption } from "./Cycle"
-import { postValues } from "src/commands/postValues"
-import { ObjectListItem, Options as ObjectListOptions, Modal as ObjectListModal } from "./ObjectList"
+import { ObjectListItem, Modal as ObjectListModal, Options as ObjectListOptions } from "./ObjectList"
+import * as AbstractObject from "./abstractModels/AbstractObject"
 
 export class Base implements IFieldBase {
     type = <const>"Object"
@@ -41,14 +38,14 @@ export function settingsModal(Base: Constructor<ISettingsModal<AbstractObject.De
 
 export interface Modal<Target> extends AbstractObject.Modal<Target> {
     existingFields: ExistingField[]
-    missingFields: GField[]
+    missingFields: Field[]
 }
 
 export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<Modal<Target>> {
     const base = AbstractObject.valueModal(managedField, plugin)
     return class ValueModal extends base {
         public existingFields: ExistingField[] = []
-        public missingFields: GField[] = []
+        public missingFields: Field[] = []
         async onOpen() {
             if (this.managedField.indexedPath && isSingleTargeted(this.managedField)) {
 
@@ -61,7 +58,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             super.onOpen()
         };
 
-        getSuggestions(query: string = ""): Array<ExistingField | GField> {
+        getSuggestions(query: string = ""): Array<ExistingField | Field> {
             return [...this.existingFields, ...this.missingFields].filter(f => {
                 if (f instanceof ExistingField) {
                     return f.field.name.toLocaleLowerCase().includes(query.toLocaleLowerCase())
@@ -71,7 +68,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             })
         }
 
-        renderSuggestion(item: ExistingField | GField, el: HTMLElement) {
+        renderSuggestion(item: ExistingField | Field, el: HTMLElement) {
             const container = el.createDiv({ cls: "value-container" })
             if (item instanceof ExistingField) {
                 container.createDiv({ text: `${item.field.name} :`, cls: "label-container" })
@@ -85,7 +82,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
 
         }
 
-        async onChooseSuggestion(item: ExistingField | GField, evt: MouseEvent | KeyboardEvent) {
+        async onChooseSuggestion(item: ExistingField | Field, evt: MouseEvent | KeyboardEvent) {
             const mF = this.managedField
             if (!isSingleTargeted(mF)) return
             const reOpen = async () => {
@@ -150,7 +147,7 @@ export function createDvField(
     return AbstractObject.createDvField(managedField, dv, p, fieldContainer, attrs)
 }
 
-export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined, noteField?: NoteFieldsComponent): void {
+export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined, noteField?: NoteFieldsComponent): void {
     const iconName = getIcon(mapFieldType(field.type));
     if (noteField) {
         const action = async () => await noteField.moveToObject(`${indexedPath}`);
@@ -182,8 +179,8 @@ export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, l
     }
 }
 
-export function getOptionsStr(managedField: IFieldManager<Target, Options>): string {
-    return AbstractObject.getOptionsStr(managedField)
+export function getOptionsStr(field: IField<Options>): string {
+    return AbstractObject.getOptionsStr(field)
 }
 
 export function validateValue(managedField: IFieldManager<Target, Options>): boolean {

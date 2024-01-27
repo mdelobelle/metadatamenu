@@ -1,10 +1,9 @@
 import MetadataMenu from "main";
 import chooseSectionModal from "src/modals/chooseSectionModal";
 import { setIcon, TFile } from "obsidian";
-import { buildField, FieldValueManager, fieldValueManager } from "src/fields/Field";
-import { createDvField as _createDvField, mapFieldType, mapLegacyFieldType } from "src/fields/Fields";
+import { buildField, Field, FieldValueManager, fieldValueManager } from "src/fields/Field";
+import { createDvField as _createDvField } from "src/fields/Fields";
 import { positionIcon } from "src/note/line";
-import GField from "src/fields/_Field"
 
 function buildAndOpenModal(
     plugin: MetadataMenu,
@@ -12,7 +11,7 @@ function buildAndOpenModal(
     fieldName: string,
     attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
 ): void {
-    const field: GField | undefined = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.isRoot() && f.name === fieldName)
+    const field: Field | undefined = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.isRoot() && f.name === fieldName)
     if (field) {
         if (attrs?.options?.inFrontmatter) {
             const fieldVM = fieldValueManager(plugin, field.id, field.fileClassName, file, undefined, undefined, -1)

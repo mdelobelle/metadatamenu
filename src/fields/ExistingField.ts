@@ -1,12 +1,11 @@
 import { TFile } from "obsidian"
-import Field from "./_Field"
 import MetadataMenu from "main"
-import ObjectListField, { ObjectListItem } from "./fieldManagers/ObjectListField"
+import { ObjectListItem } from "./fieldManagers/ObjectListField"
 import { Note } from "src/note/note"
 import { FieldType } from "src/types/fieldTypes"
-import { Line, LinePosition } from "src/note/line"
+import { LinePosition } from "src/note/line"
 import { LineNode } from "src/note/lineNode"
-import { fieldValueManager } from "./Field"
+import { Field, fieldValueManager, upperPath as getUpperPath } from "./Field"
 import { displayItem } from "./models/ObjectList"
 
 interface IExistingField {
@@ -55,7 +54,7 @@ export class ExistingField implements IExistingField {
             //on crée les ObjectListItem
             const upperPath = `${this.indexedPath}[${index}]`
             const eFields = (await Note.getExistingFields(plugin, file)).filter(eF =>
-                eF.indexedPath && Field.upperPath(eF.indexedPath) === upperPath)
+                eF.indexedPath && getUpperPath(eF.indexedPath) === upperPath)
             items.push({
                 fields: eFields,
                 indexInList: index,

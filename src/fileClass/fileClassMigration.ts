@@ -1,12 +1,10 @@
 import MetadataMenu from "main";
-import { ExistingField } from "src/fields/ExistingField";
-import Field from "src/fields/_Field";
 import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 import { legacyGenuineKeys } from "src/utils/dataviewUtils";
-import { getFrontmatterPosition } from "src/utils/fileUtils";
 import { capitalize } from "src/utils/textUtils";
 import { FileClass } from "./fileClass";
 import { FileClassAttribute } from "./fileClassAttribute";
+import { getNewFieldId } from "src/fields/Field";
 
 export class V1FileClassMigration {
     /*
@@ -59,7 +57,7 @@ export class V1FileClassMigration {
                 const attributes = V1FileClassMigration.getInlineFileClassAttributes(this.plugin, fileClass)
                 attributes.forEach(attr => {
                     fields.push({
-                        id: Field.getNewFieldId(this.plugin),
+                        id: getNewFieldId(this.plugin),
                         command: attr.command,
                         display: attr.display,
                         name: attr.name,

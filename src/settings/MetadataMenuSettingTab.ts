@@ -1,6 +1,5 @@
 import { PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal, DropdownComponent, moment, setIcon } from "obsidian";
 import MetadataMenu from "main";
-import Field from "src/fields/_Field";
 import FieldSetting from "src/settings/FieldSetting";
 import { FolderSuggest } from "src/suggester/FolderSuggester";
 import { FileSuggest } from "src/suggester/FileSuggester";
@@ -10,6 +9,7 @@ import FileClassQuerySetting from "./FileClassQuerySetting";
 import { MultiDisplayType } from "src/types/fieldTypes";
 import { DEFAULT_SETTINGS } from "./MetadataMenuSettings";
 import { openSettings } from "src/fields/base/BaseSetting";
+import { buildEmptyField } from "src/fields/Field";
 
 class SettingTextWithButtonComponent extends Setting {
 	private newValues: string[] = []
@@ -348,7 +348,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			const _b = b.path ? b.path + "_" : b.id
 			return _a < _b ? -1 : 1
 		}).forEach(prop => {
-			const property = new Field(this.plugin);
+			const property = new (buildEmptyField(this.plugin, undefined));
 			Object.assign(property, prop);
 			new FieldSetting(fieldsContainer, property, this.plugin);
 		});

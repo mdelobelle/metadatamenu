@@ -1,6 +1,5 @@
 import { Notice, TFile } from "obsidian"
 import MetadataMenu from "main"
-import Field from "../fields/_Field";
 import { FileClass } from "src/fileClass/fileClass";
 import FileClassQuery from "src/fileClass/FileClassQuery";
 import FieldSetting from "src/settings/FieldSetting";
@@ -16,7 +15,7 @@ import { BookmarkItem } from "src/typings/types";
 import { IndexedFieldsPayload, postValues } from "src/commands/postValues";
 import { cFileWithGroups, cFileWithTags, FieldIndexBuilder, FieldsPayloadToProcess, IndexedExistingField } from "./FieldIndexBuilder";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
-
+import { Field, buildEmptyField } from "src/fields/Field";
 
 export default class FieldIndex extends FieldIndexBuilder {
     private launchTime: number
@@ -515,7 +514,7 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     private isLookupOrFormula(field: Field): boolean {
-        return [FieldType.Lookup, FieldType.Formula].includes(field.type)
+        return ["Lookup", "Formula"].includes(field.type)
     }
 
     private getFilesFields(): number {
@@ -576,7 +575,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                 this.filesFileClassesNames.set(f.path, [this.settings.globalFileClass!])
             } else {
                 fileFields = this.plugin.presetFields.map(prop => {
-                    const property = new Field(this.plugin);
+                    const property = new (buildEmptyField(this.plugin, undefined))
                     return Object.assign(property, prop);
                 });
                 this.filesFields.set(f.path, fileFields)

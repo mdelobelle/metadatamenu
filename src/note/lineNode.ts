@@ -1,12 +1,11 @@
 import MetadataMenu from "main";
-import Field from "src/fields/_Field";
-import { FieldType, frontmatterOnlyTypes, MultiDisplayType, objectTypes } from "src/types/fieldTypes";
 import { Line, LinePosition } from "./line";
 import { frontMatterLineField, parsedField } from "src/utils/parser";
 import { buildEndStyle, buildStartStyle } from "src/types/dataviewTypes";
 import * as Lookup from "src/types/lookupTypes";
 import { ExistingField } from "src/fields/ExistingField"
-
+import { buildEmptyField, getValueFromIndexedPath, Field } from "src/fields/Field";
+import { MultiDisplayType, frontmatterOnlyTypes } from "src/fields/Fields";
 
 export const separator: Record<LinePosition, ":" | "::"> = {
     "yaml": ":",
@@ -82,8 +81,8 @@ export class LineNode {
                         const parentLine = this.line.parentLine
                         const parentNode = parentLine?.nodes[0]
                         const parentField = parentNode?.field
-                        if (parentField?.type === FieldType.ObjectList ||
-                            (parentField?.type === FieldType.Lookup &&
+                        if (parentField?.type === "ObjectList" ||
+                            (parentField?.type === "Lookup" &&
                                 Lookup.bulletListLookupTypes.includes(parentField.options.outputType as Lookup.Type))) {
                             const objectListLines = parentLine!.objectListLines
                             objectListLines.push([this.line])
@@ -118,7 +117,7 @@ export class LineNode {
                                 const parentField = parentNode?.field
                                 if (parentField?.id === field.path.split("____").last()) {
                                     this.field = field
-                                    if (this.field && parentField?.type === FieldType.ObjectList) {
+                                    if (this.field && parentField?.type === "ObjectList") {
                                         const objectListLines = parentLine!.objectListLines
                                         if (this.line.isNewListItem) {
                                             objectListLines.push([this.line])
@@ -131,7 +130,7 @@ export class LineNode {
                                     } else {
                                         this.indexedPath = `${parentNode?.indexedPath}____${this.field.id}`
                                     }
-                                    this.value = Field.getValueFromIndexedPath(this.field, this.line.note.frontmatter!, this.indexedPath)
+                                    this.value = getValueFromIndexedPath(this.field, this.line.note.frontmatter!, this.indexedPath)
                                     existingField.value = this.value
                                     existingField.indexedId = this.indexedId
                                     existingField.indexedPath = this.indexedPath
@@ -157,9 +156,14 @@ export class LineNode {
                         }
                     }
                     if (yamlAttr === this.plugin.settings.fileClassAlias) {
+                        //TODO tester
                         const fileClasses = [...this.plugin.fieldIndex.fileClassesName.keys()].sort()
-                        const fileClassField = new Field(this.plugin, yamlAttr, fileClasses)
-                        fileClassField.type = FieldType.Select
+                        const fileClassField = new (buildEmptyField(this.plugin, undefined, "Select"))
+                        const options: Record<string, string> = {}
+                        for (const [index, fC] of fileClasses.entries()) {
+                            options[`${index}`] = fC
+                        }
+                        fileClassField.options = options
                         fileClassField.id = `fileclass-field-${this.plugin.settings.fileClassAlias}`
                         this.field = fileClassField
                         this.indexedPath = fileClassField.id
@@ -180,7 +184,7 @@ export class LineNode {
                         const parentLine = this.line.parentLine
                         const parentNode = parentLine?.nodes[0]
                         const parentField = parentNode?.field
-                        if (parentField && parentField?.type === FieldType.Lookup &&
+                        if (parentField && parentField?.type === "Lookup" &&
                             Lookup.bulletListLookupTypes.includes(parentField.options.outputType as Lookup.Type)) {
                             const objectListLines = parentLine!.objectListLines
                             objectListLines.push([this.line])
@@ -219,25 +223,25 @@ export class LineNode {
     public buildIndentedListItem = (value: any, shift: number = 0) => {
         if (!this.field) return ""
         const ancestors = this.field.getAncestors();
-        const level = ancestors.map(a => a.type === FieldType.ObjectList ? 2 : 1).reduce((p, c) => p + c, 0)
+        const level = ancestors.map(a => a.type === "ObjectList" ? 2 : 1).reduce((p, c) => p + c, 0)
         return `${"  ".repeat(level + 1 + shift)}- ${value}`
     }
 
     private removeIndentedListItems = () => {
         if (!this.field ||
             !(
-                this.field.type === FieldType.JSON
-                || this.field.type === FieldType.YAML
-                || this.field.type === FieldType.Lookup
-                || this.field.type === FieldType.Multi
-                || this.field.type === FieldType.MultiFile
-                || this.field.type === FieldType.Canvas
-                || this.field.type === FieldType.CanvasGroup
-                || this.field.type === FieldType.CanvasGroupLink
+                this.field.type === "JSON"
+                || this.field.type === "YAML"
+                || this.field.type === "Lookup"
+                || this.field.type === "Multi"
+                || this.field.type === "MultiFile"
+                || this.field.type === "Canvas"
+                || this.field.type === "CanvasGroup"
+                || this.field.type === "CanvasGroupLink"
             )
         ) return
         //limit inline indented line removal for lookup fields. it could be done for other multi types
-        if (this.line.position === "inline" && this.field.type !== FieldType.Lookup) return
+        if (this.line.position === "inline" && this.field.type !== "Lookup") return
         const indentLevel = this.field.getAncestors().length
         const nextLines = this.line.note.lines.filter(_line => _line.number > this.line.number)
         for (const line of nextLines) {
@@ -278,7 +282,7 @@ export class LineNode {
             if (Array.isArray(newValue)) {
                 if (this.field.getDisplay() === MultiDisplayType.asList ||
                     (
-                        this.field.type === FieldType.Lookup &&
+                        this.field.type === "Lookup" &&
                         Lookup.bulletListLookupTypes.includes(this.field.options.outputType as Lookup.Type)
                     )
                 ) {
@@ -295,7 +299,7 @@ export class LineNode {
                 }
             } else {
                 content = `${fieldHeader}${_} ${newValue}`;
-                if (this.field.type === FieldType.ObjectList) {
+                if (this.field.type === "ObjectList") {
                     const newItemLine = new Line(this.plugin, this.line.note, location, "", this.line.number! + 1)
                     new LineNode(this.plugin, newItemLine, this.buildIndentedListItem("", 1))
                     newItemLine.renderLine(asList, asBlockquote)

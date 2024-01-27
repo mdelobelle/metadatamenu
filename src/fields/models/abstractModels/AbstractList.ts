@@ -1,8 +1,8 @@
-import { ButtonComponent, DropdownComponent, Menu, SuggestModal, TFile, TextAreaComponent, TextComponent, setIcon } from "obsidian"
+import { ButtonComponent, DropdownComponent, TFile, TextAreaComponent, TextComponent, setIcon } from "obsidian"
 import { BaseOptions } from "../../base/BaseField"
 import { ISettingsModal } from "../../base/BaseSetting"
 import { FileSuggest } from "src/suggester/FileSuggester"
-import { ActionLocation, IField, IFieldManager, LegacyField, Target, baseDisplayValue, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest, removeValidationError, setValidationError } from "../../Field"
+import { ActionLocation, IField, IFieldManager, Target, baseDisplayValue, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest, removeValidationError, setValidationError } from "../../Field"
 import MetadataMenu from "main"
 import { BaseValueModal, IBaseValueModal, basicSuggestModal } from "../../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
@@ -372,7 +372,7 @@ export function displayValue(managedField: IFieldManager<Target, Options>, conta
     }
 }
 
-export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
+export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
     const iconName = getIcon(mapFieldType(field.type));
     const action = async () => {
         const eF = await getExistingFieldForIndexedPath(plugin, file, indexedPath)
@@ -400,7 +400,7 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
 }
 
 //#region utils
-export function getOptionsList(managedField: IFieldManager<Target, Options>): string[] {
+export function getOptionsList(managedField: IField<Options> | IFieldManager<Target, Options>): string[] {
     const options = managedField.options
     let values: string[] = [];
     if (Array.isArray(options)) {

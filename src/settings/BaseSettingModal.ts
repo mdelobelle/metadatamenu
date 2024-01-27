@@ -1,13 +1,13 @@
 import MetadataMenu from "main";
 import { ButtonComponent, DropdownComponent, Modal, Notice, TextComponent, TextAreaComponent, ToggleComponent, setIcon, SuggestModal } from "obsidian";
-import Field, { FieldCommand } from "src/fields/_Field";
 import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
-import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, multiTypes, rootOnlyTypes, frontmatterOnlyTypes, FieldIcon, FieldTypeTagClass } from "src/types/fieldTypes";
+import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, FieldIcon, FieldTypeTagClass } from "src/types/fieldTypes";
 import { FieldHTMLTagMap, FieldStyle, FieldStyleKey } from "src/types/dataviewTypes";
 import { cleanActions } from "src/utils/modals";
 import { insertFieldCommand } from "src/commands/paletteCommands";
-import { IField } from "src/fields/Field";
+import { Field, FieldCommand, IField, buildEmptyField, copyProperty } from "src/fields/Field";
 import { BaseOptions } from "src/fields/base/BaseField";
+import { frontmatterOnlyTypes, multiTypes, rootOnlyTypes } from "src/fields/Fields";
 
 class TypeSelector extends SuggestModal<keyof typeof FieldType> {
     constructor(
@@ -77,7 +77,7 @@ export class ParentSelector extends SuggestModal<Field> {
         const display = path
             .split("____")
             .map(id =>
-                Field.getFieldFromId(
+                getFieldFromId(
                     plugin,
                     id,
                     fileClassName
@@ -114,7 +114,7 @@ export abstract class BaseSettingModal extends Modal {
         public plugin: MetadataMenu,
     ) {
         super(plugin.app);
-        this.initialField = new Field(plugin);
+        this.initialField = new (buildEmptyField(plugin, undefined));
     }
 
     public abstract initFieldAndLocation(field?: Field): void
@@ -352,15 +352,15 @@ export abstract class BaseSettingModal extends Modal {
         fieldTypeLabelContainer.setText(fieldType)
         fieldTypeLabelContainer.className = `chip ${FieldTypeTagClass[fieldType]}`
 
-        this.field = new Field(this.plugin);
+        this.field = new (buildEmptyField(this.plugin, undefined));
         this.setFileClassName()
-        Field.copyProperty(this.field, this.initialField);
+        copyProperty(this.field, this.initialField);
         this.field.name = this.namePromptComponent.getValue()
         this.field.type = FieldTypeLabelMapping[fieldType];
         this.field.path = this.path
         if (this.field.type !== this.initialField.type &&
             ![this.field.type, this.initialField.type].every(fieldType =>
-                [FieldType.Multi, FieldType.Select, FieldType.Cycle].includes(fieldType)
+                ["Multi", "Select", "Cycle"].includes(fieldType)
             )
         ) {
             this.field.options = {}
@@ -496,4 +496,22 @@ export abstract class BaseSettingModal extends Modal {
         const fieldError = fieldsContainer?.querySelector(".field-error")
         if (fieldError) fieldsContainer!.removeChild(fieldError)
     };
+}
+
+function getFieldFromId(plugin: MetadataMenu, id: string, fileClassName: string | undefined) {
+    let field: Field | undefined = undefined;
+    if (fileClassName) {
+        const index = plugin.fieldIndex
+        field = index.fileClassesFields
+            .get(fileClassName)?.find(field => field.id === id)
+
+    } else {
+        const _field = plugin.presetFields
+            .find(field => field.id === id)
+        if (_field) {
+            field = new (buildEmptyField(plugin, fileClassName, _field.type))
+            Object.assign(field, _field);
+        }
+    }
+    return field
 }

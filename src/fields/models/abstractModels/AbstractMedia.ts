@@ -1,13 +1,13 @@
 import MetadataMenu from "main"
-import { ButtonComponent, DropdownComponent, FuzzyMatch, FuzzySuggestModal, TFile, TextAreaComponent, TextComponent, ToggleComponent, setIcon } from "obsidian"
-import { ActionLocation, IField, IFieldManager, LegacyField, Target, removeValidationError } from "src/fields/Field"
-import { BaseOptions, IFieldBase } from "src/fields/base/BaseField"
-import { BaseValueModal, IBaseValueModal, basicFuzzySuggestModal } from "src/fields/base/BaseModal"
+import { ButtonComponent, DropdownComponent, FuzzyMatch, TFile, TextAreaComponent, TextComponent, ToggleComponent, setIcon } from "obsidian"
+import { ActionLocation, IField, IFieldManager, Target, removeValidationError } from "src/fields/Field"
+import { IFieldBase } from "src/fields/base/BaseField"
+import { IBaseValueModal, basicFuzzySuggestModal } from "src/fields/base/BaseModal"
 import { ISettingsModal } from "src/fields/base/BaseSetting"
 import { FolderSuggest } from "src/suggester/FolderSuggester"
 import { Constructor } from "src/typings/types"
-import { createDvField as _createDvField, Options as FileOptions, actions as fileActions } from "./AbstractFile"
 import { getLink } from "src/utils/parser"
+import { Options as FileOptions, createDvField as _createDvField, actions as fileActions } from "./AbstractFile"
 
 //#region types
 
@@ -307,7 +307,7 @@ export function displayValue(managedField: IFieldManager<Target, Options>, conta
     container.createDiv();
 }
 
-export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
+export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
     return fileActions(plugin, field, file, location, indexedPath)
 }
 

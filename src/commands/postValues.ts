@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
-import Field from "src/fields/_Field";
+import { getIdAndIndex } from "src/fields/Field";
 import { Note } from "src/note/note";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { getFileFromFileOrPath } from "src/utils/fileUtils";
@@ -35,7 +35,7 @@ export async function postValues(
     await note.createOrUpdateFields(payload, lineNumber, asList, asBlockquote)
     const changes = []
     for (const item of payload) {
-        const { id, index } = Field.getIdAndIndex(item.indexedPath.split("____").last())
+        const { id, index } = getIdAndIndex(item.indexedPath.split("____").last())
         const field = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.id === id)
         const fieldName = field?.name
         const value = item.payload.value

@@ -2,7 +2,7 @@ import { TFile } from "obsidian"
 import { IFieldBase } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
 import * as AbstractDate from "./abstractModels/AbstractDate"
-import { ActionLocation, IField, IFieldManager, LegacyField, Target } from "../Field"
+import { ActionLocation, IField, IFieldManager, Target } from "../Field"
 import MetadataMenu from "main"
 import { Constructor } from "src/typings/types"
 
@@ -45,7 +45,7 @@ export function createDvField(
     return AbstractDate.createDvField(managedField, dv, p, fieldContainer, attrs)
 }
 
-export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
+export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
     return AbstractDate.actions(plugin, field, file, location, indexedPath)
 }
 

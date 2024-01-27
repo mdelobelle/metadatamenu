@@ -2,7 +2,6 @@ import MetadataMenu from "main";
 import { MarkdownView, Menu, Notice, TFile } from "obsidian";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import NoteFieldsComponent from "src/components/FieldsModal";
-import Field from "src/fields/_Field";
 import { AddFileClassToFileModal } from "src/fileClass/fileClass";
 import AddNewFileClassModal from "src/modals/AddNewFileClassModal";
 import { LineNode } from "src/note/lineNode";
@@ -13,8 +12,8 @@ import { getFrontmatterPosition } from "src/utils/fileUtils";
 import chooseSectionModal from "../modals/chooseSectionModal";
 import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
 import FileClassOptionsList from "./FileClassOptionsList";
-import { IFieldManager, fieldValueManager, openFieldModal } from "src/fields/Field";
-import { getActions, getFieldModal } from "src/fields/Fields";
+import { IFieldManager, fieldValueManager, openFieldModal, upperPath } from "src/fields/Field";
+import { getActions } from "src/fields/Fields";
 import { getNextOption, Options as CycleOptions } from "src/fields/models/Cycle";
 
 function isMenu(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal | "ManageAtCursorCommand"): location is Menu {
@@ -220,9 +219,8 @@ export default class OptionsList {
 	}
 
 	private buildFieldOptions(): void {
-		console.log(this.note)
 		this.note?.existingFields
-			.filter(eF => eF.indexedPath && Field.upperPath(eF.indexedPath) === this.path)
+			.filter(eF => eF.indexedPath && upperPath(eF.indexedPath) === this.path)
 			.forEach(eF => {
 				const field = eF.field
 				if (field) {

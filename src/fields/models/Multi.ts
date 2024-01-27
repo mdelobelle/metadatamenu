@@ -2,7 +2,7 @@
 import MetadataMenu from "main";
 import * as AbstractList from "./abstractModels/AbstractList"
 import { ISettingsModal } from "../base/BaseSetting";
-import { ActionLocation, IField, IFieldManager, LegacyField, Target, isSingleTargeted } from "../Field";
+import { ActionLocation, IField, IFieldManager, Target, isSingleTargeted } from "../Field";
 import { getFieldModal } from "../Fields";
 import { ButtonComponent, TFile, setIcon } from "obsidian";
 import { getLink } from "src/utils/parser";
@@ -241,7 +241,7 @@ export function createDvField(
 
 }
 
-export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
+export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
     return AbstractList.actions(plugin, field, file, location, indexedPath)
 }
 

@@ -1,9 +1,9 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
-import Field from "src/fields/_Field";
 import * as Lookup from "src/types/lookupTypes";
 import { IndexedFieldsPayload } from "./postValues";
 import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile";
+import { Field } from "src/fields/Field";
 
 export function arraysAsStringAreEqual(a: string, b: string) {
     const aAsArray = typeof a === "string" ? a.split(",").map(v => v.trim()) : (Array.isArray(a) ? a : [])

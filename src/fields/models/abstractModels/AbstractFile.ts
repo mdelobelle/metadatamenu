@@ -1,10 +1,10 @@
 import MetadataMenu from "main"
-import { ButtonComponent, FuzzySuggestModal, Notice, TFile, TextAreaComponent, setIcon } from "obsidian"
+import { ButtonComponent, Notice, TFile, TextAreaComponent, setIcon } from "obsidian"
 import { getExistingFieldForIndexedPath } from "src/fields/ExistingField"
-import { ActionLocation, IField, IFieldManager, LegacyField, Target, baseDisplayValue, fieldValueManager, getOptions, isFieldActions, isSuggest, removeValidationError } from "src/fields/Field"
+import { ActionLocation, IField, IFieldManager, Target, fieldValueManager, getOptions, isFieldActions, isSuggest, removeValidationError } from "src/fields/Field"
 import { getIcon, mapFieldType } from "src/fields/Fields"
-import { BaseOptions, IFieldBase, isFieldOptions } from "src/fields/base/BaseField"
-import { BaseValueModal, IBaseValueModal, basicFuzzySuggestModal } from "src/fields/base/BaseModal"
+import { BaseOptions, IFieldBase } from "src/fields/base/BaseField"
+import { IBaseValueModal, basicFuzzySuggestModal } from "src/fields/base/BaseModal"
 import { ISettingsModal } from "src/fields/base/BaseSetting"
 import { Link } from "src/types/dataviewTypes"
 import { Constructor } from "src/typings/types"
@@ -211,7 +211,7 @@ export function displayValue(managedField: IFieldManager<Target, Options>, conta
     if (managedField.eF) displayLinksOrText(managedField.value, managedField.eF.file, container, managedField.plugin, onClicked)
 }
 
-export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
+export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
     const iconName = getIcon(mapFieldType(field.type));
     const action = async () => {
         const eF = await getExistingFieldForIndexedPath(plugin, file, indexedPath)
@@ -260,7 +260,7 @@ export function convertDataviewArrayOfLinkToArrayOfPath(arr: (Link | any)[]) {
     }, [])
 }
 
-export function getFiles(managedField: IFieldManager<Target, Options>, currentFile?: TFile): TFile[] {
+export function getFiles(managedField: IField<Options> | IFieldManager<Target, Options>, currentFile?: TFile): TFile[] {
     const options = getOptions(managedField) as DefaultedOptions
     const dvQueryString = options.dvQueryString
     //@ts-ignore

@@ -1,17 +1,15 @@
 import MetadataMenu from "main"
 import { ButtonComponent, DropdownComponent, Modal, Notice, SuggestModal, TextComponent, ToggleComponent, setIcon } from "obsidian"
-import { FieldCommand } from "../_Field"
 import { FieldIcon, FieldTypeTagClass, FieldTypeTooltip, MultiDisplayType } from "src/types/fieldTypes"
 import { FieldHTMLTagMap, FieldStyle as GFieldStyle, FieldStyleKey } from "src/types/dataviewTypes"
 import { cleanActions } from "src/utils/modals"
-import GField from "src/fields/_Field"
 import { FileClass } from "src/fileClass/fileClass"
 import { insertIFieldCommand } from "src/commands/paletteCommands"
 import FieldSetting from "src/settings/FieldSetting"
 import { incrementVersion } from "src/settings/MetadataMenuSettings"
 import { FieldType, frontmatterOnlyTypes, multiTypes, rootOnlyTypes } from "../Fields"
 import { getFieldSettings } from "../Fields"
-import { IField, buildEmptyField, copyProperty, exportIField, field, getField, getFieldConstructor, getNewFieldId, getOptions, removeValidationError } from "../Field"
+import { FieldCommand, IField, buildEmptyField, copyProperty, getField, getFieldConstructor, getNewFieldId, getOptions, removeValidationError } from "../Field"
 import { Constructor } from "src/typings/types"
 import { BaseOptions } from "./BaseField"
 
@@ -509,16 +507,12 @@ export function buildSettingsModal<O extends BaseOptions>(
                 const _field = cEF ? getField(cEF.id, undefined, this.plugin) : undefined
                 if (_field) {
                     copyProperty(_field, this.field);
-                    const GField = exportIField(_field)
-                    this.plugin.presetFields = [...this.plugin.presetFields.filter(p => p.id !== cEF.id), GField]
+                    this.plugin.presetFields = [...this.plugin.presetFields.filter(p => p.id !== cEF.id), _field]
                 } else {
-                    this.plugin.presetFields.push(exportIField(this.field));
+                    this.plugin.presetFields.push(this.field);
                 };
                 copyProperty(this.initialField, this.field)
-                if (parentSetting) {
-                    const gField = parentSetting.field
-                    GField.copyProperty(gField, exportIField(this.field));
-                }
+                if (parentSetting) copyProperty(parentSetting.field, this.field);
                 parentSetting?.setTextContentWithname()
                 incrementVersion(this.plugin)
                 await this.plugin.saveSettings();
@@ -580,8 +574,7 @@ export function buildSettingsModal<O extends BaseOptions>(
                     if (!this.isNew && parentSetting) {
                         parentSetting.setTextContentWithname()
                     } else {
-                        const gField = exportIField(this.field)
-                        new FieldSetting(parentSettingContainer, gField, this.plugin);
+                        new FieldSetting(parentSettingContainer, this.field, this.plugin);
                     };
                 }
             }

@@ -1,13 +1,12 @@
-import { ButtonComponent, DropdownComponent, Menu, Notice, TFile, TextAreaComponent, TextComponent, setIcon } from "obsidian"
-import { IFieldBase, BaseOptions } from "../base/BaseField"
-import { ISettingsModal } from "../base/BaseSetting"
-import { getIcon, mapFieldType } from "../Fields"
-import { IFieldManager, Target, isSingleTargeted, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, LegacyField, ActionLocation, IField } from "../Field"
 import MetadataMenu from "main"
-import { IBasicModal, basicModal } from "../base/BaseModal"
-import { cleanActions } from "src/utils/modals"
+import { ButtonComponent, TFile } from "obsidian"
 import { Constructor } from "src/typings/types"
 import { getExistingFieldForIndexedPath } from "../ExistingField"
+import { ActionLocation, IField, IFieldManager, Target, baseDisplayValue, fieldValueManager, isFieldActions, isSuggest } from "../Field"
+import { getIcon, mapFieldType } from "../Fields"
+import { BaseOptions, IFieldBase } from "../base/BaseField"
+import { IBasicModal, basicModal } from "../base/BaseModal"
+import { ISettingsModal } from "../base/BaseSetting"
 
 export class Base implements IFieldBase {
     type = <const>"Boolean"
@@ -101,7 +100,7 @@ export function createDvField(
     checkbox.onchange = () => managedField.save((!managedField.value).toString())
 }
 
-export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath?: string): void {
+export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath?: string): void {
     const iconName = getIcon(mapFieldType(field.type));
 
     const action = async () => {

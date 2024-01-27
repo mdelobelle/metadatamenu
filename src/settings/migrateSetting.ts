@@ -1,7 +1,7 @@
 import MetadataMenu from "main"
-import Field from "../fields/_Field"
 import { FieldType } from "src/types/fieldTypes"
 import * as selectValuesSource from "../types/selectValuesSourceTypes"
+import { Field } from "src/fields/Field"
 
 interface V1Field extends Field {
     isMulti?: boolean,
@@ -50,7 +50,7 @@ export const migrateSettingsV1toV2 = async (plugin: MetadataMenu) => {
 export const migrateSettingsV2toV3 = async (plugin: MetadataMenu) => {
     const presetFields = plugin.presetFields
     presetFields.forEach((p: V2Field) => {
-        if ([FieldType.Select, FieldType.Multi].includes(p.type)) {
+        if (["Select", "Multi"].includes(p.type)) {
             //Step0: modify options for Select and MultiSelect
             const currentOptionKeys = Object.keys(p.options);
             p.options.valuesList = {}

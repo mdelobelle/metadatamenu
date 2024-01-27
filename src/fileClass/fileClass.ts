@@ -3,7 +3,6 @@ import MetadataMenu from "main";
 import { Notice, SuggestModal, TFile } from "obsidian";
 import { FieldType, FieldTypeLabelMapping, MultiDisplayType } from "src/types/fieldTypes";
 import { capitalize } from "src/utils/textUtils";
-import Field, { FieldCommand } from "src/fields/_Field";
 import { postValues } from "src/commands/postValues";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { Note } from "src/note/note";
@@ -13,8 +12,7 @@ import { SavedView } from "./views/tableViewComponents/saveViewModal";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { compareArrays } from "src/utils/array";
 import { FieldType as IFieldType } from "src/fields/Fields"
-import { IField, getNewFieldId, stringToBoolean } from "src/fields/Field";
-import { BaseOptions } from "src/fields/base/BaseField";
+import { Field, getNewFieldId, stringToBoolean, FieldCommand } from "src/fields/Field";
 
 interface ShortId {
     id: string
@@ -475,15 +473,15 @@ class FileClass {
                     display: newDisplay,
                     style: newStyle,
                     path: newPath,
-                    id: Field.getNewFieldId(this.plugin)
+                    id: getNewFieldId(this.plugin)
                 })
             }
         })
         await this.incrementVersion();
     }
 
-    public async updateIAttribute<O extends BaseOptions>(
-        attr: IField<O>,
+    public async updateIAttribute(
+        attr: Field,
         newType: IFieldType,
         newName: string,
         newOptions?: string[] | Record<string, string>,
@@ -529,7 +527,7 @@ class FileClass {
         })
     }
 
-    public async removeIAttribute<O extends BaseOptions>(attr: IField<O>): Promise<void> {
+    public async removeIAttribute(attr: Field): Promise<void> {
         const file = this.getClassFile();
         await this.plugin.app.fileManager.processFrontMatter(file, fm => {
             fm.fields = fm.fields.filter((f: any) => f.id !== attr.id)

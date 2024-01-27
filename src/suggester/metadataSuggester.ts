@@ -10,11 +10,10 @@ import {
     parseYaml,
     Notice,
 } from "obsidian";
-import { FieldType, MultiDisplayType } from "src/types/fieldTypes";
+import { MultiDisplayType } from "src/types/fieldTypes";
 import { genericFieldRegex, getLineFields, encodeLink } from "../utils/parser";
-import Field from "src/fields/_Field";
 import { buildMarkDownLink, getFiles } from "src/fields/models/abstractModels/AbstractFile";
-import { IFieldManager, fieldValueManager } from "src/fields/Field";
+import { Field, IFieldManager, fieldValueManager } from "src/fields/Field";
 import { getOptionsList } from "src/fields/models/abstractModels/AbstractList";
 import { Options as ListOptions } from "src/fields/models/abstractModels/AbstractList";
 import { Options as FileOptions } from "src/fields/models/abstractModels/AbstractFile";
@@ -193,9 +192,9 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                     .sort()
                     .map(tag => Object({ attr: fieldName, value: tag.replace(/^#/, "") }))
             }
-            if (this.field && [FieldType.Cycle, FieldType.Multi, FieldType.Select].contains(this.field.type)) {
+            if (this.field && ["Cycle", "Multi", "Select"].contains(this.field.type)) {
                 return getFilteredOptionsList(this.field, firstValues, lastValue)
-            } else if (this.field && [FieldType.File, FieldType.MultiFile].includes(this.field.type)) {
+            } else if (this.field && ["File", "MultiFile"].includes(this.field.type)) {
                 const sortingMethod = new Function("a", "b", `return ${this.field.options.customSorting}`) ||
                     function (a: TFile, b: TFile) { return a.basename < b.basename ? -1 : 1 }
                 const fieldVM = fieldValueManager(this.plugin, this.field.id, this.field.fileClassName, file)

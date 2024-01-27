@@ -1,9 +1,9 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
-import Field from "src/fields/_Field";
 import { Note } from "src/note/note";
 import { getFileFromFileOrPath } from "src/utils/fileUtils";
 import { IndexedFieldsPayload, postValues } from "./postValues";
+import { getIdAndIndex } from "src/fields/Field";
 
 export async function insertMissingFields(
     plugin: MetadataMenu,
@@ -32,7 +32,7 @@ export async function insertMissingFields(
                 fieldsToInsert.push({ indexedPath: field.id, payload: { value: "" } })
             })
     } else {
-        const { id, index } = Field.getIdAndIndex(indexedPath?.split("____").last())
+        const { id, index } = getIdAndIndex(indexedPath?.split("____").last())
         const existingFields = note.existingFields.filter(_f => {
             const upperIndexedIdsInPath = _f.indexedPath?.split("____")
             upperIndexedIdsInPath?.pop()

@@ -1,9 +1,8 @@
 import MetadataMenu from "main"
 import { DropdownComponent, TFile, TextAreaComponent, TextComponent, ToggleComponent } from "obsidian"
-import { updateFormulas } from "src/commands/updateFormulas"
-import { Status, statusIcon } from "src/types/lookupTypes"
+import { Status } from "src/types/lookupTypes"
 import { Constructor } from "src/typings/types"
-import { ActionLocation, IField, IFieldManager, LegacyField, Target, isFieldActions, isSingleTargeted, isSuggest, removeValidationError } from "../Field"
+import { ActionLocation, IField, IFieldManager, Target, isFieldActions, isSingleTargeted, isSuggest, removeValidationError } from "../Field"
 import { BaseOptions, IFieldBase } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
 import * as Lookup from "src/types/lookupTypes";
@@ -216,7 +215,7 @@ export function displayValue(managedField: IFieldManager<Target, Options>, conta
     if (isSingleTargeted(managedField)) displayLinksOrText(managedField.value, managedField.target, container, managedField.plugin, () => onClicked)
 }
 
-export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath?: string): void {
+export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath?: string): void {
     const name = field.name
     if (!field.options.autoUpdate && field.options.autoUpdate !== undefined) {
         const f = plugin.fieldIndex;

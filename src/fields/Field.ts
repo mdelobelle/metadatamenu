@@ -1,15 +1,12 @@
 import MetadataMenu from "main"
 
 import { Menu, TFile, TextAreaComponent, TextComponent } from "obsidian"
-import { FieldCommand } from "./_Field"
-import { MultiDisplayType } from "src/types/fieldTypes"
 import { FieldStyleLabel } from "src/types/dataviewTypes"
 import cryptoRandomString from "crypto-random-string"
 import { LineNode } from "src/note/lineNode"
-import GField from "src/fields/_Field"
 import FCSM from "src/options/FieldCommandSuggestModal";
 import FieldSettingsModal from "src/settings/FieldSettingsModal"
-import { FieldType, getFieldModal, multiTypes, objectTypes, rootOnlyTypes, getFieldClass, mapLegacyFieldType, getDefaultOptions } from "./Fields"
+import { FieldType, getFieldModal, multiTypes, objectTypes, rootOnlyTypes, getFieldClass, mapLegacyFieldType, getDefaultOptions, MultiDisplayType } from "./Fields"
 import { FieldParam, IFieldBase, BaseOptions, isFieldOptions } from "./base/BaseField"
 import { postValues } from "src/commands/postValues"
 import { IBaseValueModal, MultiTargetModificationConfirmModal } from "./base/BaseModal"
@@ -19,7 +16,7 @@ import ObjectListModal from "src/modals/fields/ObjectListModal"
 import { Constructor } from "src/typings/types"
 import { FieldActions } from "src/components/FieldsModal"
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
-import { Modal as IObjectBaseModal } from "./models/abstractModels/AbstractObject"
+import { Modal as IObjectBaseModal, Options as BaseObjectOptions } from "./models/abstractModels/AbstractObject"
 import InsertFieldSuggestModal from "src/modals/insertFieldSuggestModal"
 
 // Field Types list agnostic
@@ -27,6 +24,15 @@ import InsertFieldSuggestModal from "src/modals/insertFieldSuggestModal"
 //export type Constructor<T> = new (...args: any[]) => T;
 
 //#region Field
+
+export type Field = IField<BaseOptions>
+
+export interface FieldCommand {
+    id: string,
+    label: string,
+    icon: string,
+    hotkey?: string
+}
 
 type FieldStyle = Record<keyof typeof FieldStyleLabel, boolean>
 
@@ -49,7 +55,7 @@ export interface IField<O extends BaseOptions> extends IFieldBase {
     getDottedPath(): string
     hasIdAsAncestor(childId: string): boolean
     getCompatibleParents(): IField<O>[]
-    getAncestors(fieldId: string): IField<O>[]
+    getAncestors(fieldId?: string): IField<O>[]
     getIndentationLevel(node: LineNode): number
     isFirstItemOfObjectList(node: LineNode): boolean
     getOtherObjectTypeFields(): IField<O>[]
@@ -216,7 +222,7 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
         }
 
         public getOtherObjectTypeFields(): IField<O>[] {
-            let objectFields: LegacyField[]
+            let objectFields: IField<BaseObjectOptions>[]
             if (this.fileClassName) {
                 const index = this.plugin.fieldIndex
                 objectFields = index.fileClassesFields
@@ -303,7 +309,7 @@ export function buildField<O extends BaseOptions>(
     return _field
 }
 
-export function buildEmptyField<O extends BaseOptions>(plugin: MetadataMenu, fileClassName: string | undefined, type: FieldType): Constructor<IField<O>> {
+export function buildEmptyField<O extends BaseOptions>(plugin: MetadataMenu, fileClassName: string | undefined, type: FieldType = "Input"): Constructor<IField<O>> {
     return buildField<O>(plugin, "", "", "", fileClassName, undefined, undefined, undefined, type, getDefaultOptions(type))
 }
 
@@ -318,21 +324,6 @@ export function getOptions<O extends BaseOptions>(field: IField<O> | IFieldManag
     } else {
         return field.options as O
     }
-}
-
-export function exportIField<O extends BaseOptions>(field: IField<O>): LegacyField {
-
-    const _field = new GField(field.plugin)
-    _field.id = field.id
-    _field.type = mapLegacyFieldType(field.type)
-    _field.name = field.name
-    _field.fileClassName = field.fileClassName
-    _field.command = field.command
-    _field.display = field.display
-    _field.options = field.options
-    _field.path = field.path
-    _field.style = field.style
-    return _field
 }
 
 export function getFieldConstructor<O extends BaseOptions>(id: string, fileClassName: string | undefined, plugin: MetadataMenu): [Constructor<IField<O>>, FieldType] | [] {
@@ -514,8 +505,6 @@ export function getValueFromPath(obj: any, path: string): string {
 
 //#region FieldValueManager
 
-export interface LegacyField extends GField { }
-
 export type ActionLocation = Menu | FieldCommandSuggestModal | FieldActions
 
 export interface IFieldManager<T, O extends BaseOptions> extends IField<O> {
@@ -535,8 +524,8 @@ export type Target =
     TFile |
     TFile[]
 
-export function isSingleTargeted<O extends BaseOptions>(managedField: IFieldManager<Target, O>): managedField is IFieldManager<TFile, O> {
-    return managedField.target instanceof TFile
+export function isSingleTargeted<O extends BaseOptions>(managedField: IField<O> | IFieldManager<Target, O>): managedField is IFieldManager<TFile, O> {
+    return 'target' in managedField && managedField.target instanceof TFile
 }
 
 export function isMultiTargeted<O extends BaseOptions>(managedField: IFieldManager<Target, O>): managedField is IFieldManager<TFile[], O> {

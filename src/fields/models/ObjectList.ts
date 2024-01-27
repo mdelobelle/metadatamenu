@@ -1,16 +1,16 @@
-import { Constructor, FrontmatterObject } from "src/typings/types"
-import { IFieldBase, BaseOptions } from "../base/BaseField"
-import { ISettingsModal } from "../base/BaseSetting"
-import * as AbstractObject from "./abstractModels/AbstractObject"
-import { ButtonComponent, TFile, TextAreaComponent, setIcon } from "obsidian"
-import { ActionLocation, FieldValueManager, IField, IFieldManager, LegacyField, Target, buildField, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest, removeValidationError } from "../Field"
-import { ExistingField } from "../ExistingField"
-import NoteFieldsComponent from "src/components/FieldsModal"
 import MetadataMenu from "main"
-import { getIcon, mapFieldType, objectTypes } from "../Fields"
-import { Note } from "src/note/note"
+import { ButtonComponent, TFile, TextAreaComponent, setIcon } from "obsidian"
 import { postValues } from "src/commands/postValues"
+import NoteFieldsComponent from "src/components/FieldsModal"
+import { Note } from "src/note/note"
+import { Constructor, FrontmatterObject } from "src/typings/types"
+import { ExistingField } from "../ExistingField"
+import { ActionLocation, IField, IFieldManager, Target, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest, removeValidationError } from "../Field"
+import { getIcon, mapFieldType, objectTypes } from "../Fields"
+import { IFieldBase } from "../base/BaseField"
+import { ISettingsModal } from "../base/BaseSetting"
 import { getPseudoObjectValueManagerFromObjectItem } from "./Object"
+import * as AbstractObject from "./abstractModels/AbstractObject"
 
 export class Base implements IFieldBase {
     tooltip: "Accepts a list of object fields"
@@ -162,7 +162,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
     }
 }
 
-export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined, noteField?: NoteFieldsComponent): void {
+export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined, noteField?: NoteFieldsComponent): void {
     const iconName = getIcon(mapFieldType(field.type));
     const name = field.name
     if (noteField) {

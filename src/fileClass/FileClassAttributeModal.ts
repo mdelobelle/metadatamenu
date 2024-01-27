@@ -1,10 +1,10 @@
 import MetadataMenu from "main";
-import Field from "src/fields/_Field";
 import { SettingLocation } from "src/fields/FieldManager";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
 import { FileClass } from "src/fileClass/fileClass";
 import { BaseSettingModal } from "src/settings/BaseSettingModal";
 import { openSettings } from "src/fields/base/BaseSetting";
+import { Field, buildEmptyField, copyProperty } from "src/fields/Field";
 
 export class FileClassAttributeModal extends BaseSettingModal {
 
@@ -29,9 +29,9 @@ export class FileClassAttributeModal extends BaseSettingModal {
     public initFieldAndLocation(field?: Field) {
         if (this.attr) {
             this.field = this.attr.getField()
-            Field.copyProperty(this.initialField, this.field)
+            copyProperty(this.initialField, this.field)
         } else {
-            this.field = new Field(this.plugin);
+            this.field = new (buildEmptyField(this.plugin, undefined));
             this.field.fileClassName = this.fileClass.name
         }
         this.location = SettingLocation.FileClassAttributeSettings

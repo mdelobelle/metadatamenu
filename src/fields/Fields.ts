@@ -22,7 +22,7 @@ import * as YAML from "./models/YAML"
 import * as ObjectField from "./models/Object"
 import * as ObjectList from "./models/ObjectList"
 import { ISettingsModal, buildSettingsModal } from "./base/BaseSetting"
-import { IField, IFieldManager, Target, LegacyField } from "./Field"
+import { IField, IFieldManager, Target } from "./Field"
 import MetadataMenu from "main"
 import FieldSetting from "src/settings/FieldSetting"
 import { IBaseValueModal } from "./base/BaseModal"
@@ -186,6 +186,17 @@ export const frontmatterOnlyTypes = [
     "ObjectList"
 ]
 
+export const rawObjectTypes = [
+    "YAML",
+    "JSON"
+]
+
+export enum MultiDisplayType {
+    "asArray" = 'asArray', //YAML flow style
+    "asList" = "asList" //YAML block style
+}
+
+
 export const rootOnlyTypes = [
     "Canvas",
     "CanvasGroup",
@@ -195,6 +206,8 @@ export const rootOnlyTypes = [
 ]
 
 export type DateBasedType = "Date" | "DateTime"
+
+export const ReservedMultiAttributes = ["tags", "tagNames", "excludes", "aliases"]
 
 //#endregion
 
@@ -342,7 +355,7 @@ export function displayValue(type: FieldType): displayValueFunction {
     }
 }
 
-export type getActionFunction = (plugin: MetadataMenu, field: LegacyField, file: TFile, location: Menu | FieldCommandSuggestModal | FieldActions | "InsertFieldCommand" | "ManageAtCursorCommand", indexedPath?: string, noteFields?: NoteFieldsComponent) => void
+export type getActionFunction = (plugin: MetadataMenu, field: IField<BaseOptions>, file: TFile, location: Menu | FieldCommandSuggestModal | FieldActions | "InsertFieldCommand" | "ManageAtCursorCommand", indexedPath?: string, noteFields?: NoteFieldsComponent) => void
 
 export function getActions(type: FieldType): getActionFunction {
     switch (type) {

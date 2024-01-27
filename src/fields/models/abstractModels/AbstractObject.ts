@@ -1,14 +1,13 @@
 import MetadataMenu from "main"
 import { ButtonComponent, TFile, TextAreaComponent, setIcon } from "obsidian"
-import { Constructor, FrontmatterObject } from "src/typings/types"
-import { IField, IFieldManager, Target, fieldValueManager, getIdAndIndex, isSingleTargeted, removeValidationError, upperIndexedPathObjectPath, upperPath } from "../../Field"
+import { ExistingField } from "src/fields/ExistingField"
+import { getIcon } from "src/fields/Fields"
+import { Note } from "src/note/note"
+import { Constructor } from "src/typings/types"
+import { Field, IField, IFieldManager, Target, getIdAndIndex, isSingleTargeted, removeValidationError, upperIndexedPathObjectPath, upperPath } from "../../Field"
 import { BaseOptions } from "../../base/BaseField"
 import { BaseValueModal, IBaseValueModal, basicSuggestModal } from "../../base/BaseModal"
 import { ISettingsModal } from "../../base/BaseSetting"
-import { ExistingField } from "src/fields/ExistingField"
-import { Note } from "src/note/note"
-import GField from "src/fields/_Field"
-import { getIcon, objectTypes } from "src/fields/Fields"
 
 export interface Options extends BaseOptions {
     displayTemplate?: string
@@ -147,7 +146,7 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
 
 export async function getExistingAndMissingFields(plugin: MetadataMenu, file: TFile, indexedPath?: string): Promise<{
     existingFields: ExistingField[],
-    missingFields: GField[]
+    missingFields: Field[]
 }> {
     const existingFields = (await Note.getExistingFields(plugin, file)).filter(eF => eF.indexedPath &&
         upperPath(eF.indexedPath) === indexedPath)

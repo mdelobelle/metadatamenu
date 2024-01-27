@@ -3,15 +3,12 @@ import { ButtonComponent, Component, Modal, TFile } from "obsidian";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { postValues } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
-import { IFieldManager, fieldValueManager } from "src/fields/Field";
-import { displayValue, getActions, mapFieldType } from "src/fields/Fields";
-import Field from "src/fields/_Field";
+import { Field, IFieldManager, fieldValueManager, getIdAndIndex, upperIndexedPathObjectPath } from "src/fields/Field";
+import { displayValue, getActions, mapFieldType, objectTypes } from "src/fields/Fields";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
-import ObjectListField from "src/fields/fieldManagers/ObjectListField";
 import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
 import ChooseSectionModal from "src/modals/chooseSectionModal";
 import { Note } from "src/note/note";
-import * as FieldType from "src/types/fieldTypes";
 import { FileClassViewManager } from "./FileClassViewManager";
 import { Options as ObjectListOptions, addObjectListItem } from "src/fields/models/ObjectList";
 
@@ -22,7 +19,7 @@ export class FieldActions {
     private async setIconAndTooltipAsync(fieldOption: ButtonComponent, file: TFile, indexedPath: string, plugin: MetadataMenu): Promise<void> {
         const eF = await Note.getExistingFieldForIndexedPath(plugin, file, indexedPath)
         switch (eF?.field.type) {
-            case FieldType.FieldType.Boolean: {
+            case "Boolean": {
                 const value = BooleanField.stringToBoolean(eF?.value)
                 fieldOption.setIcon(!value ? "toggle-left" : "toggle-right")
                 fieldOption.setTooltip(!value ? `Set ${eF.name} as true` : `Set ${eF.name} as false`);
@@ -82,7 +79,7 @@ export class FieldsModal extends Modal {
     public build(): void {
         this.contentEl.replaceChildren();
         const indexedPath = this.indexedPath || ""
-        const { id, index } = Field.getIdAndIndex(indexedPath?.split("____").last())
+        const { id, index } = getIdAndIndex(indexedPath?.split("____").last())
 
         if (!id) {
             this.titleEl.setText(`Fields of ${this.file.basename}`)
@@ -90,7 +87,7 @@ export class FieldsModal extends Modal {
             const baseTitle = `Fields of ${this.file.basename} ${indexedPath?.split("____").length > 1 ? " > ... > " : " > "}`
             if (index) {
                 //this is an object list item
-                const objectListIndexedPath = Field.upperIndexedPathObjectPath(this.indexedPath || "")
+                const objectListIndexedPath = upperIndexedPathObjectPath(this.indexedPath || "")
                 const eF = this.note.getExistingFieldForIndexedPath(objectListIndexedPath)!
                 const display = `${eF.name}[${index}]`
                 this.titleEl.setText(`${baseTitle} ${display}`)
@@ -135,8 +132,8 @@ export class FieldsModal extends Modal {
         const backBtn = new ButtonComponent(backBtnWrapper)
         backBtn.setIcon("chevron-left")
 
-        const upperPath = Field.upperIndexedPathObjectPath(this.indexedPath || "")
-        const { id: upperId, index: upperIndex } = Field.getIdAndIndex(upperPath.split("____").last())
+        const upperPath = upperIndexedPathObjectPath(this.indexedPath || "")
+        const { id: upperId, index: upperIndex } = getIdAndIndex(upperPath.split("____").last())
         const upperExistingField = this.note.existingFields.find(eF => eF.field.id === upperId)
         const upperObject = upperExistingField?.field
 
@@ -183,13 +180,13 @@ export class FieldsModal extends Modal {
             }
         })
         const fieldTypeContainer = fieldSettingsWrapper.createDiv({ cls: `field-item` });
-        fieldTypeContainer.createDiv({ text: field.type, cls: `chip field-type ${FieldType.FieldBackgroundColorClass[field.type]}` })
+        fieldTypeContainer.createDiv({ text: field.type, cls: `chip field-type ${field.colorClass}` })
         const fieldValueWrapper = container.createDiv({ cls: "field-value-wrapper" })
         const fieldValueContainer = fieldValueWrapper.createDiv({
             cls: ![undefined, null, ""].includes(value) ? "field-item field-value" : "field-item field-value emptyfield"
         })
         if (value === null || value === "") {
-            fieldValueContainer.setText(field.type === FieldType.FieldType.Lookup ? "---auto---" : "<empty>");
+            fieldValueContainer.setText(field.type === "Lookup" ? "---auto---" : "<empty>");
         } else if (value === undefined) {
             fieldValueContainer.setText("<missing>");
         } else {
@@ -200,7 +197,7 @@ export class FieldsModal extends Modal {
         fieldOptionsWrapper.createDiv({ cls: "field-options-spacer" });
         const fieldOptions = new FieldOptions(fieldOptionsWrapper)
         if (this.existingFields.map(_f => _f.field.id).includes(field.id) && fieldVM) {
-            if (FieldType.objectTypes.includes(field.type)) {
+            if (objectTypes.includes(field.type)) {
                 getActions(field.type)(this.plugin, field, this.file, fieldOptions, fieldVM.indexedPath, this.noteFields)
             } else {
                 getActions(field.type)(this.plugin, field, this.file, fieldOptions, fieldVM.indexedPath)
@@ -215,7 +212,7 @@ export class FieldsModal extends Modal {
             fieldBtn.setTooltip("Add field at section")
             fieldBtn.onClick(async () => {
                 //Object and ObjectList go straight to frontmatter
-                if (FieldType.objectTypes.includes(field.type) && this.note) {
+                if (objectTypes.includes(field.type) && this.note) {
                     await postValues(this.plugin, [{ indexedPath: `${newIndexedPath}`, payload: { value: "" } }], this.file)
                     this.indexedPath = `${newIndexedPath}`
                     //Other fields go straight to frontmatter if their path is not emplty
@@ -238,7 +235,7 @@ export class FieldsModal extends Modal {
 
     private buildObjectListItemContainer(container: HTMLDivElement, field: Field, item: any, itemIndexedPath: string) {
         const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, this.file)
-        const { index } = Field.getIdAndIndex(itemIndexedPath.split("____").last())
+        const { index } = getIdAndIndex(itemIndexedPath.split("____").last())
         let value: string = ""
         if (this.indexedPath && index) {
             const eF = this.note.getExistingFieldForIndexedPath(this.indexedPath)
@@ -265,7 +262,7 @@ export class FieldsModal extends Modal {
             }
         })
         const fieldTypeContainer = fieldSettingsWrapper.createDiv({ cls: `field-item` });
-        fieldTypeContainer.createDiv({ text: `${field.type} item`, cls: `chip field-type ${FieldType.FieldBackgroundColorClass[field.type]}` })
+        fieldTypeContainer.createDiv({ text: `${field.type} item`, cls: `chip field-type ${field.colorClass}` })
         const fieldValueWrapper = container.createDiv({ cls: "field-value-wrapper" })
         const fieldValueContainer = fieldValueWrapper.createDiv({
             cls: value !== undefined && value !== null ? "field-item field-value" : "field-item field-value emptyfield"
@@ -409,8 +406,8 @@ export class FieldsModal extends Modal {
 
     private buildFieldsContainer() {
         const fieldsContainer = this.contentEl.createDiv({ cls: "note-fields-container" });
-        const { id, index } = Field.getIdAndIndex(this.indexedPath?.split("____").last())
-        if (this.indexedPath && this.note.fields.find(_f => _f.id === id)?.type === FieldType.FieldType.ObjectList && index === undefined) {
+        const { id, index } = getIdAndIndex(this.indexedPath?.split("____").last())
+        if (this.indexedPath && this.note.fields.find(_f => _f.id === id)?.type === "ObjectList" && index === undefined) {
             const field = this.note.fields.find(_f => _f.id === id)!
             const items = this.note.existingFields.find(eF => eF.indexedPath === this.indexedPath)?.value || []
             items.forEach((item: any, index: number) => this.buildObjectListItemContainer(fieldsContainer, field, item, `${this.indexedPath}[${index}]`))

@@ -1,9 +1,9 @@
 import MetadataMenu from "main";
-import Field from "src/fields/_Field";
 import { SettingLocation } from "src/fields/FieldManager";
 import FieldSetting from "src/settings/FieldSetting";
 import { BaseSettingModal } from "./BaseSettingModal";
 import { incrementVersion } from "./MetadataMenuSettings";
+import { Field, buildEmptyField, copyProperty, getNewFieldId } from "src/fields/Field";
 
 export default class FieldSettingsModal extends BaseSettingModal {
     private saved: boolean = false;
@@ -16,7 +16,7 @@ export default class FieldSettingsModal extends BaseSettingModal {
         field?: Field
     ) {
         super(plugin);
-        this.initialField = new Field(plugin);
+        this.initialField = new (buildEmptyField(plugin, undefined));
         this.initFieldAndLocation(field)
         this.initFieldManagerAndCommand()
     }
@@ -29,10 +29,10 @@ export default class FieldSettingsModal extends BaseSettingModal {
         if (field) {
             this.new = false;
             this.field = field
-            Field.copyProperty(this.initialField, this.field)
+            copyProperty(this.initialField, this.field)
         } else {
-            this.field = new Field(this.plugin);
-            const id = Field.getNewFieldId(this.plugin)
+            this.field = new (buildEmptyField(this.plugin, undefined));
+            const id = getNewFieldId(this.plugin)
             this.field.id = id;
             this.initialField.id = id;
         }
@@ -43,12 +43,12 @@ export default class FieldSettingsModal extends BaseSettingModal {
         this.saved = true;
         const currentExistingField = this.plugin.presetFields.filter(p => p.id == this.field.id)[0];
         if (currentExistingField) {
-            Field.copyProperty(currentExistingField, this.field);
+            copyProperty(currentExistingField, this.field);
         } else {
             this.plugin.presetFields.push(this.field);
         };
-        Field.copyProperty(this.initialField, this.field)
-        if (this.parentSetting) Field.copyProperty(this.parentSetting.field, this.field);
+        copyProperty(this.initialField, this.field)
+        if (this.parentSetting) copyProperty(this.parentSetting.field, this.field);
         this.parentSetting?.setTextContentWithname()
         incrementVersion(this.plugin)
         await this.plugin.saveSettings();

@@ -2,12 +2,11 @@ import MetadataMenu from "main"
 import { ButtonComponent, DropdownComponent, TFile, TextComponent, ToggleComponent, moment, setIcon } from "obsidian"
 import { getExistingFieldForIndexedPath } from "src/fields/ExistingField"
 import { FieldType, getIcon, mapFieldType } from "src/fields/Fields"
-import GField from "src/fields/_Field"
 import { Note } from "src/note/note"
 import { Constructor } from "src/typings/types"
 import { cleanActions } from "src/utils/modals"
 import { getLink } from "src/utils/parser"
-import { ActionLocation, IField, IFieldManager, LegacyField, Target, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest } from "../../Field"
+import { ActionLocation, Field, IField, IFieldManager, Target, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest } from "../../Field"
 import { BaseOptions } from "../../base/BaseField"
 import { IBaseValueModal, IBasicModal, basicModal } from "../../base/BaseModal"
 import { ISettingsModal } from "../../base/BaseSetting"
@@ -107,7 +106,7 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
             nextShiftIntervalFieldContainer.createDiv({ cls: "spacer" })
             const nextShiftIntervalField = new DropdownComponent(nextShiftIntervalFieldContainer);
             nextShiftIntervalField.addOption("none", "---None---")
-            let rootFields: GField[] = []
+            let rootFields: Field[] = []
             if (this.field.fileClassName) {
                 rootFields = this.plugin.fieldIndex.fileClassesFields
                     .get(this.field.fileClassName || "")?.filter(_f => _f.isRoot() && _f.name !== this.field.name && _f.type === "Cycle") || []
@@ -157,7 +156,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         private inputEl: TextComponent;
         private errorField: HTMLDivElement;
         private format: string;
-        private nextIntervalField?: GField;
+        private nextIntervalField?: Field;
         private pushNextInterval: boolean = false;
         private currentShift?: string
         private nextShift?: string
@@ -400,7 +399,7 @@ export function displayValue(managedField: IFieldManager<Target, Options>, conta
     container.createDiv({});
 }
 
-export function actions(plugin: MetadataMenu, field: LegacyField, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
+export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
     const dateIconName = getIcon(mapFieldType(field.type));
     const name = field.name
     const fieldVM = fieldValueManager<Options>(plugin, field.id, field.fileClassName, file, undefined, indexedPath)
@@ -525,7 +524,7 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
 
 //#region utils
 
-async function shiftDuration(managedField: IFieldManager<Target, Options>): Promise<[string | undefined, GField | undefined, string | undefined]> {
+async function shiftDuration(managedField: IFieldManager<Target, Options>): Promise<[string | undefined, Field | undefined, string | undefined]> {
     if (!isSingleTargeted(managedField)) return [undefined, undefined, undefined]
     const interval = managedField.options.dateShiftInterval || DefaultOptions.dateShiftInterval
     const cycleIntervalField = managedField.options.nextShiftIntervalField
@@ -582,7 +581,7 @@ function getMomentDate(managedField: IFieldManager<Target, Options>): moment.Mom
     return moment(_dateText, dateFormat)
 }
 
-async function updateIntervalField(managedField: IFieldManager<TFile, Options>, nextIntervalField: GField, nextShift: string): Promise<void> {
+async function updateIntervalField(managedField: IFieldManager<TFile, Options>, nextIntervalField: Field, nextShift: string): Promise<void> {
     postValues(managedField.plugin,
         [
             {

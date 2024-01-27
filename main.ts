@@ -5,7 +5,6 @@ import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
 import FieldIndex from 'src/index/FieldIndex';
 import IndexStatus from 'src/components/IndexStatus';
-import Field from 'src/fields/_Field';
 import FileClassQuery from 'src/fileClass/FileClassQuery';
 import { IMetadataMenuApi } from 'src/MetadataMenuApi';
 import { MetadataMenuApi } from 'src/MetadataMenuApi';
@@ -20,6 +19,7 @@ import { IndexDatabase } from 'src/db/DatabaseManager';
 import { FileClassCodeBlockManager } from 'src/components/FileClassCodeBlockManager';
 import { AddFileClassToFileModal } from 'src/fileClass/fileClass';
 import { FileClassCodeBlockListManager } from 'src/components/FileClassCodeBlockListManager';
+import { Field, buildEmptyField } from 'src/fields/Field';
 
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
@@ -69,7 +69,7 @@ export default class MetadataMenu extends Plugin {
 
 		//building settings tab
 		this.settings.presetFields.forEach(prop => {
-			const property = new Field(this);
+			const property = new (buildEmptyField(this, undefined))
 			Object.assign(property, prop);
 			this.presetFields.push(property);
 		});
