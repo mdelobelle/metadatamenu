@@ -182,8 +182,6 @@ export function buildSettingsModal<O extends BaseOptions>(
             // path
             this.path = this.initialField.path
             // command
-            console.log(this.field)
-            //this.addCommand = this.field.command !== undefined;
             this.addCommand = !!this.field.command
             this.command = this.initialField.command || {
                 id: this.field ? `insert__${this.field.id}` : "",

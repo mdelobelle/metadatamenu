@@ -120,8 +120,8 @@ export class FileClassDataviewTable {
                     for (const node of mutation.addedNodes) {
                         if (
                             "className" in node &&
-                            typeof node.className === "string" &&
-                            node.className.includes('field-name')
+                            typeof (node as HTMLElement).className === "string" &&
+                            ((node as HTMLElement).className as string).includes('field-name')
                         ) {
                             const fileLink = (node as HTMLElement).querySelector("span a.internal-link");
                             if (fileLink) table.addClickEventToLink(fileLink as HTMLLinkElement)
@@ -210,7 +210,8 @@ export class FileClassDataviewTable {
                     if (index === "0") {
                         const cells = table.querySelectorAll('.modifier-selector') as NodeListOf<HTMLTableCellElement>
                         for (const cell of cells) {
-                            if (!cell.checkVisibility()) cell.show()
+                            const input = cell.find("input")
+                            if (input && !(input as HTMLElement & { checkVisibility: () => boolean }).checkVisibility()) cell.show()
                             else cell.hide()
                         }
                     } else {
@@ -230,8 +231,8 @@ export class FileClassDataviewTable {
                     for (const node of mutation.addedNodes) {
                         if (
                             "className" in node &&
-                            typeof node.className === "string" &&
-                            node.className.includes('dataview table-view-table')
+                            typeof (node as HTMLElement).className === "string" &&
+                            (node as HTMLElement).className.includes('dataview table-view-table')
                         ) {
                             const table = node as HTMLTableElement
                             for (const row of table.rows) {
