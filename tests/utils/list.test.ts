@@ -1,7 +1,9 @@
-import { ListItemCache } from "obsidian"
+import * as App from "obsidian"
 import { getListBoundsFromListItemCacheList } from "src/utils/list"
 
-const listItems: ListItemCache[] = [
+const DEBUG = true
+
+const listItems: App.ListItemCache[] = [
     {
         "position": {
             "start": {

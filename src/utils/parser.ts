@@ -4,13 +4,11 @@ export const fieldComponents = ['inQuote', 'inList', 'preSpacer', 'startStyle', 
 
 export const genericFieldRegex = "(?<inQuote>\>*(\\s+)?)?(?<inList>- )?(?<preSpacer>(\\s+)?)?(?<startStyle>[_\\*~`]*)(?<attribute>[-\\w\\p{Letter}\\p{Emoji_Presentation}\\s]*)(?<endStyle>[_\\*~`]*)(?<beforeSeparatorSpacer>\\s*)";
 
-export const inlineFieldRegex = (attribute: string) => `(?<inQuote>\>*(\\s+)?)?(?<inList>- )?(?<preSpacer>(\\s+)?)?(?<startStyle>[_\\*~\`]*)(?<attribute>${attribute})(?<endStyle>[_\\*~\`]*)(?<beforeSeparatorSpacer>\\s*)::(?<afterSeparatorSpacer>\\s*)`;
+export const fullLineRegex = new RegExp(`^\\s*${genericFieldRegex}::(?<afterSeparatorSpacer>\\s*)(?<values>.*)?`, "u");
 
-export const fullLineRegex = new RegExp(`^\\s*${genericFieldRegex}::\\s*(?<values>.*)?`, "u");
+export const inSentenceRegexBrackets = new RegExp(`\\[${genericFieldRegex}::(?<afterSeparatorSpacer>\\s*)(?<values>[^\\]]+)?\\]`, "gu");
 
-export const inSentenceRegexBrackets = new RegExp(`\\[${genericFieldRegex}::\\s*(?<values>[^\\]]+)?\\]`, "gu");
-
-export const inSentenceRegexPar = new RegExp(`\\(${genericFieldRegex}::\\s*(?<values>[^\\)]+)?\\)`, "gu");
+export const inSentenceRegexPar = new RegExp(`\\(${genericFieldRegex}::(?<afterSeparatorSpacer>\\s*)(?<values>[^\\)]+)?\\)`, "gu");
 
 export const LinkRegex = new RegExp(`\\[\\[(?<target>[^\\|]*)(\\|)?(?<alias>.*)?\\]\\]`)
 
@@ -62,6 +60,7 @@ export const frontMatterLineField = (line: string): {
 } => {
     const frontMatterRegex = new RegExp(/(?<indentation>\s*)(?<list>-\s)?(?<attribute>[-\w\p{Letter}\p{Emoji_Presentation}\s]*[^\s])(?<beforeSeparatorSpacer>\s*):(?<afterSeparatorSpacer>\s*)(?<values>.*)/u)
     const fR = line.match(frontMatterRegex);
+    console.log(fR?.groups)
     if (fR?.groups) {
         return {
             attribute: fR?.groups.attribute,
