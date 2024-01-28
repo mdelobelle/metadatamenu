@@ -12,7 +12,6 @@ import { updateLookups } from "./updateLookups";
 import { updateFormulas } from "./updateFormulas";
 import { Note } from "src/note/note";
 import { FieldCommand, Field, fieldValueManager } from "src/fields/Field";
-import { BaseOptions } from "src/fields/base/BaseField";
 import { openSettings } from "src/fields/base/BaseSetting";
 
 function fileClassAttributeOptionsCommand(plugin: MetadataMenu) {

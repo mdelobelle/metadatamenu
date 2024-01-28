@@ -3,9 +3,6 @@ import { ButtonComponent, Modal, TFile } from "obsidian";
 import { FieldSet, btnIcons } from "./tableViewFieldSet";
 import { cleanActions } from "src/utils/modals";
 import { RowSorterComponent } from "./RowSorterComponent";
-import AbstractListBasedField from "src/fields/abstractFieldManagers/AbstractListBasedField";
-import FileField from "src/fields/fieldManagers/FileField";
-import MultiFileField from "src/fields/fieldManagers/MultiFileField";
 import { Field, IField } from "src/fields/Field";
 import { getFiles } from "src/fields/models/abstractModels/AbstractFile"
 import { getOptionsList } from "src/fields/models/abstractModels/AbstractList";

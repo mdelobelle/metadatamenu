@@ -1,6 +1,6 @@
 import { TFile } from "obsidian"
 import MetadataMenu from "main"
-import { ObjectListItem } from "./fieldManagers/ObjectListField"
+import { ObjectListItem } from "./models/ObjectList"
 import { Note } from "src/note/note"
 import { LinePosition } from "src/note/line"
 import { LineNode } from "src/note/lineNode"

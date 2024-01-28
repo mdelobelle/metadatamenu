@@ -5,12 +5,10 @@ import { ButtonComponent, FuzzySuggestModal, Modal, SuggestModal, TFile, setIcon
 import { Modal as IListBasedModal } from "../models/abstractModels/AbstractList";
 import { Modal as IFileBasedModal } from "../models/abstractModels/AbstractFile";
 import { Modal as IMediaBasedModal } from "../models/abstractModels/AbstractMedia";
-import { Modal as IObjectBasedModal } from "../models/abstractModels/AbstractObject";
 import { getExistingFieldForIndexedPath } from "src/commands/getValues";
 import { postValues } from "src/commands/postValues";
 import { Constructor } from "src/typings/types";
 import { Note } from "src/note/note";
-import ObjectModal from "src/modals/fields/ObjectModal";
 import { ExistingField, getValueDisplay } from "../ExistingField";
 import { positionIcon } from "src/note/line";
 import { BaseOptions } from "./BaseField";

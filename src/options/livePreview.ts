@@ -1,4 +1,4 @@
-import { App, editorInfoField, editorViewField, MarkdownView, setIcon, TFile } from "obsidian";
+import { editorInfoField, MarkdownView, setIcon, TFile } from "obsidian";
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { RangeSetBuilder } from "@codemirror/state";
 import { syntaxTree } from "@codemirror/language";

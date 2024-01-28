@@ -3,9 +3,8 @@ import { ButtonComponent, Component, Modal, TFile } from "obsidian";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { postValues } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
-import { Field, IFieldManager, fieldValueManager, getIdAndIndex, upperIndexedPathObjectPath } from "src/fields/Field";
+import { Field, IFieldManager, fieldValueManager, getIdAndIndex, stringToBoolean, upperIndexedPathObjectPath } from "src/fields/Field";
 import { displayValue, getActions, objectTypes } from "src/fields/Fields";
-import BooleanField from "src/fields/fieldManagers/BooleanField";
 import ChooseSectionModal from "src/modals/chooseSectionModal";
 import { Note } from "src/note/note";
 import { FileClassViewManager } from "./FileClassViewManager";
@@ -20,7 +19,7 @@ export class FieldActions {
         const eF = await Note.getExistingFieldForIndexedPath(plugin, file, indexedPath)
         switch (eF?.field.type) {
             case "Boolean": {
-                const value = BooleanField.stringToBoolean(eF?.value)
+                const value = stringToBoolean(eF?.value)
                 fieldOption.setIcon(!value ? "toggle-left" : "toggle-right")
                 fieldOption.setTooltip(!value ? `Set ${eF.name} as true` : `Set ${eF.name} as false`);
             }
