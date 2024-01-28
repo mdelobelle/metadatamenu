@@ -5,14 +5,11 @@ import { FieldStyleLabel } from "src/types/dataviewTypes"
 import cryptoRandomString from "crypto-random-string"
 import { LineNode } from "src/note/lineNode"
 import FCSM from "src/options/FieldCommandSuggestModal";
-import FieldSettingsModal from "src/settings/FieldSettingsModal"
-import { FieldType, getFieldModal, multiTypes, objectTypes, rootOnlyTypes, getFieldClass, mapLegacyFieldType, getDefaultOptions, MultiDisplayType } from "./Fields"
+import { FieldType, getFieldModal, multiTypes, objectTypes, rootOnlyTypes, getFieldClass, getDefaultOptions, MultiDisplayType } from "./Fields"
 import { FieldParam, IFieldBase, BaseOptions, isFieldOptions } from "./base/BaseField"
 import { postValues } from "src/commands/postValues"
 import { IBaseValueModal, MultiTargetModificationConfirmModal } from "./base/BaseModal"
 import { ExistingField } from "./ExistingField"
-import ObjectModal from "src/modals/fields/ObjectModal"
-import ObjectListModal from "src/modals/fields/ObjectListModal"
 import { Constructor } from "src/typings/types"
 import { FieldActions } from "src/components/FieldsModal"
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
@@ -237,14 +234,14 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
         public validateName(textInput: TextComponent, contentEl: Element): boolean {
             let error = false;
             if (/^[#>-]/.test(this.name)) {
-                FieldSettingsModal.setValidationError(
+                setValidationError(
                     textInput,
                     "Field name cannot start with #, >, -"
                 );
                 error = true;
             };
             if (this.name == "") {
-                FieldSettingsModal.setValidationError(
+                setValidationError(
                     textInput,
                     "Field name can not be Empty"
                 );
@@ -254,7 +251,7 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
                 const fields = this.plugin.fieldIndex.fileClassesFields
                     .get(this.fileClassName)?.filter(_f => _f.path === this.path && _f.id !== this.id && _f.fileClassName === this.fileClassName)
                 if (fields?.map(_f => _f.name).includes(this.name)) {
-                    FieldSettingsModal.setValidationError(
+                    setValidationError(
                         textInput,
                         `There is already a field with this name for this path in this ${this.plugin.settings.fileClassAlias}. Please choose another name`
                     );
@@ -263,7 +260,7 @@ export function field<B extends Constructor<IFieldBase>, O extends BaseOptions>(
             } else {
                 const fields = this.plugin.presetFields.filter(_f => _f.path === this.path && _f.id !== this.id)
                 if (fields?.map(_f => _f.name).includes(this.name)) {
-                    FieldSettingsModal.setValidationError(
+                    setValidationError(
                         textInput,
                         "There is already a field with this name for this path in presetFields. Please choose another name"
                     );

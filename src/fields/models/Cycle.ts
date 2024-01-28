@@ -4,7 +4,7 @@ import { TFile, ToggleComponent, setIcon } from "obsidian";
 import { Constructor } from "src/typings/types";
 import { getExistingFieldForIndexedPath } from "../ExistingField";
 import { ActionLocation, IField, IFieldManager, Target, fieldValueManager, isFieldActions, isSuggest } from "../Field";
-import { getIcon, mapFieldType } from "../Fields";
+import { getIcon } from "../Fields";
 import { IFieldBase } from "../base/BaseField";
 import { ISettingsModal } from "../base/BaseSetting";
 import * as AbstractList from "./abstractModels/AbstractList";
@@ -89,7 +89,7 @@ export function createDvField(
 }
 
 export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
-    const iconName = getIcon(mapFieldType(field.type));
+    const iconName = getIcon(field.type);
     const action = async () => {
         const eF = await getExistingFieldForIndexedPath(plugin, file, indexedPath)
         const fieldVM = fieldValueManager<Options>(plugin, field.id, field.fileClassName, file, eF, indexedPath)

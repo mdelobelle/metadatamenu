@@ -1,6 +1,5 @@
 import MetadataMenu from "main";
 import { FieldIcon, FieldType, objectTypes } from "src/types/fieldTypes";
-
 import { FieldManager, SettingLocation } from "../FieldManager";
 import Field from "../_Field";
 import { TFile, Menu, setIcon, TextAreaComponent } from "obsidian";
@@ -15,6 +14,7 @@ import { FieldManager as FM } from "src/types/fieldTypes";
 import ObjectListField from "./ObjectListField";
 import { FrontmatterObject } from "src/typings/types";
 import FieldSettingsModal from "src/settings/FieldSettingsModal";
+import { getIdAndIndex } from "../Field";
 
 export default class ObjectField extends FieldManager {
     //TODO refactor, create an abstratObjectField to support the settings dans getDescription methods
@@ -99,7 +99,7 @@ export default class ObjectField extends FieldManager {
     }> {
         const existingFields = (await Note.getExistingFields(plugin, file)).filter(eF => eF.indexedPath &&
             Field.upperPath(eF.indexedPath) === indexedPath)
-        const { id, index } = Field.getIdAndIndex(indexedPath?.split("____").last())
+        const { id, index } = getIdAndIndex(indexedPath?.split("____").last())
         const missingFields = plugin.fieldIndex.filesFields.get(file.path)?.filter(_f =>
             _f.getFirstAncestor()?.id === id).filter(_f => !existingFields.map(eF => eF.field.id).includes(_f.id)) || []
         return { existingFields, missingFields }
@@ -157,7 +157,7 @@ export default class ObjectField extends FieldManager {
                             } else if (typeof _value === "object") {
                                 const child = children.find(c => c.name === pattern)!
                                 if (objectTypes.includes(child.type)) {
-                                    const cFM = new FM[child.type](this.plugin, child) as ObjectField | ObjectListField
+                                    const cFM = new FM[child.type](this.plugin, child)
                                     items.push({ pattern: pattern, value: cFM.getObjectDescription(_value) })
                                 } else {
                                     defaultDisplay(pattern)

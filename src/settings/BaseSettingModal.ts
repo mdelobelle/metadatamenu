@@ -1,15 +1,15 @@
 import MetadataMenu from "main";
 import { ButtonComponent, DropdownComponent, Modal, Notice, TextComponent, TextAreaComponent, ToggleComponent, setIcon, SuggestModal } from "obsidian";
 import { FieldManager as F, SettingLocation } from "src/fields/FieldManager";
-import { FieldManager, FieldType, FieldTypeLabelMapping, FieldTypeTooltip, MultiDisplayType, FieldIcon, FieldTypeTagClass } from "src/types/fieldTypes";
+import { FieldManager, FieldTypeTooltip } from "src/types/fieldTypes";
 import { FieldHTMLTagMap, FieldStyle, FieldStyleKey } from "src/types/dataviewTypes";
 import { cleanActions } from "src/utils/modals";
 import { insertFieldCommand } from "src/commands/paletteCommands";
 import { Field, FieldCommand, IField, buildEmptyField, copyProperty } from "src/fields/Field";
 import { BaseOptions } from "src/fields/base/BaseField";
-import { frontmatterOnlyTypes, multiTypes, rootOnlyTypes } from "src/fields/Fields";
+import { frontmatterOnlyTypes, getTagName, multiTypes, rootOnlyTypes, FieldType, MultiDisplayType, getIcon } from "src/fields/Fields";
 
-class TypeSelector extends SuggestModal<keyof typeof FieldType> {
+class TypeSelector extends SuggestModal<FieldType> {
     constructor(
         private fieldSetting: BaseSettingModal,
         private labelContainer: HTMLDivElement
@@ -18,9 +18,9 @@ class TypeSelector extends SuggestModal<keyof typeof FieldType> {
         this.containerEl.addClass("metadata-menu")
     }
 
-    getSuggestions(query: string): Array<keyof typeof FieldType> {
-        const fieldTypes: Array<keyof typeof FieldType> = []
-        Object.keys(FieldTypeTooltip).forEach((key: keyof typeof FieldType) => {
+    getSuggestions(query: string): Array<FieldType> {
+        const fieldTypes: Array<FieldType> = []
+        Object.keys(FieldTypeTooltip).forEach((key: FieldType) => {
             if (!rootOnlyTypes.includes(key as FieldType)) {
                 fieldTypes.push(key)
             } else {
@@ -30,17 +30,17 @@ class TypeSelector extends SuggestModal<keyof typeof FieldType> {
         return fieldTypes.filter(k => k.toLowerCase().includes(query.toLowerCase()))
     }
 
-    renderSuggestion(value: keyof typeof FieldType, el: HTMLElement) {
+    renderSuggestion(value: FieldType, el: HTMLElement) {
         el.addClass("value-container");
         const iconContainer = el.createDiv({ cls: "icon-container" })
-        setIcon(iconContainer, FieldIcon[value])
+        setIcon(iconContainer, getIcon(value))
         const chipContainer = el.createDiv({ cls: "field-type-container" })
-        chipContainer.createDiv({ text: value, cls: `chip ${FieldTypeTagClass[value]}` })
+        chipContainer.createDiv({ text: value, cls: `chip ${getTagName(value)}` })
         chipContainer.createDiv({ cls: "spacer" })
         el.createDiv({ cls: "field-type-tooltip", text: FieldTypeTooltip[value] })
     }
 
-    onChooseSuggestion(item: keyof typeof FieldType, evt: MouseEvent | KeyboardEvent) {
+    onChooseSuggestion(item: FieldType, evt: MouseEvent | KeyboardEvent) {
         this.fieldSetting.setType(item, this.labelContainer)
     }
 }
@@ -348,15 +348,15 @@ export abstract class BaseSettingModal extends Modal {
         }
     }
 
-    public setType(fieldType: keyof typeof FieldType, fieldTypeLabelContainer: HTMLDivElement): void {
+    public setType(fieldType: FieldType, fieldTypeLabelContainer: HTMLDivElement): void {
         fieldTypeLabelContainer.setText(fieldType)
-        fieldTypeLabelContainer.className = `chip ${FieldTypeTagClass[fieldType]}`
+        fieldTypeLabelContainer.className = `chip ${getTagName(fieldType)}`
 
         this.field = new (buildEmptyField(this.plugin, undefined));
         this.setFileClassName()
         copyProperty(this.field, this.initialField);
         this.field.name = this.namePromptComponent.getValue()
-        this.field.type = FieldTypeLabelMapping[fieldType];
+        this.field.type = fieldType;
         this.field.path = this.path
         if (this.field.type !== this.initialField.type &&
             ![this.field.type, this.initialField.type].every(fieldType =>
@@ -390,7 +390,7 @@ export abstract class BaseSettingModal extends Modal {
         info.setTooltip(`The field type \ncan't be modified once saved`)
         const typeNameContainer = this.typeSelectContainer
             .createDiv({ cls: "field-type-label" })
-            .createDiv({ cls: `chip ${FieldTypeTagClass[this.field.type]}` })
+            .createDiv({ cls: `chip ${getTagName(this.field.type)}` })
         if (!this.field.id || this.isNew()) {
             new ButtonComponent(this.typeSelectContainer)
                 .setButtonText("Choose a type")

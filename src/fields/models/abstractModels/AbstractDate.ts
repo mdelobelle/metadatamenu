@@ -1,7 +1,7 @@
 import MetadataMenu from "main"
 import { ButtonComponent, DropdownComponent, TFile, TextComponent, ToggleComponent, moment, setIcon } from "obsidian"
 import { getExistingFieldForIndexedPath } from "src/fields/ExistingField"
-import { FieldType, getIcon, mapFieldType } from "src/fields/Fields"
+import { FieldType, getIcon } from "src/fields/Fields"
 import { Note } from "src/note/note"
 import { Constructor } from "src/typings/types"
 import { cleanActions } from "src/utils/modals"
@@ -400,7 +400,7 @@ export function displayValue(managedField: IFieldManager<Target, Options>, conta
 }
 
 export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
-    const dateIconName = getIcon(mapFieldType(field.type));
+    const dateIconName = getIcon(field.type);
     const name = field.name
     const fieldVM = fieldValueManager<Options>(plugin, field.id, field.fileClassName, file, undefined, indexedPath)
     if (!fieldVM) return

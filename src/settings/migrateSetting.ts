@@ -1,5 +1,4 @@
 import MetadataMenu from "main"
-import { FieldType } from "src/types/fieldTypes"
 import * as selectValuesSource from "../types/selectValuesSourceTypes"
 import { Field } from "src/fields/Field"
 
@@ -25,11 +24,11 @@ export const migrateSettingsV1toV2 = async (plugin: MetadataMenu) => {
     const presetFields = plugin.presetFields
     presetFields.forEach((p: V1Field) => {
         if (!Object.keys(p).contains("type")) {
-            if (p.isMulti) p.type = FieldType.Multi
-            else if (p.isCycle) p.type = FieldType.Cycle
-            else if (p.isBoolean) p.type = FieldType.Boolean
-            else if (p.options && Object.keys(p.options).length > 0) p.type = FieldType.Select
-            else p.type = FieldType.Input
+            if (p.isMulti) p.type = "Multi"
+            else if (p.isCycle) p.type = "Cycle"
+            else if (p.isBoolean) p.type = "Boolean"
+            else if (p.options && Object.keys(p.options).length > 0) p.type = "Select"
+            else p.type = "Input"
         }
         //erase isMulti, isCycle, isBoolean if exists
         delete p.isMulti;

@@ -3,11 +3,13 @@ import { ButtonComponent, Modal, TFile } from "obsidian";
 import { FieldSet, btnIcons } from "./tableViewFieldSet";
 import { cleanActions } from "src/utils/modals";
 import { RowSorterComponent } from "./RowSorterComponent";
-import { FieldManager as FM, FieldManager, FieldType } from "src/types/fieldTypes";
 import AbstractListBasedField from "src/fields/abstractFieldManagers/AbstractListBasedField";
 import FileField from "src/fields/fieldManagers/FileField";
 import MultiFileField from "src/fields/fieldManagers/MultiFileField";
-import { Field } from "src/fields/Field";
+import { Field, IField } from "src/fields/Field";
+import { getFiles } from "src/fields/models/abstractModels/AbstractFile"
+import { getOptionsList } from "src/fields/models/abstractModels/AbstractList";
+import { Options as SelectOptions } from "src/fields/models/Select";
 
 
 export class OptionsPriorityModal extends Modal {
@@ -44,28 +46,25 @@ export class OptionsPriorityModal extends Modal {
         } else {
             const field = this.field as Field
             switch (field.type) {
-                case FieldType.Boolean: {
+                case "Boolean": {
                     return ["true", "false"]
                 }
-                case FieldType.Multi:
-                case FieldType.Select: {
-                    const fieldManager = new FM[field.type](this.plugin, field) as AbstractListBasedField
-                    return fieldManager.getOptionsList()
-                }
-                case FieldType.MultiFile:
-                case FieldType.File: {
-                    const sortingMethod = new Function("a", "b", `return ${field.options.customSorting}`) as (a: TFile, b: TFile) => number ||
+                case "Multi":
+                case "Select":
+                    return getOptionsList(field as IField<SelectOptions>)
+                case "MultiFile":
+                case "File": {
+                    const sortingMethod = (new Function("a", "b", `return ${field.options.customSorting}`) as (a: TFile, b: TFile) => number) ||
                         function (a: TFile, b: TFile) { return a.basename < b.basename ? -1 : 1 }
                     try {
-                        const fileManager = new FieldManager[field.type](this.plugin, field) as FileField | MultiFileField;
-                        return fileManager.getFiles()
+                        return getFiles(field)
                             .sort(sortingMethod)
                             .map(item => item.basename.trim().replace(/\[\[|\]\]/g, ""))
                     } catch (error) {
                         return []
                     }
                 }
-                case FieldType.Lookup: {
+                case "Lookup": {
                     const _values = [...this.plugin.fieldIndex.fileLookupFieldLastValue.entries()].filter(([fieldId, lookupFiles]) => {
                         return fieldId.endsWith(`__related__${this.parentFieldSet.fileClass.name}___${(field as Field).name}`) && lookupFiles !== ""
                     }).map(([fieldId, lookupFiles]) => lookupFiles).join(",")

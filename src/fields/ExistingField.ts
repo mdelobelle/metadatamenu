@@ -2,7 +2,6 @@ import { TFile } from "obsidian"
 import MetadataMenu from "main"
 import { ObjectListItem } from "./fieldManagers/ObjectListField"
 import { Note } from "src/note/note"
-import { FieldType } from "src/types/fieldTypes"
 import { LinePosition } from "src/note/line"
 import { LineNode } from "src/note/lineNode"
 import { Field, fieldValueManager, upperPath as getUpperPath } from "./Field"
@@ -65,7 +64,7 @@ export class ExistingField implements IExistingField {
     }
 
     public getItemDisplayForIndex(plugin: MetadataMenu, index: string | number) {
-        if (this.field.type !== FieldType.ObjectList) return ""
+        if (this.field.type !== "ObjectList") return ""
         let numIndex: number
         if (typeof index === "string") {
             numIndex = parseInt(index)

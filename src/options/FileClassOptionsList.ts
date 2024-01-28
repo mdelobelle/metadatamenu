@@ -4,10 +4,10 @@ import { insertMissingFields } from "src/commands/insertMissingFields";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
 import { FileClass } from "src/fileClass/fileClass";
 import { FileClassAttribute } from "src/fileClass/fileClassAttribute";
-import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
 import chooseSectionModal from "src/modals/chooseSectionModal";
 import { genuineKeys } from "src/utils/dataviewUtils";
 import FieldCommandSuggestModal from "./FieldCommandSuggestModal";
+import { openSettings } from "src/fields/base/BaseSetting";
 
 function isMenu(location: Menu | "InsertFieldCommand" | FieldCommandSuggestModal): location is Menu {
     return (location as Menu).addItem !== undefined;
@@ -80,8 +80,7 @@ export default class FileClassOptionsList {
             !this.plugin.fieldIndex.fileClassesFields.get(fileClass.name)?.map(f => f.name).every(fieldName => currentFieldsNames.includes(fieldName)) :
             false
         if (isInsertFieldCommand(this.location) && fileClass) {
-            const modal = new FileClassAttributeModal(this.plugin, fileClass);
-            modal.open();
+            openSettings("", fileClass.name, this.plugin)
         } else if (isSuggest(this.location)) {
             if (fileClass) {
                 this.location.options.push({
@@ -144,27 +143,23 @@ export default class FileClassOptionsList {
 
     private buildFieldOptions(): void {
         this.fileClass?.attributes.forEach((attr: FileClassAttribute) => {
-            const modal = new FileClassAttributeModal(this.plugin, this.fileClass!, attr)
             if (isMenu(this.location)) {
                 this.location.addItem((item) => {
                     item.setTitle(`${this.fileClass!.name} - ${attr.name}`)
                     item.setIcon("wrench")
-                    item.onClick(() => {
-                        modal.open()
-                    })
+                    item.onClick(() => openSettings(attr.id, this.fileClass!.name, this.plugin))
                     item.setSection(`metadata-menu-fileclass.${this.fileClass!.name}.fileclass-fields`)
                 })
             } else if (isSuggest(this.location)) {
                 this.location.options.push({
                     id: `update_${attr.name}`,
                     actionLabel: `<span>${attr.name}</span>`,
-                    action: () => modal.open(),
+                    action: () => openSettings(attr.id, this.fileClass!.name, this.plugin),
                     icon: "gear"
                 });
             }
         });
-        const modal = new FileClassAttributeModal(this.plugin, this.fileClass!);
-        const action = () => modal.open();
+        const action = () => openSettings("", this.fileClass!.name, this.plugin);
         if (isMenu(this.location) && this.fileClass) {
             this.location.addItem((item) => {
                 item.setTitle("Add new field")

@@ -8,7 +8,7 @@ import OptionsList from "src/options/OptionsList"
 import { Constructor, FrontmatterObject } from "src/typings/types"
 import { ExistingField } from "../ExistingField"
 import { ActionLocation, Field, FieldValueManager, IField, IFieldManager, Target, buildField, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest } from "../Field"
-import { TypesOptionsMap, displayValue as getDisplayValue, getIcon, mapFieldType, objectTypes } from "../Fields"
+import { TypesOptionsMap, displayValue as getDisplayValue, getIcon, objectTypes } from "../Fields"
 import { IFieldBase } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
 import { getNextOption } from "./Cycle"
@@ -74,7 +74,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                 container.createDiv({ text: `${item.field.name} :`, cls: "label-container" })
                 const valueContainer = container.createDiv()
                 const fieldVM = fieldValueManager(this.managedField.plugin, item.field.id, item.field.fileClassName, item.file, item, item.indexedPath, item.lineNumber);
-                (fieldVM && fieldVM?.value !== "") ? getDisplayValue(mapFieldType(item.field.type))(fieldVM, valueContainer,) : valueContainer.setText("<empty>")
+                (fieldVM && fieldVM?.value !== "") ? getDisplayValue(item.field.type)(fieldVM, valueContainer,) : valueContainer.setText("<empty>")
             } else {
                 container.createDiv({ text: `${item.name} :`, cls: "label-container" })
                 container.createDiv({ text: "<missing>" })
@@ -148,7 +148,7 @@ export function createDvField(
 }
 
 export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined, noteField?: NoteFieldsComponent): void {
-    const iconName = getIcon(mapFieldType(field.type));
+    const iconName = getIcon(field.type);
     if (noteField) {
         const action = async () => await noteField.moveToObject(`${indexedPath}`);
         if (isFieldActions(location)) {

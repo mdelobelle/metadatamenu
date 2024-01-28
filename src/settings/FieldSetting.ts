@@ -1,9 +1,8 @@
 import { setIcon, Setting, TFile } from "obsidian";
 import MetadataMenu from "main";
-import { FieldTypeTagClass } from "src/types/fieldTypes";
 import { openSettings } from "src/fields/base/BaseSetting";
 import { getField, Field } from "src/fields/Field";
-import { getOptionStr } from "src/fields/Fields";
+import { getOptionStr, getTagName } from "src/fields/Fields";
 
 export default class FieldSetting extends Setting {
     private fieldNameContainer: HTMLDivElement;
@@ -36,7 +35,7 @@ export default class FieldSetting extends Setting {
         }
         this.fieldNameContainer.createDiv({ text: `${this.field.name}` })
         this.typeContainer = this.infoEl.createEl("div")
-        this.typeContainer.setAttr("class", `chip ${FieldTypeTagClass[this.field.type]}`)
+        this.typeContainer.setAttr("class", `chip ${getTagName(this.field.type)}`)
         this.typeContainer.setText(this.field.type)
         this.fieldOptionsContainer = this.infoEl.createEl("div")
         this.fieldOptionsContainer.setText(`${getOptionStr(field.type)(field)}`)
@@ -48,8 +47,6 @@ export default class FieldSetting extends Setting {
                 .setTooltip("Edit")
                 .onClick(() => {
                     openSettings(this.field.id, undefined, this.plugin, this, this.containerEl)
-                    //let modal = new FieldSettingsModal(this.plugin, this.containerEl, this, this.field);
-                    //modal.open();
                 });
         });
     };

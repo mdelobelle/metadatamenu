@@ -2,7 +2,7 @@ import MetadataMenu from "main"
 import { ButtonComponent, Notice, TFile, TextAreaComponent, setIcon } from "obsidian"
 import { getExistingFieldForIndexedPath } from "src/fields/ExistingField"
 import { ActionLocation, IField, IFieldManager, Target, fieldValueManager, getOptions, isFieldActions, isSuggest, removeValidationError } from "src/fields/Field"
-import { getIcon, mapFieldType } from "src/fields/Fields"
+import { getIcon } from "src/fields/Fields"
 import { BaseOptions, IFieldBase } from "src/fields/base/BaseField"
 import { IBaseValueModal, basicFuzzySuggestModal } from "src/fields/base/BaseModal"
 import { ISettingsModal } from "src/fields/base/BaseSetting"
@@ -212,7 +212,7 @@ export function displayValue(managedField: IFieldManager<Target, Options>, conta
 }
 
 export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
-    const iconName = getIcon(mapFieldType(field.type));
+    const iconName = getIcon(field.type);
     const action = async () => {
         const eF = await getExistingFieldForIndexedPath(plugin, file, indexedPath)
         fieldValueManager(plugin, field.id, field.fileClassName, file, eF, indexedPath)?.openModal()

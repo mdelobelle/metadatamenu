@@ -6,7 +6,6 @@ import { AddFileClassToFileModal } from "src/fileClass/fileClass";
 import AddNewFileClassModal from "src/modals/AddNewFileClassModal";
 import { LineNode } from "src/note/lineNode";
 import { Note } from "src/note/note";
-import { FieldType } from "src/types/fieldTypes";
 import { genuineKeys } from "src/utils/dataviewUtils";
 import { getFrontmatterPosition } from "src/utils/fileUtils";
 import chooseSectionModal from "../modals/chooseSectionModal";
@@ -66,10 +65,10 @@ export default class OptionsList {
 			const fieldVM = fieldValueManager(this.plugin, mField.id, mField.fileClassName, this.file, undefined, indexedPath)
 			if (!fieldVM) return
 			switch (fieldVM.type) {
-				case FieldType.Boolean:
+				case "Boolean":
 					fieldVM.save(!fieldVM.value)
 					break;
-				case FieldType.Cycle:
+				case "Cycle":
 					const nextOption = getNextOption(fieldVM as IFieldManager<TFile, CycleOptions>);
 					fieldVM.save(nextOption)
 					break;

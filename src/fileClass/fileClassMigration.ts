@@ -1,10 +1,10 @@
 import MetadataMenu from "main";
-import { FieldType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 import { legacyGenuineKeys } from "src/utils/dataviewUtils";
 import { capitalize } from "src/utils/textUtils";
 import { FileClass } from "./fileClass";
 import { FileClassAttribute } from "./fileClassAttribute";
 import { getNewFieldId } from "src/fields/Field";
+import { FieldType } from "src/fields/Fields";
 
 export class V1FileClassMigration {
     /*
@@ -29,7 +29,7 @@ export class V1FileClassMigration {
                             : dvFile[key];
                         try {
                             const { type, options, command, display, style } = JSON.parse(item);
-                            const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
+                            const fieldType = capitalize(type) as FieldType;
                             const attr = new FileClassAttribute(plugin, this.name, key, this.name, fieldType, options, fileClass.name, command, display, style)
                             attributes.push(attr)
                         } catch (e) {

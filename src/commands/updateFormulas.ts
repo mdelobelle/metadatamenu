@@ -1,6 +1,5 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian";
-import { FieldType } from "src/types/fieldTypes";
 import { Status } from "src/types/lookupTypes";
 import { arraysAsStringAreEqual } from "./updateLookups";
 import { Field } from "src/fields/Field";
@@ -40,7 +39,7 @@ export async function updateFormulas(
     //1. flatten all file__formulaField in a Map
     const fileFormulasFields: Map<string, Field> = new Map();
     [...f.filesLookupAndFormulaFieldsExists].forEach(([filePath, fields]) => {
-        fields.filter(field => field.type === FieldType.Formula).forEach(field => {
+        fields.filter(field => field.type === "Formula").forEach(field => {
             const fileFormulaField = `${filePath}__calculated__${field.fileClassName || "presetField"}___${field.name}`
             fileFormulasFields.set(fileFormulaField, field)
         })

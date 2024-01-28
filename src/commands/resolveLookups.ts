@@ -1,5 +1,4 @@
 import MetadataMenu from "main";
-import { FieldType } from "src/types/fieldTypes";
 
 export function resolveLookups(plugin: MetadataMenu): void {
     /*
@@ -20,7 +19,7 @@ export function resolveLookups(plugin: MetadataMenu): void {
     });
     //then assign results to all files having implemented a lookupfield
     [...index.filesLookupAndFormulaFieldsExists].forEach(([filePath, fields]) => {
-        fields.filter(field => field.type === FieldType.Lookup).forEach(lookupField => {
+        fields.filter(field => field.type === "Lookup").forEach(lookupField => {
             //for all lookup fields in files that have lookupfields:
             //1. get the query results
             const queryRelatedDVFiles = lookupQueryResults.get(`${lookupField.fileClassName || "presetField"}___${lookupField.name}`) || [];

@@ -1,8 +1,8 @@
 import MetadataMenu from "main";
 import { IField } from "src/fields/Field";
+import { MultiDisplayType } from "src/fields/Fields";
 import { BaseOptions } from "src/fields/base/BaseField";
 import FileClassQuery from "src/fileClass/FileClassQuery";
-import { MultiDisplayType } from "src/types/fieldTypes";
 
 type Field = Omit<IField<BaseOptions>, "plugin">
 

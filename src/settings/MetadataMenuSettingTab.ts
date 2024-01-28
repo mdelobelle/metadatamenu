@@ -6,10 +6,10 @@ import { FileSuggest } from "src/suggester/FileSuggester";
 import FileClassQuery from "src/fileClass/FileClassQuery";
 import FileClassQuerySettingsModal from "./FileClassQuerySettingModal";
 import FileClassQuerySetting from "./FileClassQuerySetting";
-import { MultiDisplayType } from "src/types/fieldTypes";
 import { DEFAULT_SETTINGS } from "./MetadataMenuSettings";
 import { openSettings } from "src/fields/base/BaseSetting";
 import { buildEmptyField } from "src/fields/Field";
+import { MultiDisplayType } from "src/fields/Fields";
 
 class SettingTextWithButtonComponent extends Setting {
 	private newValues: string[] = []
@@ -335,11 +335,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					.setTooltip("Add New Property Manager")
 					.setButtonText("Add new")
 					.setCta()
-					.onClick(async () => {
-						//let modal = new FieldSettingsModal(this.plugin, presetFieldsSettings);
-						//modal.open();
-						openSettings("", undefined, this.plugin, undefined, fieldsContainer)
-					});
+					.onClick(async () => openSettings("", undefined, this.plugin, undefined, fieldsContainer));
 			}).settingEl.addClass("no-border");
 		const fieldsContainer = presetFieldsSettings.createDiv({ cls: "fields-container" })
 		/* Managed properties that currently have preset options */

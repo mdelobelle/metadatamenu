@@ -2,7 +2,6 @@ import MetadataMenu from "main";
 import { Column, ViewConfiguration } from "./tableViewFieldSet"
 import { FileClass } from "../../fileClass";
 import { fieldStates } from "./OptionsMultiSelectModal";
-import { FieldType, migratedFieldTypes } from "src/types/fieldTypes";
 import { FileClassTableView } from "../fileClassTableView";
 import { FileClassCodeBlockView } from "../fileClassCodeBlockView";
 import { MarkdownPostProcessorContext, TFile, setIcon } from "obsidian";
@@ -142,7 +141,7 @@ export class FileClassDataviewTable {
             const field = this.plugin.fieldIndex.fileClassesFields.get(fileClassName)?.find(f => f.isRoot() && f.name === fieldName)
             const files = selectedFiles.map(sF => this.plugin.app.vault.getAbstractFileByPath(sF)).filter(f => f instanceof TFile) as TFile[]
 
-            if (field && migratedFieldTypes.includes(field.type)) {
+            if (field) {
                 const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, files, undefined)
                 fieldVM?.openModal()
             }
@@ -346,7 +345,7 @@ export class FileClassDataviewTable {
                         return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} !== undefined)\n`
                     } else if (values.length) {
                         const fCField = filter.name !== "file" ? this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.find(f => f.name === filter.name) : undefined
-                        if (fCField?.type === FieldType.Boolean) {
+                        if (fCField?.type === "Boolean") {
                             switch (value) {
                                 case 'true':
                                     return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === true)\n`

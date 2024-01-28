@@ -2,19 +2,18 @@ import MetadataMenu from "main";
 import { MarkdownView, Notice, TFile } from "obsidian";
 import NoteFieldsComponent from "src/components/FieldsModal";
 import { AddFileClassToFileModal, FileClass } from "src/fileClass/fileClass";
-import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
 import chooseSectionModal from "src/modals/chooseSectionModal";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import FileClassOptionsList from "src/options/FileClassOptionsList";
 import OptionsList from "src/options/OptionsList";
 import { insertMissingFields } from "./insertMissingFields";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
-import { FieldType } from "src/types/fieldTypes";
 import { updateLookups } from "./updateLookups";
 import { updateFormulas } from "./updateFormulas";
 import { Note } from "src/note/note";
 import { FieldCommand, Field, fieldValueManager } from "src/fields/Field";
 import { BaseOptions } from "src/fields/base/BaseField";
+import { openSettings } from "src/fields/base/BaseSetting";
 
 function fileClassAttributeOptionsCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
@@ -52,10 +51,7 @@ function insertFileClassAttributeCommand(plugin: MetadataMenu) {
             if (inFileClass) {
                 try {
                     const fileClassName = FileClass.getFileClassNameFromPath(plugin.settings, view!.file!.path)
-                    if (fileClassName) {
-                        const fileClassAttributeModal = new FileClassAttributeModal(plugin, FileClass.createFileClass(plugin, fileClassName))
-                        fileClassAttributeModal.open()
-                    }
+                    if (fileClassName) openSettings("", fileClassName, plugin)
                 } catch (error) {
                     new Notice("plugin is not a valid fileClass")
                 }
@@ -366,7 +362,7 @@ function updateFileLookupsCommand(plugin: MetadataMenu) {
             if (inFile) {
                 const file = view.file;
                 if (inFile && file instanceof TFile && file.extension === "md") {
-                    const lookupFields = plugin.fieldIndex.filesFields.get(file.path)?.filter(field => field.type === FieldType.Lookup)
+                    const lookupFields = plugin.fieldIndex.filesFields.get(file.path)?.filter(field => field.type === "Lookup")
                     lookupFields?.forEach(async (field) => {
                         await updateLookups(plugin, { file: file, fieldName: field.name })
                         await plugin.fieldIndex.applyUpdates()
@@ -392,7 +388,7 @@ function updateFileFormulasCommand(plugin: MetadataMenu) {
             if (inFile) {
                 const file = view.file;
                 if (inFile && file instanceof TFile && file.extension === "md") {
-                    const formulaFields = plugin.fieldIndex.filesFields.get(file.path)?.filter(field => field.type === FieldType.Formula)
+                    const formulaFields = plugin.fieldIndex.filesFields.get(file.path)?.filter(field => field.type === "Formula")
                     formulaFields?.forEach(async (field) => {
                         await updateFormulas(plugin, { file: file, fieldName: field.name })
                         await plugin.fieldIndex.applyUpdates()

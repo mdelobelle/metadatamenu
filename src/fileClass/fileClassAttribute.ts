@@ -1,9 +1,8 @@
 import MetadataMenu from "main";
 import { BaseOptions, FieldParam, isFieldOptions } from "src/fields/base/BaseField";
 import { buildField, FieldCommand, getField, IField } from "src/fields/Field";
-import { getOptionStr } from "src/fields/Fields";
+import { FieldType, getOptionStr, MultiDisplayType } from "src/fields/Fields";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
-import { FieldType, MultiDisplayType, FieldTypeLabelMapping } from "src/types/fieldTypes";
 
 class FileClassAttribute {
 
@@ -12,7 +11,7 @@ class FileClassAttribute {
         public origin: string,
         public name: string,
         public id: string,
-        public type: FieldType = FieldType.Input,
+        public type: FieldType = "Input",
         public options: string[] | Record<string, any> = [],
         public fileClassName: string,
         public command: FieldCommand,

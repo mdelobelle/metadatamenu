@@ -1,7 +1,7 @@
 import { ButtonComponent, DropdownComponent, Menu, Notice, TFile, TextAreaComponent, TextComponent, setIcon } from "obsidian"
 import { IFieldBase, BaseOptions } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
-import { getIcon, mapFieldType } from "../Fields"
+import { getIcon } from "../Fields"
 import { IFieldManager, Target, isSingleTargeted, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, ActionLocation, IField } from "../Field"
 import MetadataMenu from "main"
 import { IBasicModal, basicModal } from "../base/BaseModal"
@@ -225,7 +225,7 @@ export function createDvField(
 }
 
 export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath?: string): void {
-    const iconName = getIcon(mapFieldType(field.type));
+    const iconName = getIcon(field.type);
 
     const action = async () => {
         const eF = await getExistingFieldForIndexedPath(plugin, file, indexedPath)

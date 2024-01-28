@@ -1,7 +1,6 @@
 import { FileClassAttribute } from "./fileClassAttribute";
 import MetadataMenu from "main";
 import { Notice, SuggestModal, TFile } from "obsidian";
-import { FieldType, FieldTypeLabelMapping, MultiDisplayType } from "src/types/fieldTypes";
 import { capitalize } from "src/utils/textUtils";
 import { postValues } from "src/commands/postValues";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
@@ -11,7 +10,7 @@ import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
 import { SavedView } from "./views/tableViewComponents/saveViewModal";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { compareArrays } from "src/utils/array";
-import { FieldType as IFieldType } from "src/fields/Fields"
+import { FieldType, FieldType as IFieldType, MultiDisplayType, fieldTypes } from "src/fields/Fields"
 import { Field, getNewFieldId, stringToBoolean, FieldCommand } from "src/fields/Field";
 
 interface ShortId {
@@ -306,7 +305,7 @@ class FileClass {
         const attributes: FileClassAttribute[] = [];
         rawAttributes.forEach((attr: any) => {
             const { name, id, type, options, command, display, style, path } = attr;
-            const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
+            const fieldType = capitalize(type) as FieldType;
             attributes.push(new FileClassAttribute(plugin, this.name, name, id, fieldType, options, fileClass.name, command, display, style, path))
         })
         if (excludes) {
@@ -442,7 +441,7 @@ class FileClass {
     }
 
     public async updateAttribute(
-        newType: keyof typeof FieldType,
+        newType: FieldType,
         newName: string,
         newOptions?: string[] | Record<string, string>,
         attr?: FileClassAttribute,

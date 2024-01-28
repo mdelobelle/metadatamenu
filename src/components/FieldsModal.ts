@@ -4,13 +4,13 @@ import { insertMissingFields } from "src/commands/insertMissingFields";
 import { postValues } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
 import { Field, IFieldManager, fieldValueManager, getIdAndIndex, upperIndexedPathObjectPath } from "src/fields/Field";
-import { displayValue, getActions, mapFieldType, objectTypes } from "src/fields/Fields";
+import { displayValue, getActions, objectTypes } from "src/fields/Fields";
 import BooleanField from "src/fields/fieldManagers/BooleanField";
-import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
 import ChooseSectionModal from "src/modals/chooseSectionModal";
 import { Note } from "src/note/note";
 import { FileClassViewManager } from "./FileClassViewManager";
 import { Options as ObjectListOptions, addObjectListItem } from "src/fields/models/ObjectList";
+import { openSettings } from "src/fields/base/BaseSetting";
 
 
 export class FieldActions {
@@ -174,10 +174,7 @@ export class FieldsModal extends Modal {
         fieldSettingBtn.onClick(() => {
             const _fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
             const fileClassAttribute = _fileClass?.attributes.find(attr => attr.id === field.id)
-            if (fileClassAttribute && _fileClass) {
-                const fileClassAttributeModal = new FileClassAttributeModal(this.plugin, _fileClass, fileClassAttribute)
-                fileClassAttributeModal.open();
-            }
+            if (fileClassAttribute && _fileClass) openSettings(fileClassAttribute.id, _fileClass.name, this.plugin)
         })
         const fieldTypeContainer = fieldSettingsWrapper.createDiv({ cls: `field-item` });
         fieldTypeContainer.createDiv({ text: field.type, cls: `chip field-type ${field.colorClass}` })
@@ -190,7 +187,7 @@ export class FieldsModal extends Modal {
         } else if (value === undefined) {
             fieldValueContainer.setText("<missing>");
         } else {
-            if (fieldVM) displayValue(mapFieldType(field.type))(fieldVM, fieldValueContainer, () => { this.close() })
+            if (fieldVM) displayValue(field.type)(fieldVM, fieldValueContainer, () => { this.close() })
             else fieldValueContainer.setText(`${value}`)
         }
         const fieldOptionsWrapper = container.createDiv({ cls: "field-options-wrapper" });
@@ -256,10 +253,7 @@ export class FieldsModal extends Modal {
         fieldSettingBtn.onClick(() => {
             const _fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
             const fileClassAttribute = _fileClass?.attributes.find(attr => attr.id === field.id)
-            if (fileClassAttribute && _fileClass) {
-                const fileClassAttributeModal = new FileClassAttributeModal(this.plugin, _fileClass, fileClassAttribute)
-                fileClassAttributeModal.open();
-            }
+            if (fileClassAttribute && _fileClass) openSettings(fileClassAttribute.id, _fileClass.name, this.plugin)
         })
         const fieldTypeContainer = fieldSettingsWrapper.createDiv({ cls: `field-item` });
         fieldTypeContainer.createDiv({ text: `${field.type} item`, cls: `chip field-type ${field.colorClass}` })
@@ -313,10 +307,7 @@ export class FieldsModal extends Modal {
                     const fileClassAddAttributeBtn = new ButtonComponent(fileClassOptionsContainer)
                     fileClassAddAttributeBtn.setIcon("plus-circle")
                     fileClassAddAttributeBtn.setTooltip(`Add field definition in ${_fileClass.name}`)
-                    fileClassAddAttributeBtn.onClick(() => {
-                        const fileClassAttributeModal = new FileClassAttributeModal(this.plugin, _fileClass)
-                        fileClassAttributeModal.open()
-                    })
+                    fileClassAddAttributeBtn.onClick(() => openSettings("", fileClassName, this.plugin))
                     if (i < ancestors.length - 1) {
                         fileClassOptionsContainer.createDiv({ text: ">", cls: "separator" })
                     }

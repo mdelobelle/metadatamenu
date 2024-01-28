@@ -10,13 +10,13 @@ import {
     parseYaml,
     Notice,
 } from "obsidian";
-import { MultiDisplayType } from "src/types/fieldTypes";
 import { genericFieldRegex, getLineFields, encodeLink } from "../utils/parser";
 import { buildMarkDownLink, getFiles } from "src/fields/models/abstractModels/AbstractFile";
 import { Field, IFieldManager, fieldValueManager } from "src/fields/Field";
 import { getOptionsList } from "src/fields/models/abstractModels/AbstractList";
 import { Options as ListOptions } from "src/fields/models/abstractModels/AbstractList";
 import { Options as FileOptions } from "src/fields/models/abstractModels/AbstractFile";
+import { MultiDisplayType } from "src/fields/Fields";
 
 interface IValueCompletion {
     attr: string;

@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { Note } from "./note"
 import { LineNode } from "./lineNode";
 import { getLineFields } from "src/utils/parser";
-import { FieldType, frontmatterOnlyTypes } from "src/types/fieldTypes";
+import { frontmatterOnlyTypes } from "src/fields/Fields";
 
 export type LinePosition = "yaml" | "inline"
 
@@ -105,7 +105,7 @@ export class Line {
             if (line.indentationLevel === 0) break
             if (line.indentationLevel > this.indentationLevel || (
                 line.indentationLevel === this.indentationLevel &&
-                line.nodes[0]?.field?.type === FieldType.ObjectList &&
+                line.nodes[0]?.field?.type === "ObjectList" &&
                 !line.isNewListItem
             )) {
                 lastChildLine = line

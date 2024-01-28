@@ -6,7 +6,6 @@ import FieldSetting from "src/settings/FieldSetting";
 import { resolveLookups } from "src/commands/resolveLookups";
 import { updateLookups } from "src/commands/updateLookups";
 import { updateFormulas, cleanRemovedFormulasFromIndex } from "src/commands/updateFormulas";
-import { FieldType } from "src/types/fieldTypes";
 import { Status as LookupStatus, Status } from "src/types/lookupTypes";
 import { updateCanvas, updateCanvasAfterFileClass } from "src/commands/updateCanvas";
 import { CanvasData } from "obsidian/canvas";
@@ -184,9 +183,9 @@ export default class FieldIndex extends FieldIndexBuilder {
                         fieldsPayload.forEach(fieldPayload => {
                             const field = this.filesFields
                                 .get(filePath)?.find(_f => _f.isRoot() && _f.id === fieldPayload.indexedPath)
-                            if (field && field.type === FieldType.Lookup) this.fileLookupFieldsStatus
+                            if (field && field.type === "Lookup") this.fileLookupFieldsStatus
                                 .set(`${filePath}__${field.name}`, LookupStatus.upToDate)
-                            if (field && field.type === FieldType.Formula) this.fileFormulaFieldsStatus
+                            if (field && field.type === "Formula") this.fileFormulaFieldsStatus
                                 .set(`${filePath}__${field.name}`, LookupStatus.upToDate)
                         })
                     }
@@ -340,11 +339,11 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     private getLookupQueries(): void {
-        this.plugin.presetFields.filter(field => field.type === FieldType.Lookup).forEach(field => {
+        this.plugin.presetFields.filter(field => field.type === "Lookup").forEach(field => {
             this.lookupQueries.set(`presetField___${field.name}`, field)
         });
         [...this.fileClassesFields].forEach(([fileClassName, fields]) => {
-            fields.filter(field => field.type === FieldType.Lookup).forEach(field => {
+            fields.filter(field => field.type === "Lookup").forEach(field => {
                 this.lookupQueries.set(`${fileClassName}___${field.name}`, field)
             })
         })
@@ -597,11 +596,11 @@ export default class FieldIndex extends FieldIndexBuilder {
     private getFilesLookupAndFormulaFieldsExists(file?: TFile): void {
         if (!this.dvReady()) return
         [...this.filesFields.entries()].forEach(([filePath, fields]) => {
-            const dvFormulaFields = fields.filter(f => f.isRoot() && f.type === FieldType.Formula &&
+            const dvFormulaFields = fields.filter(f => f.isRoot() && f.type === "Formula" &&
                 f.name in this.dv.api.page(filePath))
             if (!this.settings.isAutoCalculationEnabled) dvFormulaFields
                 .forEach(field => this.fileFormulaFieldsStatus.set(`${filePath}__${field.name}`, Status.mayHaveChanged))
-            const dvLookupFields = fields.filter(f => f.isRoot() && f.type === FieldType.Lookup &&
+            const dvLookupFields = fields.filter(f => f.isRoot() && f.type === "Lookup" &&
                 f.name in this.dv.api.page(filePath))
             if (!this.settings.isAutoCalculationEnabled) dvFormulaFields
                 .forEach(field => this.fileLookupFieldsStatus.set(`${filePath}__${field.name}`, Status.mayHaveChanged))
@@ -612,9 +611,9 @@ export default class FieldIndex extends FieldIndexBuilder {
     public dvQFieldChanged(path: string) {
         let changed: boolean = false
         this.filesLookupAndFormulaFieldsExists.get(path)?.forEach(field => {
-            if (field.type === FieldType.Lookup) {
+            if (field.type === "Lookup") {
                 changed = changed || this.fileLookupFieldsStatus.get(path + "__" + field.name) === Status.changed
-            } else if (field.type === FieldType.Formula) {
+            } else if (field.type === "Formula") {
                 changed = changed || this.fileFormulaFieldsStatus.get(path + "__" + field.name) === Status.changed
             }
         })
@@ -624,9 +623,9 @@ export default class FieldIndex extends FieldIndexBuilder {
     public dvQFieldMayHaveChanged(path: string) {
         let changed: boolean = false
         this.filesLookupAndFormulaFieldsExists.get(path)?.forEach(field => {
-            if (field.type === FieldType.Lookup) {
+            if (field.type === "Lookup") {
                 changed = changed || this.fileLookupFieldsStatus.get(path + "__" + field.name) === Status.mayHaveChanged
-            } else if (field.type === FieldType.Formula) {
+            } else if (field.type === "Formula") {
                 changed = changed || this.fileFormulaFieldsStatus.get(path + "__" + field.name) === Status.mayHaveChanged
             }
         })
@@ -636,9 +635,9 @@ export default class FieldIndex extends FieldIndexBuilder {
     public dvQFieldHasAnError(path: string) {
         let changed: boolean = false
         this.filesLookupAndFormulaFieldsExists.get(path)?.forEach(field => {
-            if (field.type === FieldType.Lookup) {
+            if (field.type === "Lookup") {
                 changed = changed || this.fileLookupFieldsStatus.get(path + "__" + field.name) === Status.error
-            } else if (field.type === FieldType.Formula) {
+            } else if (field.type === "Formula") {
                 changed = changed || this.fileFormulaFieldsStatus.get(path + "__" + field.name) === Status.error
             }
         })

@@ -4,10 +4,10 @@ import { ISettingsModal } from "../../base/BaseSetting"
 import { FileSuggest } from "src/suggester/FileSuggester"
 import { ActionLocation, IField, IFieldManager, Target, baseDisplayValue, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest, removeValidationError, setValidationError } from "../../Field"
 import MetadataMenu from "main"
-import { BaseValueModal, IBaseValueModal, basicSuggestModal } from "../../base/BaseModal"
+import { IBaseValueModal, basicSuggestModal } from "../../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
 import { Constructor } from "src/typings/types"
-import { getIcon, mapFieldType } from "src/fields/Fields"
+import { getIcon } from "src/fields/Fields"
 import { getExistingFieldForIndexedPath } from "src/fields/ExistingField"
 
 
@@ -373,7 +373,7 @@ export function displayValue(managedField: IFieldManager<Target, Options>, conta
 }
 
 export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {
-    const iconName = getIcon(mapFieldType(field.type));
+    const iconName = getIcon(field.type);
     const action = async () => {
         const eF = await getExistingFieldForIndexedPath(plugin, file, indexedPath)
         fieldValueManager(plugin, field.id, field.fileClassName, file, eF, indexedPath)?.openModal()

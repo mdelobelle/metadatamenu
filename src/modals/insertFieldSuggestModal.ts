@@ -3,8 +3,9 @@ import { FuzzyMatch, FuzzySuggestModal, setIcon, TFile } from "obsidian";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { postValues } from "src/commands/postValues";
 import { Note } from "src/note/note";
-import { FieldIcon, FieldManager, FieldType, FieldTypeTagClass, frontmatterOnlyTypes, objectTypes } from "src/types/fieldTypes";
 import chooseSectionModal from "./chooseSectionModal";
+import { FieldType, frontmatterOnlyTypes, getIcon, getTagName, objectTypes } from "src/fields/Fields";
+import { fieldValueManager } from "src/fields/Field";
 
 
 interface Option {
@@ -64,10 +65,10 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
     renderSuggestion(item: FuzzyMatch<Option>, el: HTMLElement): void {
         el.addClass("value-container")
         const iconContainer = el.createDiv({ cls: "icon-container" })
-        item.item.type ? setIcon(iconContainer, FieldIcon[item.item.type]) : setIcon(iconContainer, item.item.icon || "plus-with-circle")
+        item.item.type ? setIcon(iconContainer, getIcon(item.item.type)) : setIcon(iconContainer, item.item.icon || "plus-with-circle")
         el.createDiv({ text: item.item.actionLabel })
         el.createDiv({ cls: "spacer" })
-        if (item.item.type) el.createDiv({ cls: `chip ${FieldTypeTagClass[item.item.type]}`, text: item.item.type })
+        if (item.item.type) el.createDiv({ cls: `chip ${getTagName(item.item.type)}`, text: item.item.type })
     }
 
     async onChooseItem(item: Option, evt: MouseEvent | KeyboardEvent): Promise<void> {
@@ -95,11 +96,9 @@ export default class InsertFieldSuggestModal extends FuzzySuggestModal<Option> {
                 if (objectTypes.includes(field.type)) {
                     await postValues(this.plugin, [{ indexedPath: field.id, payload: { value: "" } }], this.file)
                     const eF = await Note.getExistingFieldForIndexedPath(this.plugin, this.file, field.id)
-                    const fieldManager = new FieldManager[field.type](this.plugin, field);
-                    fieldManager.createAndOpenFieldModal(this.file, field.name, eF, field.id, undefined, undefined, undefined, undefined)
+                    fieldValueManager(this.plugin, field.id, field.fileClassName, this.file, eF, field.id, undefined, undefined, undefined, undefined)?.openModal()
                 } else {
-                    const fieldManager = new FieldManager[field.type](this.plugin, field);
-                    fieldManager.createAndOpenFieldModal(this.file, item.actionLabel, undefined, undefined, this.lineNumber, this.asList, this.asBlockquote);
+                    fieldValueManager(this.plugin, field.id, field.fileClassName, this.file, undefined, undefined, this.lineNumber, this.asList, this.asBlockquote)?.openModal()
                 }
             }
         }

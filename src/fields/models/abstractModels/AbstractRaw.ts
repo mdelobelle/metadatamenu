@@ -11,7 +11,7 @@ import { EditorView, basicSetup } from "codemirror"
 import { cleanActions } from "src/utils/modals"
 import { ButtonComponent, TFile } from "obsidian"
 import { lintGutter } from "@codemirror/lint"
-import { getIcon, mapFieldType } from "src/fields/Fields"
+import { getIcon } from "src/fields/Fields"
 import { getExistingFieldForIndexedPath } from "src/fields/ExistingField"
 
 export interface Options extends BaseOptions { }
@@ -117,7 +117,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
 }
 
 export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath?: string): void {
-    const iconName = getIcon(mapFieldType(field.type));
+    const iconName = getIcon(field.type);
 
     const action = async () => {
         const eF = await getExistingFieldForIndexedPath(plugin, file, indexedPath)

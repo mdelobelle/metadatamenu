@@ -1,11 +1,10 @@
 import MetadataMenu from "main";
 import { ButtonComponent, setIcon } from "obsidian";
 import { removeFileClassAttributeWithId } from "src/commands/removeFileClassAttribute";
-import { FieldTypeTagClass } from "src/types/fieldTypes";
 import { FileClass } from "../fileClass";
 import { FileClassAttribute } from "../fileClassAttribute";
-import { FileClassAttributeModal } from "../FileClassAttributeModal";
 import { openSettings } from "src/fields/base/BaseSetting";
+import { getTagName } from "src/fields/Fields";
 
 class FileClassFieldSetting {
     private plugin: MetadataMenu;
@@ -29,7 +28,7 @@ class FileClassFieldSetting {
         }
         fieldNameContainer.createEl("span", { text: fCA.name, cls: "title" })
         const typeContainer = this.container.createDiv({ cls: "type-container" })
-        const chip = typeContainer.createDiv({ cls: `chip ${FieldTypeTagClass[fCA.type]}` })
+        const chip = typeContainer.createDiv({ cls: `chip ${getTagName(fCA.type)}` })
         chip.setText(fCA.type)
         const fieldButtonsContainer = this.container.createDiv({ cls: "buttons-container" })
         this.addEditButton(fieldButtonsContainer)
@@ -44,14 +43,7 @@ class FileClassFieldSetting {
         const btn = new ButtonComponent(container);
         btn.setIcon("pencil")
         btn.setTooltip("Edit")
-        btn.onClick(() => {
-            let modal = new FileClassAttributeModal(
-                this.plugin,
-                this.fileClass,
-                this.fileClassAttribute
-            );
-            modal.open();
-        })
+        btn.onClick(() => openSettings(this.fileClassAttribute.id, this.fileClass.name, this.plugin))
     };
 
     private addDeleteButton(container: HTMLElement): void {
@@ -97,8 +89,6 @@ export class FileClassFieldsView {
         setIcon(addBtn, "list-plus")
         addBtn.onclick = async () => {
             openSettings("", this.fileClass.name, this.plugin)
-            //const fileClassAttributeModal = new FileClassAttributeModal(this.plugin, FileClass.createFileClass(this.plugin, this.fileClass.name))
-            //fileClassAttributeModal.open()
         }
     }
 

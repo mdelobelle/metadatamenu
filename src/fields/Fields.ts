@@ -28,7 +28,6 @@ import FieldSetting from "src/settings/FieldSetting"
 import { IBaseValueModal } from "./base/BaseModal"
 import { IFieldBase, BaseOptions } from "./base/BaseField"
 import { Constructor } from "src/typings/types"
-import { FieldType as LegacyFieldType } from "src/types/fieldTypes"
 import { Menu, TFile } from "obsidian"
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
 import NoteFieldsComponent, { FieldActions } from "src/components/FieldsModal"
@@ -89,60 +88,6 @@ export interface TypesOptionsMap {
     YAML: YAML.Options
     Object: ObjectField.Options
     ObjectList: ObjectList.Options
-}
-
-export function mapLegacyFieldType(type: FieldType): LegacyFieldType {
-    switch (type) {
-        case "Input": return LegacyFieldType.Input
-        case "Number": return LegacyFieldType.Number
-        case "Select": return LegacyFieldType.Select
-        case "Multi": return LegacyFieldType.Multi
-        case "Cycle": return LegacyFieldType.Cycle
-        case "Boolean": return LegacyFieldType.Boolean
-        case "Date": return LegacyFieldType.Date
-        case "DateTime": return LegacyFieldType.DateTime
-        case "Time": return LegacyFieldType.Time
-        case "File": return LegacyFieldType.File
-        case "MultiFile": return LegacyFieldType.MultiFile
-        case "Media": return LegacyFieldType.Media
-        case "MultiMedia": return LegacyFieldType.MultiMedia
-        case "Canvas": return LegacyFieldType.Canvas
-        case "CanvasGroup": return LegacyFieldType.CanvasGroup
-        case "CanvasGroupLink": return LegacyFieldType.CanvasGroupLink
-        case "Formula": return LegacyFieldType.Formula
-        case "Lookup": return LegacyFieldType.Lookup
-        case "JSON": return LegacyFieldType.JSON
-        case "YAML": return LegacyFieldType.YAML
-        case "Object": return LegacyFieldType.Object
-        case "ObjectList": return LegacyFieldType.ObjectList
-    }
-}
-
-export function mapFieldType(type: keyof typeof LegacyFieldType): FieldType {
-    switch (type) {
-        case "Input": return "Input"
-        case "Number": return "Number"
-        case "Select": return "Select"
-        case "Multi": return "Multi"
-        case "Cycle": return "Cycle"
-        case "Boolean": return "Boolean"
-        case "Date": return "Date"
-        case "DateTime": return "DateTime"
-        case "Time": return "Time"
-        case "File": return "File"
-        case "MultiFile": return "MultiFile"
-        case "Media": return "Media"
-        case "MultiMedia": return "MultiMedia"
-        case "Canvas": return "Canvas"
-        case "CanvasGroup": return "CanvasGroup"
-        case "CanvasGroupLink": return "CanvasGroupLink"
-        case "Formula": return "Formula"
-        case "Lookup": return "Lookup"
-        case "JSON": return "JSON"
-        case "YAML": return "YAML"
-        case "Object": return "Object"
-        case "ObjectList": return "ObjectList"
-    }
 }
 
 export const fieldTypes: Array<FieldType> = [
@@ -474,6 +419,22 @@ export function validateValue(type: FieldType): geValidateValueFunction {
 export function getIcon(type: FieldType): string {
     const c = getFieldClass(type)
     return new c().icon
+}
+
+export function getTagName(type: FieldType): string {
+    const c = getFieldClass(type)
+    return new c().tagName
+}
+
+export function getColorClass(type: FieldType): string {
+    const c = getFieldClass(type)
+    return new c().colorClass
+}
+
+
+export function getTooltip(type: FieldType): string {
+    const c = getFieldClass(type)
+    return new c().tooltip
 }
 
 //#endregion

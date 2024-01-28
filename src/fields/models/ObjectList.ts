@@ -6,7 +6,7 @@ import { Note } from "src/note/note"
 import { Constructor, FrontmatterObject } from "src/typings/types"
 import { ExistingField } from "../ExistingField"
 import { ActionLocation, IField, IFieldManager, Target, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest, removeValidationError } from "../Field"
-import { getIcon, mapFieldType, objectTypes } from "../Fields"
+import { getIcon, objectTypes } from "../Fields"
 import { IFieldBase } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
 import { getPseudoObjectValueManagerFromObjectItem } from "./Object"
@@ -163,7 +163,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
 }
 
 export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined, noteField?: NoteFieldsComponent): void {
-    const iconName = getIcon(mapFieldType(field.type));
+    const iconName = getIcon(field.type);
     const name = field.name
     if (noteField) {
         const moveToObject = async () => await noteField.moveToObject(`${indexedPath}`);

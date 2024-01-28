@@ -2,7 +2,6 @@ import MetadataMenu from "main";
 import { ButtonComponent, Component, FileView, MarkdownEditView, TFile, View } from "obsidian";
 import { updateFormulas } from "src/commands/updateFormulas";
 import { updateLookups } from "src/commands/updateLookups";
-import { FieldType } from "src/types/fieldTypes";
 
 enum Statuses {
     "indexing" = "indexing",
@@ -74,10 +73,10 @@ export default class IndexStatus extends Component {
                 const dvQFields = this.getdvQFieldsToUpdate()
                 await Promise.all(dvQFields.map(async field => {
                     if (this.file) {
-                        if (field.type === FieldType.Lookup) {
+                        if (field.type === "Lookup") {
                             await updateLookups(this.plugin, { file: this.file, fieldName: field.name });
                             updatesToApply = true
-                        } else if (field.type === FieldType.Formula) {
+                        } else if (field.type === "Formula") {
                             await updateFormulas(this.plugin, { file: this.file, fieldName: field.name })
                             updatesToApply = true
                         }
@@ -98,7 +97,7 @@ export default class IndexStatus extends Component {
         if (this.file) {
             const index = this.plugin.fieldIndex
             const fileDVQFields = index.filesLookupsAndFormulasFields.get(this.file.path) || []
-            return fileDVQFields.filter(field => [FieldType.Lookup, FieldType.Formula].includes(field.type))
+            return fileDVQFields.filter(field => ["Lookup", "Formula"].includes(field.type))
         }
         return []
     }
