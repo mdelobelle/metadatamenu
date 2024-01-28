@@ -553,7 +553,12 @@ class FileClass {
                 const fileClass = FileClass.createFileClass(index.plugin, fileClassName)
                 index.fileClassesFields.set(
                     fileClassName,
-                    fileClass.attributes.map(attr => attr.getField())
+                    fileClass.attributes
+                        .map(attr => attr.getIField())
+                        .filter(field =>
+                            field !== undefined
+                            /* in case getIField doesn't resolve the field won't be added and the error will be silent*/
+                        ) as Field[]
                 )
                 index.fileClassesPath.set(file.path, fileClass)
                 index.fileClassesName.set(fileClass.name, fileClass)

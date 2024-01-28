@@ -51,8 +51,9 @@ class FileClassAttribute {
         if (isFieldOptions([this.type, options])) {
             const iField = buildField<O>(this.plugin, this.name, this.id, this.path || "", this.fileClassName, this.command, this.display, this.style, ...[this.type, options] as FieldParam)
             return new iField();
+        } else {
+            console.error(`${this.fileClassName}'s attribute [${this.name}] is not properly set. Check the fileclass settings or delete and recreate it`)
         }
-
     }
 
     public getOptionsString(plugin: MetadataMenu) {

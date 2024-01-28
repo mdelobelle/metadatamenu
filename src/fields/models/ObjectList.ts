@@ -13,9 +13,9 @@ import { getPseudoObjectValueManagerFromObjectItem } from "./Object"
 import * as AbstractObject from "./abstractModels/AbstractObject"
 
 export class Base implements IFieldBase {
-    tooltip: "Accepts a list of object fields"
-    colorClass: "lookup"
     type = <const>"ObjectList"
+    tooltip = "Accepts a list of object fields"
+    colorClass = "file"
     tagName = "object-list"
     icon = "boxes"
 }
