@@ -53,6 +53,19 @@ declare module "obsidian" {
 
     interface App {
         viewRegistry: ViewRegistry
+        setting: SettingPanel
+    }
+
+    interface SettingPanel {
+        pluginTabs: Array<PluginSettingTab>
+        open: () => void
+        close: () => void
+    }
+
+    interface PluginSettingTab {
+        id: string,
+        navEl: HTMLDivElement
+        containerEl: HTMLDivElement
     }
 
     interface Editor {

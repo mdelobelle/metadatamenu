@@ -581,7 +581,13 @@ export function buildSettingsModal<O extends BaseOptions>(
 }
 
 
-export function openSettings<O extends BaseOptions>(id: string, fileClassName: string | undefined, plugin: MetadataMenu, parentSetting?: FieldSetting, parentSettingContainer?: HTMLElement) {
+export function openSettings<O extends BaseOptions>(
+    id: string,
+    fileClassName: string | undefined,
+    plugin: MetadataMenu,
+    parentSetting?: FieldSetting,
+    parentSettingContainer?: HTMLElement
+): ISettingsModal<O> | undefined {
     let Field: Constructor<IField<O>> | undefined = undefined
     let type: FieldType | undefined = "Input"
     if (!id) {
@@ -592,5 +598,6 @@ export function openSettings<O extends BaseOptions>(id: string, fileClassName: s
     if (Field && type) {
         const settingsModal = getFieldSettings(Field, type, plugin, parentSetting, parentSettingContainer)
         settingsModal.open()
+        return settingsModal
     }
 }

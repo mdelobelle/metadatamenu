@@ -1,18 +1,17 @@
 {
-	"name": "obsidian-sample-plugin",
-	"version": "1.0.1",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"name": "Metadata-menu",
+	"version": "0.8.0",
+	"description": "Managing metadata of notes",
 	"main": "main.js",
 	"scripts": {
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production --define:DEBUG=false",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"css:clean": "rm -f styles.css",
-		"css:compile": "sass ./src/assets/css/styles.scss ./styles.css --no-source-map",
+		"css:compile": "sass ./src/assets/css/styles.scss ./styles.css --no-source-map && cp ./styles.css ./test-vault-mdm/.obsidian/plugins/metadata-menu/styles.css",
 		"build:css": "npm run css:clean && npm run css:compile",
 		"build:css:watch": "onchange -i './src/assets/css/*.scss' './src/assets/css/*.css' -- npm run build:css",
 		"dev": "node esbuild.config.mjs --define:DEBUG=true",
-		"dev:silent": "node esbuild.config.mjs --define:DEBUG=false",
-		"test": "jest"
+		"dev:silent": "node esbuild.config.mjs --define:DEBUG=false"
 	},
 	"keywords": [],
 	"author": "",
@@ -40,10 +39,9 @@
 		"@codemirror/legacy-modes": "^6.3.3",
 		"@codemirror/lint": "^6.4.1",
 		"@codemirror/stream-parser": "^0.19.9",
-		"@popperjs/core": "^2.11.5",
-		"@types/uuid": "^9.0.4",
 		"codemirror": "^6.0.1",
 		"crypto-random-string": "^5.0.0",
 		"yaml": "^2.3.2"
-	}
+	},
+	"type": "module"
 }

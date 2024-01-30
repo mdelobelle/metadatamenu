@@ -11,6 +11,65 @@ import { openSettings } from "src/fields/base/BaseSetting";
 import { buildEmptyField } from "src/fields/Field";
 import { MultiDisplayType } from "src/fields/Fields";
 
+export function isMetadataMenuSettingTab(tab: PluginSettingTab | MetadataMenuSettingTab): tab is MetadataMenuSettingTab {
+	return 'groups' in tab
+}
+
+export function isPresetFieldsSettingGroup(group: SettingGroup | PresetFieldsSettingGroup): group is PresetFieldsSettingGroup {
+	return 'addNewButton' in group
+}
+
+class SettingGroup {
+	public settingsContainerShowButton: ButtonComponent
+	public containerEl: HTMLDivElement
+	constructor(
+		public tab: MetadataMenuSettingTab,
+		public id: string,
+		public title: string,
+		public subTitle: string,
+		public withButton: boolean = false
+	) {
+		this.create()
+	}
+
+	public create(): void {
+		const settingHeader = this.tab.containerEl.createEl('div')
+		const settingHeaderContainer = settingHeader.createEl("div", { cls: "header-container" });
+		const settingHeaderTextContainer = settingHeaderContainer.createEl("div", { cls: "text-container" });
+		settingHeaderTextContainer.createEl('h4', { text: this.title, cls: "section-header" });
+		if (this.subTitle) settingHeaderTextContainer.createEl('div', { text: this.subTitle, cls: "setting-item-description" });
+
+		const settingsContainer = this.tab.containerEl.createEl("div");
+		if (this.withButton) {
+			const settingsContainerShowButtonContainer = settingHeaderContainer.createEl("div", { cls: "setting-item-control" });
+			this.settingsContainerShowButton = new ButtonComponent(settingsContainerShowButtonContainer);
+			this.settingsContainerShowButton.buttonEl.addClass("setting-item-control");
+			settingsContainer.hide();
+			this.settingsContainerShowButton.setCta();
+			this.settingsContainerShowButton.setIcon("chevrons-up-down");
+
+			const toggleState = () => {
+				if (settingsContainer.isShown()) {
+					settingsContainer.hide();
+					this.settingsContainerShowButton.setIcon("chevrons-up-down");
+					this.settingsContainerShowButton.setCta();
+				} else {
+					settingsContainer.show();
+					this.settingsContainerShowButton.setIcon("chevrons-down-up");
+					this.settingsContainerShowButton.removeCta();
+				}
+			}
+			this.settingsContainerShowButton.onClick(() => toggleState());
+		}
+		this.tab.groups.push(this)
+		this.containerEl = settingsContainer
+	}
+}
+
+class PresetFieldsSettingGroup extends SettingGroup {
+	public addNewButton: ButtonComponent
+}
+
 class SettingTextWithButtonComponent extends Setting {
 	private newValues: string[] = []
 	constructor(
@@ -28,6 +87,7 @@ class SettingTextWithButtonComponent extends Setting {
 		private normalizeValue: (item: string) => string
 	) {
 		super(containerEl)
+		containerEl.addClass("metadata-menu")
 		const saveButton = new ButtonComponent(this.containerEl)
 		saveButton.buttonEl.addClass("save")
 		saveButton.setIcon("save")
@@ -98,13 +158,14 @@ class ButtonDisplaySetting extends Setting {
 	}
 }
 
-
 export default class MetadataMenuSettingTab extends PluginSettingTab {
 	private plugin: MetadataMenu;
 	private newFileClassesPath: string | null;
 	private newFileClassAlias: string
 	private newTableViewMaxRecords: number
 	private newIcon: string
+	public groups: SettingGroup[] = []
+	public fieldsContainer: HTMLDivElement
 
 	constructor(plugin: MetadataMenu) {
 		super(plugin.app, plugin);
@@ -117,58 +178,27 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		this.containerEl.addClass("settings")
 	};
 
-	private createSettingGroup(title: string, subTitle?: string, withButton: boolean = false): HTMLDivElement {
-		const settingHeader = this.containerEl.createEl('div')
-		const settingHeaderContainer = settingHeader.createEl("div", { cls: "header-container" });
-		const settingHeaderTextContainer = settingHeaderContainer.createEl("div", { cls: "text-container" });
-		settingHeaderTextContainer.createEl('h4', { text: title, cls: "section-header" });
-		if (subTitle) settingHeaderTextContainer.createEl('div', { text: subTitle, cls: "setting-item-description" });
-
-		const settingsContainer = this.containerEl.createEl("div");
-		if (withButton) {
-			const settingsContainerShowButtonContainer = settingHeaderContainer.createEl("div", { cls: "setting-item-control" });
-			const settingsContainerShowButton = new ButtonComponent(settingsContainerShowButtonContainer);
-			settingsContainerShowButton.buttonEl.addClass("setting-item-control");
-			settingsContainer.hide();
-			settingsContainerShowButton.setCta();
-			settingsContainerShowButton.setIcon("chevrons-up-down");
-
-			const toggleState = () => {
-				if (settingsContainer.isShown()) {
-					settingsContainer.hide();
-					settingsContainerShowButton.setIcon("chevrons-up-down");
-					settingsContainerShowButton.setCta();
-				} else {
-					settingsContainer.show();
-					settingsContainerShowButton.setIcon("chevrons-down-up");
-					settingsContainerShowButton.removeCta();
-				}
-			}
-			settingsContainerShowButton.onClick(() => toggleState());
-		}
-
-
-		return settingsContainer
-	}
 
 	display(): void {
 		let { containerEl } = this;
 		containerEl.empty();
 
+		//#region global settings
 		/* 
 		-----------------------------------------
 		Global Settings 
 		-----------------------------------------
 		*/
-		const globalSettings = this.createSettingGroup(
+		const globalSettings = new SettingGroup(this,
+			'global-settings',
 			'Global settings',
 			"Global settings to apply to your whole vault",
 			true
 		)
 
 		/* Scope*/
-		const scopeReloadInfo = globalSettings.createDiv({ cls: "settings-info-warning" })
-		new Setting(globalSettings)
+		const scopeReloadInfo = globalSettings.containerEl.createDiv({ cls: "settings-info-warning" })
+		new Setting(globalSettings.containerEl)
 			.setName('Scope')
 			.setDesc('Index fields in frontmatter only or in the whole note (if you use dataview inline fields). ' +
 				'Indexing full notes could cause some latencies in vaults with large files')
@@ -184,7 +214,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			}).settingEl.addClass("no-border");
 
 		/* Manage menu options display*/
-		new Setting(globalSettings)
+		new Setting(globalSettings.containerEl)
 			.setName("Display field options in context menu")
 			.setDesc("Choose to show or hide fields options in the context menu of a link or a file")
 			.addToggle((toggle: ToggleComponent) => {
@@ -199,7 +229,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		/* Exclude Folders from indexing*/
 		new SettingTextWithButtonComponent(
-			this.plugin, globalSettings, 'Excluded folders',
+			this.plugin, globalSettings.containerEl, 'Excluded folders',
 			'Folders where preset fields and fileClass options won\'t be applied. ' +
 			'Useful for templates or settings folders.', 'Enter/folders/paths/, comma/separated/',
 			"fileIndexingExcludedFolders",
@@ -208,7 +238,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		/*
 		/* Exclude extensions from indexing*/
 		new SettingTextWithButtonComponent(
-			this.plugin, globalSettings, 'Excluded extensions',
+			this.plugin, globalSettings.containerEl, 'Excluded extensions',
 			'Files with these extensions won\'t be indexed ' +
 			'Useful for big files that don\'t contain metadata. Comma separated', "",
 			"fileIndexingExcludedExtensions",
@@ -217,7 +247,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		/* Exclude Folders from indexing*/
 		new SettingTextWithButtonComponent(
-			this.plugin, globalSettings, 'Excluded file name patterns',
+			this.plugin, globalSettings.containerEl, 'Excluded file name patterns',
 			'files with names matching those regex won\'t be indexed. ' +
 			'Useful for very specific usecases. Comma separated ', 'foo*, .md$',
 			"fileIndexingExcludedRegex",
@@ -226,14 +256,14 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		/* Exclude Fields from indexing*/
 		new SettingTextWithButtonComponent(
-			this.plugin, globalSettings, 'Globally ignored fields',
+			this.plugin, globalSettings.containerEl, 'Globally ignored fields',
 			'Fields to be ignored by the plugin. Comma separated ', '',
 			"globallyIgnoredFields",
 			(item) => item
 		)
 
 		/* Autocomplete*/
-		const enableAutoComplete = new Setting(globalSettings)
+		const enableAutoComplete = new Setting(globalSettings.containerEl)
 			.setName('Autocomplete')
 			.setDesc('Activate autocomplete fields')
 			.addToggle(cb => {
@@ -247,7 +277,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		enableAutoComplete.controlEl.addClass("full-width");
 
 		/* Auto calculated lookups and formulas*/
-		const enableAutoCalculation = new Setting(globalSettings)
+		const enableAutoCalculation = new Setting(globalSettings.containerEl)
 			.setName('Auto calculation')
 			.setDesc('Activate lookups and formulas fields global auto-calculation')
 			.addToggle(cb => {
@@ -264,7 +294,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		/* Indexing Status icon*/
 
-		const showIndexingStatus = new Setting(globalSettings)
+		const showIndexingStatus = new Setting(globalSettings.containerEl)
 			.setName('Fields Indexing Status')
 			.setDesc('Show fields indexing status icon in status toolbar')
 			.addToggle(cb => {
@@ -284,7 +314,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 
 		/* lists display in frontmatter*/
-		const frontmatterListDisplay = new Setting(globalSettings)
+		const frontmatterListDisplay = new Setting(globalSettings.containerEl)
 			.setName('Frontmatter list display')
 			.setDesc('Choose wether lists should be displayed as arrays or indented lists in frontmatter')
 			.addDropdown((cb: DropdownComponent) => {
@@ -301,7 +331,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		frontmatterListDisplay.controlEl.addClass("full-width");
 
 		/* First day of week (for Date Fields*/
-		new Setting(globalSettings)
+		new Setting(globalSettings.containerEl)
 			.setName('First day of week')
 			.setDesc('For date fields, which day the date picker\'s week should start with')
 			.addDropdown((cb: DropdownComponent) => {
@@ -314,7 +344,8 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				});
 			}).settingEl.addClass("no-border");
-
+		//#endregion
+		//#region presetFields
 		/* 
 		-----------------------------------------
 		Managing predefined fields 
@@ -322,22 +353,24 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		*/
 		/* Add new property for which we want to preset options*/
 		containerEl.createDiv({ cls: "setting-divider" })
-		const presetFieldsSettings = this.createSettingGroup(
+		const presetFieldsSettings = new PresetFieldsSettingGroup(this,
+			'preset-fields-settings',
 			'Preset Fields settings',
 			"Manage globally predefined type and options for a field throughout your whole vault",
 			true
 		)
-		new Setting(presetFieldsSettings)
+		new Setting(presetFieldsSettings.containerEl)
 			.setName("Add New Field Setting")
 			.setDesc("Add a new Frontmatter property for which you want preset options.")
 			.addButton((button: ButtonComponent): ButtonComponent => {
-				return button
+				presetFieldsSettings.addNewButton = button
 					.setTooltip("Add New Property Manager")
 					.setButtonText("Add new")
 					.setCta()
-					.onClick(async () => openSettings("", undefined, this.plugin, undefined, fieldsContainer));
+					.onClick(async () => openSettings("", undefined, this.plugin, undefined, this.fieldsContainer))
+				return presetFieldsSettings.addNewButton;
 			}).settingEl.addClass("no-border");
-		const fieldsContainer = presetFieldsSettings.createDiv({ cls: "fields-container" })
+		this.fieldsContainer = presetFieldsSettings.containerEl.createDiv({ cls: "fields-container" })
 		/* Managed properties that currently have preset options */
 		this.plugin.presetFields.sort((a, b) => {
 			const _a = a.path ? a.path + "_" : a.id
@@ -346,9 +379,10 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		}).forEach(prop => {
 			const property = new (buildEmptyField(this.plugin, undefined));
 			Object.assign(property, prop);
-			new FieldSetting(fieldsContainer, property, this.plugin);
+			new FieldSetting(this.fieldsContainer, property, this.plugin);
 		});
-
+		//#endregion
+		//#region fileclass
 		/* 
 		-----------------------------------------
 		Managing fileClass 
@@ -357,7 +391,8 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		/* Set classFiles Path*/
 		containerEl.createDiv({ cls: "setting-divider" });
-		const classFilesSettings = this.createSettingGroup(
+		const classFilesSettings = new SettingGroup(this,
+			'fileclass-settings',
 			'FileClass settings',
 			"Manage fileClass folder and alias. " +
 			"When a note has a fileClass defined, fileClass field properties will override " +
@@ -365,7 +400,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			true
 		)
 
-		const fileClassesFolderSaveButton = new ButtonComponent(classFilesSettings)
+		const fileClassesFolderSaveButton = new ButtonComponent(classFilesSettings.containerEl)
 		fileClassesFolderSaveButton.buttonEl.addClass("save")
 		fileClassesFolderSaveButton.setIcon("save")
 		fileClassesFolderSaveButton.onClick(async () => {
@@ -373,7 +408,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			await this.plugin.saveSettings()
 			fileClassesFolderSaveButton.removeCta()
 		})
-		const path = new Setting(classFilesSettings)
+		const path = new Setting(classFilesSettings.containerEl)
 			.setName('Class Files path')
 			.setDesc('Path to the files containing the authorized fields for a type of note')
 			.addSearch((cfs) => {
@@ -391,7 +426,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		path.controlEl.addClass("full-width");
 		path.settingEl.appendChild(fileClassesFolderSaveButton.buttonEl)
 
-		const aliasSaveButton = new ButtonComponent(classFilesSettings)
+		const aliasSaveButton = new ButtonComponent(classFilesSettings.containerEl)
 		aliasSaveButton.buttonEl.addClass("save")
 		aliasSaveButton.setIcon("save")
 		aliasSaveButton.onClick(async () => {
@@ -400,7 +435,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			aliasSaveButton.removeCta()
 		})
 
-		const alias = new Setting(classFilesSettings)
+		const alias = new Setting(classFilesSettings.containerEl)
 			.setName('FileClass field alias')
 			.setDesc('Choose another name for fileClass field in frontmatter (example: Category, type, ...')
 			.addText((text) => {
@@ -419,7 +454,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		/* 
 
 		/* Set global fileClass*/
-		const global = new Setting(classFilesSettings)
+		const global = new Setting(classFilesSettings.containerEl)
 			.setName('Global fileClass')
 			.setDesc('Choose one fileClass to be applicable to all files ' +
 				'(even it is not present as a fileClass attribute in their frontmatter). ' +
@@ -448,7 +483,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		global.controlEl.addClass("full-width");
 
 		/* Default Icon */
-		const defaultIconSave = new ButtonComponent(classFilesSettings)
+		const defaultIconSave = new ButtonComponent(classFilesSettings.containerEl)
 		defaultIconSave.buttonEl.addClass("save")
 		defaultIconSave.setIcon("save")
 		defaultIconSave.onClick(async () => {
@@ -456,8 +491,8 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			await this.plugin.saveSettings()
 			defaultIconSave.removeCta()
 		})
-		const iconManagerContainer = classFilesSettings.createDiv({ cls: "icon" })
-		const defaultIconSetting = new Setting(classFilesSettings)
+		const iconManagerContainer = classFilesSettings.containerEl.createDiv({ cls: "icon" })
+		const defaultIconSetting = new Setting(classFilesSettings.containerEl)
 			.setName("Default Icon")
 			.setDesc("Choose a default icon for fileclasses from lucide.dev library")
 			.addText(cb => {
@@ -478,7 +513,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		defaultIconSetting.controlEl.addClass("full-width");
 
 		/* Rows per pages */
-		const rowPerPageSaveButton = new ButtonComponent(classFilesSettings)
+		const rowPerPageSaveButton = new ButtonComponent(classFilesSettings.containerEl)
 		rowPerPageSaveButton.buttonEl.addClass("save")
 		rowPerPageSaveButton.setIcon("save")
 		rowPerPageSaveButton.onClick(async () => {
@@ -487,7 +522,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			rowPerPageSaveButton.removeCta()
 		})
 
-		const maxRows = new Setting(classFilesSettings)
+		const maxRows = new Setting(classFilesSettings.containerEl)
 			.setName('Result per page')
 			.setDesc('Number of result per page in table view')
 			.addText((text) => {
@@ -505,7 +540,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		/* Choose fileclass at file creation Fileclass selector in modal*/
 
-		const chooseFileClassAtFileCreation = new Setting(classFilesSettings)
+		const chooseFileClassAtFileCreation = new Setting(classFilesSettings.containerEl)
 			.setName('Add a fileclass after create')
 			.setDesc('Select a fileclass at file creation to be added to the file')
 			.addToggle(cb => {
@@ -521,7 +556,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		/* Choose fileclass at file creation Fileclass selector in modal*/
 
-		const autoInsertFieldsAtFileClassInsertion = new Setting(classFilesSettings)
+		const autoInsertFieldsAtFileClassInsertion = new Setting(classFilesSettings.containerEl)
 			.setName('Insert fileClass fields')
 			.setDesc('Includes fileClass in frontmatter after fileClass choice')
 			.addToggle(cb => {
@@ -536,7 +571,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		/* Fileclass selector in modal*/
 
-		const showFileClassSelectInModal = new Setting(classFilesSettings)
+		const showFileClassSelectInModal = new Setting(classFilesSettings.containerEl)
 			.setName('Fileclass Select')
 			.setDesc('Show fileclass select option in note fields modals')
 			.addToggle(cb => {
@@ -548,14 +583,16 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			})
 		showFileClassSelectInModal.settingEl.addClass("no-border");
 		showFileClassSelectInModal.controlEl.addClass("full-width");
-
+		//#endregion
+		//#region button display
 		/* 
 		--------------------------------------------------
 		Managing extra button display options
 		--------------------------------------------------
 		*/
 		containerEl.createDiv({ cls: "setting-divider" });
-		const metadataMenuBtnSettings = this.createSettingGroup(
+		const metadataMenuBtnSettings = new SettingGroup(this,
+			'metadata-menu-button',
 			'Metadata Menu button',
 			'Show extra button to access metadata menu modal of fields',
 			true);
@@ -611,8 +648,9 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			"enableFileExplorer" |
 			"enableStarred",
 			needsReload: boolean
-		}[]).forEach(s => new ButtonDisplaySetting(this.plugin, metadataMenuBtnSettings, s.name, s.description, s.value, s.needsReload))
-
+		}[]).forEach(s => new ButtonDisplaySetting(this.plugin, metadataMenuBtnSettings.containerEl, s.name, s.description, s.value, s.needsReload))
+		//#endregion
+		//#region fileclass matching queries
 		/* 
 		--------------------------------------------------
 		Managing predefined fileClass for query's matching files 
@@ -621,12 +659,13 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		/* Add new query for which matching files will be applied the fileClass*/
 
 		containerEl.createDiv({ cls: "setting-divider" });
-		const queryFileClassSettings = this.createSettingGroup(
+		const queryFileClassSettings = new SettingGroup(this,
+			'fileclass-queries',
 			'Query based FileClass settings',
 			"Manage globally predefined type and options for a field matching this query",
 			true
 		)
-		new Setting(queryFileClassSettings)
+		new Setting(queryFileClassSettings.containerEl)
 			.setName("Add New Query for fileClass")
 			.setDesc("Add a new query and a FileClass that will apply to files matching this query.")
 			.addButton((button: ButtonComponent): ButtonComponent => {
@@ -635,7 +674,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					.setButtonText("Add new")
 					.setCta()
 					.onClick(async () => {
-						let modal = new FileClassQuerySettingsModal(this.plugin, queryFileClassSettings);
+						let modal = new FileClassQuerySettingsModal(this.plugin, queryFileClassSettings.containerEl);
 						modal.open();
 					});
 			}).settingEl.addClass("no-border");
@@ -645,7 +684,8 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			.forEach(query => {
 				const fileClassQuery = new FileClassQuery();
 				Object.assign(fileClassQuery, query);
-				new FileClassQuerySetting(queryFileClassSettings, fileClassQuery, this.plugin);
+				new FileClassQuerySetting(queryFileClassSettings.containerEl, fileClassQuery, this.plugin);
 			});
+		//#endregion
 	};
 };

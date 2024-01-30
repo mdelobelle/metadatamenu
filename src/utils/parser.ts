@@ -60,7 +60,6 @@ export const frontMatterLineField = (line: string): {
 } => {
     const frontMatterRegex = new RegExp(/(?<indentation>\s*)(?<list>-\s)?(?<attribute>[-\w\p{Letter}\p{Emoji_Presentation}\s]*[^\s])(?<beforeSeparatorSpacer>\s*):(?<afterSeparatorSpacer>\s*)(?<values>.*)/u)
     const fR = line.match(frontMatterRegex);
-    console.log(fR?.groups)
     if (fR?.groups) {
         return {
             attribute: fR?.groups.attribute,
