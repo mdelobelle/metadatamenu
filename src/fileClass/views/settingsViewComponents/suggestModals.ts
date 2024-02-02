@@ -7,6 +7,7 @@ export class ParentSuggestModal extends SuggestModal<string> {
 
     constructor(private view: FileClassSettingsView) {
         super(view.plugin.app)
+        this.containerEl.setAttr("id", `${this.view.fileClass.name}-parent-suggest-modal`)
     }
 
     getSuggestions(query: string): string[] {
@@ -35,6 +36,7 @@ export class TagSuggestModal extends SuggestModal<string> {
 
     constructor(private view: FileClassSettingsView) {
         super(view.plugin.app)
+        this.containerEl.setAttr("id", `${this.view.fileClass.name}-tagNames-suggest-modal`)
     }
 
     getSuggestions(query: string): string[] {
@@ -61,6 +63,7 @@ export class FieldSuggestModal extends SuggestModal<string> {
 
     constructor(private view: FileClassSettingsView) {
         super(view.plugin.app)
+        this.containerEl.setAttr("id", `${this.view.fileClass.name}-exclude-field-suggest-modal`)
     }
 
     getSuggestions(query: string): string[] {
@@ -97,6 +100,7 @@ export class PathSuggestModal extends SuggestModal<string> {
     constructor(private view: FileClassSettingsView) {
         super(view.plugin.app)
         this.plugin = view.plugin
+        this.containerEl.setAttr("id", `${this.view.fileClass.name}-filesPaths-suggest-modal`)
     }
 
     getSuggestions(query: string): string[] {
@@ -121,7 +125,6 @@ export class PathSuggestModal extends SuggestModal<string> {
         filesPaths.push(item)
         options.filesPaths = filesPaths
         this.view.fileClass.updateOptions(options)
-
     }
 
     renderSuggestion(value: string, el: HTMLElement) {
@@ -134,6 +137,7 @@ export class BookmarksGroupSuggestModal extends SuggestModal<string> {
     constructor(private view: FileClassSettingsView) {
         super(view.plugin.app)
         this.plugin = view.plugin
+        this.containerEl.setAttr("id", `${this.view.fileClass.name}-bookmarksGroups-suggest-modal`)
     }
 
     private getGroups = (items: BookmarkItem[], groups: string[] = [], path: string = "") => {

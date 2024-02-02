@@ -67,8 +67,6 @@ export default class AddNewFileClassModal extends Modal {
         saveBtn.onClick(async () => await this.save())
     }
 
-
-
     private async save() {
         const fileClassName = this.name
         const classFilesPath = this.plugin.settings.classFilesPath

@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "2a58b08d47570ad6",
+        "id": "cc596869604fa5de",
         "type": "tabs",
         "children": [
           {
-            "id": "fcf7d5235ea0adda",
+            "id": "cb691c61ddfc887a",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -18,17 +18,8 @@
                 "source": false
               }
             }
-          },
-          {
-            "id": "0962b7630956c906",
-            "type": "leaf",
-            "state": {
-              "type": "FileClassView__Fileclass1",
-              "state": {}
-            }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -155,10 +146,15 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "0962b7630956c906",
+  "active": "cb691c61ddfc887a",
   "lastOpenFiles": [
-    "__fixtures__/fileClasses/Fileclass1.md",
+    "Fileclasses/Fileclass2.md",
     "Fileclasses/Fileclass1.md",
+    "__fixtures__/fileClasses/Fileclass2.md",
+    "__fixtures__/fileClasses/Fileclass1.md",
+    "__fixtures__/tags.md",
+    "Folder2",
+    "Folder1",
     "__fixtures__/fileClasses/FileClass2.md",
     "Fileclasses/FileClass2.md",
     "Fileclasses/a.md",

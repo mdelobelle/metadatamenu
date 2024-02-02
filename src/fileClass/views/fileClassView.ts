@@ -5,6 +5,7 @@ import { FileClass } from "../fileClass";
 import { FileClassFieldsView } from "./fileClassFieldsView";
 import { FileClassSettingsView } from "./fileClassSettingsView";
 import { FileClassTableView } from "./fileClassTableView";
+import { setTimeout } from "timers/promises";
 
 export const FILECLASS_VIEW_TYPE = "FileClassView"
 
@@ -44,9 +45,9 @@ export class FileClassView extends ItemView {
     private menuOptions: MenuOption[] = []
     private viewContainer: HTMLDivElement
     private views: HTMLDivElement[] = []
-    private settingsView: FileClassSettingsView
+    public settingsView: FileClassSettingsView
     public tableView: FileClassTableView
-    private fieldsView: FileClassFieldsView
+    public fieldsView: FileClassFieldsView
 
     constructor(
         public leaf: WorkspaceLeaf,
@@ -133,3 +134,25 @@ export class FileClassView extends ItemView {
         //this.tableView.update();
     }
 }
+
+//#region tests
+export async function testFileClassViewNavigation(plugin: MetadataMenu, fileClass: FileClass, speed: number = 100) {
+    const fCView = plugin.app.workspace.getActiveViewOfType(FileClassView)
+    if (!fCView) throw Error(`${fileClass.name} view didn't open`)
+
+    const tableViewMenuHeader = fCView.containerEl.querySelector("#tableOption") as HTMLElement
+    if (!tableViewMenuHeader) throw Error(`${fileClass.name} settings menu not found`)
+    tableViewMenuHeader.click()
+    await setTimeout(speed)
+
+    const fieldsMenuHeader = fCView.containerEl.querySelector("#fieldsOption") as HTMLElement
+    if (!fieldsMenuHeader) throw Error(`${fileClass.name} settings menu not found`)
+    fieldsMenuHeader.click()
+    await setTimeout(speed)
+
+    const settingsMenuHeader = fCView.containerEl.querySelector("#settingsOption") as HTMLElement
+    if (!settingsMenuHeader) throw Error(`${fileClass.name} settings menu not found`)
+    settingsMenuHeader.click()
+    await setTimeout(speed)
+}
+//#endregion

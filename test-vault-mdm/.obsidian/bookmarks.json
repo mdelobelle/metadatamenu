@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "type": "group",
+      "ctime": 1706911562094,
+      "items": [],
+      "title": "group1"
+    },
+    {
+      "type": "group",
+      "ctime": 1706911568536,
+      "items": [],
+      "title": "group2"
+    },
+    {
+      "type": "group",
+      "ctime": 1706911572024,
+      "items": [],
+      "title": "group3"
+    }
+  ]
+}

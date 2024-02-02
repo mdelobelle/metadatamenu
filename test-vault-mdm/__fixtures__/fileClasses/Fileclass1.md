@@ -1,8 +1,8 @@
 ---
 limit: 100
-mapWithTag: false
+mapWithTag: true
 icon: dumbbell
-tagNames: 
+tagNames: Tag1
 excludes: 
 extends: 
 version: "2.1"
@@ -26,24 +26,6 @@ fields:
     style:
       bold: true
     type: Multi
-    path: ""
-  - id: HNUTzT
-    name: intensity
-    options:
-      valuesList:
-        "1": 🔥
-        "2": 🔥🔥
-        "3": 🔥🔥🔥
-        "4": 🔥🔥🔥🔥
-        "5": 🔥🔥🔥🔥🔥
-        "6": 🔥🔥🔥🔥🔥🔥
-        "7": 🔥🔥🔥🔥🔥🔥🔥
-      sourceType: ValuesList
-      valuesListNotePath: ""
-      valuesFromDVQuery: ""
-    style:
-      bold: true
-    type: Cycle
     path: ""
   - id: 8w5EAz
     name: calories
@@ -114,8 +96,12 @@ fields:
     type: Number
     path: ""
 filesPaths:
-  - Daily/Notes/2023
-bookmarksGroups: 
-savedViews: []
-favoriteView: 
+  - Folder1
+  - Folder2
+bookmarksGroups:
+  - group1
+  - group2
+  - group3
+savedViews: 
+favoriteView:
 ---

@@ -8,10 +8,13 @@ import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings"
 import { setTimeout } from "timers/promises"
 import { TFile } from "obsidian"
 import { getFieldSettingsTest } from "src/fields/Fields"
+import { testFileClassViewNavigation } from "src/fileClass/views/fileClassView"
+import { testFileClassSettingsView } from "src/fileClass/views/fileClassSettingsView"
 
-const speed = 500
+const speed = 0
 
 export async function run(plugin: MetadataMenu) {
+    await setTimeout(1000)
     await clean(plugin)
     //await testPresetFields(plugin)
     await testFileClasses(plugin)
@@ -23,6 +26,7 @@ async function clean(plugin: MetadataMenu) {
     await plugin.saveSettings()
     const fileClassFiles = plugin.app.vault.getFiles().filter(f => f.parent?.path === "Fileclasses")
     for (const fC of fileClassFiles) await plugin.app.vault.adapter.remove(fC.path)
+    await plugin.fieldIndex.fullIndex(true)
     console.log("%c [CLEANED]", "color: blue")
 }
 
@@ -107,24 +111,35 @@ async function testFileClasses(plugin: MetadataMenu) {
     insertAndDispatch(fileClassSettings.fileClassPathInput, "Fileclasses")
     fileClassSettings.fileClassesFolderSaveButton.buttonEl.click()
     plugin.app.setting.close()
-    const fileclasses = plugin.app.vault.getFiles().filter(f => f.parent?.path === "__fixtures__/fileClasses")
+    const fileclasses = plugin.app.vault.getFiles()
+        .filter(f => f.parent?.path === "__fixtures__/fileClasses")
+        .sort((f1, f2) => f1.name < f2.basename ? -1 : 1)
     const addFileClassBtn = document.querySelector(".fileClass-add-button") as HTMLDivElement
     if (!addFileClassBtn) throw Error("Fileclass add button not found")
     for (const fileclass of fileclasses) {
-        await testCreateFileClass(addFileClassBtn, fileclass)
+        await testCreateFileClass(plugin, addFileClassBtn, fileclass)
     }
 }
 
-async function testCreateFileClass(addBtn: HTMLDivElement, fileClass: TFile) {
+async function testCreateFileClass(plugin: MetadataMenu, addBtn: HTMLDivElement, fileClassDataFile: TFile) {
+    const fileClassName = fileClassDataFile.basename
     addBtn.click()
     const modal = document.querySelector("#add-new-fileclass-modal")
     if (!modal) throw Error("Add new fileclass modal not found")
     const input = modal.querySelector("#fileclass-name-input") as HTMLInputElement
     if (!input) throw Error("fileclass name input not found")
-    input.value = fileClass.basename
+    input.value = fileClassDataFile.basename
     input.dispatchEvent(new Event("input"))
+    await setTimeout(500) // because input is async in this form
     const saveBtn = modal.querySelector("#new-fileclass-confirm-btn") as HTMLDivElement
     saveBtn.dispatchEvent(new Event("click"));
     (modal.querySelector(".modal-close-button") as HTMLDivElement).click();
-    await setTimeout(2000)
+    await setTimeout(500) // because save is async in this form
+    const fileClass = plugin.fieldIndex.fileClassesName.get(fileClassName)
+    if (!fileClass) throw Error(`${fileClassName} wasn't create or indexed`)
+    await testFileClassViewNavigation(plugin, fileClass)
+    const data = plugin.app.metadataCache.getFileCache(fileClassDataFile)?.frontmatter
+    if (!data) throw Error(`${fileClassDataFile.basename} fixture data not found`)
+    await testFileClassSettingsView(plugin, fileClass, data)
 }
+
