@@ -6,7 +6,7 @@ import { ActionLocation, IField, IFieldManager, Target, baseDisplayValue, fieldV
 import { getIcon } from "../Fields"
 import { BaseOptions, IFieldBase } from "../base/BaseField"
 import { IBasicModal, basicModal } from "../base/BaseModal"
-import { ISettingsModal } from "../base/BaseSetting"
+import { ISettingsModal as BaseSettingsModal } from "../base/BaseSetting"
 
 export class Base implements IFieldBase {
     type = <const>"Boolean"
@@ -17,12 +17,11 @@ export class Base implements IFieldBase {
 }
 
 export interface Options extends BaseOptions { }
-
 export interface DefaultedOptions extends Options { }
-
 export const DefaultOptions: DefaultedOptions = {}
+export interface ISettingsModal extends BaseSettingsModal<Options> { }
 
-export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>>): Constructor<ISettingsModal<Options>> {
+export function settingsModal(Base: Constructor<BaseSettingsModal<DefaultedOptions>>): Constructor<BaseSettingsModal<Options>> {
     return class InputSettingModal extends Base {
         createSettingContainer = () => { }
 
@@ -138,3 +137,10 @@ export function getOptionsStr(field: IField<Options>): string {
 export function validateValue(managedField: IFieldManager<Target, Options>): boolean {
     return isBoolean(managedField.value)
 }
+
+//#region test
+
+export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>) {
+
+}
+//#endregion

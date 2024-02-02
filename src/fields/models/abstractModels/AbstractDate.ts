@@ -12,6 +12,7 @@ import { IBaseValueModal, IBasicModal, basicModal } from "../../base/BaseModal"
 import { ISettingsModal } from "../../base/BaseSetting"
 import { Options as CycleOptions, getOptionsList as getCycleOptionsList, getNextOption } from "../Cycle"
 import { postValues } from "src/commands/postValues"
+import { insertAndDispatch, selectOptionAndDispatch } from "src/tests/utils"
 
 
 //#endregion
@@ -37,10 +38,20 @@ export const DefaultOptions: DefaultedOptions = {
 
 export interface IDateBaseSettingModal extends ISettingsModal<Options> {
     createSettingContainer(): void
+    dateFormatInput: TextComponent
+    defaultInsertAsLink: ToggleComponent
+    dateLinkPathInput: TextComponent
+    dateShiftInterval: TextComponent
+    nextShiftIntervalField: DropdownComponent
 }
 
 export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>>): Constructor<IDateBaseSettingModal> {
     return class SettingsModal extends Base {
+        dateFormatInput: TextComponent
+        defaultInsertAsLink: ToggleComponent
+        dateLinkPathInput: TextComponent
+        dateShiftInterval: TextComponent
+        nextShiftIntervalField: DropdownComponent
         createSettingContainer() {
             const container = this.optionsContainer
             if (!this.field.options.dateFormat) this.field.options.dateFormat = DefaultOptions.dateFormat
@@ -48,7 +59,8 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
             const dateFormatContainer = container.createDiv({ cls: "field-container" });
             dateFormatContainer.createEl("span", { text: "Date format", cls: 'label' })
             const dateExample = dateFormatContainer.createEl("span", { cls: 'more-info' })
-            const dateFormatInput = new TextComponent(dateFormatContainer)
+            this.dateFormatInput = new TextComponent(dateFormatContainer)
+            const dateFormatInput = this.dateFormatInput
             dateFormatInput.inputEl.addClass("with-label")
             dateFormatInput.inputEl.addClass("full-width")
             dateFormatInput.setValue(this.field.options.dateFormat)
@@ -63,20 +75,20 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
                 const defaultInsertAsLinkContainer = container.createDiv({ cls: "field-container" });
                 defaultInsertAsLinkContainer.createEl("span", { text: "Insert as link by default", cls: 'label' });
                 defaultInsertAsLinkContainer.createDiv({ cls: "spacer" })
-                const defaultInsertAsLink = new ToggleComponent(defaultInsertAsLinkContainer);
-                defaultInsertAsLink.setValue(this.field.options.defaultInsertAsLink)
-                defaultInsertAsLink.onChange((value: boolean) => {
+                this.defaultInsertAsLink = new ToggleComponent(defaultInsertAsLinkContainer);
+                this.defaultInsertAsLink.setValue(this.field.options.defaultInsertAsLink)
+                this.defaultInsertAsLink.onChange((value: boolean) => {
                     this.field.options.defaultInsertAsLink = value;
                 });
 
                 //folder path for link
                 const dateLinkPathContainer = container.createDiv({ cls: "field-container" });
                 dateLinkPathContainer.createEl("span", { text: "Link path (optional)", cls: 'label' })
-                const dateLinkPathInput = new TextComponent(dateLinkPathContainer)
-                dateLinkPathInput.inputEl.addClass("with-label")
-                dateLinkPathInput.inputEl.addClass("full-width")
-                dateLinkPathInput.setValue(this.field.options.linkPath)
-                dateLinkPathInput.onChange((value: string) => {
+                this.dateLinkPathInput = new TextComponent(dateLinkPathContainer)
+                this.dateLinkPathInput.inputEl.addClass("with-label")
+                this.dateLinkPathInput.inputEl.addClass("full-width")
+                this.dateLinkPathInput.setValue(this.field.options.linkPath)
+                this.dateLinkPathInput.onChange((value: string) => {
                     this.field.options.linkPath = value + ((!value.endsWith("/") && !!value.length) ? "/" : "");
                 });
 
@@ -86,10 +98,10 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
             const dateShiftIntervalContainer = container.createDiv({ cls: "field-container" });
             dateShiftIntervalContainer.createEl("span", { text: "Define a shift interval", cls: 'label' });
             dateShiftIntervalContainer.createDiv({ cls: "spacer" })
-            const dateShiftInterval = new TextComponent(dateShiftIntervalContainer);
-            dateShiftInterval.setPlaceholder("ex: 1 month, 2 days")
-            dateShiftInterval.setValue(this.field.options.dateShiftInterval || DefaultOptions.dateShiftInterval)
-            dateShiftInterval.onChange((value: string) => {
+            this.dateShiftInterval = new TextComponent(dateShiftIntervalContainer);
+            this.dateShiftInterval.setPlaceholder("ex: 1 month, 2 days")
+            this.dateShiftInterval.setValue(this.field.options.dateShiftInterval || DefaultOptions.dateShiftInterval)
+            this.dateShiftInterval.onChange((value: string) => {
                 if (!value) {
                     this.field.options.dateShiftInterval = DefaultOptions.dateShiftInterval;
                 } else {
@@ -104,25 +116,19 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
                 cls: 'label'
             });
             nextShiftIntervalFieldContainer.createDiv({ cls: "spacer" })
-            const nextShiftIntervalField = new DropdownComponent(nextShiftIntervalFieldContainer);
-            nextShiftIntervalField.addOption("none", "---None---")
-            let rootFields: Field[] = []
-            if (this.field.fileClassName) {
-                rootFields = this.plugin.fieldIndex.fileClassesFields
-                    .get(this.field.fileClassName || "")?.filter(_f => _f.isRoot() && _f.name !== this.field.name && _f.type === "Cycle") || []
-
-            } else {
-                rootFields = this.plugin.presetFields.filter(_f => _f.name !== this.field.name && _f.type === this.field.type)
-            }
+            this.nextShiftIntervalField = new DropdownComponent(nextShiftIntervalFieldContainer);
+            this.nextShiftIntervalField.addOption("none", "---None---")
+            const rootFields = getCycleRootFields(this.field)
             // limit choices to root fields
-            rootFields.forEach(_f => nextShiftIntervalField.addOption(_f.id, _f.name))
+            rootFields.forEach(_f => this.nextShiftIntervalField.addOption(_f.id, _f.name))
             const currentField = rootFields.find(_f => _f.name === this.field.options.nextShiftIntervalField)?.id || "none"
-            nextShiftIntervalField.setValue(currentField)
-            nextShiftIntervalField.onChange(value => {
+            this.nextShiftIntervalField.setValue(currentField)
+            this.nextShiftIntervalField.onChange(value => {
                 if (value === "none") {
                     delete this.field.options.nextShiftIntervalField;
                 } else {
-                    this.field.options.nextShiftIntervalField = rootFields.find(_f => _f.id === value)?.name.toString();
+                    const field = rootFields.find(_f => _f.id === value)?.name.toString()
+                    this.field.options.nextShiftIntervalField = field;
                 }
             })
         }
@@ -130,6 +136,18 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
             return true;
         }
     }
+}
+
+function getCycleRootFields(field: IField<Options>): Field[] {
+    let rootFields: Field[] = []
+    if (field.fileClassName) {
+        rootFields = field.plugin.fieldIndex.fileClassesFields
+            .get(field.fileClassName || "")?.filter(_f => _f.isRoot() && _f.name !== field.name && _f.type === "Cycle") || []
+
+    } else {
+        rootFields = field.plugin.presetFields.filter(_f => _f.name !== field.name && _f.type === "Cycle")
+    }
+    return rootFields
 }
 
 export interface Modal<T extends Target> extends IBaseValueModal<T> { }
@@ -615,6 +633,28 @@ async function shiftDate(managedField: IFieldManager<Target, Options>): Promise<
     managedField.value = formattedValue
     if (nextIntervalField && nextShift) updateIntervalField(managedField, nextIntervalField, nextShift)
     else managedField.save()
+}
+
+//#endregion
+
+
+//#region tests
+
+export async function enterFieldSetting(settingModal: IDateBaseSettingModal, field: IField<Options>) {
+    if (field.options.dateFormat) insertAndDispatch(settingModal.dateFormatInput, `${field.options.dateFormat}`)
+    if (field.options.dateShiftInterval) insertAndDispatch(settingModal.dateShiftInterval, `${field.options.dateShiftInterval}`)
+    if (field.options.nextShiftIntervalField) {
+        let cycleField: IField<BaseOptions> | undefined
+        if (field.fileClassName) {
+            cycleField = field.plugin.fieldIndex.fileClassesFields
+                .get(field.fileClassName || "")?.find(_f => _f.isRoot() && _f.name !== field.name && _f.type === "Cycle")
+
+        } else {
+            cycleField = field.plugin.presetFields.find(_f => _f.name !== field.name && _f.type === "Cycle")
+        }
+        if (!cycleField) throw Error("Cycle field for intervals not found")
+        selectOptionAndDispatch(settingModal.nextShiftIntervalField, `${cycleField.id}`)
+    }
 }
 
 //#endregion

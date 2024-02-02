@@ -6,7 +6,7 @@ import { getExistingFieldForIndexedPath } from "../ExistingField";
 import { ActionLocation, IField, IFieldManager, Target, fieldValueManager, isFieldActions, isSuggest } from "../Field";
 import { getIcon } from "../Fields";
 import { IFieldBase } from "../base/BaseField";
-import { ISettingsModal } from "../base/BaseSetting";
+import { ISettingsModal as IBaseSettingsModal } from "../base/BaseSetting";
 import * as AbstractList from "./abstractModels/AbstractList";
 import { getOptionsList as baseGetOptionsList } from "./abstractModels/AbstractList";
 
@@ -22,25 +22,33 @@ export interface Options extends AbstractList.Options {
     allowNull?: boolean
 }
 
-export interface DefaultedOptions extends AbstractList.DefaultedOptions { }
+export interface DefaultedOptions extends AbstractList.DefaultedOptions {
+    allowNull?: boolean
+}
 
 export const DefaultOptions: AbstractList.DefaultedOptions = AbstractList.DefaultOptions
 
-export function settingsModal(Base: Constructor<ISettingsModal<AbstractList.DefaultedOptions>>): Constructor<ISettingsModal<Options>> {
+export interface ISettingsModal extends AbstractList.IListBaseSettingModal {
+    allowNullToggler: ToggleComponent
+}
+
+export function settingsModal(Base: Constructor<IBaseSettingsModal<AbstractList.DefaultedOptions>>): Constructor<ISettingsModal> {
     const base = AbstractList.settingsModal(Base)
     return class SettingsModal extends base {
+        public allowNullToggler: ToggleComponent
         public createSettingContainer(): void {
             const container = this.optionsContainer
             const allowNullValueContainer = container.createDiv({ cls: "field-container" });
             allowNullValueContainer.createDiv({ cls: "label", text: "Cycle begins by a null value" });
             allowNullValueContainer.createDiv({ cls: "spacer" });
-            const allowNullToggler = new ToggleComponent(allowNullValueContainer);
-            allowNullToggler.setValue(this.field.options.allowNull || false);
-            allowNullToggler.onChange(value => this.field.options.allowNull = value);
+            this.allowNullToggler = new ToggleComponent(allowNullValueContainer)
+                .setValue(this.field.options.allowNull || false)
+                .onChange(value => this.field.options.allowNull = value);
             super.createSettingContainer();
         }
     }
 }
+
 
 export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<AbstractList.Modal<Target>> {
     const base = AbstractList.valueModal(managedField, plugin)
@@ -133,4 +141,10 @@ export function getNextOption(managedField: IFieldManager<Target, Options>): str
     return nextOption
 }
 
+//#endregion
+//#region test
+export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>) {
+    settingModal.allowNullToggler.toggleEl.click()
+    return AbstractList.enterFieldSetting(settingModal, field)
+}
 //#endregion

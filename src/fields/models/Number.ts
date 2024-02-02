@@ -1,6 +1,6 @@
 import { ButtonComponent, TFile, TextComponent } from "obsidian"
 import { IFieldBase, BaseOptions } from "../base/BaseField"
-import { ISettingsModal } from "../base/BaseSetting"
+import { ISettingsModal as BaseSettingsModal } from "../base/BaseSetting"
 import { getIcon } from "../Fields"
 import { IFieldManager, Target, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, ActionLocation, removeValidationError, IField } from "../Field"
 import MetadataMenu from "main"
@@ -9,6 +9,7 @@ import { cleanActions } from "src/utils/modals"
 import { Constructor } from "src/typings/types"
 import { getExistingFieldForIndexedPath } from "../ExistingField"
 import { Note } from "src/note/note"
+import { insertAndDispatch } from "src/tests/utils"
 
 export class Base implements IFieldBase {
     type = <const>"Number"
@@ -26,11 +27,17 @@ export interface Options extends BaseOptions {
 export interface DefaultedOptions extends Options { }
 export const DefaultOptions: DefaultedOptions = {}
 
-export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>>): Constructor<ISettingsModal<Options>> {
+export interface ISettingsModal extends BaseSettingsModal<Options> {
+    numberStepValue: TextComponent;
+    numberMinValue: TextComponent;
+    numberMaxValue: TextComponent;
+}
+
+export function settingsModal(Base: Constructor<BaseSettingsModal<DefaultedOptions>>): Constructor<ISettingsModal> {
     return class SettingModal extends Base {
-        private numberStepValue: TextComponent;
-        private numberMinValue: TextComponent;
-        private numberMaxValue: TextComponent;
+        public numberStepValue: TextComponent;
+        public numberMinValue: TextComponent;
+        public numberMaxValue: TextComponent;
         createSettingContainer = () => {
             const container = this.optionsContainer
             const numberStepValueContainer = container.createDiv({ cls: "field-container" });
@@ -150,7 +157,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             plusBtn.setDisabled(!canIncrement(this.managedField));
 
             fieldContainer.createDiv({ cls: "spacer" })
-
             this.buildSimpleSaveBtn(fieldContainer)
 
             cleanActions(this.contentEl, ".field-error")
@@ -319,5 +325,11 @@ function canIncrement(managedField: IFieldManager<Target, Options>): boolean {
     )
 }
 
-
+//#endregion
+//#region test
+export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>) {
+    if (field.options.min || field.options.min === 0) insertAndDispatch(settingModal.numberMinValue, `${field.options.min}`)
+    if (field.options.max || field.options.max === 0) insertAndDispatch(settingModal.numberMaxValue, `${field.options.max}`)
+    if (field.options.step || field.options.step === 0) insertAndDispatch(settingModal.numberStepValue, `${field.options.step}`)
+}
 //#endregion

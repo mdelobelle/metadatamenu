@@ -8,27 +8,23 @@
         "type": "tabs",
         "children": [
           {
-            "id": "cab54d595ffe2188",
+            "id": "fcf7d5235ea0adda",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "fixtures/settings/presetFields/multi.md",
+                "file": "Fileclasses/Fileclass1.md",
                 "mode": "source",
                 "source": false
               }
             }
           },
           {
-            "id": "fcf7d5235ea0adda",
+            "id": "0962b7630956c906",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "workbench.md",
-                "mode": "source",
-                "source": false
-              }
+              "type": "FileClassView__Fileclass1",
+              "state": {}
             }
           }
         ],
@@ -98,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "workbench.md",
+                "file": "Fileclasses/Fileclass1.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -115,7 +111,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "workbench.md",
+                "file": "Fileclasses/Fileclass1.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -138,7 +134,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "workbench.md"
+                "file": "Fileclasses/Fileclass1.md"
               }
             }
           }
@@ -159,16 +155,27 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "fcf7d5235ea0adda",
+  "active": "0962b7630956c906",
   "lastOpenFiles": [
-    "fixtures/settings/presetFields/multi.md",
+    "__fixtures__/fileClasses/Fileclass1.md",
+    "Fileclasses/Fileclass1.md",
+    "__fixtures__/fileClasses/FileClass2.md",
+    "Fileclasses/FileClass2.md",
+    "Fileclasses/a.md",
+    "Fileclasses/Tests.md",
+    "Fileclasses/testtest.md",
+    "Fileclasses/test.md",
+    "__fixtures__/settings/presetFields.md",
+    "__fixtures__/fileClasses",
+    "Fileclasses",
     "workbench.md",
-    "fixtures/lists/Areas.md.md",
-    "fixtures/lists",
+    "fixtures/settings/presetFields.yml",
+    "fixtures/settings/presetFields/fields.md",
+    "__fixtures__/lists/Areas.md.md",
+    "__fixtures__/lists",
     "fixtures/settings/presetFields",
-    "fixtures/settings",
-    "Untitled",
-    "fixtures",
+    "__fixtures__/settings",
+    "__fixtures__",
     "Welcome.md"
   ]
 }

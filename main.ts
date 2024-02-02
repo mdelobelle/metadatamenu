@@ -20,7 +20,7 @@ import { FileClassCodeBlockManager } from 'src/components/FileClassCodeBlockMana
 import { AddFileClassToFileModal } from 'src/fileClass/fileClass';
 import { FileClassCodeBlockListManager } from 'src/components/FileClassCodeBlockListManager';
 import { Field, buildEmptyField } from 'src/fields/Field';
-import * as test from "test"
+import * as test from "src/tests/test"
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
 	public settings: MetadataMenuSettings;
@@ -132,7 +132,7 @@ export default class MetadataMenu extends Plugin {
 			ctx.addChild(fileClassCodeBlockManager)
 		});
 		this.app.workspace.trigger("layout-change")
-		if (DEBUG && this.app.vault.getName() == 'test-vault-mdm') await test.run(this)
+		if (DEBUG && this.app.vault.getName() == 'test-vault-mdm') DEBUG = false; await test.run(this)
 	};
 
 	/*

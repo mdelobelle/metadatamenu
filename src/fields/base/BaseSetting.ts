@@ -6,14 +6,15 @@ import { FileClass } from "src/fileClass/fileClass"
 import { insertIFieldCommand } from "src/commands/paletteCommands"
 import FieldSetting from "src/settings/FieldSetting"
 import { incrementVersion } from "src/settings/MetadataMenuSettings"
-import { FieldType, frontmatterOnlyTypes, multiTypes, rootOnlyTypes, MultiDisplayType, getIcon, getTagName, fieldTypes, getTooltip } from "../Fields"
-import { getFieldSettings } from "../Fields"
-import { FieldCommand, IField, buildEmptyField, copyProperty, getField, getFieldConstructor, getNewFieldId, getOptions, removeValidationError } from "../Field"
+import { FieldType, frontmatterOnlyTypes, multiTypes, rootOnlyTypes, MultiDisplayType, getIcon, getTagName, fieldTypes, getTooltip, getFieldSettingsModal } from "../Fields"
+import { FieldCommand, FieldStyle, IField, buildEmptyField, copyProperty, getField, getFieldConstructor, getNewFieldId, getOptions, removeValidationError } from "../Field"
 import { Constructor } from "src/typings/types"
 import { BaseOptions } from "./BaseField"
 
 // Field Types list agnostic
 // Field types specific settings agnostic
+
+//#region modals
 export const enum SettingLocation {
     "PluginSettings",
     "FileClassAttributeSettings"
@@ -38,9 +39,12 @@ export interface ISettingsModal<O extends BaseOptions> extends Modal {
     isNew: boolean
     parentSetting?: FieldSetting
     parentSettingContainer?: HTMLElement
+    typeSelector: TypeSelector<O>
+    typeNameContainer: HTMLDivElement
     getFileClassName(): string | undefined
     setParent(parent: IField<O> | undefined): void
-    setType(fieldType: FieldType, fieldTypeLabelContainer: HTMLDivElement): void
+    setType(fieldType: FieldType, fieldTypeLabelContainer: HTMLDivElement): ISettingsModal<BaseOptions>
+    save(): void
 }
 
 class TypeSelector<O extends BaseOptions> extends SuggestModal<FieldType> {
@@ -57,16 +61,17 @@ class TypeSelector<O extends BaseOptions> extends SuggestModal<FieldType> {
         const _fieldTypes: Array<FieldType> = []
         for (const fieldType of fieldTypes) {
             if (!rootOnlyTypes.includes(fieldType)) {
-                fieldTypes.push(fieldType)
+                _fieldTypes.push(fieldType)
             } else {
-                if (this.fieldSetting.field.isRoot()) fieldTypes.push(fieldType)
+                if (this.fieldSetting.field.isRoot()) _fieldTypes.push(fieldType)
             }
         }
-        return fieldTypes.filter(k => k.toLowerCase().includes(query.toLowerCase()))
+        return _fieldTypes.filter(k => k.toLowerCase().includes(query.toLowerCase()))
     }
 
     renderSuggestion(value: FieldType, el: HTMLElement) {
-        el.addClass("value-container");
+        el.addClass("value-container")
+        el.addClass(`field-type-${value}`);
         const iconContainer = el.createDiv({ cls: "icon-container" })
         setIcon(iconContainer, getIcon(value))
         const chipContainer = el.createDiv({ cls: "field-type-container" })
@@ -153,6 +158,8 @@ export function buildSettingsModal<O extends BaseOptions>(
         public isNew: boolean = true;
         public fileClass?: FileClass
         public saved: boolean = false
+        public typeSelector: TypeSelector<O>
+        public typeNameContainer: HTMLDivElement
         constructor() {
             super(plugin.app)
             this.plugin = plugin
@@ -408,15 +415,16 @@ export function buildSettingsModal<O extends BaseOptions>(
             }
         }
 
-        public setType(fieldType: FieldType, fieldTypeLabelContainer: HTMLDivElement): void {
+        public setType(fieldType: FieldType, fieldTypeLabelContainer: HTMLDivElement): ISettingsModal<BaseOptions> {
             fieldTypeLabelContainer.setText(fieldType)
             fieldTypeLabelContainer.className = `chip ${getTagName(fieldType)}`
             this.field.fileClassName = this.fileClass?.name
             const Field = buildEmptyField(plugin, this.field.fileClassName, fieldType)
-            const settingsModal = getFieldSettings(Field, fieldType, plugin, parentSetting, parentSettingContainer)
+            const settingsModal = getFieldSettingsModal(Field, fieldType, plugin, parentSetting, parentSettingContainer)
             settingsModal.field.name = this.namePromptComponent.getValue()
             settingsModal.open()
             this.close()
+            return settingsModal
         }
 
 
@@ -430,20 +438,22 @@ export function buildSettingsModal<O extends BaseOptions>(
             info.setClass("tooltip-button")
             setIcon(info.buttonEl, !(this.field.id && !this.isNew) ? "shield-alert" : "lock")
             info.setTooltip(`The field type \ncan't be modified once saved`)
-            const typeNameContainer = this.typeSelectContainer
+            this.typeNameContainer = this.typeSelectContainer
                 .createDiv({ cls: "field-type-label" })
                 .createDiv({ cls: `chip ${getTagName(this.field.type)}` })
             if (!this.field.id || this.isNew) {
                 new ButtonComponent(this.typeSelectContainer)
                     .setButtonText("Choose a type")
                     .onClick(() => {
-                        new TypeSelector(this.plugin, this, typeNameContainer).open()
+                        this.typeSelector = new TypeSelector(this.plugin, this, this.typeNameContainer)
+                        this.typeSelector.open()
                     })
+                    .buttonEl.setAttr("id", "field-type-selector-btn")
             }
             this.frontmatterOnlyTypeInfoContainer = this.typeSelectContainer.createDiv({ cls: "tooltip-btn" });
             this.setTypeInfo()
             if (this.field.type) {
-                typeNameContainer.setText(this.field.type);
+                this.typeNameContainer.setText(this.field.type);
                 if (multiTypes.includes(this.field.type)) {
                     this.frontmatterListDisplayContainer.show()
                 } else {
@@ -481,12 +491,12 @@ export function buildSettingsModal<O extends BaseOptions>(
                 } else {
                     delete this.field.display
                 }
-                this.onSave()
+                this.save()
                 this.close();
             })
         }
 
-        public async onSave(): Promise<void> {
+        public async save(): Promise<void> {
             if (this.fileClass) {
                 await this.fileClass.updateIAttribute(
                     this.field,
@@ -580,7 +590,6 @@ export function buildSettingsModal<O extends BaseOptions>(
     }
 }
 
-
 export function openSettings<O extends BaseOptions>(
     id: string,
     fileClassName: string | undefined,
@@ -596,8 +605,65 @@ export function openSettings<O extends BaseOptions>(
         [Field, type] = getFieldConstructor(id, fileClassName, plugin) || []
     }
     if (Field && type) {
-        const settingsModal = getFieldSettings(Field, type, plugin, parentSetting, parentSettingContainer)
+        const settingsModal = getFieldSettingsModal(Field, type, plugin, parentSetting, parentSettingContainer)
         settingsModal.open()
         return settingsModal
     }
 }
+
+//#endregion
+//#region utils
+
+function areOptionsEqual(o1: BaseOptions | undefined, o2: BaseOptions | undefined): boolean {
+    return !!(!o1 && !o2) ||
+        !!(
+            o1 && o2
+            && Object.keys(o1).every(k => k in o2
+                && typeof o1[k] === "object"
+                ? areOptionsEqual(o1[k], o2[k])
+                : o1[k] === o2[k]
+            )
+            && Object.keys(o2).every(k => k in o1
+                && typeof o2[k] === "object"
+                ? areOptionsEqual(o2[k], o1[k])
+                : o2[k] === o1[k]
+            )
+        )
+}
+
+
+//TODO merge dataview FieldStyle && field FieldStyle
+function areStylesEqual(s1: FieldStyle | undefined, s2: FieldStyle | undefined): boolean {
+    return !!(!s1 && !s2) ||
+        !!(
+            s1 && s2
+            && Object.keys(s1).every(k => k in s2 && s1[k] === s2[k])
+            && Object.keys(s2).every(k => k in s1 && s2[k] === s1[k])
+        )
+}
+function areCommandsEqual(c1: FieldCommand | undefined, c2: FieldCommand | undefined): boolean {
+    return !!(!c1 && !c2) ||
+        !!(
+            c1 && c2
+            && c1.hotkey === c2.hotkey
+            && c1.icon === c2.icon
+            && c1.id === c1.id
+            && c1.label === c2.label
+        )
+}
+
+export function areFieldSettingsEqualWithoutId(f1: IField<BaseOptions>, f2: IField<BaseOptions>): boolean {
+
+    return f1.name === f2.name
+        && f1.type === f2.type
+        && f1.tagName === f2.tagName
+        && f1.icon === f2.icon
+        && f1.tooltip === f2.tooltip
+        && f1.colorClass === f2.colorClass
+        && f1.path === f2.path
+        && f1.display === f2.display
+        && areOptionsEqual(f1.options, f2.options)
+        && areStylesEqual(f1.style, f2.style)
+        && areCommandsEqual(f1.command, f2.command)
+}
+//#endregion

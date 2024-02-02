@@ -1,0 +1,121 @@
+---
+limit: 100
+mapWithTag: false
+icon: dumbbell
+tagNames: 
+excludes: 
+extends: 
+version: "2.1"
+fields:
+  - id: djJ9mH
+    name: activities
+    options:
+      valuesList:
+        "1": 🏃🏻‍♂️
+        "2": 🏋🏻‍♀️
+        "3": ⏸️
+        "4": 🥊
+        "5": ⛷
+        "6": 🏄🏻‍♂️
+        "7": 🚶🏻‍♂️
+        "8": 🤕
+        "9": ❓
+      sourceType: ValuesList
+      valuesListNotePath: ""
+      valuesFromDVQuery: ""
+    style:
+      bold: true
+    type: Multi
+    path: ""
+  - id: HNUTzT
+    name: intensity
+    options:
+      valuesList:
+        "1": 🔥
+        "2": 🔥🔥
+        "3": 🔥🔥🔥
+        "4": 🔥🔥🔥🔥
+        "5": 🔥🔥🔥🔥🔥
+        "6": 🔥🔥🔥🔥🔥🔥
+        "7": 🔥🔥🔥🔥🔥🔥🔥
+      sourceType: ValuesList
+      valuesListNotePath: ""
+      valuesFromDVQuery: ""
+    style:
+      bold: true
+    type: Cycle
+    path: ""
+  - id: 8w5EAz
+    name: calories
+    options:
+      template: "{{calories}} KCal"
+    style:
+      bold: true
+    type: Input
+    path: ""
+  - id: vMJFH9
+    name: distance
+    options:
+      template: "{{distance}} km"
+    style:
+      bold: true
+    type: Input
+    path: ""
+  - id: DiyBNg
+    name: time
+    options:
+      template: "`{{hours}}:{{minutes}}:{{seconds}}`"
+    style:
+      bold: true
+    type: Input
+    path: ""
+  - id: CwftRO
+    name: push-ups
+    options:
+      step: "10"
+      min: "0"
+      max: "1000"
+    style:
+      bold: true
+    type: Number
+    path: ""
+  - id: ANUgFR
+    name: pull-ups
+    options:
+      step: "5"
+      min: "0"
+      max: "1000"
+    style:
+      bold: true
+    type: Number
+    path: ""
+  - id: YHFlAp
+    name: squats
+    options:
+      step: "10"
+      min: "0"
+      max: "1000"
+    style:
+      bold: true
+    type: Number
+    path: ""
+  - id: 0pnKEj
+    name: route
+    options:
+      dvQueryString: dv.pages('#RunningRoute and -"Settings"')
+      customRendering: ""
+    type: MultiFile
+    path: ""
+  - id: H6TV3Z
+    name: bpm
+    options: {}
+    style:
+      bold: true
+    type: Number
+    path: ""
+filesPaths:
+  - Daily/Notes/2023
+bookmarksGroups: 
+savedViews: []
+favoriteView: 
+---

@@ -22,7 +22,7 @@ import * as YAML from "./models/YAML"
 import * as ObjectField from "./models/Object"
 import * as ObjectList from "./models/ObjectList"
 import { ISettingsModal, buildSettingsModal } from "./base/BaseSetting"
-import { IField, IFieldManager, Target } from "./Field"
+import { IField, IFieldManager, Target, field } from "./Field"
 import MetadataMenu from "main"
 import FieldSetting from "src/settings/FieldSetting"
 import { IBaseValueModal } from "./base/BaseModal"
@@ -189,7 +189,7 @@ export function getDefaultOptions<O extends BaseOptions>(type: FieldType): O {
     }
 }
 
-export function getFieldSettings<O extends BaseOptions>(Field: Constructor<IField<O>>,
+export function getFieldSettingsModal<O extends BaseOptions>(Field: Constructor<IField<O>>,
     type: FieldType,
     plugin: MetadataMenu,
     parentSetting?: FieldSetting,
@@ -438,5 +438,32 @@ export function getTooltip(type: FieldType): string {
 }
 
 //#endregion
+//#region tests
 
-//TODO remplir les create settings container et les fields options
+export async function getFieldSettingsTest(settingModal: ISettingsModal<BaseOptions>, field: IField<BaseOptions>): Promise<void> {
+    switch (settingModal.field.type) {
+        case "Input": await Input.enterFieldSetting(settingModal as Input.ISettingsModal, field); break
+        case "Select": await Select.enterFieldSetting(settingModal as Select.ISettingsModal, field as IField<Select.Options>); break
+        case "Multi": await Multi.enterFieldSetting(settingModal as Multi.ISettingsModal, field as IField<Multi.Options>); break
+        case "Cycle": await Cycle.enterFieldSetting(settingModal as Cycle.ISettingsModal, field as IField<Cycle.Options>); break
+        case "Number": await NumberField.enterFieldSetting(settingModal as NumberField.ISettingsModal, field as IField<NumberField.Options>); break
+        case "Boolean": await BooleanField.enterFieldSetting(settingModal as BooleanField.ISettingsModal, field as IField<BooleanField.Options>); break
+        case "Date": await DateField.enterFieldSetting(settingModal as DateField.ISettingsModal, field as IField<DateField.Options>); break
+        case "DateTime": await DateTime.enterFieldSetting(settingModal as DateTime.ISettingsModal, field as IField<DateTime.Options>); break
+        case "Time": await Time.enterFieldSetting(settingModal as Time.ISettingsModal, field as IField<Time.Options>); break
+        case "File":
+        case "MultiFile":
+        case "Media":
+        case "MultiMedia":
+        case "Canvas":
+        case "CanvasGroup":
+        case "CanvasGroupLink":
+        case "Formula":
+        case "Lookup":
+        case "JSON":
+        case "YAML":
+        case "Object":
+        case "ObjectList":
+    }
+}
+//#endregion

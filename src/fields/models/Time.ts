@@ -1,6 +1,6 @@
 import { TFile } from "obsidian"
 import { IFieldBase } from "../base/BaseField"
-import { ISettingsModal } from "../base/BaseSetting"
+import { ISettingsModal as BaseSettingsModal } from "../base/BaseSetting"
 import * as AbstractDate from "./abstractModels/AbstractDate"
 import { ActionLocation, IField, IFieldManager, Target } from "../Field"
 import MetadataMenu from "main"
@@ -21,8 +21,9 @@ export const DefaultOptions: AbstractDate.DefaultedOptions = {
     dateFormat: "HH:mm",
     dateShiftInterval: "1 hour"
 }
+export interface ISettingsModal extends AbstractDate.IDateBaseSettingModal { }
 
-export function settingsModal(Base: Constructor<ISettingsModal<AbstractDate.DefaultedOptions>>): Constructor<ISettingsModal<Options>> {
+export function settingsModal(Base: Constructor<BaseSettingsModal<AbstractDate.DefaultedOptions>>): Constructor<ISettingsModal> {
     const base = AbstractDate.settingsModal(Base)
     return class SettingsModal extends base { }
 }
@@ -57,3 +58,12 @@ export function getOptionsStr(field: IField<Options>): string {
 export function validateValue(managedField: IFieldManager<Target, Options>): boolean {
     return AbstractDate.validateValue(managedField)
 }
+
+
+//#region tests
+
+export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>) {
+    AbstractDate.enterFieldSetting(settingModal, field)
+}
+
+//#endregion

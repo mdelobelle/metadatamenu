@@ -1,6 +1,6 @@
 import { ButtonComponent, DropdownComponent, Menu, Notice, TFile, TextAreaComponent, TextComponent, setIcon } from "obsidian"
 import { IFieldBase, BaseOptions } from "../base/BaseField"
-import { ISettingsModal } from "../base/BaseSetting"
+import { ISettingsModal as IBaseSettingsModal } from "../base/BaseSetting"
 import { getIcon } from "../Fields"
 import { IFieldManager, Target, isSingleTargeted, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, ActionLocation, IField } from "../Field"
 import MetadataMenu from "main"
@@ -8,6 +8,7 @@ import { IBasicModal, basicModal } from "../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
 import { Constructor } from "src/typings/types"
 import { getExistingFieldForIndexedPath } from "../ExistingField"
+import { insertAndDispatch } from "src/tests/utils"
 
 export class Base implements IFieldBase {
     type = <const>"Input"
@@ -25,21 +26,28 @@ export interface DefaultedOptions extends Options { }
 
 export const DefaultOptions: DefaultedOptions = {}
 
-export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>>): Constructor<ISettingsModal<Options>> {
+export interface ISettingsModal extends IBaseSettingsModal<Options> {
+    templateValue: TextAreaComponent
+}
+
+export function settingsModal(Base: Constructor<IBaseSettingsModal<DefaultedOptions>>): Constructor<ISettingsModal> {
     return class InputSettingModal extends Base {
+        templateValue: TextAreaComponent
         createSettingContainer = () => {
             const container = this.optionsContainer
             this.field.options.template
             container.createEl("span", { text: "Template", cls: 'label' })
             const templateContainer = container.createDiv({ cls: "field-container" });
-            const templateValue = new TextAreaComponent(templateContainer)
+            this.templateValue = new TextAreaComponent(templateContainer)
+            const templateValue = this.templateValue
             templateValue.inputEl.cols = 50;
             templateValue.inputEl.rows = 4;
             templateValue.inputEl.addClass("full-width")
             templateValue.setValue(this.field.options.template || "")
             templateValue.onChange((value: string) => {
-                this.field.options.template = value;
-            })
+                this.field.options.template = value
+            });
+            templateValue.inputEl.setAttr("id", "template-input")
         }
 
         validateOptions(): boolean {
@@ -250,3 +258,15 @@ export function getOptionsStr(field: IField<Options>): string {
 export function validateValue(managedField: IFieldManager<Target, Options>): boolean {
     return true
 }
+
+//#region test
+export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>) {
+    if (field.options?.template !== undefined) {
+        insertAndDispatch(settingModal.templateValue, field.options.template)
+        const input = settingModal.containerEl.querySelector("#template-input") as HTMLInputElement
+        if (!input) throw Error("Template input not found")
+        if (!(input.value === settingModal.templateValue.getValue())) throw Error("Template input error")
+    }
+}
+//#endregion
+

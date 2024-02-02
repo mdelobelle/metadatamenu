@@ -1,7 +1,7 @@
 
 import MetadataMenu from "main";
 import * as AbstractList from "./abstractModels/AbstractList"
-import { ISettingsModal } from "../base/BaseSetting";
+import { ISettingsModal as IBaseSettingsModal } from "../base/BaseSetting";
 import { ActionLocation, IField, IFieldManager, Target, isSingleTargeted } from "../Field";
 import { getFieldModal } from "../Fields";
 import { ButtonComponent, TFile, setIcon } from "obsidian";
@@ -25,7 +25,9 @@ export interface DefaultedOptions extends AbstractList.DefaultedOptions { }
 
 export const DefaultOptions: AbstractList.DefaultedOptions = AbstractList.DefaultOptions
 
-export function settingsModal(Base: Constructor<ISettingsModal<AbstractList.DefaultedOptions>>): Constructor<ISettingsModal<Options>> {
+export interface ISettingsModal extends AbstractList.IListBaseSettingModal { }
+
+export function settingsModal(Base: Constructor<IBaseSettingsModal<AbstractList.DefaultedOptions>>): Constructor<ISettingsModal> {
     const base = AbstractList.settingsModal(Base)
     return class SettingsModal extends base { }
 }
@@ -256,3 +258,10 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
         return AbstractList.getOptionsList(managedField).includes(managedField.value)
     }
 }
+
+//#region test
+export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>) {
+    return AbstractList.enterFieldSetting(settingModal, field)
+}
+
+//#endregion

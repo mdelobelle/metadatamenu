@@ -31,7 +31,7 @@ export interface FieldCommand {
     hotkey?: string
 }
 
-type FieldStyle = Record<keyof typeof FieldStyleLabel, boolean>
+export type FieldStyle = Record<keyof typeof FieldStyleLabel, boolean>
 
 export interface IField<O extends BaseOptions> extends IFieldBase {
     // a field base with a name, an id, options, a fileclass name....
@@ -354,7 +354,11 @@ export function getField<O extends BaseOptions>(id: string, fileClassName: strin
 }
 
 export function copyProperty<O extends BaseOptions>(target: IField<O>, source: IField<O>): void {
-    const unbound = (value: any) => value ? JSON.parse(JSON.stringify(value)) : ""
+    const unbound = (value: any) => value
+        ? JSON.parse(JSON.stringify(value))
+        : value === ""
+            ? ""
+            : undefined
     target.id = unbound(source.id);
     target.name = unbound(source.name);
     target.type = unbound(source.type)

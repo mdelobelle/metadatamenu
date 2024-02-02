@@ -1,4 +1,4 @@
-import { PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal, DropdownComponent, moment, setIcon } from "obsidian";
+import { PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal, DropdownComponent, moment, setIcon, SearchComponent } from "obsidian";
 import MetadataMenu from "main";
 import FieldSetting from "src/settings/FieldSetting";
 import { FolderSuggest } from "src/suggester/FolderSuggester";
@@ -11,12 +11,18 @@ import { openSettings } from "src/fields/base/BaseSetting";
 import { buildEmptyField } from "src/fields/Field";
 import { MultiDisplayType } from "src/fields/Fields";
 
+type Group = SettingGroup | PresetFieldsSettingGroup | FileClassSettingGroup
+
 export function isMetadataMenuSettingTab(tab: PluginSettingTab | MetadataMenuSettingTab): tab is MetadataMenuSettingTab {
 	return 'groups' in tab
 }
 
-export function isPresetFieldsSettingGroup(group: SettingGroup | PresetFieldsSettingGroup): group is PresetFieldsSettingGroup {
+export function isPresetFieldsSettingGroup(group: Group): group is PresetFieldsSettingGroup {
 	return 'addNewButton' in group
+}
+
+export function isFileClassSettingGroup(group: Group): group is FileClassSettingGroup {
+	return true
 }
 
 class SettingGroup {
@@ -68,6 +74,11 @@ class SettingGroup {
 
 class PresetFieldsSettingGroup extends SettingGroup {
 	public addNewButton: ButtonComponent
+}
+
+class FileClassSettingGroup extends SettingGroup {
+	public fileClassPathInput: SearchComponent
+	public fileClassesFolderSaveButton: ButtonComponent
 }
 
 class SettingTextWithButtonComponent extends Setting {
@@ -391,7 +402,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		/* Set classFiles Path*/
 		containerEl.createDiv({ cls: "setting-divider" });
-		const classFilesSettings = new SettingGroup(this,
+		const classFilesSettings = new FileClassSettingGroup(this,
 			'fileclass-settings',
 			'FileClass settings',
 			"Manage fileClass folder and alias. " +
@@ -399,32 +410,33 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			"global preset fields settings for the same field name",
 			true
 		)
-
-		const fileClassesFolderSaveButton = new ButtonComponent(classFilesSettings.containerEl)
-		fileClassesFolderSaveButton.buttonEl.addClass("save")
-		fileClassesFolderSaveButton.setIcon("save")
-		fileClassesFolderSaveButton.onClick(async () => {
+		const cFS = classFilesSettings
+		cFS.fileClassesFolderSaveButton = new ButtonComponent(classFilesSettings.containerEl)
+		cFS.fileClassesFolderSaveButton.buttonEl.addClass("save")
+		cFS.fileClassesFolderSaveButton.setIcon("save")
+		cFS.fileClassesFolderSaveButton.onClick(async () => {
 			this.plugin.settings.classFilesPath = this.newFileClassesPath
 			await this.plugin.saveSettings()
-			fileClassesFolderSaveButton.removeCta()
+			cFS.fileClassesFolderSaveButton.removeCta()
 		})
 		const path = new Setting(classFilesSettings.containerEl)
 			.setName('Class Files path')
 			.setDesc('Path to the files containing the authorized fields for a type of note')
 			.addSearch((cfs) => {
+				cFS.fileClassPathInput = cfs
 				new FolderSuggest(this.plugin, cfs.inputEl);
 				cfs.setPlaceholder("Folder")
 					.setValue(this.plugin.settings.classFilesPath || "")
 					.onChange((new_folder) => {
 						const newPath = new_folder.endsWith("/") || !new_folder ? new_folder : new_folder + "/";
 						this.newFileClassesPath = newPath || null
-						fileClassesFolderSaveButton.setCta()
+						cFS.fileClassesFolderSaveButton.setCta()
 					})
 			});
 		path.settingEl.addClass("no-border");
 		path.settingEl.addClass("narrow-title");
 		path.controlEl.addClass("full-width");
-		path.settingEl.appendChild(fileClassesFolderSaveButton.buttonEl)
+		path.settingEl.appendChild(cFS.fileClassesFolderSaveButton.buttonEl)
 
 		const aliasSaveButton = new ButtonComponent(classFilesSettings.containerEl)
 		aliasSaveButton.buttonEl.addClass("save")

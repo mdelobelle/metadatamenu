@@ -9,6 +9,7 @@ import { cleanActions } from "src/utils/modals"
 import { Constructor } from "src/typings/types"
 import { getIcon } from "src/fields/Fields"
 import { getExistingFieldForIndexedPath } from "src/fields/ExistingField"
+import { insertAndDispatch, selectOptionAndDispatch } from "src/tests/utils"
 
 
 //#region options values
@@ -34,9 +35,9 @@ export const SourceTypeDisplay: Record<keyof typeof SourceType, string> = {
 //#endregion
 
 export interface Options extends BaseOptions {
-    valuesNotePath?: string
+    valuesListNotePath?: string
     valuesList?: Record<string, string>
-    dvQuery?: string
+    valuesFromDVQuery?: string
     sourceType: "ValuesListNotePath" | "ValuesList" | "ValuesFromDVQuery"
 }
 
@@ -50,22 +51,30 @@ export const DefaultOptions: DefaultedOptions = {
 }
 
 export interface IListBaseSettingModal extends ISettingsModal<Options> {
+    addValue: HTMLButtonElement
+    valuesPromptComponents: TextComponent[]
+    sourceTypeSelector: DropdownComponent
+    notePathInput: TextComponent
+    dvQueryInput: TextAreaComponent
     createSettingContainer(): void
 }
 
 export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>>): Constructor<IListBaseSettingModal> {
     return class SettingsModal extends Base {
-        private valuesPromptComponents: TextComponent[] = []
-
+        public valuesPromptComponents: TextComponent[] = []
+        public addValue: HTMLButtonElement
+        public sourceTypeSelector: DropdownComponent
+        public notePathInput: TextComponent
+        public dvQueryInput: TextAreaComponent
         createSettingContainer() {
             const container = this.optionsContainer
             const sourceTypeContainer = container.createDiv({ cls: "field-container" });
             sourceTypeContainer.createDiv({ text: "Values source type", cls: "label" })
             sourceTypeContainer.createDiv({ cls: "spacer" });
-            const sourceType = new DropdownComponent(sourceTypeContainer);
+            this.sourceTypeSelector = new DropdownComponent(sourceTypeContainer);
 
-            Object.keys(SourceType).forEach((option: keyof typeof SourceType) => sourceType.addOption(option, SourceTypeDisplay[option]))
-            sourceType.setValue(this.field.options.sourceType)
+            Object.keys(SourceType).forEach((option: keyof typeof SourceType) => this.sourceTypeSelector.addOption(option, SourceTypeDisplay[option]))
+            this.sourceTypeSelector.setValue(this.field.options.sourceType)
 
             const valuesListNotePathContainer = this.createListNotePathContainer(container);
             const presetValuesFieldsContainer = this.createValuesListContainer(container);
@@ -77,7 +86,7 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
                 "ValuesFromDVQuery": valuesFromDVQueryContainer
             }
 
-            sourceType.onChange((value: keyof typeof SourceType) => {
+            this.sourceTypeSelector.onChange((value: keyof typeof SourceType) => {
                 this.field.options.sourceType = value;
                 this.displaySelectedTypeContainer(valuesContainers, value)
             })
@@ -123,7 +132,8 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
         private createListNotePathContainer(container: HTMLDivElement): HTMLDivElement {
             const valuesListNotePathContainer = container.createDiv({ cls: "field-container" });
             valuesListNotePathContainer.createDiv({ text: `Path of the note`, cls: "label" });
-            const input = new TextComponent(valuesListNotePathContainer);
+            this.notePathInput = new TextComponent(valuesListNotePathContainer);
+            const input = this.notePathInput
             input.inputEl.addClass("full-width");
             input.inputEl.addClass("with-label");
             new FileSuggest(
@@ -196,13 +206,13 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
             valuesFromDVQueryTopContainer.createEl("span", { text: "Dataview function" });
             valuesFromDVQueryTopContainer.createEl("span", { text: "Dataview query returning a list of string (<dv> object is available)", cls: "sub-text" });
             const valuesFromDVQueryContainer = valuesFromDVQueryTopContainer.createDiv({ cls: "field-container" })
-            const valuesFromDVQuery = new TextAreaComponent(valuesFromDVQueryContainer);
-            valuesFromDVQuery.inputEl.addClass("full-width");
-            valuesFromDVQuery.inputEl.cols = 65;
-            valuesFromDVQuery.inputEl.rows = 8;
-            valuesFromDVQuery.setPlaceholder("ex: dv.pages('#student').map(p => p.name)")
-            valuesFromDVQuery.setValue(this.field.options.valuesFromDVQuery || "");
-            valuesFromDVQuery.onChange((value) => {
+            this.dvQueryInput = new TextAreaComponent(valuesFromDVQueryContainer);
+            this.dvQueryInput.inputEl.addClass("full-width");
+            this.dvQueryInput.inputEl.cols = 65;
+            this.dvQueryInput.inputEl.rows = 8;
+            this.dvQueryInput.setPlaceholder("ex: dv.pages('#student').map(p => p.name)")
+            this.dvQueryInput.setValue(this.field.options.valuesFromDVQuery || "");
+            this.dvQueryInput.onChange((value) => {
                 this.field.options.valuesFromDVQuery = value
             })
             return valuesFromDVQueryTopContainer;
@@ -220,10 +230,10 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
 
         private createAddButton(valuesList: HTMLDivElement, valuesListBody: HTMLDivElement): void {
             const valuesListFooter = valuesList.createDiv();
-            const addValue = valuesListFooter.createEl('button');
-            addValue.type = 'button';
-            addValue.textContent = 'Add a value';
-            addValue.onClickEvent(async (evt: MouseEvent) => {
+            this.addValue = valuesListFooter.createEl('button');
+            this.addValue.type = 'button';
+            this.addValue.textContent = 'Add a value';
+            this.addValue.onClickEvent(async (evt: MouseEvent) => {
                 evt.preventDefault();
                 let newKeyNumber = 1;
                 Object.keys(this.field.options.valuesList).forEach(key => {
@@ -314,7 +324,9 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                     this.managedField.options.valuesList = newOptions
                     break;
                 case "ValuesListNotePath":
-                    const valuesFile = plugin.app.vault.getAbstractFileByPath((options as Options).valuesListNotePath);
+                    const path = options.valuesListNotePath
+                    if (!path) return
+                    const valuesFile = plugin.app.vault.getAbstractFileByPath(path);
                     if (valuesFile instanceof TFile && valuesFile.extension == "md") {
                         const result = await plugin.app.vault.read(valuesFile)
                         plugin.app.vault.modify(valuesFile, `${result}\n${newValue}`);
@@ -413,8 +425,11 @@ export function getOptionsList(managedField: IField<Options> | IFieldManager<Tar
                 values = Object.values(options.valuesList || {});
                 break;
             case "ValuesListNotePath":
-                values = managedField.plugin.fieldIndex.valuesListNotePathValues
-                    .get(managedField.options.valuesListNotePath) || [];
+                const path = managedField.options.valuesListNotePath
+                const index = managedField.plugin.fieldIndex
+                values = path
+                    ? index.valuesListNotePathValues.get(path) || []
+                    : []
                 break;
             case "ValuesFromDVQuery":
                 {
@@ -437,3 +452,27 @@ export function getOptionsList(managedField: IField<Options> | IFieldManager<Tar
     return values;
 }
 //#endregion
+//#region test
+
+export async function enterFieldSetting(settingModal: IListBaseSettingModal, field: IField<Options>) {
+    selectOptionAndDispatch(settingModal.sourceTypeSelector, field.options.sourceType)
+    switch (field.options.sourceType) {
+        case "ValuesList":
+            for (const [key, value] of Object.entries(field.options.valuesList || {})) {
+                settingModal.addValue.click()
+                const valueInput = settingModal.valuesPromptComponents[parseInt(key) - 1]
+                insertAndDispatch(valueInput, value)
+            }
+            break;
+        case "ValuesListNotePath":
+            if (!field.options.valuesListNotePath) throw Error(`Can't find <${field.name}> values list note path`)
+            insertAndDispatch(settingModal.notePathInput, field.options.valuesListNotePath)
+            break;
+        case "ValuesFromDVQuery":
+            if (!field.options.valuesFromDVQuery) throw Error(`Can't find <${field.name}> dataview query`)
+            insertAndDispatch(settingModal.dvQueryInput, field.options.valuesFromDVQuery)
+            break;
+    }
+}
+
+//#enregion
