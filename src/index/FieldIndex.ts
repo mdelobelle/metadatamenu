@@ -1,6 +1,6 @@
 import { Notice, TFile } from "obsidian"
 import MetadataMenu from "main"
-import { FileClass } from "src/fileClass/fileClass";
+import { FileClass, createFileClass, getFileClassNameFromPath, indexFileClass } from "src/fileClass/fileClass";
 import FileClassQuery from "src/fileClass/FileClassQuery";
 import FieldSetting from "src/settings/FieldSetting";
 import { resolveLookups } from "src/commands/resolveLookups";
@@ -272,7 +272,7 @@ export default class FieldIndex extends FieldIndexBuilder {
     private getFileClassesAncestors(): void {
         //1. iterate over fileClasses to init fileClassesAncestors
         this.indexableFileClasses().forEach(f => {
-            const fileClassName = FileClass.getFileClassNameFromPath(this.settings, f.path)
+            const fileClassName = getFileClassNameFromPath(this.settings, f.path)
             if (fileClassName) {
                 const parent = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.extends
                 if (parent) {
@@ -314,17 +314,16 @@ export default class FieldIndex extends FieldIndexBuilder {
             this.fieldsFromGlobalFileClass = []
         } else {
             try {
-                this.fieldsFromGlobalFileClass = FileClass
-                    .createFileClass(
-                        this.plugin,
-                        globalFileClass)
+                this.fieldsFromGlobalFileClass = createFileClass(
+                    this.plugin,
+                    globalFileClass)
                     .attributes.map(attr => attr.getField())
             } catch (error) { }
         }
     }
 
     private getFileClasses(): void {
-        this.indexableFileClasses().forEach(f => FileClass.indexFileClass(this, f));
+        this.indexableFileClasses().forEach(f => indexFileClass(this, f));
         (async () => {
             await Promise.all(this.openFileClassManagerAfterIndex.map(async fileClassName => {
                 const fileClass = this.fileClassesName.get(fileClassName)

@@ -30,7 +30,7 @@ export class V1FileClassMigration {
                         try {
                             const { type, options, command, display, style } = JSON.parse(item);
                             const fieldType = capitalize(type) as FieldType;
-                            const attr = new FileClassAttribute(plugin, this.name, key, this.name, fieldType, options, fileClass.name, command, display, style)
+                            const attr = new FileClassAttribute(plugin, key, this.name, fieldType, options, fileClass.name, command, display, style)
                             attributes.push(attr)
                         } catch (e) {
                             //do nothing

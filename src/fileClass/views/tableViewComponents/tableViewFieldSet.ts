@@ -1,6 +1,6 @@
 import MetadataMenu from "main"
 import { ButtonComponent } from "obsidian"
-import { FileClass, FileClassChild } from "../../fileClass"
+import { FileClass, FileClassChild, getSortedRootFields } from "../../fileClass"
 import { FileClassTableView } from "../fileClassTableView"
 import { RowSorterComponent } from "./RowSorterComponent";
 import { FieldComponent } from "./FieldComponent";
@@ -88,7 +88,7 @@ export class FieldSet {
         this.fieldComponents.push(fieldComponent);
         let index = 0;
         this.fileClasses.forEach(_fC => {
-            const sortedFields = FileClass.getSortedRootFields(this.plugin, _fC)
+            const sortedFields = getSortedRootFields(this.plugin, _fC)
             for (const [_index, field] of sortedFields.entries()) {
                 const fieldContainer = this.container.createDiv({ cls: "field-container" })
                 this.fieldComponents.push(new FieldComponent(_fC, fieldContainer, this, field.name, field.name, _index + index + 1))

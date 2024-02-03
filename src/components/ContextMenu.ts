@@ -3,7 +3,7 @@ import { Component, Menu, Platform, requireApiVersion, TAbstractFile, TFile } fr
 import OptionsList from "src/options/OptionsList";
 import FileClassOptionsList from "../options/FileClassOptionsList";
 import FieldCommandSuggestModal from "../options/FieldCommandSuggestModal";
-import { FileClass } from "src/fileClass/fileClass";
+import { FileClass, getFileClassNameFromPath } from "src/fileClass/fileClass";
 
 export default class ContextMenu extends Component {
 	fileContextMenuOpened: boolean = false
@@ -40,7 +40,7 @@ export default class ContextMenu extends Component {
 		if (file instanceof TFile && file.extension === 'md') {
 			if (!Platform.isMobile && requireApiVersion("0.16.0")) {
 				if (classFilesPath && file.path.startsWith(classFilesPath)) {
-					const fileClassName = FileClass.getFileClassNameFromPath(this.plugin.settings, file.path)
+					const fileClassName = getFileClassNameFromPath(this.plugin.settings, file.path)
 					menu.setSectionSubmenu(
 						`metadata-menu-fileclass.${fileClassName}.fileclass-fields`,
 						{ title: "Manage fields", icon: "wrench" }

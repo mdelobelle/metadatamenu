@@ -8,7 +8,6 @@ class FileClassAttribute {
 
     constructor(
         public plugin: MetadataMenu,
-        public origin: string,
         public name: string,
         public id: string,
         public type: FieldType = "Input",

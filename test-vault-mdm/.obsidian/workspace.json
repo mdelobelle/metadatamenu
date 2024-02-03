@@ -4,14 +4,14 @@
     "type": "split",
     "children": [
       {
-        "id": "cc44e4bbb0cafdab",
+        "id": "7cee0fc1c2aa78e7",
         "type": "tabs",
         "children": [
           {
-            "id": "7fe564c2d14bda3d",
+            "id": "43ae543c00633163",
             "type": "leaf",
             "state": {
-              "type": "FileClassView__Fileclass1",
+              "type": "empty",
               "state": {}
             }
           }
@@ -138,7 +138,7 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "7fe564c2d14bda3d",
+  "active": "43ae543c00633163",
   "lastOpenFiles": [
     "Fileclasses/Fileclass2.md",
     "Fileclasses/Fileclass1.md",

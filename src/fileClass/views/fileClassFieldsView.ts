@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { ButtonComponent, setIcon } from "obsidian";
 import { removeFileClassAttributeWithId } from "src/commands/removeFileClassAttribute";
-import { FileClass } from "../fileClass";
+import { FileClass, buildSortedAttributes } from "../fileClass";
 import { FileClassAttribute } from "../fileClassAttribute";
 import { openSettings } from "src/fields/base/BaseSetting";
 import { getTagName } from "src/fields/Fields";
@@ -95,7 +95,7 @@ export class FileClassFieldsView {
     buildSettings(): void {
         this.container.replaceChildren();
         const fieldsContainer = this.container.createDiv({ cls: "fields-container" })
-        const sortedAttributes = FileClass.buildSortedAttributes(this.plugin, this.fileClass)
+        const sortedAttributes = buildSortedAttributes(this.plugin, this.fileClass)
         sortedAttributes.forEach(attribute => {
             new FileClassFieldSetting(fieldsContainer, this.fileClass, attribute, this.plugin);
         });

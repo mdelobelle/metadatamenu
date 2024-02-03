@@ -131,11 +131,11 @@ async function testCreateFileClass(plugin: MetadataMenu, addBtn: HTMLDivElement,
     if (!input) throw Error("fileclass name input not found")
     input.value = fileClassDataFile.basename
     input.dispatchEvent(new Event("input"))
-    await setTimeout(500) // because input is async in this form
+    await setTimeout(100) // because input is async in this form
     const saveBtn = modal.querySelector("#new-fileclass-confirm-btn") as HTMLDivElement
     saveBtn.dispatchEvent(new Event("click"));
     (modal.querySelector(".modal-close-button") as HTMLDivElement).click();
-    await setTimeout(500) // because save is async in this form
+    await setTimeout(100) // because save is async in this form
     const fileClass = plugin.fieldIndex.fileClassesName.get(fileClassName)
     //clear frontmatterCache for this file to avoid conflict with previous test runs
     if (!fileClass) throw Error(`${fileClassName} wasn't create or indexed`)

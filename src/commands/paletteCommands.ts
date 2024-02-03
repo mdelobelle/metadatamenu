@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { MarkdownView, Notice, TFile } from "obsidian";
 import NoteFieldsComponent from "src/components/FieldsModal";
-import { AddFileClassToFileModal, FileClass } from "src/fileClass/fileClass";
+import { AddFileClassToFileModal, FileClass, getFileClassNameFromPath } from "src/fileClass/fileClass";
 import chooseSectionModal from "src/modals/chooseSectionModal";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import FileClassOptionsList from "src/options/FileClassOptionsList";
@@ -49,7 +49,7 @@ function insertFileClassAttributeCommand(plugin: MetadataMenu) {
             }
             if (inFileClass) {
                 try {
-                    const fileClassName = FileClass.getFileClassNameFromPath(plugin.settings, view!.file!.path)
+                    const fileClassName = getFileClassNameFromPath(plugin.settings, view!.file!.path)
                     if (fileClassName) openSettings("", fileClassName, plugin)
                 } catch (error) {
                     new Notice("plugin is not a valid fileClass")
