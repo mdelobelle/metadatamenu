@@ -243,7 +243,7 @@ export class FileClassSettingsView {
 
 //#region tests
 
-export async function testFileClassSettingsView(plugin: MetadataMenu, fileClass: FileClass, data: FrontMatterCache) {
+export async function testFileClassSettingsView(plugin: MetadataMenu, fileClass: FileClass, data: FrontMatterCache, speed: number = 100) {
     const fCView = plugin.app.workspace.getActiveViewOfType(FileClassView)
     if (!fCView || !fCView.settingsView) throw Error(`${fileClass.name} view didn't open`)
     const container = fCView.settingsView.container
@@ -258,10 +258,13 @@ export async function testFileClassSettingsView(plugin: MetadataMenu, fileClass:
         if (!addBtn || !(addBtn instanceof HTMLButtonElement)) throw Error(`add ${collection} button not found`)
         for (const item of items) {
             addBtn.click()
+            await setTimeout(speed)
             const choices = document.querySelectorAll(`#${fileClass.name}-${collection}-suggest-modal .suggestion-item`)
             for (const choice of choices) {
-                if ((choice instanceof HTMLDivElement) && choice.innerText.replace(/^#(.*)/, "$1") === item) choice.click()
-                await setTimeout(200) // this choice will trigger an async save
+                if ((choice instanceof HTMLDivElement) && choice.innerText.replace(/^#(.*)/, "$1") === item) {
+                    choice.click()
+                    await setTimeout(200) // this choice will trigger an async save
+                }
             }
         }
     }
@@ -286,8 +289,8 @@ export async function testFileClassSettingsView(plugin: MetadataMenu, fileClass:
     fCView.settingsView.saveBtn.click()
     await setTimeout(100) //upper changes have to be saved before changing other settings
     await selectChoices("tagNames")
-    await selectChoices("filesPaths")
     await selectChoices("bookmarksGroups")
+    await selectChoices("filesPaths")
     fCView.leaf.detach()
 }
 

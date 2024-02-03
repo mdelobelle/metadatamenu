@@ -4,19 +4,15 @@
     "type": "split",
     "children": [
       {
-        "id": "cc596869604fa5de",
+        "id": "cc44e4bbb0cafdab",
         "type": "tabs",
         "children": [
           {
-            "id": "cb691c61ddfc887a",
+            "id": "7fe564c2d14bda3d",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Fileclasses/Fileclass1.md",
-                "mode": "source",
-                "source": false
-              }
+              "type": "FileClassView__Fileclass1",
+              "state": {}
             }
           }
         ]
@@ -85,7 +81,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Fileclasses/Fileclass1.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +97,6 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Fileclasses/Fileclass1.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -124,9 +118,7 @@
             "type": "leaf",
             "state": {
               "type": "outline",
-              "state": {
-                "file": "Fileclasses/Fileclass1.md"
-              }
+              "state": {}
             }
           }
         ]
@@ -146,12 +138,12 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "cb691c61ddfc887a",
+  "active": "7fe564c2d14bda3d",
   "lastOpenFiles": [
     "Fileclasses/Fileclass2.md",
     "Fileclasses/Fileclass1.md",
-    "__fixtures__/fileClasses/Fileclass2.md",
     "__fixtures__/fileClasses/Fileclass1.md",
+    "__fixtures__/fileClasses/Fileclass2.md",
     "__fixtures__/tags.md",
     "Folder2",
     "Folder1",

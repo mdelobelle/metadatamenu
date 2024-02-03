@@ -103,5 +103,5 @@ bookmarksGroups:
   - group2
   - group3
 savedViews: 
-favoriteView:
+favoriteView: 
 ---

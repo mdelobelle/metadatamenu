@@ -75,7 +75,7 @@ export default class AddNewFileClassModal extends Modal {
         if (classFilesPath) {
             try {
                 openAfterCreate.push(fileClassName)
-                fCFile = await this.plugin.app.vault.create(`${classFilesPath}${fileClassName}.md`, "")
+                fCFile = await this.plugin.app.vault.create(`${classFilesPath}${fileClassName}.md`, "---\n---")
             } catch (error) {
                 openAfterCreate.remove(fileClassName)
                 new Notice("Something went wrong. Impossible to create this fileClass", 3000)

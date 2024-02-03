@@ -131,6 +131,7 @@ declare module "obsidian" {
         fileCache: Record<string, { mtime: number }>
         inProgressTaskCount: number;
         initialized: boolean;
+        cleanupDeletedCache: () => void
         db: {
             name: string
         }

@@ -2,7 +2,7 @@
 limit: 40
 mapWithTag: false
 icon: alert-octagon
-tagNames: #Tag1
+tagNames: 
 excludes: activities
 extends: Fileclass1
 version: "2.1"
@@ -45,7 +45,7 @@ fields:
       bold: true
     type: Cycle
     path: ""
-filesPaths:
+filesPaths: 
 bookmarksGroups: 
 savedViews: []
 favoriteView: 

@@ -8,6 +8,7 @@ import { FieldType, getIcon } from "src/fields/Fields"
 const updateProps = async (plugin: MetadataMenu, view: View) => {
     if (!(view instanceof MarkdownView) || !(view.file instanceof TFile) || view.file === undefined) return
     const file = view.file
+    if (!plugin.app.vault.getAbstractFileByPath(file.path)) return
     const optionsList = new OptionsList(plugin, file, "ManageAtCursorCommand")
     const note = new Note(plugin, file)
     await note.build();

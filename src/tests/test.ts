@@ -14,7 +14,6 @@ import { testFileClassSettingsView } from "src/fileClass/views/fileClassSettings
 const speed = 0
 
 export async function run(plugin: MetadataMenu) {
-    await setTimeout(1000)
     await clean(plugin)
     //await testPresetFields(plugin)
     await testFileClasses(plugin)
@@ -27,6 +26,7 @@ async function clean(plugin: MetadataMenu) {
     const fileClassFiles = plugin.app.vault.getFiles().filter(f => f.parent?.path === "Fileclasses")
     for (const fC of fileClassFiles) await plugin.app.vault.adapter.remove(fC.path)
     await plugin.fieldIndex.fullIndex(true)
+    plugin.app.metadataCache.cleanupDeletedCache()
     console.log("%c [CLEANED]", "color: blue")
 }
 
@@ -113,6 +113,7 @@ async function testFileClasses(plugin: MetadataMenu) {
     plugin.app.setting.close()
     const fileclasses = plugin.app.vault.getFiles()
         .filter(f => f.parent?.path === "__fixtures__/fileClasses")
+        //Fileclass1.md has to be created before Fileclass2.md for inheritance testing
         .sort((f1, f2) => f1.name < f2.basename ? -1 : 1)
     const addFileClassBtn = document.querySelector(".fileClass-add-button") as HTMLDivElement
     if (!addFileClassBtn) throw Error("Fileclass add button not found")
@@ -136,6 +137,7 @@ async function testCreateFileClass(plugin: MetadataMenu, addBtn: HTMLDivElement,
     (modal.querySelector(".modal-close-button") as HTMLDivElement).click();
     await setTimeout(500) // because save is async in this form
     const fileClass = plugin.fieldIndex.fileClassesName.get(fileClassName)
+    //clear frontmatterCache for this file to avoid conflict with previous test runs
     if (!fileClass) throw Error(`${fileClassName} wasn't create or indexed`)
     await testFileClassViewNavigation(plugin, fileClass)
     const data = plugin.app.metadataCache.getFileCache(fileClassDataFile)?.frontmatter

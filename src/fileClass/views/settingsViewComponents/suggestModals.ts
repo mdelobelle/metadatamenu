@@ -119,6 +119,7 @@ export class PathSuggestModal extends SuggestModal<string> {
         return folders.map(f => f.path);
     }
 
+
     onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
         const options = this.view.fileClass.getFileClassOptions()
         const filesPaths = options.filesPaths || []
@@ -160,6 +161,7 @@ export class BookmarksGroupSuggestModal extends SuggestModal<string> {
     }
 
     onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
+        const cache = this.plugin.app.metadataCache.getFileCache(this.view.fileClass.getClassFile())?.frontmatter as Record<string, any> || {}
         const options = this.view.fileClass.getFileClassOptions()
         const bookmarksGroups = options.bookmarksGroups || []
         bookmarksGroups.push(item)
