@@ -140,7 +140,7 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
 
 //#region test
 
-export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>) {
+export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>, speed = 100) {
 
 }
 //#endregion

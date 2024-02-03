@@ -7,7 +7,7 @@ export class ParentSuggestModal extends SuggestModal<string> {
 
     constructor(private view: FileClassSettingsView) {
         super(view.plugin.app)
-        this.containerEl.setAttr("id", `${this.view.fileClass.name}-parent-suggest-modal`)
+        this.containerEl.setAttr("id", `${this.view.fileClass.name}-extends-suggest-modal`)
     }
 
     getSuggestions(query: string): string[] {
@@ -63,13 +63,14 @@ export class FieldSuggestModal extends SuggestModal<string> {
 
     constructor(private view: FileClassSettingsView) {
         super(view.plugin.app)
-        this.containerEl.setAttr("id", `${this.view.fileClass.name}-exclude-field-suggest-modal`)
+        this.containerEl.setAttr("id", `${this.view.fileClass.name}-excludes-suggest-modal`)
     }
 
     getSuggestions(query: string): string[] {
         const fileClassName = this.view.fileClass.name
         const fileClassFields = this.view.plugin.fieldIndex.fileClassesFields.get(fileClassName) || []
         const excludedFields = this.view.fileClass.getFileClassOptions().excludes
+
         return fileClassFields
             .filter(fCA =>
                 fCA.fileClassName !== fileClassName

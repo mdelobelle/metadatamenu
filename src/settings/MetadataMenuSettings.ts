@@ -4,10 +4,10 @@ import { MultiDisplayType } from "src/fields/Fields";
 import { BaseOptions } from "src/fields/base/BaseField";
 import FileClassQuery from "src/fileClass/FileClassQuery";
 
-type Field = Omit<IField<BaseOptions>, "plugin">
+export type UnboundField = Omit<IField<BaseOptions>, "plugin">
 
 export interface MetadataMenuSettings {
-	presetFields: Array<Field>;
+	presetFields: Array<UnboundField>;
 	fileClassQueries: Array<FileClassQuery>;
 	displayFieldsInContextMenu: boolean;
 	globallyIgnoredFields: Array<string>;

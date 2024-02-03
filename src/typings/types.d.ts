@@ -24,6 +24,10 @@ interface BookmarkItem {
 
 type Constructor<T> = new (...args: any[]) => T
 
+type PartialRecord<K extends keyof any, T> = {
+    [P in K]?: T;
+};
+
 type FrontmatterValue = string | number | boolean | FrontmatterObject;
 
 interface FrontmatterObject {

@@ -136,23 +136,21 @@ export class FileClassView extends ItemView {
 }
 
 //#region tests
+
+export type Tab = "table" | "fields" | "settings"
+
+export async function openTab(fCView: FileClassView, tab: Tab, speed: number = 100) {
+    const menuHeader = fCView.containerEl.querySelector(`#${tab}Option`) as HTMLElement
+    if (!menuHeader) throw Error(`${fCView.fileClass.name} ${tab} menu not found`)
+    menuHeader.click()
+    await setTimeout(speed)
+}
+
 export async function testFileClassViewNavigation(plugin: MetadataMenu, fileClass: FileClass, speed: number = 100) {
     const fCView = plugin.app.workspace.getActiveViewOfType(FileClassView)
     if (!fCView) throw Error(`${fileClass.name} view didn't open`)
-
-    const tableViewMenuHeader = fCView.containerEl.querySelector("#tableOption") as HTMLElement
-    if (!tableViewMenuHeader) throw Error(`${fileClass.name} settings menu not found`)
-    tableViewMenuHeader.click()
-    await setTimeout(speed)
-
-    const fieldsMenuHeader = fCView.containerEl.querySelector("#fieldsOption") as HTMLElement
-    if (!fieldsMenuHeader) throw Error(`${fileClass.name} settings menu not found`)
-    fieldsMenuHeader.click()
-    await setTimeout(speed)
-
-    const settingsMenuHeader = fCView.containerEl.querySelector("#settingsOption") as HTMLElement
-    if (!settingsMenuHeader) throw Error(`${fileClass.name} settings menu not found`)
-    settingsMenuHeader.click()
-    await setTimeout(speed)
+    await openTab(fCView, "table", speed)
+    await openTab(fCView, "fields", speed)
+    await openTab(fCView, "settings", speed)
 }
 //#endregion

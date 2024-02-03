@@ -21,10 +21,6 @@ fields:
         "8": 🤕
         "9": ❓
       sourceType: ValuesList
-      valuesListNotePath: ""
-      valuesFromDVQuery: ""
-    style:
-      bold: true
     type: Multi
     path: ""
   - id: 8w5EAz
@@ -41,6 +37,7 @@ fields:
       template: "{{distance}} km"
     style:
       bold: true
+      italic: true
     type: Input
     path: ""
   - id: DiyBNg
@@ -54,9 +51,9 @@ fields:
   - id: CwftRO
     name: push-ups
     options:
-      step: "10"
-      min: "0"
-      max: "1000"
+      step: 10
+      min: 0
+      max: 1000
     style:
       bold: true
     type: Number
@@ -64,9 +61,9 @@ fields:
   - id: ANUgFR
     name: pull-ups
     options:
-      step: "5"
-      min: "0"
-      max: "1000"
+      step: 5
+      min: 0
+      max: 1000
     style:
       bold: true
     type: Number
@@ -74,19 +71,12 @@ fields:
   - id: YHFlAp
     name: squats
     options:
-      step: "10"
-      min: "0"
-      max: "1000"
+      step: 10
+      min: 0
+      max: 1000
     style:
       bold: true
     type: Number
-    path: ""
-  - id: 0pnKEj
-    name: route
-    options:
-      dvQueryString: dv.pages('#RunningRoute and -"Settings"')
-      customRendering: ""
-    type: MultiFile
     path: ""
   - id: H6TV3Z
     name: bpm

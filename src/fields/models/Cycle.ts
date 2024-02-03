@@ -143,8 +143,13 @@ export function getNextOption(managedField: IFieldManager<Target, Options>): str
 
 //#endregion
 //#region test
-export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>) {
-    settingModal.allowNullToggler.toggleEl.click()
-    return AbstractList.enterFieldSetting(settingModal, field)
+export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>, speed = 100) {
+    if (field.options.allowNull) {
+        settingModal.allowNullToggler.toggleEl.click()
+    } else if (field.options.allowNull !== undefined) {
+        settingModal.allowNullToggler.toggleEl.click()
+        settingModal.allowNullToggler.toggleEl.click()
+    }
+    return AbstractList.enterFieldSetting(settingModal, field, speed)
 }
 //#endregion

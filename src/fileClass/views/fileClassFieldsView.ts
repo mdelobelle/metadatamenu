@@ -1,10 +1,13 @@
 import MetadataMenu from "main";
-import { ButtonComponent, setIcon } from "obsidian";
+import { ButtonComponent, FrontMatterCache, setIcon } from "obsidian";
 import { removeFileClassAttributeWithId } from "src/commands/removeFileClassAttribute";
 import { FileClass, buildSortedAttributes } from "../fileClass";
 import { FileClassAttribute } from "../fileClassAttribute";
 import { openSettings } from "src/fields/base/BaseSetting";
 import { getTagName } from "src/fields/Fields";
+import { FileClassView, openTab } from "./fileClassView";
+import { enterFieldSettings } from "src/tests/test";
+import { buildEmptyField, buildField } from "src/fields/Field";
 
 class FileClassFieldSetting {
     private plugin: MetadataMenu;
@@ -102,3 +105,16 @@ export class FileClassFieldsView {
         this.builAddBtn();
     }
 }
+
+
+export async function testFileClassFieldsView(plugin: MetadataMenu, fileClass: FileClass, data: FrontMatterCache, speed: number = 100) {
+    const fCView = plugin.app.workspace.getActiveViewOfType(FileClassView)
+    if (!fCView || !fCView.fieldsView) throw Error(`${fileClass.name} view didn't open`)
+    openTab(fCView, "fields", speed)
+    for (const fieldData of data.fields) {
+        const field = new (buildEmptyField(plugin, fileClass.name))
+        Object.assign(field, fieldData)
+        await enterFieldSettings(field, undefined, fileClass)
+    }
+}
+

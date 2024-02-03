@@ -1,6 +1,6 @@
 import MetadataMenu from "main"
 import { ButtonComponent, DropdownComponent, Modal, Notice, SuggestModal, TextComponent, ToggleComponent, setIcon } from "obsidian"
-import { FieldHTMLTagMap, FieldStyle as GFieldStyle, FieldStyleKey } from "src/types/dataviewTypes"
+import { FieldHTMLTagMap, FieldDecoration, fieldDecorations, FieldStyleKey } from "src/types/dataviewTypes"
 import { cleanActions } from "src/utils/modals"
 import { FileClass } from "src/fileClass/fileClass"
 import { insertIFieldCommand } from "src/commands/paletteCommands"
@@ -8,7 +8,7 @@ import FieldSetting from "src/settings/FieldSetting"
 import { incrementVersion } from "src/settings/MetadataMenuSettings"
 import { FieldType, frontmatterOnlyTypes, multiTypes, rootOnlyTypes, MultiDisplayType, getIcon, getTagName, fieldTypes, getTooltip, getFieldSettingsModal } from "../Fields"
 import { FieldCommand, FieldStyle, IField, buildEmptyField, copyProperty, getField, getFieldConstructor, getNewFieldId, getOptions, removeValidationError } from "../Field"
-import { Constructor } from "src/typings/types"
+import { Constructor, PartialRecord } from "src/typings/types"
 import { BaseOptions } from "./BaseField"
 
 // Field Types list agnostic
@@ -41,10 +41,11 @@ export interface ISettingsModal<O extends BaseOptions> extends Modal {
     parentSettingContainer?: HTMLElement
     typeSelector: TypeSelector<O>
     typeNameContainer: HTMLDivElement
+    decorationButtons: PartialRecord<FieldDecoration, ToggleComponent>
     getFileClassName(): string | undefined
     setParent(parent: IField<O> | undefined): void
     setType(fieldType: FieldType, fieldTypeLabelContainer: HTMLDivElement): ISettingsModal<BaseOptions>
-    save(): void
+    save(): Promise<void>
 }
 
 class TypeSelector<O extends BaseOptions> extends SuggestModal<FieldType> {
@@ -160,6 +161,7 @@ export function buildSettingsModal<O extends BaseOptions>(
         public saved: boolean = false
         public typeSelector: TypeSelector<O>
         public typeNameContainer: HTMLDivElement
+        public decorationButtons: PartialRecord<FieldDecoration, ToggleComponent> = {}
         constructor() {
             super(plugin.app)
             this.plugin = plugin
@@ -374,7 +376,7 @@ export function buildSettingsModal<O extends BaseOptions>(
 
         private setLabelStyle(label: HTMLDivElement): void {
             const fieldStyle = this.field.style || {}
-            Object.keys(GFieldStyle).forEach((style: keyof typeof GFieldStyle) => {
+            fieldDecorations.forEach((style: FieldDecoration) => {
                 const styleKey = FieldStyleKey[style]
                 if (!!fieldStyle[styleKey]) {
                     label.addClass(styleKey)
@@ -391,17 +393,18 @@ export function buildSettingsModal<O extends BaseOptions>(
             parentNode.createDiv({ text: "::" })
             parentNode.createDiv({ cls: "spacer" })
             const styleButtonsContainer = parentNode.createDiv({ cls: "style-buttons-container" })
-            Object.keys(GFieldStyle).forEach((style: keyof typeof GFieldStyle) => {
+            fieldDecorations.forEach((style: FieldDecoration) => {
                 const styleBtnContainer = styleButtonsContainer.createEl(FieldHTMLTagMap[style], { cls: "style-button-container" })
                 styleBtnContainer.createDiv({ cls: "style-btn-label", text: FieldStyleKey[style] })
                 const styleBtnToggler = new ToggleComponent(styleBtnContainer)
-                const fieldStyle = this.field.style || {}
-                styleBtnToggler.setValue(fieldStyle[FieldStyleKey[style]])
+                styleBtnToggler.setValue(this.field.style ? this.field.style[FieldStyleKey[style]] : false)
                 styleBtnToggler.onChange(v => {
+                    const fieldStyle = this.field.style || {}
                     fieldStyle[FieldStyleKey[style]] = v
                     this.field.style = fieldStyle
                     this.setLabelStyle(styleSelectorLabel);
                 })
+                this.decorationButtons[style] = styleBtnToggler
             })
         }
 
@@ -656,14 +659,19 @@ export function areFieldSettingsEqualWithoutId(f1: IField<BaseOptions>, f2: IFie
 
     return f1.name === f2.name
         && f1.type === f2.type
-        && f1.tagName === f2.tagName
-        && f1.icon === f2.icon
-        && f1.tooltip === f2.tooltip
-        && f1.colorClass === f2.colorClass
+        //&& f1.tagName === f2.tagName
+        //&& f1.icon === f2.icon
+        //&& f1.tooltip === f2.tooltip
+        //&& f1.colorClass === f2.colorClass
         && f1.path === f2.path
         && f1.display === f2.display
         && areOptionsEqual(f1.options, f2.options)
         && areStylesEqual(f1.style, f2.style)
         && areCommandsEqual(f1.command, f2.command)
 }
+//#endregion
+//#region tests
+
+
+
 //#endregion

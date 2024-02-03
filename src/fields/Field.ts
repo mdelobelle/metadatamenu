@@ -1,7 +1,7 @@
 import MetadataMenu from "main"
 
 import { Menu, TFile, TextAreaComponent, TextComponent } from "obsidian"
-import { FieldStyleLabel } from "src/types/dataviewTypes"
+import { FieldDecoration, FieldStyleLabel, fieldDecorations } from "src/types/dataviewTypes"
 import cryptoRandomString from "crypto-random-string"
 import { LineNode } from "src/note/lineNode"
 import FCSM from "src/options/FieldCommandSuggestModal";
@@ -32,6 +32,10 @@ export interface FieldCommand {
 }
 
 export type FieldStyle = Record<keyof typeof FieldStyleLabel, boolean>
+
+export function isFieldStyle(style: any): style is FieldStyle {
+    return typeof style === "object" && Object.keys(style).every(key => fieldDecorations.includes(FieldStyleLabel[key as FieldDecoration]))
+}
 
 export interface IField<O extends BaseOptions> extends IFieldBase {
     // a field base with a name, an id, options, a fileclass name....

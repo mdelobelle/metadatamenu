@@ -454,7 +454,7 @@ export function getOptionsList(managedField: IField<Options> | IFieldManager<Tar
 //#endregion
 //#region test
 
-export async function enterFieldSetting(settingModal: IListBaseSettingModal, field: IField<Options>) {
+export async function enterFieldSetting(settingModal: IListBaseSettingModal, field: IField<Options>, speed = 100) {
     selectOptionAndDispatch(settingModal.sourceTypeSelector, field.options.sourceType)
     switch (field.options.sourceType) {
         case "ValuesList":

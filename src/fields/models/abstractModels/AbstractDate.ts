@@ -640,7 +640,7 @@ async function shiftDate(managedField: IFieldManager<Target, Options>): Promise<
 
 //#region tests
 
-export async function enterFieldSetting(settingModal: IDateBaseSettingModal, field: IField<Options>) {
+export async function enterFieldSetting(settingModal: IDateBaseSettingModal, field: IField<Options>, speed = 100) {
     if (field.options.dateFormat) insertAndDispatch(settingModal.dateFormatInput, `${field.options.dateFormat}`)
     if (field.options.dateShiftInterval) insertAndDispatch(settingModal.dateShiftInterval, `${field.options.dateShiftInterval}`)
     if (field.options.nextShiftIntervalField) {

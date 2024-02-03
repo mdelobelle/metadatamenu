@@ -327,7 +327,7 @@ function canIncrement(managedField: IFieldManager<Target, Options>): boolean {
 
 //#endregion
 //#region test
-export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>) {
+export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>, speed = 100) {
     if (field.options.min || field.options.min === 0) insertAndDispatch(settingModal.numberMinValue, `${field.options.min}`)
     if (field.options.max || field.options.max === 0) insertAndDispatch(settingModal.numberMaxValue, `${field.options.max}`)
     if (field.options.step || field.options.step === 0) insertAndDispatch(settingModal.numberStepValue, `${field.options.step}`)

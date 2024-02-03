@@ -440,17 +440,17 @@ export function getTooltip(type: FieldType): string {
 //#endregion
 //#region tests
 
-export async function getFieldSettingsTest(settingModal: ISettingsModal<BaseOptions>, field: IField<BaseOptions>): Promise<void> {
+export async function getFieldSettingsTest(settingModal: ISettingsModal<BaseOptions>, field: IField<BaseOptions>, speed = 100): Promise<void> {
     switch (settingModal.field.type) {
-        case "Input": await Input.enterFieldSetting(settingModal as Input.ISettingsModal, field); break
-        case "Select": await Select.enterFieldSetting(settingModal as Select.ISettingsModal, field as IField<Select.Options>); break
-        case "Multi": await Multi.enterFieldSetting(settingModal as Multi.ISettingsModal, field as IField<Multi.Options>); break
-        case "Cycle": await Cycle.enterFieldSetting(settingModal as Cycle.ISettingsModal, field as IField<Cycle.Options>); break
-        case "Number": await NumberField.enterFieldSetting(settingModal as NumberField.ISettingsModal, field as IField<NumberField.Options>); break
-        case "Boolean": await BooleanField.enterFieldSetting(settingModal as BooleanField.ISettingsModal, field as IField<BooleanField.Options>); break
-        case "Date": await DateField.enterFieldSetting(settingModal as DateField.ISettingsModal, field as IField<DateField.Options>); break
-        case "DateTime": await DateTime.enterFieldSetting(settingModal as DateTime.ISettingsModal, field as IField<DateTime.Options>); break
-        case "Time": await Time.enterFieldSetting(settingModal as Time.ISettingsModal, field as IField<Time.Options>); break
+        case "Input": await Input.enterFieldSetting(settingModal as Input.ISettingsModal, field, speed); break
+        case "Select": await Select.enterFieldSetting(settingModal as Select.ISettingsModal, field as IField<Select.Options>, speed); break
+        case "Multi": await Multi.enterFieldSetting(settingModal as Multi.ISettingsModal, field as IField<Multi.Options>, speed); break
+        case "Cycle": await Cycle.enterFieldSetting(settingModal as Cycle.ISettingsModal, field as IField<Cycle.Options>, speed); break
+        case "Number": await NumberField.enterFieldSetting(settingModal as NumberField.ISettingsModal, field as IField<NumberField.Options>, speed); break
+        case "Boolean": await BooleanField.enterFieldSetting(settingModal as BooleanField.ISettingsModal, field as IField<BooleanField.Options>, speed); break
+        case "Date": await DateField.enterFieldSetting(settingModal as DateField.ISettingsModal, field as IField<DateField.Options>, speed); break
+        case "DateTime": await DateTime.enterFieldSetting(settingModal as DateTime.ISettingsModal, field as IField<DateTime.Options>, speed); break
+        case "Time": await Time.enterFieldSetting(settingModal as Time.ISettingsModal, field as IField<Time.Options>, speed); break
         case "File":
         case "MultiFile":
         case "Media":

@@ -4,18 +4,27 @@
     "type": "split",
     "children": [
       {
-        "id": "7cee0fc1c2aa78e7",
+        "id": "ed84716197a5a7d5",
         "type": "tabs",
         "children": [
           {
-            "id": "43ae543c00633163",
+            "id": "1394d1f96a3b0b97",
             "type": "leaf",
             "state": {
-              "type": "empty",
+              "type": "FileClassView__Fileclass1",
+              "state": {}
+            }
+          },
+          {
+            "id": "b3e77c78113c0b31",
+            "type": "leaf",
+            "state": {
+              "type": "FileClassView__Fileclass2",
               "state": {}
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -138,12 +147,13 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "43ae543c00633163",
+  "active": "b3e77c78113c0b31",
   "lastOpenFiles": [
     "Fileclasses/Fileclass2.md",
     "Fileclasses/Fileclass1.md",
-    "__fixtures__/fileClasses/Fileclass1.md",
     "__fixtures__/fileClasses/Fileclass2.md",
+    "__fixtures__/fileClasses/Fileclass1.md",
+    "__fixtures__/settings/presetFields.md",
     "__fixtures__/tags.md",
     "Folder2",
     "Folder1",
@@ -153,7 +163,6 @@
     "Fileclasses/Tests.md",
     "Fileclasses/testtest.md",
     "Fileclasses/test.md",
-    "__fixtures__/settings/presetFields.md",
     "__fixtures__/fileClasses",
     "Fileclasses",
     "workbench.md",

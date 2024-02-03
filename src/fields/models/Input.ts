@@ -260,7 +260,7 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
 }
 
 //#region test
-export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>) {
+export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>, speed = 100) {
     if (field.options?.template !== undefined) {
         insertAndDispatch(settingModal.templateValue, field.options.template)
         const input = settingModal.containerEl.querySelector("#template-input") as HTMLInputElement

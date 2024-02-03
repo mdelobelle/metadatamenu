@@ -2,17 +2,20 @@ import MetadataMenu from "main";
 import { ButtonComponent, FrontMatterCache, MarkdownRenderer, setIcon, TextComponent, ToggleComponent } from "obsidian";
 import { FileClass, FileClassOptions } from "../fileClass";
 import { BookmarksGroupSuggestModal, FieldSuggestModal, ParentSuggestModal, PathSuggestModal, TagSuggestModal } from "./settingsViewComponents/suggestModals";
-import { FileClassView } from "./fileClassView";
+import { FileClassView, openTab } from "./fileClassView";
 import { setTimeout } from "timers/promises";
-
-type PartialRecord<K extends keyof any, T> = {
-    [P in K]?: T;
-};
+import { testFileClassFieldsView } from "./fileClassFieldsView";
+import { PartialRecord } from "src/typings/types";
 
 type Bindable =
     | "tagNames"
     | "filesPaths"
     | "bookmarksGroups"
+
+type Choosable =
+    | Bindable
+    | "extends"
+    | "excludes"
 
 class FileClassSetting {
     constructor(
@@ -200,6 +203,7 @@ export class FileClassSettingsView {
                 })
         })
         const fieldAddBtn = fieldsContainer.createEl('button', { cls: "item" })
+        fieldAddBtn.setAttr('id', `fileclass-setting-excludes-addBtn`)
         setIcon(fieldAddBtn, "plus-circle")
         fieldAddBtn.onclick = () => {
             new FieldSuggestModal(this).open();
@@ -213,7 +217,7 @@ export class FileClassSettingsView {
         if (parent) {
             const path = this.fileClass.getClassFile().path
             const component = this.plugin
-            MarkdownRenderer.renderMarkdown(`[[${parent.name}]]`, parentLinkContainer, path, component)
+            MarkdownRenderer.render(this.plugin.app, `[[${parent.name}]]`, parentLinkContainer, path, component)
             parentLinkContainer.querySelector("a.internal-link")?.addEventListener("click", (e) => {
                 this.plugin.app.workspace.openLinkText(
                     //@ts-ignore
@@ -234,6 +238,7 @@ export class FileClassSettingsView {
             }
         }
         const parentChangeBtn = parentManagerContainer.createEl('button', { cls: "item right-align" })
+        parentChangeBtn.setAttr('id', `fileclass-setting-extends-addBtn`)
         setIcon(parentChangeBtn, "edit")
         parentChangeBtn.onclick = () => {
             new ParentSuggestModal(this).open();
@@ -246,8 +251,14 @@ export class FileClassSettingsView {
 export async function testFileClassSettingsView(plugin: MetadataMenu, fileClass: FileClass, data: FrontMatterCache, speed: number = 100) {
     const fCView = plugin.app.workspace.getActiveViewOfType(FileClassView)
     if (!fCView || !fCView.settingsView) throw Error(`${fileClass.name} view didn't open`)
+
+    const settingsMenuHeader = fCView.containerEl.querySelector("#settingsOption") as HTMLElement
+    if (!settingsMenuHeader) throw Error(`${fileClass.name} settings menu not found`)
+    settingsMenuHeader.click()
+    await setTimeout(speed)
+
     const container = fCView.settingsView.container
-    const selectChoices = async (collection: Bindable) => {
+    const selectChoices = async (collection: Choosable) => {
         const items: string[] = Array.isArray(data[collection])
             ? data[collection]
             : data[collection] !== null
@@ -263,7 +274,7 @@ export async function testFileClassSettingsView(plugin: MetadataMenu, fileClass:
             for (const choice of choices) {
                 if ((choice instanceof HTMLDivElement) && choice.innerText.replace(/^#(.*)/, "$1") === item) {
                     choice.click()
-                    await setTimeout(200) // this choice will trigger an async save
+                    await setTimeout(50) // this choice will trigger an async save
                 }
             }
         }
@@ -287,11 +298,13 @@ export async function testFileClassSettingsView(plugin: MetadataMenu, fileClass:
         input.dispatchEvent(new Event("input"))
     }
     fCView.settingsView.saveBtn.click()
-    await setTimeout(100) //upper changes have to be saved before changing other settings
+    await setTimeout(50) //upper changes have to be saved before changing other settings
     await selectChoices("tagNames")
     await selectChoices("bookmarksGroups")
     await selectChoices("filesPaths")
-    fCView.leaf.detach()
+    await selectChoices("extends")
+    await testFileClassFieldsView(plugin, fCView.fileClass, data, speed)
+    await selectChoices("excludes")
 }
 
 //#endregion

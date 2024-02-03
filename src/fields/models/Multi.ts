@@ -260,8 +260,8 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
 }
 
 //#region test
-export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>) {
-    return AbstractList.enterFieldSetting(settingModal, field)
+export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>, speed = 100) {
+    return AbstractList.enterFieldSetting(settingModal, field, speed)
 }
 
 //#endregion

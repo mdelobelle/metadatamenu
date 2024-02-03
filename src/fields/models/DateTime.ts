@@ -62,8 +62,8 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
 
 //#region tests
 
-export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>) {
-    AbstractDate.enterFieldSetting(settingModal, field)
+export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>, speed = 100) {
+    AbstractDate.enterFieldSetting(settingModal, field, speed)
     if (field.options.linkPath) insertAndDispatch(settingModal.dateLinkPathInput, `${field.options.linkPath}`)
     if (field.options.defaultInsertAsLink) settingModal.defaultInsertAsLink.toggleEl.click()
 }
