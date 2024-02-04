@@ -83,8 +83,8 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                         this.templateValues[name] = "";
                         if (optionsString) {
                             try {
-                                const options = JSON.parse(optionsString);
-                                this.buildTemplateSelectItem(options.template, this.contentEl.createDiv({ cls: "field-container" }), name, options);
+                                const selectOptions = JSON.parse(optionsString);
+                                this.buildTemplateSelectItem(options.template, this.contentEl.createDiv({ cls: "field-container" }), name, selectOptions);
                             } catch ({ name: errorName, message }) {
                                 const notice = `{{${name}}} field definition is not a valid JSON \n` +
                                     `in <${this.managedField.name}> ${this.managedField.fileClassName ? this.managedField.fileClassName : "Metadata Menu"} settings`
@@ -130,6 +130,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
 
         private buildTemplateSelectItem(template: string, fieldContainer: HTMLDivElement, name: string, options: string[]) {
+            console.log(template)
             fieldContainer.createDiv({ text: name, cls: "label" });
             fieldContainer.createDiv({ cls: "spacer" })
             const selectEl = new DropdownComponent(fieldContainer);
