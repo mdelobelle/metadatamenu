@@ -398,7 +398,6 @@ export class FieldsModal extends Modal {
             items.forEach((item: any, index: number) => this.buildObjectListItemContainer(fieldsContainer, field, `${this.indexedPath}[${index}]`))
             this.buildInsertNewItem(field, this.indexedPath)
         } else {
-            console.log(this.existingFields, this.missingFields)
             this.existingFields
                 .filter(eF => {
                     if (eF.name === this.plugin.settings.fileClassAlias) return this.plugin.settings.showFileClassSelectInModal

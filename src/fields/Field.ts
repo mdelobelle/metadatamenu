@@ -683,7 +683,7 @@ export function removeValidationError(textInput: TextComponent | TextAreaCompone
     if (fieldError) fieldsContainer!.removeChild(fieldError)
 };
 
-export function baseDisplayValue<O extends BaseOptions>(managedField: IFieldManager<Target, O>, container: HTMLDivElement, onClicked = () => { }) {
+export function baseGetValueString<O extends BaseOptions>(managedField: IFieldManager<Target, O>): string {
     let valueText: string;
     switch (managedField.value) {
         case undefined: valueText = ""; break;
@@ -692,7 +692,11 @@ export function baseDisplayValue<O extends BaseOptions>(managedField: IFieldMana
         case 0: valueText = "0"; break;
         default: valueText = managedField.value.toString() || "";
     }
-    container.createDiv({ text: `<P> ${valueText}` })
+    return valueText
+}
+
+export function baseDisplayValue<O extends BaseOptions>(managedField: IFieldManager<Target, O>, container: HTMLDivElement, onClicked = () => { }) {
+    container.createDiv({ text: baseGetValueString(managedField) })
 }
 
 export function stringToBoolean(value: string): boolean {

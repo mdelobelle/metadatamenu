@@ -33,6 +33,10 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
     return class ValueModal extends base { }
 }
 
+export function valueString(managedField: IFieldManager<Target, Options>) {
+    return AbstractDate.valueString(managedField)
+}
+
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {
     return AbstractDate.displayValue(managedField, container, onClicked)
 }

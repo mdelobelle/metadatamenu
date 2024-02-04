@@ -59,10 +59,15 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
     }
 }
 
+export function valueString(managedField: IFieldManager<Target, Options>): string {
+    if (!isSingleTargeted(managedField)) return ""
+    const fileClassName = managedField.plugin.fieldIndex.filesFields.get(managedField.target.path)?.find(f => f.id === managedField.id)?.fileClassName || "presetField"
+    return managedField.plugin.fieldIndex.fileFormulaFieldLastValue.get(`${managedField.target.path}__calculated__${fileClassName}___${managedField.name}`) || ""
+}
+
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked = () => { }) {
     if (!isSingleTargeted(managedField)) return
-    const fileClassName = managedField.plugin.fieldIndex.filesFields.get(managedField.target.path)?.find(f => f.id === managedField.id)?.fileClassName || "presetField"
-    container.createDiv({ text: managedField.plugin.fieldIndex.fileFormulaFieldLastValue.get(`${managedField.target.path}__calculated__${fileClassName}___${managedField.name}`) })
+    container.createDiv({ text: valueString(managedField) })
 }
 
 export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath?: string): void {

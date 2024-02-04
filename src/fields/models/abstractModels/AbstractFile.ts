@@ -1,14 +1,14 @@
 import MetadataMenu from "main"
 import { ButtonComponent, Notice, TFile, TextAreaComponent, setIcon } from "obsidian"
 import { getExistingFieldForIndexedPath } from "src/fields/ExistingField"
-import { ActionLocation, IField, IFieldManager, Target, fieldValueManager, getOptions, isFieldActions, isSuggest, removeValidationError } from "src/fields/Field"
+import { ActionLocation, IField, IFieldManager, Target, fieldValueManager, getOptions, isFieldActions, isSingleTargeted, isSuggest, removeValidationError } from "src/fields/Field"
 import { getIcon } from "src/fields/Fields"
 import { BaseOptions, IFieldBase } from "src/fields/base/BaseField"
 import { IBaseValueModal, basicFuzzySuggestModal } from "src/fields/base/BaseModal"
 import { ISettingsModal } from "src/fields/base/BaseSetting"
 import { Link } from "src/types/dataviewTypes"
 import { Constructor } from "src/typings/types"
-import { displayLinksOrText } from "src/utils/linksUtils"
+import { displayLinksOrText, getLinksOrTextString } from "src/utils/linksUtils"
 import { cleanActions } from "src/utils/modals"
 
 export class Base implements Omit<IFieldBase, 'type' | 'tooltip'> {
@@ -205,6 +205,12 @@ export function createDvField(
             spacer.show()
         }
     }
+}
+
+export function valueString(managedField: IFieldManager<Target, Options>): string {
+    if (!isSingleTargeted(managedField)) return ""
+    if (managedField.value) return getLinksOrTextString(managedField.value, managedField.target)
+    else return ""
 }
 
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {

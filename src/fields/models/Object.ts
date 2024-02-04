@@ -8,7 +8,7 @@ import OptionsList from "src/options/OptionsList"
 import { Constructor, FrontmatterObject } from "src/typings/types"
 import { ExistingField } from "../ExistingField"
 import { ActionLocation, Field, FieldValueManager, IField, IFieldManager, Target, buildField, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest } from "../Field"
-import { TypesOptionsMap, displayValue as getDisplayValue, getIcon, objectTypes } from "../Fields"
+import { TypesOptionsMap, displayValue as getDisplayValue, valueString as getValueString, getIcon } from "../Fields"
 import { IFieldBase } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
 import { getNextOption } from "./Cycle"
@@ -132,6 +132,11 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
     }
 }
+//TODO factor valueString && getObjectDescription
+
+export function valueString(managedField: IFieldManager<Target, Options>): string {
+    return getObjectDescription(managedField, managedField.value)
+}
 
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked = () => { }) {
     container.setText(getObjectDescription(managedField, managedField.value))
@@ -195,24 +200,6 @@ export function getObjectDescription(managedField: IFieldManager<Target, Options
         const children = managedField.getChildren()
         const childrenNames = children.map(c => c.name)
         return childrenNames.join(", ")
-        /*
-        const items = []
-        for (const [key, _value] of Object.entries(value)) {
-            if (childrenNames.includes(key)) {
-                if (typeof _value === "object") {
-                    const child = children.find(c => c.name === key)!
-                    const cFM = new FM[child.type](this.plugin, child) as ObjectListField | ObjectField
-                    items.push(cFM.getObjectDescription(_value))
-                } else {
-                    items.push(`${_value}`)
-                }
-            } else {
-                items.push(`(${key}?)`)
-            }
-        }
-        return items.join(", ") || `(${this.field.name}?)`
-        */
-
     } else {
         const items: { pattern: string, value: string }[] = []
         const defaultDisplay = (pattern: string) => {
@@ -227,25 +214,12 @@ export function getObjectDescription(managedField: IFieldManager<Target, Options
             if (next.value.groups) {
                 const pattern = next.value.groups.pattern
                 if (childrenNames.includes(pattern)) {
-                    try {
-                        const _value = (new Function("value", `return value['${pattern}']`))(value)
-                        if (["number", "string", "boolean"].includes(typeof _value)) {
-                            items.push({ pattern: pattern, value: _value })
-                        } else if (typeof _value === "object") {
-                            const child = children.find(c => c.name === pattern)!
-                            if (objectTypes.includes(child.type)) {
-                                const cFVM = fieldValueManager(managedField.plugin, child.id, child.fileClassName, managedField.target, undefined, undefined)
-                                items.push({ pattern: pattern, value: getObjectDescription(cFVM as IFieldManager<Target, Options>, _value) })
-                                // const cFM = new FM[child.type](this.plugin, child) as ObjectField | ObjectListField
-                                // items.push({ pattern: pattern, value: cFM.getObjectDescription(_value) })
-                            } else {
-                                defaultDisplay(pattern)
-                            }
-                        } else {
-                            defaultDisplay(pattern)
-                        }
-                    } catch (e) {
-                        defaultDisplay(pattern)
+                    const child = children.find(c => c.name === pattern)!
+                    const cFVM = fieldValueManager(managedField.plugin, child.id, child.fileClassName, managedField.target, undefined, undefined)
+                    if (!cFVM) defaultDisplay(pattern)
+                    else {
+                        cFVM.value = value[child.name]
+                        items.push({ pattern: pattern, value: getValueString(cFVM.type)(cFVM) })
                     }
                 } else {
                     defaultDisplay(pattern)

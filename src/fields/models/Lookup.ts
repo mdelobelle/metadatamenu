@@ -7,7 +7,7 @@ import { BaseOptions, IFieldBase } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
 import * as Lookup from "src/types/lookupTypes";
 import { updateLookups } from "src/commands/updateLookups"
-import { displayLinksOrText } from "src/utils/linksUtils"
+import { displayLinksOrText, getLinksOrTextString } from "src/utils/linksUtils"
 import { resolveLookups } from "src/commands/resolveLookups"
 
 export class Base implements IFieldBase {
@@ -210,6 +210,11 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
             return true
         }
     }
+}
+
+export function valueString(managedField: IFieldManager<Target, Options>): string {
+    if (isSingleTargeted(managedField)) return getLinksOrTextString(managedField.value, managedField.target)
+    else return ""
 }
 
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked = () => { }) {

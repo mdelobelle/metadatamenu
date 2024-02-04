@@ -2,7 +2,7 @@ import MetadataMenu from "main"
 import { ButtonComponent, TFile } from "obsidian"
 import { Constructor } from "src/typings/types"
 import { getExistingFieldForIndexedPath } from "../ExistingField"
-import { ActionLocation, IField, IFieldManager, Target, baseDisplayValue, fieldValueManager, isFieldActions, isSuggest } from "../Field"
+import { ActionLocation, IField, IFieldManager, Target, baseDisplayValue, baseGetValueString, fieldValueManager, isFieldActions, isSuggest } from "../Field"
 import { getIcon } from "../Fields"
 import { BaseOptions, IFieldBase } from "../base/BaseField"
 import { IBasicModal, basicModal } from "../base/BaseModal"
@@ -79,6 +79,10 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             this.close()
         }
     }
+}
+
+export function valueString(managedField: IFieldManager<Target, Options>): string {
+    return baseGetValueString(managedField)
 }
 
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked = () => { }) {

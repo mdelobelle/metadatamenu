@@ -1,9 +1,10 @@
 import { ButtonComponent, ColorComponent, DropdownComponent, TextAreaComponent, TextComponent, ToggleComponent, setIcon } from "obsidian"
 import { FileSuggest } from "src/suggester/FileSuggester"
 import { Constructor } from "src/typings/types"
-import { IFieldManager, Target, removeValidationError } from "../../Field"
+import { IFieldManager, Target, isSingleTargeted, removeValidationError } from "../../Field"
 import { BaseOptions } from "../../base/BaseField"
 import { ISettingsModal } from "../../base/BaseSetting"
+import { getLink } from "src/utils/parser"
 
 
 //#region options values
@@ -236,4 +237,48 @@ export function validateValue(managedField: IFieldManager<Target, Options>) {
         error = true;
     }
     return !error
+}
+
+export function valueString(managedField: IFieldManager<Target, Options>): string {
+    if (!isSingleTargeted(managedField)) return ""
+    const result: string[] = []
+    const value = managedField.value
+    const values = Array.isArray(value) ? value : [value]
+    values.forEach((value, i) => {
+        const link = getLink(value, managedField.target)
+        if (link?.path) {
+            const linkText = link.path.split("/").last() || ""
+            result.push(linkText.replace(/(.*).md/, "$1"));
+        } else {
+            result.push(value);
+        }
+        if (i < values.length - 1) {
+            result.push(" | ")
+        }
+    })
+    return result.join("")
+}
+
+
+export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {
+    if (!isSingleTargeted(managedField)) return
+    const value = managedField.value
+    const values = Array.isArray(value) ? value : [value]
+    values.forEach((value, i) => {
+        const link = getLink(value, managedField.target)
+        if (link?.path) {
+            const linkText = link.path.split("/").last() || ""
+            const linkEl = container.createEl('a', { text: linkText.replace(/(.*).md/, "$1") });
+            linkEl.onclick = () => {
+                managedField.plugin.app.workspace.openLinkText(value.path, managedField.target.path, true)
+                onClicked()
+            }
+        } else {
+            container.createDiv({ text: value });
+        }
+        if (i < values.length - 1) {
+            container.createEl('span', { text: " | " })
+        }
+    })
+    container.createDiv()
 }

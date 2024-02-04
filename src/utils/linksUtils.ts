@@ -2,6 +2,41 @@ import MetadataMenu from "main"
 import { TFile } from "obsidian"
 import { extractLinks, getLink } from "./parser"
 
+export const getLinksOrTextString = (value: string | string[], file: TFile) => {
+    const links = typeof value === 'string' ? extractLinks(value) : undefined
+    let result: string[] = []
+    if (links) {
+        links.forEach((_link, i) => {
+            const link = getLink(_link, file)
+            if (link?.path) {
+                const linkText = link.path.split("/").last() || ""
+                result.push(linkText.replace(/(.*).md/, "$1"));
+            }
+            if (i < links.length - 1) {
+                result.push(" | ")
+            }
+        })
+
+    } else {
+        const values = Array.isArray(value) ? value : [value]
+        values.forEach((value, i) => {
+            if (value) {
+                const link = getLink(value, file)
+                if (link?.path) {
+                    const linkText = link.path.split("/").last() || ""
+                    result.push(linkText.replace(/(.*).md/, "$1"));
+                } else {
+                    result.push(value);
+                }
+                if (i < values.length - 1) {
+                    result.push(" | ")
+                }
+            }
+        })
+    }
+    return result.join("")
+}
+
 export const displayLinksOrText = (value: string | string[], file: TFile, container: HTMLDivElement, plugin: MetadataMenu, onClicked: () => any) => {
     const links = typeof value === 'string' ? extractLinks(value) : undefined
     if (links) {

@@ -2,7 +2,7 @@ import { ButtonComponent, DropdownComponent, Menu, Notice, TFile, TextAreaCompon
 import { IFieldBase, BaseOptions } from "../base/BaseField"
 import { ISettingsModal as IBaseSettingsModal } from "../base/BaseSetting"
 import { getIcon } from "../Fields"
-import { IFieldManager, Target, isSingleTargeted, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, ActionLocation, IField } from "../Field"
+import { IFieldManager, Target, isSingleTargeted, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, ActionLocation, IField, baseGetValueString } from "../Field"
 import MetadataMenu from "main"
 import { IBasicModal, basicModal } from "../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
@@ -191,6 +191,10 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             this.close()
         }
     }
+}
+
+export function valueString(managedField: IFieldManager<Target, Options>): string {
+    return baseGetValueString(managedField)
 }
 
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked = () => { }) {

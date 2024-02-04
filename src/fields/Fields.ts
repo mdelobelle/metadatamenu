@@ -271,6 +271,35 @@ export function getFieldClass(type: FieldType): Constructor<IFieldBase> {
     }
 }
 
+export type getValueStringFunction = (managedField: IFieldManager<Target, BaseOptions>) => string
+
+export function valueString(type: FieldType): getValueStringFunction {
+    switch (type) {
+        case "Input": return Input.valueString
+        case "Number": return NumberField.valueString
+        case "Select": return Select.valueString
+        case "Cycle": return Cycle.valueString
+        case "Boolean": return BooleanField.valueString
+        case "Date": return DateField.valueString
+        case "DateTime": return DateTime.valueString
+        case "Time": return Time.valueString
+        case "Multi": return Multi.valueString
+        case "File": return File.valueString
+        case "MultiFile": return MultiFile.valueString
+        case "Media": return Media.valueString
+        case "MultiMedia": return MultiMedia.valueString
+        case "Canvas": return Canvas.valueString
+        case "CanvasGroup": return CanvasGroup.valueString
+        case "CanvasGroupLink": return CanvasGroupLink.valueString
+        case "JSON": return JSONField.valueString
+        case "YAML": return YAML.valueString
+        case "Formula": return Formula.valueString
+        case "Lookup": return Lookup.valueString
+        case "Object": return ObjectField.valueString
+        case "ObjectList": return ObjectList.valueString
+    }
+}
+
 export type displayValueFunction = (managedField: IFieldManager<Target, BaseOptions>, container: HTMLDivElement, onClicked?: () => any) => void
 
 export function displayValue(type: FieldType): displayValueFunction {

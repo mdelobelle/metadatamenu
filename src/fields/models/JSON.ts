@@ -66,9 +66,13 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
     }
 }
 
-export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {
+export function valueString(managedField: IFieldManager<Target, Options>): string {
     const valueString = `${JSON.stringify(managedField.value, null, "  ") || ""}`
-    container.setText(`${valueString.slice(0, 50)}${valueString.length > 50 ? "..." : ""}`)
+    return `${valueString.slice(0, 50)}${valueString.length > 50 ? "..." : ""}`
+}
+
+export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {
+    container.setText(valueString(managedField))
 }
 
 export function createDvField(

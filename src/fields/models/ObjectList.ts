@@ -6,7 +6,7 @@ import { Note } from "src/note/note"
 import { Constructor, FrontmatterObject } from "src/typings/types"
 import { ExistingField } from "../ExistingField"
 import { ActionLocation, IField, IFieldManager, Target, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest, removeValidationError } from "../Field"
-import { getIcon, objectTypes } from "../Fields"
+import { getIcon, valueString as getValueString } from "../Fields"
 import { IFieldBase } from "../base/BaseField"
 import { ISettingsModal } from "../base/BaseSetting"
 import { getPseudoObjectValueManagerFromObjectItem } from "./Object"
@@ -15,7 +15,7 @@ import * as AbstractObject from "./abstractModels/AbstractObject"
 export class Base implements IFieldBase {
     type = <const>"ObjectList"
     tooltip = "Accepts a list of object fields"
-    colorClass = "file"
+    colorClass = "lookup"
     tagName = "object-list"
     icon = "boxes"
 }
@@ -219,6 +219,10 @@ export function createDvField(
 export function getOptionsStr(field: IField<Options>): string {
     return AbstractObject.getOptionsStr(field)
 }
+//TODO factor valueString && getObjectDescription
+export function valueString(managedField: IFieldManager<Target, Options>): string {
+    return getObjectDescription(managedField, managedField.value)
+}
 
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked = () => { }) {
     container.setText(getObjectDescription(managedField, managedField.value))
@@ -257,25 +261,12 @@ export function displayItem(managedField: IFieldManager<Target, Options>, value:
                 if (pattern === 'itemIndex') {
                     items.push({ pattern: "itemIndex", value: `${itemIndex}` })
                 } else if (childrenNames.includes(pattern)) {
-                    try {
-                        const _value = (new Function("value", `return value['${pattern}']`))(value)
-                        if (["number", "string", "boolean"].includes(typeof _value)) {
-                            items.push({ pattern: pattern, value: _value })
-                        } else if (typeof _value === "object") {
-                            const child = children.find(c => c.name === pattern)!
-                            if (objectTypes.includes(child.type)) {
-                                const cFVM = fieldValueManager(managedField.plugin, child.id, child.fileClassName, managedField.target, undefined, undefined)
-                                items.push({ pattern: pattern, value: getObjectDescription(cFVM as IFieldManager<Target, Options>, _value) })
-                                // const cFM = new FM[child.type](this.plugin, child) as ObjectField | ObjectListField
-                                // items.push({ pattern: pattern, value: cFM.getObjectDescription(_value) })
-                            } else {
-                                defaultDisplay(pattern)
-                            }
-                        } else {
-                            defaultDisplay(pattern)
-                        }
-                    } catch (e) {
-                        defaultDisplay(pattern)
+                    const child = children.find(c => c.name === pattern)!
+                    const cFVM = fieldValueManager(managedField.plugin, child.id, child.fileClassName, managedField.target, undefined, undefined)
+                    if (!cFVM) defaultDisplay(pattern)
+                    else {
+                        cFVM.value = value[child.name]
+                        items.push({ pattern: pattern, value: getValueString(cFVM.type)(cFVM) })
                     }
                 } else {
                     defaultDisplay(pattern)

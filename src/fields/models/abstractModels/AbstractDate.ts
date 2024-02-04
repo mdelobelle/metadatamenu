@@ -384,6 +384,26 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
     }
 }
 
+export function valueString(managedField: IFieldManager<Target, Options>): string {
+    let valueString: string
+    const dateFormat = managedField.options.dateFormat
+    const source = isSingleTargeted(managedField) ? managedField.target : undefined
+    const dateLink = getLink(managedField.value, source)
+    if (dateLink?.path) {
+        const linkText = dateLink.path.split("/").last() || ""
+        valueString = linkText.replace(/(.*).md/, "$1")
+
+    } else {
+        const date = moment(managedField.value, dateFormat)
+        if (date.isValid()) {
+            valueString = date.format(managedField.options.dateFormat)
+        } else {
+            valueString = managedField.value !== undefined ? managedField.value : ""
+        }
+    }
+    return valueString
+}
+
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {
     const dateFormat = managedField.options.dateFormat
     const source = isSingleTargeted(managedField) ? managedField.target : undefined

@@ -159,6 +159,10 @@ export function createDvField(
     return AbstractMedia.createDvField(managedField, dv, p, fieldContainer, attrs)
 }
 
+export function valueString(managedField: IFieldManager<Target, Options>): string {
+    return AbstractMedia.valueString(managedField)
+}
+
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any): void {
     return AbstractMedia.displayValue(managedField, container, onClicked)
 }

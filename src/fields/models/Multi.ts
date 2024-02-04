@@ -145,6 +145,10 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
     }
 }
 
+export function valueString(managedField: IFieldManager<Target, Options>): string {
+    return AbstractList.valueString(managedField)
+}
+
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {
     return AbstractList.displayValue(managedField, container, onClicked)
 }

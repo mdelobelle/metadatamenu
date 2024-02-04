@@ -1,6 +1,6 @@
 import MetadataMenu from "main"
 import { ButtonComponent, DropdownComponent, FuzzyMatch, TFile, TextAreaComponent, TextComponent, ToggleComponent, setIcon } from "obsidian"
-import { ActionLocation, IField, IFieldManager, Target, removeValidationError } from "src/fields/Field"
+import { ActionLocation, IField, IFieldManager, Target, isSingleTargeted, removeValidationError } from "src/fields/Field"
 import { IFieldBase } from "src/fields/base/BaseField"
 import { IBaseValueModal, basicFuzzySuggestModal } from "src/fields/base/BaseModal"
 import { ISettingsModal } from "src/fields/base/BaseSetting"
@@ -8,6 +8,7 @@ import { FolderSuggest } from "src/suggester/FolderSuggester"
 import { Constructor } from "src/typings/types"
 import { getLink } from "src/utils/parser"
 import { Options as FileOptions, createDvField as _createDvField, actions as fileActions } from "./AbstractFile"
+import { displayLinksOrText, getLinksOrTextString } from "src/utils/linksUtils"
 
 //#region types
 
@@ -290,21 +291,14 @@ export function createDvField(
     return _createDvField(managedField, dv, p, fieldContainer, attrs)
 }
 
-export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any): void {
-    const eF = managedField.eF
-    if (!eF) return
-    const link = getLink(eF.value, eF.file)
-    if (link?.path) {
-        const linkText = link.path.split("/").last() || ""
-        const linkEl = container.createEl('a', { text: linkText.replace(/(.*).md/, "$1") });
-        linkEl.onclick = () => {
-            managedField.plugin.app.workspace.openLinkText(link.path, eF.file.path, true)
-            onClicked();
-        }
-    } else {
-        container.createDiv({ text: eF.value });
-    }
-    container.createDiv();
+export function valueString(managedField: IFieldManager<Target, Options>): string {
+    if (!isSingleTargeted(managedField)) return ""
+    if (managedField.value) return getLinksOrTextString(managedField.value, managedField.target)
+    else return ""
+}
+
+export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {
+    if (managedField.eF) displayLinksOrText(managedField.value, managedField.eF.file, container, managedField.plugin, onClicked)
 }
 
 export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath: string | undefined): void {

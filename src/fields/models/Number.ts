@@ -2,7 +2,7 @@ import { ButtonComponent, TFile, TextComponent } from "obsidian"
 import { IFieldBase, BaseOptions } from "../base/BaseField"
 import { ISettingsModal as BaseSettingsModal } from "../base/BaseSetting"
 import { getIcon } from "../Fields"
-import { IFieldManager, Target, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, ActionLocation, removeValidationError, IField } from "../Field"
+import { IFieldManager, Target, baseDisplayValue, fieldValueManager, isSuggest, isFieldActions, ActionLocation, removeValidationError, IField, baseGetValueString } from "../Field"
 import MetadataMenu from "main"
 import { IBasicModal, basicModal } from "../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
@@ -201,6 +201,10 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             this.close()
         }
     }
+}
+
+export function valueString(managedField: IFieldManager<Target, Options>): string {
+    return baseGetValueString(managedField)
 }
 
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked = () => { }) {

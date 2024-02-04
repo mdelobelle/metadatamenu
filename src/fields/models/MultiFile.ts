@@ -192,6 +192,10 @@ export function createDvField(
     return AbstractFile.createDvField(managedField, dv, p, fieldContainer, attrs)
 }
 
+export function valueString(managedField: IFieldManager<Target, Options>): string {
+    return AbstractFile.valueString(managedField)
+}
+
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {
     return AbstractFile.displayValue(managedField, container, onClicked)
 }

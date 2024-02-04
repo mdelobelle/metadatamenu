@@ -376,9 +376,13 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
     }
 }
 
+export function valueString(managedField: IFieldManager<Target, Options>): string {
+    return `${managedField.value.join(", ")}`
+}
+
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {
     if (Array.isArray(managedField.value)) {
-        container.createDiv({ text: `<P> ${managedField.value.join(", ")}` })
+        container.createDiv({ text: valueString(managedField) })
     } else {
         return baseDisplayValue(managedField, container, onClicked)
     }
