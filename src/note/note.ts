@@ -262,11 +262,12 @@ export class Note {
             // initialize frontmatter and get insertion line and position
             if (frontmatterOnlyTypes.includes(field.type) && !this.frontmatter) this.initFrontmatter()
             const frontmatterEnd = this.frontmatterEnd()
-            let insertLineNumber =
-                (lineNumber ? Math.max(lineNumber, 0) : undefined) ||
-                frontmatterEnd ||
-                this.lines.last()?.number ||
-                0
+            let insertLineNumber = lineNumber === 0
+                ? 0
+                : ((lineNumber !== undefined ? Math.max(lineNumber, 0) : undefined) ||
+                    frontmatterEnd ||
+                    this.lines.last()?.number ||
+                    0)
             if (frontmatterOnlyTypes.includes(field.type)) insertLineNumber = frontmatterEnd!
             const position = frontmatterEnd && (insertLineNumber <= frontmatterEnd) ? "yaml" : "inline"
 

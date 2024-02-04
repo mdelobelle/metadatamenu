@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { ButtonComponent, FrontMatterCache, setIcon } from "obsidian";
+import { ButtonComponent, FrontMatterCache, Modal, setIcon } from "obsidian";
 import { removeFileClassAttributeWithId } from "src/commands/removeFileClassAttribute";
 import { FileClass, buildSortedAttributes } from "../fileClass";
 import { FileClassAttribute } from "../fileClassAttribute";
@@ -55,8 +55,24 @@ class FileClassFieldSetting {
         btn.setTooltip("Delete");
         btn.setClass("cell")
         btn.onClick(() => {
+            const confirmModal = new Modal(this.plugin.app);
+            confirmModal.containerEl.addClass("metadata-menu");
+            confirmModal.titleEl.setText("Please confirm");
+            confirmModal.contentEl.createDiv().setText(`Do you really want to remove this field?`);
+            const confirmFooter = confirmModal.contentEl.createDiv({ cls: "footer-actions" });
+            confirmFooter.createDiv({ cls: "spacer" })
+            const confirmButton = new ButtonComponent(confirmFooter);
+            confirmButton.setWarning();
+            confirmButton.setIcon("checkmark");
+            confirmButton.onClick(async () => {
+                removeFileClassAttributeWithId(this.plugin, this.fileClass, this.fileClassAttribute.id)
+                confirmModal.close();
+            })
+            const dismissButton = new ButtonComponent(confirmFooter);
+            dismissButton.setIcon("cross");
+            dismissButton.onClick(() => confirmModal.close());
+            confirmModal.open();
 
-            removeFileClassAttributeWithId(this.plugin, this.fileClass, this.fileClassAttribute.id)
         })
     };
 

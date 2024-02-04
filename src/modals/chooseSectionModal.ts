@@ -63,7 +63,7 @@ export default class chooseSectionModal extends SuggestModal<Line> {
         // insertAsCommentItem
 
         const addAtEndOfFrontMatterBtn = new ButtonComponent(inputContainer)
-        addAtEndOfFrontMatterBtn.setIcon("list-end")
+        addAtEndOfFrontMatterBtn.setIcon("align-vertical-space-around")
         addAtEndOfFrontMatterBtn.onClick(() => {
             this.onSelect(-1, false, false)
             this.close();

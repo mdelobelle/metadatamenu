@@ -65,8 +65,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "a3ddc01deee26343",
@@ -119,7 +118,9 @@
             "type": "leaf",
             "state": {
               "type": "outline",
-              "state": {}
+              "state": {
+                "file": "Untitled.md"
+              }
             }
           }
         ]
@@ -139,8 +140,9 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "843146fafd076ecb",
+  "active": "a70066693f6a00ac",
   "lastOpenFiles": [
+    "Untitled.md",
     "Fileclasses/Fileclass2.md",
     "Fileclasses/Fileclass1.md",
     "__fixtures__/settings/presetFields.md",

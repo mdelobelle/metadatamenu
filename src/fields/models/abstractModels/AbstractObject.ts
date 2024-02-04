@@ -1,7 +1,7 @@
 import MetadataMenu from "main"
 import { ButtonComponent, TFile, TextAreaComponent, setIcon } from "obsidian"
 import { ExistingField } from "src/fields/ExistingField"
-import { getIcon } from "src/fields/Fields"
+import { getIcon, valueString } from "src/fields/Fields"
 import { Note } from "src/note/note"
 import { Constructor } from "src/typings/types"
 import { Field, IField, IFieldManager, Target, getIdAndIndex, isSingleTargeted, removeValidationError, upperIndexedPathObjectPath, upperPath } from "../../Field"
@@ -166,10 +166,20 @@ export function createDvField(
     attrs.cls = "value-container"
     /* button to display input */
     const editBtn = fieldContainer.createEl("button");
-    const fieldValue = (dv.el('span', p[managedField.name] || "", attrs) as HTMLDivElement);
+    managedField.value = p[managedField.name] || {}
+    const value = valueString(managedField.type)(managedField)
+    const fieldValue = (dv.el('span', value || "", attrs) as HTMLDivElement);
     fieldContainer.appendChild(fieldValue);
     setIcon(editBtn, getIcon(managedField.type))
-    editBtn.onclick = () => managedField.openModal()
+    editBtn.onclick = async () => {
+        const file = managedField.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
+        const _eF = file instanceof TFile && await Note.getExistingFieldForIndexedPath(managedField.plugin, file, managedField.id)
+        if (!_eF) return
+        managedField.eF = _eF
+        managedField.value = _eF.value
+        managedField.indexedPath = _eF.indexedPath
+        managedField.openModal()
+    }
 
 }
 
