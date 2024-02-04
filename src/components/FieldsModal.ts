@@ -3,13 +3,14 @@ import { ButtonComponent, Component, Modal, TFile } from "obsidian";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { postValues } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
-import { Field, IFieldManager, fieldValueManager, getIdAndIndex, stringToBoolean, upperIndexedPathObjectPath } from "src/fields/Field";
+import { Field, IFieldManager, Target, fieldValueManager, getIdAndIndex, stringToBoolean, upperIndexedPathObjectPath } from "src/fields/Field";
 import { displayValue, getActions, objectTypes } from "src/fields/Fields";
 import ChooseSectionModal from "src/modals/chooseSectionModal";
 import { Note } from "src/note/note";
 import { FileClassViewManager } from "./FileClassViewManager";
 import { Options as ObjectListOptions, addObjectListItem } from "src/fields/models/ObjectList";
 import { openSettings } from "src/fields/base/BaseSetting";
+import { BaseOptions } from "src/fields/base/BaseField";
 
 
 export class FieldActions {
@@ -154,15 +155,21 @@ export class FieldsModal extends Modal {
         }
         backBtnWrapper.onclick = async () => { await this.noteFields.moveToObject(upperPath) }
     }
-    //
+
     private buildFieldContainer(container: HTMLDivElement, field: Field, value?: string | null | undefined, indexedPath?: string): void {
+        const eF = this.existingFields.find(eF => eF.field.id === field.id)
+        const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, this.file, eF, indexedPath)
         const fieldNameWrapper = container.createDiv({ cls: "field-name-wrapper" })
         const fieldNameContainer = fieldNameWrapper.createDiv({ text: `${field.name}`, cls: "field-item field-name" });
+        this.buildFieldSetting(container, field, fieldNameContainer)
+        this.buildFieldValue(container, field, fieldVM, value)
+        this.buildActions(container, field, fieldVM, value)
+    }
+
+    private buildFieldSetting(container: HTMLDivElement, field: Field, fieldNameContainer: HTMLDivElement, isObjectListItem: boolean = false) {
         const fieldSettingsWrapper = container.createDiv({ cls: "field-settings-wrapper" });
         fieldSettingsWrapper.createDiv({ cls: "field-settings-spacer" })
         const fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
-        const eF = this.existingFields.find(eF => eF.field.id === field.id)
-        const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, this.file, eF, indexedPath)
         if (fileClass) {
             fieldNameContainer.addClass(`fileClassField__${fileClass.name.replace("/", "___").replaceAll(" ", "_")}`)
         }
@@ -176,7 +183,10 @@ export class FieldsModal extends Modal {
             if (fileClassAttribute && _fileClass) openSettings(fileClassAttribute.id, _fileClass.name, this.plugin)
         })
         const fieldTypeContainer = fieldSettingsWrapper.createDiv({ cls: `field-item` });
-        fieldTypeContainer.createDiv({ text: field.type, cls: `chip field-type ${field.colorClass}` })
+        fieldTypeContainer.createDiv({ text: `${field.type}${isObjectListItem ? " item" : ""}`, cls: `chip field-type ${field.colorClass}` })
+    }
+
+    private buildFieldValue(container: HTMLDivElement, field: Field, fieldVM: IFieldManager<Target, BaseOptions> | undefined, value?: string | null | undefined) {
         const fieldValueWrapper = container.createDiv({ cls: "field-value-wrapper" })
         const fieldValueContainer = fieldValueWrapper.createDiv({
             cls: ![undefined, null, ""].includes(value) ? "field-item field-value" : "field-item field-value emptyfield"
@@ -189,6 +199,9 @@ export class FieldsModal extends Modal {
             if (fieldVM) displayValue(field.type)(fieldVM, fieldValueContainer, () => { this.close() })
             else fieldValueContainer.setText(`${value}`)
         }
+    }
+
+    private buildActions(container: HTMLDivElement, field: Field, fieldVM: IFieldManager<Target, BaseOptions> | undefined, value?: string | null | undefined) {
         const fieldOptionsWrapper = container.createDiv({ cls: "field-options-wrapper" });
         fieldOptionsWrapper.createDiv({ cls: "field-options-spacer" });
         const fieldOptions = new FieldOptions(fieldOptionsWrapper)
@@ -228,8 +241,7 @@ export class FieldsModal extends Modal {
         };
     }
 
-
-    private buildObjectListItemContainer(container: HTMLDivElement, field: Field, item: any, itemIndexedPath: string) {
+    private buildObjectListItemContainer(container: HTMLDivElement, field: Field, itemIndexedPath: string) {
         const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, this.file)
         const { index } = getIdAndIndex(itemIndexedPath.split("____").last())
         let value: string = ""
@@ -239,23 +251,7 @@ export class FieldsModal extends Modal {
         }
         const fieldNameWrapper = container.createDiv({ cls: "field-name-wrapper" })
         const fieldNameContainer = fieldNameWrapper.createDiv({ text: `${field.name} [${index}]`, cls: "field-item field-name" });
-        const fieldSettingsWrapper = container.createDiv({ cls: "field-settings-wrapper" });
-        fieldSettingsWrapper.createDiv({ cls: "field-settings-spacer" })
-        const fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
-        if (fileClass) {
-            fieldNameContainer.addClass(`fileClassField__${fileClass.name.replace("/", "___").replaceAll(" ", "_")}`)
-        }
-        const fieldSettingContainer = fieldSettingsWrapper.createDiv({ cls: "field-item field-setting" });
-        const fieldSettingBtn = new ButtonComponent(fieldSettingContainer);
-        fieldSettingBtn.setIcon("gear")
-        fieldSettingBtn.setTooltip(`${field.fileClassName ? field.fileClassName + " > " : "Preset Field > "} ${field.name} settings`)
-        fieldSettingBtn.onClick(() => {
-            const _fileClass = field.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(field.fileClassName) : undefined
-            const fileClassAttribute = _fileClass?.attributes.find(attr => attr.id === field.id)
-            if (fileClassAttribute && _fileClass) openSettings(fileClassAttribute.id, _fileClass.name, this.plugin)
-        })
-        const fieldTypeContainer = fieldSettingsWrapper.createDiv({ cls: `field-item` });
-        fieldTypeContainer.createDiv({ text: `${field.type} item`, cls: `chip field-type ${field.colorClass}` })
+        this.buildFieldSetting(container, field, fieldNameContainer, true)
         const fieldValueWrapper = container.createDiv({ cls: "field-value-wrapper" })
         const fieldValueContainer = fieldValueWrapper.createDiv({
             cls: value !== undefined && value !== null ? "field-item field-value" : "field-item field-value emptyfield"
@@ -266,7 +262,6 @@ export class FieldsModal extends Modal {
         const fieldOptions = new FieldOptions(fieldOptionsWrapper)
         if (fieldVM) getActions(fieldVM?.type)(this.plugin, field, this.file, fieldOptions, itemIndexedPath, this.noteFields)
     }
-
 
     private buildFileClassManager(container: HTMLDivElement): void {
         const fileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path) || [];
@@ -400,12 +395,13 @@ export class FieldsModal extends Modal {
         if (this.indexedPath && this.note.fields.find(_f => _f.id === id)?.type === "ObjectList" && index === undefined) {
             const field = this.note.fields.find(_f => _f.id === id)!
             const items = this.note.existingFields.find(eF => eF.indexedPath === this.indexedPath)?.value || []
-            items.forEach((item: any, index: number) => this.buildObjectListItemContainer(fieldsContainer, field, item, `${this.indexedPath}[${index}]`))
+            items.forEach((item: any, index: number) => this.buildObjectListItemContainer(fieldsContainer, field, `${this.indexedPath}[${index}]`))
             this.buildInsertNewItem(field, this.indexedPath)
         } else {
+            console.log(this.existingFields, this.missingFields)
             this.existingFields
-                .filter(f => {
-                    if (f.name === this.plugin.settings.fileClassAlias) return this.plugin.settings.showFileClassSelectInModal
+                .filter(eF => {
+                    if (eF.name === this.plugin.settings.fileClassAlias) return this.plugin.settings.showFileClassSelectInModal
                     else return true
                 })
                 .forEach(eF => {

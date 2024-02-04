@@ -4,27 +4,18 @@
     "type": "split",
     "children": [
       {
-        "id": "ed84716197a5a7d5",
+        "id": "da933f75c0d2f17e",
         "type": "tabs",
         "children": [
           {
-            "id": "1394d1f96a3b0b97",
+            "id": "843146fafd076ecb",
             "type": "leaf",
             "state": {
-              "type": "FileClassView__Fileclass1",
-              "state": {}
-            }
-          },
-          {
-            "id": "b3e77c78113c0b31",
-            "type": "leaf",
-            "state": {
-              "type": "FileClassView__Fileclass2",
+              "type": "empty",
               "state": {}
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -74,7 +65,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "a3ddc01deee26343",
@@ -147,13 +139,13 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "b3e77c78113c0b31",
+  "active": "843146fafd076ecb",
   "lastOpenFiles": [
     "Fileclasses/Fileclass2.md",
     "Fileclasses/Fileclass1.md",
-    "__fixtures__/fileClasses/Fileclass2.md",
-    "__fixtures__/fileClasses/Fileclass1.md",
     "__fixtures__/settings/presetFields.md",
+    "__fixtures__/fileClasses/Fileclass1.md",
+    "__fixtures__/fileClasses/Fileclass2.md",
     "__fixtures__/tags.md",
     "Folder2",
     "Folder1",

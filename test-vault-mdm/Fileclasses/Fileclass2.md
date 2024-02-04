@@ -11,7 +11,7 @@ extends: Fileclass1
 savedViews: []
 favoriteView: 
 fieldsOrder:
-  - WSk20K
+  - yNjepl
 version: "2.4"
 fields:
   - name: intensity
@@ -30,5 +30,5 @@ fields:
     style:
       bold: true
     path: ""
-    id: WSk20K
+    id: yNjepl
 ---

@@ -338,6 +338,17 @@ export function getFieldConstructor<O extends BaseOptions>(id: string, fileClass
             const { name, id, path, command, display, style, type, options } = fCF
             return [buildField(plugin, name, id, path, fileClassName, command, display, style, ...[type, options] as FieldParam), type as FieldType]
         }
+    } else if (id === `fileclass-field-${plugin.settings.fileClassAlias}`) {
+        const fileClasses = [...plugin.fieldIndex.fileClassesName.keys()].sort()
+        const valuesList: Record<string, string> = {}
+        const options = {
+            sourceType: "ValuesList",
+            valuesList: valuesList
+        }
+        for (const [index, fC] of fileClasses.entries()) {
+            valuesList[`${index}`] = fC
+        }
+        return [buildField(plugin, plugin.settings.fileClassAlias, id, "", undefined, undefined, undefined, undefined, ...["Select", options] as FieldParam), "Select"]
     } else {
         const fS = plugin.settings.presetFields.find(f => f.id === id)
         if (!fS) return []

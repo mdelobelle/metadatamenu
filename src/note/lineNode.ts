@@ -159,12 +159,17 @@ export class LineNode {
                         //TODO tester
                         const fileClasses = [...this.plugin.fieldIndex.fileClassesName.keys()].sort()
                         const fileClassField = new (buildEmptyField(this.plugin, undefined, "Select"))
-                        const options: Record<string, string> = {}
+                        const valuesList: Record<string, string> = {}
+                        const options = {
+                            sourceType: "ValuesList",
+                            valuesList: valuesList
+                        }
                         for (const [index, fC] of fileClasses.entries()) {
-                            options[`${index}`] = fC
+                            valuesList[`${index}`] = fC
                         }
                         fileClassField.options = options
                         fileClassField.id = `fileclass-field-${this.plugin.settings.fileClassAlias}`
+                        fileClassField.name = this.plugin.settings.fileClassAlias
                         this.field = fileClassField
                         this.indexedPath = fileClassField.id
                         this.value = value
