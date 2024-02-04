@@ -8,6 +8,7 @@ import { ISettingsModal } from "../base/BaseSetting"
 import * as Lookup from "src/types/lookupTypes";
 import { updateLookups } from "src/commands/updateLookups"
 import { displayLinksOrText } from "src/utils/linksUtils"
+import { resolveLookups } from "src/commands/resolveLookups"
 
 export class Base implements IFieldBase {
     type = <const>"Lookup"
@@ -217,7 +218,8 @@ export function displayValue(managedField: IFieldManager<Target, Options>, conta
 
 export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFile, location: ActionLocation, indexedPath?: string): void {
     const name = field.name
-    if (!field.options.autoUpdate && field.options.autoUpdate !== undefined) {
+    //if (!field.options.autoUpdate && field.options.autoUpdate !== undefined) {
+    if (field.options.autoUpdate === false || !plugin.settings.isAutoCalculationEnabled) {
         const f = plugin.fieldIndex;
         const id = `${file.path}__${field.name}`;
         let status: Status;
@@ -230,6 +232,7 @@ export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFil
         ) status = Status.changed
         const icon = Lookup.statusIcon[status]
         const action = async () => {
+            if (!plugin.settings.isAutoCalculationEnabled) resolveLookups(plugin)
             await updateLookups(plugin, { file: file, fieldName: field.name })
             f.applyUpdates()
         }

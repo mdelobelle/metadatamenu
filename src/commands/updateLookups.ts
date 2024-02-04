@@ -4,6 +4,8 @@ import * as Lookup from "src/types/lookupTypes";
 import { IndexedFieldsPayload } from "./postValues";
 import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile";
 import { Field } from "src/fields/Field";
+import { extractLinks, getLink } from "src/utils/parser";
+import { compareArrays } from "src/utils/array";
 
 export function arraysAsStringAreEqual(a: string, b: string) {
     const aAsArray = typeof a === "string" ? a.split(",").map(v => v.trim()) : (Array.isArray(a) ? a : [])
@@ -75,6 +77,29 @@ function renderValue(field: Field, pages: any, plugin: MetadataMenu, tFile: TFil
     return newValue
 }
 
+export function cleanRemovedLookupItemsFromIndex(
+    plugin: MetadataMenu
+): void {
+    //some fields may have been changed manually, update the "lastValue" index so that next comparison will work
+    const f = plugin.fieldIndex;
+    for (let id of f.fileLookupFieldLastValue.keys()) {
+        const matchRegex = /(?<filePath>.*)__related__(?<fileClassName>.*)___(?<fieldName>.*)/
+        const { filePath, fieldName, fileClassName } = id.match(matchRegex)?.groups || {}
+        const file = plugin.app.vault.getAbstractFileByPath(filePath)
+        if (!(file instanceof TFile)) continue
+        const dvPage = f.dv.api.page(filePath);
+        const currentLinks = (Array.isArray(dvPage[fieldName])
+            ? dvPage[fieldName]
+            : dvPage[fieldName]
+                ? [dvPage[fieldName]]
+                : []).map((p: any) => p?.path) as string[]
+        const indexedLinks = (extractLinks(f.fileLookupFieldLastValue.get(id) || "") || []).map(l => getLink(l)?.path || "")
+        if (!compareArrays(currentLinks, indexedLinks)) {
+            f.fileLookupFieldLastValue.set(id, currentLinks.filter(l => !!l).map(l => buildMarkDownLink(plugin, file, l)).join(", "))
+        }
+    }
+}
+
 export async function updateLookups(
     plugin: MetadataMenu,
     forceUpdateOne?: { file: TFile, fieldName: string },
@@ -109,6 +134,7 @@ export async function updateLookups(
                     forceUpdateOne?.file.path === file.path &&
                     forceUpdateOne?.fieldName === field.name
                 )
+            //console.log(file.basename, field.name, ":: ", currentValue, ">>>", newValue)
             const valueHasChanged = (!currentValue && newValue !== "") || !arraysAsStringAreEqual(currentValue || "", newValue)
             const formatHasChanged = outputType !== f.fileLookupFieldLastOutputType.get(lookupFileId)
             if (

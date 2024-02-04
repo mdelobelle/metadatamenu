@@ -70,11 +70,12 @@ export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFil
     const f = plugin.fieldIndex;
     const id = `${file.path}__${name}`;
     const status = f.fileFormulaFieldsStatus.get(id) as Status || Status.changed
-    if (!field.options.autoUpdate && field.options.autoUpdate !== undefined) {
-        const action = async () => {
-            await updateFormulas(plugin, { file: file, fieldName: name })
-            f.applyUpdates()
-        };
+    const action = async () => {
+        await updateFormulas(plugin, { file: file, fieldName: name })
+        f.applyUpdates()
+    };
+    //if (!field.options.autoUpdate && field.options.autoUpdate !== undefined) {
+    if (field.options.autoUpdate === false || !plugin.settings.isAutoCalculationEnabled) {
         const icon = statusIcon[status]
         if (isSuggest(location) && [Status.changed, Status.mayHaveChanged].includes(status)) {
             location.options.push({

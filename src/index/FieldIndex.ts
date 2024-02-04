@@ -4,7 +4,7 @@ import { FileClass, createFileClass, getFileClassNameFromPath, indexFileClass } 
 import FileClassQuery from "src/fileClass/FileClassQuery";
 import FieldSetting from "src/settings/FieldSetting";
 import { resolveLookups } from "src/commands/resolveLookups";
-import { updateLookups } from "src/commands/updateLookups";
+import { cleanRemovedLookupItemsFromIndex, updateLookups } from "src/commands/updateLookups";
 import { updateFormulas, cleanRemovedFormulasFromIndex } from "src/commands/updateFormulas";
 import { Status as LookupStatus, Status } from "src/types/lookupTypes";
 import { updateCanvas, updateCanvasAfterFileClass } from "src/commands/updateCanvas";
@@ -200,6 +200,7 @@ export default class FieldIndex extends FieldIndexBuilder {
     ): Promise<void> {
         const start = Date.now()
         this.plugin.indexStatus.setState("indexing")
+        cleanRemovedLookupItemsFromIndex(this.plugin)
         cleanRemovedFormulasFromIndex(this.plugin);
         this.getFilesLookupAndFormulaFieldsExists();
 
@@ -601,7 +602,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                 .forEach(field => this.fileFormulaFieldsStatus.set(`${filePath}__${field.name}`, Status.mayHaveChanged))
             const dvLookupFields = fields.filter(f => f.isRoot() && f.type === "Lookup" &&
                 f.name in this.dv.api.page(filePath))
-            if (!this.settings.isAutoCalculationEnabled) dvFormulaFields
+            if (!this.settings.isAutoCalculationEnabled) dvLookupFields
                 .forEach(field => this.fileLookupFieldsStatus.set(`${filePath}__${field.name}`, Status.mayHaveChanged))
             this.filesLookupAndFormulaFieldsExists.set(filePath, [...dvFormulaFields, ...dvLookupFields])
         });
