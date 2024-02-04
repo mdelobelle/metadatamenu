@@ -95,7 +95,7 @@ export class FileClassViewManager extends Component {
                 }
             )
 
-            //FIXME: conflict with float-search that is overring getLeaf...
+            //FIXME (P2) conflict with float-search that is overring getLeaf...
             try {
                 //@ts-ignore
                 await this.plugin.app.workspace.getLeaf('tab', 'vertical').setViewState({

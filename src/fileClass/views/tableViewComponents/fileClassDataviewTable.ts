@@ -167,7 +167,6 @@ export class FileClassDataviewTable {
 
             if (cell.tagName === "TH") checkBox.addClass("page-checkbox")
             else filesCheckboxes.push(checkBox)
-            //FIXME when updating pagination, the checkbox are duplicated
             checkBox.onclick = (e) => {
                 e.stopPropagation();
                 checkBox.toggleAttribute("checked")
@@ -399,7 +398,6 @@ export class FileClassDataviewTable {
             return `basename(p${index}${fieldKey})`
         }
         const sorters = Object.entries(this.viewConfiguration.sorters)
-            //TODO if field type is number, parseFloat before sorting
             .sort((s1, s2) => (s1[1].priority || 0) < (s2[1].priority || 0) ? -1 : 1)
             .filter(s => s[1].direction)
             .map(s => {
@@ -487,7 +485,6 @@ export class FileClassDataviewTable {
             if (column.name === "file") {
                 return "        dv.el(\"div\", p.file.link, {cls: \"field-name\"})";
             } else {
-                //TODO add a "show add field buttons default to false" -> faster
                 return `        hasFileClass(p.file.path, "${column.id}") ? f(dv, p, "${column.name}", {options: {alwaysOn: false, showAddField: ${this.view.manager.showAddField}}}) : ""`
             }
         }).join(",\n");

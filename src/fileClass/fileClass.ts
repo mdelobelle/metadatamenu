@@ -34,13 +34,6 @@ const options: Record<string, { name: string, toValue: (value: any) => any }> = 
     "fieldsOrder": { name: "fieldsOrder", toValue: (value?: Field['id'][]) => value || [] }
 }
 
-//TODO
-/*
-isOrderValid au cas où on a changé le path
-si pas isOrderValid, on reconstruit un ordre rationnel (comme on le fait pour la fileClassFieldsView)
-fieldsOrder = Array<fields ids>
-*/
-
 export interface FileClassChild {
     name: string,
     path: string[],

@@ -11,7 +11,7 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
     // Implements the live preview supercharging
     // Code structure based on https://github.com/nothingislost/obsidian-cm6-attributes/blob/743d71b0aa616407149a0b6ea5ffea28e2154158/src/main.ts
     // Code help credits to @NothingIsLost! They have been a great help getting this to work properly.
-    //FIXME icon isn't displayed in LP for files file a - in their name
+    //FIXME (P2) icon isn't displayed in LP for files file a - in their name
     class HeaderWidget extends WidgetType {
         fileClassName?: string
         after: boolean

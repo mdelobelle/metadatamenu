@@ -156,7 +156,6 @@ export class LineNode {
                         }
                     }
                     if (yamlAttr === this.plugin.settings.fileClassAlias) {
-                        //TODO tester
                         const fileClasses = [...this.plugin.fieldIndex.fileClassesName.keys()].sort()
                         const fileClassField = new (buildEmptyField(this.plugin, undefined, "Select"))
                         const valuesList: Record<string, string> = {}

@@ -320,8 +320,7 @@ export function getOptions<O extends BaseOptions>(field: IField<O> | IFieldManag
         Object.keys(options).length === 0 &&
         options.constructor === Object
     ) {
-        //TODO fix the casting of getDefaultOptions. try to get if from getDefaultOptions
-        return getDefaultOptions(field.type) as O
+        return getDefaultOptions<O>(field.type)
     } else {
         return field.options as O
     }

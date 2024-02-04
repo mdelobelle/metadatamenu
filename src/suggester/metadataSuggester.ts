@@ -138,7 +138,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         }
 
         const getFilteredOptionsList = (field: Field, firstValues: string[] | undefined, lastValue: string | undefined) => {
-            //TODO tester
+            //TODO (P1) tester
             const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, file)
             if (!fieldVM || !["Cycle", "Multi", "Select"].includes(fieldVM.type)) return []
             const options = getOptionsList(fieldVM as IFieldManager<TFile, ListOptions>)

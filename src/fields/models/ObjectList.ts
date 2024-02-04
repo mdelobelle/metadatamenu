@@ -60,7 +60,7 @@ export function settingsModal(Base: Constructor<ISettingsModal<AbstractObject.De
             })
         }
         validateOptions(): boolean {
-            //TODO is valid if every nested fields are true
+            //TODO (P2) is valid if every nested fields are true
             return true
         }
     }
@@ -219,13 +219,16 @@ export function createDvField(
 export function getOptionsStr(field: IField<Options>): string {
     return AbstractObject.getOptionsStr(field)
 }
-//TODO factor valueString && getObjectDescription
 export function valueString(managedField: IFieldManager<Target, Options>): string {
-    return getObjectDescription(managedField, managedField.value)
+    let template = managedField.options.displayTemplate as string || undefined
+    const itemsCount = Object.keys(managedField.value).length
+    if (!template) return `<${managedField.getChildren().map(f => f.name).join(", ")}>(*${itemsCount})`
+    template = template.replace(`{{itemsCount}}`, `${itemsCount}`)
+    return template
 }
 
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked = () => { }) {
-    container.setText(getObjectDescription(managedField, managedField.value))
+    container.setText(valueString(managedField))
 }
 
 export function validateValue(managedField: IFieldManager<Target, Options>): boolean {
@@ -233,14 +236,6 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
 }
 
 //#region utils
-
-export function getObjectDescription(managedField: IFieldManager<Target, Options>, value: FrontmatterObject = {}): string {
-    let template = managedField.options.displayTemplate as string || undefined
-    const itemsCount = Object.keys(value).length
-    if (!template) return `<${managedField.getChildren().map(f => f.name).join(", ")}>(*${itemsCount})`
-    template = template.replace(`{{itemsCount}}`, `${itemsCount}`)
-    return template
-}
 
 export function displayItem(managedField: IFieldManager<Target, Options>, value: any, itemIndex: number): string {
     let template = managedField.options.itemDisplayTemplate as string || undefined

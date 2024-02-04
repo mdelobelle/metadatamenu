@@ -163,7 +163,6 @@ function getInputType(type: FieldType): string {
 }
 
 export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<IBasicModal<Target>> {
-    //TODO inserer le multi target change
     const base = basicModal(managedField, plugin)
     return class ValueModal extends base {
         public managedField: IFieldManager<Target, Options>

@@ -112,7 +112,6 @@ class ParentSelector<O extends BaseOptions> extends SuggestModal<IField<O>> {
 
     onChooseSuggestion(parent: IField<O>, evt: MouseEvent | KeyboardEvent) {
         this.fieldSetting.setParent(parent)
-        //TODO call setting.setParent(item) given that item is the path
     }
 
 
@@ -635,7 +634,7 @@ function areOptionsEqual(o1: BaseOptions | undefined, o2: BaseOptions | undefine
 }
 
 
-//TODO merge dataview FieldStyle && field FieldStyle
+//TODO (P2) merge dataview FieldStyle && field FieldStyle
 function areStylesEqual(s1: FieldStyle | undefined, s2: FieldStyle | undefined): boolean {
     return !!(!s1 && !s2) ||
         !!(

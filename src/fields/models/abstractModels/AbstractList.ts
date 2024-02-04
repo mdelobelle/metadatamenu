@@ -439,7 +439,7 @@ export function getOptionsList(managedField: IField<Options> | IFieldManager<Tar
                 {
                     const dvApi = managedField.plugin.app.plugins.plugins.dataview?.api
                     if (dvApi) {
-                        //TODO validate this is still working after adding fallback empty object
+                        //TODO (P2) validate this is still working after adding fallback empty object
                         //values = new Function("dv", "current", `return ${this.field.options.valuesFromDVQuery}`)(dvApi, dvFile)
                         const dvFile = isSingleTargeted(managedField) ? dvApi.page(managedField.target.path) : {}
                         values = new Function("dv", "current", `return ${managedField.options.valuesFromDVQuery}`)(dvApi, dvFile || {})

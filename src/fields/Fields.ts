@@ -32,9 +32,6 @@ import { Menu, TFile } from "obsidian"
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
 import NoteFieldsComponent, { FieldActions } from "src/components/FieldsModal"
 
-
-//TODO next Media and Multi Media (similar to file)
-
 //#region Types
 
 /*

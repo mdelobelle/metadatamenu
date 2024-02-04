@@ -148,7 +148,7 @@ export async function enterFieldSettings(field: Field, container?: HTMLDivElemen
             }
         }
     }
-    //TODO command
+    //TODO (P2) command
     // type settings
     await getFieldSettingsTest(newTypeFieldModal, field, speed = 100)
     // save and compare

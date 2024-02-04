@@ -163,24 +163,7 @@ export function createDvField(
 ): void {
     attrs.cls = "value-container"
     const values = p[managedField.name]
-    const buildItem = (_value: Link) => {
-        //TODO update with Media and MultiMedia fileds
-        /*
-        if (_value?.path && [FieldType.Media, FieldType.MultiMedia].includes(managedField.type)) {
-            const src = managedField.plugin.app.vault.adapter.getResourcePath(_value.path)
-            if (src) {
-                const image = fieldContainer.createEl("img")
-                image.src = src
-                fieldContainer.appendChild(image)
-            } else {
-                fieldContainer.appendChild(dv.el('span', "?"))
-            }
-        } else {
-            fieldContainer.appendChild(dv.el('span', _value || "", attrs))
-        }
-        */
-        fieldContainer.appendChild(dv.el('span', _value || "", attrs))
-    }
+    const buildItem = (_value: Link) => fieldContainer.appendChild(dv.el('span', _value || "", attrs))
     if (Array.isArray(values)) values.forEach(value => buildItem(value))
     else buildItem(values)
 

@@ -122,7 +122,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                     this.open()
                 } else if (item.type === "Object") {
                     await postValues(mF.plugin, [{ indexedPath: `${mF.indexedPath}____${item.id}`, payload: { value: "" } }], mF.target)
-                    await mF.plugin.fieldIndex.indexFields() // FIXME is it necessary ???
+                    await mF.plugin.fieldIndex.indexFields() // FIXME (p2) is it necessary ???
                     const cF = await Note.getExistingFieldForIndexedPath(mF.plugin, mF.target as TFile, `${mF.indexedPath}____${item.id}`)
                     fieldValueManager(mF.plugin, item.id, item.fileClassName, mF.target, cF, cF?.indexedPath, undefined, undefined, undefined, this)?.openModal()
                 } else {
@@ -132,14 +132,49 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
     }
 }
-//TODO factor valueString && getObjectDescription
 
 export function valueString(managedField: IFieldManager<Target, Options>): string {
-    return getObjectDescription(managedField, managedField.value)
+    let template = managedField.options.displayTemplate
+    if (!template) {
+        const children = managedField.getChildren()
+        const childrenNames = children.map(c => c.name)
+        return childrenNames.join(", ")
+    } else {
+        const items: { pattern: string, value: string }[] = []
+        const defaultDisplay = (pattern: string) => {
+            items.push({ pattern: pattern, value: `(${pattern}?)` })
+        }
+        const children = managedField.getChildren()
+        const childrenNames = children.map(c => c.name)
+        const templatePathRegex = new RegExp(`\\{\\{(?<pattern>[^\\}]+?)\\}\\}`, "gu");
+        const tP = template.matchAll(templatePathRegex)
+        let next = tP.next();
+        while (!next.done) {
+            if (next.value.groups) {
+                const pattern = next.value.groups.pattern
+                if (childrenNames.includes(pattern)) {
+                    const child = children.find(c => c.name === pattern)!
+                    const cFVM = fieldValueManager(managedField.plugin, child.id, child.fileClassName, managedField.target, undefined, undefined)
+                    if (!cFVM) defaultDisplay(pattern)
+                    else {
+                        cFVM.value = managedField.value[child.name]
+                        items.push({ pattern: pattern, value: getValueString(cFVM.type)(cFVM) })
+                    }
+                } else {
+                    defaultDisplay(pattern)
+                }
+            }
+            next = tP.next()
+        }
+        for (const item of items) {
+            template = template.replace(`{{${item.pattern}}}`, item.value)
+        }
+        return template
+    }
 }
 
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked = () => { }) {
-    container.setText(getObjectDescription(managedField, managedField.value))
+    container.setText(valueString(managedField))
 }
 
 export function createDvField(
@@ -194,45 +229,6 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
 
 
 //#region utils
-export function getObjectDescription(managedField: IFieldManager<Target, Options>, value: FrontmatterObject = {}): string {
-    let template = managedField.options.displayTemplate
-    if (!template) {
-        const children = managedField.getChildren()
-        const childrenNames = children.map(c => c.name)
-        return childrenNames.join(", ")
-    } else {
-        const items: { pattern: string, value: string }[] = []
-        const defaultDisplay = (pattern: string) => {
-            items.push({ pattern: pattern, value: `(${pattern}?)` })
-        }
-        const children = managedField.getChildren()
-        const childrenNames = children.map(c => c.name)
-        const templatePathRegex = new RegExp(`\\{\\{(?<pattern>[^\\}]+?)\\}\\}`, "gu");
-        const tP = template.matchAll(templatePathRegex)
-        let next = tP.next();
-        while (!next.done) {
-            if (next.value.groups) {
-                const pattern = next.value.groups.pattern
-                if (childrenNames.includes(pattern)) {
-                    const child = children.find(c => c.name === pattern)!
-                    const cFVM = fieldValueManager(managedField.plugin, child.id, child.fileClassName, managedField.target, undefined, undefined)
-                    if (!cFVM) defaultDisplay(pattern)
-                    else {
-                        cFVM.value = value[child.name]
-                        items.push({ pattern: pattern, value: getValueString(cFVM.type)(cFVM) })
-                    }
-                } else {
-                    defaultDisplay(pattern)
-                }
-            }
-            next = tP.next()
-        }
-        for (const item of items) {
-            template = template.replace(`{{${item.pattern}}}`, item.value)
-        }
-        return template
-    }
-}
 
 export function getPseudoObjectValueManagerFromObjectItem(managedField: IFieldManager<Target, ObjectListOptions>, item: ObjectListItem, previousModal: ObjectListModal<Target>) {
     const mF = managedField

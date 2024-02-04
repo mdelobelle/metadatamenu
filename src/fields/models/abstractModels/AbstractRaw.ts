@@ -37,7 +37,6 @@ export interface Modal<T extends Target> extends IBaseValueModal<T> {
 }
 
 export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<IBasicModal<Target>> {
-    //TODO inserer le multi target change
     const base = basicModal(managedField, plugin)
     return class ValueModal extends base {
         private editor: EditorView;
@@ -50,7 +49,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             this.buildPositionContainer();
             this.buildInputEl(this.contentEl.createDiv({ cls: "field-container" }));
             cleanActions(this.contentEl, ".footer-actions")
-            //this.buildSaveBtn(this.contentEl.createDiv({ cls: "footer-actions" }));
             this.buildFooterBtn()
             this.containerEl.addClass("metadata-menu")
         }

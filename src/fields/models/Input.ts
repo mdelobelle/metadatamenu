@@ -57,7 +57,6 @@ export function settingsModal(Base: Constructor<IBaseSettingsModal<DefaultedOpti
 }
 
 export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<IBasicModal<Target>> {
-    //TODO inserer le multi target change
     const base = basicModal(managedField, plugin)
     return class ValueModal extends base {
         private templateValues: Record<string, string> = {};

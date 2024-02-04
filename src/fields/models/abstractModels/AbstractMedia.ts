@@ -119,7 +119,7 @@ export function settingsModal(Base: Constructor<ISettingsModal<DefaultedOptions>
             addValue.textContent = 'Add a value';
             addValue.onClickEvent(async (evt: MouseEvent) => {
                 evt.preventDefault();
-                //FIXME doesn't work at field init
+                //FIXME (P1) doesn't work at field init
                 const newKeyNumber = (this.field.options.folders || []).length + 1;
                 this.field.options.folders[newKeyNumber] = "";
                 this.foldersInputComponents.push(this.createFolderContainer(valuesListBody, newKeyNumber))

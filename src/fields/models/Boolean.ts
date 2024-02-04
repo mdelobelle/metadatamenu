@@ -32,7 +32,6 @@ export function settingsModal(Base: Constructor<BaseSettingsModal<DefaultedOptio
 }
 
 export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<IBasicModal<Target>> {
-    //TODO inserer le multi target change
     const base = basicModal(managedField, plugin)
     return class ValueModal extends base {
         public managedField: IFieldManager<Target, Options>
@@ -70,12 +69,21 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                 trueButton.setCta();
                 falseButton.removeCta();
             })
-            this.buildSimpleSaveBtn(choicesContainer)
+            this.buildSaveBtn(choicesContainer)
         };
+        public buildSaveBtn(fieldContainer: HTMLDivElement) {
+            fieldContainer.createDiv({ cls: "spacer" })
+            const infoContainer = fieldContainer.createDiv({ cls: "info" })
+            infoContainer.setText("Alt+Enter to save")
+            const saveBtn = new ButtonComponent(fieldContainer);
+            saveBtn.setIcon("checkmark");
+            saveBtn.onClick(() => {
+                this.save();
+            })
+        }
 
-        public async save(): Promise<void> {
+        public save(): void {
             this.managedField.save()
-            //FIXME doesn't close
             this.close()
         }
     }
