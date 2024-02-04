@@ -74,7 +74,6 @@ export class FileClassDataviewTable {
             this.limitWrapped = !this.limitWrapped
         }
 
-
         const values: any[] = this.getFilteredFiles();
         this.count = values.length;
         const rangesCount = Math.floor(this.count / this.limit) + 1
@@ -135,6 +134,15 @@ export class FileClassDataviewTable {
     }
 
     public buildBulkModifiers(observed: HTMLDivElement) {
+
+        const cleanTable = (table: HTMLTableElement) => {
+            for (const selector of table.querySelectorAll(".modifier-selector")) {
+                (selector as HTMLElement).parentElement?.removeChild(selector)
+            }
+            for (const toggler of table.querySelectorAll(".checkbox-toggler")) {
+                (toggler as HTMLElement).parentElement?.removeChild(toggler)
+            }
+        }
 
         const processFilesFieldChange = (dvTable: FileClassDataviewTable, selectedFiles: string[], allFilesSelected: boolean, columndId: string) => {
             const { fileClassName, fieldName } = dvTable.columnsFileClassField[columndId]
@@ -235,6 +243,7 @@ export class FileClassDataviewTable {
                             (node as HTMLElement).className.includes('dataview table-view-table')
                         ) {
                             const table = node as HTMLTableElement
+                            cleanTable(table)
                             for (const row of table.rows) {
                                 const cell = row.cells.item(0)
                                 if (cell) buildCellCheckBox(table, cell, filesCheckboxes, allFilesSelected, selectedFiles)
