@@ -30,7 +30,18 @@ export function settingsModal(Base: Constructor<BaseSettingsModal<AbstractDate.D
 
 export function valueModal(managedField: IFieldManager<Target, Options>, plugin: MetadataMenu): Constructor<AbstractDate.Modal<Target>> {
     const base = AbstractDate.valueModal(managedField, plugin)
-    return class ValueModal extends base { }
+    return class ValueModal extends base {
+        buildInputEl: (dateFieldsContainer: HTMLDivElement) => Promise<void>
+        buildInsertAsLinkButton: (dateFieldsContainer: HTMLDivElement) => void
+        buildClearBtn: (dateFieldsContainer: HTMLDivElement) => void
+        buildSaveBtn: (dateFieldsContainer: HTMLDivElement) => void
+
+        public async buildFields(dateFieldsContainer: HTMLDivElement): Promise<void> {
+            await this.buildInputEl(dateFieldsContainer);
+            this.buildClearBtn(dateFieldsContainer);
+            this.buildSaveBtn(dateFieldsContainer);
+        }
+    }
 }
 
 export function valueString(managedField: IFieldManager<Target, Options>) {

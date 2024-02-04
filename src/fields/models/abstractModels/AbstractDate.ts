@@ -150,7 +150,13 @@ function getCycleRootFields(field: IField<Options>): Field[] {
     return rootFields
 }
 
-export interface Modal<T extends Target> extends IBaseValueModal<T> { }
+export interface Modal<T extends Target> extends IBaseValueModal<T> {
+    buildFields(dateFieldsContainer: HTMLDivElement): Promise<void>
+    buildInputEl(dateFieldsContainer: HTMLDivElement): void
+    buildInsertAsLinkButton(dateFieldsContainer: HTMLDivElement): void
+    buildClearBtn(dateFieldsContainer: HTMLDivElement): void
+    buildSaveBtn(dateFieldsContainer: HTMLDivElement): void
+}
 
 
 function getInputType(type: FieldType): string {
@@ -212,7 +218,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             this.buildSaveBtn(dateFieldsContainer);
         }
 
-        private async buildInputEl(container: HTMLDivElement): Promise<void> {
+        public async buildInputEl(container: HTMLDivElement): Promise<void> {
             [this.currentShift, this.nextIntervalField, this.nextShift] = await shiftDuration(this.managedField);
             const wrapper = container.createDiv({ cls: "date-input-wrapper" })
             this.inputEl = new TextComponent(wrapper);
@@ -256,7 +262,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             if (isSingleTargeted(this.managedField)) this.buildShiftBtn(container)
         };
 
-        private buildShiftBtn(container: HTMLDivElement) {
+        public buildShiftBtn(container: HTMLDivElement) {
             this.shiftFromTodayBtn = new ButtonComponent(container)
                 .setIcon("skip-forward")
                 .setTooltip(`Shift ${this.managedField.name} ${this.currentShift || "1 day"} ahead`)

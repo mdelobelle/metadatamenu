@@ -64,13 +64,14 @@ export default class OptionsList {
 		if (mField) {
 			const fieldVM = fieldValueManager(this.plugin, mField.id, mField.fileClassName, this.file, undefined, indexedPath)
 			if (!fieldVM) return
+			fieldVM.value = value
 			switch (fieldVM.type) {
 				case "Boolean":
-					fieldVM.save(!fieldVM.value)
+					fieldVM.save(`${!fieldVM.value}`)
 					break;
 				case "Cycle":
 					const nextOption = getNextOption(fieldVM as IFieldManager<TFile, CycleOptions>);
-					fieldVM.save(nextOption)
+					fieldVM.save(`${nextOption}`)
 					break;
 				default:
 					const eF = node.line.note.getExistingFieldForIndexedPath(indexedPath)
