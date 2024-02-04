@@ -454,7 +454,8 @@ export class FileClassDataviewTable {
             "    }else if(typeof item === 'string'){\n" +
             "        return item\n" +
             "    }else{\n" +
-            "        return item?.toString() || '' \n" +
+            "        const numVal = parseFloat(item?.toString()) \n" +
+            "        return !isNaN(numVal) ? numVal : item?.toString() || '' \n" +
             "    }\n" +
             "}\n" +
             "const fileFileClasses = (path) => {\n" +

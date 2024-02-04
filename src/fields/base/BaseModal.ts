@@ -46,7 +46,6 @@ export class BaseValueModal<T extends Target, O extends BaseOptions> extends Mod
 
     public async goToPreviousModal() {
         const pM = this.managedField.previousModal
-        console.log("ICI")
         if (pM && this.managedField.indexedPath && isSingleTargeted(pM.managedField)) {
             const upperPath = upperIndexedPathObjectPath(this.managedField.indexedPath)
             const { index: upperFieldIndex } = getIdAndIndex(upperPath.split("____").last())
@@ -88,7 +87,9 @@ export class BaseValueModal<T extends Target, O extends BaseOptions> extends Mod
         infoContainer.setText("Alt+Enter to save")
         const saveBtn = new ButtonComponent(fieldContainer);
         saveBtn.setIcon("checkmark");
-        saveBtn.onClick(() => { this.managedField.save(); })
+        saveBtn.onClick(() => {
+            this.managedField.save();
+        })
     }
 
     async onClose() {

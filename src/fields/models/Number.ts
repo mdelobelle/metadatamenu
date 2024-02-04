@@ -1,4 +1,4 @@
-import { ButtonComponent, TFile, TextComponent } from "obsidian"
+import { ButtonComponent, TFile, TextComponent, setIcon } from "obsidian"
 import { IFieldBase, BaseOptions } from "../base/BaseField"
 import { ISettingsModal as BaseSettingsModal } from "../base/BaseSetting"
 import { getIcon } from "../Fields"
@@ -90,6 +90,8 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
 
         constructor(...rest: any[]) {
             super()
+            this.containerEl.addClass("metadata-menu")
+            this.value = managedField.value
             this.buildInputEl()
         }
 
@@ -157,7 +159,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             plusBtn.setDisabled(!canIncrement(this.managedField));
 
             fieldContainer.createDiv({ cls: "spacer" })
-            this.buildSimpleSaveBtn(fieldContainer)
+            this.buildSaveBtn(fieldContainer)
 
             cleanActions(this.contentEl, ".field-error")
             this.errorField = this.contentEl.createEl("div", { cls: "field-error" })
@@ -186,6 +188,18 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                 this.toggleButtonsState(minusBtn, plusBtn, numberInput);
             })
         };
+
+
+        public buildSaveBtn(fieldContainer: HTMLDivElement) {
+            fieldContainer.createDiv({ cls: "spacer" })
+            const infoContainer = fieldContainer.createDiv({ cls: "info" })
+            infoContainer.setText("Alt+Enter to save")
+            const saveBtn = new ButtonComponent(fieldContainer);
+            saveBtn.setIcon("checkmark");
+            saveBtn.onClick(() => {
+                this.save();
+            })
+        }
 
         public async save(): Promise<void> {
             if (!validateValue(this.managedField)) {
@@ -223,6 +237,27 @@ export function createDvField(
     const editBtn = fieldContainer.createEl("button");
     const fieldValue = (dv.el('span', p[managedField.name] || "", attrs) as HTMLDivElement);
     fieldContainer.appendChild(fieldValue);
+
+    /* end spacer */
+    const spacer = fieldContainer.createDiv({ cls: "spacer-1" });
+    if (attrs.options?.alwaysOn) spacer.hide();
+    setIcon(editBtn, getIcon("Number"));
+    if (!attrs?.options?.alwaysOn) {
+        editBtn.hide();
+        spacer.show();
+        fieldContainer.onmouseover = () => {
+            editBtn.show();
+            spacer.hide();
+        }
+        fieldContainer.onmouseout = () => {
+            editBtn.hide();
+            if (!attrs.options?.alwaysOn) spacer.show();
+        }
+    }
+    /* button on click : remove button and field and display input field*/
+    editBtn.onclick = async () => {
+        managedField.openModal()
+    }
 
 }
 
