@@ -10,6 +10,7 @@ import { Constructor } from "src/typings/types"
 import { getIcon } from "src/fields/Fields"
 import { getExistingFieldForIndexedPath } from "src/fields/ExistingField"
 import { insertAndDispatch, selectOptionAndDispatch } from "src/tests/utils"
+import { setTimeout } from "timers/promises"
 
 
 //#region options values
@@ -291,8 +292,15 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
 
         getSuggestions(query: string): string[] | Promise<string[]> {
-            return getOptionsList(this.managedField).filter(o => o.toLowerCase().includes(query.toLowerCase()))
+            const values = getOptionsList(this.managedField).filter(o => o.toLowerCase().includes(query.toLowerCase()))
+            if (this.addButton) {
+                (values.some(p => p === query) || this.managedField.options.sourceType === "ValuesFromDVQuery" || !query) ?
+                    this.addButton.buttonEl.hide() :
+                    this.addButton.buttonEl.show();
+            };
+            return values
         }
+
         renderSuggestion(value: string, el: HTMLElement) {
             el.setText(value)
             el.addClass("value-container")
@@ -317,7 +325,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                     if (Array.isArray(newOptions)) {
                         const newValues = [...newOptions, newValue]
                         const newObj: Record<string, string> = {}
-                        for (const [k, v] of newValue) { newObj[`${k}`] = v }
+                        for (const [k, v] of newValues) { newObj[`${k}`] = v }
                     } else if (typeof newOptions === "object") {
                         newOptions[`${Object.keys(newOptions).length + 1}`] = newValue
                     }
@@ -329,7 +337,8 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                     const valuesFile = plugin.app.vault.getAbstractFileByPath(path);
                     if (valuesFile instanceof TFile && valuesFile.extension == "md") {
                         const result = await plugin.app.vault.read(valuesFile)
-                        plugin.app.vault.modify(valuesFile, `${result}\n${newValue}`);
+                        await plugin.app.vault.modify(valuesFile, `${result}\n${newValue}`);
+                        await plugin.fieldIndex.getValuesListNotePathValues()
                     }
                 default:
                     break;

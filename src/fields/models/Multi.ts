@@ -2,13 +2,14 @@
 import MetadataMenu from "main";
 import * as AbstractList from "./abstractModels/AbstractList"
 import { ISettingsModal as IBaseSettingsModal } from "../base/BaseSetting";
-import { ActionLocation, IField, IFieldManager, Target, isSingleTargeted } from "../Field";
+import { ActionLocation, IField, IFieldManager, Target, fieldValueManager, isSingleTargeted } from "../Field";
 import { getFieldModal } from "../Fields";
 import { ButtonComponent, TFile, setIcon } from "obsidian";
 import { getLink } from "src/utils/parser";
 import { IFieldBase } from "../base/BaseField";
 import { buildMarkDownLink } from "./abstractModels/AbstractFile";
 import { Constructor } from "src/typings/types";
+import { setTimeout } from "timers/promises";
 
 
 export class Base implements IFieldBase {
@@ -78,8 +79,9 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
         async onAdd(): Promise<void> {
             await this.addNewValueToSettings()
-            await plugin.fieldIndex.indexFields();
+            await plugin.fieldIndex.indexFields()
             this.selectedOptions.push(this.inputEl.value)
+            managedField.value = this.selectedOptions
             const modal = getFieldModal(managedField, plugin)
             modal?.open()
             this.close()

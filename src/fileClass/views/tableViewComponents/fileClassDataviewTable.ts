@@ -43,8 +43,12 @@ export class FileClassDataviewTable {
                     return this.plugin.fieldIndex.filesFileClasses.get(path)?.map(_fC => _fC.name) || []
                 }
                 const hasFileClass = (path: string, id: string) => {
-                    const fileClassName = id.split('____')[0]
-                    return fileFileClasses(path).includes(fileClassName)
+                    if (id.includes('____')) {
+                        const fileClassName = id.split('____')[0]
+                        return fileFileClasses(path).includes(fileClassName)
+                    } else {
+                        return true
+                    }
                 }
                 const query = (new Function(
                     "dv", "current", "fileClassFiles", "hasFileClass",
@@ -74,7 +78,7 @@ export class FileClassDataviewTable {
             this.limitWrapped = !this.limitWrapped
         }
 
-        const values: any[] = this.getFilteredFiles();
+        const values: any[] = this.getFilteredFiles() || [];
         this.count = values.length;
         const rangesCount = Math.floor(this.count / this.limit) + 1
         if (rangesCount < 2) return

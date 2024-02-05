@@ -244,8 +244,8 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     async getValuesListNotePathValues(): Promise<void> {
-        this.fileClassesName.forEach((fileClass) => {
-            fileClass.attributes.forEach(async attr => {
+        await Promise.all([...new Set(this.fileClassesName)].map(async ([fileClassName, fileClass]) => {
+            await Promise.all(fileClass.attributes.map(async attr => {
                 if (typeof attr.options === "object" && !!(attr.options as Record<string, any>)["valuesListNotePath"]) {
                     this.valuesListNotePathValues.set(
                         (attr.options as Record<string, any>).valuesListNotePath,
@@ -255,9 +255,9 @@ export default class FieldIndex extends FieldIndexBuilder {
                         )
                     )
                 }
-            })
-        })
-        this.plugin.presetFields.forEach(async setting => {
+            }))
+        }))
+        await Promise.all(this.plugin.presetFields.map(async setting => {
             if (setting.options.valuesListNotePath) {
                 this.valuesListNotePathValues.set(
                     setting.options.valuesListNotePath,
@@ -267,7 +267,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                     )
                 )
             }
-        })
+        }))
     }
 
     private getFileClassesAncestors(): void {
