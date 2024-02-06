@@ -105,6 +105,7 @@ function setLinkMetadataFormButton(plugin: MetadataMenu, link: HTMLElement, dest
             }
         }
     }
+    plugin.app.workspace.trigger("metadata-menu:button-built", destPath, viewTypeName, fileClassName)
 }
 
 

@@ -7,6 +7,7 @@ import { FileClassCodeBlockView } from "../fileClassCodeBlockView";
 import { MarkdownPostProcessorContext, TFile, setIcon } from "obsidian";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
 import { fieldValueManager } from "src/fields/Field";
+import { extensionMediaTypes } from "src/fields/models/abstractModels/AbstractMedia";
 
 export class FileClassDataviewTable {
     private firstCollWidth: number;
@@ -252,7 +253,24 @@ export class FileClassDataviewTable {
                                 if (cell) buildCellCheckBox(table, cell, filesCheckboxes, allFilesSelected, selectedFiles)
                             }
                             if (table.tHead) buildHeaderCols(dvTable, table, selectedFiles, allFilesSelected)
+                        } else if (
+                            "className" in node &&
+                            typeof (node as HTMLElement).className === "string" &&
+                            (node as HTMLElement).className.includes('internal-embed')
+                        ) {
+                            const src = (node as HTMLElement).getAttr("src")
+                            if (src && node.nodeName === "SPAN" && Object.keys(extensionMediaTypes).some(extension => src.endsWith(extension))) {
+                                for (const child of node.childNodes) { node.removeChild(child) }
+                                const img = node.createEl("img")
+                                img.src = dvTable.plugin.app.vault.adapter.getResourcePath(src)
+                                img.style.width = "40px"
+                                node.appendChild(img)
+                            }
                         }
+                    }
+                } else if (mutation.type == "attributes") {
+                    for (const node of mutation.addedNodes) {
+
                     }
                 }
             }

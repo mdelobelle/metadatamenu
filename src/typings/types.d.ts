@@ -58,6 +58,9 @@ declare module "obsidian" {
     interface App {
         viewRegistry: ViewRegistry
         setting: SettingPanel
+        commands: {
+            commands: Record<string, Command>
+        }
     }
 
     interface SettingPanel {
@@ -185,6 +188,16 @@ declare module "obsidian" {
     interface Workspace {
         on(name: "layout-ready", callback: () => void, ctx?: any): EventRef;
         on(name: "layout-change", callback: Debouncer<[_file: TFile], void>, ctx?: any): EventRef;
+        on(
+            name: "metadata-menu:button-built",
+            callback: (destPath: string, viewTypeName: string | null, fileClassName?: string) => void,
+            ctx?: any
+        ): EventRef;
+        on(
+            name: "metadata-menu:fields-modal-built",
+            callback: (modal: Modal) => void,
+            ctx?: any
+        ): EventRef;
     }
     interface ViewRegistry extends Events {
         /**

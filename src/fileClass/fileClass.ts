@@ -87,6 +87,7 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
     ) {
         super(plugin.app)
     }
+
     getSuggestions(query: string): string[] | Promise<string[]> {
         const fileClasses = [...this.plugin.fieldIndex.fileClassesName.keys()]
             .filter(fileClassName => !this.plugin.fieldIndex.filesFileClasses
@@ -100,6 +101,7 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
 
     renderSuggestion(value: string, el: HTMLElement) {
         el.setText(value);
+        el.setAttr("id", `fileclass-${value}-add-choice`)
     }
 
     onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {

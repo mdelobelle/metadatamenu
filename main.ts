@@ -21,6 +21,7 @@ import { AddFileClassToFileModal } from 'src/fileClass/fileClass';
 import { FileClassCodeBlockListManager } from 'src/components/FileClassCodeBlockListManager';
 import { Field, buildEmptyField } from 'src/fields/Field';
 import * as test from "src/tests/test"
+import { TestRunner } from 'src/tests/runner';
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
 	public settings: MetadataMenuSettings;
@@ -31,6 +32,7 @@ export default class MetadataMenu extends Plugin {
 	public extraButton: ExtraButton;
 	public contextMenu: ContextMenu;
 	public indexStatus: IndexStatus;
+	public testRunner: TestRunner;
 	public indexName: string;
 	public launched: boolean = false;
 	public indexDB: IndexDatabase;
@@ -132,7 +134,8 @@ export default class MetadataMenu extends Plugin {
 			ctx.addChild(fileClassCodeBlockManager)
 		});
 		this.app.workspace.trigger("layout-change")
-		//if (DEBUG && this.app.vault.getName() === 'test-vault-mdm') { DEBUG = true; await test.run(this) }
+		this.testRunner = this.addChild(new TestRunner(this))
+		//if (DEBUG && this.app.vault.getName() === 'test-vault-mdm') { DEBUG = false; await this.testRunner.run() }
 	};
 
 	/*

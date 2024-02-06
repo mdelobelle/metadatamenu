@@ -58,7 +58,7 @@ export class FieldsModal extends Modal {
 
     constructor(
         public plugin: MetadataMenu,
-        private file: TFile,
+        readonly file: TFile,
         public noteFields: NoteFieldsComponent,
         public indexedPath: string | undefined
     ) {
@@ -125,6 +125,7 @@ export class FieldsModal extends Modal {
         this.contentEl.createEl('hr')
         const fileClassManagersContainer = this.contentEl.createDiv({ cls: "fields-container" });
         this.buildFileClassManager(fileClassManagersContainer)
+        this.plugin.app.workspace.trigger("metadata-menu:fields-modal-built", this)
     }
 
     private buildNavigation(): void {
@@ -343,6 +344,7 @@ export class FieldsModal extends Modal {
         const insertMissingFieldsInFrontmatterBtn = new ButtonComponent(insertMissingFieldsContainer)
         insertMissingFieldsInFrontmatterBtn.setIcon("align-vertical-space-around")
         insertMissingFieldsInFrontmatterBtn.setTooltip("In Frontmatter")
+        insertMissingFieldsInFrontmatterBtn.buttonEl.addClass("in-frontmatter-btn")
         insertMissingFieldsInFrontmatterBtn.onClick(() => {
             if (!this.indexedPath) {
                 insertMissingFields(this.plugin, this.file.path, -1)
@@ -355,6 +357,7 @@ export class FieldsModal extends Modal {
         const insertMissingFieldsBtn = new ButtonComponent(insertMissingFieldsContainer)
         insertMissingFieldsBtn.setIcon("log-in")
         insertMissingFieldsBtn.setTooltip("At line...")
+        insertMissingFieldsBtn.buttonEl.addClass("at-line-btn")
         insertMissingFieldsBtn.onClick(() => {
             if (!this.indexedPath) {
                 new ChooseSectionModal(
@@ -411,7 +414,6 @@ export class FieldsModal extends Modal {
         }
     }
 }
-
 
 export default class NoteFieldsComponent extends Component {
 

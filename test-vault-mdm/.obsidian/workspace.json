@@ -4,15 +4,19 @@
     "type": "split",
     "children": [
       {
-        "id": "da933f75c0d2f17e",
+        "id": "e94596fa5f046827",
         "type": "tabs",
         "children": [
           {
-            "id": "843146fafd076ecb",
+            "id": "4b2a52b207ca987b",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {}
+              "type": "markdown",
+              "state": {
+                "file": "Folder3/test3_1_fileclass_frontmatter.md",
+                "mode": "source",
+                "source": false
+              }
             }
           }
         ]
@@ -81,6 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "Folder3/test3_1_fileclass_frontmatter.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -97,6 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
+                "file": "Folder3/test3_1_fileclass_frontmatter.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -119,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Untitled.md"
+                "file": "Folder3/test3_1_fileclass_frontmatter.md"
               }
             }
           }
@@ -140,11 +146,13 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "a70066693f6a00ac",
+  "active": "4b2a52b207ca987b",
   "lastOpenFiles": [
-    "Untitled.md",
     "Fileclasses/Fileclass2.md",
     "Fileclasses/Fileclass1.md",
+    "Folder3/test3_1_fileclass_frontmatter.md",
+    "Folder4",
+    "Folder3",
     "__fixtures__/settings/presetFields.md",
     "__fixtures__/fileClasses/Fileclass1.md",
     "__fixtures__/fileClasses/Fileclass2.md",
@@ -166,7 +174,6 @@
     "__fixtures__/lists",
     "fixtures/settings/presetFields",
     "__fixtures__/settings",
-    "__fixtures__",
     "Welcome.md"
   ]
 }

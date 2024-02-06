@@ -16,14 +16,14 @@ extends:
 savedViews: []
 favoriteView: 
 fieldsOrder:
-  - Z9bAqx
-  - bEFR7W
-  - cu0348
-  - Z0ijjW
-  - slCUzt
-  - sqaCTD
-  - a6MJ30
-  - 8xKUWy
+  - Vk6D7h
+  - wBUleJ
+  - vZMbil
+  - sDMLvT
+  - jcs1gS
+  - Fv5vUx
+  - pPNbXO
+  - oz7oCY
 version: "2.15"
 fields:
   - name: activities
@@ -41,7 +41,7 @@ fields:
         "8": 🤕
         "9": ❓
     path: ""
-    id: 8xKUWy
+    id: oz7oCY
   - name: calories
     type: Input
     options:
@@ -49,7 +49,7 @@ fields:
     style:
       bold: true
     path: ""
-    id: a6MJ30
+    id: pPNbXO
   - name: distance
     type: Input
     options:
@@ -58,7 +58,7 @@ fields:
       bold: true
       italic: true
     path: ""
-    id: sqaCTD
+    id: Fv5vUx
   - name: time
     type: Input
     options:
@@ -66,7 +66,7 @@ fields:
     style:
       bold: true
     path: ""
-    id: slCUzt
+    id: jcs1gS
   - name: push-ups
     type: Number
     options:
@@ -76,7 +76,7 @@ fields:
     style:
       bold: true
     path: ""
-    id: Z0ijjW
+    id: sDMLvT
   - name: pull-ups
     type: Number
     options:
@@ -86,7 +86,7 @@ fields:
     style:
       bold: true
     path: ""
-    id: cu0348
+    id: vZMbil
   - name: squats
     type: Number
     options:
@@ -96,12 +96,12 @@ fields:
     style:
       bold: true
     path: ""
-    id: bEFR7W
+    id: wBUleJ
   - name: bpm
     type: Number
     options: {}
     style:
       bold: true
     path: ""
-    id: Z9bAqx
+    id: Vk6D7h
 ---

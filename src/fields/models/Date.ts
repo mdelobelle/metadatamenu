@@ -5,7 +5,6 @@ import * as AbstractDate from "./abstractModels/AbstractDate"
 import { ActionLocation, IField, IFieldManager, Target } from "../Field"
 import MetadataMenu from "main"
 import { Constructor } from "src/typings/types"
-import { insertAndDispatch } from "src/tests/utils"
 
 export class Base implements IFieldBase {
     type = <const>"Date"
@@ -65,7 +64,7 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
 
 export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>, speed = 100) {
     AbstractDate.enterFieldSetting(settingModal, field, speed)
-    if (field.options.linkPath) insertAndDispatch(settingModal.dateLinkPathInput, `${field.options.linkPath}`)
+    if (field.options.linkPath) settingModal.plugin.testRunner.insertInTextComponent(settingModal.dateLinkPathInput, `${field.options.linkPath}`)
     if (field.options.defaultInsertAsLink) settingModal.defaultInsertAsLink.toggleEl.click()
 
 }

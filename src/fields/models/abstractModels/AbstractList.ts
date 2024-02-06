@@ -9,8 +9,6 @@ import { cleanActions } from "src/utils/modals"
 import { Constructor } from "src/typings/types"
 import { getIcon } from "src/fields/Fields"
 import { getExistingFieldForIndexedPath } from "src/fields/ExistingField"
-import { insertAndDispatch, selectOptionAndDispatch } from "src/tests/utils"
-import { setTimeout } from "timers/promises"
 
 
 //#region options values
@@ -468,22 +466,22 @@ export function getOptionsList(managedField: IField<Options> | IFieldManager<Tar
 //#region test
 
 export async function enterFieldSetting(settingModal: IListBaseSettingModal, field: IField<Options>, speed = 100) {
-    selectOptionAndDispatch(settingModal.sourceTypeSelector, field.options.sourceType)
+    settingModal.plugin.testRunner.selectInDropDownComponent(settingModal.sourceTypeSelector, field.options.sourceType)
     switch (field.options.sourceType) {
         case "ValuesList":
             for (const [key, value] of Object.entries(field.options.valuesList || {})) {
                 settingModal.addValue.click()
                 const valueInput = settingModal.valuesPromptComponents[parseInt(key) - 1]
-                insertAndDispatch(valueInput, value)
+                settingModal.plugin.testRunner.insertInTextComponent(valueInput, value)
             }
             break;
         case "ValuesListNotePath":
             if (!field.options.valuesListNotePath) throw Error(`Can't find <${field.name}> values list note path`)
-            insertAndDispatch(settingModal.notePathInput, field.options.valuesListNotePath)
+            settingModal.plugin.testRunner.insertInTextComponent(settingModal.notePathInput, field.options.valuesListNotePath)
             break;
         case "ValuesFromDVQuery":
             if (!field.options.valuesFromDVQuery) throw Error(`Can't find <${field.name}> dataview query`)
-            insertAndDispatch(settingModal.dvQueryInput, field.options.valuesFromDVQuery)
+            settingModal.plugin.testRunner.insertInTextComponent(settingModal.dvQueryInput, field.options.valuesFromDVQuery)
             break;
     }
 }

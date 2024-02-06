@@ -8,8 +8,6 @@ import { IBasicModal, basicModal } from "../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
 import { Constructor } from "src/typings/types"
 import { getExistingFieldForIndexedPath } from "../ExistingField"
-import { Note } from "src/note/note"
-import { insertAndDispatch } from "src/tests/utils"
 
 export class Base implements IFieldBase {
     type = <const>"Number"
@@ -366,8 +364,8 @@ function canIncrement(managedField: IFieldManager<Target, Options>): boolean {
 //#endregion
 //#region test
 export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>, speed = 100) {
-    if (field.options.min || field.options.min === 0) insertAndDispatch(settingModal.numberMinValue, `${field.options.min}`)
-    if (field.options.max || field.options.max === 0) insertAndDispatch(settingModal.numberMaxValue, `${field.options.max}`)
-    if (field.options.step || field.options.step === 0) insertAndDispatch(settingModal.numberStepValue, `${field.options.step}`)
+    if (field.options.min || field.options.min === 0) settingModal.plugin.testRunner.insertInTextComponent(settingModal.numberMinValue, `${field.options.min}`)
+    if (field.options.max || field.options.max === 0) settingModal.plugin.testRunner.insertInTextComponent(settingModal.numberMaxValue, `${field.options.max}`)
+    if (field.options.step || field.options.step === 0) settingModal.plugin.testRunner.insertInTextComponent(settingModal.numberStepValue, `${field.options.step}`)
 }
 //#endregion

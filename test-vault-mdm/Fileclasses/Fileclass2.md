@@ -11,8 +11,8 @@ extends: Fileclass1
 savedViews: []
 favoriteView: 
 fieldsOrder:
-  - yNjepl
-version: "2.4"
+  - 5aZM0b
+version: "2.3"
 fields:
   - name: intensity
     type: Cycle
@@ -30,5 +30,5 @@ fields:
     style:
       bold: true
     path: ""
-    id: yNjepl
+    id: 5aZM0b
 ---

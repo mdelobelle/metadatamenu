@@ -8,7 +8,6 @@ import { IBasicModal, basicModal } from "../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
 import { Constructor } from "src/typings/types"
 import { getExistingFieldForIndexedPath } from "../ExistingField"
-import { insertAndDispatch } from "src/tests/utils"
 
 export class Base implements IFieldBase {
     type = <const>"Input"
@@ -266,7 +265,7 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
 //#region test
 export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>, speed = 100) {
     if (field.options?.template !== undefined) {
-        insertAndDispatch(settingModal.templateValue, field.options.template)
+        settingModal.plugin.testRunner.insertInTextComponent(settingModal.templateValue, field.options.template)
         const input = settingModal.containerEl.querySelector("#template-input") as HTMLInputElement
         if (!input) throw Error("Template input not found")
         if (!(input.value === settingModal.templateValue.getValue())) throw Error("Template input error")

@@ -12,8 +12,6 @@ import { IBaseValueModal, IBasicModal, basicModal } from "../../base/BaseModal"
 import { ISettingsModal } from "../../base/BaseSetting"
 import { Options as CycleOptions, getOptionsList as getCycleOptionsList, getNextOption } from "../Cycle"
 import { postValues } from "src/commands/postValues"
-import { insertAndDispatch, selectOptionAndDispatch } from "src/tests/utils"
-
 
 //#endregion
 
@@ -151,11 +149,11 @@ function getCycleRootFields(field: IField<Options>): Field[] {
 }
 
 export interface Modal<T extends Target> extends IBaseValueModal<T> {
-    buildFields(dateFieldsContainer: HTMLDivElement): Promise<void>
-    buildInputEl(dateFieldsContainer: HTMLDivElement): void
-    buildInsertAsLinkButton(dateFieldsContainer: HTMLDivElement): void
-    buildClearBtn(dateFieldsContainer: HTMLDivElement): void
-    buildSaveBtn(dateFieldsContainer: HTMLDivElement): void
+    buildFields?(dateFieldsContainer: HTMLDivElement): Promise<void>
+    buildInputEl?(dateFieldsContainer: HTMLDivElement): void
+    buildInsertAsLinkButton?(dateFieldsContainer: HTMLDivElement): void
+    buildClearBtn?(dateFieldsContainer: HTMLDivElement): void
+    buildSaveBtn?(dateFieldsContainer: HTMLDivElement): void
 }
 
 
@@ -185,7 +183,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         private nextShift?: string
         private initialValue: string
 
-
         constructor(...rest: any[]) {
             super(plugin.app)
             this.managedField = managedField
@@ -211,7 +208,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             this.errorField.hide();
         }
 
-        private async buildFields(dateFieldsContainer: HTMLDivElement): Promise<void> {
+        public async buildFields(dateFieldsContainer: HTMLDivElement): Promise<void> {
             await this.buildInputEl(dateFieldsContainer);
             this.buildInsertAsLinkButton(dateFieldsContainer);
             this.buildClearBtn(dateFieldsContainer);
@@ -666,8 +663,8 @@ async function shiftDate(managedField: IFieldManager<Target, Options>): Promise<
 //#region tests
 
 export async function enterFieldSetting(settingModal: IDateBaseSettingModal, field: IField<Options>, speed = 100) {
-    if (field.options.dateFormat) insertAndDispatch(settingModal.dateFormatInput, `${field.options.dateFormat}`)
-    if (field.options.dateShiftInterval) insertAndDispatch(settingModal.dateShiftInterval, `${field.options.dateShiftInterval}`)
+    if (field.options.dateFormat) settingModal.plugin.testRunner.insertInTextComponent(settingModal.dateFormatInput, `${field.options.dateFormat}`)
+    if (field.options.dateShiftInterval) settingModal.plugin.testRunner.insertInTextComponent(settingModal.dateShiftInterval, `${field.options.dateShiftInterval}`)
     if (field.options.nextShiftIntervalField) {
         let cycleField: IField<BaseOptions> | undefined
         if (field.fileClassName) {
@@ -678,7 +675,7 @@ export async function enterFieldSetting(settingModal: IDateBaseSettingModal, fie
             cycleField = field.plugin.presetFields.find(_f => _f.name !== field.name && _f.type === "Cycle")
         }
         if (!cycleField) throw Error("Cycle field for intervals not found")
-        selectOptionAndDispatch(settingModal.nextShiftIntervalField, `${cycleField.id}`)
+        settingModal.plugin.testRunner.selectInDropDownComponent(settingModal.nextShiftIntervalField, `${cycleField.id}`)
     }
 }
 
