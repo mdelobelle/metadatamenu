@@ -11,8 +11,8 @@ import { testFileClassViewNavigation } from "src/fileClass/views/fileClassView"
 import { testFileClassSettingsView } from "src/fileClass/views/fileClassSettingsView"
 import { FileClass } from "src/fileClass/fileClass"
 import { fieldDecorations, FieldStyle, FieldStyleLabel } from "src/types/dataviewTypes"
-
-const speed = 0
+import { Note } from "src/note/note"
+import { BaseValueModal } from "src/fields/base/BaseModal"
 
 function getPresetFields(plugin: MetadataMenu, speed = 100): Field[] {
     const presetFieldsFile = plugin.app.vault.getAbstractFileByPath("__fixtures__/settings/presetFields.md")
@@ -206,5 +206,48 @@ async function insertMissingFields(plugin: MetadataMenu, file: TFile, speed = 10
 }
 
 async function testNumberFieldAction(plugin: MetadataMenu, modal: HTMLDivElement, speed = 100) {
-    console.log(modal.innerText)
+    const numberField = plugin.fieldIndex.filesFields.get("Folder3/test3_1_fileclass_frontmatter.md")?.find(f => f.name === "push-ups")
+    if (!numberField) throw Error(`${"push-ups"} field not found`)
+    const incrementBtn = modal.querySelector(`#field_${numberField.id}_increase`) as HTMLDivElement
+    if (!incrementBtn) throw Error(`${numberField.name} increment button not found`)
+    plugin.testRunner.planActionAfterFieldIndex(() => { getNumberFieldResultAndTestInputField(plugin, numberField, modal, speed) })
+    incrementBtn.click()
+}
+
+async function getNumberFieldResultAndTestInputField(plugin: MetadataMenu, numberField: Field, modal: HTMLDivElement, speed = 100) {
+    const file = plugin.app.vault.getAbstractFileByPath("Folder3/test3_1_fileclass_frontmatter.md")
+    if (!(file instanceof TFile)) throw Error("Folder3/test3_1_fileclass_frontmatter.md file not found")
+    const note = await Note.buildNote(plugin, file)
+    const test = note.existingFields.find(eF => eF.field.id === numberField.id)?.value === numberField.options.step
+    plugin.testRunner.log(test ? "SUCCESS" : "ERROR", "Number field action from fields modal")
+    const input = plugin.fieldIndex.filesFields.get("Folder3/test3_1_fileclass_frontmatter.md")?.find(f => f.name === "calories")
+    if (!input) throw Error(`${"calories"} field not found`)
+    const updateBtn = modal.querySelector(`#field_${input.id}_update`) as HTMLDivElement
+    if (!updateBtn) throw Error(`${input.name} increment button not found`)
+    plugin.testRunner.planActionAfterFieldUpdateModalBuilt(input.id, (modal) => { testInputModal(plugin, input, modal, speed) })
+    updateBtn.click()
+}
+
+async function testInputModal(plugin: MetadataMenu, input: Field, inputModal: BaseValueModal<TFile, BaseOptions>, speed = 100) {
+    const modal = document.querySelector(`#field_${input.id}_update_modal`)
+    if (!modal) throw Error(`${input.name} update modal not found`)
+    const textArea = modal.querySelector("textarea") as HTMLTextAreaElement
+    if (!textArea) throw Error(`${input.name} text area not found`)
+    plugin.testRunner.insertInInputEl(textArea, "test valeur input")
+    plugin.testRunner.planActionAfterFieldIndex(() => {
+        testInputUpdate(plugin, input, speed)
+    })
+    inputModal.managedField.save()
+    inputModal.close()
+}
+
+async function testInputUpdate(plugin: MetadataMenu, input: Field, speed = 100) {
+    const file = plugin.app.vault.getAbstractFileByPath("Folder3/test3_1_fileclass_frontmatter.md")
+    if (!(file instanceof TFile)) throw Error("Folder3/test3_1_fileclass_frontmatter.md file not found")
+    const note = await Note.buildNote(plugin, file)
+    const test = note.existingFields.find(eF => eF.field.id === input.id)?.value === "test valeur input"
+    plugin.testRunner.log(test ? "SUCCESS" : "ERROR", "Input field action from fields modal")
+    const modal = document.querySelector(".modal-container.metadata-menu.note-fields-modal") as HTMLDivElement
+    if (!modal) throw Error("Fields Modal not found");
+    (modal.querySelector(".modal-close-button") as HTMLDivElement).click()
 }

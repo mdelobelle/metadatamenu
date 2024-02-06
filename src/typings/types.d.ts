@@ -1,3 +1,4 @@
+import { BaseOptions } from "crypto-random-string";
 import MetadataMenu from "main";
 import "obsidian";
 import { EventRef } from "obsidian";
@@ -5,6 +6,7 @@ import { EventRef } from "obsidian";
 import { DataviewApi } from "obsidian-dataview";
 import { IMetadataMenuApi } from "src/MetadataMenuApi";
 import { IndexedFieldsPayload } from "src/commands/postValues";
+import { BaseValueModal } from "src/fields/base/BaseModal";
 
 interface InternalPlugin {
     enabled: boolean;
@@ -196,6 +198,11 @@ declare module "obsidian" {
         on(
             name: "metadata-menu:fields-modal-built",
             callback: (modal: Modal) => void,
+            ctx?: any
+        ): EventRef;
+        on(
+            name: "metadata-menu:field-update-modal-built",
+            callback: (modal: BaseValueModal<TFile, BaseOptions>) => void,
             ctx?: any
         ): EventRef;
     }

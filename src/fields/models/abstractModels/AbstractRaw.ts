@@ -129,6 +129,6 @@ export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFil
             icon: iconName
         });
     } else if (isFieldActions(location)) {
-        location.addOption(iconName, action, `Update ${field.name}'s value`);
+        location.addOption(`field_${field.id}_update`, iconName, action, `Update ${field.name}'s value`);
     }
 }

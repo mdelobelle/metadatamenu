@@ -285,10 +285,10 @@ export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFil
         });
     } else if (isFieldActions(location)) {
         if (step) {
-            location.addOption("minus-square", decrease, `Decrease ${name} by ${step}`);
-            location.addOption("plus-square", increase, `Increase ${name} by ${step}`);
+            location.addOption(`field_${field.id}_decrease`, "minus-square", decrease, `Decrease ${name} by ${step}`);
+            location.addOption(`field_${field.id}_increase`, "plus-square", increase, `Increase ${name} by ${step}`);
         }
-        location.addOption(iconName, action, `Update ${name}'s value`)
+        location.addOption(`field_${field.id}_update`, iconName, action, `Update ${name}'s value`)
     };
 
 }

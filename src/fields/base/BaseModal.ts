@@ -31,7 +31,9 @@ export type ModalType =
 export class BaseValueModal<T extends Target, O extends BaseOptions> extends Modal implements IBaseValueModal<T> {
     public managedField: IFieldManager<T, O>
     public saved: boolean = false
+
     onOpen(): void {
+        this.contentEl.setAttr("id", `field_${this.managedField.id}_update_modal`)
         this.containerEl.onkeydown = (e) => {
             if (e.key == "Enter" && e.altKey) {
                 e.preventDefault()
@@ -42,6 +44,7 @@ export class BaseValueModal<T extends Target, O extends BaseOptions> extends Mod
                 this.close()
             }
         }
+        this.managedField.plugin.app.workspace.trigger("metadata-menu:field-update-modal-built", this)
     }
 
     public async goToPreviousModal() {

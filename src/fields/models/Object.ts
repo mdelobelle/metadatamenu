@@ -192,7 +192,7 @@ export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFil
     if (noteField) {
         const action = async () => await noteField.moveToObject(`${indexedPath}`);
         if (isFieldActions(location)) {
-            location.addOption(iconName, action, `Go to ${field.name}'s fields`);
+            location.addOption(`field_${field.id}_children`, iconName, action, `Go to ${field.name}'s fields`);
         }
     } else {
         const name = field.name

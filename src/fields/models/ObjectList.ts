@@ -174,8 +174,8 @@ export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFil
             }
         }
         if (isFieldActions(location)) {
-            location.addOption(iconName, moveToObject, `Go to this ${name} item`);
-            location.addOption("trash", removeObject, `Remove this ${name} item`)
+            location.addOption(`field_${field.id}_goto_${indexedPath}`, iconName, moveToObject, `Go to this ${name} item`);
+            location.addOption(`field_${field.id}_remove_${indexedPath}`, "trash", removeObject, `Remove this ${name} item`)
         }
     } else {
         const moveToObject = async () => {

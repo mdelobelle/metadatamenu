@@ -483,8 +483,8 @@ export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFil
             icon: "eraser"
         })
     } else if (isFieldActions(location)) {
-        location.addOption("skip-forward", shiftDateAction, `Shift ${name} ahead`);
-        location.addOption(dateIconName, dateModalAction, `Set ${name}'s date`);
+        location.addOption(`field_${field.id}_shift`, "skip-forward", shiftDateAction, `Shift ${name} ahead`);
+        location.addOption(`field_${field.id}_update`, dateIconName, dateModalAction, `Set ${name}'s date`);
     };
 }
 

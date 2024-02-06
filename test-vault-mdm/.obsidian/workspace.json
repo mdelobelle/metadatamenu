@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "3cf166e4e3fbe1f1",
+        "id": "a8db2117949e5baf",
         "type": "tabs",
         "children": [
           {
-            "id": "e04b2d4dffd2e8fc",
+            "id": "68e7561e94d818c2",
             "type": "leaf",
             "state": {
               "type": "FileClassView__Fileclass1",
@@ -16,7 +16,7 @@
             }
           },
           {
-            "id": "b1e23973d5d1ae8c",
+            "id": "e741b88fe984dcbf",
             "type": "leaf",
             "state": {
               "type": "FileClassView__Fileclass2",
@@ -24,7 +24,7 @@
             }
           },
           {
-            "id": "08bf06f5974e7ac3",
+            "id": "47a27f5e8ae69a1c",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -163,7 +163,7 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "08bf06f5974e7ac3",
+  "active": "47a27f5e8ae69a1c",
   "lastOpenFiles": [
     "Fileclasses/Fileclass2.md",
     "Fileclasses/Fileclass1.md",

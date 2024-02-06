@@ -131,6 +131,7 @@ export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFil
         });
     } else if (isFieldActions(location)) {
         location.addOption(
+            `${field.id}_toggle`,
             iconName,
             action,
             `Toggle ${field.name}`,

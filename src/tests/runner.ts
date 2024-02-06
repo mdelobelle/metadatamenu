@@ -1,11 +1,13 @@
 import MetadataMenu from "main"
 import { Component, DropdownComponent, MetadataCache, Modal, TFile, TextAreaComponent, TextComponent, Vault, Workspace } from "obsidian"
 import { FieldsModal } from "src/components/FieldsModal"
-import { testFileClassesCreation, testValueModification } from "./test"
+import { testFileClassesCreation, testValueModification, testPresetFieldsCreation } from "./test"
 import FieldIndex from "src/index/FieldIndex"
+import { BaseValueModal } from "src/fields/base/BaseModal"
+import { BaseOptions } from "src/fields/base/BaseField"
 
 export class TestRunner extends Component {
-    speed: number = 100
+    speed: number = 10
     defaultAction = () => { /**do nothing */ }
     waitingForMetadata: boolean = false
     waitingForIndexing: boolean = false
@@ -13,15 +15,19 @@ export class TestRunner extends Component {
     waitingForButtonFileclass: string | undefined = undefined
     waitingForButtonDest: string | undefined = undefined
     waitingForModalForFilePath: string | undefined
+    waitingForModalForFieldId: string | undefined
     nextActionAfterIndex: (...arg: any[]) => any = this.defaultAction
     nextActionAfterCache: (...arg: any[]) => any = this.defaultAction
     nextActionAfterButton: (...arg: any[]) => any = this.defaultAction
     nextActionAfterFieldsModal: (...arg: any[]) => any = this.defaultAction
+    nextActionAfterFieldUpdateModal: (...arg: any[]) => any = this.defaultAction
     resetAfterIndexAction: boolean = true
     resetAfterCacheAction: boolean = true
     resetAfterButtonAction: boolean = true
     resetAfterFieldModalAction: boolean = true
+    resetAfterFieldUpdateModalAction: boolean = true
     modals: Modal[] = []
+    fieldsUpdateModals: BaseValueModal<TFile, BaseOptions>[] = []
     vault: Vault
     index: FieldIndex
     metadataCache: MetadataCache
@@ -80,7 +86,6 @@ export class TestRunner extends Component {
         this.registerEvent(
             this.workspace.on('metadata-menu:fields-modal-built', async (modal: FieldsModal) => {
                 if (this.waitingForModalForFilePath === modal.file.path) {
-                    console.log(this.nextActionAfterFieldsModal)
                     this.modals.push(modal)
                     await this.nextActionAfterFieldsModal()
                     if (this.resetAfterFieldModalAction) {
@@ -90,14 +95,28 @@ export class TestRunner extends Component {
                 }
             })
         )
+
+        this.registerEvent(
+            this.workspace.on('metadata-menu:field-update-modal-built', async (modal: BaseValueModal<TFile, BaseOptions>) => {
+                if (this.waitingForModalForFieldId === modal.managedField.id) {
+                    this.fieldsUpdateModals.push(modal)
+                    await this.nextActionAfterFieldUpdateModal(modal)
+                    if (this.resetAfterFieldUpdateModalAction) {
+                        this.waitingForModalForFieldId = undefined
+                        this.nextActionAfterFieldUpdateModal = this.defaultAction
+                    }
+                }
+            })
+        )
     }
 
     async run() {
         await this.clean()
-        //await testPresetFieldsCreation(plugin, speed)
+        await testPresetFieldsCreation(this.plugin, this.speed)
         await testFileClassesCreation(this.plugin, this.speed)
         await testValueModification(this.plugin, this.speed)
     }
+
 
     async clean() {
         for (const leaf of this.workspace.getLeavesOfType("markdown")) { leaf.detach() }
@@ -138,6 +157,12 @@ export class TestRunner extends Component {
         this.nextActionAfterFieldsModal = action
         this.waitingForModalForFilePath = file.path
         this.resetAfterFieldModalAction = reset
+    }
+
+    planActionAfterFieldUpdateModalBuilt(id: string, action: (...arg: any[]) => any, reset = true) {
+        this.nextActionAfterFieldUpdateModal = action
+        this.waitingForModalForFieldId = id
+        this.resetAfterFieldUpdateModalAction = reset
     }
 
     public log(status: "SUCCESS" | "ERROR", output: string) {

@@ -11,7 +11,7 @@ extends: Fileclass1
 savedViews: []
 favoriteView: 
 fieldsOrder:
-  - dDLaHj
+  - L11GLC
 version: "2.3"
 fields:
   - name: intensity
@@ -30,5 +30,5 @@ fields:
     style:
       bold: true
     path: ""
-    id: dDLaHj
+    id: L11GLC
 ---

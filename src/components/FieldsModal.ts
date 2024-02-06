@@ -32,9 +32,10 @@ export class FieldActions {
         }
     }
 
-    public addOption(icon: string, onclick: () => {} | void, tooltip?: string, className?: string, file?: TFile, indexedPath?: string, plugin?: MetadataMenu) {
+    public addOption(id: string, icon: string, onclick: () => {} | void, tooltip?: string, className?: string, file?: TFile, indexedPath?: string, plugin?: MetadataMenu) {
         const fieldOptionContainer = this.container.createDiv({ cls: "field-item field-option" })
         const fieldOption = new ButtonComponent(fieldOptionContainer);
+        fieldOption.buttonEl.setAttr("id", id)
         if (indexedPath && file && plugin) {
             this.setIconAndTooltipAsync(fieldOption, file, indexedPath, plugin)
         } else {
@@ -43,9 +44,7 @@ export class FieldActions {
         }
         if (className) fieldOption.buttonEl.addClass(className);
         fieldOption.onClick(() => onclick())
-
     }
-
 }
 
 export class FieldOptions extends FieldActions { }

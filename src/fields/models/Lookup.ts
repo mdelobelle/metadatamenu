@@ -250,12 +250,12 @@ export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFil
             });
 
         } else if (isFieldActions(location) && [Status.changed, Status.mayHaveChanged].includes(status)) {
-            location.addOption(icon, action, `Update ${name}'s value`);
+            location.addOption(`field_${field.id}_update`, icon, action, `Update ${name}'s value`);
         } else if (isFieldActions(location) && status === Status.upToDate) {
-            location.addOption(icon, () => { }, `${name} is up to date`);
+            location.addOption(`field_${field.id}_update`, icon, () => { }, `${name} is up to date`);
         }
     } else if (isFieldActions(location)) {
-        location.addOption("server-cog", () => { }, `${name} is auto-updated`, "disabled");
+        location.addOption(`field_${field.id}_update`, "server-cog", () => { }, `${name} is auto-updated`, "disabled");
     }
 }
 

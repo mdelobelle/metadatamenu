@@ -115,7 +115,7 @@ export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFil
             icon: iconName
         })
     } else if (isFieldActions(location)) {
-        location.addOption(iconName, action, `Cycle ${name}`);
+        location.addOption(`field_${field.id}_shift`, iconName, action, `Cycle ${field.name}`);
     };
 }
 
