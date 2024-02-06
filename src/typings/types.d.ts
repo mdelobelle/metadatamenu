@@ -276,6 +276,6 @@ declare global {
     interface Window {
         MetadataMenuAPI?: IMetadataMenuApi;
         MetadataMenu?: MetadataMenu;
-        DEBUG?: boolean
+        MDM_DEBUG?: boolean
     }
 }

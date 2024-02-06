@@ -82,7 +82,7 @@ export default class FieldIndex extends FieldIndexBuilder {
 
         this.registerEvent(
             this.plugin.app.metadataCache.on("dataview:index-ready", async () => {
-                DEBUG && console.log("dataview index ready")
+                MDM_DEBUG && console.log("dataview index ready")
                 this.dv = this.plugin.app.plugins.plugins.dataview;
             })
         )
@@ -157,7 +157,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         await this.getCanvasesFiles();
         await this.getValuesListNotePathValues();
         this.getFilesLookupAndFormulaFieldsExists();
-        DEBUG && console.log("indexed FIELDS for ", indexedFiles, " files in ", (Date.now() - start) / 1000, "s")
+        MDM_DEBUG && console.log("indexed FIELDS for ", indexedFiles, " files in ", (Date.now() - start) / 1000, "s")
     }
 
     public pushPayloadToUpdate(filePath: string, fieldsPayloadToUpdate: IndexedFieldsPayload) {
@@ -209,7 +209,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         await updateFormulas(this.plugin, forceUpdateOne, force_update_all);
         await this.applyUpdates()
         this.plugin.app.metadataCache.trigger("metadata-menu:indexed");
-        DEBUG && console.log("Resolved dvQ in ", (Date.now() - start) / 1000, "s")
+        MDM_DEBUG && console.log("Resolved dvQ in ", (Date.now() - start) / 1000, "s")
     }
 
     async migrateFileClasses(): Promise<void> {
@@ -229,7 +229,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                     nodes = canvasContent.nodes;
                     edges = canvasContent.edges
                 } catch (error) {
-                    DEBUG && console.log(error)
+                    MDM_DEBUG && console.log(error)
                     new Notice(`Couldn't read ${canvas.path}`)
                 }
             }

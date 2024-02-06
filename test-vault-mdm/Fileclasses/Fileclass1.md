@@ -16,15 +16,15 @@ extends:
 savedViews: []
 favoriteView: 
 fieldsOrder:
-  - Vk6D7h
-  - wBUleJ
-  - vZMbil
-  - sDMLvT
-  - jcs1gS
-  - Fv5vUx
-  - pPNbXO
-  - oz7oCY
-version: "2.15"
+  - J5EFhm
+  - MBeS53
+  - Ex2xQN
+  - 758IjN
+  - UxpKAm
+  - 6sXHU9
+  - K8wzlg
+  - LntcEP
+version: "2.14"
 fields:
   - name: activities
     type: Multi
@@ -41,7 +41,7 @@ fields:
         "8": 🤕
         "9": ❓
     path: ""
-    id: oz7oCY
+    id: LntcEP
   - name: calories
     type: Input
     options:
@@ -49,7 +49,7 @@ fields:
     style:
       bold: true
     path: ""
-    id: pPNbXO
+    id: K8wzlg
   - name: distance
     type: Input
     options:
@@ -58,7 +58,7 @@ fields:
       bold: true
       italic: true
     path: ""
-    id: Fv5vUx
+    id: 6sXHU9
   - name: time
     type: Input
     options:
@@ -66,7 +66,7 @@ fields:
     style:
       bold: true
     path: ""
-    id: jcs1gS
+    id: UxpKAm
   - name: push-ups
     type: Number
     options:
@@ -76,7 +76,7 @@ fields:
     style:
       bold: true
     path: ""
-    id: sDMLvT
+    id: 758IjN
   - name: pull-ups
     type: Number
     options:
@@ -86,7 +86,7 @@ fields:
     style:
       bold: true
     path: ""
-    id: vZMbil
+    id: Ex2xQN
   - name: squats
     type: Number
     options:
@@ -96,12 +96,12 @@ fields:
     style:
       bold: true
     path: ""
-    id: wBUleJ
+    id: MBeS53
   - name: bpm
     type: Number
     options: {}
     style:
       bold: true
     path: ""
-    id: Vk6D7h
+    id: J5EFhm
 ---

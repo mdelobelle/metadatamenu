@@ -263,7 +263,8 @@ export class FileClassDataviewTable {
                                 for (const child of node.childNodes) { node.removeChild(child) }
                                 const img = node.createEl("img")
                                 img.src = dvTable.plugin.app.vault.adapter.getResourcePath(src)
-                                img.style.width = "40px"
+                                img.style.height = "60px"
+                                img.style.borderRadius = "var(--image-radius)";
                                 node.appendChild(img)
                             }
                         }

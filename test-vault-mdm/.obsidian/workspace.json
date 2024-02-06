@@ -4,11 +4,27 @@
     "type": "split",
     "children": [
       {
-        "id": "e94596fa5f046827",
+        "id": "3cf166e4e3fbe1f1",
         "type": "tabs",
         "children": [
           {
-            "id": "4b2a52b207ca987b",
+            "id": "e04b2d4dffd2e8fc",
+            "type": "leaf",
+            "state": {
+              "type": "FileClassView__Fileclass1",
+              "state": {}
+            }
+          },
+          {
+            "id": "b1e23973d5d1ae8c",
+            "type": "leaf",
+            "state": {
+              "type": "FileClassView__Fileclass2",
+              "state": {}
+            }
+          },
+          {
+            "id": "08bf06f5974e7ac3",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -19,7 +35,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -146,7 +163,7 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "4b2a52b207ca987b",
+  "active": "08bf06f5974e7ac3",
   "lastOpenFiles": [
     "Fileclasses/Fileclass2.md",
     "Fileclasses/Fileclass1.md",

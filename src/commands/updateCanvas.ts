@@ -177,7 +177,7 @@ export async function updateCanvas(
                 nodes = canvasContent.nodes;
                 edges = canvasContent.edges
             } catch (error) {
-                DEBUG && console.log(error)
+                MDM_DEBUG && console.log(error)
                 new Notice(`Couldn't read ${canvas.path}`)
             }
         }

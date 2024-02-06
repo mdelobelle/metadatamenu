@@ -40,7 +40,7 @@ export default class MetadataMenu extends Plugin {
 
 	async onload(): Promise<void> {
 		console.log('+------ Metadata Menu loaded ------x-+');
-		this.register(() => delete window.DEBUG);
+		this.register(() => delete window.MDM_DEBUG);
 		this.indexName = `metadata_menu_${this.app.appId ||
 			this.app.vault.adapter.basePath ||
 			this.app.vault.getName()}`;
@@ -135,8 +135,9 @@ export default class MetadataMenu extends Plugin {
 		});
 		this.app.workspace.trigger("layout-change")
 		this.testRunner = this.addChild(new TestRunner(this))
-		//if (DEBUG && this.app.vault.getName() === 'test-vault-mdm') { DEBUG = false; await this.testRunner.run() }
+		if (MDM_DEBUG && this.app.vault.getName() === 'test-vault-mdm') { MDM_DEBUG = false; await this.testRunner.run() }
 	};
+
 
 	/*
 	------------

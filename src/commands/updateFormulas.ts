@@ -34,7 +34,7 @@ export async function updateFormulas(
     forceUpdateAll: boolean = false
 ): Promise<void> {
     const start = Date.now()
-    DEBUG && console.log("start update formulas", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
+    MDM_DEBUG && console.log("start update formulas", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision)
     const f = plugin.fieldIndex;
     //1. flatten all file__formulaField in a Map
     const fileFormulasFields: Map<string, Field> = new Map();
@@ -75,7 +75,7 @@ export async function updateFormulas(
             f.fileFormulaFieldsStatus.set(`${filePath}__${field.name}`, Status.error)
         }
     }))
-    DEBUG && console.log("finished update formulas", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision, `${(Date.now() - start)}ms`)
+    MDM_DEBUG && console.log("finished update formulas", plugin.fieldIndex.lastRevision, "->", plugin.fieldIndex.dv?.api.index.revision, `${(Date.now() - start)}ms`)
     //3 remove non existing formula fields from index, since those indexes aren't flushed each time
     cleanRemovedFormulasFromIndex(plugin);
 }

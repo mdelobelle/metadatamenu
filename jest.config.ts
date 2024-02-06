@@ -17,7 +17,7 @@ const config: Config.InitialOptions = {
         "node_modules"
     ],
     globals: {
-        DEBUG: true
+        MDM_DEBUG: true
     }
 };
 

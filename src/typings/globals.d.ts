@@ -1,1 +1,1 @@
-declare var DEBUG: boolean | undefined
+declare var MDM_DEBUG: boolean | undefined
