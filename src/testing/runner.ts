@@ -1,10 +1,14 @@
 import MetadataMenu from "main"
 import { Component, DropdownComponent, MetadataCache, Modal, TFile, TextAreaComponent, TextComponent, Vault, Workspace } from "obsidian"
 import { FieldsModal } from "src/components/FieldsModal"
-import { testFileClassesCreation, testValueModification, testPresetFieldsCreation } from "./test"
 import FieldIndex from "src/index/FieldIndex"
 import { BaseValueModal } from "src/fields/base/BaseModal"
 import { BaseOptions } from "src/fields/base/BaseField"
+import { setTimeout } from "timers/promises"
+import MetadataMenuSettingTab, { isMetadataMenuSettingTab } from "src/settings/MetadataMenuSettingTab"
+import { testPresetFieldsCreation } from "./tests/settingsCreation"
+import { fileClassFolder, testFileClassesCreation } from "./tests/fileclassCreation"
+import { testFilePath, testValueModification } from "./tests/fieldsModal"
 
 export class TestRunner extends Component {
     speed: number = 10
@@ -123,10 +127,10 @@ export class TestRunner extends Component {
         this.plugin.presetFields = []
         this.plugin.settings.classFilesPath = ""
         await this.plugin.saveSettings()
-        const fileClassFiles = this.vault.getFiles().filter(f => f.parent?.path === "Fileclasses")
-        const test3_1 = this.vault.getAbstractFileByPath("Folder3/test3_1_fileclass_frontmatter.md")
-        if (test3_1 instanceof TFile) await this.plugin.app.vault.modify(test3_1, "")
-        else throw Error("Didn't find 'test3_1.md' in Folder3/")
+        const fileClassFiles = this.vault.getFiles().filter(f => f.parent?.path === fileClassFolder)
+        const testFile = this.vault.getAbstractFileByPath(testFilePath)
+        if (!(testFile instanceof TFile)) return this.plugin.testRunner.log("ERROR", `Didn't find ${testFilePath}`)
+        await this.plugin.app.vault.modify(testFile, "")
         for (const fC of fileClassFiles) await this.vault.adapter.remove(fC.path)
         await this.index.fullIndex(true)
         this.metadataCache.cleanupDeletedCache()
@@ -192,4 +196,18 @@ export class TestRunner extends Component {
             modal.close()
         }
     }
+}
+
+export async function openPluginSettings(plugin: MetadataMenu, speed = 100): Promise<MetadataMenuSettingTab> {
+    const app = plugin.app
+    const setting = app.setting
+    await setTimeout(speed)
+    setting.open()
+    await setTimeout(speed)
+    const mdmSettingTab = setting.pluginTabs.find(p => p.id === "metadata-menu")
+    if (!mdmSettingTab || !isMetadataMenuSettingTab(mdmSettingTab)) throw Error("Metadatamenu setting tab is undefined")
+    mdmSettingTab.navEl.click()
+    plugin.testRunner.log("SUCCESS", "openSettingTab")
+    await setTimeout(speed)
+    return mdmSettingTab
 }

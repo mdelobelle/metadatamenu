@@ -249,11 +249,12 @@ export class FileClassSettingsView {
 //#region tests
 
 export async function testFileClassSettingsView(plugin: MetadataMenu, fileClass: FileClass, data: FrontMatterCache, speed: number = 100) {
+    const runner = plugin.testRunner
     const fCView = plugin.app.workspace.getActiveViewOfType(FileClassView)
-    if (!fCView || !fCView.settingsView) throw Error(`${fileClass.name} view didn't open`)
+    if (!fCView || !fCView.settingsView) return runner.log("ERROR", `${fileClass.name} view didn't open`)
 
     const settingsMenuHeader = fCView.containerEl.querySelector("#settingsOption") as HTMLElement
-    if (!settingsMenuHeader) throw Error(`${fileClass.name} settings menu not found`)
+    if (!settingsMenuHeader) return runner.log("ERROR", `${fileClass.name} settings menu not found`)
     settingsMenuHeader.click()
     await setTimeout(speed)
 
@@ -266,7 +267,7 @@ export async function testFileClassSettingsView(plugin: MetadataMenu, fileClass:
                 : []
         if (!items.length) return
         const addBtn = container.querySelector(`#fileclass-setting-${collection}-addBtn`)
-        if (!addBtn || !(addBtn instanceof HTMLButtonElement)) throw Error(`add ${collection} button not found`)
+        if (!addBtn || !(addBtn instanceof HTMLButtonElement)) return runner.log("ERROR", `add ${collection} button not found`)
         for (const item of items) {
             addBtn.click()
             await setTimeout(speed)

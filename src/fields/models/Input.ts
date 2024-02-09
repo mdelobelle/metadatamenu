@@ -128,7 +128,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
 
         private buildTemplateSelectItem(template: string, fieldContainer: HTMLDivElement, name: string, options: string[]) {
-            console.log(template)
             fieldContainer.createDiv({ text: name, cls: "label" });
             fieldContainer.createDiv({ cls: "spacer" })
             const selectEl = new DropdownComponent(fieldContainer);
@@ -264,11 +263,12 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
 
 //#region test
 export async function enterFieldSetting(settingModal: ISettingsModal, field: IField<Options>, speed = 100) {
+    const runner = settingModal.plugin.testRunner
     if (field.options?.template !== undefined) {
         settingModal.plugin.testRunner.insertInTextComponent(settingModal.templateValue, field.options.template)
         const input = settingModal.containerEl.querySelector("#template-input") as HTMLInputElement
-        if (!input) throw Error("Template input not found")
-        if (!(input.value === settingModal.templateValue.getValue())) throw Error("Template input error")
+        if (!input) return runner.log("ERROR", "Template input not found")
+        if (!(input.value === settingModal.templateValue.getValue())) return runner.log("ERROR", "Template input error")
     }
 }
 //#endregion

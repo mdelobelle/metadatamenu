@@ -206,7 +206,7 @@ export function buildSettingsModal<O extends BaseOptions>(
             if (this.field.name == "") {
                 this.titleEl.setText(`Add a field and define options`);
             } else {
-                this.titleEl.setText(`<PROTO> Manage settings options for ${this.field.name}`);
+                this.titleEl.setText(`Manage settings options for ${this.field.name}`);
             };
 
             /* Name and parent */
@@ -257,7 +257,7 @@ export function buildSettingsModal<O extends BaseOptions>(
                 this.field.name = value;
                 this.command.id = `insert__${this.field.fileClassName || "presetField"}__${value}`
                 this.command.label = `Insert ${value} field`
-                this.titleEl.setText(`<PROTO> Manage settings options for ${this.field.name}`);
+                this.titleEl.setText(`Manage settings options for ${this.field.name}`);
                 removeValidationError(input);
             });
             this.namePromptComponent = input

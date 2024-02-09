@@ -466,22 +466,23 @@ export function getOptionsList(managedField: IField<Options> | IFieldManager<Tar
 //#region test
 
 export async function enterFieldSetting(settingModal: IListBaseSettingModal, field: IField<Options>, speed = 100) {
-    settingModal.plugin.testRunner.selectInDropDownComponent(settingModal.sourceTypeSelector, field.options.sourceType)
+    const runner = settingModal.plugin.testRunner
+    runner.selectInDropDownComponent(settingModal.sourceTypeSelector, field.options.sourceType)
     switch (field.options.sourceType) {
         case "ValuesList":
             for (const [key, value] of Object.entries(field.options.valuesList || {})) {
                 settingModal.addValue.click()
                 const valueInput = settingModal.valuesPromptComponents[parseInt(key) - 1]
-                settingModal.plugin.testRunner.insertInTextComponent(valueInput, value)
+                runner.insertInTextComponent(valueInput, value)
             }
             break;
         case "ValuesListNotePath":
-            if (!field.options.valuesListNotePath) throw Error(`Can't find <${field.name}> values list note path`)
-            settingModal.plugin.testRunner.insertInTextComponent(settingModal.notePathInput, field.options.valuesListNotePath)
+            if (!field.options.valuesListNotePath) return runner.log("ERROR", `Can't find <${field.name}> values list note path`)
+            runner.insertInTextComponent(settingModal.notePathInput, field.options.valuesListNotePath)
             break;
         case "ValuesFromDVQuery":
-            if (!field.options.valuesFromDVQuery) throw Error(`Can't find <${field.name}> dataview query`)
-            settingModal.plugin.testRunner.insertInTextComponent(settingModal.dvQueryInput, field.options.valuesFromDVQuery)
+            if (!field.options.valuesFromDVQuery) return runner.log("ERROR", `Can't find <${field.name}> dataview query`)
+            runner.insertInTextComponent(settingModal.dvQueryInput, field.options.valuesFromDVQuery)
             break;
     }
 }

@@ -141,14 +141,15 @@ export type Tab = "table" | "fields" | "settings"
 
 export async function openTab(fCView: FileClassView, tab: Tab, speed: number = 100) {
     const menuHeader = fCView.containerEl.querySelector(`#${tab}Option`) as HTMLElement
-    if (!menuHeader) throw Error(`${fCView.fileClass.name} ${tab} menu not found`)
+    const runner = fCView.fileClass.plugin.testRunner
+    if (!menuHeader) return runner.log("ERROR", `${fCView.fileClass.name} ${tab} menu not found`)
     menuHeader.click()
     await setTimeout(speed)
 }
 
 export async function testFileClassViewNavigation(plugin: MetadataMenu, fileClass: FileClass, speed: number = 100) {
     const fCView = plugin.app.workspace.getActiveViewOfType(FileClassView)
-    if (!fCView) throw Error(`${fileClass.name} view didn't open`)
+    if (!fCView) return plugin.testRunner.log("ERROR", `${fileClass.name} view didn't open`)
     await openTab(fCView, "table", speed)
     await openTab(fCView, "fields", speed)
     await openTab(fCView, "settings", speed)
