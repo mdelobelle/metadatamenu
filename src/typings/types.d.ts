@@ -54,6 +54,9 @@ interface Property {
     value: string
 }
 
+interface DataviewApi {
+    page: any
+}
 
 declare module "obsidian" {
 

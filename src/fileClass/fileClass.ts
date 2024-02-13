@@ -536,6 +536,20 @@ export function getSortedRootFields(plugin: MetadataMenu, fileClass: FileClass):
     return sortedFields
 }
 
+export function sortFileFields(index: FieldIndex, file: TFile): Field[] {
+    const fileClasses = index.filesFileClasses.get(file.path) || [];
+    const sortedAttributes: Field[] = []
+    for (const fileClass of fileClasses) {
+        const fileClassFields = index.fileClassesFields.get(fileClass.name) || []
+        const order = fileClass.options.fieldsOrder
+        const sortedFields = order
+            ? fileClassFields.sort((f1, f2) => order.indexOf(f1.id) < order.indexOf(f2.id) ? -1 : 1)
+            : fileClassFields
+        sortedAttributes.push(...sortedFields)
+    }
+    return sortedAttributes
+}
+
 export function getTagNamesFromFrontMatter(_tagNames: string[] | string | undefined): string[] {
     if (Array.isArray(_tagNames)) {
         return _tagNames;

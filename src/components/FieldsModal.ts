@@ -11,6 +11,7 @@ import { FileClassViewManager } from "./FileClassViewManager";
 import { Options as ObjectListOptions, addObjectListItem } from "src/fields/models/ObjectList";
 import { openSettings } from "src/fields/base/BaseSetting";
 import { BaseOptions } from "src/fields/base/BaseField";
+import { sortFileFields } from "src/fileClass/fileClass";
 
 
 export class FieldActions {
@@ -391,6 +392,8 @@ export class FieldsModal extends Modal {
         })
     }
 
+
+
     private buildFieldsContainer() {
         const fieldsContainer = this.contentEl.createDiv({ cls: "note-fields-container" });
         const { id, index } = getIdAndIndex(this.indexedPath?.split("____").last())
@@ -400,15 +403,22 @@ export class FieldsModal extends Modal {
             items.forEach((item: any, index: number) => this.buildObjectListItemContainer(fieldsContainer, field, `${this.indexedPath}[${index}]`))
             this.buildInsertNewItem(field, this.indexedPath)
         } else {
-            this.existingFields
-                .filter(eF => {
-                    if (eF.name === this.plugin.settings.fileClassAlias) return this.plugin.settings.showFileClassSelectInModal
-                    else return true
-                })
-                .forEach(eF => {
-                    this.buildFieldContainer(fieldsContainer, eF.field, eF.value, eF.indexedPath)
-                })
-            this.missingFields.forEach(_f => this.buildFieldContainer(fieldsContainer, _f, undefined))
+            const sortedIds = sortFileFields(this.plugin.fieldIndex, this.file).map(f => f.id)
+            const fields: Array<ExistingField | Field> = [
+                ...this.existingFields
+                    .filter(eF => {
+                        if (eF.name === this.plugin.settings.fileClassAlias) return this.plugin.settings.showFileClassSelectInModal
+                        else return true
+                    }),
+                ...this.missingFields.sort((f1, f2) => sortedIds.indexOf(f1.id) < sortedIds.indexOf(f2.id) ? -1 : 1)
+            ]
+            for (const fieldOrEf of fields) {
+                if (fieldOrEf instanceof ExistingField) {
+                    this.buildFieldContainer(fieldsContainer, fieldOrEf.field, fieldOrEf.value, fieldOrEf.indexedPath)
+                } else {
+                    this.buildFieldContainer(fieldsContainer, fieldOrEf, undefined)
+                }
+            }
             if (this.missingFields.length) this.buildInsertMissingFieldsBtn()
         }
     }

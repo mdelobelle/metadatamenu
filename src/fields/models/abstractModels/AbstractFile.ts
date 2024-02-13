@@ -7,7 +7,7 @@ import { BaseOptions, IFieldBase } from "src/fields/base/BaseField"
 import { IBaseValueModal, basicFuzzySuggestModal } from "src/fields/base/BaseModal"
 import { ISettingsModal } from "src/fields/base/BaseSetting"
 import { Link } from "src/types/dataviewTypes"
-import { Constructor } from "src/typings/types"
+import { Constructor, DataviewApi } from "src/typings/types"
 import { displayLinksOrText, getLinksOrTextString } from "src/utils/linksUtils"
 import { cleanActions } from "src/utils/modals"
 
@@ -249,11 +249,12 @@ export function convertDataviewArrayOfLinkToArrayOfPath(arr: (Link | any)[]) {
     }, [])
 }
 
-export function getFiles(managedField: IField<Options> | IFieldManager<Target, Options>, currentFile?: TFile): TFile[] {
+export function getFiles(managedField: IField<Options> | IFieldManager<Target, Options>): TFile[] {
     const options = getOptions(managedField) as DefaultedOptions
+    const currentFile = isSingleTargeted(managedField) ? managedField.target : undefined
     const dvQueryString = options.dvQueryString
     //@ts-ignore
-    const getResults = (api: DataviewPlugin["api"]) => {
+    const getResults = (api: DataviewApi) => {
         try {
             return (new Function("dv", "current", `return ${dvQueryString}`))(api, currentFile ? api.page(currentFile.path) : undefined)
         } catch (error) {
