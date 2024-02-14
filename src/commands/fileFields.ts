@@ -31,13 +31,14 @@ export class FieldInfo {
     public getInfos(): IFieldInfo {
         const field = this.eF.field
         const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, this.file, undefined)!
+        fieldVM.value = this.eF.value
         return {
             indexedPath: this.eF.indexedPath,
             name: this.eF.field.name,
             value: this.eF.value,
             fileClassName: this.eF.field.fileClassName,
             type: this.eF.field.type,
-            isValid: validateValue(fieldVM.type)(fieldVM),
+            isValid: !fieldVM.value || validateValue(fieldVM.type)(fieldVM),
             id: this.eF.field.id,
             ignoredInMenu: this.plugin.settings.globallyIgnoredFields.includes(this.eF.field.name),
             options: this.eF.field.options,
