@@ -4,7 +4,7 @@ import { ObjectListItem } from "./models/ObjectList"
 import { Note } from "src/note/note"
 import { LinePosition } from "src/note/line"
 import { LineNode } from "src/note/lineNode"
-import { Field, fieldValueManager, upperPath as getUpperPath } from "./Field"
+import { Field, fieldValueManager, getIdAndIndex, upperPath as getUpperPath } from "./Field"
 import { displayItem } from "./models/ObjectList"
 
 interface IExistingField {
@@ -96,4 +96,17 @@ export function getValueDisplay(field: ExistingField | undefined): string {
 export async function getExistingFieldForIndexedPath(plugin: MetadataMenu, file: TFile, indexedPath: string | undefined): Promise<ExistingField | undefined> {
     const eFs = await Note.getExistingFields(plugin, file)
     return eFs.find(eF => eF.indexedPath === indexedPath)
+}
+
+export function getNamedIndexedPath(plugin: MetadataMenu, file: TFile, indexedPath: string): string | undefined {
+    const items = indexedPath.split("____")
+    const namedPathItems: string[] = []
+    const fileFields = plugin.fieldIndex.filesFields.get(file.path) || []
+    for (const item of items) {
+        const { id, index } = getIdAndIndex(item)
+        const field = fileFields.find(f => f.id === id)
+        if (!field) return
+        namedPathItems.push(`${field.name}${index ? "[" + index + "]" : ""}`)
+    }
+    return namedPathItems.join("____")
 }

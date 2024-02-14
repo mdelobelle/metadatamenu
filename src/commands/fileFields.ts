@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian"
-import { ExistingField } from "src/fields/ExistingField";
+import { ExistingField, getNamedIndexedPath } from "src/fields/ExistingField";
 import { fieldValueManager } from "src/fields/Field";
 import { FieldType, validateValue } from "src/fields/Fields";
 import { Note } from "src/note/note";
@@ -47,10 +47,7 @@ export class FieldInfo {
     }
 }
 
-export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | string): Promise<Record<string, IFieldInfo>> {
-    /*
-    returns all fields with source, type, options, isValid, ignored
-    */
+async function fileExistingFields(plugin: MetadataMenu, fileOrfilePath: TFile | string): Promise<[ExistingField[], TFile]> {
     let file: TFile;
     if (fileOrfilePath instanceof TFile) {
         file = fileOrfilePath;
@@ -63,9 +60,31 @@ export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | s
         }
     }
     const eFs = await Note.getExistingFields(plugin, file)
+    return [eFs, file]
+}
+
+export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | string): Promise<Record<string, IFieldInfo>> {
+    /*
+    returns all fields with source, type, options, isValid, ignored
+    */
+    const [eFs, file] = await fileExistingFields(plugin, fileOrfilePath)
     const fields: Record<string, IFieldInfo> = {}
     for (const eF of eFs) {
         if (eF.indexedPath) fields[eF.indexedPath] = (new FieldInfo(plugin, file, eF)).getInfos()
+    }
+    return fields;
+}
+
+export async function namedFileFields(plugin: MetadataMenu, fileOrfilePath: TFile | string): Promise<Record<string, IFieldInfo>> {
+    /*
+    returns all fields with source, type, options, isValid, ignored
+    */
+    const [eFs, file] = await fileExistingFields(plugin, fileOrfilePath)
+    const fields: Record<string, IFieldInfo> = {}
+    for (const eF of eFs) {
+        if (!eF.indexedPath) continue
+        const namedIndexedPath = getNamedIndexedPath(plugin, file, eF.indexedPath)
+        if (namedIndexedPath) fields[namedIndexedPath] = (new FieldInfo(plugin, file, eF)).getInfos()
     }
     return fields;
 }
