@@ -1,1 +1,1 @@
-window.MDM_DEBUG=false
+window.MDM_DEBUG=true

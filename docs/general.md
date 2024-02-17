@@ -60,5 +60,7 @@ a Field can be modified or added from several locations:
 - Obsidian and plugins menus : file explorer, note, calendar, context menu of a link, many other plugins not fully tested ...
 - dataview table if you have dataview plugin installed
 - the [Metadata Menu button](#metadata-menu-button--metadata-menu-modal) appearing next to each note's name (file explorer, tab header, link....)
+- the [tableview](fileclasses.md#table-view) of a fileclass view
+- a Metadata Menu [code block](controls.md#codeblocks)
 
 See detailed section [controls](controls.md)

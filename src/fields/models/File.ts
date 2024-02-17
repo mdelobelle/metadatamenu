@@ -29,7 +29,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         constructor(...rest: any[]) {
             super()
             if (isSingleTargeted(this.managedField)) this.selectedFilePath = getLink(this.managedField.value, this.managedField.target)?.path
-            console.log(validateValue(this.managedField))
         }
 
         async onChooseItem(item: TFile): Promise<void> {

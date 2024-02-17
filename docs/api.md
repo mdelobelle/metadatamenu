@@ -1,29 +1,31 @@
 # Api
 
-API is accessible with `app.plugins.plugins["metadata-menu"].api`
+API is accessible with `MetadataMenu.api`
 
 ### getValues (deprecated)
 
-`getValues(fileOrFilePath: TFile | string, attribute: string)`
+```typescript
+getValues(fileOrFilePath: TFile | string, attribute: string) => Promise<string[]>
+```
 
 Takes a TFile containing the field and a string for the related field name
 Returns an array with the values of the field. If there are several fields with the same name (in object list fields for example, see [Settings](settings#object-listoptions)), this function will return an array with all the exisiting values
 
-This is an asynchronous function, so you should await it.
-
 ### getValuesForIndexedPath
 
-`getValuesForIndexedPath(fileOrFilePath: TFile | string, indexedPath: string)`
+```typescript
+getValuesForIndexedPath(fileOrFilePath: TFile | string, indexedPath: string) => Promise<string>
+```
 
 Takes a TFile containing the field and a string for the related field's [indexedPath](fields#indexed-path)
 
 Returns the value of the field for this indexedPath
 
-This is an asynchronous function, so you should await it.
-
 ### postValues
 creates or updates fields with values in the target note
-`postValues(fileOrFilePath: TFile | string, payload: FieldsPayload, lineNumber?: number, after?: boolean, asList?: boolean, asBlockquote?:boolean)`
+```typescript
+postValues(fileOrFilePath: TFile | string, payload: FieldsPayload, lineNumber?: number, after?: boolean, asList?: boolean, asBlockquote?:boolean) => Promise<void>
+```
 
 #### parameters:
 
@@ -47,13 +49,45 @@ export type FieldsPayload = Array<{
 }>
 ```
 
+### postNamedFieldsValues
+Same as [postValues](#postvalues) : creates or updates fields with values in the target note. The payload identifies fields based on their names rather than their indexedPath.
+```typescript
+postNamedFieldsValues: (fileOrFilePath: TFile | string, payload: NamedFieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => Promise<void>;
+```
+
+#### parameters:
+
+- `fileOrFilePath: TFile | string` : the target file where to create or update the fields
+- `payload: NamedFieldsPayload`: list of fields and values to create or update (see type definition below) 
+- `lineNumber?: number` : optional line number where to create fields if it doesn't exist. If the field already exists, this attribute won't do anything. If line number is undefined and the field doesn't exist yet, it will be included in frontmatter
+- `after?: boolean` : optional parameter to create new fields after or before the line number. Defaults to `true`
+- `asList?: boolean`: optional parameter to create new fields as list (insert a `- ` before the field's name) . Defaults to `false`
+- `asBlockquote?: boolean`: optional parameter to create new fields as comment (insert a `>` before the field's name) . Defaults to `false`
+
+#### `NamedFieldsPayload` and `FieldPayload`
+
+```typescript
+export type FieldPayload = {
+    value: string, // the field's value as string
+}
+
+export type NamedFieldsPayload = Array<{
+    name: string, //the name of the field
+    payload: FieldPayload
+}>
+```
+
 ### fieldModifier
-`fieldModifier(dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> })`
+```typescript
+fieldModifier(dv: any, p: any, fieldName: string, attrs?: { cls: string, attr: Record<string, string> }) => HTMLElement
+```
 
 Takes a dataview api instance, a page, a field name and optional attributes and returns a HTML element to modify the value of the field in the target note
 
 ### fileFields
-`fileFields(fileOrFilePath: TFile | string)`
+```typescript
+fileFields(fileOrFilePath: TFile | string) => Promise<Record<string, IFieldInfo>>
+```
 
 Takes a TFile or e filePath and returns all the fields in the document, both frontmatter and dataview fields, and returns a collection of analysis of those fields by metadatamenu:
 
@@ -90,8 +124,16 @@ Takes a TFile or e filePath and returns all the fields in the document, both fro
 }
 ```
 
+### namedFileFields
+```typescript
+namedFileFields: (fileOrFilePath: TFile | string) => Promise<Record<string, IFieldInfo>>
+```
+Same as [fileFields](#filefields) but the key is a "named indexedPath" (each field's ID composing the indexedPath is replaced by its name)
+
 ### insertMissingFields
-`insertMissingFields: (fileOrFilePath: string | TFile, lineNumber: number, boolean, asList: boolean, asBlockquote: boolean, fileClassName?: string)`
+```typescript
+insertMissingFields: (fileOrFilePath: string | TFile, lineNumber: number, boolean, asList: boolean, asBlockquote: boolean, fileClassName?: string) => Promise<void>
+```
 
 Takes:
 - a TFile or its path, 
@@ -102,5 +144,3 @@ Takes:
 - asks wether insertion should only deal with one single fileClass' fields (default: all)
 
 Inserts all missings fields of all (or one specified) fileClass fields at the line, with the format
-
-This is an asynchronous function, so you should await it.

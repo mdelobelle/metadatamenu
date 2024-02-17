@@ -342,12 +342,15 @@ export class FileClassDataviewTable {
     }
 
     private addClickEventToLink(link: HTMLLinkElement): void {
-        link.addEventListener("click", () => this.plugin.app.workspace.openLinkText(
-            //@ts-ignore
-            link.getAttr("data-href")?.replace(/(.*).md/, "$1"),
-            this.fileClass.getClassFile().path,
-            'tab'
-        ))
+        link.addEventListener("click", (e) => {
+            e.preventDefault()
+            this.plugin.app.workspace.openLinkText(
+                //@ts-ignore
+                link.getAttr("data-href")?.replace(/(.*).md/, "$1"),
+                this.fileClass.getClassFile().path,
+                'tab'
+            )
+        })
     }
 
     private buildFilterQuery(): string {

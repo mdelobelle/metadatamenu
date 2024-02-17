@@ -3,6 +3,7 @@ import { EditorPosition, Notice, parseYaml, TFile } from "obsidian";
 import { FieldPayload, IndexedFieldsPayload } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
 import * as Lookup from "src/types/lookupTypes";
+import { Options as LookupOptions } from "src/fields/models/Lookup";
 import { Line, LinePosition } from "./line";
 import { LineNode } from "./lineNode";
 import { dumpValue } from "src/fields/models/YAML";
@@ -82,7 +83,14 @@ export class Note {
         switch (location) {
             case "yaml":
                 switch (type) {
-                    case "Lookup": return this.renderMultiFilesFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
+                    case "Lookup": {
+                        if (["BuiltinSummarizing",
+                            "CustomSummarizing"].includes((field.options as LookupOptions).outputType)) {
+                            return this.renderValueString(rawValue, type, indentationLevel);
+                        } else {
+                            return this.renderMultiFilesFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel))
+                        }
+                    };
                     case "Multi": return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
                     case "MultiFile": return this.renderMultiFilesFields(rawValue, (item) => `"${item}"`);;
                     case "MultiMedia": return this.renderMultiFilesFields(rawValue, (item) => `"${item}"`);
