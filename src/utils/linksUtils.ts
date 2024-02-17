@@ -68,7 +68,7 @@ export const displayLinksOrText = (value: string | string[], file: TFile, contai
                         onClicked()
                     }
                 } else {
-                    container.createDiv({ text: value });
+                    container.createEl('span', { text: value });
                 }
                 if (i < values.length - 1) {
                     container.createEl('span', { text: " | " })

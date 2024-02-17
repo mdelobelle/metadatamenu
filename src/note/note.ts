@@ -58,7 +58,7 @@ export class Note {
         }
     }
 
-    public renderMultiFields = (rawValue: string, itemRendering: (itemValue: string) => any) => {
+    public renderMultiFields = (rawValue: string, itemRendering: (itemValue: string) => string) => {
         const values = rawValue
             .replace(/(\,\s+)/g, ',')
             .split(',')
@@ -67,7 +67,7 @@ export class Note {
         return values.length ? values : ""
     }
 
-    public renderMultiFilesFields = (rawValue: string, itemRendering: (itemValue: string) => any) => {
+    public renderMultiFilesFields = (rawValue: string, itemRendering: (itemValue: string) => string) => {
         const values = ((rawValue.match(/\!?\[(?:\[??[^\[]*?\]\])/g) || []) as string[])
             .map(value => itemRendering(value));
         return values?.length ? values : ""
@@ -77,7 +77,7 @@ export class Note {
         field: Field,
         rawValue: string,
         location: LinePosition
-    ): any {
+    ): string[] | string | "" {
         const type = field?.type
         const indentationLevel = field?.path ? field.path.split("____").length : 0
         switch (location) {

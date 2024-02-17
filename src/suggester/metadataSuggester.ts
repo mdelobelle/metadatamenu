@@ -17,6 +17,8 @@ import { getOptionsList } from "src/fields/models/abstractModels/AbstractList";
 import { Options as ListOptions } from "src/fields/models/abstractModels/AbstractList";
 import { Options as FileOptions } from "src/fields/models/abstractModels/AbstractFile";
 import { MultiDisplayType } from "src/fields/Fields";
+import { Note } from "src/note/note";
+import { postValues } from "src/commands/postValues";
 
 interface IValueCompletion {
     attr: string;
@@ -176,7 +178,6 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 i += 1;
             }
         };
-
         if (matchField.attribute) {
             const fieldName = matchField.attribute;
             this.field = this.plugin.fieldIndex.filesFields.get(context.file.path)?.find(f => f.name === fieldName);
@@ -192,7 +193,7 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                     .sort()
                     .map(tag => Object({ attr: fieldName, value: tag.replace(/^#/, "") }))
             }
-            if (this.field && ["Cycle", "Multi", "Select"].contains(this.field.type)) {
+            if (this.field && ["Cycle", "Multi", "Select"].includes(this.field.type)) {
                 return getFilteredOptionsList(this.field, firstValues, lastValue)
             } else if (this.field && ["File", "MultiFile"].includes(this.field.type)) {
                 const sortingMethod = new Function("a", "b", `return ${this.field.options.customSorting}`) ||
@@ -246,6 +247,21 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
             el.setText(rawValue)
         }
     };
+    getFieldLines(editor: Editor, fieldName: string): {
+        beginFieldLineNumber: number,
+        endFieldLineNumber: number
+    } {
+        let beginFieldLineNumber = this.context!.start.line
+        let endFieldLineNumber = this.context!.start.line
+        while (!editor.getLine(beginFieldLineNumber).startsWith(`${fieldName}:`)
+            && beginFieldLineNumber > 0)
+            beginFieldLineNumber = beginFieldLineNumber - 1
+        while (!editor.getLine(endFieldLineNumber + 1).includes(':')
+            && !(editor.getLine(endFieldLineNumber + 1) === "---")
+            && endFieldLineNumber + 1 <= this.context!.editor.lastLine())
+            endFieldLineNumber = endFieldLineNumber + 1
+        return { beginFieldLineNumber, endFieldLineNumber }
+    }
 
     async selectSuggestion(suggestion: IValueCompletion, event: KeyboardEvent | MouseEvent): Promise<void> {
         const activeView = this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
@@ -255,53 +271,23 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
         const editor = activeView.editor;
         const activeLine = editor.getLine(this.context!.start.line);
         const file = this.context?.file
+        if (!(file instanceof TFile)) return
         const position = this.context?.editor.getCursor().ch || 0
         const fieldName = suggestion.attr
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-
-        const clean = (item: string) => {
-            return item?.replace(/\s?\,$/, "")
-        }
-
-        if (this.inFrontmatter && file) {
+        if (this.inFrontmatter && fieldName === "tags") {
+            //special case for tags in frontmatter
+            const clean = (item: string) => {
+                return item?.replace(/\s?\,$/, "")
+            }
             try {
-                let beginFieldLineNumber = this.context!.start.line
-                let endFieldLineNumber = this.context!.start.line
-                while (!editor.getLine(beginFieldLineNumber).startsWith(`${fieldName}:`)
-                    && beginFieldLineNumber > 0)
-                    beginFieldLineNumber = beginFieldLineNumber - 1
-                while (!editor.getLine(endFieldLineNumber + 1).includes(':')
-                    && !(editor.getLine(endFieldLineNumber + 1) === "---")
-                    && endFieldLineNumber + 1 <= this.context!.editor.lastLine())
-                    endFieldLineNumber = endFieldLineNumber + 1
+                const { beginFieldLineNumber, endFieldLineNumber } = this.getFieldLines(editor, fieldName)
                 const serializedField = editor.getRange(
                     { line: beginFieldLineNumber, ch: 0 },
                     { line: endFieldLineNumber, ch: editor.getLine(endFieldLineNumber).length })
                 let parsedField: Record<string, string | string[] | null> = parseYaml(serializedField)
                 let [attr, pastValues] = Object.entries(parsedField)[0]
                 let newField: string
-                if (
-                    this.field
-                    && ["Multi", "Select", "Cycle"].includes(this.field.type)
-                    && this.field.getDisplay() === MultiDisplayType.asList
-                ) {
-                    const fieldVM = fieldValueManager(this.plugin, this.field.id, this.field.fileClassName, file)
-                    const options = getOptionsList(fieldVM as IFieldManager<TFile, ListOptions>)
-                    //clean the past values in case the user has typed a comma to insert a new value, and append the new value
-                    let valuesArray: string[] = [suggestion.value]
-                    if (typeof pastValues == 'string') {
-                        valuesArray = [...new Set([clean(pastValues), ...valuesArray]
-                            .filter(item => options.includes(item)))]
-                    } else if (Array.isArray(pastValues)) {
-                        valuesArray = [...new Set([
-                            ...pastValues
-                                .filter(v => !!v)
-                                .map(value => clean(value)),
-                            ...valuesArray
-                        ].filter(item => options.includes(item)))]
-                    }
-                    newField = `${attr}: ${valuesArray.map(value => `\n  - ${clean(value)}`).join("")}`
-                } else if (fieldName === "tags" && this.plugin.settings.frontmatterListDisplay === MultiDisplayType.asList) {
+                if (this.plugin.settings.frontmatterListDisplay === MultiDisplayType.asList) {
                     let valuesArray: string[] = [suggestion.value]
                     //@ts-ignore
                     const options = Object.keys(this.plugin.app.metadataCache.getTags()).map(t => t.replace(/^#/, ""))
@@ -342,9 +328,39 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                 }
                 editor.replaceRange(newField, { line: beginFieldLineNumber, ch: 0 }, { line: endFieldLineNumber, ch: editor.getLine(endFieldLineNumber).length });
 
+                if (this.plugin.settings.frontmatterListDisplay === MultiDisplayType.asList) {
+                    let endFieldLineNumber = this.context!.start.line
+                    while (!editor.getLine(endFieldLineNumber + 1).includes(':') && !(editor.getLine(endFieldLineNumber + 1) === "---")) {
+                        editor.getLine(endFieldLineNumber); endFieldLineNumber = endFieldLineNumber + 1
+                    }
+                    editor.setCursor({ line: endFieldLineNumber, ch: editor.getLine(endFieldLineNumber).length })
+                }
+            } catch (error) {
+                new Notice("incorrect frontmatter format", 2000)
+                this.close()
+                return
+            }
+        } else {
+            //managed field
+            const note = await Note.buildNote(this.plugin, file)
+            const eF = note.existingFields.find(eF => eF.field.isRoot() && eF.field.name === fieldName)
+            if (!eF?.indexedPath) return
+            const currentValue = Array.isArray(eF.value)
+                ? eF.value
+                : !eF.value
+                    ? []
+                    : [eF.value]
+            if (this.inFrontmatter) {
+                const { beginFieldLineNumber, endFieldLineNumber } = this.getFieldLines(editor, fieldName)
+                const renderedValue = note.renderFieldValue(eF.field, [...currentValue, suggestion.value].join(","), this.inFrontmatter ? "yaml" : "inline")
+                const newField = Array.isArray(renderedValue) && this.field?.getDisplay() === MultiDisplayType.asArray
+                    ? `${fieldName}: [${renderedValue.join(", ")}]`
+                    : Array.isArray(renderedValue)
+                        ? `${fieldName}:\n${renderedValue.map(v => "  - " + v).join("\n")}`
+                        : `${fieldName}: ${renderedValue}`
+                editor.replaceRange(newField, { line: beginFieldLineNumber, ch: 0 }, { line: endFieldLineNumber, ch: editor.getLine(endFieldLineNumber).length });
                 if (!(this.field?.getDisplay() === MultiDisplayType.asList)
-                    && !(fieldName === "tags" && this.plugin.settings.frontmatterListDisplay === MultiDisplayType.asList)
-                    && (Array.isArray(pastValues) || typeof pastValues === 'string' && pastValues.contains(","))) {
+                    && !(fieldName === "tags" && this.plugin.settings.frontmatterListDisplay === MultiDisplayType.asList)) {
                     editor.setCursor({ line: beginFieldLineNumber, ch: newField.length - 1 })
                 } else {
                     let endFieldLineNumber = this.context!.start.line
@@ -353,42 +369,39 @@ export default class ValueSuggest extends EditorSuggest<IValueCompletion> {
                     }
                     editor.setCursor({ line: endFieldLineNumber, ch: editor.getLine(endFieldLineNumber).length })
                 }
-            } catch (error) {
-                new Notice("Frontmatter wrongly formatted", 2000)
-                this.close()
-                return
+            } else if (this.inFullLine && this.field) {
+                //replace directly in place to maintain cursor position
+                let cleanedLine = activeLine
+                while (![',', ':'].contains(cleanedLine.charAt(cleanedLine.length - 1))) {
+                    cleanedLine = cleanedLine.slice(0, -1)
+                }
+                editor.replaceRange(`${cleanedLine}${event.shiftKey ? "" : " "}` + suggestion.value,
+                    { line: this.context!.start.line, ch: 0 }, this.context!.end);
+            } else if (this.inSentence && this.field) {
+                //replace directly in place to maintain cursor position
+                let beforeCursor = activeLine.slice(0, position)
+                let afterCursor = activeLine.slice(position)
+                let separatorPos = position;
+                let currentValueLength = 0;
+                while (!beforeCursor.endsWith("::") && !beforeCursor.endsWith(",") && beforeCursor.length) {
+                    separatorPos = separatorPos - 1;
+                    currentValueLength = currentValueLength + 1
+                    beforeCursor = beforeCursor.slice(0, -1);
+                }
+                let nextBracketPos = position;
+                while (!encodeLink(afterCursor).match("(\\]|\\)).*") && afterCursor.length) {
+                    nextBracketPos = nextBracketPos + 1;
+                    afterCursor = afterCursor.slice(nextBracketPos - position);
+                }
+                editor.replaceRange(
+                    suggestion.value,
+                    { line: this.context!.start.line, ch: separatorPos },
+                    { line: this.context!.start.line, ch: nextBracketPos }
+                )
+                editor.setCursor({ line: this.context!.start.line, ch: nextBracketPos - currentValueLength + suggestion.value.length })
             }
-        } else if (this.inFullLine && this.field && file) {
-            //replace directly in place to maintain cursor position
-            let cleanedLine = activeLine
-            while (![',', ':'].contains(cleanedLine.charAt(cleanedLine.length - 1))) {
-                cleanedLine = cleanedLine.slice(0, -1)
-            }
-            editor.replaceRange(`${cleanedLine}${event.shiftKey ? "" : " "}` + suggestion.value,
-                { line: this.context!.start.line, ch: 0 }, this.context!.end);
-        } else if (this.inSentence && this.field && file) {
-            //replace directly in place to maintain cursor position
-            let beforeCursor = activeLine.slice(0, position)
-            let afterCursor = activeLine.slice(position)
-            let separatorPos = position;
-            let currentValueLength = 0;
-            while (!beforeCursor.endsWith("::") && !beforeCursor.endsWith(",") && beforeCursor.length) {
-                separatorPos = separatorPos - 1;
-                currentValueLength = currentValueLength + 1
-                beforeCursor = beforeCursor.slice(0, -1);
-            }
-            let nextBracketPos = position;
-            while (!encodeLink(afterCursor).match("(\\]|\\)).*") && afterCursor.length) {
-                nextBracketPos = nextBracketPos + 1;
-                afterCursor = afterCursor.slice(nextBracketPos - position);
-            }
-            editor.replaceRange(
-                suggestion.value,
-                { line: this.context!.start.line, ch: separatorPos },
-                { line: this.context!.start.line, ch: nextBracketPos }
-            )
-            editor.setCursor({ line: this.context!.start.line, ch: nextBracketPos - currentValueLength + suggestion.value.length })
         }
+
         this.didSelect = true
         this.close()
     };

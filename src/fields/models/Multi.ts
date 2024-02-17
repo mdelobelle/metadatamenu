@@ -44,7 +44,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             const initialOptions: string | string[] = isSingleTargeted(managedField) ? managedField.value || [] : []
             if (initialOptions && isSingleTargeted(managedField)) {
                 if (Array.isArray(initialOptions)) {
-                    this.selectedOptions = initialOptions.map(item => {
+                    this.selectedOptions = initialOptions.filter(i => !!i).map(item => {
                         const file = managedField.target as TFile
                         const link = getLink(item, file)
                         if (link) {
@@ -54,7 +54,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                         }
                     })
 
-                    this.selectedOptions = initialOptions.map(item => item.toString())
+                    this.selectedOptions = initialOptions.filter(i => !!i).map(item => item.toString())
                 }
                 else if (typeof (initialOptions) === "string" && initialOptions.toString().startsWith("[[")) {
                     this.selectedOptions = initialOptions.split(",").map(item => item.trim());

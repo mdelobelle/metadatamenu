@@ -137,7 +137,6 @@ export default class MetadataMenu extends Plugin {
 		if (MDM_DEBUG && this.app.vault.getName() === 'test-vault-mdm') { MDM_DEBUG = false; await this.testRunner.run() }
 	};
 
-
 	/*
 	------------
 	Settings
