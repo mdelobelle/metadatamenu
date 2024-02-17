@@ -124,23 +124,11 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             const inputContainer = this.containerEl.createDiv({ cls: "suggester-input" })
             inputContainer.appendChild(this.inputEl)
             this.containerEl.find(".prompt").prepend(inputContainer)
+            this.containerEl.createDiv({ cls: "footer-actions" })
             cleanActions(this.containerEl, ".footer-actions")
-            const footerActionsContainer = this.containerEl.createDiv({ cls: "footer-actions" })
         }
         getItems(): TFile[] {
-            try {
-                if (this.managedField.options.customSorting) {
-                    const sortingMethod = (a: TFile, b: TFile) => (new Function("a", "b", `return ${this.managedField.options.customSorting}`))(a, b)
-                    return getFiles(this.managedField).sort(sortingMethod);
-                } else {
-                    const sortingMethod = (a: TFile, b: TFile) => { return a.basename < b.basename ? -1 : 1 }
-                    return getFiles(this.managedField).sort(sortingMethod);
-                }
-
-            } catch (error) {
-                this.close();
-                throw (error);
-            }
+            return getFiles(this.managedField)
         }
         getItemText(item: TFile): string {
             return item.basename;

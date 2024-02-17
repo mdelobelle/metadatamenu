@@ -32,12 +32,17 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
 
         async onChooseItem(item: TFile): Promise<void> {
-            const dvApi = plugin.app.plugins.plugins.dataview?.api
             let alias: string | undefined = undefined;
+            const dvApi = plugin.app.plugins.plugins.dataview?.api
             if (dvApi && this.managedField.options.customRendering) {
                 alias = new Function("page", `return ${this.managedField.options.customRendering}`)(dvApi.page(item.path))
             }
-            this.managedField.save(buildMarkDownLink(plugin, item, item.path, undefined, alias))
+            const newValue = buildMarkDownLink(plugin, item, item.path, undefined, alias)
+            if (newValue === this.managedField.value) {
+                this.managedField.save("")
+            } else {
+                this.managedField.save(buildMarkDownLink(plugin, item, item.path, undefined, alias))
+            }
             this.close()
         }
 
