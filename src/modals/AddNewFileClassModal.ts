@@ -10,6 +10,7 @@ export default class AddNewFileClassModal extends Modal {
     ) {
         super(plugin.app);
         this.containerEl.addClass("metadata-menu")
+        this.containerEl.setAttr("id", "add-new-fileclass-modal")
     }
 
     onOpen(): void {
@@ -35,6 +36,7 @@ export default class AddNewFileClassModal extends Modal {
         const nameInput = new TextComponent(nameContainer);
         nameInput.inputEl.addClass("with-label");
         nameInput.inputEl.addClass("full-width");
+        nameInput.inputEl.setAttr("id", "fileclass-name-input")
         const nameErrorContainer = this.contentEl.createDiv({ cls: "field-error", text: `This ${fileClassAlias} file already exists` });
 
         cleanActions(this.contentEl, ".footer-actions")
@@ -42,10 +44,10 @@ export default class AddNewFileClassModal extends Modal {
         actionsContainer.createDiv({ cls: "spacer" })
         const infoContainer = actionsContainer.createDiv({ cls: "info" })
         infoContainer.setText("Alt+Enter to save")
-        const saveBtn = new ButtonComponent(actionsContainer);
-        saveBtn.setDisabled(true);
-        saveBtn.setIcon("file-plus-2");
-
+        const saveBtn = new ButtonComponent(actionsContainer)
+            .setDisabled(true)
+            .setIcon("file-plus-2")
+        saveBtn.buttonEl.setAttr("id", "new-fileclass-confirm-btn")
         nameErrorContainer.hide();
         nameInput.onChange(async value => {
             this.name = nameInput.getValue()
@@ -65,8 +67,6 @@ export default class AddNewFileClassModal extends Modal {
         saveBtn.onClick(async () => await this.save())
     }
 
-
-
     private async save() {
         const fileClassName = this.name
         const classFilesPath = this.plugin.settings.classFilesPath
@@ -75,7 +75,7 @@ export default class AddNewFileClassModal extends Modal {
         if (classFilesPath) {
             try {
                 openAfterCreate.push(fileClassName)
-                fCFile = await this.plugin.app.vault.create(`${classFilesPath}${fileClassName}.md`, "")
+                fCFile = await this.plugin.app.vault.create(`${classFilesPath}${fileClassName}.md`, "---\n---")
             } catch (error) {
                 openAfterCreate.remove(fileClassName)
                 new Notice("Something went wrong. Impossible to create this fileClass", 3000)

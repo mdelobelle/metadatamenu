@@ -1,13 +1,12 @@
-import Field from "../../../fields/Field";
-import { FieldManager as FM, FieldManager, FieldType } from "src/types/fieldTypes";
 import { TextComponent, ButtonComponent, setIcon, TFile, SuggestModal } from "obsidian";
 import MetadataMenu from "main";
 import { FieldSet } from "src/fileClass/views/tableViewComponents/tableViewFieldSet";
 import { getLink } from "src/utils/parser";
-import FileField from "../../../fields/fieldManagers/FileField";
 import { cleanActions } from "src/utils/modals";
-import AbstractListBasedField from "src/fields/abstractFieldManagers/AbstractListBasedField";
-import MultiFileField from "src/fields/fieldManagers/MultiFileField";
+import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile";
+import { Field, IField, getField } from "src/fields/Field";
+import { getOptionsList, Options as ListOptions } from "src/fields/models/abstractModels/AbstractList";
+import { getFiles, Options as FileOptions } from "src/fields/models/abstractModels/AbstractFile";
 
 export enum fieldStates {
     __empty__ = "__empty__",
@@ -55,7 +54,7 @@ export class OptionsMultiSelectModal extends SuggestModal<string> {
                 this.selectedOptions = initialOptions.map(item => {
                     const link = getLink(item, fileClassFile)
                     if (link) {
-                        return FileField.buildMarkDownLink(this.plugin, fileClassFile, link.path)
+                        return buildMarkDownLink(this.plugin, fileClassFile, link.path)
                     } else {
                         return item.toString()
                     }
@@ -77,7 +76,7 @@ export class OptionsMultiSelectModal extends SuggestModal<string> {
         }
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter" && e.altKey) {
-                await this.replaceValues();
+                await this.replaceOptionsValues();
                 this.close()
             }
         }
@@ -90,22 +89,22 @@ export class OptionsMultiSelectModal extends SuggestModal<string> {
             const commonStates = Object.keys(fieldStates)
             const field = this.field as Field
             switch (field.type) {
-                case FieldType.Boolean: {
+                case "Boolean": {
                     return [...commonStates, "true", "false"]
                 }
-                case FieldType.Multi:
-                case FieldType.Select: {
-                    const fieldManager = new FM[field.type](this.plugin, this.field) as AbstractListBasedField
-                    const values = fieldManager.getOptionsList().filter(o => String(o).toLowerCase().includes(query.toLowerCase()))
+                case "Multi":
+                case "Select": {
+                    const field = getField(this.field.id, this.field.fileClassName, this.plugin) as IField<ListOptions> | undefined
+                    const values = field ? getOptionsList(field).filter(o => String(o).toLowerCase().includes(query.toLowerCase())) : []
                     return [...commonStates, ...values]
                 }
-                case FieldType.MultiFile:
-                case FieldType.File: {
+                case "MultiFile":
+                case "File": {
                     const sortingMethod = new Function("a", "b", `return ${field.options.customSorting}`) as (a: TFile, b: TFile) => number ||
                         function (a: TFile, b: TFile) { return a.basename < b.basename ? -1 : 1 }
                     try {
-                        const fileManager = new FieldManager[field.type](this.plugin, this.field) as FileField | MultiFileField;
-                        const values = fileManager.getFiles()
+                        const field = getField(this.field.id, this.field.fileClassName, this.plugin) as IField<FileOptions> | undefined
+                        const values = (field ? getFiles(field) : [])
                             .sort(sortingMethod)
                             .map(item => item.basename.trim().replace(/\[\[|\]\]/g, ""))
                             .filter(o => String(o).toLowerCase().includes(query.toLowerCase()));
@@ -114,7 +113,7 @@ export class OptionsMultiSelectModal extends SuggestModal<string> {
                         return []
                     }
                 }
-                case FieldType.Lookup: {
+                case "Lookup": {
                     const _values = [...this.plugin.fieldIndex.fileLookupFieldLastValue.entries()].filter(([fieldId, lookupFiles]) => {
                         return fieldId.endsWith(`__related__${this.fileClassFile.basename}___${(this.field as Field).name}`) && lookupFiles !== ""
                     }).map(([fieldId, lookupFiles]) => lookupFiles).join(",")
@@ -160,12 +159,12 @@ export class OptionsMultiSelectModal extends SuggestModal<string> {
         const confirmButton = new ButtonComponent(footerActionsContainer)
         confirmButton.setIcon("checkmark")
         confirmButton.onClick(async () => {
-            await this.replaceValues();
+            await this.replaceOptionsValues();
             this.close()
         })
     }
 
-    async replaceValues() {
+    async replaceOptionsValues() {
         const options = this.selectedOptions;
         this.input.inputEl.value = options.join(", ");
         this.parentFieldSet.tableView.update()

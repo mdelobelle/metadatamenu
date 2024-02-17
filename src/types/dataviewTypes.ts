@@ -3,6 +3,19 @@ export type Link = {
     type: "file"
 }
 
+export type FieldDecoration =
+    | "Code"
+    | "Italic"
+    | "Bold"
+    | "Strikethrough"
+
+export const fieldDecorations: FieldDecoration[] = [
+    "Code",
+    "Italic",
+    "Bold",
+    "Strikethrough"
+]
+
 export enum FieldStyle {
     "Code" = "Code",
     "Italic" = "Italic",

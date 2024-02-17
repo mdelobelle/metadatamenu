@@ -1,10 +1,7 @@
 import { FileClassAttribute } from "./fileClassAttribute";
 import MetadataMenu from "main";
 import { Notice, SuggestModal, TFile } from "obsidian";
-import { FieldType, FieldTypeLabelMapping, MultiDisplayType } from "src/types/fieldTypes";
 import { capitalize } from "src/utils/textUtils";
-import Field, { FieldCommand } from "src/fields/Field";
-import { FieldManager } from "src/fields/FieldManager";
 import { postValues } from "src/commands/postValues";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { Note } from "src/note/note";
@@ -13,6 +10,10 @@ import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
 import { SavedView } from "./views/tableViewComponents/saveViewModal";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { compareArrays } from "src/utils/array";
+import { FieldType, FieldType as IFieldType, MultiDisplayType, fieldTypes } from "src/fields/Fields"
+import { Field, getNewFieldId, stringToBoolean, FieldCommand } from "src/fields/Field";
+
+//#region Fileclass, options
 
 interface ShortId {
     id: string
@@ -32,13 +33,6 @@ const options: Record<string, { name: string, toValue: (value: any) => any }> = 
     "favoriteView": { name: "favoriteView", toValue: (value?: string) => value || null },
     "fieldsOrder": { name: "fieldsOrder", toValue: (value?: Field['id'][]) => value || [] }
 }
-
-//TODO
-/*
-isOrderValid au cas où on a changé le path
-si pas isOrderValid, on reconstruit un ordre rationnel (comme on le fait pour la fileClassFieldsView)
-fieldsOrder = Array<fields ids>
-*/
 
 export interface FileClassChild {
     name: string,
@@ -93,6 +87,7 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
     ) {
         super(plugin.app)
     }
+
     getSuggestions(query: string): string[] | Promise<string[]> {
         const fileClasses = [...this.plugin.fieldIndex.fileClassesName.keys()]
             .filter(fileClassName => !this.plugin.fieldIndex.filesFileClasses
@@ -106,6 +101,7 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
 
     renderSuggestion(value: string, el: HTMLElement) {
         el.setText(value);
+        el.setAttr("id", `fileclass-${value}-add-choice`)
     }
 
     onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
@@ -121,7 +117,6 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
         }
     }
 }
-
 class FileClass {
     constructor(public plugin: MetadataMenu, public name: string) {
         this.attributes = [];
@@ -143,7 +138,7 @@ class FileClass {
         } = this.plugin.app.metadataCache.getFileCache(this.getClassFile())?.frontmatter as Record<string, any> || {}
         const index = this.plugin.fieldIndex
         const parent = index.fileClassesName.get(_parent);
-        const excludedNames = FileClass.getExcludedFieldsFromFrontmatter(_excludes);
+        const excludedNames = getExcludedFieldsFromFrontmatter(_excludes);
 
         const excludes: FileClassAttribute[] = []
         index.fileClassesAncestors.get(this.getClassFile().basename)?.forEach(ancestorName => {
@@ -152,10 +147,10 @@ class FileClass {
             })
         })
         const limit = typeof (_limit) === 'number' ? _limit : this.plugin.settings.tableViewMaxRecords
-        const mapWithTag = FieldManager.stringToBoolean(_mapWithTag);
-        const tagNames = FileClass.getTagNamesFromFrontMatter(_tagNames);
-        const filesPaths = FileClass.getFilesPathsFromFrontMatter(_filesPaths);
-        const bookmarksGroups = FileClass.getBookmarksGroupsFromFrontMatter(_bookmarksGroups);
+        const mapWithTag = stringToBoolean(_mapWithTag);
+        const tagNames = getTagNamesFromFrontMatter(_tagNames);
+        const filesPaths = getFilesPathsFromFrontMatter(_filesPaths);
+        const bookmarksGroups = getBookmarksGroupsFromFrontMatter(_bookmarksGroups);
         const icon = typeof (_icon) === 'string' ? _icon : this.plugin.settings.fileClassIcon
         const savedViews: SavedView[] = _savedViews || [];
         const favoriteView: string | null = (typeof _favoriteView === "string" && _favoriteView !== "") ? _favoriteView : null
@@ -215,9 +210,9 @@ class FileClass {
     }
 
     public moveField(thisId: string, direction: "upwards" | "downwards") {
-        const thisPath = FileClass.getFileClassAttributes(this.plugin, this).find(attr => attr.id === thisId)?.path
+        const thisPath = getFileClassAttributes(this.plugin, this).find(attr => attr.id === thisId)?.path
         const sortedPaths: ShortId[] = []
-        for (const attr of FileClass.buildSortedAttributes(this.plugin, this)) {
+        for (const attr of buildSortedAttributes(this.plugin, this)) {
             sortedPaths.push({ id: attr.id, path: attr.getField().path })
         }
         const compareShortId = (a: ShortId) => a.id === thisId && a.path === thisPath
@@ -246,133 +241,24 @@ class FileClass {
         return this.getChildren().filter(c => childrenNames.includes(c.name))
     }
 
-    static getSortedRootFields(plugin: MetadataMenu, fileClass: FileClass): Field[] {
-        const fieldsOrder = fileClass.fieldsOrder ||
-            FileClass.buildSortedAttributes(plugin, fileClass).map(attr => attr.id)
-        const iFinder = (f: Field) => { return (id: string) => f.id === id }
-        const fields = plugin.fieldIndex.fileClassesFields
-            .get(fileClass.name)?.filter(_f => _f.isRoot()) || [];
-        const sortedFields = fields.sort((f1, f2) => {
-            return fieldsOrder.findIndex(iFinder(f1)) < fieldsOrder.findIndex(iFinder(f2)) ? -1 : 1
-        })
-        return sortedFields
-    }
-
-    static buildSortedAttributes(plugin: MetadataMenu, fileClass: FileClass): FileClassAttribute[] {
-        const attributes = FileClass.getFileClassAttributes(plugin, fileClass);
-        const options = fileClass.getFileClassOptions()
-        const presetOrder = options.fieldsOrder || []
-        //1 sort according to preset order
-        attributes.sort((a, b) =>
-            presetOrder.indexOf(a.id) > presetOrder.indexOf(b.id) ? 1 : -1
-        )
-        //2. rebuild a clean herarchy
-        const sortedAttributes = attributes.filter(attr => !attr.path)
-        let hasError: boolean = false
-        while (sortedAttributes.length < attributes.length) {
-            const _initial = [...sortedAttributes]
-            sortedAttributes.forEach((sAttr, parentIndex) => {
-                for (const attr of attributes) {
-                    if (
-                        attr.path?.split("____").last() === sAttr.id &&
-                        !sortedAttributes.includes(attr)
-                    ) {
-                        //insert before next field at same or lower level as parent
-                        const parentLevel = sAttr.getLevel()
-                        const parentSibling = sortedAttributes.slice(parentIndex + 1).find(oAttr => oAttr.getLevel() <= parentLevel)
-                        const parentSiblingIndex = parentSibling ? sortedAttributes.indexOf(parentSibling) : sortedAttributes.length
-                        sortedAttributes.splice(parentSiblingIndex, 0, attr)
-                        break
-                    }
-                }
-            })
-            if (_initial.length === sortedAttributes.length) {
-                console.error("Impossible to restore field hierarchy, check you fileclass configuration")
-                new Notice("Impossible to restore field hierarchy, check you fileclass configuration")
-                hasError = true
-                return FileClass.getFileClassAttributes(plugin, fileClass);
-            }
-        }
-        //3. update the fieldsOrder to store a clean hierarchy
-        options.fieldsOrder = sortedAttributes.map(sAttr => sAttr.id)
-        if (!compareArrays(presetOrder, options.fieldsOrder)) fileClass.updateOptions(options)
-        //4. return the sortedAttributes
-        return sortedAttributes
-    }
-
-    static getFileClassAttributes(plugin: MetadataMenu, fileClass: FileClass, excludes?: string[]): FileClassAttribute[] {
-        const file = fileClass.getClassFile();
-        const rawAttributes = plugin.app.metadataCache.getFileCache(file)?.frontmatter?.fields || []
-        const attributes: FileClassAttribute[] = [];
-        rawAttributes.forEach((attr: any) => {
-            const { name, id, type, options, command, display, style, path } = attr;
-            const fieldType = FieldTypeLabelMapping[capitalize(type) as keyof typeof FieldType];
-            attributes.push(new FileClassAttribute(plugin, this.name, name, id, fieldType, options, fileClass.name, command, display, style, path))
-        })
-        if (excludes) {
-            return attributes.filter(attr => !excludes.includes(attr.name))
-        } else {
-            return attributes
-        }
-    }
-
-    static getExcludedFieldsFromFrontmatter(excludedFields: string[] | string | undefined): string[] {
-        if (Array.isArray(excludedFields)) {
-            return excludedFields;
-        } else if (excludedFields) {
-            return excludedFields.split(",")
-        } else {
-            return []
-        }
-    }
-
-    static getTagNamesFromFrontMatter(_tagNames: string[] | string | undefined): string[] {
-        if (Array.isArray(_tagNames)) {
-            return _tagNames;
-        } else if (_tagNames) {
-            return _tagNames.split(",")
-        } else {
-            return []
-        }
-    }
-
-    static getFilesPathsFromFrontMatter(_filesPaths: string[] | string | undefined): string[] {
-        if (Array.isArray(_filesPaths)) {
-            return _filesPaths;
-        } else if (_filesPaths) {
-            return _filesPaths.split(",")
-        } else {
-            return []
-        }
-    }
-
-    static getBookmarksGroupsFromFrontMatter(_bookmarksGroups: string[] | string | undefined): string[] {
-        if (Array.isArray(_bookmarksGroups)) {
-            return _bookmarksGroups;
-        } else if (_bookmarksGroups) {
-            return _bookmarksGroups.split(",")
-        } else {
-            return []
-        }
-    }
 
     public getAttributes(): void {
         try {
             const file = this.getClassFile();
             const ancestors = this.plugin.fieldIndex.fileClassesAncestors.get(this.name);
             const _excludedFields = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.excludes
-            let excludedFields = FileClass.getExcludedFieldsFromFrontmatter(_excludedFields);
+            let excludedFields = getExcludedFieldsFromFrontmatter(_excludedFields);
 
             const ancestorsAttributes: Map<string, FileClassAttribute[]> = new Map();
-            ancestorsAttributes.set(this.name, FileClass.getFileClassAttributes(this.plugin, this, excludedFields))
+            ancestorsAttributes.set(this.name, getFileClassAttributes(this.plugin, this, excludedFields))
 
             ancestors?.forEach(ancestorName => {
                 const ancestorFile = this.plugin.app.vault.getAbstractFileByPath(`${this.plugin.settings.classFilesPath}${ancestorName}.md`)
                 const ancestor = new FileClass(this.plugin, ancestorName);
-                ancestorsAttributes.set(ancestorName, FileClass.getFileClassAttributes(this.plugin, ancestor, excludedFields))
+                ancestorsAttributes.set(ancestorName, getFileClassAttributes(this.plugin, ancestor, excludedFields))
                 if (ancestorFile instanceof TFile && ancestorFile.extension === "md") {
                     const _excludedFields = this.plugin.app.metadataCache.getFileCache(ancestorFile)?.frontmatter?.excludes
-                    excludedFields.push(...FileClass.getExcludedFieldsFromFrontmatter(_excludedFields));
+                    excludedFields.push(...getExcludedFieldsFromFrontmatter(_excludedFields));
                 }
             })
             for (const [fileClassName, fileClassAttributes] of ancestorsAttributes) {
@@ -442,7 +328,7 @@ class FileClass {
     }
 
     public async updateAttribute(
-        newType: keyof typeof FieldType,
+        newType: FieldType,
         newName: string,
         newOptions?: string[] | Record<string, string>,
         attr?: FileClassAttribute,
@@ -473,7 +359,46 @@ class FileClass {
                     display: newDisplay,
                     style: newStyle,
                     path: newPath,
-                    id: Field.getNewFieldId(this.plugin)
+                    id: getNewFieldId(this.plugin)
+                })
+            }
+        })
+        await this.incrementVersion();
+    }
+
+    public async updateIAttribute(
+        attr: Field,
+        newType: IFieldType,
+        newName: string,
+        newOptions?: string[] | Record<string, string>,
+        newCommand?: FieldCommand,
+        newDisplay?: MultiDisplayType,
+        newStyle?: Record<keyof typeof FieldStyleLabel, boolean>,
+        newPath?: string
+    ): Promise<void> {
+        const fileClass = attr && attr.fileClassName ? this.plugin.fieldIndex.fileClassesName.get(attr.fileClassName)! : this
+        const file = fileClass.getClassFile();
+        await this.plugin.app.fileManager.processFrontMatter(file, fm => {
+            fm.fields = fm.fields || []
+            const field = fm.fields.find((f: FileClassAttribute) => f.id === attr.id)
+            if (field) {
+                field.type = newType;
+                if (newOptions) field.options = newOptions;
+                if (newCommand) field.command = newCommand;
+                if (newDisplay) field.display = newDisplay;
+                if (newStyle) field.style = newStyle;
+                if (newName) field.name = newName;
+                if (newPath !== undefined) field.path = newPath
+            } else {
+                fm.fields.push({
+                    name: newName,
+                    type: newType,
+                    options: newOptions,
+                    command: newCommand,
+                    display: newDisplay,
+                    style: newStyle,
+                    path: newPath,
+                    id: getNewFieldId(this.plugin)
                 })
             }
         })
@@ -487,75 +412,215 @@ class FileClass {
         })
     }
 
-    static createFileClass(plugin: MetadataMenu, name: string): FileClass {
-        const fileClass = new FileClass(plugin, name);
-        fileClass.options = fileClass.getFileClassOptions()
-        fileClass.getAttributes();
-        return fileClass
+    public async removeIAttribute(attr: Field): Promise<void> {
+        const file = this.getClassFile();
+        await this.plugin.app.fileManager.processFrontMatter(file, fm => {
+            fm.fields = fm.fields.filter((f: any) => f.id !== attr.id)
+        })
     }
+}
 
-    static getFileClassNameFromPath(settings: MetadataMenuSettings, path: string): string | undefined {
-        const fileClassNameRegex = new RegExp(`${settings.classFilesPath}(?<fileClassName>.*).md`);
-        return path.match(fileClassNameRegex)?.groups?.fileClassName
-    }
+export { FileClass }
+//#endregion
+//#region methods
 
-    static indexFileClass(index: FieldIndex, file: TFile): void {
-        const fileClassName = FileClass.getFileClassNameFromPath(index.plugin.settings, file.path)
-        if (fileClassName) {
-            try {
-                const fileClass = FileClass.createFileClass(index.plugin, fileClassName)
-                index.fileClassesFields.set(
-                    fileClassName,
-                    fileClass.attributes.map(attr => attr.getField())
-                )
-                index.fileClassesPath.set(file.path, fileClass)
-                index.fileClassesName.set(fileClass.name, fileClass)
-                const cache = index.plugin.app.metadataCache.getFileCache(file);
-                if (fileClass.getMajorVersion() === undefined || fileClass.getMajorVersion() as number < 2) {
-                    index.v1FileClassesPath.set(file.path, fileClass)
-                    index.remainingLegacyFileClasses = true
-                } else if (fileClass.getMajorVersion() === 2) {
-                    index.v2FileClassesPath.set(file.path, fileClass)
-                    index.remainingLegacyFileClasses = true
+export function buildSortedAttributes(plugin: MetadataMenu, fileClass: FileClass): FileClassAttribute[] {
+    const attributes = getFileClassAttributes(plugin, fileClass);
+    const options = fileClass.getFileClassOptions()
+    const presetOrder = options.fieldsOrder || []
+    //1 sort according to preset order
+    attributes.sort((a, b) =>
+        presetOrder.indexOf(a.id) > presetOrder.indexOf(b.id) ? 1 : -1
+    )
+    //2. rebuild a clean herarchy
+    const sortedAttributes = attributes.filter(attr => !attr.path)
+    let hasError: boolean = false
+    while (sortedAttributes.length < attributes.length) {
+        const _initial = [...sortedAttributes]
+        sortedAttributes.forEach((sAttr, parentIndex) => {
+            for (const attr of attributes) {
+                if (
+                    attr.path?.split("____").last() === sAttr.id &&
+                    !sortedAttributes.includes(attr)
+                ) {
+                    //insert before next field at same or lower level as parent
+                    const parentLevel = sAttr.getLevel()
+                    const parentSibling = sortedAttributes.slice(parentIndex + 1).find(oAttr => oAttr.getLevel() <= parentLevel)
+                    const parentSiblingIndex = parentSibling ? sortedAttributes.indexOf(parentSibling) : sortedAttributes.length
+                    sortedAttributes.splice(parentSiblingIndex, 0, attr)
+                    break
                 }
-                /*
-                ** Map with tags
-                */
-                if (cache?.frontmatter?.mapWithTag) {
-                    if (!fileClassName.includes(" ")) {
-                        index.tagsMatchingFileClasses.set(fileClassName, fileClass)
-                    }
-                }
-                if (cache?.frontmatter?.tagNames) {
-                    const _tagNames = cache?.frontmatter?.tagNames as string | string[];
-                    const tagNames = Array.isArray(_tagNames) ? [..._tagNames] : _tagNames.split(",").map(t => t.trim())
-                    tagNames.forEach(tag => {
-                        if (!tag.includes(" ")) {
-                            index.tagsMatchingFileClasses.set(tag, fileClass)
-                        }
-                    })
-                }
-                /*
-                ** Map with files paths
-                */
-                if (cache?.frontmatter?.filesPaths) {
-                    const _filesPaths = cache?.frontmatter?.filesPaths as string | string[];
-                    const filesPaths = Array.isArray(_filesPaths) ? [..._filesPaths] : _filesPaths.split(",").map(f => f.trim())
-                    filesPaths.forEach(path => index.filesPathsMatchingFileClasses.set(path, fileClass))
-                }
-                /*
-                ** Map with bookmarks groups
-                */
-                if (cache?.frontmatter?.bookmarksGroups) {
-                    const _bookmarksGroups = cache?.frontmatter?.bookmarksGroups as string | string[];
-                    const bookmarksGroups = Array.isArray(_bookmarksGroups) ? [..._bookmarksGroups] : _bookmarksGroups.split(",").map(g => g.trim())
-                    bookmarksGroups.forEach(group => index.bookmarksGroupsMatchingFileClasses.set(group, fileClass))
-                }
-            } catch (error) {
-                console.error(error)
             }
+        })
+        if (_initial.length === sortedAttributes.length) {
+            console.error("Impossible to restore field hierarchy, check you fileclass configuration")
+            new Notice("Impossible to restore field hierarchy, check you fileclass configuration")
+            hasError = true
+            return getFileClassAttributes(plugin, fileClass);
+        }
+    }
+    //3. update the fieldsOrder to store a clean hierarchy
+    options.fieldsOrder = sortedAttributes.map(sAttr => sAttr.id)
+    if (!compareArrays(presetOrder, options.fieldsOrder)) fileClass.updateOptions(options)
+    //4. return the sortedAttributes
+    return sortedAttributes
+}
+
+export function createFileClass(plugin: MetadataMenu, name: string): FileClass {
+    const fileClass = new FileClass(plugin, name);
+    fileClass.options = fileClass.getFileClassOptions()
+    fileClass.getAttributes();
+    return fileClass
+}
+
+export function getBookmarksGroupsFromFrontMatter(_bookmarksGroups: string[] | string | undefined): string[] {
+    if (Array.isArray(_bookmarksGroups)) {
+        return _bookmarksGroups;
+    } else if (_bookmarksGroups) {
+        return _bookmarksGroups.split(",")
+    } else {
+        return []
+    }
+}
+
+export function getExcludedFieldsFromFrontmatter(excludedFields: string[] | string | undefined): string[] {
+    if (Array.isArray(excludedFields)) {
+        return excludedFields;
+    } else if (excludedFields) {
+        return excludedFields.split(",")
+    } else {
+        return []
+    }
+}
+
+export function getFileClassAttributes(plugin: MetadataMenu, fileClass: FileClass, excludes?: string[]): FileClassAttribute[] {
+    const file = fileClass.getClassFile();
+    const rawAttributes = plugin.app.metadataCache.getFileCache(file)?.frontmatter?.fields || []
+    const attributes: FileClassAttribute[] = [];
+    rawAttributes.forEach((attr: any) => {
+        const { name, id, type, options, command, display, style, path } = attr;
+        const fieldType = capitalize(type) as FieldType;
+        attributes.push(new FileClassAttribute(plugin, name, id, fieldType, options, fileClass.name, command, display, style, path))
+    })
+    if (excludes) {
+        return attributes.filter(attr => !excludes.includes(attr.name))
+    } else {
+        return attributes
+    }
+}
+
+export function getFileClassNameFromPath(settings: MetadataMenuSettings, path: string): string | undefined {
+    const fileClassNameRegex = new RegExp(`${settings.classFilesPath}(?<fileClassName>.*).md`);
+    return path.match(fileClassNameRegex)?.groups?.fileClassName
+}
+
+export function getFilesPathsFromFrontMatter(_filesPaths: string[] | string | undefined): string[] {
+    if (Array.isArray(_filesPaths)) {
+        return _filesPaths;
+    } else if (_filesPaths) {
+        return _filesPaths.split(",")
+    } else {
+        return []
+    }
+}
+
+export function getSortedRootFields(plugin: MetadataMenu, fileClass: FileClass): Field[] {
+    const fieldsOrder = fileClass.fieldsOrder ||
+        buildSortedAttributes(plugin, fileClass).map(attr => attr.id)
+    const iFinder = (f: Field) => { return (id: string) => f.id === id }
+    const fields = plugin.fieldIndex.fileClassesFields
+        .get(fileClass.name)?.filter(_f => _f.isRoot()) || [];
+    const sortedFields = fields.sort((f1, f2) => {
+        return fieldsOrder.findIndex(iFinder(f1)) < fieldsOrder.findIndex(iFinder(f2)) ? -1 : 1
+    })
+    return sortedFields
+}
+
+export function sortFileFields(index: FieldIndex, file: TFile): Field[] {
+    const fileClasses = index.filesFileClasses.get(file.path) || [];
+    const sortedAttributes: Field[] = []
+    for (const fileClass of fileClasses) {
+        const fileClassFields = index.fileClassesFields.get(fileClass.name) || []
+        const order = fileClass.options.fieldsOrder
+        const sortedFields = order
+            ? fileClassFields.sort((f1, f2) => order.indexOf(f1.id) < order.indexOf(f2.id) ? -1 : 1)
+            : fileClassFields
+        sortedAttributes.push(...sortedFields)
+    }
+    return sortedAttributes
+}
+
+export function getTagNamesFromFrontMatter(_tagNames: string[] | string | undefined): string[] {
+    if (Array.isArray(_tagNames)) {
+        return _tagNames;
+    } else if (_tagNames) {
+        return _tagNames.split(",")
+    } else {
+        return []
+    }
+}
+
+export function indexFileClass(index: FieldIndex, file: TFile): void {
+    const fileClassName = getFileClassNameFromPath(index.plugin.settings, file.path)
+    if (fileClassName) {
+        try {
+            const fileClass = createFileClass(index.plugin, fileClassName)
+            index.fileClassesFields.set(
+                fileClassName,
+                fileClass.attributes
+                    .map(attr => attr.getIField())
+                    .filter(field =>
+                        field !== undefined
+                        /* in case getIField doesn't resolve the field won't be added and the error will be silent*/
+                    ) as Field[]
+            )
+            index.fileClassesPath.set(file.path, fileClass)
+            index.fileClassesName.set(fileClass.name, fileClass)
+            const cache = index.plugin.app.metadataCache.getFileCache(file);
+            if (fileClass.getMajorVersion() === undefined || fileClass.getMajorVersion() as number < 2) {
+                index.v1FileClassesPath.set(file.path, fileClass)
+                index.remainingLegacyFileClasses = true
+            } else if (fileClass.getMajorVersion() === 2) {
+                index.v2FileClassesPath.set(file.path, fileClass)
+                index.remainingLegacyFileClasses = true
+            }
+            /*
+            ** Map with tags
+            */
+            if (cache?.frontmatter?.mapWithTag) {
+                if (!fileClassName.includes(" ")) {
+                    index.tagsMatchingFileClasses.set(fileClassName, fileClass)
+                }
+            }
+            if (cache?.frontmatter?.tagNames) {
+                const _tagNames = cache?.frontmatter?.tagNames as string | string[];
+                const tagNames = Array.isArray(_tagNames) ? [..._tagNames] : _tagNames.split(",").map(t => t.trim())
+                tagNames.forEach(tag => {
+                    if (!tag.includes(" ")) {
+                        index.tagsMatchingFileClasses.set(tag, fileClass)
+                    }
+                })
+            }
+            /*
+            ** Map with files paths
+            */
+            if (cache?.frontmatter?.filesPaths) {
+                const _filesPaths = cache?.frontmatter?.filesPaths as string | string[];
+                const filesPaths = Array.isArray(_filesPaths) ? [..._filesPaths] : _filesPaths.split(",").map(f => f.trim())
+                filesPaths.forEach(path => index.filesPathsMatchingFileClasses.set(path, fileClass))
+            }
+            /*
+            ** Map with bookmarks groups
+            */
+            if (cache?.frontmatter?.bookmarksGroups) {
+                const _bookmarksGroups = cache?.frontmatter?.bookmarksGroups as string | string[];
+                const bookmarksGroups = Array.isArray(_bookmarksGroups) ? [..._bookmarksGroups] : _bookmarksGroups.split(",").map(g => g.trim())
+                bookmarksGroups.forEach(group => index.bookmarksGroupsMatchingFileClasses.set(group, fileClass))
+            }
+        } catch (error) {
+            console.error(error)
         }
     }
 }
 
-export { FileClass };
+//#endregion

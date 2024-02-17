@@ -4,20 +4,18 @@ export const fieldComponents = ['inQuote', 'inList', 'preSpacer', 'startStyle', 
 
 export const genericFieldRegex = "(?<inQuote>\>*(\\s+)?)?(?<inList>- )?(?<preSpacer>(\\s+)?)?(?<startStyle>[_\\*~`]*)(?<attribute>[-\\w\\p{Letter}\\p{Emoji_Presentation}\\s]*)(?<endStyle>[_\\*~`]*)(?<beforeSeparatorSpacer>\\s*)";
 
-export const inlineFieldRegex = (attribute: string) => `(?<inQuote>\>*(\\s+)?)?(?<inList>- )?(?<preSpacer>(\\s+)?)?(?<startStyle>[_\\*~\`]*)(?<attribute>${attribute})(?<endStyle>[_\\*~\`]*)(?<beforeSeparatorSpacer>\\s*)::(?<afterSeparatorSpacer>\\s*)`;
+export const fullLineRegex = new RegExp(`^\\s*${genericFieldRegex}::(?<afterSeparatorSpacer>\\s*)(?<values>.*)?`, "u");
 
-export const fullLineRegex = new RegExp(`^\\s*${genericFieldRegex}::\\s*(?<values>.*)?`, "u");
+export const inSentenceRegexBrackets = new RegExp(`\\[${genericFieldRegex}::(?<afterSeparatorSpacer>\\s*)(?<values>[^\\]]+)?\\]`, "gu");
 
-export const inSentenceRegexBrackets = new RegExp(`\\[${genericFieldRegex}::\\s*(?<values>[^\\]]+)?\\]`, "gu");
-
-export const inSentenceRegexPar = new RegExp(`\\(${genericFieldRegex}::\\s*(?<values>[^\\)]+)?\\)`, "gu");
+export const inSentenceRegexPar = new RegExp(`\\(${genericFieldRegex}::(?<afterSeparatorSpacer>\\s*)(?<values>[^\\)]+)?\\)`, "gu");
 
 export const LinkRegex = new RegExp(`\\[\\[(?<target>[^\\|]*)(\\|)?(?<alias>.*)?\\]\\]`)
 
-export const getLink = (linkText: string, source: TFile): { path: string, alias?: string } | undefined => {
+export const getLink = (linkText: string, source?: TFile): { path: string, alias?: string } | undefined => {
     const fR = `${linkText}`?.match(LinkRegex);
     if (fR?.groups?.target) {
-        const path = app.metadataCache.getFirstLinkpathDest(fR?.groups?.target, source.path)?.path
+        const path = app.metadataCache.getFirstLinkpathDest(fR?.groups?.target, source?.path || fR?.groups?.target)?.path
         if (path) {
             return {
                 path: path,

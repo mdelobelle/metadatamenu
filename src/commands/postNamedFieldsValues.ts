@@ -2,12 +2,12 @@ import MetadataMenu from "main";
 import { MarkdownView, TFile } from "obsidian";
 import { FieldStyleLabel, buildEndStyle, buildStartStyle } from "src/types/dataviewTypes";
 import { legacyGenuineKeys } from "src/utils/dataviewUtils";
-import { decodeLink, encodeLink, fieldComponents, inlineFieldRegex } from "src/utils/parser";
+import { decodeLink, encodeLink, fieldComponents } from "src/utils/parser";
 import { FieldPayload } from "./postValues";
 import { getFileFromFileOrPath, getFrontmatterPosition } from "src/utils/fileUtils";
 import { Note } from "src/note/note";
 
-
+export const inlineFieldRegex = (attribute: string) => `(?<inQuote>\>*(\\s+)?)?(?<inList>- )?(?<preSpacer>(\\s+)?)?(?<startStyle>[_\\*~\`]*)(?<attribute>${attribute})(?<endStyle>[_\\*~\`]*)(?<beforeSeparatorSpacer>\\s*)::(?<afterSeparatorSpacer>\\s*)`;
 
 export type NamedFieldsPayload = Array<{
     name: string,

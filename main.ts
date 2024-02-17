@@ -5,12 +5,11 @@ import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
 import FieldIndex from 'src/index/FieldIndex';
 import IndexStatus from 'src/components/IndexStatus';
-import Field from 'src/fields/Field';
 import FileClassQuery from 'src/fileClass/FileClassQuery';
 import { IMetadataMenuApi } from 'src/MetadataMenuApi';
 import { MetadataMenuApi } from 'src/MetadataMenuApi';
 import { DEFAULT_SETTINGS, MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
-import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
+import MetadataMenuSettingTab, { isPresetFieldsSettingGroup } from "src/settings/MetadataMenuSettingTab";
 import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import { updatePropertiesSection } from 'src/options/updateProps';
@@ -20,7 +19,8 @@ import { IndexDatabase } from 'src/db/DatabaseManager';
 import { FileClassCodeBlockManager } from 'src/components/FileClassCodeBlockManager';
 import { AddFileClassToFileModal } from 'src/fileClass/fileClass';
 import { FileClassCodeBlockListManager } from 'src/components/FileClassCodeBlockListManager';
-
+import { Field, buildEmptyField } from 'src/fields/Field';
+import { TestRunner } from 'src/testing/runner';
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
 	public settings: MetadataMenuSettings;
@@ -31,14 +31,15 @@ export default class MetadataMenu extends Plugin {
 	public extraButton: ExtraButton;
 	public contextMenu: ContextMenu;
 	public indexStatus: IndexStatus;
+	public testRunner: TestRunner;
 	public indexName: string;
 	public launched: boolean = false;
 	public indexDB: IndexDatabase;
 	public codeBlockListManager: FileClassCodeBlockListManager
 
 	async onload(): Promise<void> {
-		console.log('+------ Metadata Menu loaded --------+');
-		this.register(() => delete window.DEBUG);
+		console.log('+------ Metadata Menu loaded ------x-+');
+		this.register(() => delete window.MDM_DEBUG);
 		this.indexName = `metadata_menu_${this.app.appId ||
 			this.app.vault.adapter.basePath ||
 			this.app.vault.getName()}`;
@@ -69,7 +70,7 @@ export default class MetadataMenu extends Plugin {
 
 		//building settings tab
 		this.settings.presetFields.forEach(prop => {
-			const property = new Field(this);
+			const property = new (buildEmptyField(this, undefined))
 			Object.assign(property, prop);
 			this.presetFields.push(property);
 		});
@@ -101,18 +102,18 @@ export default class MetadataMenu extends Plugin {
 		)
 
 		this.registerEvent(
-			this.app.workspace.on('metadata-menu:indexed', () => {
+			this.app.workspace.on("file-open", (file) => {
+				updatePropertiesSection(this)
+			})
+		)
+
+		this.registerEvent(
+			this.app.metadataCache.on('metadata-menu:indexed', () => {
 				this.indexStatus.setState("indexed")
 				const currentView = this.app.workspace.getActiveViewOfType(MarkdownView)
 				if (currentView) this.indexStatus.checkForUpdate(currentView)
 				updatePropertiesSection(this)
 				FileClassViewManager.reloadViews(this)
-			})
-		)
-
-		this.registerEvent(
-			this.app.workspace.on("file-open", (file) => {
-				updatePropertiesSection(this)
 			})
 		)
 
@@ -132,6 +133,8 @@ export default class MetadataMenu extends Plugin {
 			ctx.addChild(fileClassCodeBlockManager)
 		});
 		this.app.workspace.trigger("layout-change")
+		this.testRunner = this.addChild(new TestRunner(this))
+		if (MDM_DEBUG && this.app.vault.getName() === 'test-vault-mdm') { MDM_DEBUG = false; await this.testRunner.run() }
 	};
 
 	/*

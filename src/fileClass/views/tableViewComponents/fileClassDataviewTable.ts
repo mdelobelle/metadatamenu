@@ -2,11 +2,12 @@ import MetadataMenu from "main";
 import { Column, ViewConfiguration } from "./tableViewFieldSet"
 import { FileClass } from "../../fileClass";
 import { fieldStates } from "./OptionsMultiSelectModal";
-import { FieldType } from "src/types/fieldTypes";
 import { FileClassTableView } from "../fileClassTableView";
 import { FileClassCodeBlockView } from "../fileClassCodeBlockView";
-import { MarkdownPostProcessorContext, setIcon } from "obsidian";
+import { MarkdownPostProcessorContext, TFile, setIcon } from "obsidian";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
+import { fieldValueManager } from "src/fields/Field";
+import { extensionMediaTypes } from "src/fields/models/abstractModels/AbstractMedia";
 
 export class FileClassDataviewTable {
     private firstCollWidth: number;
@@ -15,7 +16,10 @@ export class FileClassDataviewTable {
     public limitWrapped: boolean = false
     public limit: number
     public plugin: MetadataMenu
-    public observer: MutationObserver;
+    public count: number;
+    public columnsFileClassField: Record<string, { fileClassName: string, fieldName: string }> = {}
+    public observers: MutationObserver[] = []
+
     constructor(
         public viewConfiguration: ViewConfiguration,
         public view: FileClassTableView | FileClassCodeBlockView,
@@ -26,6 +30,40 @@ export class FileClassDataviewTable {
     ) {
         this.plugin = this.view.manager.plugin
         this.limit = maxRow || this.fileClass.options.limit || this.plugin.settings.tableViewMaxRecords
+    }
+
+    public getFilteredFiles(): any {
+        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
+        if (dvApi) {
+            try {
+                const current = this.ctx ? dvApi.page(this.ctx.sourcePath) : {}
+                const fFC = this.plugin.fieldIndex.filesFileClasses
+                const fileClassesNames = [this.fileClass.name, ...this.viewConfiguration.children]
+                const fileClassFiles = [...fFC.keys()].filter(path => fFC.get(path)?.some(_fileClass => fileClassesNames.includes(_fileClass.name)))
+                const fileFileClasses = (path: string) => {
+                    return this.plugin.fieldIndex.filesFileClasses.get(path)?.map(_fC => _fC.name) || []
+                }
+                const hasFileClass = (path: string, id: string) => {
+                    if (id.includes('____')) {
+                        const fileClassName = id.split('____')[0]
+                        return fileFileClasses(path).includes(fileClassName)
+                    } else {
+                        return true
+                    }
+                }
+                const query = (new Function(
+                    "dv", "current", "fileClassFiles", "hasFileClass",
+                    `return ${this.buildDvJSQuery()}`)
+                )(dvApi, current, fileClassFiles, hasFileClass)
+                const values = query.values;
+                return values
+            } catch (e) {
+                console.log(e)
+                console.error("unable to build the list of files")
+            }
+        } else {
+            return []
+        }
     }
 
     public buildPaginationManager(container: HTMLDivElement): void {
@@ -40,80 +78,55 @@ export class FileClassDataviewTable {
             }
             this.limitWrapped = !this.limitWrapped
         }
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
 
-        if (dvApi) {
-            try {
-                const current = this.ctx ? dvApi.page(this.ctx.sourcePath) : {}
-                const fFC = this.plugin.fieldIndex.filesFileClasses
-                const fileClassesNames = [this.fileClass.name, ...this.viewConfiguration.children]
-                const fileClassFiles = [...fFC.keys()].filter(path => fFC.get(path)?.some(_fileClass => fileClassesNames.includes(_fileClass.name)))
-                const fileFileClasses = (path: string) => {
-                    return this.plugin.fieldIndex.filesFileClasses.get(path)?.map(_fC => _fC.name) || []
+        const values: any[] = this.getFilteredFiles() || [];
+        this.count = values.length;
+        const rangesCount = Math.floor(this.count / this.limit) + 1
+        if (rangesCount < 2) return
+        for (let i = 0; i < rangesCount; i++) {
+            if (i * this.limit < this.count) {
+                const rangeComponent = container.createDiv({
+                    cls: `range ${i === this.sliceStart / this.limit ? "active" : ""}`,
+                    text: `${i * this.limit + 1} - ${Math.min((i + 1) * this.limit, this.count)}`
+                })
+                rangeComponent.onclick = () => {
+                    this.sliceStart = i * this.limit;
+                    this.view.update(this.limit, this.sliceStart);
                 }
-                const hasFileClass = (path: string, id: string) => {
-                    const fileClassName = id.split('____')[0]
-                    return fileFileClasses(path).includes(fileClassName)
-                }
-                const query = (new Function(
-                    "dv", "current", "fileClassFiles", "hasFileClass",
-                    `return ${this.buildDvJSQuery()}`)
-                )(dvApi, current, fileClassFiles, hasFileClass)
-                const values = query.values;
-                const count = values.length;
-                const rangesCount = Math.floor(count / this.limit) + 1
-                if (rangesCount < 2) return
-                for (let i = 0; i < rangesCount; i++) {
-                    if (i * this.limit < count) {
-                        const rangeComponent = container.createDiv({
-                            cls: `range ${i === this.sliceStart / this.limit ? "active" : ""}`,
-                            text: `${i * this.limit + 1} - ${Math.min((i + 1) * this.limit, count)}`
-                        })
-                        rangeComponent.onclick = () => {
-                            this.sliceStart = i * this.limit;
-                            this.view.update(this.limit, this.sliceStart);
-                        }
-                        this.ranges.push(rangeComponent)
+                this.ranges.push(rangeComponent)
+            }
+            if (rangesCount >= 5 && i === 2) {
+                const rangeExpander = container.createDiv({
+                    cls: `range`,
+                    text: `< ... >`
+                })
+                rangeExpander.onclick = () => {
+                    if (rangeExpander.hasClass("active")) {
+                        rangeExpander.removeClass("active")
+                        rangeExpander.setText("< ... >")
+                    } else {
+                        rangeExpander.addClass("active")
+                        rangeExpander.setText("> ... <")
                     }
-                    if (rangesCount >= 5 && i === 2) {
-                        const rangeExpander = container.createDiv({
-                            cls: `range`,
-                            text: `< ... >`
-                        })
-                        rangeExpander.onclick = () => {
-                            if (rangeExpander.hasClass("active")) {
-                                rangeExpander.removeClass("active")
-                                rangeExpander.setText("< ... >")
-                            } else {
-                                rangeExpander.addClass("active")
-                                rangeExpander.setText("> ... <")
-                            }
-                            toggleRanges(rangesCount)
-                        }
-                    }
+                    toggleRanges(rangesCount)
                 }
-                const activeRange = this.ranges.find(r => r.hasClass("active"))
-                if (activeRange && this.ranges.indexOf(activeRange) < 2) toggleRanges(rangesCount)
-            } catch (e) {
-                console.log(e)
-                console.error("unable to build the list of files")
             }
         }
+        const activeRange = this.ranges.find(r => r.hasClass("active"))
+        if (activeRange && this.ranges.indexOf(activeRange) < 2) toggleRanges(rangesCount)
+
     }
 
-    public setTableViewObserver(observed: HTMLDivElement) {
-        // Selectionne le noeud dont les mutations seront observées
-        var targetNode = observed
-        // Options de l'observateur (quelles sont les mutations à observer)
-        var config = { attributes: true, childList: true };
-
-        // Fonction callback à éxécuter quand une mutation est observée
+    public addLinkClickEvent(observed: HTMLDivElement) {
         var callback = function (mutationsList: MutationRecord[], table: FileClassDataviewTable) {
             for (var mutation of mutationsList) {
                 if (mutation.type == "childList") {
                     for (const node of mutation.addedNodes) {
-                        //@ts-ignore
-                        if ("className" in node && (node.className as string).includes('field-name')) {
+                        if (
+                            "className" in node &&
+                            typeof (node as HTMLElement).className === "string" &&
+                            ((node as HTMLElement).className as string).includes('field-name')
+                        ) {
                             const fileLink = (node as HTMLElement).querySelector("span a.internal-link");
                             if (fileLink) table.addClickEventToLink(fileLink as HTMLLinkElement)
                         }
@@ -121,15 +134,156 @@ export class FileClassDataviewTable {
                 }
             }
         };
+        const observer = new MutationObserver(mutationList => callback(mutationList, this));
+        if (observed) observer.observe(observed, { childList: true });
+    }
 
-        // Créé une instance de l'observateur lié à la fonction de callback
-        this.observer = new MutationObserver(mutationList => callback(mutationList, this));
+    public buildBulkModifiers(observed: HTMLDivElement) {
 
-        // Commence à observer le noeud cible pour les mutations précédemment configurées
-        if (targetNode) this.observer.observe(targetNode, config);
+        const cleanTable = (table: HTMLTableElement) => {
+            for (const selector of table.querySelectorAll(".modifier-selector")) {
+                (selector as HTMLElement).parentElement?.removeChild(selector)
+            }
+            for (const toggler of table.querySelectorAll(".checkbox-toggler")) {
+                (toggler as HTMLElement).parentElement?.removeChild(toggler)
+            }
+        }
+
+        const processFilesFieldChange = (dvTable: FileClassDataviewTable, selectedFiles: string[], allFilesSelected: boolean, columndId: string) => {
+            const { fileClassName, fieldName } = dvTable.columnsFileClassField[columndId]
+            const field = this.plugin.fieldIndex.fileClassesFields.get(fileClassName)?.find(f => f.isRoot() && f.name === fieldName)
+            const files = selectedFiles.map(sF => this.plugin.app.vault.getAbstractFileByPath(sF)).filter(f => f instanceof TFile) as TFile[]
+
+            if (field) {
+                const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, files, undefined)
+                fieldVM?.openModal()
+            }
+        }
+
+        const buildCellCheckBox = (
+            table: HTMLTableElement,
+            cell: HTMLTableCellElement,
+            filesCheckboxes: HTMLInputElement[],
+            allFilesSelected: boolean,
+            selectedFiles: string[]
+        ) => {
+            const checkBoxContainer = cell.createDiv({ cls: "modifier-selector" })
+            const checkBox = checkBoxContainer.createEl("input", { type: "checkbox" })
+
+            if (cell.tagName === "TH") checkBox.addClass("page-checkbox")
+            else filesCheckboxes.push(checkBox)
+            checkBox.onclick = (e) => {
+                e.stopPropagation();
+                checkBox.toggleAttribute("checked")
+                if (cell!.tagName === "TH") {
+                    allFilesSelected = checkBox.checked
+                    for (const cB of filesCheckboxes) cB.checked = false
+                    selectedFiles.splice(0)
+                    if (allFilesSelected) {
+                        for (const cell of table.querySelectorAll("div.field-name a.internal-link")) {
+                            const name = cell?.getAttr("data-href");
+                            if (name) selectedFiles.push(name)
+                        }
+                        for (const cB of filesCheckboxes) cB.checked = true
+                    }
+
+                } else {
+                    const headerCheckbox = table.querySelector(".page-checkbox")
+                    if (headerCheckbox) {
+                        (headerCheckbox as HTMLInputElement).checked = false
+                        allFilesSelected = false
+                    }
+                    const name = cell!.querySelector("div.field-name a.internal-link")?.getAttr("data-href")
+                    if (checkBox.checked && name) selectedFiles.push(name)
+                    else if (name) selectedFiles.remove(name)
+                }
+            }
+            checkBoxContainer.hide()
+            cell.prepend(checkBoxContainer)
+        }
+
+        const buildHeaderCols = (
+            dvTable: FileClassDataviewTable,
+            table: HTMLTableElement,
+            selectedFiles: string[],
+            allFilesSelected: boolean
+        ) => {
+            const header = table.rows[0]
+            for (const [index, column] of Object.entries(header.cells)) {
+
+                if (index === "0") {
+                    column.createDiv({ cls: "spacer" })
+                    const toggleButtonContainer = column.createDiv({ cls: "checkbox-toggler" })
+                    setIcon(toggleButtonContainer, "list-todo")
+
+                }
+
+                column.onclick = (e) => {
+                    if (index === "0") {
+                        const cells = table.querySelectorAll('.modifier-selector') as NodeListOf<HTMLTableCellElement>
+                        for (const cell of cells) {
+                            const input = cell.find("input")
+                            if (input && !(input as HTMLElement & { checkVisibility: () => boolean }).checkVisibility()) cell.show()
+                            else cell.hide()
+                        }
+                    } else {
+                        const columnId = (column.querySelector('span.column-id') as HTMLInputElement).id
+                        if (selectedFiles.length || allFilesSelected) processFilesFieldChange(dvTable, selectedFiles, allFilesSelected, columnId)
+                    }
+                }
+            }
+        }
+
+        var callback = function (mutationsList: MutationRecord[], dvTable: FileClassDataviewTable) {
+            const selectedFiles: string[] = []
+            let allFilesSelected: boolean = false
+            const filesCheckboxes: HTMLInputElement[] = []
+            for (var mutation of mutationsList) {
+                if (mutation.type == "childList") {
+                    for (const node of mutation.addedNodes) {
+                        if (
+                            "className" in node &&
+                            typeof (node as HTMLElement).className === "string" &&
+                            (node as HTMLElement).className.includes('dataview table-view-table')
+                        ) {
+                            const table = node as HTMLTableElement
+                            cleanTable(table)
+                            for (const row of table.rows) {
+                                const cell = row.cells.item(0)
+                                if (cell) buildCellCheckBox(table, cell, filesCheckboxes, allFilesSelected, selectedFiles)
+                            }
+                            if (table.tHead) buildHeaderCols(dvTable, table, selectedFiles, allFilesSelected)
+                        } else if (
+                            "className" in node &&
+                            typeof (node as HTMLElement).className === "string" &&
+                            (node as HTMLElement).className.includes('internal-embed')
+                        ) {
+                            const src = (node as HTMLElement).getAttr("src")
+                            if (src && node.nodeName === "SPAN" && Object.keys(extensionMediaTypes).some(extension => src.endsWith(extension))) {
+                                for (const child of node.childNodes) { node.removeChild(child) }
+                                const img = node.createEl("img")
+                                img.src = dvTable.plugin.app.vault.adapter.getResourcePath(src)
+                                img.style.width = "40px"
+                                img.style.borderRadius = "var(--image-radius)";
+                                node.appendChild(img)
+                            }
+                        }
+                    }
+                } else if (mutation.type == "attributes") {
+                    for (const node of mutation.addedNodes) {
+
+                    }
+                }
+            }
+        };
+        const observer = new MutationObserver(mutationList => callback(mutationList, this));
+        this.observers.push(observer)
+        if (observed) observer.observe(observed, { childList: true, subtree: true });
     }
 
     public buildTable(tableContainer: HTMLDivElement): void {
+        if (this.view instanceof FileClassTableView) this.addLinkClickEvent(tableContainer)
+        this.buildBulkModifiers(tableContainer)
         tableContainer.onscroll = (e) => {
             const table = tableContainer
             const firstColl = tableContainer.querySelectorAll('tbody > tr > td:first-child')
@@ -160,18 +314,14 @@ export class FileClassDataviewTable {
         if (dvApi) {
             dvApi.executeJs(this.buildDvJSRendering(), tableContainer, this.view.manager, this.fileClass.getClassFile().path)
         }
-        // links aren't clickable anymore, rebinding them to click event
-        if (this.view instanceof FileClassTableView) {
-            for (const link of tableContainer.querySelectorAll("a.internal-link") as NodeListOf<HTMLLinkElement>) this.addClickEventToLink(link)
-            this.setTableViewObserver(tableContainer)
-        }
     }
 
     public buidFileClassViewBtn(): void {
         const id = this.view.tableId
         if (document.querySelector(`#${id} thead th .fileclass-icon`)) return
-        const firstColHeader = document.querySelector(`#${id} thead th`)
-        if (firstColHeader) {
+        const firstColHeader = document.querySelector(`#${id} thead th `)
+        if (firstColHeader instanceof Element) {
+            firstColHeader.addClass("first-col-header-cell")
             const firstColHeaderContainer = firstColHeader.createDiv({ cls: "first-col-header-container" });
             [...firstColHeader.children].forEach(child => {
                 if (!child.hasClass("first-col-header-container")) {
@@ -185,17 +335,22 @@ export class FileClassDataviewTable {
                 this.plugin.addChild(fileClassViewManager)
                 fileClassViewManager.build()
             }
-            firstColHeaderContainer?.prepend(button)
+            const checkBoxContainer = firstColHeaderContainer.querySelector(".modifier-selector")
+            if (checkBoxContainer) firstColHeaderContainer?.insertAfter(button, checkBoxContainer)
+            else firstColHeaderContainer.prepend(button)
         }
     }
 
     private addClickEventToLink(link: HTMLLinkElement): void {
-        link.addEventListener("click", () => this.plugin.app.workspace.openLinkText(
-            //@ts-ignore
-            link.getAttr("data-href")?.replace(/(.*).md/, "$1"),
-            this.fileClass.getClassFile().path,
-            'tab'
-        ))
+        link.addEventListener("click", (e) => {
+            e.preventDefault()
+            this.plugin.app.workspace.openLinkText(
+                //@ts-ignore
+                link.getAttr("data-href")?.replace(/(.*).md/, "$1"),
+                this.fileClass.getClassFile().path,
+                'tab'
+            )
+        })
     }
 
     private buildFilterQuery(): string {
@@ -225,7 +380,7 @@ export class FileClassDataviewTable {
                         return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} !== undefined)\n`
                     } else if (values.length) {
                         const fCField = filter.name !== "file" ? this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.find(f => f.name === filter.name) : undefined
-                        if (fCField?.type === FieldType.Boolean) {
+                        if (fCField?.type === "Boolean") {
                             switch (value) {
                                 case 'true':
                                     return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === true)\n`
@@ -269,7 +424,6 @@ export class FileClassDataviewTable {
             return `basename(p${index}${fieldKey})`
         }
         const sorters = Object.entries(this.viewConfiguration.sorters)
-            //TODO if field type is number, parseFloat before sorting
             .sort((s1, s2) => (s1[1].priority || 0) < (s2[1].priority || 0) ? -1 : 1)
             .filter(s => s[1].direction)
             .map(s => {
@@ -305,9 +459,11 @@ export class FileClassDataviewTable {
 
     private buildDvJSRendering(): string {
         const buildColumnName = (column: Column) => {
-            if (column.name === "file") return this.fileClass.name
-            if (this.viewConfiguration.children.length) return column.id.replace("____", ": ")
-            else return column.name
+            const hasChildren = this.viewConfiguration.children.length
+            if (column.name === "file") return `${this.fileClass.name}${this.count ? " (" + this.count + ")" : ""}`
+            const [fileClassName, fieldName] = column.id.split("____")
+            this.columnsFileClassField[column.id] = { fileClassName, fieldName }
+            return `<span class='column-id' id='${column.id}'/>${hasChildren ? column.id.replace("____", ": ") : column.name}</span>`
         }
         const columns = this.viewConfiguration.columns
             .filter(f => !this.viewConfiguration.columns.find(_f => _f.id === f.id)?.hidden)
@@ -322,7 +478,8 @@ export class FileClassDataviewTable {
             "    }else if(typeof item === 'string'){\n" +
             "        return item\n" +
             "    }else{\n" +
-            "        return item?.toString() || '' \n" +
+            "        const numVal = parseFloat(item?.toString()) \n" +
+            "        return !isNaN(numVal) ? numVal : item?.toString() || '' \n" +
             "    }\n" +
             "}\n" +
             "const fileFileClasses = (path) => {\n" +
@@ -354,7 +511,6 @@ export class FileClassDataviewTable {
             if (column.name === "file") {
                 return "        dv.el(\"div\", p.file.link, {cls: \"field-name\"})";
             } else {
-                //TODO add a "show add field buttons default to false" -> faster
                 return `        hasFileClass(p.file.path, "${column.id}") ? f(dv, p, "${column.name}", {options: {alwaysOn: false, showAddField: ${this.view.manager.showAddField}}}) : ""`
             }
         }).join(",\n");

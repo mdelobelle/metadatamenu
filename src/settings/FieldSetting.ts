@@ -1,9 +1,8 @@
 import { setIcon, Setting, TFile } from "obsidian";
 import MetadataMenu from "main";
-import Field from "src/fields/Field";
-import { FieldManager, FieldTypeTagClass } from "src/types/fieldTypes";
-import FieldSettingsModal from "src/settings/FieldSettingsModal";
-import { FieldManager as F } from "src/fields/FieldManager";
+import { openSettings } from "src/fields/base/BaseSetting";
+import { getField, Field } from "src/fields/Field";
+import { getOptionStr, getTagName } from "src/fields/Fields";
 
 export default class FieldSetting extends Setting {
     private fieldNameContainer: HTMLDivElement;
@@ -23,8 +22,8 @@ export default class FieldSetting extends Setting {
     };
 
     public setTextContentWithname(): void {
-
-        const manager = new FieldManager[this.field.type](this.plugin, this.field) as F;
+        const field = getField(this.field.id, this.field.fileClassName, this.plugin)
+        if (!field) return
         this.infoEl.textContent = "";
         this.infoEl.addClass("setting-item")
         this.fieldNameContainer = this.infoEl.createDiv({ cls: "name" })
@@ -36,10 +35,10 @@ export default class FieldSetting extends Setting {
         }
         this.fieldNameContainer.createDiv({ text: `${this.field.name}` })
         this.typeContainer = this.infoEl.createEl("div")
-        this.typeContainer.setAttr("class", `chip ${FieldTypeTagClass[this.field.type]}`)
+        this.typeContainer.setAttr("class", `chip ${getTagName(this.field.type)}`)
         this.typeContainer.setText(this.field.type)
         this.fieldOptionsContainer = this.infoEl.createEl("div")
-        this.fieldOptionsContainer.setText(`${manager.getOptionsStr()}`)
+        this.fieldOptionsContainer.setText(`${getOptionStr(field.type)(field)}`)
     };
 
     private addEditButton(): void {
@@ -47,8 +46,7 @@ export default class FieldSetting extends Setting {
             b.setIcon("pencil")
                 .setTooltip("Edit")
                 .onClick(() => {
-                    let modal = new FieldSettingsModal(this.plugin, this.containerEl, this, this.field);
-                    modal.open();
+                    openSettings(this.field.id, undefined, this.plugin, this, this.containerEl)
                 });
         });
     };

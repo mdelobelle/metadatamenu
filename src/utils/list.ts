@@ -31,7 +31,7 @@ export function getListBoundsFromListItemCacheList(
             }
         })
     if (end >= 0) {
-        DEBUG && console.log({ start: start, end: end })
+        MDM_DEBUG && console.log({ start: start, end: end })
         return { start: start, end: end }
     }
     return

@@ -1,17 +1,17 @@
-import { App, editorInfoField, editorViewField, MarkdownView, setIcon, TFile } from "obsidian";
+import { editorInfoField, MarkdownView, setIcon, TFile } from "obsidian";
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { RangeSetBuilder } from "@codemirror/state";
 import { syntaxTree } from "@codemirror/language";
 import { tokenClassNodeProp } from "@codemirror/language";
 import MetadataMenu from "main";
-import NoteFieldsComponent from "src/components/NoteFields";
+import NoteFieldsComponent from "src/components/FieldsModal";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
 
 export function buildCMViewPlugin(plugin: MetadataMenu) {
     // Implements the live preview supercharging
     // Code structure based on https://github.com/nothingislost/obsidian-cm6-attributes/blob/743d71b0aa616407149a0b6ea5ffea28e2154158/src/main.ts
     // Code help credits to @NothingIsLost! They have been a great help getting this to work properly.
-    //FIXME icon isn't displayed in LP for files file a - in their name
+    //FIXME (P2) icon isn't displayed in LP for files file a - in their name
     class HeaderWidget extends WidgetType {
         fileClassName?: string
         after: boolean

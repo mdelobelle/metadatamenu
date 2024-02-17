@@ -10,16 +10,32 @@ let envPlugin = {
 		// they point to a JSON file containing the environment variables.
 		build.onLoad({ filter: /env.js/ }, async (args) => {
 
-			let DEBUG = false
+			let MDM_DEBUG = false
 			process.argv.forEach((val, index) => {
-				const match = val.match(/--define:DEBUG=(?<debug>false|true)/)
-				if (match) DEBUG = match.groups.debug
+				const match = val.match(/--define:MDM_DEBUG=(?<MDM_DEBUG>false|true)/)
+				if (match) MDM_DEBUG = match.groups.MDM_DEBUG
 			})
-			await fs.promises.writeFile("./env.js", `window.DEBUG=${DEBUG}`)
+			await fs.promises.writeFile("./env.js", `window.MDM_DEBUG=${MDM_DEBUG}`)
 			return {}
 		})
 	},
 }
+
+let copyPlugin = {
+	name: 'copy',
+	setup(build) {
+		build.onEnd(result => {
+			fs.copyFile('main.js', 'test-vault-mdm/.obsidian/plugins/metadata-menu/main.js', (err) => {
+				if (err) throw err;
+				console.log('main.js was copied to test-vault-mdm');
+			});
+			fs.copyFile('manifest.json', 'test-vault-mdm/.obsidian/plugins/metadata-menu/manifest.json', (err) => {
+				if (err) throw err;
+				console.log('manifest.json was copied to test-vault-mdm');
+			});
+		});
+	},
+};
 
 const banner =
 	`/*
@@ -56,7 +72,7 @@ const context = await esbuild.context({
 	sourcemap: prod ? false : "inline",
 	treeShaking: true,
 	outfile: "main.js",
-	plugins: [envPlugin]
+	plugins: [envPlugin, copyPlugin]
 });
 
 if (prod) {

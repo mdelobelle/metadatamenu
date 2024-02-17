@@ -2,12 +2,13 @@ import MetadataMenu from "main"
 import { ButtonComponent, MarkdownView, TFile, View } from "obsidian"
 import InsertFieldSuggestModal from "src/modals/insertFieldSuggestModal"
 import { Note } from "src/note/note"
-import { FieldIcon, FieldType } from "src/types/fieldTypes"
 import OptionsList from "./OptionsList"
+import { FieldType, getIcon } from "src/fields/Fields"
 
 const updateProps = async (plugin: MetadataMenu, view: View) => {
     if (!(view instanceof MarkdownView) || !(view.file instanceof TFile) || view.file === undefined) return
     const file = view.file
+    if (!plugin.app.vault.getAbstractFileByPath(file.path)) return
     const optionsList = new OptionsList(plugin, file, "ManageAtCursorCommand")
     const note = new Note(plugin, file)
     await note.build();
@@ -15,7 +16,7 @@ const updateProps = async (plugin: MetadataMenu, view: View) => {
         const key = item.entry.key
         const pseudoField: {
             id: string | undefined,
-            type: keyof typeof FieldType | undefined
+            type: FieldType | undefined
         } = {
             id: key === plugin.settings.fileClassAlias ?
                 `fileclass-field-${plugin.settings.fileClassAlias}` :
@@ -30,9 +31,9 @@ const updateProps = async (plugin: MetadataMenu, view: View) => {
         if (plugin.settings.enableProperties) {
             const btnContainer = item.containerEl.createDiv({ cls: "field-btn-container" })
             const btn = new ButtonComponent(btnContainer)
-            btn.setIcon(FieldIcon[pseudoField.type])
+            btn.setIcon(getIcon(pseudoField.type))
             btn.setClass("property-metadata-menu")
-            btn.onClick(() => { optionsList ? optionsList.createAndOpenFieldModal(node) : null })
+            btn.onClick(() => { optionsList ? optionsList.createAndOpenNodeFieldModal(node) : null })
             item.containerEl.insertBefore(btnContainer, item.valueEl)
         }
     })

@@ -1,24 +1,13 @@
 import MetadataMenu from "main";
-import Field, { FieldCommand } from "src/fields/Field";
+import { IField } from "src/fields/Field";
+import { MultiDisplayType } from "src/fields/Fields";
+import { BaseOptions } from "src/fields/base/BaseField";
 import FileClassQuery from "src/fileClass/FileClassQuery";
-import { FieldStyleLabel } from "src/types/dataviewTypes";
-import { FieldType, MultiDisplayType } from "src/types/fieldTypes";
 
-interface _Field {
-	name: string,
-	options: Record<string, any>,
-	id: string,
-	type: FieldType,
-	fileClassName?: string,
-	command?: FieldCommand,
-	display?: MultiDisplayType,
-	style?: Record<keyof typeof FieldStyleLabel, boolean>,
-	path: string
-}
-
+export type UnboundField = Omit<IField<BaseOptions>, "plugin">
 
 export interface MetadataMenuSettings {
-	presetFields: Array<_Field>;
+	presetFields: Array<UnboundField>;
 	fileClassQueries: Array<FileClassQuery>;
 	displayFieldsInContextMenu: boolean;
 	globallyIgnoredFields: Array<string>;

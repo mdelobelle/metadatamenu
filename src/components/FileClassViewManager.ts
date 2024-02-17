@@ -42,7 +42,7 @@ export class FileClassViewManager extends Component {
         this.name = this.fileClass.name;
         this.fileClassViewType = FILECLASS_VIEW_TYPE + "__" + this.fileClass.name
         await this.openFileClassView();
-        this.registerEvent(this.plugin.app.workspace.on("metadata-menu:fileclass-indexed", () => {
+        this.registerEvent(this.plugin.app.metadataCache.on("metadata-menu:fileclass-indexed", () => {
             const view = this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType)[0]?.view as FileClassView | undefined
             if (view) {
                 view.updateFieldsView();
@@ -95,7 +95,7 @@ export class FileClassViewManager extends Component {
                 }
             )
 
-            //FIXME: conflict with float-search that is overring getLeaf...
+            //FIXME (P2) conflict with float-search that is overring getLeaf...
             try {
                 //@ts-ignore
                 await this.plugin.app.workspace.getLeaf('tab', 'vertical').setViewState({

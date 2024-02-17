@@ -1,10 +1,9 @@
 import MetadataMenu from "main";
 import { Notice, TFile } from "obsidian";
 import { AllCanvasNodeData, CanvasData, CanvasEdgeData, CanvasFileData, CanvasGroupData, CanvasNodeData } from "obsidian/canvas"
-import { FieldType } from "src/types/fieldTypes";
 import { IndexedFieldsPayload, postValues } from "./postValues";
-import { FieldManager } from "src/fields/FieldManager";
-import Field from "src/fields/Field";
+import { buildMarkDownLink } from "src/fields/models/abstractModels/AbstractFile";
+import { Field } from "src/fields/Field";
 
 export async function updateCanvas(
     plugin: MetadataMenu,
@@ -178,7 +177,7 @@ export async function updateCanvas(
                 nodes = canvasContent.nodes;
                 edges = canvasContent.edges
             } catch (error) {
-                DEBUG && console.log(error)
+                MDM_DEBUG && console.log(error)
                 new Notice(`Couldn't read ${canvas.path}`)
             }
         }
@@ -203,15 +202,15 @@ export async function updateCanvas(
                 if (!currentFilesPaths.includes(targetFilePath)) currentFilesPaths.push(targetFilePath)
                 const fileFields = f.filesFields.get(targetFilePath)
                 const linksFields = fileFields?.filter(field =>
-                    field.type === FieldType.Canvas
+                    field.type === "Canvas"
                     && field.options.canvasPath === canvas.path
                 )
                 const groupsFields = fileFields?.filter(field =>
-                    field.type === FieldType.CanvasGroup
+                    field.type === "CanvasGroup"
                     && field.options.canvasPath === canvas.path
                 )
                 const groupsLinksFields = fileFields?.filter(field =>
-                    field.type === FieldType.CanvasGroupLink
+                    field.type === "CanvasGroupLink"
                     && field.options.canvasPath === canvas.path
                 )
                 // for each canvas field, if the canvas field match the conditions, then, add the origin file to the target canvas field list of files
@@ -251,7 +250,7 @@ export async function updateCanvas(
                 const payload: IndexedFieldsPayload = []
                 cumulatedLinksFields.forEach((linkNodes, name) => {
                     const field = fields.find(_f => _f.name === name)
-                    const values = linkNodes.map((node: CanvasFileData) => FieldManager.buildMarkDownLink(plugin, file, node.file, node.subpath))
+                    const values = linkNodes.map((node: CanvasFileData) => buildMarkDownLink(plugin, file, node.file, node.subpath))
                     if (field) payload.push({ indexedPath: field.id, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
                 })
                 cumulatedGroupsFields.forEach((groupNodes, name) => {
@@ -261,7 +260,7 @@ export async function updateCanvas(
                 })
                 cumulatedGroupsLinksFields.forEach((linkNodes, name) => {
                     const field = fields.find(_f => _f.name === name)
-                    const values = linkNodes.map((node: CanvasFileData) => FieldManager.buildMarkDownLink(plugin, file, node.file, node.subpath))
+                    const values = linkNodes.map((node: CanvasFileData) => buildMarkDownLink(plugin, file, node.file, node.subpath))
                     if (field) payload.push({ indexedPath: field.id, payload: { value: values ? [...(new Set(values))].join(",") : "" } })
                 })
                 if (payload.length) await postValues(plugin, payload, file)
@@ -275,19 +274,19 @@ export async function updateCanvas(
                 const payload: IndexedFieldsPayload = []
                 // canvas fields
                 const canvasFields = f.filesFields.get(filePath)?.filter(field =>
-                    field.type === FieldType.Canvas
+                    field.type === "Canvas"
                     && field.options.canvasPath === canvas.path
                 )
                 canvasFields?.forEach(field => { payload.push({ indexedPath: field.id, payload: { value: "" } }) })
                 // canvas group fields
                 const canvasGroupFields = f.filesFields.get(filePath)?.filter(field =>
-                    field.type === FieldType.CanvasGroup
+                    field.type === "CanvasGroup"
                     && field.options.canvasPath === canvas.path
                 )
                 canvasGroupFields?.forEach(field => { payload.push({ indexedPath: field.id, payload: { value: "" } }) })
                 // canvas group links fields
                 const canvasGroupLinksFields = f.filesFields.get(filePath)?.filter(field =>
-                    field.type === FieldType.CanvasGroupLink
+                    field.type === "CanvasGroupLink"
                     && field.options.canvasPath === canvas.path
                 )
                 canvasGroupLinksFields?.forEach(field => { payload.push({ indexedPath: field.id, payload: { value: "" } }) })
@@ -302,13 +301,14 @@ export async function updateCanvas(
 export async function updateCanvasAfterFileClass(plugin: MetadataMenu, files: TFile[] = []): Promise<void> {
     for (const file of files) {
         const index = plugin.fieldIndex
-        if (index.classFilesPath && file.path.startsWith(this.classFilesPath)) {
+        //if (index.classFilesPath && file.path.startsWith(this.classFilesPath)) {
+        if (index.classFilesPath && !file.path.startsWith(index.classFilesPath)) {
             const fileClassName = index.fileClassesPath.get(file.path)?.name
-            const canvasFields = (fileClassName && index.fileClassesFields.get(fileClassName)?.filter(field => field.type === FieldType.Canvas)) || []
+            const canvasFields = (fileClassName && index.fileClassesFields.get(fileClassName)?.filter(field => field.type === "Canvas")) || []
             await Promise.all(canvasFields.map(async field => {
-                const canvasFile = this.plugin.app.vault.getAbstractFileByPath(field.options.canvasPath)
+                const canvasFile = plugin.app.vault.getAbstractFileByPath(field.options.canvasPath)
                 if (canvasFile instanceof TFile && canvasFile.extension === "canvas") {
-                    await updateCanvas(this.plugin, { canvas: canvasFile })
+                    await updateCanvas(plugin, { canvas: canvasFile })
                 }
             }))
         }

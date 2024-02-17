@@ -5,6 +5,7 @@ import { FileClass } from "../fileClass";
 import { FileClassFieldsView } from "./fileClassFieldsView";
 import { FileClassSettingsView } from "./fileClassSettingsView";
 import { FileClassTableView } from "./fileClassTableView";
+import { setTimeout } from "timers/promises";
 
 export const FILECLASS_VIEW_TYPE = "FileClassView"
 
@@ -44,9 +45,9 @@ export class FileClassView extends ItemView {
     private menuOptions: MenuOption[] = []
     private viewContainer: HTMLDivElement
     private views: HTMLDivElement[] = []
-    private settingsView: FileClassSettingsView
+    public settingsView: FileClassSettingsView
     public tableView: FileClassTableView
-    private fieldsView: FileClassFieldsView
+    public fieldsView: FileClassFieldsView
 
     constructor(
         public leaf: WorkspaceLeaf,
@@ -133,3 +134,24 @@ export class FileClassView extends ItemView {
         //this.tableView.update();
     }
 }
+
+//#region tests
+
+export type Tab = "table" | "fields" | "settings"
+
+export async function openTab(fCView: FileClassView, tab: Tab, speed: number = 100) {
+    const menuHeader = fCView.containerEl.querySelector(`#${tab}Option`) as HTMLElement
+    const runner = fCView.fileClass.plugin.testRunner
+    if (!menuHeader) return runner.log("ERROR", `${fCView.fileClass.name} ${tab} menu not found`)
+    menuHeader.click()
+    await setTimeout(speed)
+}
+
+export async function testFileClassViewNavigation(plugin: MetadataMenu, fileClass: FileClass, speed: number = 100) {
+    const fCView = plugin.app.workspace.getActiveViewOfType(FileClassView)
+    if (!fCView) return plugin.testRunner.log("ERROR", `${fileClass.name} view didn't open`)
+    await openTab(fCView, "table", speed)
+    await openTab(fCView, "fields", speed)
+    await openTab(fCView, "settings", speed)
+}
+//#endregion

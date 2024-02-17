@@ -2,7 +2,14 @@ import MetadataMenu from "main";
 import { Note } from "./note"
 import { LineNode } from "./lineNode";
 import { getLineFields } from "src/utils/parser";
-import { FieldType, frontmatterOnlyTypes } from "src/types/fieldTypes";
+import { frontmatterOnlyTypes } from "src/fields/Fields";
+
+export type LinePosition = "yaml" | "inline"
+
+export const positionIcon: Record<LinePosition, string> = {
+    yaml: "align-vertical-space-around",
+    inline: "log-in"
+}
 
 export class Line {
     public nodes: LineNode[] = []
@@ -13,7 +20,7 @@ export class Line {
     constructor(
         public plugin: MetadataMenu,
         public note: Note,
-        public position: "yaml" | "inline",
+        public position: LinePosition,
         public rawContent: string = "",
         public number: number,
         public indentationLevel: number = 0,
@@ -98,7 +105,7 @@ export class Line {
             if (line.indentationLevel === 0) break
             if (line.indentationLevel > this.indentationLevel || (
                 line.indentationLevel === this.indentationLevel &&
-                line.nodes[0]?.field?.type === FieldType.ObjectList &&
+                line.nodes[0]?.field?.type === "ObjectList" &&
                 !line.isNewListItem
             )) {
                 lastChildLine = line

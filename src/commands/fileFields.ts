@@ -1,8 +1,9 @@
 import MetadataMenu from "main";
 import { TFile } from "obsidian"
-import { ExistingField } from "src/fields/ExistingField";
+import { ExistingField, getNamedIndexedPath } from "src/fields/ExistingField";
+import { fieldValueManager } from "src/fields/Field";
+import { FieldType, validateValue } from "src/fields/Fields";
 import { Note } from "src/note/note";
-import { FieldManager, FieldType } from "src/types/fieldTypes";
 
 
 export interface IFieldInfo {
@@ -29,14 +30,15 @@ export class FieldInfo {
 
     public getInfos(): IFieldInfo {
         const field = this.eF.field
-        const fieldManager = new FieldManager[field.type](this.plugin, field);
+        const fieldVM = fieldValueManager(this.plugin, field.id, field.fileClassName, this.file, undefined)!
+        fieldVM.value = this.eF.value
         return {
             indexedPath: this.eF.indexedPath,
             name: this.eF.field.name,
             value: this.eF.value,
             fileClassName: this.eF.field.fileClassName,
             type: this.eF.field.type,
-            isValid: fieldManager.validateValue(this.eF.value),
+            isValid: !fieldVM.value || validateValue(fieldVM.type)(fieldVM),
             id: this.eF.field.id,
             ignoredInMenu: this.plugin.settings.globallyIgnoredFields.includes(this.eF.field.name),
             options: this.eF.field.options,
@@ -45,10 +47,7 @@ export class FieldInfo {
     }
 }
 
-export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | string): Promise<Record<string, IFieldInfo>> {
-    /*
-    returns all fields with source, type, options, isValid, ignored
-    */
+async function fileExistingFields(plugin: MetadataMenu, fileOrfilePath: TFile | string): Promise<[ExistingField[], TFile]> {
     let file: TFile;
     if (fileOrfilePath instanceof TFile) {
         file = fileOrfilePath;
@@ -61,9 +60,31 @@ export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | s
         }
     }
     const eFs = await Note.getExistingFields(plugin, file)
+    return [eFs, file]
+}
+
+export async function fileFields(plugin: MetadataMenu, fileOrfilePath: TFile | string): Promise<Record<string, IFieldInfo>> {
+    /*
+    returns all fields with source, type, options, isValid, ignored
+    */
+    const [eFs, file] = await fileExistingFields(plugin, fileOrfilePath)
     const fields: Record<string, IFieldInfo> = {}
     for (const eF of eFs) {
         if (eF.indexedPath) fields[eF.indexedPath] = (new FieldInfo(plugin, file, eF)).getInfos()
+    }
+    return fields;
+}
+
+export async function namedFileFields(plugin: MetadataMenu, fileOrfilePath: TFile | string): Promise<Record<string, IFieldInfo>> {
+    /*
+    returns all fields with source, type, options, isValid, ignored
+    */
+    const [eFs, file] = await fileExistingFields(plugin, fileOrfilePath)
+    const fields: Record<string, IFieldInfo> = {}
+    for (const eF of eFs) {
+        if (!eF.indexedPath) continue
+        const namedIndexedPath = getNamedIndexedPath(plugin, file, eF.indexedPath)
+        if (namedIndexedPath) fields[namedIndexedPath] = (new FieldInfo(plugin, file, eF)).getInfos()
     }
     return fields;
 }

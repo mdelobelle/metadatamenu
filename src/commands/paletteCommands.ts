@@ -1,22 +1,20 @@
 import MetadataMenu from "main";
 import { MarkdownView, Notice, TFile } from "obsidian";
-import NoteFieldsComponent from "src/components/NoteFields";
-import Field, { FieldCommand } from "src/fields/Field";
-import { AddFileClassToFileModal, FileClass } from "src/fileClass/fileClass";
-import { FileClassAttributeModal } from "src/fileClass/FileClassAttributeModal";
+import NoteFieldsComponent from "src/components/FieldsModal";
+import { AddFileClassToFileModal, FileClass, getFileClassNameFromPath } from "src/fileClass/fileClass";
 import chooseSectionModal from "src/modals/chooseSectionModal";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import FileClassOptionsList from "src/options/FileClassOptionsList";
 import OptionsList from "src/options/OptionsList";
 import { insertMissingFields } from "./insertMissingFields";
-import { FieldManager as F } from "src/fields/FieldManager";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
-import { FieldType } from "src/types/fieldTypes";
 import { updateLookups } from "./updateLookups";
 import { updateFormulas } from "./updateFormulas";
 import { Note } from "src/note/note";
+import { FieldCommand, Field, fieldValueManager } from "src/fields/Field";
+import { openSettings } from "src/fields/base/BaseSetting";
 
-function addFileClassAttributeOptions(plugin: MetadataMenu) {
+function fileClassAttributeOptionsCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
     plugin.addCommand({
         id: "fileClassAttr_options",
@@ -37,7 +35,7 @@ function addFileClassAttributeOptions(plugin: MetadataMenu) {
     });
 }
 
-function addInsertFileClassAttribute(plugin: MetadataMenu) {
+function insertFileClassAttributeCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
     plugin.addCommand({
         id: "insert_fileClassAttr",
@@ -51,11 +49,8 @@ function addInsertFileClassAttribute(plugin: MetadataMenu) {
             }
             if (inFileClass) {
                 try {
-                    const fileClassName = FileClass.getFileClassNameFromPath(plugin.settings, view!.file!.path)
-                    if (fileClassName) {
-                        const fileClassAttributeModal = new FileClassAttributeModal(plugin, FileClass.createFileClass(plugin, fileClassName))
-                        fileClassAttributeModal.open()
-                    }
+                    const fileClassName = getFileClassNameFromPath(plugin.settings, view!.file!.path)
+                    if (fileClassName) openSettings("", fileClassName, plugin)
                 } catch (error) {
                     new Notice("plugin is not a valid fileClass")
                 }
@@ -64,7 +59,7 @@ function addInsertFileClassAttribute(plugin: MetadataMenu) {
     });
 }
 
-function addInsertFieldAtPositionCommand(plugin: MetadataMenu) {
+function insertFieldAtPositionCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
     plugin.addCommand({
         id: "insert_field_at_cursor",
@@ -84,7 +79,7 @@ function addInsertFieldAtPositionCommand(plugin: MetadataMenu) {
     })
 }
 
-function addFieldOptionsCommand(plugin: MetadataMenu) {
+function fieldOptionsCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
     plugin.addCommand({
         id: "field_options",
@@ -106,7 +101,7 @@ function addFieldOptionsCommand(plugin: MetadataMenu) {
     });
 }
 
-function addManageFieldAtCursorCommand(plugin: MetadataMenu) {
+function manageFieldAtCursorCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
     plugin.addCommand({
         id: "field_at_cursor_options",
@@ -128,7 +123,7 @@ function addManageFieldAtCursorCommand(plugin: MetadataMenu) {
                     switch (view.getMode()) {
                         case "source": {
                             const node = note.getNodeAtPosition(editor.getCursor())
-                            if (node) optionsList.createAndOpenFieldModal(node)
+                            if (node) optionsList.createAndOpenNodeFieldModal(node)
                             else new Notice("No field with definition at this position", 2000)
                         }
                             break;
@@ -139,11 +134,11 @@ function addManageFieldAtCursorCommand(plugin: MetadataMenu) {
                                 const field = key && plugin.fieldIndex.filesFields.get(view.file!.path)?.find(_f => _f.isRoot() && _f.name === key)
                                 if (field) {
                                     const node = note.getNodeForIndexedPath(field.id)
-                                    if (node) optionsList.createAndOpenFieldModal(node)
+                                    if (node) optionsList.createAndOpenNodeFieldModal(node)
                                     else new Notice("No field with definition at this position", 2000)
                                 } else if (key === plugin.settings.fileClassAlias) {
                                     const node = note.getNodeForIndexedPath(`fileclass-field-${plugin.settings.fileClassAlias}`)
-                                    if (node) optionsList.createAndOpenFieldModal(node)
+                                    if (node) optionsList.createAndOpenNodeFieldModal(node)
                                     else new Notice("No field with definition at this position", 2000)
                                 }
                             }
@@ -199,7 +194,7 @@ function insertMissingFieldsCommand(plugin: MetadataMenu) {
     })
 }
 
-function addOpenFieldsModalCommand(plugin: MetadataMenu) {
+function openFieldsModalCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
     plugin.addCommand({
         id: "open_fields_modal",
@@ -222,7 +217,7 @@ function addOpenFieldsModalCommand(plugin: MetadataMenu) {
     })
 }
 
-export function addInsertFieldCommand(plugin: MetadataMenu, command: FieldCommand, field: Field, fileClassName?: string) {
+export function insertFieldCommand(plugin: MetadataMenu, command: FieldCommand, field: Field, fileClassName?: string) {
     plugin.addCommand({
         id: command.id,
         name: command.label,
@@ -245,21 +240,48 @@ export function addInsertFieldCommand(plugin: MetadataMenu, command: FieldComman
                         lineNumber: number,
                         asList: boolean,
                         asBlockquote: boolean
-                    ) => F.openFieldModal(
-                        plugin,
-                        view.file!,
-                        field.name,
-                        lineNumber,
-                        asList,
-                        asBlockquote
-                    )
+                    ) => {
+                        fieldValueManager(plugin, field.id, field.fileClassName, view.file!, undefined, undefined, lineNumber, asList, asBlockquote)?.openModal()
+                    }
                 ).open();
             }
         }
     })
 }
 
-function addInsertFieldsCommand(plugin: MetadataMenu): void {
+export function insertIFieldCommand(plugin: MetadataMenu, command: FieldCommand, field: Field, fileClassName?: string) {
+    plugin.addCommand({
+        id: command.id,
+        name: command.label,
+        icon: command.icon,
+        checkCallback: (checking: boolean): boolean | void => {
+            const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
+            const fR = command.id.match(/insert__(?<fieldId>.*)/)
+            const fileClasses = view?.file ? plugin.fieldIndex.filesFileClasses.get(view?.file.path) : undefined
+            const belongsToView = field !== undefined && !!view?.file &&
+                (
+                    !!fileClasses && fileClasses.some(fileClass => fileClass.name === fileClassName) ||
+                    (!fileClasses && !fileClassName)
+                )
+            if (checking) return belongsToView
+            if (view?.file && field) {
+                new chooseSectionModal(
+                    plugin,
+                    view.file,
+                    (
+                        lineNumber: number,
+                        asList: boolean,
+                        asBlockquote: boolean
+                    ) => {
+                        fieldValueManager(plugin, field.id, field.fileClassName, view.file!, undefined, undefined, lineNumber, asList, asBlockquote)
+                    }
+                ).open();
+            }
+        }
+    })
+}
+
+function insertFieldsCommand(plugin: MetadataMenu): void {
     const fields: { field: Field, fileClassName: string | undefined }[] = [];
     plugin.presetFields.forEach(f => { if (f.command && f.isRoot()) fields.push({ field: f, fileClassName: undefined }) });
     [...plugin.fieldIndex.fileClassesFields].forEach(([fileClassName, _fields]) => {
@@ -269,12 +291,12 @@ function addInsertFieldsCommand(plugin: MetadataMenu): void {
         if (_field.field.command) {
             const { field, fileClassName } = _field
             const command = field.command!
-            addInsertFieldCommand(plugin, command, field, fileClassName)
+            insertFieldCommand(plugin, command, field, fileClassName)
         }
     })
 }
 
-function addOpenFileclassViewCommand(plugin: MetadataMenu) {
+function openFileclassViewCommand(plugin: MetadataMenu) {
     plugin.addCommand({
         id: "open_fileclass_view",
         name: "Open fileClass view",
@@ -293,7 +315,7 @@ function addOpenFileclassViewCommand(plugin: MetadataMenu) {
 }
 
 
-function addFileclassToFileCommand(plugin: MetadataMenu) {
+function fileclassToFileCommand(plugin: MetadataMenu) {
     plugin.addCommand({
         id: "add_fileclass_to_file",
         name: "Add fileClass to file",
@@ -312,7 +334,7 @@ function addFileclassToFileCommand(plugin: MetadataMenu) {
     })
 }
 
-function addUpdateLookupsAndFormulas(plugin: MetadataMenu) {
+function updateLookupsAndFormulasCommand(plugin: MetadataMenu) {
     plugin.addCommand({
         id: "update_all_lookups",
         name: "Update all lookups and formulas",
@@ -324,7 +346,7 @@ function addUpdateLookupsAndFormulas(plugin: MetadataMenu) {
     })
 }
 
-function addUpdateFileLookupsCommand(plugin: MetadataMenu) {
+function updateFileLookupsCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
     plugin.addCommand({
         id: "update_file_lookups",
@@ -339,7 +361,7 @@ function addUpdateFileLookupsCommand(plugin: MetadataMenu) {
             if (inFile) {
                 const file = view.file;
                 if (inFile && file instanceof TFile && file.extension === "md") {
-                    const lookupFields = plugin.fieldIndex.filesFields.get(file.path)?.filter(field => field.type === FieldType.Lookup)
+                    const lookupFields = plugin.fieldIndex.filesFields.get(file.path)?.filter(field => field.type === "Lookup")
                     lookupFields?.forEach(async (field) => {
                         await updateLookups(plugin, { file: file, fieldName: field.name })
                         await plugin.fieldIndex.applyUpdates()
@@ -350,7 +372,7 @@ function addUpdateFileLookupsCommand(plugin: MetadataMenu) {
     })
 }
 
-function addUpdateFileFormulasCommand(plugin: MetadataMenu) {
+function updateFileFormulasCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
     plugin.addCommand({
         id: "update_file_formulas",
@@ -365,7 +387,7 @@ function addUpdateFileFormulasCommand(plugin: MetadataMenu) {
             if (inFile) {
                 const file = view.file;
                 if (inFile && file instanceof TFile && file.extension === "md") {
-                    const formulaFields = plugin.fieldIndex.filesFields.get(file.path)?.filter(field => field.type === FieldType.Formula)
+                    const formulaFields = plugin.fieldIndex.filesFields.get(file.path)?.filter(field => field.type === "Formula")
                     formulaFields?.forEach(async (field) => {
                         await updateFormulas(plugin, { file: file, fieldName: field.name })
                         await plugin.fieldIndex.applyUpdates()
@@ -377,17 +399,17 @@ function addUpdateFileFormulasCommand(plugin: MetadataMenu) {
 }
 
 export function addCommands(plugin: MetadataMenu) {
-    addFileClassAttributeOptions(plugin);
-    addInsertFileClassAttribute(plugin);
-    addFieldOptionsCommand(plugin);
-    addInsertFieldAtPositionCommand(plugin);
-    addManageFieldAtCursorCommand(plugin);
+    fileClassAttributeOptionsCommand(plugin);
+    insertFileClassAttributeCommand(plugin);
+    fieldOptionsCommand(plugin);
+    insertFieldAtPositionCommand(plugin);
+    manageFieldAtCursorCommand(plugin);
     insertMissingFieldsCommand(plugin);
-    addOpenFieldsModalCommand(plugin)
-    addInsertFieldsCommand(plugin)
-    addUpdateFileLookupsCommand(plugin);
-    addUpdateFileFormulasCommand(plugin)
-    addOpenFileclassViewCommand(plugin)
-    addFileclassToFileCommand(plugin)
-    addUpdateLookupsAndFormulas(plugin)
+    openFieldsModalCommand(plugin)
+    insertFieldsCommand(plugin)
+    updateFileLookupsCommand(plugin);
+    updateFileFormulasCommand(plugin)
+    openFileclassViewCommand(plugin)
+    fileclassToFileCommand(plugin)
+    updateLookupsAndFormulasCommand(plugin)
 }

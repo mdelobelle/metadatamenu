@@ -33,7 +33,7 @@ export class IndexDatabase extends Component {
     }
 
     public init() {
-        DEBUG && console.log("create or open db")
+        MDM_DEBUG && console.log("create or open db")
         this.name = `metadata_menu_${this.plugin.app.appId ||
             this.plugin.app.vault.adapter.basePath ||
             this.plugin.app.vault.getName()}`

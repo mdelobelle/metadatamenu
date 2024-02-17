@@ -1,3 +1,7 @@
+# 0.8.0
+Edit a field's value in multiple files at once
+Customize the display value of Object, ObjectList and ObjectList items fields
+
 # 0.7.7
 fix multi file fields broken when some file names include a comma
 

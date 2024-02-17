@@ -75,4 +75,4 @@ export function getFrontmatterPosition(plugin: MetadataMenu, file: TFile) {
     } else {
         return { start: undefined, end: undefined }
     }
-}   
+}

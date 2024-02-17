@@ -1,7 +1,6 @@
 import MetadataMenu from "main"
-import Field from "../fields/Field"
-import { FieldType } from "src/types/fieldTypes"
 import * as selectValuesSource from "../types/selectValuesSourceTypes"
+import { Field } from "src/fields/Field"
 
 interface V1Field extends Field {
     isMulti?: boolean,
@@ -25,11 +24,11 @@ export const migrateSettingsV1toV2 = async (plugin: MetadataMenu) => {
     const presetFields = plugin.presetFields
     presetFields.forEach((p: V1Field) => {
         if (!Object.keys(p).contains("type")) {
-            if (p.isMulti) p.type = FieldType.Multi
-            else if (p.isCycle) p.type = FieldType.Cycle
-            else if (p.isBoolean) p.type = FieldType.Boolean
-            else if (p.options && Object.keys(p.options).length > 0) p.type = FieldType.Select
-            else p.type = FieldType.Input
+            if (p.isMulti) p.type = "Multi"
+            else if (p.isCycle) p.type = "Cycle"
+            else if (p.isBoolean) p.type = "Boolean"
+            else if (p.options && Object.keys(p.options).length > 0) p.type = "Select"
+            else p.type = "Input"
         }
         //erase isMulti, isCycle, isBoolean if exists
         delete p.isMulti;
@@ -44,13 +43,13 @@ export const migrateSettingsV1toV2 = async (plugin: MetadataMenu) => {
     })
     plugin.settings.settingsVersion = 2
     await plugin.saveData(plugin.settings)
-    DEBUG && console.log("Metadata menu settings migrated to version 2")
+    MDM_DEBUG && console.log("Metadata menu settings migrated to version 2")
 }
 
 export const migrateSettingsV2toV3 = async (plugin: MetadataMenu) => {
     const presetFields = plugin.presetFields
     presetFields.forEach((p: V2Field) => {
-        if ([FieldType.Select, FieldType.Multi].includes(p.type)) {
+        if (["Select", "Multi"].includes(p.type)) {
             //Step0: modify options for Select and MultiSelect
             const currentOptionKeys = Object.keys(p.options);
             p.options.valuesList = {}
@@ -74,14 +73,14 @@ export const migrateSettingsV2toV3 = async (plugin: MetadataMenu) => {
     })
     plugin.settings.settingsVersion = 3
     await plugin.saveData(plugin.settings)
-    DEBUG && console.log("Metadata menu settings migrated to version 3")
+    MDM_DEBUG && console.log("Metadata menu settings migrated to version 3")
 }
 
 export const migrateSettingsV3toV4 = async (plugin: MetadataMenu) => {
     plugin.settings.fileClassExcludedFolders = []
     plugin.settings.settingsVersion = 4
     await plugin.saveData(plugin.settings)
-    DEBUG && console.log("Metadata menu settings migrated to version 4")
+    MDM_DEBUG && console.log("Metadata menu settings migrated to version 4")
 }
 
 
@@ -89,5 +88,5 @@ export const migrateSettingsV4toV5 = async (plugin: MetadataMenu) => {
     plugin.settings.fileClassExcludedFolders = []
     plugin.settings.settingsVersion = "5.0"
     await plugin.saveData(plugin.settings)
-    DEBUG && console.log("Metadata menu settings migrated to version 5")
+    MDM_DEBUG && console.log("Metadata menu settings migrated to version 5")
 }

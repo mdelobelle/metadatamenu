@@ -1,8 +1,9 @@
 import MetadataMenu from "main";
-import { FieldManager } from "src/types/fieldTypes";
-import { FieldManager as F } from "src/fields/FieldManager";
 import chooseSectionModal from "src/modals/chooseSectionModal";
 import { setIcon, TFile } from "obsidian";
+import { buildField, Field, FieldValueManager, fieldValueManager } from "src/fields/Field";
+import { createDvField as _createDvField } from "src/fields/Fields";
+import { positionIcon } from "src/note/line";
 
 function buildAndOpenModal(
     plugin: MetadataMenu,
@@ -10,26 +11,25 @@ function buildAndOpenModal(
     fieldName: string,
     attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
 ): void {
-    if (attrs?.options?.inFrontmatter) {
-        const lineNumber = - 1
-        F.openFieldModal(plugin, file, fieldName, lineNumber, false, false)
-    } else {
-        new chooseSectionModal(
-            plugin,
-            file,
-            (
-                lineNumber: number,
-                asList: boolean,
-                asBlockquote: boolean
-            ) => F.openFieldModal(
+    const field: Field | undefined = plugin.fieldIndex.filesFields.get(file.path)?.find(f => f.isRoot() && f.name === fieldName)
+    if (field) {
+        if (attrs?.options?.inFrontmatter) {
+            const fieldVM = fieldValueManager(plugin, field.id, field.fileClassName, file, undefined, undefined, -1)
+            fieldVM?.openModal()
+        } else {
+            new chooseSectionModal(
                 plugin,
                 file,
-                fieldName,
-                lineNumber,
-                asList,
-                asBlockquote
-            )
-        ).open();
+                (
+                    lineNumber: number,
+                    asList: boolean,
+                    asBlockquote: boolean
+                ) => {
+                    const fieldVM = fieldValueManager(plugin, field.id, field.fileClassName, file, undefined, undefined, lineNumber, asList, asBlockquote)
+                    fieldVM?.openModal()
+                }
+            ).open();
+        }
     }
 }
 
@@ -50,11 +50,16 @@ function createDvField(
         return
     }
     if (field?.type) {
-        const fieldManager = new FieldManager[field.type](plugin, field);
-        fieldManager.createDvField(dv, p, fieldContainer, attrs);
+        const target = plugin.app.vault.getAbstractFileByPath(p.file.path) as TFile
+        const fieldVM = fieldValueManager(plugin, field.id, field.fileClassName, target, undefined)
+        _createDvField(fieldVM, dv, p, fieldContainer)
     } else {
-        const fieldManager = F.createDefault(plugin, fieldName);
-        fieldManager.createDvField(dv, p, fieldContainer, attrs);
+        const field = buildField(plugin, fieldName, "", "", undefined, undefined, undefined, undefined, "Input", {});
+        const file = plugin.app.vault.getAbstractFileByPath(p.file.path)
+        if (file instanceof TFile) {
+            const fieldVM = new (FieldValueManager(plugin, field, file, undefined))
+            _createDvField(fieldVM, dv, p, fieldContainer, attrs)
+        }
     }
 }
 
@@ -76,7 +81,7 @@ export function fieldModifier(
             fieldContainer.appendChild(emptyField);
         } else {
             const addFieldBtn = dv.el("button", attrs);
-            setIcon(addFieldBtn, "log-in")
+            setIcon(addFieldBtn, positionIcon.inline)
             addFieldBtn.onclick = async () => {
                 const file = plugin.app.vault.getAbstractFileByPath(p.file.path)
                 if (file instanceof TFile && file.extension == "md") {
@@ -85,9 +90,14 @@ export function fieldModifier(
                         buildAndOpenModal(plugin, file, fieldName, attrs)
                     } else {
                         new chooseSectionModal(plugin, file,
-                            (lineNumber: number, asList: boolean, asBlockquote: boolean) => F.openFieldModal(
-                                plugin, file, undefined, lineNumber, asList, asBlockquote
-                            ),
+                            (lineNumber: number, asList: boolean, asBlockquote: boolean) => {
+                                const field = buildField(plugin, fieldName, "", "", undefined, undefined, undefined, undefined, "Input", {});
+                                const file = plugin.app.vault.getAbstractFileByPath(p.file.path)
+                                if (file instanceof TFile) {
+                                    const fieldVM = new (FieldValueManager(plugin, field, file, undefined, undefined, lineNumber, asList, asBlockquote))
+                                    fieldVM?.openModal()
+                                }
+                            },
                         ).open();
                     }
                 } else {
@@ -96,12 +106,16 @@ export function fieldModifier(
             }
             fieldContainer.appendChild(addFieldBtn);
             const addInFrontmatterFieldBtn = dv.el("button", attrs);
-            setIcon(addInFrontmatterFieldBtn, "align-vertical-space-around")
+            setIcon(addInFrontmatterFieldBtn, positionIcon.yaml)
             addInFrontmatterFieldBtn.onclick = async () => {
                 const file = plugin.app.vault.getAbstractFileByPath(p.file.path)
                 if (file instanceof TFile && file.extension == "md") {
                     const field = plugin.fieldIndex.filesFields.get(file.path)?.filter(f => f.isRoot()).find(field => field.name === fieldName)
-                    if (field) F.openFieldModal(plugin, file, field.name, -1, false, false)
+                    if (field) {
+                        const _field = buildField(plugin, field.name, field.id, field.path, field.fileClassName, field.command, field.display, field.style, field.type, {})
+                        const fieldVM = new (FieldValueManager(plugin, _field, file, undefined, undefined, -1, false, false))
+                        fieldVM?.openModal()
+                    }
                 } else {
                     throw Error("path doesn't correspond to a proper file");
                 }
@@ -115,8 +129,12 @@ export function fieldModifier(
             if (field) {
                 createDvField(plugin, dv, p, fieldContainer, fieldName, attrs)
             } else {
-                const fieldManager = F.createDefault(plugin, fieldName);
-                fieldManager.createDvField(dv, p, fieldContainer, attrs);
+                const field = buildField(plugin, fieldName, "", "", undefined, undefined, undefined, undefined, "Input", {});
+                const file = plugin.app.vault.getAbstractFileByPath(p.file.path)
+                if (file instanceof TFile) {
+                    const fieldVM = new (FieldValueManager(plugin, field, file, undefined))
+                    _createDvField(fieldVM, dv, p, fieldContainer, attrs)
+                }
             }
         }
     }

@@ -24,12 +24,12 @@ export abstract class StoreManager extends Component {
                     const store = transaction.objectStore(this.storeName);
                     resolve(func(store))
                 } else {
-                    DEBUG && console.error("store not found")
+                    MDM_DEBUG && console.error("store not found")
                     reject()
                 }
             }
             open.onerror = () => {
-                DEBUG && console.error("unable to open db")
+                MDM_DEBUG && console.error("unable to open db")
                 reject()
             }
         })
@@ -66,7 +66,7 @@ export abstract class StoreManager extends Component {
                 payload.forEach(item => {
                     request = store.get(item.id);
                     request.onerror = () => {
-                        DEBUG && console.log("error on getting ", item.id)
+                        MDM_DEBUG && console.log("error on getting ", item.id)
                         reject(request.error)
                     }
                     request.onsuccess = () => {

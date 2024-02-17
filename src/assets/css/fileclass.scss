@@ -45,10 +45,6 @@
     right: calc(var(--size-2-2) + 2em);
 }
 
-.first-col-header-container{
-    display: flex;
-}
-
 .metadata-menu.fileclass-view, .metadata-menu.fileclass-codeblock-view{
     
     .fv-menu{
@@ -452,9 +448,24 @@
         }
         div[id^="table-container"]{
             overflow: scroll;
+            
 
-            input.file-select{
-                
+            .first-col-header-cell{
+                padding-left: var(--table-cell-padding);
+                span:first-child{
+                    margin-left: 0;
+                }
+                .first-col-header-container{
+                    display: flex;
+                    width: 100%;
+                    .fileclass-icon{
+                        margin: 0 0.3em;
+                        svg{
+                            height: calc(var(--icon-size) * 0.935);
+                            width: calc(var(--icon-size) * 0.935);
+                        }
+                    }
+                }
             }
 
             .field-name, .value-container{
@@ -485,9 +496,51 @@
                 top: 0;
             }
 
-            thead th:first-child {
-                left: 0;
+            @mixin checkbox-container {
+                min-width: 0;
+                margin: 0;
+                padding-right: 0;
+                text-align: center;
+                input{
+                    vertical-align: middle;
+                }
+            }
+
+            thead th.table-view-th:first-child {
+                
                 z-index: 2;
+                display: flex;
+                height: var(--line-height);
+                width: 100%;
+                align-items: center;
+
+                .checkbox-toggler{
+                    display: flex;
+                    align-items: center;
+                }
+                &.first-col-header-cell{
+                    left: 0;
+                    padding: var(--table-cell-padding);
+                }
+
+                .spacer{
+                    width: 100%;
+                }
+                
+                span:nth-child(2){
+                    margin-left: 0.5em;
+                }
+
+                &.modifier-selector{
+                    @include checkbox-container()
+                }
+            }
+
+            thead th:first-child, thead th {
+
+                &.table-view-th.first-col-header-cell{
+                    padding-left: 0;
+                }
                 span.dataview.small-text{
                     display: none;
                 }
@@ -498,7 +551,16 @@
                 left: 0;
                 z-index: 1;
                 max-width: 100%;
-                background-color: inherit;
+                background-color: inherit;    
+                display: flex;
+                height: var(--line-height);
+
+                &.modifier-selector{
+                    @include checkbox-container()
+                }
+            }
+            tbody > tr > td:nth-child(2) {
+                padding-left: 0;
             }
 
             tbody > tr:nth-child(odd):hover > td:first-child{
@@ -515,7 +577,7 @@
                     @media screen and (max-width: 390px) {
                         overflow: hidden;
                         text-overflow: ellipsis;
-                        background-color: white;
+                        background-color: inherit;
                         a.internal-link{
                             white-space: nowrap;
                             text-overflow: ellipsis;

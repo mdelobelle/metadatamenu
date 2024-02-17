@@ -145,3 +145,17 @@ start: <a number> optional
 showAddField: <true of false> optional (false if absent)
 ``` 
 ~~~~
+
+## Bulk edit fields
+
+You can edit a field's value in multiple files at once.
+
+From a [fileclass table view](fileclasses.md#table-view) or a [Codeblock](#codeblocks):
+- click on the first column to display checkboxes to select the files where you want to update the field's values
+- toggling the checkbox of the header row will toggle all the files' checkboxes in the page (depending on where you are in the pagination of your table)
+- click on the field name (header cell of the table) of the field that you want to update
+- update the value in the field's modal
+- a confirmation modal will be displayed showing you the values that will be modified
+- click on "confirm" to update the field's value in the selected files
+
+[demo](https://youtu.be/0Xn4pppT7wU)

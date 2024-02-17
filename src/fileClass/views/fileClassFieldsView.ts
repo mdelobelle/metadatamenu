@@ -1,11 +1,13 @@
 import MetadataMenu from "main";
-import { ButtonComponent, Notice, setIcon } from "obsidian";
+import { ButtonComponent, FrontMatterCache, Modal, setIcon } from "obsidian";
 import { removeFileClassAttributeWithId } from "src/commands/removeFileClassAttribute";
-import { FieldTypeTagClass } from "src/types/fieldTypes";
-import { FileClass } from "../fileClass";
+import { buildEmptyField } from "src/fields/Field";
+import { getTagName } from "src/fields/Fields";
+import { openSettings } from "src/fields/base/BaseSetting";
+import { enterFieldSettings } from "src/testing/tests/settingsCreation";
+import { FileClass, buildSortedAttributes } from "../fileClass";
 import { FileClassAttribute } from "../fileClassAttribute";
-import { FileClassAttributeModal } from "../FileClassAttributeModal";
-import Field from "src/fields/Field";
+import { FileClassView, openTab } from "./fileClassView";
 
 class FileClassFieldSetting {
     private plugin: MetadataMenu;
@@ -29,7 +31,7 @@ class FileClassFieldSetting {
         }
         fieldNameContainer.createEl("span", { text: fCA.name, cls: "title" })
         const typeContainer = this.container.createDiv({ cls: "type-container" })
-        const chip = typeContainer.createDiv({ cls: `chip ${FieldTypeTagClass[fCA.type]}` })
+        const chip = typeContainer.createDiv({ cls: `chip ${getTagName(fCA.type)}` })
         chip.setText(fCA.type)
         const fieldButtonsContainer = this.container.createDiv({ cls: "buttons-container" })
         this.addEditButton(fieldButtonsContainer)
@@ -44,14 +46,7 @@ class FileClassFieldSetting {
         const btn = new ButtonComponent(container);
         btn.setIcon("pencil")
         btn.setTooltip("Edit")
-        btn.onClick(() => {
-            let modal = new FileClassAttributeModal(
-                this.plugin,
-                this.fileClass,
-                this.fileClassAttribute
-            );
-            modal.open();
-        })
+        btn.onClick(() => openSettings(this.fileClassAttribute.id, this.fileClass.name, this.plugin))
     };
 
     private addDeleteButton(container: HTMLElement): void {
@@ -60,8 +55,24 @@ class FileClassFieldSetting {
         btn.setTooltip("Delete");
         btn.setClass("cell")
         btn.onClick(() => {
+            const confirmModal = new Modal(this.plugin.app);
+            confirmModal.containerEl.addClass("metadata-menu");
+            confirmModal.titleEl.setText("Please confirm");
+            confirmModal.contentEl.createDiv().setText(`Do you really want to remove this field?`);
+            const confirmFooter = confirmModal.contentEl.createDiv({ cls: "footer-actions" });
+            confirmFooter.createDiv({ cls: "spacer" })
+            const confirmButton = new ButtonComponent(confirmFooter);
+            confirmButton.setWarning();
+            confirmButton.setIcon("checkmark");
+            confirmButton.onClick(async () => {
+                removeFileClassAttributeWithId(this.plugin, this.fileClass, this.fileClassAttribute.id)
+                confirmModal.close();
+            })
+            const dismissButton = new ButtonComponent(confirmFooter);
+            dismissButton.setIcon("cross");
+            dismissButton.onClick(() => confirmModal.close());
+            confirmModal.open();
 
-            removeFileClassAttributeWithId(this.plugin, this.fileClass, this.fileClassAttribute.id)
         })
     };
 
@@ -96,18 +107,30 @@ export class FileClassFieldsView {
         const addBtn = btnContainer.createEl('button');
         setIcon(addBtn, "list-plus")
         addBtn.onclick = async () => {
-            const fileClassAttributeModal = new FileClassAttributeModal(this.plugin, FileClass.createFileClass(this.plugin, this.fileClass.name))
-            fileClassAttributeModal.open()
+            openSettings("", this.fileClass.name, this.plugin)
         }
     }
 
     buildSettings(): void {
         this.container.replaceChildren();
         const fieldsContainer = this.container.createDiv({ cls: "fields-container" })
-        const sortedAttributes = FileClass.buildSortedAttributes(this.plugin, this.fileClass)
+        const sortedAttributes = buildSortedAttributes(this.plugin, this.fileClass)
         sortedAttributes.forEach(attribute => {
             new FileClassFieldSetting(fieldsContainer, this.fileClass, attribute, this.plugin);
         });
         this.builAddBtn();
     }
 }
+
+
+export async function testFileClassFieldsView(plugin: MetadataMenu, fileClass: FileClass, data: FrontMatterCache, speed: number = 100) {
+    const fCView = plugin.app.workspace.getActiveViewOfType(FileClassView)
+    if (!fCView || !fCView.fieldsView) return plugin.testRunner.log("ERROR", `${fileClass.name} view didn't open`)
+    openTab(fCView, "fields", speed)
+    for (const fieldData of data.fields) {
+        const field = new (buildEmptyField(plugin, fileClass.name))
+        Object.assign(field, fieldData)
+        await enterFieldSettings(field, undefined, fileClass)
+    }
+}
+

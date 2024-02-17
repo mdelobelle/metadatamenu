@@ -1,9 +1,12 @@
+import { BaseOptions } from "crypto-random-string";
 import MetadataMenu from "main";
 import "obsidian";
 import { EventRef } from "obsidian";
 //@ts-ignore
 import { DataviewApi } from "obsidian-dataview";
 import { IMetadataMenuApi } from "src/MetadataMenuApi";
+import { IndexedFieldsPayload } from "src/commands/postValues";
+import { BaseValueModal } from "src/fields/base/BaseModal";
 
 interface InternalPlugin {
     enabled: boolean;
@@ -19,6 +22,18 @@ interface BookmarkItem {
     path: string;
     title: string;
     items?: BookmarkItem[];
+}
+
+type Constructor<T> = new (...args: any[]) => T
+
+type PartialRecord<K extends keyof any, T> = {
+    [P in K]?: T;
+};
+
+type FrontmatterValue = string | number | boolean | FrontmatterObject;
+
+interface FrontmatterObject {
+    [key: string]: FrontmatterValue;
 }
 
 interface BookmarkInternalPlugin extends InternalPlugin {
@@ -39,11 +54,30 @@ interface Property {
     value: string
 }
 
+interface DataviewApi {
+    page: any
+}
 
 declare module "obsidian" {
 
     interface App {
         viewRegistry: ViewRegistry
+        setting: SettingPanel
+        commands: {
+            commands: Record<string, Command>
+        }
+    }
+
+    interface SettingPanel {
+        pluginTabs: Array<PluginSettingTab>
+        open: () => void
+        close: () => void
+    }
+
+    interface PluginSettingTab {
+        id: string,
+        navEl: HTMLDivElement
+        containerEl: HTMLDivElement
     }
 
     interface Editor {
@@ -109,6 +143,7 @@ declare module "obsidian" {
         fileCache: Record<string, { mtime: number }>
         inProgressTaskCount: number;
         initialized: boolean;
+        cleanupDeletedCache: () => void
         db: {
             name: string
         }
@@ -133,12 +168,46 @@ declare module "obsidian" {
             callback: () => any,
             ctx?: any
         ): EventRef;
+        on(
+            name: "metadata-menu:indexed",
+            callback: () => void,
+            ctx?: any
+        ): EventRef;
+        on(
+            name: "metadata-menu:fileclass-indexed",
+            callback: () => void,
+            ctx?: any
+        ): EventRef;
+        on(
+            name: "metadata-menu:fileclass-indexed",
+            callback: () => void,
+            ctx?: any
+        ): EventRef;
+        on(
+            name: "metadata-menu:fields-changed",
+            callback: (data: { file: TFile, payload: IndexedFieldsPayload }) => void,
+            ctx?: any
+        ): EventRef;
+
     }
     interface Workspace {
-        on(name: "metadata-menu:indexed", callback: () => void, ctx?: any): EventRef;
-        on(name: "metadata-menu:fileclass-indexed", callback: () => void, ctx?: any): EventRef;
         on(name: "layout-ready", callback: () => void, ctx?: any): EventRef;
         on(name: "layout-change", callback: Debouncer<[_file: TFile], void>, ctx?: any): EventRef;
+        on(
+            name: "metadata-menu:button-built",
+            callback: (destPath: string, viewTypeName: string | null, fileClassName?: string) => void,
+            ctx?: any
+        ): EventRef;
+        on(
+            name: "metadata-menu:fields-modal-built",
+            callback: (modal: Modal) => void,
+            ctx?: any
+        ): EventRef;
+        on(
+            name: "metadata-menu:field-update-modal-built",
+            callback: (modal: BaseValueModal<TFile, BaseOptions>) => void,
+            ctx?: any
+        ): EventRef;
     }
     interface ViewRegistry extends Events {
         /**
@@ -217,6 +286,6 @@ declare global {
     interface Window {
         MetadataMenuAPI?: IMetadataMenuApi;
         MetadataMenu?: MetadataMenu;
-        DEBUG?: boolean
+        MDM_DEBUG?: boolean
     }
 }

@@ -1,6 +1,6 @@
 import MetadataMenu from "main";
 import { FileClassDataviewTable } from "./tableViewComponents/fileClassDataviewTable";
-import { FileClass, FileClassChild } from "../fileClass";
+import { FileClass, FileClassChild, getSortedRootFields } from "../fileClass";
 import { ViewConfiguration } from "./tableViewComponents/tableViewFieldSet";
 import { MarkdownPostProcessorContext } from "obsidian";
 import { FileClassCodeBlockManager } from "src/components/FileClassCodeBlockManager";
@@ -34,7 +34,7 @@ export class FileClassCodeBlockView {
             position: 0
         }]
 
-        const sortedFields = FileClass.getSortedRootFields(this.plugin, this.fileClass)
+        const sortedFields = getSortedRootFields(this.plugin, this.fileClass)
         for (const [_index, f] of sortedFields.entries()) {
             columns.push({
                 id: `${this.fileClass.name}____${f.name}`,
@@ -61,7 +61,7 @@ export class FileClassCodeBlockView {
     public update(maxRows?: number, sliceStart: number = 0): void {
         this.fileClassDataviewTable = new FileClassDataviewTable(
             this.viewConfiguration, this, this.fileClass, maxRows, sliceStart, this.ctx)
-        this.fileClassDataviewTable.buildTable(this.tableContainer);
         this.fileClassDataviewTable.buildPaginationManager(this.paginationContainer);
+        this.fileClassDataviewTable.buildTable(this.tableContainer);
     }
 }

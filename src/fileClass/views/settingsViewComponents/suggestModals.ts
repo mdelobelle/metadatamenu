@@ -7,6 +7,7 @@ export class ParentSuggestModal extends SuggestModal<string> {
 
     constructor(private view: FileClassSettingsView) {
         super(view.plugin.app)
+        this.containerEl.setAttr("id", `${this.view.fileClass.name}-extends-suggest-modal`)
     }
 
     getSuggestions(query: string): string[] {
@@ -35,6 +36,7 @@ export class TagSuggestModal extends SuggestModal<string> {
 
     constructor(private view: FileClassSettingsView) {
         super(view.plugin.app)
+        this.containerEl.setAttr("id", `${this.view.fileClass.name}-tagNames-suggest-modal`)
     }
 
     getSuggestions(query: string): string[] {
@@ -61,12 +63,14 @@ export class FieldSuggestModal extends SuggestModal<string> {
 
     constructor(private view: FileClassSettingsView) {
         super(view.plugin.app)
+        this.containerEl.setAttr("id", `${this.view.fileClass.name}-excludes-suggest-modal`)
     }
 
     getSuggestions(query: string): string[] {
         const fileClassName = this.view.fileClass.name
         const fileClassFields = this.view.plugin.fieldIndex.fileClassesFields.get(fileClassName) || []
         const excludedFields = this.view.fileClass.getFileClassOptions().excludes
+
         return fileClassFields
             .filter(fCA =>
                 fCA.fileClassName !== fileClassName
@@ -97,6 +101,7 @@ export class PathSuggestModal extends SuggestModal<string> {
     constructor(private view: FileClassSettingsView) {
         super(view.plugin.app)
         this.plugin = view.plugin
+        this.containerEl.setAttr("id", `${this.view.fileClass.name}-filesPaths-suggest-modal`)
     }
 
     getSuggestions(query: string): string[] {
@@ -115,13 +120,13 @@ export class PathSuggestModal extends SuggestModal<string> {
         return folders.map(f => f.path);
     }
 
+
     onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
         const options = this.view.fileClass.getFileClassOptions()
         const filesPaths = options.filesPaths || []
         filesPaths.push(item)
         options.filesPaths = filesPaths
         this.view.fileClass.updateOptions(options)
-
     }
 
     renderSuggestion(value: string, el: HTMLElement) {
@@ -134,6 +139,7 @@ export class BookmarksGroupSuggestModal extends SuggestModal<string> {
     constructor(private view: FileClassSettingsView) {
         super(view.plugin.app)
         this.plugin = view.plugin
+        this.containerEl.setAttr("id", `${this.view.fileClass.name}-bookmarksGroups-suggest-modal`)
     }
 
     private getGroups = (items: BookmarkItem[], groups: string[] = [], path: string = "") => {
@@ -156,6 +162,7 @@ export class BookmarksGroupSuggestModal extends SuggestModal<string> {
     }
 
     onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
+        const cache = this.plugin.app.metadataCache.getFileCache(this.view.fileClass.getClassFile())?.frontmatter as Record<string, any> || {}
         const options = this.view.fileClass.getFileClassOptions()
         const bookmarksGroups = options.bookmarksGroups || []
         bookmarksGroups.push(item)

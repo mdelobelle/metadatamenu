@@ -1,20 +1,44 @@
 import { TFile } from "obsidian"
-import Field from "./Field"
 import MetadataMenu from "main"
-import { ObjectListItem } from "./fieldManagers/ObjectListField"
+import { ObjectListItem } from "./models/ObjectList"
 import { Note } from "src/note/note"
+import { LinePosition } from "src/note/line"
+import { LineNode } from "src/note/lineNode"
+import { Field, fieldValueManager, getIdAndIndex, upperPath as getUpperPath } from "./Field"
+import { displayItem } from "./models/ObjectList"
 
-export class ExistingField {
+interface IExistingField {
+    node: LineNode
+    field: Field
+    value?: any
+    indexedId?: string
+    indexedPath?: string
+}
+
+export class ExistingField implements IExistingField {
     public name: string
     constructor(
+        public node: LineNode,
         public field: Field,
         public value?: any,
         public indexedId?: string,
-        public indexedPath?: string
+        public indexedPath?: string,
     ) {
         this.name = this.field.name
         this.indexedId = this.indexedId || this.field.id
         this.indexedPath = this.indexedPath || this.indexedId
+    }
+
+    get lineNumber(): number {
+        return this.node.line.number
+    }
+
+    get position(): LinePosition {
+        return this.node.line.position
+    }
+
+    get file(): TFile {
+        return this.node.line.note.file
     }
 
     public isRoot() {
@@ -29,7 +53,7 @@ export class ExistingField {
             //on crée les ObjectListItem
             const upperPath = `${this.indexedPath}[${index}]`
             const eFields = (await Note.getExistingFields(plugin, file)).filter(eF =>
-                eF.indexedPath && Field.upperPath(eF.indexedPath) === upperPath)
+                eF.indexedPath && getUpperPath(eF.indexedPath) === upperPath)
             items.push({
                 fields: eFields,
                 indexInList: index,
@@ -38,4 +62,51 @@ export class ExistingField {
         }))
         return items
     }
+
+    public getItemDisplayForIndex(plugin: MetadataMenu, index: string | number) {
+        if (this.field.type !== "ObjectList") return ""
+        let numIndex: number
+        if (typeof index === "string") {
+            numIndex = parseInt(index)
+        } else {
+            numIndex = index
+        }
+        if (!isNaN(numIndex) && this.field) {
+            const item = (this.value)[numIndex]
+            const fieldVM = fieldValueManager(plugin, this.field.id, this.field.fileClassName, this.file, this, this.indexedPath)
+            if (fieldVM) return displayItem(fieldVM, item, numIndex)
+        } else {
+            return `${this.name}[${index}]`
+        }
+    }
+}
+
+
+export function getValueDisplay(field: ExistingField | undefined): string {
+    if (field?.value === ("" || null)) {
+        return "<--Empty-->"
+    } else if (!field) {
+        return "<--Missing-->"
+    } else {
+        return field.value || ""
+    }
+}
+
+
+export async function getExistingFieldForIndexedPath(plugin: MetadataMenu, file: TFile, indexedPath: string | undefined): Promise<ExistingField | undefined> {
+    const eFs = await Note.getExistingFields(plugin, file)
+    return eFs.find(eF => eF.indexedPath === indexedPath)
+}
+
+export function getNamedIndexedPath(plugin: MetadataMenu, file: TFile, indexedPath: string): string | undefined {
+    const items = indexedPath.split("____")
+    const namedPathItems: string[] = []
+    const fileFields = plugin.fieldIndex.filesFields.get(file.path) || []
+    for (const item of items) {
+        const { id, index } = getIdAndIndex(item)
+        const field = fileFields.find(f => f.id === id)
+        if (!field) return
+        namedPathItems.push(`${field.name}${index ? "[" + index + "]" : ""}`)
+    }
+    return namedPathItems.join("____")
 }

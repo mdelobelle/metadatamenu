@@ -1,0 +1,175 @@
+{
+  "main": {
+    "id": "2b44672973937dca",
+    "type": "split",
+    "children": [
+      {
+        "id": "0a899d41d3fc7a7d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "6f623a76b2a20f68",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "8ac7316587cb532d",
+    "type": "split",
+    "children": [
+      {
+        "id": "6f04c3c80b8b9cf1",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a70066693f6a00ac",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "64add039ca2511a8",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "2d4e4c0c7d29b941",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "a3ddc01deee26343",
+    "type": "split",
+    "children": [
+      {
+        "id": "b3e7ab711e669731",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "6b3568a542e52105",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "cab23512d1942096",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "13b801cd7e64ec13",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "5fc9fd53aa1a242c",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "6f623a76b2a20f68",
+  "lastOpenFiles": [
+    "Fileclasses/Fileclass1.md",
+    "Untitled.md",
+    "Untitled 1.md",
+    "Untitled 2.md",
+    "Untitled 3.md",
+    "Folder3/test3_1_fileclass_frontmatter.md",
+    "Fileclasses/Fileclass2.md",
+    "Folder4",
+    "Folder3",
+    "__fixtures__/settings/presetFields.md",
+    "__fixtures__/fileClasses/Fileclass1.md",
+    "__fixtures__/fileClasses/Fileclass2.md",
+    "__fixtures__/tags.md",
+    "Folder2",
+    "Folder1",
+    "__fixtures__/fileClasses/FileClass2.md",
+    "Fileclasses/FileClass2.md",
+    "Fileclasses/a.md",
+    "Fileclasses/Tests.md",
+    "Fileclasses/testtest.md",
+    "Fileclasses/test.md",
+    "__fixtures__/fileClasses",
+    "Fileclasses",
+    "workbench.md",
+    "fixtures/settings/presetFields.yml",
+    "fixtures/settings/presetFields/fields.md",
+    "__fixtures__/lists/Areas.md.md",
+    "__fixtures__/lists",
+    "fixtures/settings/presetFields",
+    "__fixtures__/settings",
+    "Welcome.md"
+  ]
+}

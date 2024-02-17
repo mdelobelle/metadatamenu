@@ -2,12 +2,13 @@ import MetadataMenu from "main";
 import { EditorPosition, Notice, parseYaml, TFile } from "obsidian";
 import { FieldPayload, IndexedFieldsPayload } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
-import Field from "src/fields/Field";
-import YAMLField from "src/fields/fieldManagers/YAMLField";
-import { FieldManager, FieldType, frontmatterOnlyTypes, rawObjectTypes, ReservedMultiAttributes } from "src/types/fieldTypes";
 import * as Lookup from "src/types/lookupTypes";
-import { Line } from "./line";
+import { Options as LookupOptions } from "src/fields/models/Lookup";
+import { Line, LinePosition } from "./line";
 import { LineNode } from "./lineNode";
+import { dumpValue } from "src/fields/models/YAML";
+import { getIdAndIndex, Field, upperIndexedPathObjectPath } from "src/fields/Field";
+import { FieldType, frontmatterOnlyTypes, rawObjectTypes, ReservedMultiAttributes } from "src/fields/Fields";
 
 export class Note {
     public lines: Line[] = []
@@ -57,7 +58,7 @@ export class Note {
         }
     }
 
-    public renderMultiFields = (rawValue: string, itemRendering: (itemValue: string) => any) => {
+    public renderMultiFields = (rawValue: string, itemRendering: (itemValue: string) => string) => {
         const values = rawValue
             .replace(/(\,\s+)/g, ',')
             .split(',')
@@ -66,7 +67,7 @@ export class Note {
         return values.length ? values : ""
     }
 
-    public renderMultiFilesFields = (rawValue: string, itemRendering: (itemValue: string) => any) => {
+    public renderMultiFilesFields = (rawValue: string, itemRendering: (itemValue: string) => string) => {
         const values = ((rawValue.match(/\!?\[(?:\[??[^\[]*?\]\])/g) || []) as string[])
             .map(value => itemRendering(value));
         return values?.length ? values : ""
@@ -75,20 +76,27 @@ export class Note {
     public renderFieldValue(
         field: Field,
         rawValue: string,
-        location: "yaml" | "inline"
-    ): any {
+        location: LinePosition
+    ): string[] | string | "" {
         const type = field?.type
         const indentationLevel = field?.path ? field.path.split("____").length : 0
         switch (location) {
             case "yaml":
                 switch (type) {
-                    case FieldType.Lookup: return this.renderMultiFilesFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
-                    case FieldType.Multi: return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
-                    case FieldType.MultiFile: return this.renderMultiFilesFields(rawValue, (item) => `"${item}"`);;
-                    case FieldType.MultiMedia: return this.renderMultiFilesFields(rawValue, (item) => `"${item}"`);
-                    case FieldType.Canvas: return this.renderMultiFilesFields(rawValue, (item) => item ? `"${item}"` : "");
-                    case FieldType.CanvasGroup: return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
-                    case FieldType.CanvasGroupLink: return this.renderMultiFilesFields(rawValue, (item) => item ? `"${item}"` : "");
+                    case "Lookup": {
+                        if (["BuiltinSummarizing",
+                            "CustomSummarizing"].includes((field.options as LookupOptions).outputType)) {
+                            return this.renderValueString(rawValue, type, indentationLevel);
+                        } else {
+                            return this.renderMultiFilesFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel))
+                        }
+                    };
+                    case "Multi": return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
+                    case "MultiFile": return this.renderMultiFilesFields(rawValue, (item) => `"${item}"`);;
+                    case "MultiMedia": return this.renderMultiFilesFields(rawValue, (item) => `"${item}"`);
+                    case "Canvas": return this.renderMultiFilesFields(rawValue, (item) => item ? `"${item}"` : "");
+                    case "CanvasGroup": return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
+                    case "CanvasGroupLink": return this.renderMultiFilesFields(rawValue, (item) => item ? `"${item}"` : "");
                     case undefined: if ([...ReservedMultiAttributes, this.plugin.settings.fileClassAlias].includes(field.name)) {
                         return this.renderMultiFields(rawValue, (item) => `${item}`)
                     } else {
@@ -98,7 +106,7 @@ export class Note {
                 }
             case "inline":
                 switch (type) {
-                    case FieldType.Lookup: {
+                    case "Lookup": {
                         if (field &&
                             Lookup.bulletListLookupTypes.includes(field.options.outputType as Lookup.Type)
                         ) {
@@ -107,10 +115,9 @@ export class Note {
                             return rawValue;
                         }
                     }
-                    case FieldType.JSON: return JSON.stringify(JSON.parse(rawValue || "{}"))
-                    case FieldType.YAML: {
-                        const fm = new FieldManager[FieldType.YAML](this.plugin, field) as YAMLField
-                        return fm.dumpValue(rawValue)
+                    case "JSON": return JSON.stringify(JSON.parse(rawValue || "{}"))
+                    case "YAML": {
+                        return dumpValue(rawValue)
                     }
                     default: return rawValue;
                 }
@@ -213,7 +220,7 @@ export class Note {
 
     private createLine = (
         value: string,
-        position: "yaml" | "inline",
+        position: LinePosition,
         lineNumber: number,
         field?: Field,
         asList: boolean = false,
@@ -241,9 +248,9 @@ export class Note {
         asList: boolean = false,
         asBlockquote: boolean = false
     ): void {
-        const upperPath = Field.upperIndexedPathObjectPath(indexedPath)
-        const { id, index } = Field.getIdAndIndex(indexedPath.split("____").last())
-        const { id: upperFieldId, index: upperFieldIndex } = Field.getIdAndIndex(upperPath.split("____").last())
+        const upperPath = upperIndexedPathObjectPath(indexedPath)
+        const { id, index } = getIdAndIndex(indexedPath.split("____").last())
+        const { id: upperFieldId, index: upperFieldIndex } = getIdAndIndex(upperPath.split("____").last())
         if (lineNumber === -1 && !this.frontmatter) this.initFrontmatter()
         if (id.startsWith("fileclass-field")) {
             const fR = id.match(/fileclass-field-(?<fileClassAlias>.*)/)
@@ -257,52 +264,53 @@ export class Note {
         }
 
         if (!upperFieldIndex) {
-            DEBUG && console.log("Not an item of objectlist")
+            //MDM_DEBUG && console.log("Not an item of objectlist")
             const field = this.getField(id)
             if (!field) return
             // initialize frontmatter and get insertion line and position
             if (frontmatterOnlyTypes.includes(field.type) && !this.frontmatter) this.initFrontmatter()
             const frontmatterEnd = this.frontmatterEnd()
-            let insertLineNumber =
-                (lineNumber ? Math.max(lineNumber, 0) : undefined) ||
-                frontmatterEnd ||
-                this.lines.last()?.number ||
-                0
+            let insertLineNumber = lineNumber === 0
+                ? 0
+                : ((lineNumber !== undefined ? Math.max(lineNumber, 0) : undefined) ||
+                    frontmatterEnd ||
+                    this.lines.last()?.number ||
+                    0)
             if (frontmatterOnlyTypes.includes(field.type)) insertLineNumber = frontmatterEnd!
             const position = frontmatterEnd && (insertLineNumber <= frontmatterEnd) ? "yaml" : "inline"
 
-            if (field.type !== FieldType.ObjectList) {
-                DEBUG && console.log("Not an ObjectList")
+            if (field.type !== "ObjectList") {
+                //MDM_DEBUG && console.log("Not an ObjectList")
                 const parentField = this.existingFields.find(eF => eF.indexedPath === upperPath)
-                if (parentField?.field.type === FieldType.Object) {
-                    DEBUG && console.log("child of an object")
+                if (parentField?.field.type === "Object") {
+                    //MDM_DEBUG && console.log("child of an object")
                     const parentLine = this.getNodeForIndexedPath(upperPath)?.line
                     const lastChildLine = parentLine?.getLastChildLine()
                     this.createLine(payload.value, "yaml", lastChildLine ? lastChildLine.number + 1 : 1, field, asList, asBlockquote)
                 } else {
-                    DEBUG && console.log("No parent field or parent not an object")
+                    //MDM_DEBUG && console.log("No parent field or parent not an object")
                     this.createLine(payload.value, position, insertLineNumber, field, asList, asBlockquote)
                 }
             } else {
 
-                DEBUG && console.log("An ObjectList")
+                //MDM_DEBUG && console.log("An ObjectList")
                 //specific case where the field is object but the upperIndex is unknown
                 //it mean that we have to insert a new ObjectList Header
                 const upperNode = this.getNodeForIndexedPath(upperPath)
                 if (!upperNode) {
 
-                    DEBUG && console.log("no upper node (shouldnt exist)")
+                    //MDM_DEBUG && console.log("no upper node (shouldnt exist)")
                     const objectListHeaderLine = new Line(this.plugin, this, position, `${field.name}:`, insertLineNumber)
                     objectListHeaderLine.renderLine()
                 } else {
                     if (upperNode.field?.id !== field.id) {
-                        DEBUG && console.log("upper node indexed path !==  this indexed path we are adding the header and a first item")
+                        //MDM_DEBUG && console.log("upper node indexed path !==  this indexed path we are adding the header and a first item")
                         const objectListHeaderLine = new Line(this.plugin, this, position, "", upperNode.line.number! + 1)
                         const node = new LineNode(this.plugin, objectListHeaderLine, "")
                         node.createFieldNodeContent(field, "", "yaml")
                         node.line.renderLine()
                     } else {
-                        DEBUG && console.log("the object list doesn't have a first item, let's create it")
+                        //MDM_DEBUG && console.log("the object list doesn't have a first item, let's create it")
                         const newItemLine = new Line(this.plugin, upperNode.line.note, position, "", upperNode.line.number! + 1)
                         // if field is not in a list, shift of 0, else shift 1
                         const shift = /^(\s+)-(\s+)?(.*)/.test(upperNode.rawContent) ? 1 : 0
@@ -312,7 +320,7 @@ export class Note {
                 }
             }
         } else {
-            DEBUG && console.log("in an existing item of an object list")
+            //MDM_DEBUG && console.log("in an existing item of an object list")
             const i = parseInt(upperFieldIndex)
             const parentFieldIndexedPath = upperPath.replace(/\[\w+\]$/, '')
             const parentNode = this.getNodeForIndexedPath(parentFieldIndexedPath)
@@ -323,14 +331,14 @@ export class Note {
             const field = this.getField(id)
             const lastItemLine = parentNode.line.objectListLines[i].last()
             if (lastItemLine) {
-                DEBUG && console.log("we have a last object for item")
+                //MDM_DEBUG && console.log("we have a last object for item")
                 if (/-(\s+)?$/.test(parentNode.line.objectListLines[i].last()?.rawContent || "") && field) {
-                    DEBUG && console.log("replace the placeholder")
+                    //MDM_DEBUG && console.log("replace the placeholder")
                     const node = lastItemLine.nodes[0]
                     node.createFieldNodeContent(field, payload.value, "yaml");
                     node.line.renderLine(asList, asBlockquote)
                 } else {
-                    DEBUG && console.log("add the field at the end")
+                    //MDM_DEBUG && console.log("add the field at the end")
                     const lastChildLine = lastItemLine.getLastChildLine()
                     this.createLine(payload.value, "yaml", lastChildLine ? lastChildLine.number + 1 : 1, field, asList, asBlockquote)
                 }

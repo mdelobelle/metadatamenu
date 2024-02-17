@@ -15,7 +15,10 @@ const config: Config.InitialOptions = {
     ],
     moduleDirectories: [
         "node_modules"
-    ]
+    ],
+    globals: {
+        MDM_DEBUG: true
+    }
 };
 
 export default config;
