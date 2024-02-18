@@ -43,7 +43,7 @@ export class FieldActions {
             fieldOption.setIcon(icon)
             if (tooltip) fieldOption.setTooltip(tooltip);
         }
-        if (className) fieldOption.buttonEl.addClass(className);
+        if (className) fieldOption.buttonEl.addClass(className.replace(" ", "_"));
         fieldOption.onClick(() => onclick())
     }
 }

@@ -118,7 +118,7 @@ export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFil
         const eF = await getExistingFieldForIndexedPath(plugin, file, indexedPath)
         const fieldVM = fieldValueManager(plugin, field.id, field.fileClassName, file, eF, indexedPath)
         if (fieldVM) {
-            fieldVM.value = !fieldVM.value
+            fieldVM.value = (!fieldVM.value).toString()
             fieldVM.save()
         }
     };
