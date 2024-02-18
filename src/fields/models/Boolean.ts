@@ -106,7 +106,7 @@ export function createDvField(
 ): void {
     attrs.cls = "value-container"
     const checkbox: HTMLInputElement = dv.el("input", "", { ...attrs, "type": "checkbox" })
-    checkbox.checked = p[managedField.name]
+    checkbox.checked = managedField.value
     fieldContainer.appendChild(checkbox)
     checkbox.onchange = () => managedField.save((!managedField.value).toString())
 }

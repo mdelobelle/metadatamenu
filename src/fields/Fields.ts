@@ -362,7 +362,6 @@ export function createDvField<O extends BaseOptions>(
     attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
 ): void {
     if (!managedField) return
-    managedField.value = p[managedField.name] || ""
     switch (managedField.type) {
         case "Input": return Input.createDvField(managedField as unknown as IFieldManager<Target, Input.Options>, dv, p, fieldContainer, attrs)
         case "Number": return NumberField.createDvField(managedField as unknown as IFieldManager<Target, NumberField.Options>, dv, p, fieldContainer, attrs)
@@ -383,7 +382,7 @@ export function createDvField<O extends BaseOptions>(
         case "Object": return ObjectField.createDvField(managedField as unknown as IFieldManager<Target, ObjectField.Options>, dv, p, fieldContainer, attrs)
         case "ObjectList": return ObjectList.createDvField(managedField as unknown as IFieldManager<Target, ObjectList.Options>, dv, p, fieldContainer, attrs)
         default: {
-            const fieldValue = dv.el('span', p[managedField.name], attrs);
+            const fieldValue = dv.el('span', managedField.value, attrs);
             fieldContainer.appendChild(fieldValue);
         }
     }

@@ -166,7 +166,7 @@ export function createDvField(
     attrs.cls = "value-container"
     /* button to display input */
     const editBtn = fieldContainer.createEl("button");
-    managedField.value = p[managedField.name] || {}
+    managedField.value = managedField.value || {}
     const value = valueString(managedField.type)(managedField)
     const fieldValue = (dv.el('span', value || "", attrs) as HTMLDivElement);
     fieldContainer.appendChild(fieldValue);

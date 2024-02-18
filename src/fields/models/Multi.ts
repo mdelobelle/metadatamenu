@@ -164,11 +164,11 @@ export function createDvField(
 ): void {
     let valueHovered = false;
     let currentValues: string[] = [];
-    if (p[managedField.name]) {
-        if (Object.keys(p[managedField.name]).includes("path")) {
-            currentValues = [`[[${p[managedField.name].path.replace(".md", "")}]]`]
-        } else if (Array.isArray(p[managedField.name])) {
-            p[managedField.name].forEach((item: any) => {
+    if (managedField.value) {
+        if (Object.keys(managedField.value).includes("path")) {
+            currentValues = [`[[${managedField.value.path.replace(".md", "")}]]`]
+        } else if (Array.isArray(managedField.value)) {
+            managedField.value.forEach((item: any) => {
                 if (Object.keys(item).includes("path")) {
                     currentValues.push(`[[${item.path.replace(".md", "")}]]`)
                 } else {
@@ -176,7 +176,7 @@ export function createDvField(
                 }
             })
         } else {
-            const value = p[managedField.name]
+            const value = managedField.value
             currentValues = value ? `${value}`.split(",").map((v: string) => v.trim()) : [];
         }
     }

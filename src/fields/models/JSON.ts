@@ -83,7 +83,7 @@ export function createDvField(
     attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
 ): void {
     attrs.cls = "value-container"
-    const fieldValue = dv.el('span', p[managedField.name] || "", attrs)
+    const fieldValue = dv.el('span', managedField.value || "", attrs)
     fieldContainer.appendChild(fieldValue)
     /* end spacer */
     /* button to display input */

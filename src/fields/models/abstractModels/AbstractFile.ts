@@ -150,7 +150,7 @@ export function createDvField(
     attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
 ): void {
     attrs.cls = "value-container"
-    const values = p[managedField.name]
+    const values = managedField.value
     const buildItem = (_value: Link) => fieldContainer.appendChild(dv.el('span', _value || "", attrs))
     if (Array.isArray(values)) values.forEach(value => buildItem(value))
     else buildItem(values)
