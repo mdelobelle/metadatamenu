@@ -9,19 +9,23 @@ Called `Property`in Obsidian, fields in frontmatter are of form: `<name>: <value
 
 ## Fields in the body section of the file with dataview notation
 Following Dataview notation, you can define fields:
+
 - in the body of the file, occupying the full line `<name>:: <value>`
 - inside a line in the body of the file, surrounded with brackets or parenthesis: `... (<name>:: value) ...`or `... [<name>:: <value>]...`
 
 ## Field definition
 In order to give metadata menu the capability to manage a field, you'll have to set a definition for it. You can set a definition for a field in two places:
+
 - in the [plugin settings](settings.md): the field definition will be applied to every file of your vault
 - in a [fileClass](fileclass.md): the field definition will be applied to the files [mapped with this fileClass](fileclasses.md#file-mapping)
 
 All fields defintions are composed of:
+
  - [common settings](#fields-common-settings)
  - specific options depending on their [type](#fields-types)
 
 These options are translated in a [field object](#field-object-structure) stored:
+
 - as a `fields` item in the [fileClass](fileclass.md) file for fileclasses fields
 - as a `fields` item in the `data.json` file of the plugin's folder for [preset fields](settings.md#preset-field-settings)
 
@@ -124,8 +128,10 @@ You can set an icon for the button of the command in the mobile toolbar (icon na
 ### Frontmatter List display type
 
 Defines the way that multi-value type fields ([Multi](fields.md#multi), [MultiFile](fields.md#multi-file)) are displayed in the frontmatter:
+
 - As an array inline: `Field: [Value1, Value2]`
 - As an indented list below the field name:
+
 ```
 Field:
   - Value 1
@@ -135,6 +141,7 @@ Field:
 ### Inline field style
 
 [Inline fields](#fields-in-the-body-section-of-the-file-with-dataview-notation) can be automatically styled with four styles (you can mix them):
+
 - bold,
 - italic,
 - strikethrough
@@ -152,6 +159,7 @@ Select the [type](#field-type) of the field. The type of the field will define s
 If you really need to change the type of a field, and if you are sure that it won't cause any discrepancies in your data, you'll have to remove this field from the fileclass or the preset fields and create a new one with the same name and the new type.
 
 Some types are only available in the frontmatter:
+
 - [YAML](#yaml)
 - [Object](#object)
 - [Object List](#object-list)
@@ -176,6 +184,7 @@ A basic type to store a string.
 You can define a template to help fill your `Input` field.
 
 Every item enclosed in curly braces will be transformed into an input or a dropdown select in the field modal. You can modify the "templatized" text afterwards:
+
 - {{Name}} will be transformed in an input field labeled "Name"
 - {{color: ["red", "green", "blue"]}} will be transformed into a dropdown select field labelled "color" with 3 value: "red", "green" and "blue
 
@@ -203,6 +212,7 @@ A type that accepts a number (int or float).
 
 ### options
 You can define an optional:
+
 - (increment/decrement) step
 - minimum value
 - maximum value
@@ -219,6 +229,7 @@ A type that accepts values from a list.
 
 ### options
 You can define several sources for the values:
+
 - a note path: each line of the target note will be an option for the dropdown selector
 - a javascript function returning an array of string (dataview api is available with the `dv` keyword, the dv.current() variable is available with the `current` keyword)
 - the setting form (add/edit/remove values one by one)
@@ -236,6 +247,7 @@ A type that will cycle through values from a list.
 
 ### options
 You can define several sources for the values:
+
 - a note path: each line of the target note will be an option for the dropdown selector
 - a javascript function returning an array of string (dataview api is available with the `dv` keyword, the dv.current() variable is available with the `current` keyword)
 - the setting form (add/edit/remove values one by one)
@@ -256,6 +268,7 @@ A type that multiple values from a list.
 
 ### options
 You can define several sources for the values:
+
 - a note path: each line of the target note will be an option for the dropdown selector
 - a javascript function returning an array of string (dataview api is available with the `dv` keyword, the dv.current() variable is available with the `current` keyword)
 - the setting form (add/edit/remove values one by one)
@@ -273,6 +286,7 @@ A type that accepts a date.
 
 ### options
 You can define:
+
 - the date format as defined in [moment.js](https://momentjs.com/docs/#/displaying/format/) library
 - insert link by default: The date will be embedded in an internal link : `[[2024-01-01]]`
 - Link path : if provided, the path will be explicitely included in the internal link : `[[Daily/Notes/2024-01-01]]`
@@ -296,6 +310,7 @@ A type that accepts a date with time
 
 ### options
 You can define:
+
 - the time format as defined in [moment.js](https://momentjs.com/docs/#/displaying/format/) library
 - Define a shift interval: a value in [moment.js duration notation](https://momentjs.com/docs/#/durations/creating/)
 - Choose a [cycle field](#cycle) belonging to this fileclass or preset fields that contains duration values. Each time you shift the date, the time will be added the current value, and the cycle field will be updated with the next value in the list. This "Interval field" can't be a [nested field](#nesting-fields)
@@ -315,6 +330,7 @@ A type that accepts a time (hours, minutes, seconds, milliseconds)
 
 ### options
 You can define:
+
 - the date and time format as defined in [moment.js](https://momentjs.com/docs/#/displaying/format/) library
 - Define a shift interval: a value in [moment.js duration notation](https://momentjs.com/docs/#/durations/creating/)
 - Choose a [cycle field](#cycle) belonging to this fileclass or preset fields that contains duration values. Each time you shift the date, the date will be added the current value, and the cycle field will be updated with the next value in the list. This "Interval field" can't be a [nested field](#nesting-fields)
@@ -345,12 +361,15 @@ it takes a « source » (explained here https://blacksmithgu.github.io/obsidian-
 
 you can also improve the filtering by applying a combination of other functions to the result returned by dv.pages(source):
 
-dv.pages(…).where(…) 
-dv.pages(…).filter(…)
-dv.pages(…).limit(…)
-etc
+- dv.pages(…).where(…) 
+- dv.pages(…).filter(…)
+- dv.pages(…).limit(…)
+- etc
+
 you can combine them:
-dv.pages(…).where(…).limit(...)
+
+- dv.pages(…).where(…).limit(...)
+
 see documentation here https://blacksmithgu.github.io/obsidian-dataview/api/data-array/#raw-interface
 
 A good source of help to build dataview queries is the obsidian discord server > plugin-advanced > dataview : the community is really helpful there.
@@ -407,6 +426,7 @@ A type that accepts amultiple internal links to files in your vault
 
 ### options
 You can define :
+
 - a [dataviewjs query](#dataview-query) returning an array of pages
 - a javascript function to return an [alias](#alias) for each result
 - a javascript function to [sort](#sorting-order) the results within the query
@@ -422,6 +442,7 @@ You can define :
 A type that accepts an internal link to a media file in your vault
 ### options
 You can define :
+
 - the folders where your media files are located
 - the embed size for images
 - display the media modal search as list or cards (gallery style)
@@ -494,6 +515,7 @@ Example2: `const i=0.0;const sum = pages.reduce((p, c) => p + c["age"], i); retu
 ### Example
 
 If you have a lookup field `students` defined like this:
+
  - name: `students``
  - dataview query: `dv.pages("#student")``
  - Name of the related field: `School`
@@ -548,6 +570,7 @@ A field that returns the result of a javascript function
 
 ### options
 You can define :
+
 - if the field will auto-update each time the content of your vault has changed (can slow down obsidian if you have many of those fields and a lot of files)
 - a javascript function returning a value. (the dataview api is available with th `dv` keyword, the current dataview page object is available with the keyword `current`)
 
@@ -559,6 +582,7 @@ You can define :
 ### example
 
 if you have the field `mixed sum`defined like this:
+
 - name: `mixed sum`
 - auto-update: true
 - javascript formula: `current.apples + current.bananas`
@@ -582,6 +606,7 @@ The path to canvas where you want to search for matching connexions
 
 #### `Nodes to target from this note`
 The direction of the edge connecting this node with other nodes:
+
 - `Incoming`: only the nodes with edges pointing to this node will be triggered
 - `Outgoing`: only the nodes to which this node is pointing will be triggered
 - `Both Side`: every nodes connected to this node will be triggered
