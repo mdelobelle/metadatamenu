@@ -4,7 +4,6 @@ import { setIcon, TFile } from "obsidian";
 import { buildField, Field, FieldValueManager, fieldValueManager } from "src/fields/Field";
 import { createDvField as _createDvField } from "src/fields/Fields";
 import { positionIcon } from "src/note/line";
-import { ExistingField, getExistingFieldForIndexedPath } from "src/fields/ExistingField";
 
 function buildAndOpenModal(
     plugin: MetadataMenu,
@@ -34,13 +33,13 @@ function buildAndOpenModal(
     }
 }
 
-export async function fieldModifier(
+export function fieldModifier(
     plugin: MetadataMenu,
     dv: any,
     p: any,
     fieldName: string,
     attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
-): Promise<HTMLElement> {
+): HTMLElement {
     /* fieldContainer*/
     const fieldContainer: HTMLElement = dv.el("div", "")
     fieldContainer.setAttr("class", `metadata-menu-dv-field-container ${fieldName}`)
@@ -51,9 +50,10 @@ export async function fieldModifier(
         throw Error("path doesn't correspond to a proper file");
     }
     const { indexedPath, field } = getFullIndexedPath(fieldName, plugin.fieldIndex.filesFields.get(file.path))
-    const ef = await getExistingFieldForIndexedPath(plugin, file, indexedPath)
 
-    if (ef?.value === undefined) {
+    const fieldSegments = fieldName.replaceAll("[", ".").replaceAll("]", "").split(".")
+    const fieldValue = fieldSegments.reduce((acc, cur) => (acc[cur]), p)
+    if (fieldValue === undefined) {
         if (!attrs?.options?.showAddField) {
             const emptyField = dv.el("span", null, attrs);
             fieldContainer.appendChild(emptyField);
@@ -86,12 +86,17 @@ export async function fieldModifier(
         fieldContainer.appendChild(addInFrontmatterFieldBtn);
     } else {
         if (field && field?.type) {
-            const fieldVM = fieldValueManager(plugin, field.id, field.fileClassName, file, ef, indexedPath)
+            const fieldVM = fieldValueManager(plugin, field.id, field.fileClassName, file, undefined, indexedPath)
+            if (!fieldVM) {
+                return fieldContainer
+            }
+            fieldVM.value = fieldValue
             _createDvField(fieldVM, dv, p, fieldContainer, attrs)
         }
         else {
             const field = buildField(plugin, fieldName, "", "", undefined, undefined, undefined, undefined, "Input", {});
-            const fieldVM = new (FieldValueManager(plugin, field, file, ef, indexedPath))
+            const fieldVM = new (FieldValueManager(plugin, field, file, undefined, indexedPath))
+            fieldVM.value = fieldValue
             _createDvField(fieldVM, dv, p, fieldContainer, attrs)
         }
     }
