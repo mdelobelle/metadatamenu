@@ -3,7 +3,7 @@ import { legacyGenuineKeys } from "src/utils/dataviewUtils";
 import { capitalize } from "src/utils/textUtils";
 import { FileClass } from "./fileClass";
 import { FileClassAttribute } from "./fileClassAttribute";
-import { getNewFieldId } from "src/fields/Field";
+import { Field, getNewFieldId } from "src/fields/Field";
 import { FieldType } from "src/fields/Fields";
 
 export class V1FileClassMigration {
@@ -56,6 +56,7 @@ export class V1FileClassMigration {
             await this.plugin.app.fileManager.processFrontMatter(file, async (fm) => {
                 const attributes = V1FileClassMigration.getInlineFileClassAttributes(this.plugin, fileClass)
                 attributes.forEach(attr => {
+
                     fields.push({
                         id: getNewFieldId(this.plugin),
                         command: attr.command,
@@ -66,8 +67,8 @@ export class V1FileClassMigration {
                         type: attr.type,
                         path: ""
                     })
-                })
-                fm.fields = fields
+                });
+                fm.fields = [...fm.fields.filter((f: Field) => !fields.map(_f => _f.id).includes(f.id)), ...fields]
                 fm.version = "2.0"
             })
         }
