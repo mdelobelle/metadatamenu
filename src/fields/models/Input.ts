@@ -158,7 +158,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             inputEl.inputEl.focus();
             inputEl.inputEl.addClass("full-width");
             if (isSingleTargeted(this.managedField)) {
-                inputEl.setValue(this.managedField.value);
+                inputEl.setValue(`${this.managedField.value}`);
             } else {
                 inputEl.setPlaceholder("Multiple values");
             }
@@ -186,6 +186,8 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
 
         public async save(): Promise<void> {
             this.managedField.save()
+            this.saved = true
+            if (this.managedField.previousModal) await this.goToPreviousModal()
             this.close()
         }
     }

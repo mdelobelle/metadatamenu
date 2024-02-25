@@ -60,10 +60,6 @@ export class BaseValueModal<T extends Target, O extends BaseOptions> extends Mod
                 pM.close()
                 const uEF = await Note.getExistingFieldForIndexedPath(this.managedField.plugin, this.managedField.target, upperPath)
                 if (uEF) fieldValueManager(this.managedField.plugin, uEF.field.id, uEF.field.fileClassName, this.managedField.target, uEF, uEF.indexedPath)?.openModal()
-                // jardinerie ultime.... à tester
-                // const objectModal = new ObjectModal(this.managedField.plugin, this.managedField.target, undefined, upperPath,
-                //     undefined, undefined, undefined, pM.previousModal)
-                // objectModal.open()
             } else if (pField && pFile) {
                 pM.close()
                 fieldValueManager(

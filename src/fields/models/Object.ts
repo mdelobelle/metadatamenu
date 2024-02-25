@@ -14,6 +14,7 @@ import { ISettingsModal } from "../base/BaseSetting"
 import { getNextOption } from "./Cycle"
 import { ObjectListItem, Modal as ObjectListModal, Options as ObjectListOptions } from "./ObjectList"
 import * as AbstractObject from "./abstractModels/AbstractObject"
+import { setTimeout } from "timers/promises"
 
 export class Base implements IFieldBase {
     type = <const>"Object"
@@ -48,7 +49,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         public missingFields: Field[] = []
         async onOpen() {
             if (this.managedField.indexedPath && isSingleTargeted(this.managedField)) {
-
                 const { existingFields, missingFields } = await AbstractObject.getExistingAndMissingFields(
                     this.managedField.plugin, this.managedField.target, this.managedField.indexedPath)
                 this.existingFields = existingFields
@@ -230,7 +230,7 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
 
 //#region utils
 
-export function getPseudoObjectValueManagerFromObjectItem(managedField: IFieldManager<Target, ObjectListOptions>, item: ObjectListItem, previousModal: ObjectListModal<Target>) {
+export function getPseudoObjectValueManagerFromObjectItem(managedField: IFieldManager<Target, ObjectListOptions>, item: ObjectListItem, previousModal?: ObjectListModal<Target>) {
     const mF = managedField
     const field = buildField(mF.plugin, "", "", mF.path, mF.fileClassName, undefined, undefined, undefined, "Object", {})
     const itemFVM = new (FieldValueManager(mF.plugin, field, mF.target, undefined, item.indexedPath, undefined, undefined, undefined, previousModal))

@@ -2,8 +2,11 @@ import MetadataMenu from "main";
 import chooseSectionModal from "src/modals/chooseSectionModal";
 import { setIcon, TFile } from "obsidian";
 import { buildField, Field, FieldValueManager, fieldValueManager } from "src/fields/Field";
-import { createDvField as _createDvField } from "src/fields/Fields";
+import { createDvField as _createDvField, getIcon } from "src/fields/Fields";
 import { positionIcon } from "src/note/line";
+import { displayItem } from "src/fields/models/ObjectList";
+import { Note } from "src/note/note";
+import { getPseudoObjectValueManagerFromObjectItem } from "src/fields/models/Object";
 
 function buildAndOpenModal(
     plugin: MetadataMenu,
@@ -49,10 +52,10 @@ export function fieldModifier(
     if (!(file instanceof TFile && file.extension == "md")) {
         throw Error("path doesn't correspond to a proper file");
     }
-    const { indexedPath, field } = getFullIndexedPath(fieldName, plugin.fieldIndex.filesFields.get(file.path))
+    const { indexedPath, field } = getFullIndexedPathFromDottedPath(fieldName, plugin.fieldIndex.filesFields.get(file.path))
 
     const fieldSegments = fieldName.replaceAll("[", ".").replaceAll("]", "").split(".")
-    const fieldValue = fieldSegments.reduce((acc, cur) => (acc[cur]), p)
+    const fieldValue = fieldSegments.reduce((acc, cur) => acc?.[cur], p)
     if (fieldValue === undefined) {
         if (!attrs?.options?.showAddField) {
             const emptyField = dv.el("span", null, attrs);
@@ -91,7 +94,21 @@ export function fieldModifier(
                 return fieldContainer
             }
             fieldVM.value = fieldValue
-            _createDvField(fieldVM, dv, p, fieldContainer, attrs)
+            if (field.type === "ObjectList" && !isNaN(parseInt(fieldSegments.last()!))) {
+                const index = parseInt(fieldSegments.last()!)
+                const editBtn = fieldContainer.createEl("button");
+                const displayValue = (dv.el('span', displayItem(fieldVM, fieldValue, parseInt(fieldSegments.last()!)) || "", attrs) as HTMLDivElement);
+                fieldContainer.appendChild(displayValue);
+                setIcon(editBtn, getIcon("Object"))
+                editBtn.onclick = async () => {
+                    const upperObjectListEF = await Note.getExistingFieldForIndexedPath(plugin, file, indexedPath.replace(/\[\d+\]$/, ""))
+                    const item = (await upperObjectListEF?.getChildrenFields(fieldVM.plugin, fieldVM.target as TFile) || [])[index]
+                    const itemFVM = getPseudoObjectValueManagerFromObjectItem(fieldVM, item)
+                    itemFVM.openModal()
+                }
+            } else {
+                _createDvField(fieldVM, dv, p, fieldContainer, attrs)
+            }
         }
         else {
             const field = buildField(plugin, fieldName, "", "", undefined, undefined, undefined, undefined, "Input", {});
@@ -104,7 +121,7 @@ export function fieldModifier(
 };
 
 
-function getFullIndexedPath(dottedPath: string, fileFields: Field[] | undefined): { indexedPath: string, field: Field } {
+function getFullIndexedPathFromDottedPath(dottedPath: string, fileFields: Field[] | undefined): { indexedPath: string, field: Field } {
     const dottedFields = dottedPath.replaceAll("[", ".").replaceAll("]", "").split(".")
     var parent = ""
     const fields = []

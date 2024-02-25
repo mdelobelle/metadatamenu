@@ -3,7 +3,7 @@ import { ButtonComponent, TFile, TextAreaComponent, setIcon } from "obsidian"
 import { postValues } from "src/commands/postValues"
 import NoteFieldsComponent from "src/components/FieldsModal"
 import { Note } from "src/note/note"
-import { Constructor, FrontmatterObject } from "src/typings/types"
+import { Constructor } from "src/typings/types"
 import { ExistingField } from "../ExistingField"
 import { ActionLocation, IField, IFieldManager, Target, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest, removeValidationError } from "../Field"
 import { getIcon, valueString as getValueString } from "../Fields"
@@ -181,7 +181,6 @@ export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFil
         const moveToObject = async () => {
             const _eF = await Note.getExistingFieldForIndexedPath(plugin, file, indexedPath)
             if (_eF) fieldValueManager(plugin, _eF?.field.id, _eF?.field.fileClassName, file, _eF, _eF?.indexedPath, undefined, undefined, undefined, undefined)?.openModal()
-            // if (_eF) this.createAndOpenFieldModal(file, _eF.field.name, _eF, _eF.indexedPath, undefined, undefined, undefined, undefined)
         }
         const removeObject = async () => {
             if (indexedPath) {

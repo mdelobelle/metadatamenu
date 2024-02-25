@@ -123,11 +123,11 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
 
         private buildBackButton(container: HTMLDivElement) {
-            const backButton = new ButtonComponent(container)
-            backButton.setIcon("left-arrow")
-            backButton.onClick(async () => { this.onEscape() })
-            backButton.setCta();
-            backButton.setTooltip("Go to parent field")
+            new ButtonComponent(container)
+                .setIcon("left-arrow")
+                .onClick(async () => { this.onEscape() })
+                .setCta()
+                .setTooltip("Go to parent field")
             const infoContainer = container.createDiv({ cls: "info" })
             infoContainer.setText("Alt+Esc to go back")
         }
@@ -173,7 +173,7 @@ export function createDvField(
     setIcon(editBtn, getIcon(managedField.type))
     editBtn.onclick = async () => {
         const file = managedField.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
-        const _eF = file instanceof TFile && await Note.getExistingFieldForIndexedPath(managedField.plugin, file, managedField.id)
+        const _eF = file instanceof TFile && await Note.getExistingFieldForIndexedPath(managedField.plugin, file, managedField.indexedPath)
         if (!_eF) return
         managedField.eF = _eF
         managedField.value = _eF.value

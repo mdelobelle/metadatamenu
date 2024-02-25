@@ -587,7 +587,7 @@ export function FieldValueManager<O extends BaseOptions, F extends Constructor<I
             this.eF = existingField
             this.value = this.eF?.value
             if (!this.eF) {
-                
+
             }
             this.indexedPath = indexedPath
             this.lineNumber = lineNumber
