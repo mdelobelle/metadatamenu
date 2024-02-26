@@ -1,7 +1,8 @@
 import MetadataMenu from "main";
 import { Component, TFile } from "obsidian";
 import { IndexedFieldsPayload } from "src/commands/postValues";
-import { Field } from "src/fields/Field";
+import { Field, IFieldManager } from "src/fields/Field";
+import { BaseOptions } from "src/fields/base/BaseField";
 import { FileClass } from "src/fileClass/fileClass";
 import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
 import { Status as LookupStatus, Type as LookupType } from "src/types/lookupTypes";
@@ -82,6 +83,7 @@ export abstract class FieldIndexBuilder extends Component {
     public lastDVUpdatingTime: number
     public lastTimeBeforeResolving: number
     public settings: MetadataMenuSettings
+    public updatedManagedField: IFieldManager<TFile, BaseOptions> | undefined
 
     constructor(public plugin: MetadataMenu) {
         super()

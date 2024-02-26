@@ -106,9 +106,8 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
 
         public async save(): Promise<void> {
             const newContent = this.editor.state.doc.toString().trim()
-            this.managedField.save(newContent)
             this.saved = true
-            if (this.managedField.previousModal) await this.goToPreviousModal()
+            this.managedField.save(newContent)
             this.close();
         }
     }

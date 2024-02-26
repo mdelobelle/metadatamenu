@@ -15,6 +15,8 @@ import { FieldActions } from "src/components/FieldsModal"
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal"
 import { Modal as IObjectBaseModal, Options as BaseObjectOptions } from "./models/abstractModels/AbstractObject"
 import InsertFieldSuggestModal from "src/modals/insertFieldSuggestModal"
+import { Note } from "src/note/note"
+import { getPseudoObjectValueManagerFromObjectItem } from "./models/Object"
 
 // Field Types list agnostic
 
@@ -533,6 +535,7 @@ export interface IFieldManager<T, O extends BaseOptions> extends IField<O> {
     previousModal?: IObjectBaseModal<Target>
     openModal: () => void;
     save: (value?: any) => Promise<void>
+    goToPreviousModal: () => Promise<void>
 }
 
 export type Target =
@@ -586,9 +589,6 @@ export function FieldValueManager<O extends BaseOptions, F extends Constructor<I
             this.target = target
             this.eF = existingField
             this.value = this.eF?.value
-            if (!this.eF) {
-
-            }
             this.indexedPath = indexedPath
             this.lineNumber = lineNumber
             this.asList = asList
@@ -604,14 +604,51 @@ export function FieldValueManager<O extends BaseOptions, F extends Constructor<I
             return this._modal
         }
 
+        public async goToPreviousModal() {
+            const pM = this.previousModal
+            if (pM && this.indexedPath && isSingleTargeted(pM.managedField)) {
+                const upperPath = upperIndexedPathObjectPath(this.indexedPath)
+                const { index: upperFieldIndex } = getIdAndIndex(upperPath.split("____").last())
+                const eF = await Note.getExistingFieldForIndexedPath(this.plugin, pM.managedField.target, pM.managedField.indexedPath)
+                const pField = pM.managedField.eF?.field
+                const pFile = pM.managedField.target
+                const pIndexedPath = pM.managedField.indexedPath
+                if (upperFieldIndex !== undefined && !isNaN(parseInt(upperFieldIndex)) && isSingleTargeted(this)) {
+                    const i = parseInt(upperFieldIndex)
+                    const upperObjectListEF = await Note.getExistingFieldForIndexedPath(plugin, this.target, upperPath.replace(/\[\d+\]$/, ""))
+                    const item = (await upperObjectListEF?.getChildrenFields(this.plugin, this.target as TFile) || [])[i]
+                    const itemFVM = getPseudoObjectValueManagerFromObjectItem(this, item)
+                    itemFVM.openModal()
+                    pM.close()
+                } else if (pField && pFile) {
+                    fieldValueManager(
+                        this.plugin,
+                        pField.id,
+                        pField.fileClassName,
+                        pFile,
+                        eF,
+                        pIndexedPath,
+                        pM.managedField.lineNumber,
+                        pM.managedField.asList,
+                        pM.managedField.asBlockquote,
+                        pM.managedField.previousModal
+                    )?.openModal()
+                    pM.close()
+                } else {
+                    pM.open()
+                }
+            }
+            this.plugin.fieldIndex.updatedManagedField = undefined
+        }
+
         public async save(value?: any) {
             if (value !== undefined) this.value = value
             if (isSingleTargeted(this)) {
-                await postValues(plugin, [{ indexedPath: this.indexedPath || this.id, payload: { value: this.value } }], this.target, this.lineNumber, this.asList, this.asBlockquote)
+                if (this.previousModal) this.plugin.fieldIndex.updatedManagedField = this
+                await postValues(plugin, [{ indexedPath: this.indexedPath || this.id, payload: { value: `${this.value || ""}` } }], this.target, this.lineNumber, this.asList, this.asBlockquote)
             } else if (isMultiTargeted(this)) {
                 new MultiTargetModificationConfirmModal(this).open()
             }
-            if (this.previousModal) this.previousModal.open()
         }
     }
 }

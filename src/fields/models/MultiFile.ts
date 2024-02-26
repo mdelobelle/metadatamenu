@@ -107,6 +107,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
 
         async save() {
+            this.saved = true
             const result = this.selectedFiles.map(file => {
                 const dvApi = plugin.app.plugins.plugins.dataview?.api
                 let alias: string | undefined = undefined;

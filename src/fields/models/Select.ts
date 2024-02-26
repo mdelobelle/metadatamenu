@@ -42,6 +42,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             if (value === managedField.value) el.addClass("value-checked")
         }
         onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
+            this.saved = true
             managedField.save(item)
         }
     }

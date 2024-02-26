@@ -73,7 +73,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             this.containerEl.onkeydown = async (e) => {
                 if (e.key == "Enter" && e.altKey) {
                     await this.save();
-                    this.close()
                 }
             }
         }
@@ -88,6 +87,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
 
         async save() {
+            this.saved = true
             const options = this.selectedOptions;
             managedField.save(options.join(", "))
             this.close();

@@ -284,11 +284,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             this.buildFooterActions(footerActionsContainer)
         }
 
-        public close(openPreviousModal: boolean = true): void {
-            if (openPreviousModal) this.managedField.previousModal?.open()
-            super.close()
-        }
-
         getSuggestions(query: string): string[] | Promise<string[]> {
             const values = getOptionsList(this.managedField).filter(o => o.toLowerCase().includes(query.toLowerCase()))
             if (this.addButton) {
@@ -303,7 +298,9 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             el.setText(value)
             el.addClass("value-container")
         }
+
         onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
+            this.saved = true
             managedField.save(item)
         }
 

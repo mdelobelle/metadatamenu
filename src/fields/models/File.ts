@@ -32,6 +32,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
 
         async onChooseItem(item: TFile): Promise<void> {
+            this.saved = true
             let alias: string | undefined = undefined;
             const dvApi = plugin.app.plugins.plugins.dataview?.api
             if (dvApi && this.managedField.options.customRendering) {

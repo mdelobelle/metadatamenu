@@ -206,9 +206,8 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                 this.numberInput.inputEl.setAttr("class", "is-invalid")
                 return
             }
-            managedField.save()
             this.saved = true
-            if (this.managedField.previousModal) await this.goToPreviousModal()
+            managedField.save()
             this.close()
         }
     }

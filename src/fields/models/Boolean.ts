@@ -82,7 +82,8 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             })
         }
 
-        public save(): void {
+        public async save(): Promise<void> {
+            this.saved = true
             this.managedField.save()
             this.close()
         }

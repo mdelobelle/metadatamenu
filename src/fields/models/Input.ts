@@ -149,7 +149,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                 this.renderedValue.setPlaceholder("Multiple values");
             }
             this.renderedValue.setValue(this.managedField.value);
-            this.renderedValue.onChange(value => this.managedField.value = value)
+            this.renderedValue.onChange(value => this.managedField.value = `${value}`)
         }
 
         private buildInputEl(container: HTMLDivElement): void {
@@ -158,11 +158,11 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             inputEl.inputEl.focus();
             inputEl.inputEl.addClass("full-width");
             if (isSingleTargeted(this.managedField)) {
-                inputEl.setValue(`${this.managedField.value}`);
+                inputEl.setValue(`${this.managedField.value || ""}`);
             } else {
                 inputEl.setPlaceholder("Multiple values");
             }
-            inputEl.onChange(value => this.managedField.value = value)
+            inputEl.onChange(value => this.managedField.value = `${value}`)
         };
 
         private buildFooterBtn() {
@@ -185,9 +185,8 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
 
         public async save(): Promise<void> {
-            this.managedField.save()
             this.saved = true
-            if (this.managedField.previousModal) await this.goToPreviousModal()
+            this.managedField.save()
             this.close()
         }
     }
