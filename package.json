@@ -17,7 +17,6 @@
 	"author": "",
 	"license": "MIT",
 	"devDependencies": {
-		"@types/jest": "^29.1.2",
 		"@types/js-yaml": "^4.0.5",
 		"@types/node": "^16.11.6",
 		"@typescript-eslint/eslint-plugin": "5.29.0",
@@ -37,6 +36,7 @@
 		"@codemirror/legacy-modes": "^6.3.3",
 		"@codemirror/lint": "^6.4.1",
 		"@codemirror/stream-parser": "^0.19.9",
+		"@popperjs/core": "^2.11.5",
 		"codemirror": "^6.0.1",
 		"crypto-random-string": "^5.0.0",
 		"yaml": "^2.3.2"

@@ -355,7 +355,7 @@ export function buildSettingsModal<O extends BaseOptions>(
             this.addCommand ? iconContainer.show() : iconContainer.hide();
 
             // icon
-            iconContainer.createDiv({ text: "Icon name", cls: "label" })
+            iconContainer.createDiv({ text: "Icon name for mobile toolbar", cls: "label" })
             this.iconName = new TextComponent(iconContainer)
             this.iconName.inputEl.addClass("full-width");
             this.iconName.inputEl.addClass("with-label");

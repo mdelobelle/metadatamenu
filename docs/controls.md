@@ -144,7 +144,7 @@ files per page:  <a number> optional
 start: <a number> optional
 showAddField: <true of false> optional (false if absent)
 ``` 
-~~~~
+~~~
 
 ## Bulk edit fields
 

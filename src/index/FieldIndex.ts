@@ -145,7 +145,6 @@ export default class FieldIndex extends FieldIndexBuilder {
         let start = Date.now()
         this.flushCache();
         this.getFileClassesAncestors();
-        this.getGlobalFileClass();
         this.getFileClasses();
         this.getLookupQueries();
         this.resolveFileClassMatchingTags();
@@ -310,22 +309,14 @@ export default class FieldIndex extends FieldIndexBuilder {
         }
     }
 
-    private getGlobalFileClass(): void {
+    private getFileClasses(): void {
+        this.indexableFileClasses().forEach(f => indexFileClass(this, f));
         const globalFileClass = this.settings.globalFileClass
         if (!globalFileClass) {
             this.fieldsFromGlobalFileClass = []
         } else {
-            try {
-                this.fieldsFromGlobalFileClass = createFileClass(
-                    this.plugin,
-                    globalFileClass)
-                    .attributes.map(attr => attr.getField())
-            } catch (error) { }
+            this.fieldsFromGlobalFileClass = this.fileClassesFields.get(globalFileClass) || []
         }
-    }
-
-    private getFileClasses(): void {
-        this.indexableFileClasses().forEach(f => indexFileClass(this, f));
         (async () => {
             await Promise.all(this.openFileClassManagerAfterIndex.map(async fileClassName => {
                 const fileClass = this.fileClassesName.get(fileClassName)
