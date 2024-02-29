@@ -51,7 +51,8 @@ export class Note {
                 const indentation = `\n${"  ".repeat(indentationLevel + 1)}`
                 return `${indentation}${_rawValue.split("\n").join(indentation)}`;
             } else {
-                return parseYaml(_rawValue);
+                //return parseYaml(_rawValue)
+                return parseYaml(_rawValue) === _rawValue ? parseYaml(_rawValue) : `"${_rawValue}"`;
             };
         } else {
             return ""
