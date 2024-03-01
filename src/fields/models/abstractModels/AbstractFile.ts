@@ -150,7 +150,7 @@ export function createDvField(
     attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
 ): void {
     attrs.cls = "value-container"
-    const values = p[managedField.name]
+    const values = managedField.value
     const buildItem = (_value: Link) => fieldContainer.appendChild(dv.el('span', _value || "", attrs))
     if (Array.isArray(values)) values.forEach(value => buildItem(value))
     else buildItem(values)
@@ -274,7 +274,10 @@ export function getFiles(managedField: IField<Options> | IFieldManager<Target, O
 
                 return a
             }, [])
-            return managedField.plugin.app.vault.getMarkdownFiles().filter(f => filesPath.includes(f.path));
+            const sortingMethod: (a: TFile, b: TFile) => number = managedField.options.customSorting
+                ? new Function("a", "b", `return ${managedField.options.customSorting}`) as (a: TFile, b: TFile) => number
+                : function (a: TFile, b: TFile) { return a.basename < b.basename ? -1 : 1 }
+            return managedField.plugin.app.vault.getMarkdownFiles().filter(f => filesPath.includes(f.path)).sort(sortingMethod);
         } catch (error) {
             throw (error);
         }

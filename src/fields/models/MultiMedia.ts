@@ -105,6 +105,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
 
         async save() {
+            this.saved = true
             const embed = managedField.options.embed
             const result = this.selectedFiles.map(file => {
                 const alias = extensionMediaTypes[file.extension] === MediaType.Image ? managedField.options.thumbnailSize : undefined
@@ -115,7 +116,9 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
 
         async clearValues() {
+            this.saved = true
             managedField.save("")
+            this.close()
         }
 
         renderSelected() {

@@ -325,9 +325,8 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                 const formattedValue = this.insertAsLink
                     ? `[[${renderedPath || ""}${newValue.format(this.format)}${linkPath ? "|" + linkPath.basename : ""}]]`
                     : newValue.format(this.format)
-                this.managedField.save(formattedValue)
                 this.saved = true
-                if (this.managedField.previousModal) await this.goToPreviousModal()
+                this.managedField.save(formattedValue)
                 if (this.nextIntervalField
                     && this.pushNextInterval
                     && this.nextShift
@@ -335,9 +334,8 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                     updateIntervalField(this.managedField, this.nextIntervalField, this.nextShift)
                 this.close();
             } else if (!this.value) {
-                this.managedField.save("")
                 this.saved = true
-                if (this.managedField.previousModal) await this.goToPreviousModal()
+                this.managedField.save("")
                 this.close()
             } else {
                 this.errorField.show();
@@ -496,8 +494,7 @@ export function createDvField(
     attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
 ): void {
     attrs.cls = "value-container"
-    managedField.value = p[managedField.name]
-    const fieldValue = dv.el('span', p[managedField.name] || "", attrs);
+    const fieldValue = dv.el('span', managedField.value || "", attrs);
     const dateBtn = fieldContainer.createEl("button")
     setIcon(dateBtn, getIcon(managedField.type))
     const spacer = fieldContainer.createDiv({ cls: "spacer-1" })

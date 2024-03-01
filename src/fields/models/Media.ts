@@ -42,12 +42,12 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
 
         async onChooseItem(item: TFile): Promise<void> {
+            this.saved = true
             const embed = managedField.options.embed
             const alias = extensionMediaTypes[item.extension] === MediaType.Image ? managedField.options.thumbnailSize : undefined
             const baseValue = AbstractMedia.buildMediaLink(plugin, item, item.path, embed ? alias : undefined)
             const value = managedField.options.embed ? baseValue : baseValue.replace(/^\!/, "")
             managedField.save(value)
-            this.managedField.previousModal?.open()
         }
     }
 }

@@ -14,6 +14,7 @@ import { ISettingsModal } from "../base/BaseSetting"
 import { getNextOption } from "./Cycle"
 import { ObjectListItem, Modal as ObjectListModal, Options as ObjectListOptions } from "./ObjectList"
 import * as AbstractObject from "./abstractModels/AbstractObject"
+import { setTimeout } from "timers/promises"
 
 export class Base implements IFieldBase {
     type = <const>"Object"
@@ -48,7 +49,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         public missingFields: Field[] = []
         async onOpen() {
             if (this.managedField.indexedPath && isSingleTargeted(this.managedField)) {
-
                 const { existingFields, missingFields } = await AbstractObject.getExistingAndMissingFields(
                     this.managedField.plugin, this.managedField.target, this.managedField.indexedPath)
                 this.existingFields = existingFields
@@ -85,14 +85,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         async onChooseSuggestion(item: ExistingField | Field, evt: MouseEvent | KeyboardEvent) {
             const mF = this.managedField
             if (!isSingleTargeted(mF)) return
-            const reOpen = async () => {
-                // because vault.on("modify") is not triggered fast enough
-                const eF = await Note.getExistingFieldForIndexedPath(mF.plugin, mF.target as TFile, mF.indexedPath)
-                if (eF) {
-                    fieldValueManager(mF.plugin, mF.id, mF.fileClassName, mF.target, eF, mF.indexedPath, undefined, undefined, undefined, this.managedField.previousModal)?.openModal()
-                    this.close()
-                }
-            }
             if (item instanceof ExistingField) {
                 // child field exists: go to child field
                 const cF = item.field // child field
@@ -100,18 +92,13 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                 if (!cFVM) return
                 switch (item.field.type) {
                     case "Boolean":
-                        //OK
                         await cFVM?.save(`${!cFVM.value}`)
-                        await reOpen()
                         break;
                     case "Cycle":
-                        //TODO tester
                         const nextOptions = getNextOption(cFVM as IFieldManager<TFile, TypesOptionsMap["Cycle"]>)
                         await cFVM.save(`${nextOptions}`)
-                        await reOpen()
                         break;
                     default:
-                        //OK
                         cFVM.openModal()
                         break;
                 }
@@ -122,7 +109,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                     this.open()
                 } else if (item.type === "Object") {
                     await postValues(mF.plugin, [{ indexedPath: `${mF.indexedPath}____${item.id}`, payload: { value: "" } }], mF.target)
-                    await mF.plugin.fieldIndex.indexFields() // FIXME (p2) is it necessary ???
                     const cF = await Note.getExistingFieldForIndexedPath(mF.plugin, mF.target as TFile, `${mF.indexedPath}____${item.id}`)
                     fieldValueManager(mF.plugin, item.id, item.fileClassName, mF.target, cF, cF?.indexedPath, undefined, undefined, undefined, this)?.openModal()
                 } else {
@@ -155,7 +141,7 @@ export function valueString(managedField: IFieldManager<Target, Options>): strin
                 if (childrenNames.includes(pattern)) {
                     const child = children.find(c => c.name === pattern)!
                     const cFVM = fieldValueManager(managedField.plugin, child.id, child.fileClassName, managedField.target, undefined, undefined)
-                    if (!cFVM) defaultDisplay(pattern)
+                    if (!cFVM || !managedField.value) defaultDisplay(pattern)
                     else {
                         cFVM.value = managedField.value[child.name]
                         items.push({ pattern: pattern, value: getValueString(cFVM.type)(cFVM) })
@@ -230,7 +216,7 @@ export function validateValue(managedField: IFieldManager<Target, Options>): boo
 
 //#region utils
 
-export function getPseudoObjectValueManagerFromObjectItem(managedField: IFieldManager<Target, ObjectListOptions>, item: ObjectListItem, previousModal: ObjectListModal<Target>) {
+export function getPseudoObjectValueManagerFromObjectItem(managedField: IFieldManager<Target, ObjectListOptions>, item: ObjectListItem, previousModal?: ObjectListModal<Target>) {
     const mF = managedField
     const field = buildField(mF.plugin, "", "", mF.path, mF.fileClassName, undefined, undefined, undefined, "Object", {})
     const itemFVM = new (FieldValueManager(mF.plugin, field, mF.target, undefined, item.indexedPath, undefined, undefined, undefined, previousModal))

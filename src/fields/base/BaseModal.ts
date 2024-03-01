@@ -13,14 +13,15 @@ import { ExistingField, getValueDisplay } from "../ExistingField";
 import { positionIcon } from "src/note/line";
 import { BaseOptions } from "./BaseField";
 
+
 export interface IBaseValueModal<Target> extends Modal {
     managedField: IFieldManager<Target, BaseOptions>
     saved: boolean
-    goToPreviousModal: () => void | Promise<void>
-    buildSimpleSaveBtn: (fieldContainer: HTMLDivElement) => void
 }
 
-export interface IBasicModal<T extends Target> extends IBaseValueModal<T> { }
+export interface IBasicModal<T extends Target> extends IBaseValueModal<T> {
+    save(): Promise<void>
+}
 
 export type ModalType =
     IBasicModal<Target> |
@@ -34,11 +35,10 @@ export class BaseValueModal<T extends Target, O extends BaseOptions> extends Mod
 
     onOpen(): void {
         this.contentEl.setAttr("id", `field_${this.managedField.id}_update_modal`)
-        this.containerEl.onkeydown = (e) => {
+        this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter" && e.altKey) {
                 e.preventDefault()
-                this.managedField.save()
-                this.close()
+                this.save()
             }
             if (e.key === "Escape" && e.altKey) {
                 this.close()
@@ -47,57 +47,14 @@ export class BaseValueModal<T extends Target, O extends BaseOptions> extends Mod
         this.managedField.plugin.app.workspace.trigger("metadata-menu:field-update-modal-built", this)
     }
 
-    public async goToPreviousModal() {
-        const pM = this.managedField.previousModal
-        if (pM && this.managedField.indexedPath && isSingleTargeted(pM.managedField)) {
-            const upperPath = upperIndexedPathObjectPath(this.managedField.indexedPath)
-            const { index: upperFieldIndex } = getIdAndIndex(upperPath.split("____").last())
-            const eF = await Note.getExistingFieldForIndexedPath(this.managedField.plugin, pM.managedField.target, pM.managedField.indexedPath)
-            const pField = pM.managedField.eF?.field
-            const pFile = pM.managedField.target
-            const pIndexedPath = pM.managedField.indexedPath
-            if (upperFieldIndex && isSingleTargeted(this.managedField)) {
-                pM.close()
-                const uEF = await Note.getExistingFieldForIndexedPath(this.managedField.plugin, this.managedField.target, upperPath)
-                if (uEF) fieldValueManager(this.managedField.plugin, uEF.field.id, uEF.field.fileClassName, this.managedField.target, uEF, uEF.indexedPath)?.openModal()
-                // jardinerie ultime.... à tester
-                // const objectModal = new ObjectModal(this.managedField.plugin, this.managedField.target, undefined, upperPath,
-                //     undefined, undefined, undefined, pM.previousModal)
-                // objectModal.open()
-            } else if (pField && pFile) {
-                pM.close()
-                fieldValueManager(
-                    this.managedField.plugin,
-                    pField.id,
-                    pField.fileClassName,
-                    pFile,
-                    eF,
-                    pIndexedPath,
-                    pM.managedField.lineNumber,
-                    pM.managedField.asList,
-                    pM.managedField.asBlockquote,
-                    pM.managedField.previousModal
-                )?.openModal()
-            } else {
-                pM.open()
-            }
-        }
-    }
-
-    public buildSimpleSaveBtn(fieldContainer: HTMLDivElement) {
-        fieldContainer.createDiv({ cls: "spacer" })
-        const infoContainer = fieldContainer.createDiv({ cls: "info" })
-        infoContainer.setText("Alt+Enter to save")
-        const saveBtn = new ButtonComponent(fieldContainer);
-        saveBtn.setIcon("checkmark");
-        saveBtn.onClick(() => {
-            this.managedField.save();
-        })
-    }
-
     async onClose() {
         if (!this.saved) this.managedField.previousModal?.open()
         this.saved = false
+    }
+
+    async save() {
+        this.saved = true
+        this.managedField.save()
     }
 
 }
@@ -117,8 +74,6 @@ export function basicModal<O extends BaseOptions>(managedField: IFieldManager<Ta
 export interface IBasicSuggestModal<U, T extends Target> extends SuggestModal<U> {
     managedField: IFieldManager<Target, BaseOptions>
     saved: boolean
-    goToPreviousModal: () => void | Promise<void>
-    buildSimpleSaveBtn: (fieldContainer: HTMLDivElement) => void
 }
 
 export function basicSuggestModal<U, O extends BaseOptions>(managedField: IFieldManager<Target, O>, plugin: MetadataMenu): Constructor<IBasicSuggestModal<U, Target>> {
@@ -138,8 +93,6 @@ export function basicSuggestModal<U, O extends BaseOptions>(managedField: IField
             super(plugin.app)
             this.managedField = managedField
         }
-        goToPreviousModal() { }
-        buildSimpleSaveBtn(fieldContainer: HTMLDivElement) { }
     }
 }
 
@@ -148,8 +101,6 @@ export function basicSuggestModal<U, O extends BaseOptions>(managedField: IField
 export interface IBasicFuzzySuggestModal<U, T extends Target> extends FuzzySuggestModal<U> {
     managedField: IFieldManager<Target, BaseOptions>
     saved: boolean
-    goToPreviousModal: () => void | Promise<void>
-    buildSimpleSaveBtn: (fieldContainer: HTMLDivElement) => void
 }
 
 export function basicFuzzySuggestModal<U, O extends BaseOptions>(managedField: IFieldManager<Target, O>, plugin: MetadataMenu): Constructor<IBasicFuzzySuggestModal<U, Target>> {
@@ -169,8 +120,6 @@ export function basicFuzzySuggestModal<U, O extends BaseOptions>(managedField: I
             super(plugin.app)
             this.managedField = managedField
         }
-        goToPreviousModal() { }
-        buildSimpleSaveBtn(fieldContainer: HTMLDivElement) { }
     }
 }
 

@@ -51,7 +51,8 @@ export class Note {
                 const indentation = `\n${"  ".repeat(indentationLevel + 1)}`
                 return `${indentation}${_rawValue.split("\n").join(indentation)}`;
             } else {
-                return parseYaml(_rawValue);
+                //return parseYaml(_rawValue)
+                return parseYaml(_rawValue) === _rawValue ? parseYaml(_rawValue) : `"${_rawValue}"`;
             };
         } else {
             return ""
@@ -295,7 +296,7 @@ export class Note {
 
                 //MDM_DEBUG && console.log("An ObjectList")
                 //specific case where the field is object but the upperIndex is unknown
-                //it mean that we have to insert a new ObjectList Header
+                //it means that we have to insert a new ObjectList Header
                 const upperNode = this.getNodeForIndexedPath(upperPath)
                 if (!upperNode) {
 
@@ -304,7 +305,7 @@ export class Note {
                     objectListHeaderLine.renderLine()
                 } else {
                     if (upperNode.field?.id !== field.id) {
-                        //MDM_DEBUG && console.log("upper node indexed path !==  this indexed path we are adding the header and a first item")
+                        //MDM_DEBUG && console.log("upper node indexed path !==  this indexed path, we are adding the header and a first item")
                         const objectListHeaderLine = new Line(this.plugin, this, position, "", upperNode.line.number! + 1)
                         const node = new LineNode(this.plugin, objectListHeaderLine, "")
                         node.createFieldNodeContent(field, "", "yaml")
@@ -313,8 +314,9 @@ export class Note {
                         //MDM_DEBUG && console.log("the object list doesn't have a first item, let's create it")
                         const newItemLine = new Line(this.plugin, upperNode.line.note, position, "", upperNode.line.number! + 1)
                         // if field is not in a list, shift of 0, else shift 1
-                        const shift = /^(\s+)-(\s+)?(.*)/.test(upperNode.rawContent) ? 1 : 0
-                        new LineNode(this.plugin, newItemLine, upperNode.buildIndentedListItem("", shift))
+                        //const shift = /^(\s+)-(\s+)?(.*)/.test(upperNode.rawContent) ? 1 : 0
+                        //new LineNode(this.plugin, newItemLine, upperNode.buildIndentedListItem("", shift))
+                        new LineNode(this.plugin, newItemLine, upperNode.buildIndentedListItem(""))
                         newItemLine.renderLine()
                     }
                 }

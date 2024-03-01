@@ -206,9 +206,8 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                 this.numberInput.inputEl.setAttr("class", "is-invalid")
                 return
             }
-            managedField.save()
             this.saved = true
-            if (this.managedField.previousModal) await this.goToPreviousModal()
+            managedField.save()
             this.close()
         }
     }
@@ -232,7 +231,7 @@ export function createDvField(
     attrs.cls = "value-container"
     /* button to display input */
     const editBtn = fieldContainer.createEl("button");
-    const fieldValue = (dv.el('span', p[managedField.name] || "", attrs) as HTMLDivElement);
+    const fieldValue = (dv.el('span', managedField.value || "", attrs) as HTMLDivElement);
     fieldContainer.appendChild(fieldValue);
 
     /* end spacer */

@@ -156,6 +156,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         await this.getCanvasesFiles();
         await this.getValuesListNotePathValues();
         this.getFilesLookupAndFormulaFieldsExists();
+        if (this.updatedManagedField) await this.updatedManagedField.goToPreviousModal()
         MDM_DEBUG && console.log("indexed FIELDS for ", indexedFiles, " files in ", (Date.now() - start) / 1000, "s")
     }
 
@@ -587,12 +588,18 @@ export default class FieldIndex extends FieldIndexBuilder {
     private getFilesLookupAndFormulaFieldsExists(file?: TFile): void {
         if (!this.dvReady()) return
         [...this.filesFields.entries()].forEach(([filePath, fields]) => {
-            const dvFormulaFields = fields.filter(f => f.isRoot() && f.type === "Formula" &&
-                f.name in this.dv.api.page(filePath))
+            const dvFormulaFields = fields.filter(
+                f => f.isRoot()
+                    && f.type === "Formula"
+                    && this.dv.api.page(filePath)
+                    && f.name in this.dv.api.page(filePath))
             if (!this.settings.isAutoCalculationEnabled) dvFormulaFields
                 .forEach(field => this.fileFormulaFieldsStatus.set(`${filePath}__${field.name}`, Status.mayHaveChanged))
-            const dvLookupFields = fields.filter(f => f.isRoot() && f.type === "Lookup" &&
-                f.name in this.dv.api.page(filePath))
+            const dvLookupFields = fields.filter(
+                f => f.isRoot()
+                    && f.type === "Lookup"
+                    && this.dv.api.page(filePath)
+                    && f.name in this.dv.api.page(filePath))
             if (!this.settings.isAutoCalculationEnabled) dvLookupFields
                 .forEach(field => this.fileLookupFieldsStatus.set(`${filePath}__${field.name}`, Status.mayHaveChanged))
             this.filesLookupAndFormulaFieldsExists.set(filePath, [...dvFormulaFields, ...dvLookupFields])

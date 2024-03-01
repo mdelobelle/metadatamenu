@@ -82,7 +82,8 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             })
         }
 
-        public save(): void {
+        public async save(): Promise<void> {
+            this.saved = true
             this.managedField.save()
             this.close()
         }
@@ -106,7 +107,7 @@ export function createDvField(
 ): void {
     attrs.cls = "value-container"
     const checkbox: HTMLInputElement = dv.el("input", "", { ...attrs, "type": "checkbox" })
-    checkbox.checked = p[managedField.name]
+    checkbox.checked = managedField.value
     fieldContainer.appendChild(checkbox)
     checkbox.onchange = () => managedField.save((!managedField.value).toString())
 }

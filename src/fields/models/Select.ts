@@ -42,6 +42,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             if (value === managedField.value) el.addClass("value-checked")
         }
         onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
+            this.saved = true
             managedField.save(item)
         }
     }
@@ -63,7 +64,7 @@ export function createDvField(
     attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
 ): void {
     attrs.cls = "value-container"
-    fieldContainer.appendChild(dv.el('span', p[managedField.name] || "", attrs))
+    fieldContainer.appendChild(dv.el('span', managedField.value || "", attrs))
     /* end spacer */
     const spacer = fieldContainer.createEl("div", { cls: "spacer-1" })
     /* button to display modal */
