@@ -41,9 +41,10 @@ export function fieldModifier(
     dv: any,
     p: any,
     fieldName: string,
-    attrs?: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> }
+    attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
 ): HTMLElement {
     /* fieldContainer*/
+    attrs.cls = attrs?.cls || {} + "value-container"
     const fieldContainer: HTMLElement = dv.el("div", "")
     fieldContainer.setAttr("class", `metadata-menu-dv-field-container ${fieldName}`)
 

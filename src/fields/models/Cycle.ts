@@ -70,7 +70,6 @@ export function createDvField(
     fieldContainer: HTMLElement,
     attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
 ): void {
-    attrs.cls = "value-container"
     fieldContainer.appendChild(dv.el('span', managedField.value || "", attrs))
     /* end spacer */
     const spacer = fieldContainer.createEl("div", { cls: "spacer-1" })

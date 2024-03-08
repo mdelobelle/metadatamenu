@@ -105,7 +105,6 @@ export function createDvField(
     fieldContainer: HTMLElement,
     attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
 ): void {
-    attrs.cls = "value-container"
     const checkbox: HTMLInputElement = dv.el("input", "", { ...attrs, "type": "checkbox" })
     checkbox.checked = managedField.value
     fieldContainer.appendChild(checkbox)

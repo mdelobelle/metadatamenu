@@ -52,7 +52,7 @@ export class Note {
                 return `${indentation}${_rawValue.split("\n").join(indentation)}`;
             } else {
                 //return parseYaml(_rawValue)
-                return parseYaml(_rawValue) === _rawValue ? parseYaml(_rawValue) : `"${_rawValue}"`;
+                return parseYaml(_rawValue) === _rawValue || parseYaml(_rawValue) === false || !isNaN(parseFloat(_rawValue)) ? parseYaml(_rawValue) : `"${_rawValue}"`;
             };
         } else {
             return ""
