@@ -1,6 +1,7 @@
 export type Link = {
     path: string,
-    type: "file"
+    type: "file",
+    embed: boolean
 }
 
 export type FieldDecoration =

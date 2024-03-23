@@ -312,10 +312,11 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 				cb.setValue(this.plugin.settings.showIndexingStatusInStatusBar);
 				cb.onChange(value => {
 					this.plugin.settings.showIndexingStatusInStatusBar = value;
+					const indexStatusEl = document.querySelector(".status-bar-item.plugin-metadata-menu .index-status")
 					if (!value) {
-						this.plugin.indexStatus.unload()
+						(indexStatusEl as HTMLElement)?.hide()
 					} else {
-						this.plugin.indexStatus.load()
+						(indexStatusEl as HTMLElement)?.show()
 					}
 					this.plugin.saveSettings();
 				})

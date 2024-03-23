@@ -239,6 +239,7 @@ export class LineNode {
                 || this.field.type === "Lookup"
                 || this.field.type === "Multi"
                 || this.field.type === "MultiFile"
+                || this.field.type === "MultiMedia"
                 || this.field.type === "Canvas"
                 || this.field.type === "CanvasGroup"
                 || this.field.type === "CanvasGroupLink"

@@ -7,7 +7,7 @@ import { FileClassCodeBlockView } from "../fileClassCodeBlockView";
 import { MarkdownPostProcessorContext, TFile, setIcon } from "obsidian";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
 import { fieldValueManager } from "src/fields/Field";
-import { extensionMediaTypes } from "src/fields/models/abstractModels/AbstractMedia";
+import { extensionMediaTypes } from "src/types/mediaTypes";
 
 export class FileClassDataviewTable {
     private firstCollWidth: number;

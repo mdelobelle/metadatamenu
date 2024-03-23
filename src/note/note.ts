@@ -4,11 +4,15 @@ import { FieldPayload, IndexedFieldsPayload } from "src/commands/postValues";
 import { ExistingField } from "src/fields/ExistingField";
 import * as Lookup from "src/types/lookupTypes";
 import { Options as LookupOptions } from "src/fields/models/Lookup";
+import { Options as MediaOptions } from "src/fields/models/Media";
 import { Line, LinePosition } from "./line";
 import { LineNode } from "./lineNode";
 import { dumpValue } from "src/fields/models/YAML";
-import { getIdAndIndex, Field, upperIndexedPathObjectPath } from "src/fields/Field";
+import { getIdAndIndex, Field, upperIndexedPathObjectPath, IField } from "src/fields/Field";
 import { FieldType, frontmatterOnlyTypes, rawObjectTypes, ReservedMultiAttributes } from "src/fields/Fields";
+import { renderMediaItem } from "src/utils/mediaUtils";
+
+type MediaField = IField<MediaOptions>
 
 export class Note {
     public lines: Line[] = []
@@ -52,7 +56,7 @@ export class Note {
                 return `${indentation}${_rawValue.split("\n").join(indentation)}`;
             } else {
                 //return parseYaml(_rawValue)
-                return parseYaml(_rawValue) === _rawValue || parseYaml(_rawValue) === false || !isNaN(parseFloat(_rawValue)) ? parseYaml(_rawValue) : `"${_rawValue}"`;
+                return [_rawValue, true, false].includes(parseYaml(_rawValue)) || !isNaN(parseFloat(_rawValue)) ? parseYaml(_rawValue) : `"${_rawValue}"`;
             };
         } else {
             return ""
@@ -92,9 +96,10 @@ export class Note {
                             return this.renderMultiFilesFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel))
                         }
                     };
+                    case "Media": return `"${renderMediaItem("yaml", rawValue, field as MediaField)}"`
                     case "Multi": return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
                     case "MultiFile": return this.renderMultiFilesFields(rawValue, (item) => `"${item}"`);;
-                    case "MultiMedia": return this.renderMultiFilesFields(rawValue, (item) => `"${item}"`);
+                    case "MultiMedia": return this.renderMultiFields(rawValue, (item) => `"${renderMediaItem("yaml", item, field as MediaField)}"`);
                     case "Canvas": return this.renderMultiFilesFields(rawValue, (item) => item ? `"${item}"` : "");
                     case "CanvasGroup": return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
                     case "CanvasGroupLink": return this.renderMultiFilesFields(rawValue, (item) => item ? `"${item}"` : "");
@@ -107,6 +112,14 @@ export class Note {
                 }
             case "inline":
                 switch (type) {
+                    case "Media": return renderMediaItem("inline", rawValue, field as MediaField)
+                    case "MultiMedia": return rawValue
+                        .split(",")
+                        .filter(v => !!v)
+                        .map(v => v.trim())
+                        .map(v => renderMediaItem("inline", v, field as MediaField))
+                        .join(", ")
+
                     case "Lookup": {
                         if (field &&
                             Lookup.bulletListLookupTypes.includes(field.options.outputType as Lookup.Type)

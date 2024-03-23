@@ -61,8 +61,8 @@ export default class IndexStatus extends Component {
 
     onload(): void {
         const indexStatus = this.plugin.addStatusBarItem()
-        const container = indexStatus.createEl("div", { cls: "status-bar-item-segment" })
-
+        const container = indexStatus.createEl("div", { cls: "status-bar-item-segment index-status" })
+        if (!this.plugin.settings.showIndexingStatusInStatusBar) container.hide()
         this.statusBtn = new ButtonComponent(container)
         this.statusBtn.setClass("status-item-btn")
         this.statusIcon = this.statusBtn.buttonEl.createEl("span", { cls: "status-bar-item-icon sync-status-icon" })
@@ -86,11 +86,6 @@ export default class IndexStatus extends Component {
             }
             if (updatesToApply) this.plugin.fieldIndex.applyUpdates()
         })
-    }
-
-    onunload(): void {
-        const indexStatusEl = document.querySelector(".status-bar-item.plugin-metadata-menu")
-        if (indexStatusEl) this.plugin.app.statusBar.containerEl.removeChild(indexStatusEl)
     }
 
     public getdvQFieldsToUpdate() {

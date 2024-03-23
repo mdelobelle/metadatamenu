@@ -5,33 +5,14 @@ import { IFieldBase } from "src/fields/base/BaseField"
 import { IBaseValueModal, basicFuzzySuggestModal } from "src/fields/base/BaseModal"
 import { ISettingsModal } from "src/fields/base/BaseSetting"
 import { FolderSuggest } from "src/suggester/FolderSuggester"
+import { getIcon } from "src/fields/Fields"
 import { Constructor } from "src/typings/types"
-import { getLink } from "src/utils/parser"
 import { Options as FileOptions, createDvField as _createDvField, actions as fileActions } from "./AbstractFile"
 import { displayLinksOrText, getLinksOrTextString } from "src/utils/linksUtils"
+import { DisplayType, extensionMediaTypes, MediaType } from "src/types/mediaTypes"
+import { Link } from "src/types/dataviewTypes"
 
 //#region types
-
-export enum MediaType {
-    Audio = "Audio",
-    Image = "Image",
-    Video = "Video"
-}
-
-export const extensionMediaTypes: Record<string, MediaType> = {
-    avif: MediaType.Image,
-    bmp: MediaType.Image,
-    gif: MediaType.Image,
-    jpg: MediaType.Image,
-    jpeg: MediaType.Image,
-    png: MediaType.Image,
-    svg: MediaType.Image,
-    tif: MediaType.Image,
-    tiff: MediaType.Image,
-    webp: MediaType.Image,
-}
-
-export type DisplayType = "list" | "card"
 
 export const commonMediaTypeIcon = (display: DisplayType) => `<svg xmlns="http://www.w3.org/2000/svg" ${display === 'card' ? 'width="164" height="164"' : 'width="40" height="40"'} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-question">
     <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
@@ -277,7 +258,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             const fileName = `${value.item.basename.slice(0, 20).padEnd(value.item.basename.length > 20 ? 23 : 0, '.')}.${value.item.extension}`
             suggestionContainer.createDiv({ cls: "file-name", text: fileName })
         }
-
     }
 }
 
@@ -288,7 +268,37 @@ export function createDvField(
     fieldContainer: HTMLElement,
     attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
 ): void {
-    return _createDvField(managedField, dv, p, fieldContainer, attrs)
+    attrs.cls = "value-container"
+    const values = managedField.value
+    const buildItem = (_value: Link) => {
+        if (!_value) return
+        _value.embed = true
+        fieldContainer.appendChild(dv.el('span', _value || "", attrs))
+    }
+    if (Array.isArray(values)) values.forEach(value => buildItem(value))
+    else buildItem(values)
+
+    const searchBtn = fieldContainer.createEl("button")
+    setIcon(searchBtn, getIcon(managedField.type))
+    const spacer = fieldContainer.createEl("div", { cls: "spacer-1" })
+    const file = managedField.plugin.app.vault.getAbstractFileByPath(p["file"]["path"])
+    if (file instanceof TFile && file.extension == "md") {
+        searchBtn.onclick = () => managedField.openModal()
+    } else {
+        searchBtn.onclick = async () => { }
+    }
+    if (!attrs?.options?.alwaysOn) {
+        searchBtn.hide()
+        spacer.show()
+        fieldContainer.onmouseover = () => {
+            searchBtn.show()
+            spacer.hide()
+        }
+        fieldContainer.onmouseout = () => {
+            searchBtn.hide()
+            spacer.show()
+        }
+    }
 }
 
 export function valueString(managedField: IFieldManager<Target, Options>): string {

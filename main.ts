@@ -63,7 +63,6 @@ export default class MetadataMenu extends Plugin {
 		//loading components
 
 		this.indexStatus = this.addChild(new IndexStatus(this))
-		if (this.settings.showIndexingStatusInStatusBar) this.indexStatus.load()
 		this.codeBlockListManager = this.addChild(new FileClassCodeBlockListManager(this))
 		this.fieldIndex = this.addChild(new FieldIndex(this))
 		this.contextMenu = this.addChild(new ContextMenu(this))

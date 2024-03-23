@@ -6,7 +6,6 @@ import { ISettingsModal } from "src/fields/base/BaseSetting"
 import { ActionLocation, IField, IFieldManager, Target, isSingleTargeted } from "src/fields/Field"
 import * as AbstractMedia from "src/fields/models/abstractModels/AbstractMedia"
 import { getLink } from "src/utils/parser"
-import { MediaType, extensionMediaTypes } from "src/fields/models/abstractModels/AbstractMedia"
 
 export class Base extends AbstractMedia.Base implements IFieldBase {
     type = <const>"Media"
@@ -43,11 +42,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
 
         async onChooseItem(item: TFile): Promise<void> {
             this.saved = true
-            const embed = managedField.options.embed
-            const alias = extensionMediaTypes[item.extension] === MediaType.Image ? managedField.options.thumbnailSize : undefined
-            const baseValue = AbstractMedia.buildMediaLink(plugin, item, item.path, embed ? alias : undefined)
-            const value = managedField.options.embed ? baseValue : baseValue.replace(/^\!/, "")
-            managedField.save(value)
+            managedField.save(item.name)
         }
     }
 }

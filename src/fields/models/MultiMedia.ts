@@ -5,7 +5,6 @@ import { IFieldBase } from "src/fields/base/BaseField"
 import { ActionLocation, IField, IFieldManager, Target, isSingleTargeted } from "src/fields/Field"
 import * as AbstractMedia from "src/fields/models/abstractModels/AbstractMedia"
 import { extractLinks, getLink } from "src/utils/parser"
-import { MediaType, extensionMediaTypes } from "src/fields/models/abstractModels/AbstractMedia"
 import { cleanActions } from "src/utils/modals"
 import { ISettingsModal } from "../base/BaseSetting"
 
@@ -106,12 +105,7 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
 
         async save() {
             this.saved = true
-            const embed = managedField.options.embed
-            const result = this.selectedFiles.map(file => {
-                const alias = extensionMediaTypes[file.extension] === MediaType.Image ? managedField.options.thumbnailSize : undefined
-                const value = AbstractMedia.buildMediaLink(plugin, file, file.path, embed ? alias : undefined)
-                return embed ? value : value.replace(/^\!/, "")
-            })
+            const result = this.selectedFiles.map(file => file.name)
             managedField.save(result.join(", "))
         }
 
@@ -126,7 +120,6 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             const chooser = this.chooser
             const suggestions: HTMLDivElement[] = chooser.suggestions
             const values: FuzzyMatch<TFile>[] = chooser.values
-
             suggestions.forEach((s, i) => {
                 if (this.selectedFiles.some(file => file.path === values[i].item.path)) {
                     s.addClass("value-checked")
