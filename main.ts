@@ -132,7 +132,7 @@ export default class MetadataMenu extends Plugin {
 			this.codeBlockListManager.addChild(fileClassCodeBlockManager)
 			ctx.addChild(fileClassCodeBlockManager)
 		});
-		this.app.workspace.trigger("layout-change")
+		if (this.app.workspace.layoutReady) this.app.workspace.trigger("layout-change")
 		this.testRunner = this.addChild(new TestRunner(this))
 		if (MDM_DEBUG && this.app.vault.getName() === 'test-vault-mdm') { MDM_DEBUG = false; await this.testRunner.run() }
 	};
