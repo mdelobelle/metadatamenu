@@ -9,10 +9,10 @@ import FileClassQuery from 'src/fileClass/FileClassQuery';
 import { IMetadataMenuApi } from 'src/MetadataMenuApi';
 import { MetadataMenuApi } from 'src/MetadataMenuApi';
 import { DEFAULT_SETTINGS, MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
-import MetadataMenuSettingTab, { isPresetFieldsSettingGroup } from "src/settings/MetadataMenuSettingTab";
+import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
-import { updatePropertiesSection } from 'src/options/updateProps';
+import { updatePropertiesCommands } from 'src/options/updateProps';
 import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton';
 import { FileClassViewManager } from 'src/components/FileClassViewManager';
 import { IndexDatabase } from 'src/db/DatabaseManager';
@@ -97,12 +97,13 @@ export default class MetadataMenu extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', (leaf) => {
 				if (leaf) this.indexStatus.checkForUpdate(leaf.view)
+				updatePropertiesCommands(this)
 			})
 		)
 
 		this.registerEvent(
 			this.app.workspace.on("file-open", (file) => {
-				updatePropertiesSection(this)
+				updatePropertiesCommands(this)
 			})
 		)
 
@@ -111,7 +112,7 @@ export default class MetadataMenu extends Plugin {
 				this.indexStatus.setState("indexed")
 				const currentView = this.app.workspace.getActiveViewOfType(MarkdownView)
 				if (currentView) this.indexStatus.checkForUpdate(currentView)
-				updatePropertiesSection(this)
+				updatePropertiesCommands(this)
 				FileClassViewManager.reloadViews(this)
 			})
 		)

@@ -2067,6 +2067,14 @@
   height: calc(var(--icon-size) * 0.935);
   width: calc(var(--icon-size) * 0.935);
 }
+.field-btn-container.with-bottom-border {
+  align-self: stretch;
+  align-items: flex-start;
+  flex-direction: row;
+  flex-shrink: 0;
+  border-bottom: var(--metadata-divider-width) solid var(--metadata-divider-color);
+  background-color: var(--metadata-label-background);
+}
 
 .metadata-content .action-container {
   display: flex;

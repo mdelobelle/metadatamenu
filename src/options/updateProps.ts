@@ -1,14 +1,17 @@
 import MetadataMenu from "main"
-import { ButtonComponent, MarkdownView, TFile, View } from "obsidian"
+import { ButtonComponent, debounce, MarkdownView, TFile, View, WorkspaceLeaf } from "obsidian"
 import InsertFieldSuggestModal from "src/modals/insertFieldSuggestModal"
 import { Note } from "src/note/note"
 import OptionsList from "./OptionsList"
 import { FieldType, getIcon } from "src/fields/Fields"
+import { PropLeaf, PropView } from "src/typings/types"
+import { setTimeout } from "timers/promises"
 
-const updateProps = async (plugin: MetadataMenu, view: View) => {
-    if (!(view instanceof MarkdownView) || !(view.file instanceof TFile) || view.file === undefined) return
-    const file = view.file
-    if (!plugin.app.vault.getAbstractFileByPath(file.path)) return
+function isPropView(view: MarkdownView | PropView): view is PropView {
+    return (view as PropView).file !== undefined;
+}
+
+const updateProps = async (plugin: MetadataMenu, view: MarkdownView | PropView, file: TFile) => {
     const optionsList = new OptionsList(plugin, file, "ManageAtCursorCommand")
     const note = new Note(plugin, file)
     await note.build();
@@ -28,21 +31,20 @@ const updateProps = async (plugin: MetadataMenu, view: View) => {
         if (!node) return
         const buttonsContainers = item.containerEl.findAll(".field-btn-container")
         buttonsContainers.forEach(container => item.containerEl.removeChild(container))
-        if (plugin.settings.enableProperties) {
-            const btnContainer = item.containerEl.createDiv({ cls: "field-btn-container" })
-            const btn = new ButtonComponent(btnContainer)
-            btn.setIcon(getIcon(pseudoField.type))
-            btn.setClass("property-metadata-menu")
-            btn.onClick(() => { optionsList ? optionsList.createAndOpenNodeFieldModal(node) : null })
-            item.containerEl.insertBefore(btnContainer, item.valueEl)
-        }
+        const btnContainer = item.containerEl.createDiv({ cls: "field-btn-container" })
+        if (isPropView(view)) btnContainer.addClass("with-bottom-border")
+        const btn = new ButtonComponent(btnContainer)
+        btn.setIcon(getIcon(pseudoField.type))
+        btn.setClass("property-metadata-menu")
+        btn.onClick(() => { optionsList ? optionsList.createAndOpenNodeFieldModal(node) : null })
+        item.containerEl.insertBefore(btnContainer, item.valueEl)
     })
     const actionContainer = view.metadataEditor.contentEl.find('.action-container') || view.metadataEditor.contentEl.createDiv({ cls: "action-container" })
     actionContainer.replaceChildren()
     actionContainer.appendChild(view.metadataEditor.addPropertyButtonEl)
     const fileClassButtonsContainer = view.metadataEditor.contentEl.find('.fileclass-btn-container') || view.metadataEditor.contentEl.createDiv({ cls: "fileclass-btn-container" })
     fileClassButtonsContainer.replaceChildren()
-    if (!plugin.settings.enableProperties) return
+
     const fileClasses = plugin.fieldIndex.filesFileClasses.get(file.path)
     fileClasses?.forEach(fileClass => {
         const addFieldButton = new ButtonComponent(fileClassButtonsContainer)
@@ -56,7 +58,11 @@ const updateProps = async (plugin: MetadataMenu, view: View) => {
 export async function updatePropertiesSection(plugin: MetadataMenu) {
     const leaves = plugin.app.workspace.getLeavesOfType("markdown");
     for (const leaf of leaves) {
-        updateProps(plugin, leaf.view)
+        const view = leaf.view
+        if (!(view instanceof MarkdownView) || !(view.file instanceof TFile) || view.file === undefined) return
+        const file = view.file
+        if (!plugin.app.vault.getAbstractFileByPath(file.path)) continue
+        updateProps(plugin, view, file)
     }
     const currentView = plugin.app.workspace.getActiveViewOfType(MarkdownView)
     if (currentView && currentView.file) {
@@ -77,5 +83,39 @@ export async function updatePropertiesSection(plugin: MetadataMenu) {
                 focusedElement.find("[class^=metadata-input]")?.setText(eF?.value || "")
             }
         }
+    }
+}
+
+function getPropView(plugin: MetadataMenu): PropView | undefined {
+    var propView: PropView | undefined
+    plugin.app.workspace.iterateAllLeaves((l: PropLeaf) => {
+        if (
+            !propView
+            && l.view.file
+            && l.view.plugin?.id === "properties"
+        ) {
+            propView = l.view
+        }
+    })
+    return propView
+}
+
+export async function updatePropertiesPane(plugin: MetadataMenu) {
+    var propView: PropView | undefined
+    if (propView && propView.file.path == plugin.app.workspace.getActiveFile()?.path) {
+        updateProps(plugin, propView, propView.file)
+    } else {
+        await setTimeout(300);
+        propView = getPropView(plugin)
+        if (propView) {
+            updateProps(plugin, propView, propView.file)
+        }
+    }
+}
+
+export async function updatePropertiesCommands(plugin: MetadataMenu) {
+    if (plugin.settings.enableProperties) {
+        updatePropertiesSection(plugin)
+        updatePropertiesPane(plugin)
     }
 }

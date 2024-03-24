@@ -20,6 +20,15 @@
             width: calc(var(--icon-size)*0.935);
         }
     }
+
+    &.with-bottom-border {
+        align-self: stretch;
+        align-items: flex-start;
+        flex-direction: row;
+        flex-shrink: 0;
+        border-bottom: var(--metadata-divider-width) solid var(--metadata-divider-color);
+        background-color: var(--metadata-label-background);
+    }
 }
 
 

@@ -1,7 +1,7 @@
 import { BaseOptions } from "crypto-random-string";
 import MetadataMenu from "main";
 import "obsidian";
-import { EventRef } from "obsidian";
+import { EventRef, Plugin, TFile, View, WorkspaceLeaf } from "obsidian";
 //@ts-ignore
 import { DataviewApi } from "obsidian-dataview";
 import { IMetadataMenuApi } from "src/MetadataMenuApi";
@@ -14,6 +14,29 @@ interface InternalPlugin {
 
 interface HTMLDateInputElement extends HTMLInputElement {
     showPicker: () => void
+}
+
+interface PropView extends View {
+    plugin: Plugin & { id: string },
+    file: TFile,
+    metadataEditor: {
+        rendered: {
+            iconEl: HTMLElement;
+            containerEl: HTMLDivElement;
+            keyEl: HTMLDivElement;
+            valueEl: HTMLDivElement;
+            entry: {
+                key: string;
+            };
+        }[];
+        properties: Property[];
+        addPropertyButtonEl: HTMLDivElement;
+        contentEl: HTMLDivElement;
+    }
+}
+
+interface PropLeaf extends WorkspaceLeaf {
+    view: PropView
 }
 
 interface BookmarkItem {
