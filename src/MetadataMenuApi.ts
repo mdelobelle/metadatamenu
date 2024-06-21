@@ -6,10 +6,10 @@ import { getValues, getValuesForIndexedPath } from "./commands/getValues";
 import { insertMissingFields } from "./commands/insertMissingFields";
 import { IndexedFieldsPayload, postValues } from "./commands/postValues";
 import { NamedFieldsPayload, postNamedFieldsValues } from "./commands/postNamedFieldsValues";
-import { updateFormulas } from "./commands/updateFormulas";
-import { getFileFromFileOrPath } from "./utils/fileUtils";
+import { updateFormulas, updateSingleFormula } from "./commands/updateFormulas";
 // @ts-ignore
 import equal from "fast-deep-equal";
+import { waitFor } from "./utils/syncUtils";
 
 export interface IMetadataMenuApi {
     getValues: (fileOrFilePath: TFile | string, attribute: string) => Promise<string[]>;
@@ -21,7 +21,11 @@ export interface IMetadataMenuApi {
     postValues: (fileOrFilePath: TFile | string, payload: IndexedFieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => Promise<void>;
     postNamedFieldsValues: (fileOrFilePath: TFile | string, payload: NamedFieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => Promise<void>;
     postNamedFieldsValues_synced: (fileOrFilePath: TFile | string, payload: NamedFieldsPayload, lineNumber?: number, asList?: boolean, asBlockquote?: boolean) => Promise<boolean>;
-    updateFormulas: (forceUpdateOne?: { file: TFile, fieldName: string }, forceUpdateAll?: boolean) => void;
+    updateFormulas: (forceUpdateOne?: { file: TFile, fieldName: string }, forceUpdateAll?: boolean, doLock?: boolean) => Promise<void>;
+    updateSingleFormula: (forceUpdateOne: { file: TFile, fieldName: string }) => Promise<void>;
+    applyUpdates: () => Promise<void>;
+    lock: () => Promise<void>;
+    unlock: () => Promise<void>;
 }
 
 export class MetadataMenuApi {
@@ -40,6 +44,10 @@ export class MetadataMenuApi {
             postNamedFieldsValues: this.postNamedFieldsValues(),
             postNamedFieldsValues_synced: this.postNamedFieldsValues_synced(),
             updateFormulas: this.updateFormulas(),
+            updateSingleFormula: this.updateSingleFormula(),
+            applyUpdates: this.applyUpdates(),
+            lock: this.lock(),
+            unlock: this.unlock()
         };
     }
 
@@ -94,21 +102,13 @@ export class MetadataMenuApi {
             let current_payloads = await get_values();
             MDM_DEBUG && console.log("payloads_orig", current_payloads);
 
-            // let dv_views_ready = false;
-            // const set_dv_views_ready = () => {
-            //     dv_views_ready = true;
-            // };
-            // const workspace = this.plugin.app.workspace;
-            // // @ts-ignore
-            // this.plugin.registerEvent(workspace.on("dataview:refresh-views", set_dv_views_ready));
-
             // Post the new one
             await postNamedFieldsValues(this.plugin, payload, fileOrFilePath, lineNumber, asList, asBlockquote);
             MDM_DEBUG && console.log("payload", payload);
 
-            // Only return when the value is in fact updated.
+            // Wait that the value is in fact updated.
             const timeout = 3000;
-            let start = Date.now();
+            const start = Date.now();
             let prev_time = start;
             let now = Date.now();
             while (((now - start) < timeout) && (!equal(current_payloads, payload))) {
@@ -128,31 +128,12 @@ export class MetadataMenuApi {
 
             // Wait for dataview to be ready.
 
+            const f = this.plugin.fieldIndex;
+            await f.applyUpdates();
+
             await this.plugin.fieldIndex.indexFields();
             this.plugin.app.workspace.trigger("dataview:refresh-views");
-            // const file = getFileFromFileOrPath(this.plugin, fileOrFilePath);
-            // payload.forEach((single_payload) => {                
-            //     this.plugin.fieldIndex.resolveAndUpdateDVQueriesBasedFields(false, { file: file as TFile, fieldName: single_payload.name });
-            // });
 
-
-            // const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-            // const index_timeout = 6000;
-            // start = Date.now();
-            // now = Date.now();
-            // while (((now - start) < index_timeout) && !dv_views_ready) {
-            //     sleep(100);
-            //     now = Date.now();
-            // }
-
-            // workspace.off("dataview:refresh-views", set_dv_views_ready);
-
-            // if (!dv_views_ready) {
-            //     console.log("Failed, index_ready", dv_views_ready);
-            // }
-
-            // return dv_views_ready;
-            
             return true;
         };
     }
@@ -160,14 +141,62 @@ export class MetadataMenuApi {
 
     private updateFormulas(): (
         forceUpdateOne?: { file: TFile, fieldName: string },
-        forceUpdateAll?: boolean
-    ) => void {
+        forceUpdateAll?: boolean,
+        doLock?: boolean
+    ) => Promise<void> {
         return async (
             forceUpdateOne?: { file: TFile, fieldName: string },
-            forceUpdateAll?: boolean
+            forceUpdateAll?: boolean,
+            doLock?: boolean
         ) => {
+            const f = this.plugin.fieldIndex;
+            // if (doLock) {
+            //     await waitFor(() => { return !f.isIndexing; });
+            //     f.isIndexing = true;
+            // }
             await updateFormulas(this.plugin, forceUpdateOne, forceUpdateAll);
+            await f.applyUpdates();
+            await this.plugin.fieldIndex.indexFields();
+            this.plugin.app.workspace.trigger("dataview:refresh-views");
+            // if (doLock) {
+            //     f.isIndexing = false;
+            // }
+        };
+    }
+
+    private updateSingleFormula(): (forceUpdateOne: { file: TFile, fieldName: string }) => Promise<void> {
+        return async (forceUpdateOne: { file: TFile, fieldName: string }) => {
+            // const f = this.plugin.fieldIndex;
+            // await waitFor(() => { return !f.isIndexing; });
+            // f.isIndexing = true;
+
+            // no await on purpose for parallelization
+            await updateSingleFormula(this.plugin, forceUpdateOne);
+
+            // f.isIndexing = false;
+        };
+    }
+
+    private applyUpdates(): () => Promise<void> {
+        return async () => {
             await this.plugin.fieldIndex.applyUpdates();
+            // await this.plugin.fieldIndex.indexFields();
+            // this.plugin.app.workspace.trigger("dataview:refresh-views");
+
+        };
+    }
+
+    private lock(): () => Promise<void> {
+        return async () => {
+            const f = this.plugin.fieldIndex;
+            await waitFor(() => { return !f.isIndexing; });
+            f.isIndexing = true;
+        };
+    }
+
+    private unlock(): () => Promise<void> {
+        return async () => {
+            this.plugin.fieldIndex.isIndexing = false;
         };
     }
 }

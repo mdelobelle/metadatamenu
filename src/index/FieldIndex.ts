@@ -15,9 +15,11 @@ import { IndexedFieldsPayload, postValues } from "src/commands/postValues";
 import { cFileWithGroups, cFileWithTags, FieldIndexBuilder, FieldsPayloadToProcess, IndexedExistingField } from "./FieldIndexBuilder";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
 import { Field, buildEmptyField } from "src/fields/Field";
+import { waitFor } from "src/utils/syncUtils";
 
 export default class FieldIndex extends FieldIndexBuilder {
     private launchTime: number
+    public isIndexing = false;
 
     constructor(public plugin: MetadataMenu) {
         super(plugin)
@@ -89,6 +91,9 @@ export default class FieldIndex extends FieldIndexBuilder {
 
         this.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
+                // await waitFor(() => { return !this.isIndexing; });
+                // this.isIndexing = true;
+
                 if (file.stat.mtime > this.launchTime && op === "update" && this.dvReady() && this.settings.isAutoCalculationEnabled) {
                     const filePayloadToProcess = this.dVRelatedFieldsToUpdate.get(file.path)
                     if (![...this.dVRelatedFieldsToUpdate.keys()].includes(file.path)) {
@@ -98,6 +103,8 @@ export default class FieldIndex extends FieldIndexBuilder {
                     }
                     if ([...this.dVRelatedFieldsToUpdate.values()].every(item => item.status === "processed")) this.dVRelatedFieldsToUpdate = new Map()
                 }
+
+                // this.isIndexing = false;
             })
         )
     }
@@ -142,7 +149,8 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     public async indexFields(): Promise<void> {
-        let start = Date.now()
+        MDM_DEBUG && console.log("start indexing FIELDS");
+        const start = Date.now()
         this.flushCache();
         this.getFileClassesAncestors();
         this.getFileClasses();
