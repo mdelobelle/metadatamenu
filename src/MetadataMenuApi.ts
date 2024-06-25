@@ -106,6 +106,12 @@ export class MetadataMenuApi {
             await postNamedFieldsValues(this.plugin, payload, fileOrFilePath, lineNumber, asList, asBlockquote);
             MDM_DEBUG && console.log("payload", payload);
 
+            // Wait for dataview to be ready.
+            const f = this.plugin.fieldIndex;
+            await f.applyUpdates();
+            await f.indexFields();
+            this.plugin.app.workspace.trigger("dataview:refresh-views");
+
             // Wait that the value is in fact updated.
             const timeout = 3000;
             const start = Date.now();
@@ -126,13 +132,12 @@ export class MetadataMenuApi {
                 return false;
             }
 
-            // Wait for dataview to be ready.
+            // // Wait for dataview to be ready.
+            // await f.applyUpdates();
 
-            const f = this.plugin.fieldIndex;
-            await f.applyUpdates();
-
-            await this.plugin.fieldIndex.indexFields();
-            this.plugin.app.workspace.trigger("dataview:refresh-views");
+            // const f = this.plugin.fieldIndex;
+            // await f.indexFields();
+            // this.plugin.app.workspace.trigger("dataview:refresh-views");
 
             return true;
         };

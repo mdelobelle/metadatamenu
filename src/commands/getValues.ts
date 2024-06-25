@@ -15,8 +15,8 @@ export async function getValues(plugin: MetadataMenu, fileOrfilePath: TFile | st
             throw Error("path doesn't correspond to a proper file");
         }
     }
-    const eF = await Note.getExistingFields(plugin, file)
-    return eF.filter(_ef => _ef.field.name === attribute).map(_eF => _eF.value)
+    const eF = await Note.getExistingFields(plugin, file);
+    return eF.filter(_ef => _ef.field.name === attribute).map(_eF => _eF.value);
 }
 
 

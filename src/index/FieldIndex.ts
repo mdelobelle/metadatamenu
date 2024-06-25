@@ -20,10 +20,40 @@ import { waitFor } from "src/utils/syncUtils";
 export default class FieldIndex extends FieldIndexBuilder {
     private launchTime: number
     public isIndexing = false;
+    private readonly minInactivityTimeBeforeIndexing = 3000; // in ms
+    private lastTypingId = 0;
 
     constructor(public plugin: MetadataMenu) {
         super(plugin)
         this.launchTime = Date.now()
+    }
+
+    private async onResolved() {
+        this.lastTypingId++;
+        const currentTypingId = this.lastTypingId;
+        let self = this;
+        setTimeout(() => {
+            self.onResolvedImpl(currentTypingId);
+        }, this.minInactivityTimeBeforeIndexing);
+    }
+    private async onResolvedImpl(typingId: number) {
+        if (typingId != this.lastTypingId) { 
+            // console.log(`Wait for end of typing (typingId=${typingId}, lastTypingId=${this.lastTypingId})`);
+            return;
+        }
+        // console.log("Finished typing");
+
+        if (this.plugin.app.metadataCache.inProgressTaskCount === 0 && this.plugin.launched) {
+            if (this.changedFiles.every(file => this.classFilesPath && file.path.startsWith(this.classFilesPath))) {
+                this.plugin.app.metadataCache.trigger("metadata-menu:fileclass-indexed");
+                await updateCanvasAfterFileClass(this.plugin, this.changedFiles)
+            }
+            await this.indexFields()
+            this.plugin.app.metadataCache.trigger("metadata-menu:indexed");
+            this.changedFiles = []
+        }
+
+        this.lastTypingId = 0;
     }
 
     async onload(): Promise<void> {
@@ -69,17 +99,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         )
 
         this.registerEvent(
-            this.plugin.app.metadataCache.on('resolved', async () => {
-                if (this.plugin.app.metadataCache.inProgressTaskCount === 0 && this.plugin.launched) {
-                    if (this.changedFiles.every(file => this.classFilesPath && file.path.startsWith(this.classFilesPath))) {
-                        this.plugin.app.metadataCache.trigger("metadata-menu:fileclass-indexed");
-                        await updateCanvasAfterFileClass(this.plugin, this.changedFiles)
-                    }
-                    await this.indexFields()
-                    this.plugin.app.metadataCache.trigger("metadata-menu:indexed");
-                    this.changedFiles = []
-                }
-            })
+            this.plugin.app.metadataCache.on('resolved', this.onResolved, this)
         )
 
         this.registerEvent(
@@ -107,6 +127,8 @@ export default class FieldIndex extends FieldIndexBuilder {
                 // this.isIndexing = false;
             })
         )
+
+        this.lastTypingTime = Date.now();
     }
 
     public indexableFiles() {
