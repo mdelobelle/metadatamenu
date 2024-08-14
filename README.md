@@ -1,4 +1,10 @@
 # Metadata Menu
+
+>⭐ Looking for contributors ⭐
+>I unfortunately can't dedicate much time anymore on Meta Data Menu, but there are many things that still need to be done: UI, new types, go deeper in data structure management and integration with canvas and properties, documentation...
+>
+>You're more than welcome to submit PRs, and I will gladly help and mentor :)
+
 This plugin is made for data quality enthusiasts: access and manage the metadata of your notes in Obsidian.
 
 Metadata Menu adds context menu items to modifiy target note's frontmatter fields and "inline fields" (dataview syntax) by right-clicking on the link, or within dataview tables
