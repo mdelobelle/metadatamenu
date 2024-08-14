@@ -1,7 +1,7 @@
 # Metadata Menu
 
 >⭐ Looking for contributors ⭐
->I unfortunately can't dedicate much time anymore on Meta Data Menu, but there are many things that still need to be done: UI, new types, go deeper in data structure management and integration with canvas and properties, documentation...
+>I unfortunately can't dedicate much time anymore on Metadata Menu, but there are many things that still need to be done: UI, new types, go deeper in data structure management and integration with canvas and properties, documentation...
 >
 >You're more than welcome to submit PRs, and I will gladly help and mentor :)
 
