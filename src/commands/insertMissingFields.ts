@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { TFile } from "obsidian";
 import { Note } from "src/note/note";
 import { getFileFromFileOrPath } from "src/utils/fileUtils";
-import { IndexedFieldsPayload, postValues } from "./postValues";
+import { IndexedFieldsPayload, postValues, postValues_synced } from "./postValues";
 import { getIdAndIndex } from "src/fields/Field";
 
 export async function insertMissingFields(
@@ -12,10 +12,11 @@ export async function insertMissingFields(
     asList: boolean = false,
     asBlockquote: boolean = false,
     fileClassName?: string,
-    indexedPath?: string
+    indexedPath?: string,
+    waitForIndexing = false
 ): Promise<void> {
     /*
-    Insert "root" fields that are notre in the note.
+    Insert "root" fields that are not in the note.
     */
     const file = getFileFromFileOrPath(plugin, fileOrFilePath)
     const note = await Note.buildNote(plugin, file)
@@ -48,5 +49,12 @@ export async function insertMissingFields(
         })
     }
 
-    if (fieldsToInsert.length) await postValues(plugin, fieldsToInsert, file, lineNumber, asList, asBlockquote);
+    if (fieldsToInsert.length) {
+        if (!waitForIndexing) {
+            await postValues(plugin, fieldsToInsert, file, lineNumber, asList, asBlockquote);
+        }
+        else {
+            await postValues_synced(plugin, fieldsToInsert, file, lineNumber, asList, asBlockquote);
+        }
+    }
 }
