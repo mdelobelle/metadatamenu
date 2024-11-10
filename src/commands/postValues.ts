@@ -16,7 +16,7 @@ export type FieldPayload = {
 }
 
 export type IndexedFieldsPayload = Array<{
-    name(fileOrFilePath: string | TFile, name: any): unknown;
+    // name(fileOrFilePath: string | TFile, name: any): unknown;
     indexedPath: string, //is the indexedPath of the field in the note, not the fieldId per say
     payload: FieldPayload
 }>
