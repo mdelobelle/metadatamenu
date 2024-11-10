@@ -94,28 +94,40 @@ export function fieldModifier(
             if (!fieldVM) {
                 return fieldContainer
             }
-            fieldVM.value = fieldValue
-            if (field.type === "ObjectList" && !isNaN(parseInt(fieldSegments.last()!))) {
-                const index = parseInt(fieldSegments.last()!)
-                const editBtn = fieldContainer.createEl("button");
-                const displayValue = (dv.el('span', displayItem(fieldVM, fieldValue, parseInt(fieldSegments.last()!)) || "", attrs) as HTMLDivElement);
-                fieldContainer.appendChild(displayValue);
-                setIcon(editBtn, getIcon("Object"))
-                editBtn.onclick = async () => {
-                    const upperObjectListEF = await Note.getExistingFieldForIndexedPath(plugin, file, indexedPath.replace(/\[\d+\]$/, ""))
-                    const item = (await upperObjectListEF?.getChildrenFields(fieldVM.plugin, fieldVM.target as TFile) || [])[index]
-                    const itemFVM = getPseudoObjectValueManagerFromObjectItem(fieldVM, item)
-                    itemFVM.openModal()
+
+            try {
+                fieldVM.value = fieldValue
+                if (field.type === "ObjectList" && !isNaN(parseInt(fieldSegments.last()!))) {
+                    const index = parseInt(fieldSegments.last()!)
+                    const editBtn = fieldContainer.createEl("button");
+                    const displayValue = (dv.el('span', displayItem(fieldVM, fieldValue, parseInt(fieldSegments.last()!)) || "", attrs) as HTMLDivElement);
+                    fieldContainer.appendChild(displayValue);
+                    setIcon(editBtn, getIcon("Object"))
+                    editBtn.onclick = async () => {
+                        const upperObjectListEF = await Note.getExistingFieldForIndexedPath(plugin, file, indexedPath.replace(/\[\d+\]$/, ""))
+                        const item = (await upperObjectListEF?.getChildrenFields(fieldVM.plugin, fieldVM.target as TFile) || [])[index]
+                        const itemFVM = getPseudoObjectValueManagerFromObjectItem(fieldVM, item)
+                        itemFVM.openModal()
+                    }
+                } else {
+                    _createDvField(fieldVM, dv, p, fieldContainer, attrs)
                 }
-            } else {
-                _createDvField(fieldVM, dv, p, fieldContainer, attrs)
+            } catch (error) {
+                // @ts-ignore
+                console.log(`Error when loading "${fieldVM.target.name}" with field "${fieldVM.name}" with value "${fieldVM.value}"`);
             }
+
         }
         else {
-            const field = buildField(plugin, fieldName, "", "", undefined, undefined, undefined, undefined, "Input", {});
-            const fieldVM = new (FieldValueManager(plugin, field, file, undefined, indexedPath))
-            fieldVM.value = fieldValue
-            _createDvField(fieldVM, dv, p, fieldContainer, attrs)
+            try {
+                const field = buildField(plugin, fieldName, "", "", undefined, undefined, undefined, undefined, "Input", {});
+                const fieldVM = new (FieldValueManager(plugin, field, file, undefined, indexedPath))
+                fieldVM.value = fieldValue
+                _createDvField(fieldVM, dv, p, fieldContainer, attrs)
+            } catch (error) {
+                // @ts-ignore
+                console.log(`Error when loading "${fieldVM.target.name}" with field "${fieldVM.name}" with value "${fieldVM.value}"`);
+            }
         }
     }
     return fieldContainer

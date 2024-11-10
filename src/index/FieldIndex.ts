@@ -37,7 +37,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         }, this.minInactivityTimeBeforeIndexing);
     }
     private async onResolvedImpl(typingId: number) {
-        if (typingId != this.lastTypingId) { 
+        if (typingId != this.lastTypingId) {
             // console.log(`Wait for end of typing (typingId=${typingId}, lastTypingId=${this.lastTypingId})`);
             return;
         }
@@ -128,7 +128,7 @@ export default class FieldIndex extends FieldIndexBuilder {
             })
         )
 
-        this.lastTypingTime = Date.now();
+        // this.lastTypingTime = Date.now();
     }
 
     public indexableFiles() {
