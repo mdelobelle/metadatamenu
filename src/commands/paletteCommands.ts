@@ -15,6 +15,7 @@ import { FieldCommand, Field, fieldValueManager } from "src/fields/Field";
 import { openSettings } from "src/fields/base/BaseSetting";
 import { ExistingField } from "src/fields/ExistingField";
 import { FileClassChoiceModal } from "src/fileClass/fileClassChoiceModal";
+import { FILECLASS_VIEW_TYPE, FileClassView } from "src/fileClass/views/fileClassView";
 
 function fileClassAttributeOptionsCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
@@ -473,6 +474,27 @@ function updateFileFormulasCommand(plugin: MetadataMenu) {
     })
 }
 
+function updateTableViewCommand(plugin: MetadataMenu) {
+    plugin.addCommand({
+        id: "update_table_view",
+        name: "Update table view",
+        icon: "function-square",
+        checkCallback: (checking: boolean) => {
+            const fileClassName: string | undefined = (plugin.app.workspace.activeLeaf?.view as FileClassView).name;
+            const fileClassViewType = FILECLASS_VIEW_TYPE + "__" + fileClassName;
+            const view = plugin.app.workspace.getLeavesOfType(fileClassViewType)[0]?.view as FileClassView | undefined;
+            if (view) {
+                if (checking) {
+                    return true;
+                }
+                view.tableView.build();  // force refresh
+                view.tableView.update();
+                // TODO: restore page and scrolling level
+            }
+        }
+    })
+}
+
 export function addCommands(plugin: MetadataMenu) {
     fileClassAttributeOptionsCommand(plugin);
     insertFileClassAttributeCommand(plugin);
@@ -488,4 +510,5 @@ export function addCommands(plugin: MetadataMenu) {
     openFileclassViewCommand(plugin);
     fileclassToFileCommand(plugin);
     updateLookupsAndFormulasCommand(plugin);
+    updateTableViewCommand(plugin);
 }
