@@ -495,6 +495,31 @@ function updateTableViewCommand(plugin: MetadataMenu) {
     })
 }
 
+function focusSearchInTableViewCommand(plugin: MetadataMenu) {
+    plugin.addCommand({
+        id: "focus_search_in_table_view",
+        name: "Focus on search input in table view",
+        icon: "search",
+        checkCallback: (checking: boolean) => {
+            const fileClassName: string | undefined = (plugin.app.workspace.activeLeaf?.view as FileClassView).name;
+            const fileClassViewType = FILECLASS_VIEW_TYPE + "__" + fileClassName;
+            const view = plugin.app.workspace.getLeavesOfType(fileClassViewType)[0]?.view as FileClassView | undefined;
+            if (view) {
+                if (checking) {
+                    return true;
+                }
+
+                const searchInput = document.querySelector('.metadata-menu.fileclass-view .options .search input');
+                if (searchInput) {
+                    (searchInput as HTMLInputElement).focus();
+                } else {
+                    console.error('Search input not found');
+                }
+            }
+        }
+    })
+}
+
 export function addCommands(plugin: MetadataMenu) {
     fileClassAttributeOptionsCommand(plugin);
     insertFileClassAttributeCommand(plugin);
@@ -511,4 +536,5 @@ export function addCommands(plugin: MetadataMenu) {
     fileclassToFileCommand(plugin);
     updateLookupsAndFormulasCommand(plugin);
     updateTableViewCommand(plugin);
+    focusSearchInTableViewCommand(plugin);
 }
