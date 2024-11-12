@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { ButtonComponent, debounce, DropdownComponent, setIcon, TextComponent } from "obsidian";
 import { FileClass } from "../fileClass";
 import { FieldSet } from "./tableViewComponents/tableViewFieldSet";
-import { CreateSavedViewModal } from "./tableViewComponents/saveViewModal";
+import { CreateSavedViewModal, SavedView } from "./tableViewComponents/saveViewModal";
 import { FileClassDataviewTable } from "./tableViewComponents/fileClassDataviewTable";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
 import { ChildrenMultiSelectModal } from "./tableViewComponents/ChildrenMultiSelectModal";
@@ -257,6 +257,28 @@ export class FileClassTableView {
                 const file_name_filter = this.fieldSet.filters[filter_id];
                 file_name_filter.filter.setValue(searchValue);
                 file_name_filter.debounced(this.fieldSet);
+
+                if (this.selectedView !== undefined) {
+                    const currentViewName = this.selectedView;
+
+                    const savedView = new SavedView("");
+                    savedView.children = this.fieldSet.children.map(c => c.name);
+                    savedView.buildFilters(this.fieldSet.filters);
+                    savedView.buildRowSorters(this.fieldSet.rowSorters);
+                    savedView.buildColumnManagers(this.fieldSet.columnManagers);
+                    savedView.name = currentViewName;
+
+                    const options = this.fileClass.getFileClassOptions();
+                    options.savedViews = [...options.savedViews?.filter(v => v.name !== currentViewName) || [], savedView]
+
+                    await this.fileClass.updateOptions(options);
+                    this.selectedView = savedView.name
+                    this.favoriteBtn.buttonEl.disabled = false
+                    this.update()
+                    this.saveViewBtn.removeCta()
+
+                }
+
             }
         };
     }

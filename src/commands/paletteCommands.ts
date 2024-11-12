@@ -16,6 +16,7 @@ import { openSettings } from "src/fields/base/BaseSetting";
 import { ExistingField } from "src/fields/ExistingField";
 import { FileClassChoiceModal } from "src/fileClass/fileClassChoiceModal";
 import { FILECLASS_VIEW_TYPE, FileClassView } from "src/fileClass/views/fileClassView";
+import { SavedView } from "src/fileClass/views/tableViewComponents/saveViewModal";
 
 function fileClassAttributeOptionsCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
@@ -487,8 +488,29 @@ function updateTableViewCommand(plugin: MetadataMenu) {
                 if (checking) {
                     return true;
                 }
+                // view.tableView.saveViewBtn.onClick
                 view.tableView.build();  // force refresh
                 view.tableView.update();
+
+                if (view.tableView.selectedView !== undefined) {
+                    const currentViewName = view.selectedView;
+
+                    const savedView = new SavedView("");
+                    savedView.children = view.tableView.fieldSet.children.map(c => c.name);
+                    savedView.buildFilters(view.tableView.fieldSet.filters);
+                    savedView.buildRowSorters(view.tableView.fieldSet.rowSorters);
+                    savedView.buildColumnManagers(view.tableView.fieldSet.columnManagers);
+                    savedView.name = currentViewName as string;
+
+                    const options = view.fileClass.getFileClassOptions();
+                    options.savedViews = [...options.savedViews?.filter(v => v.name !== currentViewName) || [], savedView]
+                    view.tableView.selectedView = savedView.name
+                    view.tableView.favoriteBtn.buttonEl.disabled = false
+                    view.tableView.update()
+                    view.tableView.saveViewBtn.removeCta()
+
+                }
+
                 // TODO: restore page and scrolling level
             }
         }
