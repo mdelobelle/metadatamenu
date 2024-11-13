@@ -354,66 +354,72 @@ export class FileClassDataviewTable {
     }
 
     private buildFilterQuery(): string {
-
         return Object.entries(this.viewConfiguration.filters).map(([index, filter]) => {
-            const valueGetter = filter.name === "file" ? `p.file.name` : `p["${filter.name}"]`
-            const current = this.ctx ? `dv.page("${this.ctx.sourcePath}")` : "{}"
-            if (filter.customFilter) {
-                return `    .filter(p => (new Function("value","current", "dv", "${filter.customFilter}"))(${valueGetter}, ${current}, dv))`
+            const valueGetter = filter.name === "file" ? `p.file.name` : `p["${filter.name}"]`;
+            let normalizedValueGetter = valueGetter;
+            if (this.plugin.settings.ignoreDiacriticsInTableViewSearch) {
+                normalizedValueGetter = `${valueGetter}?.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "")`;
             }
+            const current = this.ctx ? `dv.page("${this.ctx.sourcePath}")` : "{}";
+
+            if (filter.customFilter) {
+                return `    .filter(p => (new Function("value","current", "dv", "${filter.customFilter}"))(${normalizedValueGetter}, ${current}, dv))`;
+            }
+
             if (filter.query) {
-                const value = filter.query
+                const value = filter.query;
                 if (!value.startsWith("/")) {
-                    let values = value.split(",").map(item => item.trim())
-                    const empty = values.find(v => v === "__empty__")
-                    const notEmpty = values.find(v => v === "__notEmpty__")
-                    const notFound = values.find(v => v === "__notFound__")
-                    const existing = values.find(v => v === "__existing__")
-                    values = values.filter(v => !Object.keys(fieldStates).includes(v))
+                    let values = value.split(",").map(item => item.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+                    const empty = values.find(v => v === "__empty__");
+                    const notEmpty = values.find(v => v === "__notEmpty__");
+                    const notFound = values.find(v => v === "__notFound__");
+                    const existing = values.find(v => v === "__existing__");
+                    values = values.filter(v => !Object.keys(fieldStates).includes(v));
+
                     if (empty) {
-                        return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === null)\n`
+                        return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === null)\n`;
                     } else if (notEmpty) {
-                        return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} !== null)\n`
+                        return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} !== null)\n`;
                     } else if (notFound) {
-                        return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === undefined)\n`
+                        return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === undefined)\n`;
                     } else if (existing) {
-                        return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} !== undefined)\n`
+                        return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} !== undefined)\n`;
                     } else if (values.length) {
-                        const fCField = filter.name !== "file" ? this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.find(f => f.name === filter.name) : undefined
+                        const fCField = filter.name !== "file" ? this.plugin.fieldIndex.fileClassesFields.get(this.fileClass.name)?.find(f => f.name === filter.name) : undefined;
                         if (fCField?.type === "Boolean") {
                             switch (value) {
                                 case 'true':
-                                    return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === true)\n`
+                                    return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === true)\n`;
                                 case 'false':
-                                    return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === false)\n`
+                                    return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} === false)\n`;
                                 case 'false, true':
                                 case 'true, false':
-                                    return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && [true, false].some(b => ${valueGetter} === b))\n`
+                                    return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && [true, false].some(b => ${valueGetter} === b))\n`;
                                 default:
-                                    return ""
+                                    return "";
                             }
                         } else {
-                            const valuesQueries = values.map(val => `${valueGetter}.toString().toLowerCase().includes("${val}".toLowerCase())`)
-                            return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${valueGetter} && (${valuesQueries.join(" || ")}))\n`
+                            const valuesQueries = values.map(val => `${normalizedValueGetter}.toLowerCase().includes("${val}".toLowerCase())`);
+                            return `    .filter(p => hasFileClass(p.file.path, "${filter.id}") && ${normalizedValueGetter} && (${valuesQueries.join(" || ")}))\n`;
                         }
                     } else {
-                        return ""
+                        return "";
                     }
                 } else {
-                    const cleaned = value.replace(/^\//, "").replace(/\/$/, "")
-                    let isValid = true
+                    const cleaned = value.replace(/^\//, "").replace(/\/$/, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                    let isValid = true;
                     try {
-                        new RegExp(cleaned)
+                        new RegExp(cleaned);
                     } catch (error) {
-                        isValid = false
+                        isValid = false;
                     }
-                    if (isValid) return `    .filter(p => ${valueGetter} && new RegExp("${cleaned}").test(${valueGetter}))\n`
-                    else return ""
+                    if (isValid) return `    .filter(p => ${normalizedValueGetter} && new RegExp("${cleaned}").test(${normalizedValueGetter}))\n`;
+                    else return "";
                 }
             } else {
-                return ""
+                return "";
             }
-        }).join("")
+        }).join("");
     }
 
     private buildSorterQuery(): string {

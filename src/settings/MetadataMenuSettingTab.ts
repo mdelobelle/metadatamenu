@@ -596,6 +596,20 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			})
 		showFileClassSelectInModal.settingEl.addClass("no-border");
 		showFileClassSelectInModal.controlEl.addClass("full-width");
+
+		const showIgnoreDiacriticsInTableViewSearchInModal = new Setting(classFilesSettings.containerEl)
+			.setName('Ignore diacritics in TableView search')
+			.setDesc('Diacritics will be ignored when filtering in the TableView')
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.ignoreDiacriticsInTableViewSearch);
+				cb.onChange(value => {
+					this.plugin.settings.ignoreDiacriticsInTableViewSearch = value;
+					this.plugin.saveSettings();
+				})
+			})
+		showIgnoreDiacriticsInTableViewSearchInModal.settingEl.addClass("no-border");
+		showIgnoreDiacriticsInTableViewSearchInModal.controlEl.addClass("full-width");
+
 		//#endregion
 		//#region button display
 		/* 
