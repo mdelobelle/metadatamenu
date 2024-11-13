@@ -489,26 +489,27 @@ function updateTableViewCommand(plugin: MetadataMenu) {
                     return true;
                 }
                 // view.tableView.saveViewBtn.onClick
-                view.tableView.build();  // force refresh
-                view.tableView.update();
+                // view.tableView.build();  // force refresh
 
                 if (view.tableView.selectedView !== undefined) {
-                    const currentViewName = view.selectedView;
+                    const currentViewName: string = view.selectedView as string;
 
                     const savedView = new SavedView("");
                     savedView.children = view.tableView.fieldSet.children.map(c => c.name);
                     savedView.buildFilters(view.tableView.fieldSet.filters);
                     savedView.buildRowSorters(view.tableView.fieldSet.rowSorters);
                     savedView.buildColumnManagers(view.tableView.fieldSet.columnManagers);
-                    savedView.name = currentViewName as string;
+                    savedView.name = currentViewName;
 
                     const options = view.fileClass.getFileClassOptions();
                     options.savedViews = [...options.savedViews?.filter(v => v.name !== currentViewName) || [], savedView]
                     view.tableView.selectedView = savedView.name
                     view.tableView.favoriteBtn.buttonEl.disabled = false
                     view.tableView.update()
+                    view.tableView.viewSelect.setValue(currentViewName);
                     view.tableView.saveViewBtn.removeCta()
-
+                } else {
+                    view.tableView.update();
                 }
 
                 // TODO: restore page and scrolling level

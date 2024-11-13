@@ -122,14 +122,18 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
                 const linkRegex = /^\[\[.+\]\]$/;
                 if (linkRegex.test(value)) {
                     const valueLink = getLink(value);
-                    for (const selectedOption of this.selectedOptions) {
-                        if (linkRegex.test(selectedOption)) {
-                            const selectedOptionLink = getLink(selectedOption);
-                            if (selectedOptionLink == valueLink) {
-                                hasValue = true;
-                                break;
+                    if (valueLink !== undefined) {
+                        for (const selectedOption of this.selectedOptions) {
+                            if (linkRegex.test(selectedOption)) {
+                                const selectedOptionLink = getLink(selectedOption);
+                                if (selectedOptionLink == valueLink) {
+                                    hasValue = true;
+                                    break;
+                                }
                             }
                         }
+                    } else {
+                        hasValue = this.selectedOptions.includes(value.toString());
                     }
                 } else {
                     hasValue = this.selectedOptions.includes(value.toString());

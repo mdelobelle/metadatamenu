@@ -275,6 +275,7 @@ export class FileClassTableView {
                     this.selectedView = savedView.name
                     this.favoriteBtn.buttonEl.disabled = false
                     this.update()
+                    this.viewSelect.setValue(currentViewName);
                     this.saveViewBtn.removeCta()
 
                 }
