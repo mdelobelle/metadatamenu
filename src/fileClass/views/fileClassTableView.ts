@@ -1,8 +1,8 @@
 import MetadataMenu from "main";
-import { ButtonComponent, debounce, DropdownComponent, TextComponent } from "obsidian";
+import { ButtonComponent, debounce, DropdownComponent, setIcon, TextComponent } from "obsidian";
 import { FileClass } from "../fileClass";
 import { FieldSet } from "./tableViewComponents/tableViewFieldSet";
-import { CreateSavedViewModal } from "./tableViewComponents/saveViewModal";
+import { CreateSavedViewModal, SavedView } from "./tableViewComponents/saveViewModal";
 import { FileClassDataviewTable } from "./tableViewComponents/fileClassDataviewTable";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
 import { ChildrenMultiSelectModal } from "./tableViewComponents/ChildrenMultiSelectModal";
@@ -13,6 +13,7 @@ export class FileClassTableView {
     private limit: number
     private tableContainer: HTMLDivElement
     private paginationContainer: HTMLDivElement
+    private quickSearchContainer: HTMLDivElement
     public fieldsContainer: HTMLDivElement;
     private viewSelectContainer: HTMLDivElement;
     public saveViewBtn: ButtonComponent;
@@ -47,10 +48,12 @@ export class FileClassTableView {
 
     private createHeader(): void {
         const header = this.container.createDiv({ cls: "options" })
-        const limitContainer = header.createDiv({ cls: "limit" });
-        this.paginationContainer = header.createDiv({ cls: "pagination" });
+        const small_options_container = header.createDiv({ cls: "small_options_container" });
+        const limitContainer = small_options_container.createDiv({ cls: "limit" });
+        this.paginationContainer = small_options_container.createDiv({ cls: "pagination" });
+        const applyContainer = small_options_container.createDiv({ cls: "footer" });
+        this.quickSearchContainer = small_options_container.createDiv({ cls: "search" });
         this.fieldsContainer = header.createDiv({ cls: "fields" })
-        const applyContainer = header.createDiv({ cls: "footer" })
         this.viewSelectContainer = applyContainer.createDiv({ cls: "cell" })
 
         this.buildLimitManager(limitContainer);
@@ -64,6 +67,7 @@ export class FileClassTableView {
         this.buildHideInsertFieldBtn(applyContainer);
         this.buildRefreshBtn(applyContainer)
         this.buildHideFilters(applyContainer);
+        this.buildQuickSearch(this.quickSearchContainer);
     }
 
     public update(maxRows?: number, sliceStart: number = 0): void {
@@ -239,6 +243,45 @@ export class FileClassTableView {
             }
         }
         hideFilterBtn.onClick(() => toggleState())
+    }
+
+    private buildQuickSearch(container: HTMLDivElement): void {
+        const searchIcon = container.createSpan();
+        setIcon(searchIcon, "search");
+        const inputField = container.createEl("input")
+        inputField.onkeydown = async (e) => {
+            if (e.key == "Enter") {
+                const file_name_field_component_index = 0;
+                const filter_id = this.fieldSet.fieldComponents[file_name_field_component_index].id;
+                const searchValue = inputField.value;
+                const file_name_filter = this.fieldSet.filters[filter_id];
+                file_name_filter.filter.setValue(searchValue);
+                file_name_filter.debounced(this.fieldSet);
+
+                if (this.selectedView !== undefined) {
+                    const currentViewName = this.selectedView;
+
+                    const savedView = new SavedView("");
+                    savedView.children = this.fieldSet.children.map(c => c.name);
+                    savedView.buildFilters(this.fieldSet.filters);
+                    savedView.buildRowSorters(this.fieldSet.rowSorters);
+                    savedView.buildColumnManagers(this.fieldSet.columnManagers);
+                    savedView.name = currentViewName;
+
+                    const options = this.fileClass.getFileClassOptions();
+                    options.savedViews = [...options.savedViews?.filter(v => v.name !== currentViewName) || [], savedView]
+
+                    await this.fileClass.updateOptions(options);
+                    this.selectedView = savedView.name
+                    this.favoriteBtn.buttonEl.disabled = false
+                    this.update()
+                    this.viewSelect.setValue(currentViewName);
+                    this.saveViewBtn.removeCta()
+
+                }
+
+            }
+        };
     }
 
     private buildHideInsertFieldBtn(container: HTMLDivElement): void {

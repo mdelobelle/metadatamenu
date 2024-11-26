@@ -55,7 +55,7 @@ export class FileClassViewManager extends Component {
             const view = this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType)[0]?.view as FileClassView | undefined
             if (view) {
                 view.tableView.build();  // force refresh
-                view.tableView.update();
+                // view.tableView.update();
                 // TODO: restore page and scrolling level
             }
         }));

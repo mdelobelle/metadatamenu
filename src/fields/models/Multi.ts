@@ -117,10 +117,33 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             el.addClass("value-container")
             const spacer = this.containerEl.createDiv({ cls: "spacer" })
             el.appendChild(spacer)
-            if (this.selectedOptions !== undefined && this.selectedOptions.includes(value.toString())) {
-                el.addClass("value-checked")
-                const iconContainer = el.createDiv({ cls: "icon-container" })
-                setIcon(iconContainer, "check-circle")
+            if (this.selectedOptions !== undefined) {
+                let hasValue = false;
+                const linkRegex = /^\[\[.+\]\]$/;
+                if (linkRegex.test(value)) {
+                    const valueLink = getLink(value);
+                    if (valueLink !== undefined) {
+                        for (const selectedOption of this.selectedOptions) {
+                            if (linkRegex.test(selectedOption)) {
+                                const selectedOptionLink = getLink(selectedOption);
+                                if (selectedOptionLink == valueLink) {
+                                    hasValue = true;
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        hasValue = this.selectedOptions.includes(value.toString());
+                    }
+                } else {
+                    hasValue = this.selectedOptions.includes(value.toString());
+                }
+
+                if (hasValue) {
+                    el.addClass("value-checked")
+                    const iconContainer = el.createDiv({ cls: "icon-container" })
+                    setIcon(iconContainer, "check-circle")
+                }
             }
             this.inputEl.focus()
         }

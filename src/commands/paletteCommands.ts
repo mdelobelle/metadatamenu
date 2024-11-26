@@ -16,6 +16,7 @@ import { openSettings } from "src/fields/base/BaseSetting";
 import { ExistingField } from "src/fields/ExistingField";
 import { FileClassChoiceModal } from "src/fileClass/fileClassChoiceModal";
 import { FILECLASS_VIEW_TYPE, FileClassView } from "src/fileClass/views/fileClassView";
+import { SavedView } from "src/fileClass/views/tableViewComponents/saveViewModal";
 
 function fileClassAttributeOptionsCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
@@ -487,9 +488,56 @@ function updateTableViewCommand(plugin: MetadataMenu) {
                 if (checking) {
                     return true;
                 }
-                view.tableView.build();  // force refresh
-                view.tableView.update();
+                // view.tableView.saveViewBtn.onClick
+                // view.tableView.build();  // force refresh
+
+                if (view.tableView.selectedView !== undefined) {
+                    const currentViewName: string = view.selectedView as string;
+
+                    const savedView = new SavedView("");
+                    savedView.children = view.tableView.fieldSet.children.map(c => c.name);
+                    savedView.buildFilters(view.tableView.fieldSet.filters);
+                    savedView.buildRowSorters(view.tableView.fieldSet.rowSorters);
+                    savedView.buildColumnManagers(view.tableView.fieldSet.columnManagers);
+                    savedView.name = currentViewName;
+
+                    const options = view.fileClass.getFileClassOptions();
+                    options.savedViews = [...options.savedViews?.filter(v => v.name !== currentViewName) || [], savedView]
+                    view.tableView.selectedView = savedView.name
+                    view.tableView.favoriteBtn.buttonEl.disabled = false
+                    view.tableView.update()
+                    view.tableView.viewSelect.setValue(currentViewName);
+                    view.tableView.saveViewBtn.removeCta()
+                } else {
+                    view.tableView.update();
+                }
+
                 // TODO: restore page and scrolling level
+            }
+        }
+    })
+}
+
+function focusSearchInTableViewCommand(plugin: MetadataMenu) {
+    plugin.addCommand({
+        id: "focus_search_in_table_view",
+        name: "Focus on search input in table view",
+        icon: "search",
+        checkCallback: (checking: boolean) => {
+            const fileClassName: string | undefined = (plugin.app.workspace.activeLeaf?.view as FileClassView).name;
+            const fileClassViewType = FILECLASS_VIEW_TYPE + "__" + fileClassName;
+            const view = plugin.app.workspace.getLeavesOfType(fileClassViewType)[0]?.view as FileClassView | undefined;
+            if (view) {
+                if (checking) {
+                    return true;
+                }
+
+                const searchInput = document.querySelector('.metadata-menu.fileclass-view .options .search input');
+                if (searchInput) {
+                    (searchInput as HTMLInputElement).focus();
+                } else {
+                    console.error('Search input not found');
+                }
             }
         }
     })
@@ -511,4 +559,5 @@ export function addCommands(plugin: MetadataMenu) {
     fileclassToFileCommand(plugin);
     updateLookupsAndFormulasCommand(plugin);
     updateTableViewCommand(plugin);
+    focusSearchInTableViewCommand(plugin);
 }
