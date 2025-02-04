@@ -90,11 +90,11 @@ export function actions(plugin: MetadataMenu, field: IField<Options>, file: TFil
                 icon: icon
             });
         } else if (isFieldActions(location) && [Status.changed, Status.mayHaveChanged].includes(status)) {
-            location.addOption(`field_${field.id}_udapte`, icon, action, `Update ${name}'s value`);
+            location.addOption(`field_${field.id}_update`, icon, action, `Update ${name}'s value`);
         } else if (isFieldActions(location) && status === Status.upToDate) {
-            location.addOption(`field_${field.id}_udapte`, icon, () => { }, `${name} is up to date`);
+            location.addOption(`field_${field.id}_update`, icon, () => { }, `${name} is up to date`);
         } else if (isFieldActions(location) && status === Status.error) {
-            location.addOption(`field_${field.id}_udapte`, icon, () => { }, `${name} has an error`);
+            location.addOption(`field_${field.id}_update`, icon, () => { }, `${name} has an error`);
         }
     } else if (isFieldActions(location)) {
         const icon = status === Status.error ? statusIcon['error'] : "server-cog"

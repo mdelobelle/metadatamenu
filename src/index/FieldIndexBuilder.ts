@@ -70,7 +70,7 @@ export abstract class FieldIndexBuilder extends Component {
     public filesLookupAndFormulaFieldsExists: Map<string, Field[]>;
     public filesLookupsAndFormulasFields: Map<string, Field[]>;
     public filesPathsMatchingFileClasses: Map<string, FileClass>;
-    public lastRevision: 0;
+    public lastRevision = 0;
     public lookupQueries: Map<string, Field>;
     public tagsMatchingFileClasses: Map<string, FileClass>;
     public v1FileClassesPath: Map<string, FileClass>;

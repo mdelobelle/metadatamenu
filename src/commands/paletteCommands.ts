@@ -1,5 +1,5 @@
 import MetadataMenu from "main";
-import { MarkdownView, Notice, TFile } from "obsidian";
+import { MarkdownView, Notice, SuggestModal, TFile } from "obsidian";
 import NoteFieldsComponent from "src/components/FieldsModal";
 import { AddFileClassToFileModal, FileClass, getFileClassNameFromPath } from "src/fileClass/fileClass";
 import chooseSectionModal from "src/modals/chooseSectionModal";
@@ -13,6 +13,10 @@ import { updateFormulas } from "./updateFormulas";
 import { Note } from "src/note/note";
 import { FieldCommand, Field, fieldValueManager } from "src/fields/Field";
 import { openSettings } from "src/fields/base/BaseSetting";
+import { ExistingField } from "src/fields/ExistingField";
+import { FileClassChoiceModal } from "src/fileClass/fileClassChoiceModal";
+import { FILECLASS_VIEW_TYPE, FileClassView } from "src/fileClass/views/fileClassView";
+import { SavedView } from "src/fileClass/views/tableViewComponents/saveViewModal";
 
 function fileClassAttributeOptionsCommand(plugin: MetadataMenu) {
     const classFilesPath = plugin.settings.classFilesPath
@@ -192,6 +196,79 @@ function insertMissingFieldsCommand(plugin: MetadataMenu) {
             }
         }
     })
+}
+
+class AnotherFileClassChoiceModal extends SuggestModal<string> {
+    private fileClassesNames: string[];
+    constructor(
+        private plugin: MetadataMenu,
+        private onSelect: (chosenClass: string) => void
+    ) {
+        super(plugin.app);
+        this.containerEl.addClass("metadata-menu");
+
+        // TODO also include tags? See FileClassViewManager.build.
+        this.fileClassesNames = [...plugin.fieldIndex.fileClassesName.keys()];
+        console.log("fileClassesNames", this.fileClassesNames);
+    }
+
+    getSuggestions(query: string): string[] {
+        return this.fileClassesNames
+            .filter(name => name.toLowerCase().includes(query.toLowerCase()))
+            .sort((a, b) => a.localeCompare(b));
+    }
+
+    renderSuggestion(value: string, el: HTMLElement) {
+        el.setText(value)
+        el.addClass("value-container");
+    }
+
+    async onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
+        this.onSelect(item);
+
+        this.close()
+    }
+}
+
+function insertMissingFieldsForAllFilesCommand(plugin: MetadataMenu) {
+    plugin.addCommand({
+        id: "insert_missing_fields_for_all_files",
+        name: "Bulk insert missing fields for all files",
+        icon: "battery-full",
+        callback: () => {
+            console.log("Starting inserting missing fields for all files.");
+
+            const modal = new AnotherFileClassChoiceModal(plugin, (chosenClassName: string) => {
+                console.log("chosen class:", chosenClassName);
+
+                // Take only the files that match the chosenClass.
+                const chosenClass: FileClass | undefined = plugin.fieldIndex.fileClassesName.get(chosenClassName);
+                if (!chosenClass) {
+                    console.log(`Cannot find FileClass ${chosenClassName}`);
+                    return;
+                }
+
+                const filesWithChosenClass: Array<TFile> = Array.from(plugin.fieldIndex.filesFileClasses).filter(([filepath, fileClasses]: [string, FileClass[]]) => {
+                    return fileClasses.contains(chosenClass);
+                }).map(([filepath,]: [string, FileClass[]]) => {
+                    return plugin.app.vault.getAbstractFileByPath(filepath) as TFile;
+                });
+                console.log(filesWithChosenClass);
+
+                // Update all these files.
+                (async () => {
+                    // await insertMissingFields(plugin, filesWithChosenClass[0].path, -1);
+                    // console.log(`updated ${filesWithChosenClass[0].path}`);
+                    await Promise.all(filesWithChosenClass.map((file: TFile) => {
+                        // Async call (run everything in parallel)
+                        insertMissingFields(plugin, file.path, -1);
+                    }));
+                })();
+                console.log("Finished inserting missing fields for all files.");
+            });
+            modal.open();
+        }
+    });
 }
 
 function openFieldsModalCommand(plugin: MetadataMenu) {
@@ -398,6 +475,74 @@ function updateFileFormulasCommand(plugin: MetadataMenu) {
     })
 }
 
+function updateTableViewCommand(plugin: MetadataMenu) {
+    plugin.addCommand({
+        id: "update_table_view",
+        name: "Update table view",
+        icon: "function-square",
+        checkCallback: (checking: boolean) => {
+            const fileClassName: string | undefined = (plugin.app.workspace.activeLeaf?.view as FileClassView).name;
+            const fileClassViewType = FILECLASS_VIEW_TYPE + "__" + fileClassName;
+            const view = plugin.app.workspace.getLeavesOfType(fileClassViewType)[0]?.view as FileClassView | undefined;
+            if (view) {
+                if (checking) {
+                    return true;
+                }
+                // view.tableView.saveViewBtn.onClick
+                // view.tableView.build();  // force refresh
+
+                if (view.tableView.selectedView !== undefined) {
+                    const currentViewName: string = view.selectedView as string;
+
+                    const savedView = new SavedView("");
+                    savedView.children = view.tableView.fieldSet.children.map(c => c.name);
+                    savedView.buildFilters(view.tableView.fieldSet.filters);
+                    savedView.buildRowSorters(view.tableView.fieldSet.rowSorters);
+                    savedView.buildColumnManagers(view.tableView.fieldSet.columnManagers);
+                    savedView.name = currentViewName;
+
+                    const options = view.fileClass.getFileClassOptions();
+                    options.savedViews = [...options.savedViews?.filter(v => v.name !== currentViewName) || [], savedView]
+                    view.tableView.selectedView = savedView.name
+                    view.tableView.favoriteBtn.buttonEl.disabled = false
+                    view.tableView.update()
+                    view.tableView.viewSelect.setValue(currentViewName);
+                    view.tableView.saveViewBtn.removeCta()
+                } else {
+                    view.tableView.update();
+                }
+
+                // TODO: restore page and scrolling level
+            }
+        }
+    })
+}
+
+function focusSearchInTableViewCommand(plugin: MetadataMenu) {
+    plugin.addCommand({
+        id: "focus_search_in_table_view",
+        name: "Focus on search input in table view",
+        icon: "search",
+        checkCallback: (checking: boolean) => {
+            const fileClassName: string | undefined = (plugin.app.workspace.activeLeaf?.view as FileClassView).name;
+            const fileClassViewType = FILECLASS_VIEW_TYPE + "__" + fileClassName;
+            const view = plugin.app.workspace.getLeavesOfType(fileClassViewType)[0]?.view as FileClassView | undefined;
+            if (view) {
+                if (checking) {
+                    return true;
+                }
+
+                const searchInput = document.querySelector('.metadata-menu.fileclass-view .options .search input');
+                if (searchInput) {
+                    (searchInput as HTMLInputElement).focus();
+                } else {
+                    console.error('Search input not found');
+                }
+            }
+        }
+    })
+}
+
 export function addCommands(plugin: MetadataMenu) {
     fileClassAttributeOptionsCommand(plugin);
     insertFileClassAttributeCommand(plugin);
@@ -405,11 +550,14 @@ export function addCommands(plugin: MetadataMenu) {
     insertFieldAtPositionCommand(plugin);
     manageFieldAtCursorCommand(plugin);
     insertMissingFieldsCommand(plugin);
-    openFieldsModalCommand(plugin)
-    insertFieldsCommand(plugin)
+    insertMissingFieldsForAllFilesCommand(plugin);
+    openFieldsModalCommand(plugin);
+    insertFieldsCommand(plugin);
     updateFileLookupsCommand(plugin);
-    updateFileFormulasCommand(plugin)
-    openFileclassViewCommand(plugin)
-    fileclassToFileCommand(plugin)
-    updateLookupsAndFormulasCommand(plugin)
+    updateFileFormulasCommand(plugin);
+    openFileclassViewCommand(plugin);
+    fileclassToFileCommand(plugin);
+    updateLookupsAndFormulasCommand(plugin);
+    updateTableViewCommand(plugin);
+    focusSearchInTableViewCommand(plugin);
 }

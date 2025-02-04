@@ -117,19 +117,49 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
             el.addClass("value-container")
             const spacer = this.containerEl.createDiv({ cls: "spacer" })
             el.appendChild(spacer)
-            if (this.selectedOptions.includes(value.toString())) {
-                el.addClass("value-checked")
-                const iconContainer = el.createDiv({ cls: "icon-container" })
-                setIcon(iconContainer, "check-circle")
+            if (this.selectedOptions !== undefined) {
+                let hasValue = false;
+                const linkRegex = /^\[\[.+\]\]$/;
+                if (linkRegex.test(value)) {
+                    const valueLink = getLink(value);
+                    if (valueLink !== undefined) {
+                        for (const selectedOption of this.selectedOptions) {
+                            if (linkRegex.test(selectedOption)) {
+                                const selectedOptionLink = getLink(selectedOption);
+                                if (selectedOptionLink == valueLink) {
+                                    hasValue = true;
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        hasValue = this.selectedOptions.includes(value.toString());
+                    }
+                } else {
+                    hasValue = this.selectedOptions.includes(value.toString());
+                }
+
+                if (hasValue) {
+                    el.addClass("value-checked")
+                    const iconContainer = el.createDiv({ cls: "icon-container" })
+                    setIcon(iconContainer, "check-circle")
+                }
             }
             this.inputEl.focus()
         }
 
         selectSuggestion(value: string, evt: MouseEvent | KeyboardEvent): void {
-            if (this.selectedOptions.includes(value.toString())) {
+            if (this.selectedOptions !== undefined && this.selectedOptions.includes(value.toString())) {
                 this.selectedOptions.remove(value.toString())
             } else {
-                this.selectedOptions.push(value.toString())
+                try {
+                    this.selectedOptions.push(value.toString())
+                }
+                catch {
+                    // this.selectedOptions might be undefined, thus the exception.
+                    // The user might have assigned a single value instead of an array (Multi is an array).
+                    this.selectedOptions = [value.toString()];
+                }
             }
             this.renderSelected()
         }
@@ -163,21 +193,27 @@ export function createDvField(
     attrs: { cls?: string, attr?: Record<string, string>, options?: Record<string, string> } = {}
 ): void {
     let valueHovered = false;
-    let currentValues: string[] = [];
+    let currentValues: any[] = [];
     if (managedField.value) {
         if (Object.keys(managedField.value).includes("path")) {
-            currentValues = [`[[${managedField.value.path.replace(".md", "")}]]`]
+            currentValues = [managedField.value] //`[[${managedField.value.path.replace(".md", "")}]]`]
         } else if (Array.isArray(managedField.value)) {
             managedField.value.forEach((item: any) => {
                 if (Object.keys(item).includes("path")) {
-                    currentValues.push(`[[${item.path.replace(".md", "")}]]`)
+                    currentValues.push(dv.el('span', item, attrs) as HTMLDivElement)  // `[[${item.path.replace(".md", "")}]]`)
                 } else {
                     currentValues.push(item.trim())
                 }
             })
         } else {
             const value = managedField.value
-            currentValues = value ? `${value}`.split(",").map((v: string) => v.trim()) : [];
+            currentValues = value ? `${value}`.split(",").map((v: any) => {
+                if (Object.keys(v).includes("path")) {
+                    return dv.el('span', v, attrs) as HTMLDivElement;
+                } else {
+                    return v.trim()
+                }
+            }) : [];
         }
     }
 

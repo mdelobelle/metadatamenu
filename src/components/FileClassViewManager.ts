@@ -50,6 +50,18 @@ export class FileClassViewManager extends Component {
                 view.tableView.triggerRefreshNeeded();
             }
         }));
+
+        this.registerEvent(this.plugin.app.metadataCache.on("metadata-menu:fields-changed", () => {
+            const view = this.plugin.app.workspace.getLeavesOfType(this.fileClassViewType)[0]?.view as FileClassView | undefined
+            if (view) {
+                view.tableView.build();  // force refresh
+                // view.tableView.update();
+                // TODO: restore page and scrolling level
+            }
+        }));
+
+
+
         this.plugin.indexDB.fileClassViews.editElement(this.fileClassViewType, {
             id: this.fileClassViewType,
             leafId: this.fileClassView?.leaf.id

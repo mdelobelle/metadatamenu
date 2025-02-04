@@ -12,7 +12,7 @@ export class FileClassChoiceModal extends SuggestModal<string> {
     ) {
         super(plugin.app);
         this.containerEl.addClass("metadata-menu");
-    };
+    }
 
     getSuggestions(query: string): string[] {
         const index = this.plugin.fieldIndex;

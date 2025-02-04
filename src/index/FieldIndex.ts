@@ -15,13 +15,45 @@ import { IndexedFieldsPayload, postValues } from "src/commands/postValues";
 import { cFileWithGroups, cFileWithTags, FieldIndexBuilder, FieldsPayloadToProcess, IndexedExistingField } from "./FieldIndexBuilder";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
 import { Field, buildEmptyField } from "src/fields/Field";
+import { waitFor } from "src/utils/syncUtils";
 
 export default class FieldIndex extends FieldIndexBuilder {
     private launchTime: number
+    public isIndexing = false;
+    private readonly minInactivityTimeBeforeIndexing = 3000; // in ms
+    private lastTypingId = 0;
 
     constructor(public plugin: MetadataMenu) {
         super(plugin)
         this.launchTime = Date.now()
+    }
+
+    private async onResolved() {
+        this.lastTypingId++;
+        const currentTypingId = this.lastTypingId;
+        let self = this;
+        setTimeout(() => {
+            self.onResolvedImpl(currentTypingId);
+        }, this.minInactivityTimeBeforeIndexing);
+    }
+    private async onResolvedImpl(typingId: number) {
+        if (typingId != this.lastTypingId) {
+            // console.log(`Wait for end of typing (typingId=${typingId}, lastTypingId=${this.lastTypingId})`);
+            return;
+        }
+        // console.log("Finished typing");
+
+        if (this.plugin.app.metadataCache.inProgressTaskCount === 0 && this.plugin.launched) {
+            if (this.changedFiles.every(file => this.classFilesPath && file.path.startsWith(this.classFilesPath))) {
+                this.plugin.app.metadataCache.trigger("metadata-menu:fileclass-indexed");
+                await updateCanvasAfterFileClass(this.plugin, this.changedFiles)
+            }
+            await this.indexFields()
+            this.plugin.app.metadataCache.trigger("metadata-menu:indexed");
+            this.changedFiles = []
+        }
+
+        this.lastTypingId = 0;
     }
 
     async onload(): Promise<void> {
@@ -67,17 +99,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         )
 
         this.registerEvent(
-            this.plugin.app.metadataCache.on('resolved', async () => {
-                if (this.plugin.app.metadataCache.inProgressTaskCount === 0 && this.plugin.launched) {
-                    if (this.changedFiles.every(file => this.classFilesPath && file.path.startsWith(this.classFilesPath))) {
-                        this.plugin.app.metadataCache.trigger("metadata-menu:fileclass-indexed");
-                        await updateCanvasAfterFileClass(this.plugin, this.changedFiles)
-                    }
-                    await this.indexFields()
-                    this.plugin.app.metadataCache.trigger("metadata-menu:indexed");
-                    this.changedFiles = []
-                }
-            })
+            this.plugin.app.metadataCache.on('resolved', this.onResolved, this)
         )
 
         this.registerEvent(
@@ -89,6 +111,9 @@ export default class FieldIndex extends FieldIndexBuilder {
 
         this.registerEvent(
             this.plugin.app.metadataCache.on('dataview:metadata-change', async (op: any, file: TFile) => {
+                // await waitFor(() => { return !this.isIndexing; });
+                // this.isIndexing = true;
+
                 if (file.stat.mtime > this.launchTime && op === "update" && this.dvReady() && this.settings.isAutoCalculationEnabled) {
                     const filePayloadToProcess = this.dVRelatedFieldsToUpdate.get(file.path)
                     if (![...this.dVRelatedFieldsToUpdate.keys()].includes(file.path)) {
@@ -98,8 +123,12 @@ export default class FieldIndex extends FieldIndexBuilder {
                     }
                     if ([...this.dVRelatedFieldsToUpdate.values()].every(item => item.status === "processed")) this.dVRelatedFieldsToUpdate = new Map()
                 }
+
+                // this.isIndexing = false;
             })
         )
+
+        // this.lastTypingTime = Date.now();
     }
 
     public indexableFiles() {
@@ -142,7 +171,8 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     public async indexFields(): Promise<void> {
-        let start = Date.now()
+        MDM_DEBUG && console.log("start indexing FIELDS");
+        const start = Date.now()
         this.flushCache();
         this.getFileClassesAncestors();
         this.getFileClasses();
