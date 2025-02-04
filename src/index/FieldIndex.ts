@@ -1,4 +1,4 @@
-import { Notice, TFile } from "obsidian"
+import { Notice, TAbstractFile, TFile } from "obsidian"
 import MetadataMenu from "main"
 import { FileClass, createFileClass, getFileClassNameFromPath, indexFileClass } from "src/fileClass/fileClass";
 import FileClassQuery from "src/fileClass/FileClassQuery";
@@ -31,7 +31,7 @@ export default class FieldIndex extends FieldIndexBuilder {
     private async onResolved() {
         this.lastTypingId++;
         const currentTypingId = this.lastTypingId;
-        let self = this;
+        const self = this;
         setTimeout(() => {
             self.onResolvedImpl(currentTypingId);
         }, this.minInactivityTimeBeforeIndexing);
@@ -305,17 +305,14 @@ export default class FieldIndex extends FieldIndexBuilder {
         this.indexableFileClasses().forEach(f => {
             const fileClassName = getFileClassNameFromPath(this.settings, f.path)
             if (fileClassName) {
-                const parent = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.extends
-                if (parent) {
-                    const parentFile = this.plugin.app.vault.getAbstractFileByPath(`${this.classFilesPath || ""}${parent}.md`)
-                    if (parentFile) {
-                        this.fileClassesAncestors.set(fileClassName, [parent])
-                    } else {
-                        this.fileClassesAncestors.set(fileClassName, [])
+                const parents: string[] = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.extends || []
+                const files: string[] = []
+                parents.forEach((p) => {
+                    if (this.plugin.app.vault.getAbstractFileByPath(`${this.classFilesPath || ""}${p}.md`)) {
+                        files.push(p)
                     }
-                } else {
-                    this.fileClassesAncestors.set(fileClassName, [])
-                }
+                })
+                this.fileClassesAncestors.set(fileClassName, files)
             }
         });
 
@@ -424,7 +421,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         })
         filesWithMappedTag.forEach((cFile: cFileWithTags) => {
             cFile.tags.forEach((_tag: string) => {
-                const tag = _tag.replace(/^\#/, "")
+                const tag = _tag.replace(/^#/, "")
                 this.resolveFileClassBinding(
                     this.tagsMatchingFileClasses,
                     this.filesFieldsFromTags,
@@ -443,7 +440,7 @@ export default class FieldIndex extends FieldIndexBuilder {
             .filter(_f => _f.parent !== null)
             .forEach((file: TFile) => {
                 for (const path of paths) {
-                    if (file.parent!.path.startsWith(path)) {
+                    if (file.parent && file.parent.path.startsWith(path)) {
                         this.resolveFileClassBinding(
                             this.filesPathsMatchingFileClasses,
                             this.filesFieldsFromFilesPaths,
@@ -455,7 +452,7 @@ export default class FieldIndex extends FieldIndexBuilder {
             })
     }
 
-    private getFilesForItems(items: BookmarkItem[], groups: string[], filesWithGroups: cFileWithGroups[], path: string = "") {
+    private getFilesForItems(items: BookmarkItem[], groups: string[], filesWithGroups: cFileWithGroups[], path = "") {
         if (groups.includes(path || "/")) {
             items.filter(_i => _i.type === "file").forEach(_i => filesWithGroups.push({ path: _i.path, group: path || "/" }))
         }
@@ -637,7 +634,7 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     public dvQFieldChanged(path: string) {
-        let changed: boolean = false
+        let changed = false
         this.filesLookupAndFormulaFieldsExists.get(path)?.forEach(field => {
             if (field.type === "Lookup") {
                 changed = changed || this.fileLookupFieldsStatus.get(path + "__" + field.name) === Status.changed
@@ -649,7 +646,7 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     public dvQFieldMayHaveChanged(path: string) {
-        let changed: boolean = false
+        let changed = false
         this.filesLookupAndFormulaFieldsExists.get(path)?.forEach(field => {
             if (field.type === "Lookup") {
                 changed = changed || this.fileLookupFieldsStatus.get(path + "__" + field.name) === Status.mayHaveChanged
@@ -661,7 +658,7 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     public dvQFieldHasAnError(path: string) {
-        let changed: boolean = false
+        let changed = false
         this.filesLookupAndFormulaFieldsExists.get(path)?.forEach(field => {
             if (field.type === "Lookup") {
                 changed = changed || this.fileLookupFieldsStatus.get(path + "__" + field.name) === Status.error

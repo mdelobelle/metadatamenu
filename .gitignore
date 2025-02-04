@@ -1,5 +1,5 @@
 # vscode
-.vscode 
+.vscode
 
 # Intellij
 *.iml
@@ -23,3 +23,14 @@ data.json
 .DS_Store
 
 _deprecated/*
+
+# Devenv
+.devenv*
+devenv.*
+.envrc
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
