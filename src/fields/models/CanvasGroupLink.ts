@@ -7,7 +7,7 @@ import { ISettingsModal } from "../base/BaseSetting";
 import * as AbstractCanvas from "./abstractModels/AbstractCanvas";
 
 export class Base implements IFieldBase {
-    type = <const>"CanvasGroup"
+    type = <const>"CanvasGroupLink"
     tagName = "canvas-links"
     icon = "box-select"
     tooltip = "Updates with groups in canvas"
