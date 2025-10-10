@@ -118,21 +118,40 @@ export default class MetadataMenu extends Plugin {
 		)
 
 		this.indexDB = this.addChild(new IndexDatabase(this))
-		//buildind index
-		await this.fieldIndex.fullIndex()
 		this.extraButton = this.addChild(new ExtraButton(this))
 		if (this.settings.enableFileExplorer) this.addChild(new FileClassFolderButton(this))
+
+		// Wait for workspace to be ready before indexing
+		this.app.workspace.onLayoutReady(async () => {
+			await this.fieldIndex.fullIndex()
+			this.launched = true
+			addCommands(this)
+
+			// Process all already-open files
+			const leaves = this.app.workspace.getLeavesOfType("markdown");
+			leaves.forEach((leaf) => {
+				if (leaf.view instanceof MarkdownView) {
+					this.indexStatus.checkForUpdate(leaf.view);
+				}
+			});
+
+			this.app.workspace.trigger("layout-change")
+
+			// Wait for next render cycle to ensure metadataEditor is fully rendered
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					updatePropertiesCommands(this);
+				});
+			});
+		})
+
 		this.registerEditorSuggest(new ValueSuggest(this));
-		this.launched = true
-		//building palette commands
-		addCommands(this)
 
 		this.registerMarkdownCodeBlockProcessor("mdm", async (source, el, ctx) => {
 			const fileClassCodeBlockManager = new FileClassCodeBlockManager(this, el, source, ctx)
 			this.codeBlockListManager.addChild(fileClassCodeBlockManager)
 			ctx.addChild(fileClassCodeBlockManager)
 		});
-		this.app.workspace.trigger("layout-change")
 		this.testRunner = this.addChild(new TestRunner(this))
 		if (MDM_DEBUG && this.app.vault.getName() === 'test-vault-mdm') { MDM_DEBUG = false; await this.testRunner.run() }
 	};
