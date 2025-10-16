@@ -356,6 +356,29 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				});
 			}).settingEl.addClass("no-border");
+
+		/* Disable dataview Notice */
+		if (
+			!this.app.plugins.enabledPlugins.has("dataview") ||
+			(this.app.plugins.plugins["dataview"] &&
+				//@ts-ignore
+				!this.app.plugins.plugins["dataview"].settings.enableDataviewJs)
+		) {
+			new Setting(globalSettings.containerEl)
+				.setName("Disable dataview notice")
+				.setDesc(
+					"Dataview is not installed or enabled. Disable this notice",
+				)
+				.addToggle((toggle) => {
+					toggle.setValue(this.plugin.settings.disableDataviewPrompt);
+					toggle.onChange(async (value) => {
+						this.plugin.settings.disableDataviewPrompt = value;
+						await this.plugin.saveSettings();
+					});
+				})
+				.settingEl.addClass("no-border");
+		}
+
 		//#endregion
 		//#region presetFields
 		/* 

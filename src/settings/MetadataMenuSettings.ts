@@ -37,7 +37,8 @@ export interface MetadataMenuSettings {
 	chooseFileClassAtFileCreation: boolean;
 	autoInsertFieldsAtFileClassInsertion: boolean;
 	fileClassIcon: string;
-	isAutoCalculationEnabled: boolean
+	isAutoCalculationEnabled: boolean;
+	disableDataviewPrompt: boolean;
 }
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
@@ -71,7 +72,8 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	chooseFileClassAtFileCreation: false,
 	autoInsertFieldsAtFileClassInsertion: false,
 	fileClassIcon: "package",
-	isAutoCalculationEnabled: true
+	isAutoCalculationEnabled: true,
+	disableDataviewPrompt: false,
 };
 
 export const incrementVersion = (plugin: MetadataMenu) => {

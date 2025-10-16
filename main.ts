@@ -46,19 +46,25 @@ export default class MetadataMenu extends Plugin {
 		(window["MetadataMenuAPI"] = this.api) && this.register(() => delete window["MetadataMenuAPI"]);
 		(window["MetadataMenu"] = this) && this.register(() => delete window["MetadataMenu"]);
 
-		if (!this.app.plugins.enabledPlugins.has("dataview") || (
-			//@ts-ignore
-			this.app.plugins.plugins["dataview"] && !this.app.plugins.plugins["dataview"].settings.enableDataviewJs)
+		//loading and migrating settings
+		await this.loadSettings();
+		await SettingsMigration.migrateSettings(this);
+		if (
+			!this.settings.disableDataviewPrompt &&
+			(!this.app.plugins.enabledPlugins.has("dataview") ||
+				(this.app.plugins.plugins["dataview"] &&
+				//@ts-ignore
+					!this.app.plugins.plugins["dataview"].settings
+						.enableDataviewJs))
 		) {
 			new Notice(
 				`------------------------------------------\n` +
-				`(!) INFO (!) \n` +
-				`Install and enable dataview and dataviewJS for extra Metadata Menu features\n` +
-				`------------------------------------------`, 60000)
+					`(!) INFO (!) \n` +
+					`Install and enable dataview and dataviewJS for extra Metadata Menu features\n` +
+					`------------------------------------------`,
+				60000,
+			);
 		}
-		//loading and migrating settings
-		await this.loadSettings();
-		await SettingsMigration.migrateSettings(this)
 
 		//loading components
 
