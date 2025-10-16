@@ -1,0 +1,1304 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../fields/">
+      
+      
+        <link rel="next" href="../controls/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.22">
+    
+    
+      
+        <title>FileClasses - Metadata Menu</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.84d31ad4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#fileclass" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Metadata Menu" class="md-header__button md-logo" aria-label="Metadata Menu" data-md-component="logo">
+      
+  <img src="../assets/obsidian.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Metadata Menu
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              FileClasses
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mdelobelle/metadatamenu" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Metadata Menu" class="md-nav__button md-logo" aria-label="Metadata Menu" data-md-component="logo">
+      
+  <img src="../assets/obsidian.png" alt="logo">
+
+    </a>
+    Metadata Menu
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mdelobelle/metadatamenu" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../general/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    General Concepts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Settings
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fields/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fields
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    FileClasses
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    FileClasses
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-a-fileclass" class="md-nav__link">
+    <span class="md-ellipsis">
+      What is a fileClass
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      setup
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      File mapping
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="File mapping">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic mapping
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map-with-tag" class="md-nav__link">
+    <span class="md-ellipsis">
+      Map with tag
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map-with-folders-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      Map with folder's path
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map-with-bookmark-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Map with bookmark groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map-with-a-query" class="md-nav__link">
+    <span class="md-ellipsis">
+      Map with a query
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#global-fileclass-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      Global fileclass mapping
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fileclass-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      FileClass Settings
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FileClass Settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#extends-field" class="md-nav__link">
+    <span class="md-ellipsis">
+      extends field
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#excludes-option" class="md-nav__link">
+    <span class="md-ellipsis">
+      excludes option
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapwithtag-option" class="md-nav__link">
+    <span class="md-ellipsis">
+      mapWithTag option
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tagnames-option" class="md-nav__link">
+    <span class="md-ellipsis">
+      tagNames option
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files-paths-option" class="md-nav__link">
+    <span class="md-ellipsis">
+      Files Paths option
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bookmark-group-option" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bookmark group option
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#button-icon-option" class="md-nav__link">
+    <span class="md-ellipsis">
+      button icon option
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#max-records-per-page-attribute" class="md-nav__link">
+    <span class="md-ellipsis">
+      max records per page attribute
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-attribute" class="md-nav__link">
+    <span class="md-ellipsis">
+      version attribute
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fileclass-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fileclass Fields
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#table-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table view
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Table view">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Filters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sorters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sorters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#child-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Child classes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#select-and-save-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      Select and Save view
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rebuild-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rebuild table
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../controls/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Controls
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Releases
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-a-fileclass" class="md-nav__link">
+    <span class="md-ellipsis">
+      What is a fileClass
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      setup
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      File mapping
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="File mapping">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic mapping
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map-with-tag" class="md-nav__link">
+    <span class="md-ellipsis">
+      Map with tag
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map-with-folders-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      Map with folder's path
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map-with-bookmark-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Map with bookmark groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map-with-a-query" class="md-nav__link">
+    <span class="md-ellipsis">
+      Map with a query
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#global-fileclass-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      Global fileclass mapping
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fileclass-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      FileClass Settings
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FileClass Settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#extends-field" class="md-nav__link">
+    <span class="md-ellipsis">
+      extends field
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#excludes-option" class="md-nav__link">
+    <span class="md-ellipsis">
+      excludes option
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapwithtag-option" class="md-nav__link">
+    <span class="md-ellipsis">
+      mapWithTag option
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tagnames-option" class="md-nav__link">
+    <span class="md-ellipsis">
+      tagNames option
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files-paths-option" class="md-nav__link">
+    <span class="md-ellipsis">
+      Files Paths option
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bookmark-group-option" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bookmark group option
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#button-icon-option" class="md-nav__link">
+    <span class="md-ellipsis">
+      button icon option
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#max-records-per-page-attribute" class="md-nav__link">
+    <span class="md-ellipsis">
+      max records per page attribute
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-attribute" class="md-nav__link">
+    <span class="md-ellipsis">
+      version attribute
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fileclass-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fileclass Fields
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#table-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table view
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Table view">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Filters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sorters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sorters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#child-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Child classes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#select-and-save-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      Select and Save view
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rebuild-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rebuild table
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="fileclass">FileClass</h1>
+<p>Manage preset values based on the context of a file (fileClass)</p>
+<h2 id="what-is-a-fileclass">What is a fileClass</h2>
+<p>A fileClass is basically a simple file located in the folder defined in the <a href="../settings/#fileclass-files-folder">plugin's settings</a></p>
+<p>The name of the file will be the name of the class. </p>
+<p>To map a file of your vault with a fileClass you have <a href="./#file-mapping">several options</a></p>
+<p>You can sort your fileClasses in sub-folders. Then if you want to use them in a note, just type their sub-path in the frontmatter of the note: <code>fileClass: &lt;sub-folder&gt;/&lt;sub-sub-folder&gt;/&lt;fileClass name&gt;</code></p>
+<p>the frontmatter section of this file contains the <a href="./#fileclass-settings">Fileclass settings</a> and <a href="">fields definition</a> for this fileClass. The body of this file is not used by the plugin, you can write anything you want in there.</p>
+<h2 id="setup">setup</h2>
+<ol>
+<li>Define the folder where you want to store your class files in the <a href="../settings/#fileclass-files-folder">plugin's settings</a></li>
+<li>Create a note in this folder, let's say <code>music.md</code></li>
+<li>A button will appear in the tab header of this note. click on it to access the "fileClass view" composed of 3 tabs<ul>
+<li>A table view listing all files that inherit this fileClass</li>
+<li>A Fileclass Fields views where you can add/change/remove fields definitions for this fileclass</li>
+<li>A <a href="./#fileclass-settings">Fileclass Settings</a> view where you can change the settings of the fileclass</li>
+</ul>
+</li>
+</ol>
+<h2 id="file-mapping">File mapping</h2>
+<p>You have several options to map a file with a fileClass. Those options can be combined to associate multiple fileclasses to a given file. In case 2 fileclasses mapped with the same file have fields with the same name, the field will be mapped according to this priority order:
+1. fileClass value in the <a href="./#basic-mapping">frontmatter</a>
+2. <a href="./#map-with-tag">Tag</a> match
+3. <a href="./#files-paths-option">Path</a> match
+4. <a href="./#bookmark-group-option">Bookmark group</a> match
+5. <a href="./#map-with-a-query">fileClassQuery</a> match
+6. <a href="./#global-fileclass-mapping">Global fileClass</a>
+7. settings <a href="../settings/#preset-field-settings">preset fields</a></p>
+<h3 id="basic-mapping">Basic mapping</h3>
+<p>include the name of the fileclass in the frontmatter of a note:</p>
+<div class="highlight"><pre><span></span><code>Bob Dylan.md
+===============================
+---
+fileClass: music
+---
+
+some cool stuff about Bob Dylan
+</code></pre></div>
+<p><code>Bob Dylan.md</code> will be mapped with the fileClass <code>music</code></p>
+<p>you can set multiple fileClass for a file:</p>
+<div class="highlight"><pre><span></span><code>Obsidian.md
+==============================
+---
+fileClass:
+  - company 
+  - pkm
+---
+
+some cool stuff about Obsidian
+</code></pre></div>
+<h3 id="map-with-tag">Map with tag</h3>
+<p>Include a tag that matches the fileclass and set <a href="./#map-with-tag">mapWithTag</a> as true:</p>
+<p><div class="highlight"><pre><span></span><code>Bob Dylan.md
+===============================
+#music
+
+some cool stuff about Bob Dylan
+</code></pre></div>
+<code>Bob Dylan.md</code> will be mapped with the fileClass <code>music</code></p>
+<p>Or choose any other tag defined in the <a href="./#tagnames-option">tag names</a></p>
+<h3 id="map-with-folders-path">Map with folder's path</h3>
+<p>Put your file in a folder that matches one the options defined in <a href="./#files-paths-option">Files paths option</a></p>
+<p>For example if "Resources/Music" is defined in <a href="./#files-paths-option">Files paths option</a>, and if Bob Dylan.md is in <code>&lt;Your Vault&gt;/Resources/Music/</code> then it will be mapped with the fileClass <code>music</code></p>
+<h3 id="map-with-bookmark-groups">Map with bookmark groups</h3>
+<p>Bookmark your file with a bookmark group that matches one the options defined in <a href="./#bookmark-group-option">Bookmark groups options</a></p>
+<h3 id="map-with-a-query">Map with a query</h3>
+<p>Set a <a href="../settings/#fileclass-queries">Fileclass query</a> in the plugin settings and all files included in this query's result will be mapped with the related fileclass</p>
+<h3 id="global-fileclass-mapping">Global fileclass mapping</h3>
+<p>If the file isn't mapped with a fileclass thanks to the previous options, and if there is a <a href="../settings/#global-fileclass">Global Fileclass</a> defined, then the file will be mapped with this global fileclass</p>
+<h2 id="fileclass-settings">FileClass Settings</h2>
+<p>All fileclass settings are easily configurable in a dedicated view named <code>Fileclass Setting</code>. This view is accessible by clicking the button next to the fileclass name (in the file explorer, in the tab header of the fileclass file, next to the internal link to this file etc...).</p>
+<h3 id="extends-field"><code>extends</code> field</h3>
+<p>a fileClass can extend another fileClass to benefit of it's fields without having to rewrite them.</p>
+<p>It may be usefull if you have several fileClass with the same set of fields.</p>
+<p>For example you may have a fileClass named <code>course.md</code> with some fields like <code>teacher</code>, <code>lecture</code>, <code>grade</code>, <code>type</code>.</p>
+<p>And you may want to define more specific fields depending on the type of course: a first fileClass <code>mathematics.md</code> with a field <code>chapter</code> and a second fileClass <code>physics.md</code> with a field <code>lecture</code>. For the two of them, you want to benefit from the <code>course</code> fileClass's fields.</p>
+<p>You can do this very easily by using the <code>extends</code> field in their frontmatter.</p>
+<p>With our example:</p>
+<p><code>course.md</code></p>
+<div class="highlight"><pre><span></span><code>---
+fields:
+  - name: teacher
+    type: Input
+    id: ....
+    path: ....
+    ...
+  - name: grade
+    type: Select
+    options: 
+      - &quot;0&quot;: &quot;A&quot;
+      - &quot;1&quot;: &quot;B&quot;
+      - &quot;2&quot;: &quot;C&quot;
+    id: ...
+    path: ....
+  - name: type
+    type: Select
+    options:
+      - &quot;0&quot;: &quot;at school&quot;
+      - &quot;1&quot;: &quot;online&quot;
+      - &quot;2&quot;: &quot;personal teacher at home&quot;
+    id: ...
+    path: ....
+
+---
+</code></pre></div>
+<p><code>mathematics.md</code></p>
+<div class="highlight"><pre><span></span><code>---
+extends: course
+fields:
+  - name: chapter
+    type: Select
+    options:
+      - &quot;0&quot;: Algebra
+      - &quot;1&quot;: Geometry
+      - &quot;2&quot;: Statistics
+    id: ...
+    path: ....
+  - name: to do next
+    type: File
+    options:
+      dvQueryString: &quot;dv.pages(&#39;\&quot;Courses\&quot;&#39;)&quot;
+    id: ...
+    path: ....
+---
+</code></pre></div>
+<p><code>physics.md</code></p>
+<div class="highlight"><pre><span></span><code>---
+....
+extends: course
+- fields:
+  - name: lecture
+    type: Select
+    options:
+      - &quot;0&quot;: Mecanics
+      - &quot;1&quot;: Optics
+      - &quot;2&quot;: Electricity
+    id: ...
+    path: ....
+---
+</code></pre></div>
+<p>All notes with fileClass <code>mathematics</code> or <code>physics</code> will benefit from the fields of <code>course</code> with the same option, but they will have their own fields in addition to it (<code>chapter</code> for <code>mathematics</code>, <code>lecture</code> for <code>physics</code>)</p>
+<p>A fileClass can also override a field it has inherited from by defining it again.</p>
+<p>for example:</p>
+<p><code>physics.md</code></p>
+<div class="highlight"><pre><span></span><code>---
+extends: course
+- fields:
+  - name: lecture
+    type: Select
+    options:
+      - &quot;0&quot;: Mecanics
+      - &quot;1&quot;: Optics
+      - &quot;2&quot;: Electricity
+    id: ...
+    path: ....
+  - name: type
+    type: Select
+    options:
+      - &quot;0&quot;: &quot;at school&quot;
+      - &quot;1&quot;: &quot;online&quot;
+    id: ...
+    path: ....
+
+---
+</code></pre></div>
+<p>the <code>type</code> field in <code>physics</code> will override the one in <code>course</code>. notes with <code>fileClass: physics</code> will have <code>at school</code> and <code>online</code> options for <code>type</code> but not <code>personal teacher at home</code></p>
+<h3 id="excludes-option"><code>excludes</code> option</h3>
+<p>when defined with an array of values, the field in the array won't be inherited from the parent fileClass</p>
+<p>With our previous example:</p>
+<p><code>physics.md</code></p>
+<div class="highlight"><pre><span></span><code>---
+extends: course
+excludes: [grade]
+---
+</code></pre></div>
+<p>notes with <code>fileClass: physics</code> will inherit <code>teacher</code> and <code>type</code> from <code>course</code> fileClass but not <code>grade</code></p>
+<h3 id="mapwithtag-option"><code>mapWithTag</code> option</h3>
+<p>when this is set to <code>true</code> all notes including a tag with the same name will benefit from the fields' definitions of this fileclass</p>
+<p>This works with nested tags as well</p>
+<h3 id="tagnames-option"><code>tagNames</code> option</h3>
+<p><em>aliases for your fileClasses</em></p>
+<p>when not empty (string or array of string), the tags will be mapped with this fileClass</p>
+<h3 id="files-paths-option"><code>Files Paths</code> option</h3>
+<p><em>map path with your fileClasses</em></p>
+<p>when not empty (string or array of string), the file with those paths will be mapped with this fileClass</p>
+<h3 id="bookmark-group-option"><code>Bookmark group</code> option</h3>
+<p><em>map bookmark with your fileClasses</em></p>
+<p>when not empty (string or array of string), the files bookmarked with those bookmark groups will be mapped with this fileClass</p>
+<h3 id="button-icon-option"><code>button icon</code> option</h3>
+<p>you can customize the icon of the metadata button that gives access to a modal containing all available fields for a note bound with this fileclass</p>
+<p>the icon names are available from https://lucide.dev</p>
+<h3 id="max-records-per-page-attribute"><code>max records per page</code> attribute</h3>
+<p>number of rows per page in the <a href="./#table-view">fileclass's table view</a>. </p>
+<h3 id="version-attribute"><code>version</code> attribute</h3>
+<p>Managed by the system</p>
+<h2 id="fileclass-fields">Fileclass Fields</h2>
+<p>In this view, as in the <a href="../settings/#preset-field-settings">preset fields</a> settings, you can add, edit and remove <a href="../fields/">fields definition</a> for this fileclass:
+- "list plus" button to add a new field
+- arrow-up / arrow-down to change the order in which the fields are inserted in a note
+- "pencil" button to edit a field's definition
+- "trash" button to remove a field</p>
+<h2 id="table-view">Table view</h2>
+<p>This view shows all files mapped with the fileclass. you can modify the fields directly from the table.</p>
+<h3 id="filters">Filters</h3>
+<p>Type a value in a field's filter, the table will be filtered to only display notes for which this field contains the filter value.</p>
+<p>You can filter by several values with a comma, the table will be filtered to only display notes for which this field contains one of the filter values</p>
+<p>For more complex filtering you can type a regex patter such as <code>/Eco|Science/</code>. You'll have to escape backslash, for example: <code>/2023-11-(\\d+) Mon/</code>.</p>
+<p>All columns' field except for the first column (file link) comes with a dropdown selector:
+- Empty values: will filter to display notes for which the field is in the note, but with no value
+- Not empty values: will filter to display notes for which the field is in the note, and it has a value
+- Not found: will filter to display notes for which the field is not in the note
+- Existing: will filter to display notes for which the field is in the note, whatever the value
+- field's specific values depending on their type:
+  - Boolean: true, false. (false won't match undefined or empty fields)
+  - Select, Multi-Select: the list of predefined values
+  - File, Multi-File: the list of files matching the predefined query
+  - Lookups: the list of files currently returned by lookup queries</p>
+<p>You can also define a custom filtering function in javascript returning a boolean</p>
+<h3 id="sorters">Sorters</h3>
+<ul>
+<li>"saved view" dropdown select to select a saved view</li>
+<li>"star" button to set or revoke the current view as the favorite view</li>
+<li>"eraser" button to reset the filters and sorting</li>
+<li>"save" button to save the current view</li>
+<li>"trash" button to delete the current view from the saved views</li>
+<li>"collapse filter" button to access more options: sort the table, filter the results, re-arrange columns orders, hide/show columns...</li>
+</ul>
+<p>You can define a custom sort by moving up/down the preset values of the field (for File, MultiFile, Select, MultiSelect, Lookup)</p>
+<h3 id="child-classes">Child classes</h3>
+<p>You can display child classes in the same view by selecting them from the children selector modal</p>
+<h3 id="select-and-save-view">Select and Save view</h3>
+<p>You can save the sorters/filters of the current view, or choose an existing saved view and define a saved view as favorite to show it when the table view is opened</p>
+<h3 id="rebuild-table">Rebuild table</h3>
+<p>When there's a change in a fileclass setting or fileclass field, the table view won't be automatically rebuilt. A "refresh" button will be highlighted: click on it to rebuild the table to take fileclass changes into account</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>

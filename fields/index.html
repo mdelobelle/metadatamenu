@@ -1,0 +1,3274 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../settings/">
+      
+      
+        <link rel="next" href="../fileclasses/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.22">
+    
+    
+      
+        <title>Fields - Metadata Menu</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.84d31ad4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#metadata-menu-fields" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Metadata Menu" class="md-header__button md-logo" aria-label="Metadata Menu" data-md-component="logo">
+      
+  <img src="../assets/obsidian.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Metadata Menu
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Fields
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mdelobelle/metadatamenu" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Metadata Menu" class="md-nav__button md-logo" aria-label="Metadata Menu" data-md-component="logo">
+      
+  <img src="../assets/obsidian.png" alt="logo">
+
+    </a>
+    Metadata Menu
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mdelobelle/metadatamenu" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../general/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    General Concepts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Settings
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Fields
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fields
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#fields-in-the-frontmatter-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fields in the frontmatter section
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fields-in-the-body-section-of-the-file-with-dataview-notation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fields in the body section of the file with dataview notation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#field-definition" class="md-nav__link">
+    <span class="md-ellipsis">
+      Field definition
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Field definition">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#field-object-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Field object structure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indexed-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      Indexed Path
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fields-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fields Types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fields-common-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fields common settings
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Fields common settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#field-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      Field name
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parent" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parent
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-a-command-for-this-field" class="md-nav__link">
+    <span class="md-ellipsis">
+      Set a command for this field
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frontmatter-list-display-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      Frontmatter List display type
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inline-field-style" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inline field style
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#field-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      Field type
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nesting-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      Nesting fields
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input" class="md-nav__link">
+    <span class="md-ellipsis">
+      Input
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Input">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#boolean" class="md-nav__link">
+    <span class="md-ellipsis">
+      Boolean
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Boolean">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#controls_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Number
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Number">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#select" class="md-nav__link">
+    <span class="md-ellipsis">
+      Select
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Select">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cycle
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cycle">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cycle-begins-by-a-null-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cycle begins by a null value
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multi
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Multi">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#date" class="md-nav__link">
+    <span class="md-ellipsis">
+      Date
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Date">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#template-for-link-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      Template for link path
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#datetime" class="md-nav__link">
+    <span class="md-ellipsis">
+      Datetime
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Datetime">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#time" class="md-nav__link">
+    <span class="md-ellipsis">
+      Time
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Time">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file" class="md-nav__link">
+    <span class="md-ellipsis">
+      File
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="File">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dataview-query" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dataview query
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alias" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alias
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sorting-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sorting order
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      commands
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multi File
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Multi File">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commands_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      commands
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#media" class="md-nav__link">
+    <span class="md-ellipsis">
+      Media
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Media">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multimedia" class="md-nav__link">
+    <span class="md-ellipsis">
+      MultiMedia
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lookup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lookup
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Lookup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lookup-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lookup options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Lookup options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pages-to-look-for-in-your-vault-dataviewjs-query" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pages to look for in your vault (DataviewJS Query)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#name-of-the-related-field" class="md-nav__link">
+    <span class="md-ellipsis">
+      Name of the related field
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#type-of-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type of output
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Type of output">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#links-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      Links list
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#links-indented-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      Links indented list
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#built-in-summarizing-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      Built-in Summarizing function
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-list-rendering-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom list rendering function
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-indented-list-rendering-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom indented list rendering function
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-summarizing-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom summarizing function
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commands_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      commands
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#formula" class="md-nav__link">
+    <span class="md-ellipsis">
+      Formula
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Formula">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commands_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      commands
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      example
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#canvas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Canvas
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Canvas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#path-of-the-canvas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Path of the canvas
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nodes-to-target-from-this-note" class="md-nav__link">
+    <span class="md-ellipsis">
+      Nodes to target from this note
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node-matching-colors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Node matching colors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matching-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Matching files
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#edge-matching-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      Edge matching color
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#edge-matching-from-side" class="md-nav__link">
+    <span class="md-ellipsis">
+      Edge matching from side
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#edge-matching-to-side" class="md-nav__link">
+    <span class="md-ellipsis">
+      Edge matching to side
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#edge-matching-label" class="md-nav__link">
+    <span class="md-ellipsis">
+      Edge matching label
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-new-matching-label" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add new matching label
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#canvas-group" class="md-nav__link">
+    <span class="md-ellipsis">
+      Canvas Group
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Canvas Group">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#path-of-the-canvas_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Path of the canvas
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#group-matching-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      Group matching color
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#group-matching-label" class="md-nav__link">
+    <span class="md-ellipsis">
+      Group matching label
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-new-matching-label_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add new matching label
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#canvas-group-link" class="md-nav__link">
+    <span class="md-ellipsis">
+      Canvas Group Link
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Canvas Group Link">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#json" class="md-nav__link">
+    <span class="md-ellipsis">
+      JSON
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="JSON">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#commands_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Commands
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#yaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      Yaml
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Yaml">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#commands_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Commands
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#object" class="md-nav__link">
+    <span class="md-ellipsis">
+      Object
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#commands_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Commands
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#object-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      Object List
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Object List">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#commands_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Commands
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fileclasses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FileClasses
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../controls/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Controls
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Releases
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#fields-in-the-frontmatter-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fields in the frontmatter section
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fields-in-the-body-section-of-the-file-with-dataview-notation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fields in the body section of the file with dataview notation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#field-definition" class="md-nav__link">
+    <span class="md-ellipsis">
+      Field definition
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Field definition">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#field-object-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Field object structure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indexed-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      Indexed Path
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fields-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fields Types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fields-common-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fields common settings
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Fields common settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#field-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      Field name
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parent" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parent
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-a-command-for-this-field" class="md-nav__link">
+    <span class="md-ellipsis">
+      Set a command for this field
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frontmatter-list-display-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      Frontmatter List display type
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inline-field-style" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inline field style
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#field-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      Field type
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nesting-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      Nesting fields
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#input" class="md-nav__link">
+    <span class="md-ellipsis">
+      Input
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Input">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#boolean" class="md-nav__link">
+    <span class="md-ellipsis">
+      Boolean
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Boolean">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#controls_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Number
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Number">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#select" class="md-nav__link">
+    <span class="md-ellipsis">
+      Select
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Select">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cycle
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cycle">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cycle-begins-by-a-null-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cycle begins by a null value
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multi
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Multi">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#date" class="md-nav__link">
+    <span class="md-ellipsis">
+      Date
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Date">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#template-for-link-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      Template for link path
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#datetime" class="md-nav__link">
+    <span class="md-ellipsis">
+      Datetime
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Datetime">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#time" class="md-nav__link">
+    <span class="md-ellipsis">
+      Time
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Time">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controls_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      controls
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file" class="md-nav__link">
+    <span class="md-ellipsis">
+      File
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="File">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dataview-query" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dataview query
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alias" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alias
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sorting-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sorting order
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      commands
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multi File
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Multi File">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commands_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      commands
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#media" class="md-nav__link">
+    <span class="md-ellipsis">
+      Media
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Media">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multimedia" class="md-nav__link">
+    <span class="md-ellipsis">
+      MultiMedia
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lookup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lookup
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Lookup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lookup-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lookup options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Lookup options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pages-to-look-for-in-your-vault-dataviewjs-query" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pages to look for in your vault (DataviewJS Query)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#name-of-the-related-field" class="md-nav__link">
+    <span class="md-ellipsis">
+      Name of the related field
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#type-of-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type of output
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Type of output">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#links-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      Links list
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#links-indented-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      Links indented list
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#built-in-summarizing-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      Built-in Summarizing function
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-list-rendering-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom list rendering function
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-indented-list-rendering-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom indented list rendering function
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-summarizing-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom summarizing function
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commands_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      commands
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#formula" class="md-nav__link">
+    <span class="md-ellipsis">
+      Formula
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Formula">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commands_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      commands
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      example
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#canvas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Canvas
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Canvas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#path-of-the-canvas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Path of the canvas
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nodes-to-target-from-this-note" class="md-nav__link">
+    <span class="md-ellipsis">
+      Nodes to target from this note
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node-matching-colors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Node matching colors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matching-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Matching files
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#edge-matching-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      Edge matching color
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#edge-matching-from-side" class="md-nav__link">
+    <span class="md-ellipsis">
+      Edge matching from side
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#edge-matching-to-side" class="md-nav__link">
+    <span class="md-ellipsis">
+      Edge matching to side
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#edge-matching-label" class="md-nav__link">
+    <span class="md-ellipsis">
+      Edge matching label
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-new-matching-label" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add new matching label
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#canvas-group" class="md-nav__link">
+    <span class="md-ellipsis">
+      Canvas Group
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Canvas Group">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#path-of-the-canvas_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Path of the canvas
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#group-matching-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      Group matching color
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#group-matching-label" class="md-nav__link">
+    <span class="md-ellipsis">
+      Group matching label
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-new-matching-label_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add new matching label
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#canvas-group-link" class="md-nav__link">
+    <span class="md-ellipsis">
+      Canvas Group Link
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Canvas Group Link">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      options
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#json" class="md-nav__link">
+    <span class="md-ellipsis">
+      JSON
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="JSON">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#commands_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Commands
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#yaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      Yaml
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Yaml">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#commands_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Commands
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#object" class="md-nav__link">
+    <span class="md-ellipsis">
+      Object
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#commands_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Commands
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#object-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      Object List
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Object List">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#commands_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Commands
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="metadata-menu-fields">Metadata Menu fields</h1>
+<p>Metadata Menu manages fields thanks to fields definition.</p>
+<p>A field can be identified in serveral sections of a markdown file:</p>
+<h2 id="fields-in-the-frontmatter-section">Fields in the frontmatter section</h2>
+<p>Called <code>Property</code>in Obsidian, fields in frontmatter are of form: <code>&lt;name&gt;: &lt;value&gt;</code></p>
+<h2 id="fields-in-the-body-section-of-the-file-with-dataview-notation">Fields in the body section of the file with dataview notation</h2>
+<p>Following Dataview notation, you can define fields:</p>
+<ul>
+<li>in the body of the file, occupying the full line <code>&lt;name&gt;:: &lt;value&gt;</code></li>
+<li>inside a line in the body of the file, surrounded with brackets or parenthesis: <code>... (&lt;name&gt;:: value) ...</code>or <code>... [&lt;name&gt;:: &lt;value&gt;]...</code></li>
+</ul>
+<h2 id="field-definition">Field definition</h2>
+<p>In order to give metadata menu the capability to manage a field, you'll have to set a definition for it. You can set a definition for a field in two places:</p>
+<ul>
+<li>in the <a href="../settings/">plugin settings</a>: the field definition will be applied to every file of your vault</li>
+<li>in a <a href="fileclass.md">fileClass</a>: the field definition will be applied to the files <a href="../fileclasses/#file-mapping">mapped with this fileClass</a></li>
+</ul>
+<p>All fields defintions are composed of:</p>
+<ul>
+<li><a href="#fields-common-settings">common settings</a></li>
+<li>specific options depending on their <a href="#fields-types">type</a></li>
+</ul>
+<p>These options are translated in a <a href="#field-object-structure">field object</a> stored:</p>
+<ul>
+<li>as a <code>fields</code> item in the <a href="fileclass.md">fileClass</a> file for fileclasses fields</li>
+<li>as a <code>fields</code> item in the <code>data.json</code> file of the plugin's folder for <a href="../settings/#preset-field-settings">preset fields</a></li>
+</ul>
+<h3 id="field-object-structure">Field object structure</h3>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>name</td>
+<td>field name</td>
+</tr>
+<tr>
+<td>type</td>
+<td><a href="../general/#field-types">field type</a></td>
+</tr>
+<tr>
+<td>id</td>
+<td>unique string automatically generated to identify the field across the vault</td>
+</tr>
+<tr>
+<td>options</td>
+<td>specific options by field type</td>
+</tr>
+<tr>
+<td>path</td>
+<td>The path of the field in the parent herarchy:<br> - empty or "" if the field doesn't have a parent<br>  - <parent_id> if the field has a parent (e.g. field of type <a href="./#object">Object</a> or <a href="./#object-list">ObjectList</a>)<br> - <grand_parent_id>____<parent_id> if the field has a parent that also has a parent<br> - .... any depth level is supported</td>
+</tr>
+</tbody>
+</table>
+<h3 id="indexed-path">Indexed Path</h3>
+<p>For each field instance in a file, the plugin computes an indexedPath attribute for each existing field in the plugin's index.</p>
+<p>It is used to identify the field instance in an <a href="./#object-list">ObjectList</a> and has to be passed to the <code>id</code> attribute of the <a href="../api/#postvalues">postValues</a> method.</p>
+<p>It is composed of each parent <code>id</code> separated by <code>____</code>, the position in each parent object list next to the parent <code>id</code> between square brackets, and ends with the field's <code>id</code></p>
+<p>Example of a "Company" fileClass fields:
+|Field name|Type|id|path|
+|---|---|---|---|
+|City|Input|HDERA||
+|Employees|ObjectList|dx8Mth||
+|Name|Input|7r1kwd|dx8Mth|
+|Role|Input|PCNGE4|dx8Mth|
+|Contact Info|Object|Y0dsfZ|dx8Mth|
+|e-mail|Input|hRlSsW|dx8Mth<strong><em>_Y0dsfZ|
+|phone number|Input|xLPW7T|dx8Mth</em></strong>_Y0dsfZ|</p>
+<p>Example of computed indexedPath for each field in a file:</p>
+<p><code>ACME.md</code>
+<div class="highlight"><pre><span></span><code><span class="nn">---</span>
+<span class="c1">#Field                            # indexedPath</span>
+<span class="nt">City</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Paris</span><span class="w">                       </span><span class="c1"># HDERA</span>
+<span class="nt">Employees</span><span class="p">:</span><span class="w">                        </span><span class="c1"># dx8Mth</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">John Doe</span><span class="w">                </span><span class="c1"># dx8Mth[0]____7r1kwd</span>
+<span class="w">    </span><span class="nt">Role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CFO</span><span class="w">                     </span><span class="c1"># dx8Mth[0]____PCNGE4</span>
+<span class="w">    </span><span class="nt">Contact Info</span><span class="p">:</span><span class="w">                 </span><span class="c1"># dx8Mth[0]____Y0dsfZ</span>
+<span class="w">      </span><span class="nt">e-mail</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">john.doe@acme.ob</span><span class="w">    </span><span class="c1"># dx8Mth[0]____Y0dsfZ____hRlSsW</span>
+<span class="w">      </span><span class="nt">phone number</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1234567891</span><span class="w">    </span><span class="c1"># dx8Mth[0]____Y0dsfZ____xLPW7T</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Ann Martin</span><span class="w">              </span><span class="c1"># dx8Mth[1]____7r1kwd</span>
+<span class="w">    </span><span class="nt">Role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CEO</span><span class="w">                     </span><span class="c1"># dx8Mth[1]____PCNGE4</span>
+<span class="w">    </span><span class="nt">Contact Info</span><span class="p">:</span><span class="w">                 </span><span class="c1"># dx8Mth[1]____Y0dsfZ</span>
+<span class="w">      </span><span class="nt">e-mail</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ann.martin@acme.ob</span><span class="w">  </span><span class="c1"># dx8Mth[1]____Y0dsfZ____hRlSsW</span>
+<span class="w">      </span><span class="nt">phone number</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1234567890</span><span class="w">    </span><span class="c1"># dx8Mth[1]____Y0dsfZ____xLPW7T</span>
+<span class="nn">---</span>
+</code></pre></div></p>
+<h2 id="fields-types">Fields Types</h2>
+<p>Metadata Menu can manage several field types. Choose them depending on the kind of data that you want to put in your field:</p>
+<ul>
+<li><a href="./#input">Input</a> : this is the default type. it will <code>Accept any value</code></li>
+<li><a href="./#boolean">Boolean</a>: a field that can <code>Accept true or false</code> or null value</li>
+<li><a href="./#number">Number</a>: a field that can <code>Accept a number</code></li>
+<li><a href="./#select">Select</a>: a field that can <code>Accept a single value from a list</code></li>
+<li><a href="./#multi">Multi</a>: a field that can <code>Accept multiple values from a list</code></li>
+<li><a href="./#cycle">Cycle</a>: a field that will <code>Cycle through values from a list</code></li>
+<li><a href="./#file">File</a>: a field that will <code>Accept a link to a file from your vault</code></li>
+<li><a href="./#multi-file">MultiFile</a>: a field that will <code>Accept multiple links</code></li>
+<li><a href="./#media">Media</a>: a field that will <code>Accept a link to a media file from your vault</code></li>
+<li><a href="./#multi-media">MultiMedia</a>: a field that will <code>Accept multiple links to media files</code></li>
+<li><a href="./#date">Date</a>: a field that will <code>Accept a date</code></li>
+<li><a href="fieldsmd.#datetime">DateTime</a>: a field that will <code>Accept a date with time</code></li>
+<li><a href="fieldsmd.#time">Time</a>: a field that will <code>Accept a time</code></li>
+<li><a href="./#lookup">Lookup</a>: a field that will <code>Accept a lookup query</code></li>
+<li><a href="./#formula">Formula</a>: a field that will <code>Make Calculation based on note's fields</code></li>
+<li><a href="./#canvas">Canvas</a>: a field that will <code>Update with links in a canvas</code></li>
+<li><a href="./#canvas-group">Canvas Group</a>: a field that will <code>Update with groups in a canvas</code></li>
+<li><a href="./#canvas-group-link">Canvas Group Link</a>: a field that will <code>Update with groups links in a canvas</code></li>
+<li><a href="./#json">JSON</a>: a field that will <code>Accept a JSON object</code></li>
+<li><a href="fieldsmd.#yaml">YAML</a>: a field that will <code>Accept a YAML object</code></li>
+<li><a href="./#object">Object</a>: a field that will <code>Accept a collection of fields</code></li>
+<li><a href="./#object-list">Object List</a>: a field that will <code>Accept a list of collection of fields</code></li>
+</ul>
+<h2 id="fields-common-settings">Fields common settings</h2>
+<h3 id="field-name">Field name</h3>
+<p>The name of the field - case sensitive.</p>
+<p>Metadata menu will search for this name to parse the files mapping the <a href="../fileclasses/">fileclass</a> (if the file is <a href="../fileclasses/#file-mapping">mapping</a> at least one fileclass) or all files if no fileClass is defined unless this field or the files are <a href="../settings/#globally-ignored-fields">excluded</a> from indexing</p>
+<p>A field's name is unique <a href="#nesting-fields">for a given level</a> per <a href="../fileclasses/">fileclass</a> (or within the <a href="../settings/#preset-field-settings">preset fields</a>)</p>
+<h3 id="parent">Parent</h3>
+<p>This setting is available if there is at least one <a href="./#object">Object</a> or <a href="./#object-list">Object List</a> field created for this <a href="../fileclasses/">fileclass</a> or in the <a href="../settings/#preset-field-settings">preset fields</a></p>
+<p>Some field types can't have parents (they can't be nested): <a href="./#lookup">Lookup</a>, <a href="./#formula">Formula</a>, <a href="./#canvas">Canvas</a>, <a href="./#canvas-group">Canvas Group</a>, <a href="./#canvas-group-link">Canvas Group Link</a></p>
+<h3 id="set-a-command-for-this-field">Set a command for this field</h3>
+<p>If toggled, this field will be accessible with Obsidian's command palette.</p>
+<p>You can set an icon for the button of the command in the mobile toolbar (icon names have to be one of the https://lucide.dev library)</p>
+<h3 id="frontmatter-list-display-type">Frontmatter List display type</h3>
+<p>Defines the way that multi-value type fields (<a href="./#multi">Multi</a>, <a href="./#multi-file">MultiFile</a>) are displayed in the frontmatter:</p>
+<ul>
+<li>As an array inline: <code>Field: [Value1, Value2]</code></li>
+<li>As an indented list below the field name:</li>
+</ul>
+<div class="highlight"><pre><span></span><code>Field:
+  - Value 1
+  - Value 2
+</code></pre></div>
+<h3 id="inline-field-style">Inline field style</h3>
+<p><a href="#fields-in-the-body-section-of-the-file-with-dataview-notation">Inline fields</a> can be automatically styled with four styles (you can mix them):</p>
+<ul>
+<li>bold,</li>
+<li>italic,</li>
+<li>strikethrough</li>
+<li>code</li>
+</ul>
+<p>NB: the changes to these settings won't affect existing fields. The new style will be applied the next time the field's value has changed</p>
+<h2 id="field-type">Field type</h2>
+<p>Select the <a href="#field-type">type</a> of the field. The type of the field will define specific <a href="../controls/">controls</a> (buttons, forms, ....) and validation to enter or modify values</p>
+<blockquote>
+<p>[!IMPORTANT]
+once saved, you won't be able to change the type of the field in order to avoid inconsistencies in the indexing.</p>
+</blockquote>
+<p>If you really need to change the type of a field, and if you are sure that it won't cause any discrepancies in your data, you'll have to remove this field from the fileclass or the preset fields and create a new one with the same name and the new type.</p>
+<p>Some types are only available in the frontmatter:</p>
+<ul>
+<li><a href="#yaml">YAML</a></li>
+<li><a href="#object">Object</a></li>
+<li><a href="#object-list">Object List</a></li>
+</ul>
+<h2 id="nesting-fields">Nesting fields</h2>
+<p>If the preset fields or a fileclass contains at least one <a href="#object">Object</a> or <a href="#object-list">Object List</a> field, then you can nest fields.</p>
+<p>Nesting a field (A) consists of setting an Object or Object List field (B) as a parent of (A)</p>
+<p>Each field sharing the same parent will have the same "level".
+If a field has no parent it is considered as "root" </p>
+<p>Field names are unique per level per fileClass, or unique per level in the preset Fields settings</p>
+<p>Object and Object List field can also have parent, therefore you can nest "infinitely"</p>
+<h2 id="input">Input</h2>
+<p>A basic type to store a string.</p>
+<h3 id="options">options</h3>
+<p>You can define a template to help fill your <code>Input</code> field.</p>
+<p>Every item enclosed in curly braces will be transformed into an input or a dropdown select in the field modal. You can modify the "templatized" text afterwards:</p>
+<ul>
+<li>{{Name}} will be transformed in an input field labeled "Name"</li>
+<li>{{color: ["red", "green", "blue"]}} will be transformed into a dropdown select field labelled "color" with 3 value: "red", "green" and "blue</li>
+</ul>
+<h3 id="controls">controls</h3>
+<ul>
+<li>Field modal: text area with optional inputs and dropdown selects based ont the tempplate</li>
+<li>Command palette: open field modal</li>
+<li>Note modal: open field modal</li>
+<li>Dataview table: in-cell value modifier</li>
+</ul>
+<h2 id="boolean">Boolean</h2>
+<p>A type that accepts <code>true</code> or <code>false</code> values.</p>
+<p>If the field's value is anything else than <code>true</code>, it will be mapped with <code>false</code></p>
+<h3 id="controls_1">controls</h3>
+<ul>
+<li>Field modal: choose value</li>
+<li>Command palette: toggle value</li>
+<li>Note Modal: toggle value</li>
+<li>Dataview table: toggle button</li>
+</ul>
+<h2 id="number">Number</h2>
+<p>A type that accepts a number (int or float).</p>
+<h3 id="options_1">options</h3>
+<p>You can define an optional:</p>
+<ul>
+<li>(increment/decrement) step</li>
+<li>minimum value</li>
+<li>maximum value</li>
+</ul>
+<h3 id="controls_2">controls</h3>
+<ul>
+<li>Field modal: change value, increment, decrement</li>
+<li>Command palette: open field modal</li>
+<li>Note modal: open field modal</li>
+<li>Dataview table: change value in-cell, increment, decrement</li>
+</ul>
+<h2 id="select">Select</h2>
+<p>A type that accepts values from a list.</p>
+<h3 id="options_2">options</h3>
+<p>You can define several sources for the values:</p>
+<ul>
+<li>a note path: each line of the target note will be an option for the dropdown selector</li>
+<li>a javascript function returning an array of string (dataview api is available with the <code>dv</code> keyword, the dv.current() variable is available with the <code>current</code> keyword)</li>
+<li>the setting form (add/edit/remove values one by one)</li>
+</ul>
+<h3 id="controls_3">controls</h3>
+<ul>
+<li>Field modal: select value, clear value, add a new value to the settings</li>
+<li>Command palette: open field modal</li>
+<li>Note modal: open field modal</li>
+<li>Dataview table: open field modal</li>
+<li>Inline value suggestor: choose a value from the list</li>
+</ul>
+<h2 id="cycle">Cycle</h2>
+<p>A type that will cycle through values from a list.</p>
+<h3 id="options_3">options</h3>
+<p>You can define several sources for the values:</p>
+<ul>
+<li>a note path: each line of the target note will be an option for the dropdown selector</li>
+<li>a javascript function returning an array of string (dataview api is available with the <code>dv</code> keyword, the dv.current() variable is available with the <code>current</code> keyword)</li>
+<li>the setting form (add/edit/remove values one by one)</li>
+</ul>
+<h4 id="cycle-begins-by-a-null-value"><code>Cycle begins by a null value</code></h4>
+<p>When set to true, the value of the field will be set to null if increasing one step after the last value of the list</p>
+<h3 id="controls_4">controls</h3>
+<ul>
+<li>Command palette: move to the next value</li>
+<li>Note modal: move to the next value</li>
+<li>Dataview table: move to the next value</li>
+<li>Inline value suggestor: choose a value from the list</li>
+</ul>
+<h2 id="multi">Multi</h2>
+<p>A type that multiple values from a list.</p>
+<h3 id="options_4">options</h3>
+<p>You can define several sources for the values:</p>
+<ul>
+<li>a note path: each line of the target note will be an option for the dropdown selector</li>
+<li>a javascript function returning an array of string (dataview api is available with the <code>dv</code> keyword, the dv.current() variable is available with the <code>current</code> keyword)</li>
+<li>the setting form (add/edit/remove values one by one)</li>
+</ul>
+<h3 id="controls_5">controls</h3>
+<ul>
+<li>Field modal: select/unselect value(s), clear all values, add a new value to the settings</li>
+<li>Command palette: open field modal</li>
+<li>Note modal: open field modal</li>
+<li>Dataview table: open field modal</li>
+<li>Inline value suggestor: choose a value from the list, type a comma to add another value...</li>
+</ul>
+<h2 id="date">Date</h2>
+<p>A type that accepts a date. </p>
+<h3 id="options_5">options</h3>
+<p>You can define:</p>
+<ul>
+<li>the date format as defined in <a href="https://momentjs.com/docs/#/displaying/format/">moment.js</a> library</li>
+<li>insert link by default: The date will be embedded in an internal link : <code>[[2024-01-01]]</code></li>
+<li>Link path : if provided, the path will be explicitely included in the internal link : <code>[[Daily/Notes/2024-01-01]]</code></li>
+<li>Define a shift interval: a value in <a href="https://momentjs.com/docs/#/durations/creating/">moment.js duration notation</a></li>
+<li>Choose a <a href="#cycle">cycle field</a> belonging to this fileclass or preset fields that contains duration values. Each time you shift the date, the date will be added the current value, and the cycle field will be updated with the next value in the list. This "Interval field" can't be a <a href="#nesting-fields">nested field</a></li>
+</ul>
+<h4 id="template-for-link-path">Template for link path</h4>
+<p>You can use templates to build your path with the formating token syntax of <a href="https://momentjs.com/docs/#/parsing/string-format/">moment.js</a>. For example <code>Daily/Notes/{{YYYY}}/{{MM}}</code> will render <code>[[Daily/Notes/2024/01/2024-01-01]]</code>. That can be useful if you have split subfolder for your daily notes for example</p>
+<h3 id="controls_6">controls</h3>
+<ul>
+<li>Field modal: input a date, choose a date from a datepicker, insert as link/as raw text, shift ahead</li>
+<li>Command palette: open field modal</li>
+<li>Note modal: open field modal</li>
+<li>Dataview table: open field modal</li>
+</ul>
+<p>if the plugin <a href="https://github.com/argenos/nldates-obsidian">Natural Language Dates</a> is installed, you can use it in the field modal when typing the date in the input field</p>
+<h2 id="datetime">Datetime</h2>
+<p>A type that accepts a date with time</p>
+<h3 id="options_6">options</h3>
+<p>You can define:</p>
+<ul>
+<li>the time format as defined in <a href="https://momentjs.com/docs/#/displaying/format/">moment.js</a> library</li>
+<li>Define a shift interval: a value in <a href="https://momentjs.com/docs/#/durations/creating/">moment.js duration notation</a></li>
+<li>Choose a <a href="#cycle">cycle field</a> belonging to this fileclass or preset fields that contains duration values. Each time you shift the date, the time will be added the current value, and the cycle field will be updated with the next value in the list. This "Interval field" can't be a <a href="#nesting-fields">nested field</a></li>
+</ul>
+<h3 id="controls_7">controls</h3>
+<ul>
+<li>Field modal: input a date, choose a date from a datepicker, insert as link/as raw text, shift ahead</li>
+<li>Command palette: open field modal</li>
+<li>Note modal: open field modal</li>
+<li>Dataview table: open field modal</li>
+</ul>
+<h2 id="time">Time</h2>
+<p>A type that accepts a time (hours, minutes, seconds, milliseconds)</p>
+<h3 id="options_7">options</h3>
+<p>You can define:</p>
+<ul>
+<li>the date and time format as defined in <a href="https://momentjs.com/docs/#/displaying/format/">moment.js</a> library</li>
+<li>Define a shift interval: a value in <a href="https://momentjs.com/docs/#/durations/creating/">moment.js duration notation</a></li>
+<li>Choose a <a href="#cycle">cycle field</a> belonging to this fileclass or preset fields that contains duration values. Each time you shift the date, the date will be added the current value, and the cycle field will be updated with the next value in the list. This "Interval field" can't be a <a href="#nesting-fields">nested field</a></li>
+</ul>
+<h3 id="controls_8">controls</h3>
+<ul>
+<li>Field modal: input a date, choose a date from a datepicker, insert as link/as raw text, shift ahead</li>
+<li>Command palette: open field modal</li>
+<li>Note modal: open field modal</li>
+<li>Dataview table: open field modal</li>
+</ul>
+<h2 id="file">File</h2>
+<p>A type that accepts an internal link to a file in your vault</p>
+<h3 id="options_8">options</h3>
+<p>You can define :
+- a <a href="#dataview-query">dataviewjs query</a> returning an array of pages
+- a javascript function to return an <a href="#alias">alias</a> for each result
+- a javascript function to <a href="#sorting-order">sort</a> the results within the query</p>
+<h4 id="dataview-query"><code>Dataview query</code></h4>
+<p>It accepts a call to the api function dv.pages that will return pages from your vault according to this function. Dataview api can be accessed with the <code>dv</code> variable, and the current page (dv.page object) is available with the <code>current</code> variable</p>
+<p>you’ll have to use dv.pages function explained here : https://blacksmithgu.github.io/obsidian-dataview/api/code-reference/#dvpagessource</p>
+<p>it takes a « source » (explained here https://blacksmithgu.github.io/obsidian-dataview/api/code-reference/#dvpagessource):</p>
+<p>you can also improve the filtering by applying a combination of other functions to the result returned by dv.pages(source):</p>
+<ul>
+<li>dv.pages(…).where(…) </li>
+<li>dv.pages(…).filter(…)</li>
+<li>dv.pages(…).limit(…)</li>
+<li>etc</li>
+</ul>
+<p>you can combine them:</p>
+<ul>
+<li>dv.pages(…).where(…).limit(...)</li>
+</ul>
+<p>see documentation here https://blacksmithgu.github.io/obsidian-dataview/api/data-array/#raw-interface</p>
+<p>A good source of help to build dataview queries is the obsidian discord server &gt; plugin-advanced &gt; dataview : the community is really helpful there.</p>
+<p><strong>Advanced usage</strong></p>
+<ol>
+<li>If you want to suggest only the pages that are defined on a specific field inside your notes, you can write the following:</li>
+</ol>
+<div class="highlight"><pre><span></span><code>dv.pages().map(p =&gt; p.field)
+</code></pre></div>
+<p>where <code>field</code> is the name of the inline field you want to target. </p>
+<ol>
+<li>You can also return an array of links directly from this query. This means that you can retrieve the value of a single field in any of your files.</li>
+</ol>
+<p>Example: 
+<div class="highlight"><pre><span></span><code>dv.page(&quot;Jules Verne&quot;).books
+</code></pre></div></p>
+<p>This would work if you have a file named <code>Jules Verne.md</code> in your vault (its path doesn't matter) that contains an inline field named <code>books</code> filled with one or more links to other pages.</p>
+<p>For both of the above use cases :
+- only existing pages will appear in the suggestion
+- frontmatter fields are not supported</p>
+<h4 id="alias"><code>Alias</code></h4>
+<p>It accepts a javascript instruction returning a string using dataview <code>page</code> attribute</p>
+<p>example: <code>"🚀" + (page.surname || page.file.name)</code></p>
+<h4 id="sorting-order"><code>Sorting order</code></h4>
+<p>It accepts a javascript instruction returning a number using two files <code>a</code> and <code>b</code></p>
+<p>example 1: <code>a.basename &lt; b.basename ? -1 : 1</code></p>
+<p>example 2: <code>a.stat.ctime - b.stat.ctime</code></p>
+<h3 id="commands">commands</h3>
+<ul>
+<li>Field modal: select a file, clear the value, type a string to filter the results</li>
+<li>Command palette: open field modal</li>
+<li>Note modal: open field modal</li>
+<li>Dataview table: open field modal</li>
+<li>Inline value suggestor: choose a value from the list</li>
+</ul>
+<h2 id="multi-file">Multi File</h2>
+<p>A type that accepts amultiple internal links to files in your vault</p>
+<h3 id="options_9">options</h3>
+<p>You can define :</p>
+<ul>
+<li>a <a href="#dataview-query">dataviewjs query</a> returning an array of pages</li>
+<li>a javascript function to return an <a href="#alias">alias</a> for each result</li>
+<li>a javascript function to <a href="#sorting-order">sort</a> the results within the query</li>
+</ul>
+<h3 id="commands_1">commands</h3>
+<ul>
+<li>Field modal: select/unselect a file, clear the values, type a string to filter the results</li>
+<li>Command palette: open field modal</li>
+<li>Note modal: open field modal</li>
+<li>Dataview table: open field modal</li>
+<li>Inline value suggestor: choose a value from the list, type a comma to add another value...</li>
+</ul>
+<h2 id="media">Media</h2>
+<p>A type that accepts an internal link to a media file in your vault</p>
+<h3 id="options_10">options</h3>
+<p>You can define :</p>
+<ul>
+<li>the folders where your media files are located</li>
+<li>the embed size for images</li>
+<li>display the media modal search as list or cards (gallery style)</li>
+</ul>
+<h2 id="multimedia">MultiMedia</h2>
+<p>Multiple media files</p>
+<h2 id="lookup">Lookup</h2>
+<p>A lookup field will look for targetted fields (aka related field) in targetted notes (aka Dataview JS Query results) and display the result in a presistent manner. Unlike a dataview view, a lookup field will change the content of the file by updating the value of the lookup field. 
+So even if you disable dataview plugin, the lookup field will still contain the value. 
+Lookup fields can therefore be "published".</p>
+<h3 id="lookup-options"><code>Lookup</code> options</h3>
+<h4 id="pages-to-look-for-in-your-vault-dataviewjs-query"><code>Pages to look for in your vault (DataviewJS Query)</code></h4>
+<p>A DataviewJS query of the form <code>dv.pages(...)</code> that has to return a data array of <code>page</code> object (see <a href="https://blacksmithgu.github.io/obsidian-dataview/api/code-reference/#dvpagessource">Dataview Pages source definition</a>)</p>
+<h4 id="name-of-the-related-field"><code>Name of the related field</code></h4>
+<p>The name of the field that the plugin should look for in pages returned by the query. The plugin will filter the results returned by the query with to match the value of the <code>related field</code> with the source note's link</p>
+<h4 id="type-of-output"><code>Type of output</code></h4>
+<p>Lookup field can display the result in a very various ways:</p>
+<h5 id="links-list">Links list</h5>
+<p>Simple list of links of the notes matching the query, comma separated</p>
+<h5 id="links-indented-list">Links indented list</h5>
+<p>Just like <a href="#links-list">Links list</a>, displayed as a bullet list below the field</p>
+<h5 id="built-in-summarizing-function">Built-in Summarizing function</h5>
+<p>NB: For this option you'll have to set the name of the target field on which you want to apply the built-in function in the <code>Summarized field name</code> input (not necessary for the <code>CountAll</code> function)</p>
+<ul>
+<li><code>Sum</code>: sum of the values of a specific field in the notes returned by the query </li>
+<li><code>Count</code>: Counts all pages matching the query where the "Summarized field" is non empty</li>
+<li><code>CountAll</code>: Counts all the pages matching the query</li>
+<li><code>Average</code>: Returns the average value of summarized fields in the pages matching the query</li>
+<li><code>Max</code>: Returns the maximum value of summarized fields in the pages matching the query</li>
+<li><code>Min</code>: Returns the minimum value of summarized fields in the pages matching the query</li>
+</ul>
+<h5 id="custom-list-rendering-function">Custom list rendering function</h5>
+<p>like the <a href="#links">Links</a> option, but you can customize the way each value is displayed. The object <code>page</code> is available (see <a href="https://blacksmithgu.github.io/obsidian-dataview/data-annotation/#pages">Dataview page object</a> for all attributes available in the <code>page object</code>) and can be used to build your output.
+The output has to be a string. </p>
+<h5 id="custom-indented-list-rendering-function">Custom indented list rendering function</h5>
+<p>Just like the <a href="#custom-list-rendering-function">Custom list</a>. Displayed as a bullet list below the field</p>
+<h5 id="custom-summarizing-function">Custom summarizing function</h5>
+<p>like the <a href="#built-in-summarizing-function">Built-in summarizing function</a> option but you can customize the function you want to apply on the data array of pages returned by the query. </p>
+<p>The <code>pages</code> <a href="https://blacksmithgu.github.io/obsidian-dataview/api/code-reference/#dvpagessource">data array</a> object is available.</p>
+<p>You have the write the code of the function, this function has to return something.</p>
+<p>Example1: <code>return pages.length</code></p>
+<p>Example2: <code>const i=0.0;const sum = pages.reduce((p, c) =&gt; p + c["age"], i); return sum / pages.length</code></p>
+<h3 id="commands_2">commands</h3>
+<ul>
+<li>Command palette: update lookup field (if it is not auto-updated)</li>
+<li>Note modal: update lookup field (if it is not auto-updated)</li>
+</ul>
+<h3 id="example">Example</h3>
+<p>If you have a lookup field <code>students</code> defined like this:</p>
+<ul>
+<li>name: `students``</li>
+<li>dataview query: `dv.pages("#student")``</li>
+<li>Name of the related field: <code>School</code></li>
+<li>auto-update: true</li>
+</ul>
+<p>If you have the following notes</p>
+<div class="highlight"><pre><span></span><code>John.md
+==========
+#student
+School:: [[Princeton]]
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>Anna.md
+==========
+#student
+School:: [[Princeton]]
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>Steve.md
+==========
+#student
+School:: [[Princeton]]
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>Eric.md
+==========
+#student
+School:: [[HEC]]
+</code></pre></div>
+<p>if you put <code>students::</code> field in the following files, you'll get the following results
+<div class="highlight"><pre><span></span><code>HEC.md
+==========
+students:: [[Eric]] // auto-filled
+</code></pre></div></p>
+<div class="highlight"><pre><span></span><code>Princeton.md
+==========
+students:: [[John]], [[Anna]], [[Steve]] // auto-filled
+</code></pre></div>
+<h2 id="formula">Formula</h2>
+<p>A field that returns the result of a javascript function</p>
+<h3 id="options_11">options</h3>
+<p>You can define :</p>
+<ul>
+<li>if the field will auto-update each time the content of your vault has changed (can slow down obsidian if you have many of those fields and a lot of files)</li>
+<li>a javascript function returning a value. (the dataview api is available with th <code>dv</code> keyword, the current dataview page object is available with the keyword <code>current</code>)</li>
+</ul>
+<h3 id="commands_3">commands</h3>
+<ul>
+<li>Command palette: update lookup field (if it is not auto-updated)</li>
+<li>Note modal: update lookup field (if it is not auto-updated)</li>
+</ul>
+<h3 id="example_1">example</h3>
+<p>if you have the field <code>mixed sum</code>defined like this:</p>
+<ul>
+<li>name: <code>mixed sum</code></li>
+<li>auto-update: true</li>
+<li>javascript formula: <code>current.apples + current.bananas</code></li>
+</ul>
+<p>If you put the field <code>mixed sum::</code> in the following file, you'll get the following result
+<div class="highlight"><pre><span></span><code>basket.md
+=========
+apples:: 7
+bananas:: 3
+mixed sum:: 10 // auto-calculated
+</code></pre></div></p>
+<h2 id="canvas">Canvas</h2>
+<p>A canvas field of a given note is automatically updated with other notes connected to it in a specific canvas.</p>
+<h3 id="options_12">options</h3>
+<h4 id="path-of-the-canvas"><code>Path of the canvas</code></h4>
+<p>The path to canvas where you want to search for matching connexions</p>
+<h4 id="nodes-to-target-from-this-note"><code>Nodes to target from this note</code></h4>
+<p>The direction of the edge connecting this node with other nodes:</p>
+<ul>
+<li><code>Incoming</code>: only the nodes with edges pointing to this node will be triggered</li>
+<li><code>Outgoing</code>: only the nodes to which this node is pointing will be triggered</li>
+<li><code>Both Side</code>: every nodes connected to this node will be triggered</li>
+</ul>
+<h4 id="node-matching-colors"><code>Node matching colors</code></h4>
+<p>Only the nodes connected to this node that have a color within the selected values will be triggered.
+You can define custom color values on top of the 6 default colors available in the canvas</p>
+<h4 id="matching-files"><code>Matching files</code></h4>
+<p>You can define a dvJS query that will return files. Only the nodes connected to this node whom corresponding files belong to the dvJS query result will be triggered</p>
+<h4 id="edge-matching-color"><code>Edge matching color</code></h4>
+<p>Only the nodes connected to this node with an edge that has a color within the selected values will be triggered.
+You can define custom color values on top of the 6 default colors available in the canvas</p>
+<h4 id="edge-matching-from-side"><code>Edge matching from side</code></h4>
+<p>Only the nodes connected to this node with an edge starting from the selected side values will be triggered.</p>
+<h4 id="edge-matching-to-side"><code>Edge matching to side</code></h4>
+<p>Only the nodes connected to this node with an edge pointing to the selected side values will be triggered.</p>
+<h4 id="edge-matching-label"><code>Edge matching label</code></h4>
+<p>Only the nodes connected to this node with an edge that has a label within the values list will be triggered.
+You can remove a label from the list by clicking on the cross in the chip</p>
+<h4 id="add-new-matching-label"><code>Add new matching label</code></h4>
+<p>Add new labels to match with edge labels.</p>
+<h2 id="canvas-group">Canvas Group</h2>
+<p>A canvas group field of a given note is automatically updated with names of matching groups their nodes belong to in a specific canvas.</p>
+<h3 id="options_13">options</h3>
+<h4 id="path-of-the-canvas_1"><code>Path of the canvas</code></h4>
+<p>The path to canvas where you want to search for matching groups</p>
+<h4 id="group-matching-color"><code>Group matching color</code></h4>
+<p>Only the groups surrounding this node that have a color within the selected values will be triggered.
+You can define custom color values on top of the 6 default colors available in the canvas</p>
+<h4 id="group-matching-label"><code>Group matching label</code></h4>
+<p>Only the groups surrounding this node with an edge that has a label within the values list will be triggered.
+You can remove a label from the list by clicking on the cross in the chip</p>
+<h4 id="add-new-matching-label_1"><code>Add new matching label</code></h4>
+<p>Add new labels to match with groups labels.</p>
+<h2 id="canvas-group-link">Canvas Group Link</h2>
+<p>Combination of the <code>Canvas</code> and the <code>Canvas Group</code> field options. This time, the field will target nodes linked to the groups the node belongs to</p>
+<h3 id="options_14">options</h3>
+<ul>
+<li><a href="#options-9">canvas link options</a></li>
+<li><a href="#options-10">canvas group options</a></li>
+</ul>
+<h2 id="json">JSON</h2>
+<p>A simple JSON field that will be serialized when included as an inline-field, or as a "JSON in YAML" when included in the frontmatter. The properties in the JSON are "free" meaning that they are not tied to a field definition</p>
+<h3 id="commands_4">Commands</h3>
+<ul>
+<li>Field modal: edit the JSON object</li>
+<li>Command palette: open field modal</li>
+<li>Note modal: open field modal</li>
+</ul>
+<h2 id="yaml">Yaml</h2>
+<p>A simple YAML field. The properties in the YAML are "free" meaning that they are not tied to a field definition. This field type is only available in the frontmatter</p>
+<h3 id="commands_5">Commands</h3>
+<ul>
+<li>Field modal: edit the YAML object</li>
+<li>Command palette: open field modal</li>
+<li>Note modal: open field modal</li>
+</ul>
+<h2 id="object">Object</h2>
+<p>A field that acts as a <strong>parent</strong> for other fields. When created, it will appear in the the "Parent" dropdown selector of a field setting. This field is only available in the frontmatter section</p>
+<h3 id="commands_6">Commands</h3>
+<ul>
+<li>Field modal: select the nested field to edit and trigger its "Field modal" command, add a missing child field to this object</li>
+<li>Command palette: open field modal</li>
+<li>Note modal: go to the note modal of this object, listing all children fields and access their commands, add a missing child field to this object</li>
+</ul>
+<h2 id="object-list">Object List</h2>
+<p>A field that acts as a <strong>parent</strong> for other fields. When created, it will appear in the the "Parent" dropdown selector of a field setting. This field is only available in the frontmatter section. </p>
+<h3 id="commands_7">Commands</h3>
+<ul>
+<li>Field modal: select the nested set of fields to edit and open the corresponding object field modal, add a new item to this object list, remove an item from this object list</li>
+<li>Command palette: open field modal</li>
+<li>Note modal: go to the note modal of this object list, listing all items of the list, click on one item to access the Note modal page of the corresponding Object</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>
