@@ -1,6 +1,6 @@
 {
 	"name": "Metadata-menu",
-	"version": "0.8.9",
+	"version": "0.8.10",
 	"description": "Managing metadata of notes",
 	"main": "main.js",
 	"scripts": {
