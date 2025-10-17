@@ -59,7 +59,7 @@ export async function updatePropertiesSection(plugin: MetadataMenu) {
     const leaves = plugin.app.workspace.getLeavesOfType("markdown");
     for (const leaf of leaves) {
         const view = leaf.view
-        if (!(view instanceof MarkdownView) || !(view.file instanceof TFile) || view.file === undefined) return
+        if (!(view instanceof MarkdownView) || !(view.file instanceof TFile) || view.file === undefined) continue
         const file = view.file
         if (!plugin.app.vault.getAbstractFileByPath(file.path)) continue
         updateProps(plugin, view, file)
