@@ -1,26 +1,25 @@
+import { MarkdownView, Notice, Plugin, TFile } from 'obsidian'
+import { addCommands } from 'src/commands/paletteCommands'
+import ContextMenu from 'src/components/ContextMenu'
+import ExtraButton from 'src/components/ExtraButton'
+import { FileClassCodeBlockListManager } from 'src/components/FileClassCodeBlockListManager'
+import { FileClassCodeBlockManager } from 'src/components/FileClassCodeBlockManager'
+import { FileClassViewManager } from 'src/components/FileClassViewManager'
+import IndexStatus from 'src/components/IndexStatus'
+import { IndexDatabase } from 'src/db/DatabaseManager'
+import { Field, buildEmptyField } from 'src/fields/Field'
+import { AddFileClassToFileModal } from 'src/fileClass/fileClass'
+import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton'
+import FileClassQuery from 'src/fileClass/FileClassQuery'
+import FieldIndex from 'src/index/FieldIndex'
+import { IMetadataMenuApi, MetadataMenuApi } from 'src/MetadataMenuApi'
+import { updatePropertiesCommands } from 'src/options/updateProps'
+import { DEFAULT_SETTINGS, MetadataMenuSettings } from "src/settings/MetadataMenuSettings"
+import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab"
+import * as SettingsMigration from 'src/settings/migrateSetting'
+import ValueSuggest from "src/suggester/metadataSuggester"
+import { TestRunner } from 'src/testing/runner'
 import './env'
-import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
-import { addCommands } from 'src/commands/paletteCommands';
-import ContextMenu from 'src/components/ContextMenu';
-import ExtraButton from 'src/components/ExtraButton';
-import FieldIndex from 'src/index/FieldIndex';
-import IndexStatus from 'src/components/IndexStatus';
-import FileClassQuery from 'src/fileClass/FileClassQuery';
-import { IMetadataMenuApi } from 'src/MetadataMenuApi';
-import { MetadataMenuApi } from 'src/MetadataMenuApi';
-import { DEFAULT_SETTINGS, MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
-import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
-import * as SettingsMigration from 'src/settings/migrateSetting';
-import ValueSuggest from "src/suggester/metadataSuggester";
-import { updatePropertiesCommands } from 'src/options/updateProps';
-import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton';
-import { FileClassViewManager } from 'src/components/FileClassViewManager';
-import { IndexDatabase } from 'src/db/DatabaseManager';
-import { FileClassCodeBlockManager } from 'src/components/FileClassCodeBlockManager';
-import { AddFileClassToFileModal } from 'src/fileClass/fileClass';
-import { FileClassCodeBlockListManager } from 'src/components/FileClassCodeBlockListManager';
-import { Field, buildEmptyField } from 'src/fields/Field';
-import { TestRunner } from 'src/testing/runner';
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
 	public settings: MetadataMenuSettings;
@@ -109,7 +108,9 @@ export default class MetadataMenu extends Plugin {
 
 		this.registerEvent(
 			this.app.workspace.on("file-open", (file) => {
-				updatePropertiesCommands(this)
+				if (file instanceof TFile && file.extension === "md") {
+					updatePropertiesCommands(this)
+				}
 			})
 		)
 

@@ -1,11 +1,11 @@
 import MetadataMenu from "main"
-import { ButtonComponent, debounce, MarkdownView, TFile, View, WorkspaceLeaf } from "obsidian"
+import { ButtonComponent, MarkdownView, TFile } from "obsidian"
+import { FieldType, getIcon } from "src/fields/Fields"
 import InsertFieldSuggestModal from "src/modals/insertFieldSuggestModal"
 import { Note } from "src/note/note"
-import OptionsList from "./OptionsList"
-import { FieldType, getIcon } from "src/fields/Fields"
 import { PropLeaf, PropView } from "src/typings/types"
 import { setTimeout } from "timers/promises"
+import OptionsList from "./OptionsList"
 
 function isPropView(view: MarkdownView | PropView): view is PropView {
     return (view as PropView).file !== undefined;
@@ -115,7 +115,10 @@ export async function updatePropertiesPane(plugin: MetadataMenu) {
 
 export async function updatePropertiesCommands(plugin: MetadataMenu) {
     if (plugin.settings.enableProperties) {
-        updatePropertiesSection(plugin)
-        updatePropertiesPane(plugin)
+        const activeFile = plugin.app.workspace.getActiveFile()
+        if (activeFile instanceof TFile && activeFile.extension === "md") {
+            updatePropertiesSection(plugin)
+            updatePropertiesPane(plugin)
+        }
     }
 }
