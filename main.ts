@@ -109,7 +109,9 @@ export default class MetadataMenu extends Plugin {
 
 		this.registerEvent(
 			this.app.workspace.on("file-open", (file) => {
-				updatePropertiesCommands(this)
+				if (file instanceof TFile && file.extension === "md") {
+					updatePropertiesCommands(this)
+				}
 			})
 		)
 
