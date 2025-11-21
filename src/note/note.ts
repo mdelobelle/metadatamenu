@@ -269,10 +269,26 @@ export class Note {
         if (id.startsWith("fileclass-field")) {
             const fR = id.match(/fileclass-field-(?<fileClassAlias>.*)/)
             if (fR?.groups?.fileClassAlias) {
-                const content = `${fR.groups.fileClassAlias}: ${payload.value}`
+                let content: string;
+
+                // Check if this fileClass field should be treated as Multi type
+                const field = this.getField(id);
+                const isMultiType = field?.type === "Multi" || this.plugin.settings.fileClassAsMultiSelect;
+
+                if (isMultiType && payload.value.includes(",")) {
+                    // Format as array for Multi type
+                    const values = payload.value
+                        .replace(/(\,\s+)/g, ',')
+                        .split(',')
+                        .filter(v => !!v.trim())
+                        .map(v => v.trim());
+                    content = `${fR.groups.fileClassAlias}: [${values.join(', ')}]`;
+                } else {
+                    content = `${fR.groups.fileClassAlias}: ${payload.value}`;
+                }
+
                 const newLine = new Line(this.plugin, this, "yaml", content, 1)
                 newLine.renderLine(asList, asBlockquote)
-
             }
             return
         }

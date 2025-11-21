@@ -157,7 +157,8 @@ export class LineNode {
                     }
                     if (yamlAttr === this.plugin.settings.fileClassAlias) {
                         const fileClasses = [...this.plugin.fieldIndex.fileClassesName.keys()].sort()
-                        const fileClassField = new (buildEmptyField(this.plugin, undefined, "Select"))
+                        const fieldType = this.plugin.settings.fileClassAsMultiSelect ? "Multi" : "Select";
+                        const fileClassField = new (buildEmptyField(this.plugin, undefined, fieldType))
                         const valuesList: Record<string, string> = {}
                         const options = {
                             sourceType: "ValuesList",

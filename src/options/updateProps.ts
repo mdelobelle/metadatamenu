@@ -24,7 +24,9 @@ const updateProps = async (plugin: MetadataMenu, view: MarkdownView | PropView, 
             id: key === plugin.settings.fileClassAlias ?
                 `fileclass-field-${plugin.settings.fileClassAlias}` :
                 plugin.fieldIndex.filesFields.get(file.path)?.find(_f => _f.isRoot() && _f.name === key)?.id,
-            type: key === plugin.settings.fileClassAlias ? "Select" : plugin.fieldIndex.filesFields.get(file.path)?.find(_f => _f.isRoot() && _f.name === key)?.type
+            type: key === plugin.settings.fileClassAlias ?
+                (plugin.settings.fileClassAsMultiSelect ? "Multi" : "Select") :
+                plugin.fieldIndex.filesFields.get(file.path)?.find(_f => _f.isRoot() && _f.name === key)?.type
         }
         if (!pseudoField.id || !pseudoField.type) return
         const node = note.getNodeForIndexedPath(pseudoField.id)

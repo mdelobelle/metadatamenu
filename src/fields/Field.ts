@@ -349,7 +349,8 @@ export function getFieldConstructor<O extends BaseOptions>(id: string, fileClass
         for (const [index, fC] of fileClasses.entries()) {
             valuesList[`${index}`] = fC
         }
-        return [buildField(plugin, plugin.settings.fileClassAlias, id, "", undefined, undefined, undefined, undefined, ...["Select", options] as FieldParam), "Select"]
+        const fieldType = plugin.settings.fileClassAsMultiSelect ? "Multi" : "Select";
+        return [buildField(plugin, plugin.settings.fileClassAlias, id, "", undefined, undefined, undefined, undefined, ...[fieldType, options] as FieldParam), fieldType as FieldType]
     } else {
         const fS = plugin.settings.presetFields.find(f => f.id === id)
         if (!fS) return []
