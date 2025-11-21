@@ -573,9 +573,23 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		maxRows.settingEl.addClass("narrow-title");
 		maxRows.controlEl.addClass("full-width");
 		maxRows.settingEl.appendChild(rowPerPageSaveButton.buttonEl)
+		
+		const fileClassAsMultiSelect = new Setting(classFilesSettings.containerEl)
+			.setName('FileClass as MultiSelect')
+			.setDesc('Allow selecting multiple fileClass values instead of just one')
+			.addToggle((cb) => {
+				cb
+					.setValue(this.plugin.settings.fileClassAsMultiSelect)
+					.onChange(async (value) => {
+						this.plugin.settings.fileClassAsMultiSelect = value;
+						await this.plugin.saveSettings();
+					});
+			})
+		fileClassAsMultiSelect.settingEl.addClass("no-border");
+		fileClassAsMultiSelect.controlEl.addClass("full-width");
 
 		/* Choose fileclass at file creation Fileclass selector in modal*/
-
+			
 		const chooseFileClassAtFileCreation = new Setting(classFilesSettings.containerEl)
 			.setName('Add a fileclass after create')
 			.setDesc('Select a fileclass at file creation to be added to the file')

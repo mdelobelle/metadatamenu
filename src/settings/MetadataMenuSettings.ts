@@ -14,6 +14,7 @@ export interface MetadataMenuSettings {
 	classFilesPath: string | null;
 	isAutosuggestEnabled: boolean;
 	fileClassAlias: string;
+	fileClassAsMultiSelect: boolean;
 	settingsVersion?: string | number;
 	globalFileClass?: string;
 	firstDayOfWeek: number;
@@ -49,6 +50,7 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	classFilesPath: null,
 	isAutosuggestEnabled: true,
 	fileClassAlias: "fileClass",
+	fileClassAsMultiSelect: false,
 	settingsVersion: undefined,
 	globalFileClass: undefined,
 	firstDayOfWeek: 1,
