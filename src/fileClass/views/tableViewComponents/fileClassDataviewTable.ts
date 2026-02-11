@@ -140,6 +140,18 @@ export class FileClassDataviewTable {
 
     public buildBulkModifiers(observed: HTMLDivElement) {
 
+        let isDragging = false
+        let dragConfirmed = false
+        let dragCheckState = false
+        let dragOrigin: HTMLInputElement | null = null
+        let dragOriginApply: (() => void) | null = null
+        document.addEventListener("mouseup", () => {
+            isDragging = false
+            dragConfirmed = false
+            dragOrigin = null
+            dragOriginApply = null
+        })
+
         const cleanTable = (table: HTMLTableElement) => {
             for (const selector of table.querySelectorAll(".modifier-selector")) {
                 (selector as HTMLElement).parentElement?.removeChild(selector)
@@ -170,12 +182,11 @@ export class FileClassDataviewTable {
             const checkBoxContainer = cell.createDiv({ cls: "modifier-selector" })
             const checkBox = checkBoxContainer.createEl("input", { type: "checkbox" })
 
-            if (cell.tagName === "TH") checkBox.addClass("page-checkbox")
-            else filesCheckboxes.push(checkBox)
-            checkBox.onclick = (e) => {
-                e.stopPropagation();
-                checkBox.toggleAttribute("checked")
-                if (cell!.tagName === "TH") {
+            if (cell.tagName === "TH") {
+                checkBox.addClass("page-checkbox")
+                checkBox.onclick = (e) => {
+                    e.stopPropagation();
+                    checkBox.toggleAttribute("checked")
                     allFilesSelected = checkBox.checked
                     for (const cB of filesCheckboxes) cB.checked = false
                     selectedFiles.splice(0)
@@ -186,16 +197,54 @@ export class FileClassDataviewTable {
                         }
                         for (const cB of filesCheckboxes) cB.checked = true
                     }
+                }
+            } else {
+                filesCheckboxes.push(checkBox)
 
-                } else {
+                const applyCheck = (checked: boolean) => {
+                    checkBox.checked = checked
                     const headerCheckbox = table.querySelector(".page-checkbox")
                     if (headerCheckbox) {
                         (headerCheckbox as HTMLInputElement).checked = false
                         allFilesSelected = false
                     }
-                    const name = cell!.querySelector("div.field-name a.internal-link")?.getAttr("data-href")
-                    if (checkBox.checked && name) selectedFiles.push(name)
-                    else if (name) selectedFiles.remove(name)
+                    const name = cell.querySelector("div.field-name a.internal-link")?.getAttr("data-href")
+                    if (checked && name && !selectedFiles.includes(name)) selectedFiles.push(name)
+                    else if (!checked && name) selectedFiles.remove(name)
+                }
+
+                checkBoxContainer.onmousedown = (e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    isDragging = true
+                    dragConfirmed = false
+                    dragCheckState = !checkBox.checked
+                    dragOrigin = checkBox
+                    dragOriginApply = () => applyCheck(dragCheckState)
+                }
+
+                checkBoxContainer.onmouseenter = () => {
+                    if (!isDragging) return
+                    if (!dragConfirmed) {
+                        dragConfirmed = true
+                        if (checkBox !== dragOrigin) dragOriginApply?.()
+                    }
+                    applyCheck(dragCheckState)
+                }
+
+                checkBoxContainer.onmouseup = (e) => {
+                    if (isDragging && !dragConfirmed) {
+                        applyCheck(dragCheckState)
+                    }
+                    isDragging = false
+                    dragConfirmed = false
+                    dragOrigin = null
+                    dragOriginApply = null
+                }
+
+                checkBox.onclick = (e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
                 }
             }
             checkBoxContainer.hide()
