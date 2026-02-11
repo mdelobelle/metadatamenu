@@ -8,7 +8,7 @@ import FCSM from "src/options/FieldCommandSuggestModal";
 import { FieldType, getFieldModal, multiTypes, objectTypes, rootOnlyTypes, getFieldClass, getDefaultOptions, MultiDisplayType } from "./Fields"
 import { FieldParam, IFieldBase, BaseOptions, isFieldOptions } from "./base/BaseField"
 import { postValues } from "src/commands/postValues"
-import { IBaseValueModal, MultiTargetModificationConfirmModal } from "./base/BaseModal"
+import { BulkEditMode, IBaseValueModal, MultiTargetModificationConfirmModal } from "./base/BaseModal"
 import { ExistingField } from "./ExistingField"
 import { Constructor } from "src/typings/types"
 import { FieldActions } from "src/components/FieldsModal"
@@ -534,7 +534,7 @@ export interface IFieldManager<T, O extends BaseOptions> extends IField<O> {
     asBlockquote?: boolean,
     previousModal?: IObjectBaseModal<Target>
     openModal: () => void;
-    save: (value?: any) => Promise<void>
+    save: (value?: any, mode?: import("./base/BaseModal").BulkEditMode) => Promise<void>
     goToPreviousModal: () => Promise<void>
 }
 
@@ -641,13 +641,13 @@ export function FieldValueManager<O extends BaseOptions, F extends Constructor<I
             this.plugin.fieldIndex.updatedManagedField = undefined
         }
 
-        public async save(value?: any) {
+        public async save(value?: any, mode?: BulkEditMode) {
             if (value !== undefined) this.value = value
             if (isSingleTargeted(this)) {
                 if (this.previousModal) this.plugin.fieldIndex.updatedManagedField = this
                 await postValues(plugin, [{ indexedPath: this.indexedPath || this.id, payload: { value: `${this.value || ""}` } }], this.target, this.lineNumber, this.asList, this.asBlockquote)
             } else if (isMultiTargeted(this)) {
-                new MultiTargetModificationConfirmModal(this).open()
+                new MultiTargetModificationConfirmModal(this, mode || 'overwrite').open()
             }
         }
     }

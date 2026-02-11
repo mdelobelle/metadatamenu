@@ -2,7 +2,7 @@ import { ButtonComponent, DropdownComponent, TFile, TextAreaComponent, TextCompo
 import { BaseOptions } from "../../base/BaseField"
 import { ISettingsModal } from "../../base/BaseSetting"
 import { FileSuggest } from "src/suggester/FileSuggester"
-import { ActionLocation, IField, IFieldManager, Target, baseDisplayValue, fieldValueManager, isFieldActions, isSingleTargeted, isSuggest, removeValidationError, setValidationError } from "../../Field"
+import { ActionLocation, IField, IFieldManager, Target, baseDisplayValue, fieldValueManager, isFieldActions, isMultiTargeted, isSingleTargeted, isSuggest, removeValidationError, setValidationError } from "../../Field"
 import MetadataMenu from "main"
 import { IBaseValueModal, basicSuggestModal } from "../../base/BaseModal"
 import { cleanActions } from "src/utils/modals"
@@ -375,7 +375,11 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         buildConfirm(footerActionsContainer: HTMLDivElement) { }
 
         async clearValues() {
-            this.managedField.save("")
+            if (isMultiTargeted(this.managedField)) {
+                this.managedField.save("", 'clear')
+            } else {
+                this.managedField.save("")
+            }
         }
     }
 }

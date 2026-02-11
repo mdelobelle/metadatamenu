@@ -2,7 +2,7 @@
 import MetadataMenu from "main";
 import * as AbstractList from "./abstractModels/AbstractList"
 import { ISettingsModal as IBaseSettingsModal } from "../base/BaseSetting";
-import { ActionLocation, IField, IFieldManager, Target, fieldValueManager, isSingleTargeted } from "../Field";
+import { ActionLocation, IField, IFieldManager, Target, fieldValueManager, isMultiTargeted, isSingleTargeted } from "../Field";
 import { getFieldModal } from "../Fields";
 import { ButtonComponent, TFile, setIcon } from "obsidian";
 import { getLink } from "src/utils/parser";
@@ -135,14 +135,43 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
         }
 
         buildConfirm(footerActionsContainer: HTMLDivElement) {
-            const infoContainer = footerActionsContainer.createDiv({ cls: "info" })
-            infoContainer.setText("Alt+Enter to save")
-            const confirmButton = new ButtonComponent(footerActionsContainer)
-            confirmButton.setIcon("checkmark")
-            confirmButton.onClick(async () => {
-                await this.save();
-                this.close()
-            })
+            if (isMultiTargeted(managedField)) {
+                const appendButton = new ButtonComponent(footerActionsContainer)
+                appendButton.setIcon("list-plus")
+                appendButton.setTooltip("Add to existing values")
+                appendButton.onClick(async () => {
+                    this.saved = true
+                    managedField.save(this.selectedOptions.join(", "), 'append')
+                    this.close()
+                })
+
+                const overwriteButton = new ButtonComponent(footerActionsContainer)
+                overwriteButton.setIcon("replace")
+                overwriteButton.setTooltip("Replace all values")
+                overwriteButton.onClick(async () => {
+                    this.saved = true
+                    managedField.save(this.selectedOptions.join(", "), 'overwrite')
+                    this.close()
+                })
+
+                const removeButton = new ButtonComponent(footerActionsContainer)
+                removeButton.setIcon("list-minus")
+                removeButton.setTooltip("Remove selected values")
+                removeButton.onClick(async () => {
+                    this.saved = true
+                    managedField.save(this.selectedOptions.join(", "), 'remove')
+                    this.close()
+                })
+            } else {
+                const infoContainer = footerActionsContainer.createDiv({ cls: "info" })
+                infoContainer.setText("Alt+Enter to save")
+                const confirmButton = new ButtonComponent(footerActionsContainer)
+                confirmButton.setIcon("checkmark")
+                confirmButton.onClick(async () => {
+                    await this.save();
+                    this.close()
+                })
+            }
         }
     }
 }

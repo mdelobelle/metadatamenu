@@ -13,6 +13,20 @@ import { ExistingField, getValueDisplay } from "../ExistingField";
 import { positionIcon } from "src/note/line";
 import { BaseOptions } from "./BaseField";
 
+export type BulkEditMode = 'overwrite' | 'append' | 'remove' | 'clear'
+
+const bulkEditModeLabel: Record<BulkEditMode, string> = {
+    overwrite: "Overwrite",
+    append: "Append to",
+    remove: "Remove from",
+    clear: "Clear"
+}
+
+function parseListValue(value: any): string[] {
+    if (!value) return []
+    if (Array.isArray(value)) return value.map(v => v.toString().trim()).filter(Boolean)
+    return value.toString().split(",").map((v: string) => v.trim()).filter(Boolean)
+}
 
 export interface IBaseValueModal<Target> extends Modal {
     managedField: IFieldManager<Target, BaseOptions>
@@ -133,17 +147,39 @@ interface TargetedField {
 export class MultiTargetModificationConfirmModal<O extends BaseOptions> extends Modal {
     constructor(
         public managedField: IFieldManager<TFile[], O>,
+        public mode: BulkEditMode = 'overwrite'
     ) {
         super(managedField.plugin.app)
         this.containerEl.classList.add("metadata-menu", "confirm-modal")
     }
 
+    private computeFinalValue(target: TargetedField): string {
+        const currentValues = parseListValue(target.existingField?.value)
+        const newValues = parseListValue(this.managedField.value)
+        switch (this.mode) {
+            case 'overwrite':
+                return this.managedField.value
+            case 'append':
+                return [...new Set([...currentValues, ...newValues])].join(", ")
+            case 'remove':
+                return currentValues.filter(v => !newValues.includes(v)).join(", ")
+            case 'clear':
+                return ""
+        }
+    }
+
     async onOpen() {
-        this.titleEl.innerHTML = `Change <span class="field-name">${this.managedField.name}</span> current values`
+        const modeLabel = bulkEditModeLabel[this.mode]
+        this.titleEl.innerHTML = `${modeLabel} <span class="field-name">${this.managedField.name}</span> values`
         this.contentEl.createEl("hr")
-        this.contentEl.createEl("span", { text: "New value: " })
-        this.contentEl.createEl("span", { cls: "field-value", text: `${this.managedField.value}` })
-        this.contentEl.createEl("hr")
+        if (this.mode !== 'clear') {
+            const actionLabel = this.mode === 'append' ? "Values to add"
+                : this.mode === 'remove' ? "Values to remove"
+                : "New value"
+            this.contentEl.createEl("span", { text: `${actionLabel}: ` })
+            this.contentEl.createEl("span", { cls: "field-value", text: `${this.managedField.value}` })
+            this.contentEl.createEl("hr")
+        }
         this.contentEl.createDiv({ text: `Target file(s) (${this.managedField.target.length}):` })
         const targetsContainer = this.contentEl.createDiv()
         const targets: TargetedField[] = []
@@ -172,8 +208,17 @@ export class MultiTargetModificationConfirmModal<O extends BaseOptions> extends 
             const lineNumber = target.existingField?.lineNumber
             const lineNumberDisplay = locationContainer.createSpan({ cls: "line-number", text: lineNumber ? `(${lineNumber})` : "" })
             if (lineNumber) lineNumberDisplay.ariaLabel = `${this.managedField.name} current line: ${lineNumber}`
-            const currentValueContainer = targetContainer.createDiv({ cls: "current-value", text: getValueDisplay(target.existingField) })
-            if (!target.existingField?.value) currentValueContainer.addClass("empty-or-missing")
+            const currentValueDisplay = getValueDisplay(target.existingField)
+            if (this.mode === 'append' || this.mode === 'remove') {
+                const previewValue = this.computeFinalValue(target)
+                const currentValueContainer = targetContainer.createDiv({ cls: "current-value" })
+                currentValueContainer.createSpan({ text: currentValueDisplay })
+                currentValueContainer.createSpan({ text: " → ", cls: "arrow" })
+                currentValueContainer.createSpan({ text: previewValue || "<Empty>", cls: previewValue ? "" : "empty-or-missing" })
+            } else {
+                const currentValueContainer = targetContainer.createDiv({ cls: "current-value", text: currentValueDisplay })
+                if (!target.existingField?.value) currentValueContainer.addClass("empty-or-missing")
+            }
         }
         const footer = this.contentEl.createDiv({ cls: "footer-container" })
         new ButtonComponent(footer)
@@ -181,9 +226,10 @@ export class MultiTargetModificationConfirmModal<O extends BaseOptions> extends 
             .setWarning()
             .onClick(() => {
                 for (const target of targets) {
+                    const finalValue = this.computeFinalValue(target)
                     postValues(
                         this.managedField.plugin,
-                        [{ indexedPath: this.managedField.id, payload: { value: this.managedField.value } }],
+                        [{ indexedPath: this.managedField.id, payload: { value: finalValue } }],
                         target.filePath,
                         this.managedField.lineNumber || -1,
                         this.managedField.asList,
