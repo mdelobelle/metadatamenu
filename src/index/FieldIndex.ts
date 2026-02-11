@@ -508,6 +508,37 @@ export default class FieldIndex extends FieldIndexBuilder {
         return ["Lookup", "Formula"].includes(field.type)
     }
 
+    private sortFieldsByFileClassOrder(fields: Field[], file: TFile): Field[] {
+        /*
+        Sorts a field array according to the fieldsOrder defined in associated fileClasses.
+
+        PREREQUISITE: this.filesFileClasses must be populated for the given file
+        before calling this method. Otherwise returns fields unsorted.
+        */
+
+        const fileClasses = this.filesFileClasses.get(file.path) || []
+        if (!fileClasses.length) return fields
+
+        const combinedOrder: string[] = []
+        for (const fileClass of fileClasses) {
+            const order = fileClass.options.fieldsOrder || []
+            order.forEach(id => {
+                if (!combinedOrder.includes(id)) {
+                    combinedOrder.push(id)
+                }
+            })
+        }
+
+        return fields.sort((f1, f2) => {
+            const idx1 = combinedOrder.indexOf(f1.id)
+            const idx2 = combinedOrder.indexOf(f2.id)
+            if (idx1 === -1 && idx2 === -1) return 0 // Both don't have a defined ordering - preserve original order
+            if (idx1 === -1) return 1                // f1 not ordered - goes after f2
+            if (idx2 === -1) return -1               // f2 not ordered - goes after f1
+            return idx1 - idx2                       // Both are ordered - sort by position
+        })
+    }
+
     private getFilesFields(): number {
         /*
         associates fields to each indexable files according to the mapping
@@ -550,7 +581,8 @@ export default class FieldIndex extends FieldIndexBuilder {
                 fileFields.push(...(fileFieldsFromPath || []).filter(field => !fileFields.map(f => f.id).includes(field.id)))
                 fileFields.push(...(fileFieldsFromGroup || []).filter(field => !fileFields.map(f => f.id).includes(field.id)))
                 fileFields.push(...(fileFieldsFromQuery || []).filter(field => !fileFields.map(f => f.id).includes(field.id)))
-                this.filesFields.set(f.path, fileFields);
+                fileFields = this.sortFieldsByFileClassOrder(fileFields, f)
+                this.filesFields.set(f.path, fileFields)
                 const filesLookupAndFormulasFields: Field[] = fileFields.filter(f => this.isLookupOrFormula(f))
                 filesLookupAndFormulasFields.push(...(fileFieldsFromTag || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
                 filesLookupAndFormulasFields.push(...(fileFieldsFromPath || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
@@ -559,11 +591,12 @@ export default class FieldIndex extends FieldIndexBuilder {
                 if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, filesLookupAndFormulasFields)
             } else if (this.fieldsFromGlobalFileClass.length) {
                 fileFields = this.fieldsFromGlobalFileClass
+                this.filesFileClasses.set(f.path, [this.fileClassesName.get(this.settings.globalFileClass!)!])
+                this.filesFileClassesNames.set(f.path, [this.settings.globalFileClass!])
+                fileFields = this.sortFieldsByFileClassOrder(fileFields, f)
                 this.filesFields.set(f.path, fileFields)
                 const filesLookupAndFormulasFields = this.fieldsFromGlobalFileClass.filter(f => this.isLookupOrFormula(f))
                 if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, this.fieldsFromGlobalFileClass.filter(f => this.isLookupOrFormula(f)))
-                this.filesFileClasses.set(f.path, [this.fileClassesName.get(this.settings.globalFileClass!)!])
-                this.filesFileClassesNames.set(f.path, [this.settings.globalFileClass!])
             } else {
                 fileFields = this.plugin.presetFields.map(prop => {
                     const property = new (buildEmptyField(this.plugin, undefined))
