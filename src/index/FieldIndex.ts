@@ -1,4 +1,4 @@
-import { Notice, TFile } from "obsidian"
+import { Notice, TFile, getAllTags } from "obsidian"
 import MetadataMenu from "main"
 import { FileClass, createFileClass, getFileClassNameFromPath, indexFileClass } from "src/fileClass/fileClass";
 import FileClassQuery from "src/fileClass/FileClassQuery";
@@ -372,21 +372,14 @@ export default class FieldIndex extends FieldIndexBuilder {
     private resolveFileClassMatchingTags(): void {
 
         if (!this.tagsMatchingFileClasses.size) return
-        const mappedTags = [...this.tagsMatchingFileClasses.keys()].map(_t => `#${_t}`)
+        const mappedTags = new Set(
+            Array.from(this.tagsMatchingFileClasses.keys(), _t => `#${_t}`)
+        )
         const filesWithMappedTag: cFileWithTags[] = [];
         this.indexableFiles().forEach(_f => {
-            const cache = this.plugin.app.metadataCache.getFileCache(_f)
-            const cachedTags = cache?.frontmatter?.tags
-            let fileTags: string[] = []
-            if (Array.isArray(cachedTags)) {
-                fileTags = cachedTags
-            } else if (typeof cachedTags === "string") {
-                fileTags = cachedTags.split(",").map(_t => _t.trim())
-            }
-            const filteredTagsFromFrontmatter = fileTags.filter(_t => mappedTags.includes(`#${_t}`))
-            const filteredTagsFromFile = cache?.tags?.filter(_t => mappedTags.includes(_t.tag)).map(_t => _t.tag) || []
-            const filteredTags = filteredTagsFromFrontmatter.concat(filteredTagsFromFile)
-            if (filteredTags?.length) {
+            const fileTags = this.getExpandedTags(_f)
+            const filteredTags = Array.from(fileTags).filter(_t => mappedTags.has(_t))
+            if (filteredTags.length) {
                 const fileWithTags: cFileWithTags = { path: _f.path, tags: [] }
                 filteredTags.forEach(_t => fileWithTags.tags.push(_t))
                 filesWithMappedTag.push(fileWithTags)
@@ -403,6 +396,27 @@ export default class FieldIndex extends FieldIndexBuilder {
                 )
             })
         })
+    }
+
+    private getExpandedTags(file: TFile): Set<string> {
+        /*
+         Returns a set of every tag within a file. Nested tags like #my/nested/tag are
+         expanded into all parent levels: #my, #my/nested, #my/nested/tag.
+
+         Analogous to dataview's file.tags, rather than file.etags.
+         */
+        const fileCache = this.plugin.app.metadataCache.getFileCache(file)
+        if (!fileCache) return new Set()
+
+        const exactTags = new Set(getAllTags(fileCache))
+        const allExpandedTags = new Set<string>()
+        for (const tag of exactTags) {
+            const tagLevels = tag.replace(/^#/, "").split("/")
+            for (let i = 0; i < tagLevels.length; i++) {
+                allExpandedTags.add(`#${tagLevels.slice(0, i + 1).join("/")}`)
+            }
+        }
+        return allExpandedTags
     }
 
     private resolveFileClassMatchingFilesPaths(): void {
