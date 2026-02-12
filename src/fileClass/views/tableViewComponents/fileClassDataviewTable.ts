@@ -159,6 +159,9 @@ export class FileClassDataviewTable {
             for (const toggler of table.querySelectorAll(".checkbox-toggler")) {
                 (toggler as HTMLElement).parentElement?.removeChild(toggler)
             }
+            for (const applyBtn of table.querySelectorAll(".bulk-apply-btn")) {
+                (applyBtn as HTMLElement).parentElement?.removeChild(applyBtn)
+            }
         }
 
         const processFilesFieldChange = (dvTable: FileClassDataviewTable, selectedFiles: string[], allFilesSelected: boolean, columndId: string) => {
@@ -264,22 +267,33 @@ export class FileClassDataviewTable {
                     column.createDiv({ cls: "spacer" })
                     const toggleButtonContainer = column.createDiv({ cls: "checkbox-toggler" })
                     setIcon(toggleButtonContainer, "list-todo")
-
-                }
-
-                column.onclick = (e) => {
-                    if (index === "0") {
+                    toggleButtonContainer.onclick = (e) => {
+                        e.stopPropagation()
                         const cells = table.querySelectorAll('.modifier-selector') as NodeListOf<HTMLTableCellElement>
                         for (const cell of cells) {
                             const input = cell.find("input")
                             if (input && !(input as HTMLElement & { checkVisibility: () => boolean }).checkVisibility()) cell.show()
                             else cell.hide()
                         }
-                    } else {
+                        const applyBtns = table.querySelectorAll('.bulk-apply-btn') as NodeListOf<HTMLElement>
+                        const anyCheckboxVisible = table.querySelector('.modifier-selector input') &&
+                            (table.querySelector('.modifier-selector input') as HTMLElement & { checkVisibility: () => boolean }).checkVisibility()
+                        for (const btn of applyBtns) {
+                            if (anyCheckboxVisible) btn.show()
+                            else btn.hide()
+                        }
+                    }
+                } else {
+                    const applyBtn = column.createDiv({ cls: "bulk-apply-btn" })
+                    setIcon(applyBtn, "pencil")
+                    applyBtn.onclick = (e) => {
+                        e.stopPropagation()
                         const columnId = (column.querySelector('span.column-id') as HTMLInputElement).id
                         if (selectedFiles.length || allFilesSelected) processFilesFieldChange(dvTable, selectedFiles, allFilesSelected, columnId)
                     }
+                    applyBtn.hide()
                 }
+
             }
         }
 
