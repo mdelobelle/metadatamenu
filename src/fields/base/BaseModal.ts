@@ -224,10 +224,10 @@ export class MultiTargetModificationConfirmModal<O extends BaseOptions> extends 
         new ButtonComponent(footer)
             .setButtonText("Confirm")
             .setWarning()
-            .onClick(() => {
+            .onClick(async () => {
                 for (const target of targets) {
                     const finalValue = this.computeFinalValue(target)
-                    postValues(
+                    await postValues(
                         this.managedField.plugin,
                         [{ indexedPath: this.managedField.id, payload: { value: finalValue } }],
                         target.filePath,
