@@ -1,8 +1,7 @@
 import { editorInfoField, MarkdownView, setIcon, TFile } from "obsidian";
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import { RangeSetBuilder } from "@codemirror/state";
-import { syntaxTree } from "@codemirror/language";
-import { tokenClassNodeProp } from "@codemirror/language";
+import { syntaxTree, tokenClassNodeProp } from "@codemirror/language";
 import MetadataMenu from "main";
 import NoteFieldsComponent from "src/components/FieldsModal";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
@@ -104,8 +103,6 @@ export function buildCMViewPlugin(plugin: MetadataMenu) {
                         from,
                         to,
                         enter: (node) => {
-
-
                             const tokenProps = node.type.prop(tokenClassNodeProp);
                             if (tokenProps) {
                                 const props = new Set(tokenProps.split(" "));

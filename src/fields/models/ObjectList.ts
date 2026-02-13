@@ -220,8 +220,50 @@ export function getOptionsStr(field: IField<Options>): string {
 }
 export function valueString(managedField: IFieldManager<Target, Options>): string {
     let template = managedField.options.displayTemplate as string || undefined
-    const itemsCount = Object.keys(managedField.value).length
-    if (!template) return `<${managedField.getChildren().map(f => f.name).join(", ")}>(*${itemsCount})`
+    const value = managedField.value
+    const itemsCount = Array.isArray(value) ? value.length : Object.keys(value).length
+    
+    if (!template) {
+        if (itemsCount === 0) {
+            const childNames = managedField.getChildren().map(f => f.name).join(", ")
+            return `<${childNames}> (empty)`
+        }
+        
+        const MAX_DISPLAY = 3;
+        const items: string[] = []
+        const valueArray = Array.isArray(value) ? value : Object.values(value)
+        const children = managedField.getChildren()
+        
+        for (let i = 0; i < Math.min(MAX_DISPLAY, itemsCount); i++) {
+            const itemValue = valueArray[i]
+            if (itemValue) {
+                const itemParts: string[] = []
+                children.forEach(child => {
+                    const cFVM = fieldValueManager(managedField.plugin, child.id, child.fileClassName, managedField.target, undefined, undefined)
+                    if (cFVM && itemValue[child.name] !== undefined && itemValue[child.name] !== "") {
+                        cFVM.value = itemValue[child.name]
+                        const valStr = getValueString(cFVM.type)(cFVM)
+                        if (valStr) itemParts.push(valStr)
+                    }
+                })
+                if (itemParts.length > 0) {
+                    items.push(`{${itemParts.join(", ")}}`)
+                } else {
+                    items.push(`{empty}`)
+                }
+            }
+        }
+        
+        const displayStr = items.join(", ")
+        const remaining = itemsCount - MAX_DISPLAY
+        
+        if (remaining > 0) {
+            return `${displayStr} (+${remaining} more)`
+        }
+        
+        return displayStr || `(${itemsCount} items)`
+    }
+    
     template = template.replace(`{{itemsCount}}`, `${itemsCount}`)
     return template
 }
@@ -242,33 +284,49 @@ export function displayItem(managedField: IFieldManager<Target, Options>, value:
     const defaultDisplay = (pattern: string) => {
         items.push({ pattern: pattern, value: `(${pattern}?)` })
     }
-    if (!template || !value) return `<${managedField.getChildren().map(f => f.name).join(", ")}>[${itemIndex}]`
-    else {
+    
+    if (!template || !value) {
+        // Show actual values instead of field names
         const children = managedField.getChildren()
-        const childrenNames = children.map(c => c.name)
-        const templatePathRegex = new RegExp(`\\{\\{(?<pattern>[^\\}]+?)\\}\\}`, "gu");
-        const tP = template.matchAll(templatePathRegex)
-        let next = tP.next();
-        while (!next.done) {
-            if (next.value.groups) {
-                const pattern = next.value.groups.pattern
-                if (pattern === 'itemIndex') {
-                    items.push({ pattern: "itemIndex", value: `${itemIndex}` })
-                } else if (childrenNames.includes(pattern)) {
-                    const child = children.find(c => c.name === pattern)!
-                    const cFVM = fieldValueManager(managedField.plugin, child.id, child.fileClassName, managedField.target, undefined, undefined)
-                    if (!cFVM) defaultDisplay(pattern)
-                    else {
-                        cFVM.value = value[child.name]
-                        items.push({ pattern: pattern, value: getValueString(cFVM.type)(cFVM) })
-                    }
-                } else {
-                    defaultDisplay(pattern)
-                }
+        const itemParts: string[] = []
+        
+        children.forEach(child => {
+            const cFVM = fieldValueManager(managedField.plugin, child.id, child.fileClassName, managedField.target, undefined, undefined)
+            if (cFVM && value[child.name] !== undefined) {
+                cFVM.value = value[child.name]
+                const valStr = getValueString(cFVM.type)(cFVM)
+                if (valStr) itemParts.push(`${child.name}: ${valStr}`)
             }
-            next = tP.next()
-        }
+        })
+        
+        return itemParts.length > 0 ? itemParts.join(", ") : `Item ${itemIndex + 1}`
     }
+    
+    const children = managedField.getChildren()
+    const childrenNames = children.map(c => c.name)
+    const templatePathRegex = new RegExp(`\\{\\{(?<pattern>[^\\}]+?)\\}\\}`, "gu");
+    const tP = template.matchAll(templatePathRegex)
+    let next = tP.next();
+    while (!next.done) {
+        if (next.value.groups) {
+            const pattern = next.value.groups.pattern
+            if (pattern === 'itemIndex') {
+                items.push({ pattern: "itemIndex", value: `${itemIndex}` })
+            } else if (childrenNames.includes(pattern)) {
+                const child = children.find(c => c.name === pattern)!
+                const cFVM = fieldValueManager(managedField.plugin, child.id, child.fileClassName, managedField.target, undefined, undefined)
+                if (!cFVM) defaultDisplay(pattern)
+                else {
+                    cFVM.value = value[child.name]
+                    items.push({ pattern: pattern, value: getValueString(cFVM.type)(cFVM) })
+                }
+            } else {
+                defaultDisplay(pattern)
+            }
+        }
+        next = tP.next()
+    }
+    
     for (const item of items) {
         template = template.replace(`{{${item.pattern}}}`, item.value)
     }

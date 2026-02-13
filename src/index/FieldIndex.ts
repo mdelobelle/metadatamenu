@@ -18,6 +18,8 @@ import { Field, buildEmptyField } from "src/fields/Field";
 
 export default class FieldIndex extends FieldIndexBuilder {
     private launchTime: number
+    private compiledRegexCache: RegExp[] | null = null;
+    private indexableFilesCache: TFile[] | null = null;
 
     constructor(public plugin: MetadataMenu) {
         super(plugin)
@@ -45,6 +47,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                     if (file.extension === "md") {
                         this.changedFiles.push(file)
                         this.lastTimeBeforeResolving = Date.now()
+                        this.plugin.noteCache.invalidate(file.path)
                     } else if (file.extension === "canvas") {
                         await updateCanvas(this.plugin, { canvas: file });
                     }
@@ -55,6 +58,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         this.registerEvent(
             this.plugin.app.vault.on("delete", async (file) => {
                 this.filesFields.delete(file.path)
+                this.plugin.noteCache.invalidate(file.path)
                 await this.fullIndex()
             })
         )
@@ -62,6 +66,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         this.registerEvent(
             this.plugin.app.vault.on("rename", async (file, oldPath) => {
                 this.filesFields.delete(oldPath)
+                this.plugin.noteCache.invalidate(oldPath)
                 await this.fullIndex()
             })
         )
@@ -103,19 +108,49 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     public indexableFiles() {
-        return this.plugin.app.vault.getMarkdownFiles()
-            .filter(f => !this.classFilesPath
-                || !f.path.startsWith(this.classFilesPath))
-            .filter(f => !this.settings.fileIndexingExcludedFolders.some(path => f.path.startsWith(path)))
-            .filter(f => !this.settings.fileIndexingExcludedExtensions.some(extension => f.path.endsWith(extension)))
-            .filter(f => !this.settings.fileIndexingExcludedRegex.some(regexStr => {
-                try {
-                    const regex = new RegExp(regexStr);
-                    return regex.test(f.path)
-                } catch (e) {
-                    return true
-                }
-            }))
+        if (this.indexableFilesCache) {
+            return this.indexableFilesCache;
+        }
+
+        // Compile regexes once and cache
+        if (!this.compiledRegexCache) {
+            this.compiledRegexCache = this.settings.fileIndexingExcludedRegex
+                .map(regexStr => {
+                    try {
+                        return new RegExp(regexStr);
+                    } catch (e) {
+                        return null;
+                    }
+                })
+                .filter(r => r !== null) as RegExp[];
+        }
+
+        // Single pass filter instead of 4 separate filters
+        this.indexableFilesCache = this.plugin.app.vault.getMarkdownFiles().filter(f => {
+            // Check class files path
+            if (this.classFilesPath && f.path.startsWith(this.classFilesPath)) {
+                return false;
+            }
+            
+            // Check excluded folders
+            if (this.settings.fileIndexingExcludedFolders.some(path => f.path.startsWith(path))) {
+                return false;
+            }
+            
+            // Check excluded extensions
+            if (this.settings.fileIndexingExcludedExtensions.some(extension => f.path.endsWith(extension))) {
+                return false;
+            }
+            
+            // Check excluded regex patterns
+            if (this.compiledRegexCache!.some(regex => regex.test(f.path))) {
+                return false;
+            }
+            
+            return true;
+        });
+
+        return this.indexableFilesCache;
     }
 
     public indexableFileClasses() {
@@ -144,15 +179,23 @@ export default class FieldIndex extends FieldIndexBuilder {
     public async indexFields(): Promise<void> {
         let start = Date.now()
         this.flushCache();
+        
+        // Clear caches for fresh indexing
+        this.compiledRegexCache = null;
+        this.indexableFilesCache = null;
+        
+        // Cache indexable files to avoid recalculating multiple times
+        const indexableFiles = this.indexableFiles();
+        
         this.getFileClassesAncestors();
         this.getFileClasses();
         this.getLookupQueries();
-        this.resolveFileClassMatchingTags();
-        this.resolveFileClassMatchingFilesPaths();
+        this.resolveFileClassMatchingTags(indexableFiles);
+        this.resolveFileClassMatchingFilesPaths(indexableFiles);
         this.resolveFileClassMatchingBookmarksGroups();
         this.resolveFileClassQueries();
-        this.getFilesFieldsFromFileClass();
-        const indexedFiles = this.getFilesFields();
+        this.getFilesFieldsFromFileClass(indexableFiles);
+        const indexedFiles = this.getFilesFields(indexableFiles);
         await this.getCanvasesFiles();
         await this.getValuesListNotePathValues();
         this.getFilesLookupAndFormulaFieldsExists();
@@ -219,7 +262,8 @@ export default class FieldIndex extends FieldIndexBuilder {
 
     async getCanvasesFiles(): Promise<void> {
         const canvases = this.plugin.app.vault.getFiles().filter(t => t.extension === "canvas")
-        canvases.forEach(async canvas => {
+        // Use Promise.all instead of forEach with async
+        await Promise.all(canvases.map(async canvas => {
             const currentFilesPaths: string[] = []
             let { nodes, edges }: CanvasData = { nodes: [], edges: [] };
             const rawContent = await this.plugin.app.vault.read(canvas)
@@ -233,14 +277,15 @@ export default class FieldIndex extends FieldIndexBuilder {
                     new Notice(`Couldn't read ${canvas.path}`)
                 }
             }
-            nodes?.forEach(async node => {
+            // Use Set for faster duplicate checking
+            const filePathsSet = new Set<string>();
+            nodes?.forEach(node => {
                 if (node.type === "file") {
-                    const targetFilePath = node.file
-                    if (!currentFilesPaths.includes(targetFilePath)) currentFilesPaths.push(targetFilePath)
+                    filePathsSet.add(node.file);
                 }
             })
-            this.canvasLastFiles.set(canvas.path, currentFilesPaths)
-        })
+            this.canvasLastFiles.set(canvas.path, Array.from(filePathsSet))
+        }))
     }
 
     async getValuesListNotePathValues(): Promise<void> {
@@ -369,12 +414,14 @@ export default class FieldIndex extends FieldIndexBuilder {
         }
     }
 
-    private resolveFileClassMatchingTags(): void {
+    private resolveFileClassMatchingTags(indexableFiles: TFile[]): void {
 
         if (!this.tagsMatchingFileClasses.size) return
         const mappedTags = [...this.tagsMatchingFileClasses.keys()].map(_t => `#${_t}`)
+        const mappedTagsSet = new Set(mappedTags); // Use Set for O(1) lookup
         const filesWithMappedTag: cFileWithTags[] = [];
-        this.indexableFiles().forEach(_f => {
+        
+        indexableFiles.forEach(_f => {
             const cache = this.plugin.app.metadataCache.getFileCache(_f)
             const cachedTags = cache?.frontmatter?.tags
             let fileTags: string[] = []
@@ -383,12 +430,11 @@ export default class FieldIndex extends FieldIndexBuilder {
             } else if (typeof cachedTags === "string") {
                 fileTags = cachedTags.split(",").map(_t => _t.trim())
             }
-            const filteredTagsFromFrontmatter = fileTags.filter(_t => mappedTags.includes(`#${_t}`))
-            const filteredTagsFromFile = cache?.tags?.filter(_t => mappedTags.includes(_t.tag)).map(_t => _t.tag) || []
+            const filteredTagsFromFrontmatter = fileTags.filter(_t => mappedTagsSet.has(`#${_t}`))
+            const filteredTagsFromFile = cache?.tags?.filter(_t => mappedTagsSet.has(_t.tag)).map(_t => _t.tag) || []
             const filteredTags = filteredTagsFromFrontmatter.concat(filteredTagsFromFile)
             if (filteredTags?.length) {
-                const fileWithTags: cFileWithTags = { path: _f.path, tags: [] }
-                filteredTags.forEach(_t => fileWithTags.tags.push(_t))
+                const fileWithTags: cFileWithTags = { path: _f.path, tags: filteredTags }
                 filesWithMappedTag.push(fileWithTags)
             }
         })
@@ -405,11 +451,12 @@ export default class FieldIndex extends FieldIndexBuilder {
         })
     }
 
-    private resolveFileClassMatchingFilesPaths(): void {
+    private resolveFileClassMatchingFilesPaths(indexableFiles: TFile[]): void {
 
         if (!this.filesPathsMatchingFileClasses.size) return
         const paths = [...this.filesPathsMatchingFileClasses.keys()]
-        this.indexableFiles()
+        
+        indexableFiles
             .filter(_f => _f.parent !== null)
             .forEach((file: TFile) => {
                 for (const path of paths) {
@@ -459,6 +506,8 @@ export default class FieldIndex extends FieldIndexBuilder {
         if (!dvApi) return
         this.settings.fileClassQueries.forEach(sfcq => {
             const fcq = new FileClassQuery(sfcq.name, sfcq.id, sfcq.query, sfcq.fileClassName)
+            // Invalidate cache before getting results to ensure fresh data
+            fcq.invalidateCache();
             fcq.getResults(dvApi).forEach((result: any) => {
                 const fileClass = this.fileClassesName.get(fcq.fileClassName)
                 if (fileClass) {
@@ -472,9 +521,9 @@ export default class FieldIndex extends FieldIndexBuilder {
         })
     }
 
-    private getFilesFieldsFromFileClass(): void {
+    private getFilesFieldsFromFileClass(indexableFiles: TFile[]): void {
 
-        this.indexableFiles().forEach(f => {
+        indexableFiles.forEach(f => {
             const fileFileClassesNames = [];
             const fileClassesCache: string[] | string = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.[this.settings.fileClassAlias]
             if (fileClassesCache) {
@@ -508,7 +557,17 @@ export default class FieldIndex extends FieldIndexBuilder {
         return ["Lookup", "Formula"].includes(field.type)
     }
 
-    private getFilesFields(): number {
+    private addUniqueFields(target: Field[], source: Field[] | undefined, existingIds: Set<string>): void {
+        if (!source) return;
+        for (const field of source) {
+            if (!existingIds.has(field.id)) {
+                target.push(field);
+                existingIds.add(field.id);
+            }
+        }
+    }
+
+    private getFilesFields(indexableFiles: TFile[]): number {
         /*
         associates fields to each indexable files according to the mapping
         between the file and the fileClasses
@@ -524,7 +583,7 @@ export default class FieldIndex extends FieldIndexBuilder {
         compares the fieldSet of the file and updates filesFieldsLastChange accordingly
         */
 
-        const filesToIndex = this.indexableFiles()
+        const filesToIndex = indexableFiles
             .filter(_f => !this.changedFiles.length || //forceupdateAll
                 this.changedFiles.filter(file => this.classFilesPath && file.path.startsWith(this.classFilesPath)).length || // a fileclass has changed forceupdate all
                 this.changedFiles.includes(_f)
@@ -546,22 +605,44 @@ export default class FieldIndex extends FieldIndexBuilder {
                 fileFieldsFromGroup?.length
             ) {
                 fileFields = fileFieldsFromInnerFileClasses || [];
-                fileFields.push(...(fileFieldsFromTag || []).filter(field => !fileFields.map(f => f.id).includes(field.id)))
-                fileFields.push(...(fileFieldsFromPath || []).filter(field => !fileFields.map(f => f.id).includes(field.id)))
-                fileFields.push(...(fileFieldsFromGroup || []).filter(field => !fileFields.map(f => f.id).includes(field.id)))
-                fileFields.push(...(fileFieldsFromQuery || []).filter(field => !fileFields.map(f => f.id).includes(field.id)))
+                // Use Set for faster duplicate checking
+                const existingIds = new Set(fileFields.map(f => f.id));
+                
+                this.addUniqueFields(fileFields, fileFieldsFromTag, existingIds);
+                this.addUniqueFields(fileFields, fileFieldsFromPath, existingIds);
+                this.addUniqueFields(fileFields, fileFieldsFromGroup, existingIds);
+                this.addUniqueFields(fileFields, fileFieldsFromQuery, existingIds);
+                
                 this.filesFields.set(f.path, fileFields);
-                const filesLookupAndFormulasFields: Field[] = fileFields.filter(f => this.isLookupOrFormula(f))
-                filesLookupAndFormulasFields.push(...(fileFieldsFromTag || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
-                filesLookupAndFormulasFields.push(...(fileFieldsFromPath || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
-                filesLookupAndFormulasFields.push(...(fileFieldsFromGroup || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
-                filesLookupAndFormulasFields.push(...(fileFieldsFromQuery || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
+                
+                // Build lookup and formula fields with Set
+                const lookupFormulaIds = new Set<string>();
+                const filesLookupAndFormulasFields: Field[] = [];
+                
+                for (const field of fileFields) {
+                    if (this.isLookupOrFormula(field)) {
+                        filesLookupAndFormulasFields.push(field);
+                        lookupFormulaIds.add(field.id);
+                    }
+                }
+                
+                for (const source of [fileFieldsFromTag, fileFieldsFromPath, fileFieldsFromGroup, fileFieldsFromQuery]) {
+                    if (source) {
+                        for (const field of source) {
+                            if (!lookupFormulaIds.has(field.id) && this.isLookupOrFormula(field)) {
+                                filesLookupAndFormulasFields.push(field);
+                                lookupFormulaIds.add(field.id);
+                            }
+                        }
+                    }
+                }
+                
                 if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, filesLookupAndFormulasFields)
             } else if (this.fieldsFromGlobalFileClass.length) {
                 fileFields = this.fieldsFromGlobalFileClass
                 this.filesFields.set(f.path, fileFields)
                 const filesLookupAndFormulasFields = this.fieldsFromGlobalFileClass.filter(f => this.isLookupOrFormula(f))
-                if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, this.fieldsFromGlobalFileClass.filter(f => this.isLookupOrFormula(f)))
+                if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, filesLookupAndFormulasFields)
                 this.filesFileClasses.set(f.path, [this.fileClassesName.get(this.settings.globalFileClass!)!])
                 this.filesFileClassesNames.set(f.path, [this.settings.globalFileClass!])
             } else {
@@ -571,7 +652,7 @@ export default class FieldIndex extends FieldIndexBuilder {
                 });
                 this.filesFields.set(f.path, fileFields)
                 const filesLookupAndFormulasFields = fileFields.filter(f => this.isLookupOrFormula(f))
-                if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, fileFields.filter(f => this.isLookupOrFormula(f)))
+                if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, filesLookupAndFormulasFields)
             }
             if (
                 fileFields.some(f => !previousFileFields?.includes(f.id)) ||
@@ -643,7 +724,36 @@ export default class FieldIndex extends FieldIndexBuilder {
     }
 
     public isIndexed(file: TFile): boolean {
-        this.indexableFiles().map(f => f.path).includes(file.path)
-        return true
+        // Use cached regex compilation
+        if (!this.compiledRegexCache) {
+            this.compiledRegexCache = this.settings.fileIndexingExcludedRegex
+                .map(regexStr => {
+                    try {
+                        return new RegExp(regexStr);
+                    } catch (e) {
+                        return null;
+                    }
+                })
+                .filter(r => r !== null) as RegExp[];
+        }
+
+        // Check if file passes all indexing criteria
+        if (this.classFilesPath && file.path.startsWith(this.classFilesPath)) {
+            return false;
+        }
+        
+        if (this.settings.fileIndexingExcludedFolders.some(path => file.path.startsWith(path))) {
+            return false;
+        }
+        
+        if (this.settings.fileIndexingExcludedExtensions.some(extension => file.path.endsWith(extension))) {
+            return false;
+        }
+        
+        if (this.compiledRegexCache.some(regex => regex.test(file.path))) {
+            return false;
+        }
+        
+        return true;
     }
 }

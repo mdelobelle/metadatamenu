@@ -13,8 +13,8 @@ function isPropView(view: MarkdownView | PropView): view is PropView {
 
 const updateProps = async (plugin: MetadataMenu, view: MarkdownView | PropView, file: TFile) => {
     const optionsList = new OptionsList(plugin, file, "ManageAtCursorCommand")
-    const note = new Note(plugin, file)
-    await note.build();
+    const note = await plugin.noteCache.get(file);
+    
     view.metadataEditor.rendered.forEach(item => {
         const key = item.entry.key
         const pseudoField: {
@@ -57,18 +57,30 @@ const updateProps = async (plugin: MetadataMenu, view: MarkdownView | PropView, 
 
 export async function updatePropertiesSection(plugin: MetadataMenu) {
     const leaves = plugin.app.workspace.getLeavesOfType("markdown");
-    for (const leaf of leaves) {
-        const view = leaf.view
-        if (!(view instanceof MarkdownView) || !(view.file instanceof TFile) || view.file === undefined) continue
-        const file = view.file
-        if (!plugin.app.vault.getAbstractFileByPath(file.path)) continue
-        updateProps(plugin, view, file)
+    
+    // Process only active view immediately, others in background
+    const currentView = plugin.app.workspace.getActiveViewOfType(MarkdownView);
+    
+    // Update active view first (priority)
+    if (currentView && currentView.file instanceof TFile) {
+        await updateProps(plugin, currentView, currentView.file);
     }
-    const currentView = plugin.app.workspace.getActiveViewOfType(MarkdownView)
+    
+    // Update other views in background without blocking
+    window.setTimeout(async () => {
+        for (const leaf of leaves) {
+            const view = leaf.view;
+            if (view === currentView) continue; // Skip already processed
+            if (!(view instanceof MarkdownView) || !(view.file instanceof TFile) || view.file === undefined) continue;
+            const file = view.file;
+            if (!plugin.app.vault.getAbstractFileByPath(file.path)) continue;
+            await updateProps(plugin, view, file);
+        }
+    }, 0);
+    
     if (currentView && currentView.file) {
         const file = currentView.file
-        const note = new Note(plugin, file)
-        await note.build()
+        const note = await plugin.noteCache.get(file);
         plugin.indexStatus.checkForUpdate(currentView)
         const focusedElement = document.querySelector(".metadata-property:focus-within")
         if (focusedElement instanceof HTMLElement) {
@@ -113,9 +125,12 @@ export async function updatePropertiesPane(plugin: MetadataMenu) {
     }
 }
 
-export async function updatePropertiesCommands(plugin: MetadataMenu) {
-    if (plugin.settings.enableProperties) {
-        updatePropertiesSection(plugin)
-        updatePropertiesPane(plugin)
-    }
+export function updatePropertiesCommands(plugin: MetadataMenu) {
+    if (!plugin.settings.enableProperties) return;
+    
+    // Run completely async to not block UI
+    Promise.resolve().then(async () => {
+        await updatePropertiesSection(plugin);
+        await updatePropertiesPane(plugin);
+    }).catch(err => console.error('Error updating properties:', err));
 }

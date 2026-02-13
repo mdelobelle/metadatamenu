@@ -385,7 +385,23 @@ export function valueModal(managedField: IFieldManager<Target, Options>, plugin:
 }
 
 export function valueString(managedField: IFieldManager<Target, Options>): string {
-    return `${managedField.value.join(", ")}`
+    if (!Array.isArray(managedField.value)) {
+        return `${managedField.value}`;
+    }
+    
+    // Get display values from valuesList if available
+    const options = managedField.options;
+    if (options.sourceType === "ValuesList" && options.valuesList) {
+        const displayValues = managedField.value.map(val => {
+            // valuesList: key is internal value, value is display name
+            // So we need to find if val is a key, and return its display value
+            const displayValue = options.valuesList?.[val];
+            return displayValue || val; // If not found in valuesList, return original value
+        });
+        return displayValues.join(", ");
+    }
+    
+    return `${managedField.value.join(", ")}`;
 }
 
 export function displayValue(managedField: IFieldManager<Target, Options>, container: HTMLDivElement, onClicked: () => any) {

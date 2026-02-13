@@ -88,6 +88,26 @@ export function getValueDisplay(field: ExistingField | undefined): string {
     } else if (!field) {
         return "<--Missing-->"
     } else {
+        // Handle array values properly
+        if (Array.isArray(field.value)) {
+            if (field.value.length === 0) {
+                return "<--Empty-->"
+            }
+            // Show first few items and count
+            const maxDisplay = 3;
+            const displayItems = field.value.slice(0, maxDisplay).map(item => {
+                if (typeof item === 'object' && item !== null) {
+                    // For objects, try to show a meaningful representation
+                    return item.name || item.title || item.value || JSON.stringify(item);
+                }
+                return String(item);
+            });
+            
+            if (field.value.length > maxDisplay) {
+                return `${displayItems.join(", ")} ... (${field.value.length} items)`;
+            }
+            return `${displayItems.join(", ")} (${field.value.length} items)`;
+        }
         return field.value || ""
     }
 }

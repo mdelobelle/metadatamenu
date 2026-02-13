@@ -1,6 +1,7 @@
 import { Notice, TFile } from "obsidian";
 
 class FileClassQuery {
+    private cachedResults: Set<string> | null = null;
 
     constructor(
         public name: string = "",
@@ -25,14 +26,22 @@ class FileClassQuery {
         //@ts-ignore
         if (this.query && dataview?.settings.enableDataviewJs && dataview?.settings.enableInlineDataviewJs) {
             try {
-                const filesPath = this.getResults(dataview.api).values.map((v: any) => v.file.path) as string[]
-                return filesPath.includes(file.path);
+                if (!this.cachedResults) {
+                    const results = this.getResults(dataview.api);
+                    const filesPath = results.values.map((v: any) => v.file.path) as string[];
+                    this.cachedResults = new Set(filesPath);
+                }
+                return this.cachedResults.has(file.path);
             } catch (error) {
                 return false;
             }
         } else {
             return false;
         }
+    }
+
+    public invalidateCache() {
+        this.cachedResults = null;
     }
 
     static copyProperty(target: FileClassQuery, source: FileClassQuery) {

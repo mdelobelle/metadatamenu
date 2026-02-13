@@ -391,14 +391,12 @@ export class Note {
     }
 
     static async buildNote(plugin: MetadataMenu, file: TFile): Promise<Note> {
-        const note = new Note(plugin, file)
-        await note.build()
-        return note
+        return await plugin.noteCache.get(file);
     }
 
     static async getExistingFields(plugin: MetadataMenu, file: TFile): Promise<ExistingField[]> {
-        const note = await Note.buildNote(plugin, file)
-        return note.existingFields
+        const note = await plugin.noteCache.get(file);
+        return note.existingFields;
     }
 
     static async getExistingFieldForIndexedPath(plugin: MetadataMenu, file: TFile, indexedPath: string | undefined): Promise<ExistingField | undefined> {

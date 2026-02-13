@@ -21,7 +21,6 @@ export default class ExtraButton extends Component {
             updateElLinks(this.plugin.app, this.plugin, el, ctx)
         });
 
-        // Live preview
         const ext = Prec.lowest(buildCMViewPlugin(this.plugin));
         this.plugin.registerEditorExtension(ext);
 
@@ -33,35 +32,44 @@ export default class ExtraButton extends Component {
             updateVisibleLinks(this.plugin.app, this.plugin);
         });
 
-        // Initialization
-        this.registerEvent(this.plugin.app.metadataCache.on('changed', debounce(this.updateLinks, 100, true)));
-        this.registerEvent(this.plugin.app.metadataCache.on('metadata-menu:indexed', debounce(this.updateLinks, 100, true)));
-        this.registerEvent(this.plugin.app.workspace.on("layout-change", debounce(this.updateLinks, 10, true)));
+        this.registerEvent(this.plugin.app.metadataCache.on('changed', debounce(this.updateLinks, 150, true)));
+        this.registerEvent(this.plugin.app.metadataCache.on('metadata-menu:indexed', debounce(this.updateLinks, 150, true)));
+        this.registerEvent(this.plugin.app.workspace.on("layout-change", debounce(this.updateLinks, 50, true)));
         this.registerEvent(this.plugin.app.workspace.on("window-open", (window, win) => this.initModalObservers(window.getContainer()!.doc)));
-        this.registerEvent(this.plugin.app.workspace.on("layout-change", () => this.initViewObservers()));
-        this.registerEvent(this.plugin.app.internalPlugins.getPluginById("bookmarks").instance.on("changed", debounce(this.updateLinks, 100, true)))
+        this.registerEvent(this.plugin.app.workspace.on("layout-change", debounce(() => this.initViewObservers(), 50, true)));
+        
+        const bookmarksPlugin = this.plugin.app.internalPlugins.getPluginById("bookmarks");
+        if (bookmarksPlugin?.instance) {
+            this.registerEvent(bookmarksPlugin.instance.on("changed", debounce(this.updateLinks, 150, true)));
+        }
     }
 
     public updateLinks = () => {
+        if (this.observers.length === 0) {
+            updateVisibleLinks(this.plugin.app, this.plugin);
+            return;
+        }
+        
         updateVisibleLinks(this.plugin.app, this.plugin);
+        
         this.observers.forEach(([observer, type, own_class]: [any, any, any]) => {
             const leaves = this.plugin.app.workspace.getLeavesOfType(type);
             leaves.forEach((leaf: any) => {
                 this.updateContainer(leaf.view.containerEl, own_class, type);
-            })
+            });
         });
-
     }
 
 
     private initViewObservers() {
-        // Reset observers
         this.observers.forEach(([observer, type]) => {
             observer.disconnect();
         });
         this.observers = [];
 
-        // Register new observers
+        // @ts-ignore
+        const backlinkInDocument = this.plugin.app?.internalPlugins?.plugins?.backlink?.instance?.options?.backlinkInDocument;
+
         this.registerViewType('backlink', ".tree-item-inner", true);
         this.registerViewType('bases', '.internal-link', true, 'internal-link', 'bases-tr');
         this.registerViewType('bases', '.internal-link', true, 'internal-link', 'bases-cards-item');
@@ -75,9 +83,8 @@ export default class ExtraButton extends Component {
         this.registerViewType('recent-files', '.nav-file-title-content', true);
         this.registerViewType('search', ".tree-item-inner", true);
         this.registerViewType('starred', '.nav-file-title-content', true);
-        // If backlinks in editor is on
-        // @ts-ignore
-        if (this.plugin.app?.internalPlugins?.plugins?.backlink?.instance?.options?.backlinkInDocument) {
+        
+        if (backlinkInDocument) {
             this.registerViewType('markdown', '.tree-item-inner', true);
         }
     }
@@ -89,27 +96,66 @@ export default class ExtraButton extends Component {
             attributes: false
         };
 
-        this.modalObservers.push(new MutationObserver(records => {
-            records.forEach((mutation) => {
-                if (mutation.type === 'childList') {
-                    mutation.addedNodes.forEach(n => {
-                        if ('className' in n &&
-                            // @ts-ignore
-                            (n.className.includes('modal-container') && this.plugin.settings.enableQuickSwitcher
-                                // @ts-ignore
-                                || n.className.includes('suggestion-container') && this.plugin.settings.enableSuggestor)) {
-                            let selector = ".suggestion-title, .suggestion-note, .another-quick-switcher__item__title, .omnisearch-result__title";
-                            // @ts-ignore
-                            if (n.className.includes('suggestion-container')) {
-                                selector = ".suggestion-title, .suggestion-note";
-                            }
-                            this.updateContainer(n as HTMLElement, selector, null);
-                            this._watchContainer(null, n as HTMLElement, selector);
-                        }
-                    });
+        const pendingModalUpdates: Array<{node: HTMLElement, selector: string}> = [];
+        let modalUpdateScheduled = false;
+        
+        const processModalUpdates = () => {
+            const updates = pendingModalUpdates.splice(0);
+            
+            const CHUNK_SIZE = 10;
+            let index = 0;
+            
+            const processChunk = () => {
+                const end = Math.min(index + CHUNK_SIZE, updates.length);
+                for (let i = index; i < end; i++) {
+                    const {node, selector} = updates[i];
+                    this.updateContainer(node, selector, null);
+                    this._watchContainer(null, node, selector);
                 }
-            });
+                index = end;
+                
+                if (index < updates.length) {
+                    requestAnimationFrame(processChunk);
+                } else {
+                    modalUpdateScheduled = false;
+                }
+            };
+            
+            processChunk();
+        };
+
+        this.modalObservers.push(new MutationObserver(records => {
+            let hasUpdates = false;
+            
+            for (const mutation of records) {
+                if (mutation.type !== 'childList') continue;
+                
+                for (const n of mutation.addedNodes) {
+                    if (!(n instanceof HTMLElement)) continue;
+                    
+                    const className = n.className;
+                    if (typeof className !== 'string') continue;
+                    
+                    const isModal = className.indexOf('modal-container') !== -1;
+                    const isSuggestion = className.indexOf('suggestion-container') !== -1;
+                    
+                    if (isModal || isSuggestion) {
+                        const selector = isSuggestion 
+                            ? ".suggestion-title, .suggestion-note"
+                            : ".suggestion-title, .suggestion-note, .another-quick-switcher__item__title, .omnisearch-result__title";
+                        
+                        pendingModalUpdates.push({node: n, selector});
+                        hasUpdates = true;
+                    }
+                }
+            }
+            
+            if (hasUpdates && !modalUpdateScheduled) {
+                modalUpdateScheduled = true;
+                requestAnimationFrame(processModalUpdates);
+            }
         }));
+        
         this.modalObservers.last()?.observe(doc.body, config);
     }
 
@@ -146,20 +192,39 @@ export default class ExtraButton extends Component {
     }
 
     private updateContainer(container: HTMLElement, selector: string, viewTypeName: string | null) {
-
         const nodes = container.findAll(selector);
+        
+        if (nodes.length === 0) return;
+        
+        if (nodes.length < 50) {
+            for (let i = 0; i < nodes.length; ++i) {
+                const el = nodes[i] as HTMLElement;
+                const isCanvasFileLink = el.parentElement?.getAttr("data-path")?.includes(".canvas");
+                if (!isCanvasFileLink) {
+                    updateDivExtraAttributes(this.plugin.app, this.plugin, el, viewTypeName, "");
+                }
+            }
+            return;
+        }
+        
+        const validElements: HTMLElement[] = [];
+        
         for (let i = 0; i < nodes.length; ++i) {
             const el = nodes[i] as HTMLElement;
-            const isCanvasFileLink = el.parentElement?.getAttr("data-path")?.includes(".canvas")
+            const isCanvasFileLink = el.parentElement?.getAttr("data-path")?.includes(".canvas");
             if (!isCanvasFileLink) {
-                //HERE
-                updateDivExtraAttributes(this.plugin.app, this.plugin, el, viewTypeName, "");
+                validElements.push(el);
             }
+        }
+        
+        for (const el of validElements) {
+            updateDivExtraAttributes(this.plugin.app, this.plugin, el, viewTypeName, "");
         }
     }
 
     private removeFromContainer(container: HTMLElement, selector: string) {
         const nodes = container.findAll(selector);
+        
         for (let i = 0; i < nodes.length; ++i) {
             const el = nodes[i] as HTMLElement;
             clearExtraAttributes(el);
@@ -167,8 +232,16 @@ export default class ExtraButton extends Component {
     }
 
     private _watchContainer(viewType: string | null, container: HTMLElement, selector: string) {
-        let observer = new MutationObserver((records, _) => {
-            this.updateContainer(container, selector, viewType);
+        let updateScheduled = false;
+        
+        const observer = new MutationObserver((records, _) => {
+            if (!updateScheduled) {
+                updateScheduled = true;
+                requestAnimationFrame(() => {
+                    this.updateContainer(container, selector, viewType);
+                    updateScheduled = false;
+                });
+            }
         });
         observer.observe(container, { subtree: true, childList: true, attributes: false });
         if (viewType) {
@@ -177,9 +250,33 @@ export default class ExtraButton extends Component {
     }
 
     private _watchContainerDynamic(viewType: string, container: HTMLElement, selector: string, ownClass = 'tree-item-inner', parent_class = 'tree-item') {
-        // Used for efficient updating of the backlinks panel
-        // Only loops through newly added DOM nodes instead of changing all of them
-        let observer = new MutationObserver((records, _) => {
+        const pendingUpdates: HTMLElement[] = [];
+        let updateScheduled = false;
+        
+        const processPendingUpdates = () => {
+            const updates = pendingUpdates.splice(0);
+            
+            const CHUNK_SIZE = 20;
+            let index = 0;
+            
+            const processChunk = () => {
+                const end = Math.min(index + CHUNK_SIZE, updates.length);
+                for (let i = index; i < end; i++) {
+                    updateDivExtraAttributes(this.plugin.app, this.plugin, updates[i], viewType, "");
+                }
+                index = end;
+                
+                if (index < updates.length) {
+                    requestAnimationFrame(processChunk);
+                } else {
+                    updateScheduled = false;
+                }
+            };
+            
+            processChunk();
+        };
+        
+        const observer = new MutationObserver((records, _) => {
             records.forEach((mutation) => {
                 if (mutation.type === 'childList') {
                     mutation.addedNodes.forEach((n) => {
@@ -187,16 +284,20 @@ export default class ExtraButton extends Component {
                             // @ts-ignore
                             if (n.className.includes && typeof n.className.includes === 'function' && n.className.includes(parent_class)) {
                                 const fileDivs = (n as HTMLElement).getElementsByClassName(ownClass);
-                                if (viewType === 'bases') console.log(n)
                                 for (let i = 0; i < fileDivs.length; ++i) {
                                     const link = fileDivs[i] as HTMLElement;
-                                    updateDivExtraAttributes(this.plugin.app, this.plugin, link, viewType, "");
+                                    pendingUpdates.push(link);
                                 }
                             }
                         }
                     });
                 }
             });
+            
+            if (!updateScheduled && pendingUpdates.length > 0) {
+                updateScheduled = true;
+                requestAnimationFrame(processPendingUpdates);
+            }
         });
         observer.observe(container, { subtree: true, childList: true, attributes: false });
         this.observers.push([observer, viewType, selector]);

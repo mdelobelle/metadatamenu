@@ -68,6 +68,11 @@ export class FieldsModal extends Modal {
     }
 
     async onOpen() {
+        // Show modal immediately with loading state
+        this.titleEl.setText(`Loading fields...`);
+        this.contentEl.createDiv({ cls: "loading-placeholder", text: "Loading..." });
+        
+        // Build note and UI asynchronously
         await this.buildNote();
         this.build();
     };

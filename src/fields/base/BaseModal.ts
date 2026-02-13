@@ -49,6 +49,9 @@ export class BaseValueModal<T extends Target, O extends BaseOptions> extends Mod
 
     onOpen(): void {
         this.contentEl.setAttr("id", `field_${this.managedField.id}_update_modal`)
+        // Add smooth animation class
+        this.modalEl.addClass("metadata-menu-modal-animated");
+        
         this.containerEl.onkeydown = async (e) => {
             if (e.key == "Enter" && e.altKey) {
                 e.preventDefault()

@@ -1,5 +1,5 @@
 import './env'
-import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
+import { debounce, MarkdownView, Notice, Plugin, TFile } from 'obsidian';
 import { addCommands } from 'src/commands/paletteCommands';
 import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
@@ -21,6 +21,7 @@ import { AddFileClassToFileModal } from 'src/fileClass/fileClass';
 import { FileClassCodeBlockListManager } from 'src/components/FileClassCodeBlockListManager';
 import { Field, buildEmptyField } from 'src/fields/Field';
 import { TestRunner } from 'src/testing/runner';
+import { NoteCache } from 'src/note/NoteCache';
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
 	public settings: MetadataMenuSettings;
@@ -36,6 +37,7 @@ export default class MetadataMenu extends Plugin {
 	public launched: boolean = false;
 	public indexDB: IndexDatabase;
 	public codeBlockListManager: FileClassCodeBlockListManager
+	public noteCache: NoteCache;
 
 	async onload(): Promise<void> {
 		console.log('+------ Metadata Menu loaded ------x-+');
@@ -68,6 +70,7 @@ export default class MetadataMenu extends Plugin {
 
 		//loading components
 
+		this.noteCache = new NoteCache(this);
 		this.indexStatus = this.addChild(new IndexStatus(this))
 		this.codeBlockListManager = this.addChild(new FileClassCodeBlockListManager(this))
 		this.fieldIndex = this.addChild(new FieldIndex(this))
@@ -100,26 +103,35 @@ export default class MetadataMenu extends Plugin {
 			})
 		)
 
+		const debouncedUpdateProps = debounce(() => {
+			updatePropertiesCommands(this);
+		}, 100, true);
+
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', (leaf) => {
-				if (leaf) this.indexStatus.checkForUpdate(leaf.view)
-				updatePropertiesCommands(this)
+				if (leaf) {
+					this.indexStatus.checkForUpdate(leaf.view);
+				}
+				debouncedUpdateProps();
 			})
 		)
 
 		this.registerEvent(
 			this.app.workspace.on("file-open", (file) => {
-				updatePropertiesCommands(this)
+				debouncedUpdateProps();
 			})
 		)
 
 		this.registerEvent(
 			this.app.metadataCache.on('metadata-menu:indexed', () => {
-				this.indexStatus.setState("indexed")
-				const currentView = this.app.workspace.getActiveViewOfType(MarkdownView)
-				if (currentView) this.indexStatus.checkForUpdate(currentView)
-				updatePropertiesCommands(this)
-				FileClassViewManager.reloadViews(this)
+				this.indexStatus.setState("indexed");
+				const currentView = this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (currentView) this.indexStatus.checkForUpdate(currentView);
+				
+				requestAnimationFrame(() => {
+					updatePropertiesCommands(this);
+					FileClassViewManager.reloadViews(this);
+				});
 			})
 		)
 
@@ -127,13 +139,11 @@ export default class MetadataMenu extends Plugin {
 		this.extraButton = this.addChild(new ExtraButton(this))
 		if (this.settings.enableFileExplorer) this.addChild(new FileClassFolderButton(this))
 
-		// Wait for workspace to be ready before indexing
 		this.app.workspace.onLayoutReady(async () => {
-			await this.fieldIndex.fullIndex()
-			this.launched = true
-			addCommands(this)
+			await this.fieldIndex.fullIndex();
+			this.launched = true;
+			addCommands(this);
 
-			// Process all already-open files
 			const leaves = this.app.workspace.getLeavesOfType("markdown");
 			leaves.forEach((leaf) => {
 				if (leaf.view instanceof MarkdownView) {
@@ -141,13 +151,10 @@ export default class MetadataMenu extends Plugin {
 				}
 			});
 
-			this.app.workspace.trigger("layout-change")
+			this.app.workspace.trigger("layout-change");
 
-			// Wait for next render cycle to ensure metadataEditor is fully rendered
 			requestAnimationFrame(() => {
-				requestAnimationFrame(() => {
-					updatePropertiesCommands(this);
-				});
+				updatePropertiesCommands(this);
 			});
 		})
 

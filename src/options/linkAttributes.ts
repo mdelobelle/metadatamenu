@@ -232,28 +232,34 @@ export function updatePropertiesPane(propertiesEl: HTMLElement, file: TFile, app
 
 export function updateVisibleLinks(app: App, plugin: MetadataMenu) {
     const settings = plugin.settings;
+    
+    // Batch updates to avoid blocking UI
+    const updates: Array<() => void> = [];
+    
     app.workspace.iterateRootLeaves((leaf) => {
         if (leaf.view instanceof MarkdownView && leaf.view.file) {
             const file: TFile = leaf.view.file;
             const cachedFile = app.metadataCache.getFileCache(file);
             const fileName = file.path.replace(/(.*).md/, "$1")
 
-            // @ts-ignore
-            const metadata = leaf.view?.metadataEditor.contentEl;
-            if (!!metadata) {//
-                updatePropertiesPane(metadata, file, app, plugin);
-            }
+            // Collect updates instead of executing immediately
+            const filePath = file.path; // Capture for closure
+            updates.push(() => {
+                // @ts-ignore
+                const metadata = leaf.view?.metadataEditor.contentEl;
+                if (!!metadata) {
+                    updatePropertiesPane(metadata, file, app, plugin);
+                }
 
-            //@ts-ignore
-            const tabHeader: HTMLElement = leaf.tabHeaderInnerTitleEl;
-            if (settings.enableTabHeader) {
-                // Supercharge tab headers
-                updateDivExtraAttributes(app, plugin, tabHeader, 'tabHeader', leaf.view.file.path);
-            }
-            else {
-                clearExtraAttributes(tabHeader);
-            }
-
+                //@ts-ignore
+                const tabHeader: HTMLElement = leaf.tabHeaderInnerTitleEl;
+                if (settings.enableTabHeader) {
+                    updateDivExtraAttributes(app, plugin, tabHeader, 'tabHeader', filePath);
+                }
+                else {
+                    clearExtraAttributes(tabHeader);
+                }
+            });
 
             if (cachedFile?.links && settings.enableLinks) {
                 cachedFile.links.forEach((link: LinkCache) => {
@@ -268,4 +274,11 @@ export function updateVisibleLinks(app: App, plugin: MetadataMenu) {
             }
         }
     })
+    
+    // Execute updates in batches using requestAnimationFrame
+    if (updates.length > 0) {
+        requestAnimationFrame(() => {
+            updates.forEach(update => update());
+        });
+    }
 }
