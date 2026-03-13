@@ -115,7 +115,10 @@ export async function updatePropertiesPane(plugin: MetadataMenu) {
 
 export async function updatePropertiesCommands(plugin: MetadataMenu) {
     if (plugin.settings.enableProperties) {
-        updatePropertiesSection(plugin)
-        updatePropertiesPane(plugin)
+        const activeFile = plugin.app.workspace.getActiveFile()
+        if (activeFile instanceof TFile && activeFile.extension === "md") {
+            updatePropertiesSection(plugin)
+            updatePropertiesPane(plugin)
+        }
     }
 }
