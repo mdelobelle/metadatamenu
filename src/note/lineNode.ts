@@ -236,6 +236,7 @@ export class LineNode {
             !(
                 this.field.type === "JSON"
                 || this.field.type === "YAML"
+                || this.field.type === "Formula"
                 || this.field.type === "Lookup"
                 || this.field.type === "Multi"
                 || this.field.type === "MultiFile"

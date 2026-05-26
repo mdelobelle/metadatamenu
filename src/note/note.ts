@@ -48,12 +48,15 @@ export class Note {
     public renderValueString(_rawValue: string, fieldType?: FieldType, indentationLevel: number = 0): string {
         if (_rawValue) {
             if (_rawValue.startsWith("[[") || _rawValue.startsWith("![[")) {
-                return `"${_rawValue}"`
-            } else if (_rawValue.startsWith("#")) {
+                return `"${_rawValue}"`;
+            } else if(_rawValue.startsWith("#")) {
                 return `${_rawValue}`;
             } else if (fieldType && rawObjectTypes.includes(fieldType)) {
                 const indentation = `\n${"  ".repeat(indentationLevel + 1)}`
                 return `${indentation}${_rawValue.split("\n").join(indentation)}`;
+            } else if (fieldType && fieldType === "Formula" && _rawValue.startsWith("[")) {
+                const indentation = "\n  - ";
+                return `${indentation}${_rawValue.slice(1,-1).split(/(?<="),/).map((v) => v.trim()).join(indentation)}`;
             } else {
                 //return parseYaml(_rawValue)
                 return [_rawValue, true, false].includes(parseYaml(_rawValue)) || !isNaN(parseFloat(_rawValue)) ? parseYaml(_rawValue) : `"${_rawValue}"`;
