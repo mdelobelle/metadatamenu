@@ -27,6 +27,7 @@ nav:
   - FileClasses: fileclasses.md
   - Controls: controls.md
   - API: api.md
+  - Writing frontmatter: writing-frontmatter.md
   - Releases: releases.md
 
 repo_url: https://github.com/mdelobelle/metadatamenu
